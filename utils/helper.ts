@@ -1,0 +1,41 @@
+import { CurrencyConfig } from "@/lib/config/store";
+import { convertCurrency } from "@/lib/utils";
+
+// Remove this later
+export const formatCurrencyChangeLater = (amount: number) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount);
+};
+
+// Currency format and conversion
+export const formatCurrency = (
+  amount: number,
+  currency: CurrencyConfig,
+  baseCurrency: string = "USD",
+) => {
+  const converted = convertCurrency(amount, baseCurrency, currency.code);
+
+  return new Intl.NumberFormat(currency.locale, {
+    style: "currency",
+    currency: currency.code,
+  }).format(converted);
+};
+
+export const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString();
+};
+
+export function formatDatetime(dateString: string) {
+  const date = new Date(dateString);
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${day}-${month}-${year} ${hours}:${minutes}`;
+}

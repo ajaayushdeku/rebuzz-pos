@@ -1,0 +1,208 @@
+import {
+  DateRange,
+  ProductData,
+} from "@/components/dashboardComponents/salesRevenue/RevenueVsProfitChart";
+import { SalesTrendsData } from "@/components/dashboardComponents/salesRevenue/SalesTrendChart";
+import { SlowProduct } from "@/components/dashboardComponents/salesRevenue/slow-product-columns";
+import { TopProduct } from "@/components/dashboardComponents/salesRevenue/top-product-columns";
+
+import {
+  mockRevenueVsProfit,
+  mockSalesTrendData,
+  mockSlowProducts,
+  // mockTopProducts,
+} from "@/lib/mockData/mock-salesrevenue";
+import { cookies } from "next/headers";
+
+const BASE = process.env.NEXT_PUBLIC_API_URL;
+
+// Top/Popular Products
+export const getTopProducts = async (): Promise<TopProduct[]> => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  // Dynamic date range — last 7 days
+  const endDate = new Date().toISOString().split("T")[0];
+  const startDate = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0];
+
+  const res = await fetch(
+    `${BASE}/business/report/salesByItem?startDate=${startDate}&endDate=${endDate}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      next: { revalidate: 3600 },
+    },
+  );
+
+  if (!res.ok) throw new Error(`Failed to fetch sales by item: ${res.status}`);
+
+  const json = await res.json();
+
+  const rawItems: {
+    itemName: string;
+    totalRevenue: number;
+    category: string;
+    count: number;
+  }[] = json?.data ?? [];
+
+  if (rawItems.length === 0) return [];
+
+  // Merge duplicate item names — sum their count and totalRevenue
+  const merged = rawItems.reduce<
+    Record<string, { totalRevenue: number; count: number }>
+  >((acc, item) => {
+    if (acc[item.itemName]) {
+      acc[item.itemName].totalRevenue += item.totalRevenue;
+      acc[item.itemName].count += item.count;
+    } else {
+      acc[item.itemName] = {
+        totalRevenue: item.totalRevenue,
+        count: item.count,
+      };
+    }
+    return acc;
+  }, {});
+
+  // Sort by count descending, take top 3
+  const sorted = Object.entries(merged).sort(
+    ([, a], [, b]) => b.count - a.count,
+  );
+
+  const totalCount = sorted.reduce((sum, [, { count }]) => sum + count, 0);
+
+  return sorted.map(([itemName, { totalRevenue, count }], index) => ({
+    name: itemName,
+    category:
+      rawItems.find((item) => item.itemName === itemName)?.category ??
+      "Uncategorized",
+    revenue: Math.round(totalRevenue * 100) / 100,
+    percent: totalCount > 0 ? Math.round((count / totalCount) * 100) : 0,
+  }));
+};
+
+export async function getSlowProducts(): Promise<SlowProduct[]> {
+  //   const res = await fetch(
+  //     `${process.env.NEXT_PUBLIC_API_URL}/api/products/slowproducts`,
+  //     {
+  //       next: { revalidate: 300 },
+  //     },
+  //   );
+  //   if (!res.ok)
+  //     throw new Error(
+  //       "Failed to fetch slow products",
+  //     );
+  //   return res.json();
+  return mockSlowProducts;
+}
+
+const RANGE_DAYS: Record<DateRange, number> = {
+  today: 1,
+  "7d": 6,
+  "30d": 29,
+  "90d": 89,
+  "180d": 179,
+};
+
+export async function getRevenueVsProfitData(
+  range: DateRange = "30d",
+): Promise<{ rangeData: ProductData[]; todayData: ProductData[] }> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  const today = new Date().toISOString().split("T")[0];
+  const startDate = new Date(
+    Date.now() - RANGE_DAYS[range] * 24 * 60 * 60 * 1000,
+  )
+    .toISOString()
+    .split("T")[0];
+
+  // Fetch both in parallel
+  const [rangeRes, todayRes] = await Promise.all([
+    fetch(
+      `${BASE}/business/report/salesByItem?startDate=${startDate}&endDate=${today}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        next: { revalidate: 3600 },
+      },
+    ),
+    fetch(
+      `${BASE}/business/report/salesByItem?startDate=${today}&endDate=${today}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        next: { revalidate: 300 }, // today refreshes more frequently
+      },
+    ),
+  ]);
+
+  if (!rangeRes.ok)
+    throw new Error(`Failed to fetch range data: ${rangeRes.status}`);
+  if (!todayRes.ok)
+    throw new Error(`Failed to fetch today data: ${todayRes.status}`);
+
+  const [rangeJson, todayJson] = await Promise.all([
+    rangeRes.json(),
+    todayRes.json(),
+  ]);
+
+  return {
+    rangeData: formatSalesByItem(rangeJson?.data ?? []),
+    todayData: formatSalesByItem(todayJson?.data ?? []),
+  };
+}
+
+// Extracted shared formatter
+function formatSalesByItem(
+  rawItems: {
+    itemName: string;
+    totalRevenue: number;
+    netProfit: number;
+  }[],
+): ProductData[] {
+  if (rawItems.length === 0) return [];
+
+  const merged = rawItems.reduce<
+    Record<string, { revenue: number; profit: number }>
+  >((acc, item) => {
+    if (acc[item.itemName]) {
+      acc[item.itemName].revenue += item.totalRevenue;
+      acc[item.itemName].profit += item.netProfit;
+    } else {
+      acc[item.itemName] = {
+        revenue: item.totalRevenue,
+        profit: item.netProfit,
+      };
+    }
+    return acc;
+  }, {});
+
+  return Object.entries(merged)
+    .sort(([, a], [, b]) => b.revenue - a.revenue)
+    .slice(0, 6)
+    .map(([itemName, { revenue, profit }]) => ({
+      product: itemName,
+      revenue: Math.round(revenue * 100) / 100,
+      profit: Math.round(profit * 100) / 100,
+    }));
+}
+
+export async function getSalesTrends(): Promise<SalesTrendsData> {
+  // try {
+  //   const res = await fetch(
+  //     `${process.env.NEXT_PUBLIC_API_URL}/api/sales/trends`,
+  //     { next: { revalidate: 300 } },
+  //   );
+  //   if (!res.ok) throw new Error();
+  //   return res.json();
+  // } catch {
+  return mockSalesTrendData;
+}
