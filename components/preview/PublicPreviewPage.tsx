@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 
@@ -11,11 +11,11 @@ import { getTicketByInvoice } from "@/services/apiTicket.client";
 import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
 import InvoicePreview from "@/components/invoice/InvoicePreview";
 
-export default function PublicPreviewPage() {
-  const { id } = useParams();
-  const searchParams = useSearchParams();
+type InvoiceType = "proforma" | "invoice" | "tax";
 
-  const isProforma = searchParams.get("proforma") === "true";
+export default function PublicPreviewPage({ type }: { type: InvoiceType }) {
+  const { id } = useParams();
+
   const {
     data,
     isLoading: invLoading,
@@ -27,7 +27,7 @@ export default function PublicPreviewPage() {
   });
 
   const invoice = data?.data?.Tickets;
-  console.log("Invovice Data:", invoice);
+  console.log("Invoice Data:", invoice);
 
   const { data: customerData, isLoading: isCustomerLoading } = useQuery({
     queryKey: ["customer-lookup", invoice?.phoneNumber, invoice?.customerEmail],
@@ -50,20 +50,15 @@ export default function PublicPreviewPage() {
 
   const { data: business, isLoading: bizLoading } = useBusiness();
 
-  // Fetch bill detail for paid invoices to get enriched data (cashier name, etc.)
-  const [billData, setBillData] = useState<null | Awaited<
-    ReturnType<typeof getTransactionDetail>
-  >>(null);
+  // Fetch bill/transaction data — works for paid invoices (404 for unpaid is handled silently)
+  const { data: billData, isLoading: billLoading } = useQuery({
+    queryKey: ["bill-detail", invoice?.invoice],
+    queryFn: () => getTransactionDetail(invoice!.invoice),
+    enabled: !!invoice?.invoice,
+    retry: false,
+  });
 
-  useEffect(() => {
-    if (invoice?.paidStatus === "paid" && invoice?.invoice) {
-      getTransactionDetail(invoice.invoice)
-        .then(setBillData)
-        .catch(() => console.warn("Could not fetch bill detail"));
-    }
-  }, [invoice?.paidStatus, invoice?.invoice]);
-
-  if (invLoading || bizLoading)
+  if (invLoading || bizLoading || billLoading)
     return (
       <div className="p-20 text-center">
         <Loader2 className="animate-spin inline" />
@@ -76,11 +71,11 @@ export default function PublicPreviewPage() {
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-4xl mx-auto">
         <InvoicePreview
-          type={isProforma ? "proforma" : "invoice"}
+          type={type}
           invoice={invoice}
           businessProfile={business}
           customerProfile={customerProfile}
-          billData={billData}
+          billData={billData ?? null}
         />
       </div>
     </div>

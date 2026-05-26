@@ -55,7 +55,7 @@ export const fetchRevenueProfit = async (
           .split("T")[0];
 
   const res = await fetch(
-    `/api/report/sales-by-item?startDate=${startDate}&endDate=${endDate}`,
+    `https://appapi.rebuzzpos.com/api/report/sales-by-item?startDate=${startDate}&endDate=${endDate}`,
   );
   if (!res.ok) throw new Error("Failed to fetch revenue vs profit data");
   return res.json();

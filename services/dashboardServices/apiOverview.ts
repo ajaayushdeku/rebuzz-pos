@@ -133,6 +133,9 @@ export const getTopProducts = async (): Promise<TopProduct[]> => {
 
   const endDate = new Date().toISOString().split("T")[0];
   const startDate = new Date().toISOString().split("T")[0];
+
+  // console.log("Start Date:", startDate);
+  // console.log("End Date:", endDate);
   // Dynamic date range — last 7 days
   // const startDate = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)
   //   .toISOString()
@@ -178,6 +181,8 @@ export const getTopProducts = async (): Promise<TopProduct[]> => {
     }
     return acc;
   }, {});
+
+  // console.log("Top 3 Products:", merged);
 
   // Sort by count descending, take top 3
   const sorted = Object.entries(merged)

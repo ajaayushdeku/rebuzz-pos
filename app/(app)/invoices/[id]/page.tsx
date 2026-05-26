@@ -3,7 +3,7 @@
 import jsPDF from "jspdf";
 import toast from "react-hot-toast";
 import { toPng } from "html-to-image";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
@@ -24,6 +24,7 @@ import {
 
 import { useBusiness } from "@/hooks/useBusiness";
 import { getTicketByInvoice } from "@/services/apiTicket.client";
+import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
 
 import { Button } from "@/components/ui/button";
 import InvoicePreview from "@/components/invoice/InvoicePreview";
@@ -52,14 +53,18 @@ type InvoiceStatus = "draft" | "sent" | "paid" | "overdue";
 export default function InvoiceDetailPage() {
   const { id } = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { currency } = useCurrency();
   const { data: business } = useBusiness();
 
   const [invoiceType, setInvoiceType] = useState<
-    "proforma" | "regular" | "tax"
+    "proforma" | "invoice" | "tax"
   >("proforma");
-  const invoiceRef = useRef(null);
+  const proformaRef = useRef<HTMLDivElement | null>(null);
+  const regularRef = useRef<HTMLDivElement | null>(null);
+  const taxRef = useRef<HTMLDivElement | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generatingFor, setGeneratingFor] = useState<string | null>(null);
 
   const [loyaltySettings, setLoyaltySettings] =
     useState<LoyaltyPointSettings | null>(null);
@@ -71,29 +76,56 @@ export default function InvoiceDetailPage() {
   );
   const [discountError, setDiscountError] = useState("");
 
-  const handleDownloadPDF = async () => {
-    if (!invoiceRef.current) return;
+  const handleDownloadPDF = async (
+    ref: React.RefObject<HTMLDivElement | null>,
+    suffix: string,
+  ) => {
+    if (!ref.current) return;
 
     try {
+      setGeneratingFor(suffix);
       setIsGenerating(true);
 
-      const dataUrl = await toPng(invoiceRef.current, {
-        quality: 1.0,
+      const dataUrl = await toPng(ref.current, {
+        cacheBust: true,
         pixelRatio: 2,
         backgroundColor: "#ffffff",
       });
 
       const pdf = new jsPDF("p", "mm", "a4");
-      const imgProps = pdf.getImageProperties(dataUrl);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-      pdf.addImage(dataUrl, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Invoice-${invoice.invoice}.pdf`);
+      const pageWidth = 210;
+      const pageHeight = 297;
+
+      const imgProps = pdf.getImageProperties(dataUrl);
+
+      const imgWidth = pageWidth;
+
+      const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
+
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+
+        pdf.addPage();
+
+        pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
+
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`Invoice-${invoice.invoice}-${suffix}.pdf`);
     } catch (err) {
       console.error("PDF Generation Error:", err);
     } finally {
       setIsGenerating(false);
+      setGeneratingFor(null);
     }
   };
 
@@ -122,7 +154,11 @@ export default function InvoiceDetailPage() {
   });
 
   const customerProfile = customerData;
+  console.log("CUstomer Profile:", customerProfile);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [billData, setBillData] = useState<null | Awaited<
+    ReturnType<typeof getTransactionDetail>
+  >>(null);
 
   const [isSendInvoiceModalOpen, setIsSendInvoiceModalOpen] = useState(false);
 
@@ -133,10 +169,6 @@ export default function InvoiceDetailPage() {
   });
 
   // ── Derived calculations ──────────────────────────────────────────────────
-
-  // const isTaxApplied = invoice?.taxamt > 0; // taxSettings.mode === "exclusive" reflected here
-
-  // const isTaxApplied = invoice?.isTaxExclusive;
 
   const subtotalBeforeTax = invoice?.total ?? 0;
 
@@ -212,14 +244,14 @@ export default function InvoiceDetailPage() {
   const openPaymentModal = () => {
     setPaymentData({
       amount: invoice?.grandTotal || 0,
-      discount: invoice?.discount ?? 0, // ✅ pre-fill from invoice
+      discount: invoice?.discount ?? 0,
       method: "cash",
     });
     setIsPaymentModalOpen(true);
   };
 
   const handleOpenPaymentModal = async () => {
-    openPaymentModal(); // already sets discount from invoice
+    openPaymentModal();
     try {
       const data = await fetchLoyaltyPointSettings();
       setLoyaltySettings(data);
@@ -231,11 +263,6 @@ export default function InvoiceDetailPage() {
   const openSendInvoiceModal = () => {
     setIsSendInvoiceModalOpen(true);
   };
-
-  const calculatedGrandTotal = Math.max(
-    0,
-    paymentData.amount - paymentData.discount,
-  );
 
   const handleRecordPayment = async () => {
     if (discountError || redeemError) return;
@@ -265,7 +292,6 @@ export default function InvoiceDetailPage() {
     }
 
     try {
-      // ── Step 1: Record payment ───────────────────────────────────────────
       const paymentRes = await fetch(`/api/tickets/${ticketId}/payment`, {
         method: "PUT",
         headers: {
@@ -282,7 +308,6 @@ export default function InvoiceDetailPage() {
         return;
       }
 
-      // ── Step 2: Redeem loyalty points (only if enabled and points > 0) ──
       if (redeemEnabled && redeemPoints > 0) {
         const redeemPayload = {
           invoiceNumber: String(ticketId),
@@ -300,13 +325,12 @@ export default function InvoiceDetailPage() {
         const redeemResult = await redeemRes.json();
 
         if (redeemResult?.response?.status !== "success") {
-          // Payment succeeded but redeem failed — warn but don't block
           toast.error(
             "Payment recorded but failed to redeem loyalty points. Please contact support.",
           );
           console.error("Redeem failed:", redeemResult);
           setIsPaymentModalOpen(false);
-          setTimeout(() => window.location.reload(), 2000);
+          queryClient.invalidateQueries({ queryKey: ["ticket", id] });
           return;
         }
 
@@ -320,22 +344,32 @@ export default function InvoiceDetailPage() {
       }
 
       setIsPaymentModalOpen(false);
-      setTimeout(() => window.location.reload(), 1000);
+      queryClient.invalidateQueries({ queryKey: ["ticket", id] });
+      try {
+        const detail = await getTransactionDetail(ticketId);
+        setBillData(detail);
+      } catch {
+        console.warn("Could not fetch bill detail after payment");
+      }
     } catch (error) {
       console.error("Fetch Error:", error);
       toast.error("Network error. Please try again.");
     }
   };
 
-  const copyPublicLink = () => {
-    // Example logic for your "Copy Link" button
-    // const shareUrl = `${window.location.origin}/public/preview/${invoice.id}${isProformaInvoice ? "?proforma=true" : ""}`;
-    const publicUrl = `${window.location.origin}/preview/${invoice.invoice}${invoiceType === "proforma" ? "?proforma=true" : ""}`;
-
-    navigator.clipboard.writeText(publicUrl);
-    toast.success("Public link copied to clipboard!");
+  const copyPublicLinkForType = (type: string) => {
+    const segment =
+      type === "proforma"
+        ? "proforma"
+        : type === "invoice"
+          ? "invoice"
+          : "tax-invoice";
+    const url = `${window.location.origin}/preview/${segment}/${invoice.invoice}`;
+    navigator.clipboard.writeText(url);
+    toast.success(
+      `${type.charAt(0).toUpperCase() + type.slice(1)} link copied!`,
+    );
   };
-  // ------------------------------------------------------------------
 
   const [moreActionsOpen, setMoreActionsOpen] = useState(false);
 
@@ -370,14 +404,7 @@ export default function InvoiceDetailPage() {
         year: "numeric",
       });
 
-  const statusColors: Record<InvoiceStatus, string> = {
-    draft: "bg-gray-100 text-gray-600",
-    sent: "bg-blue-100 text-blue-700",
-    paid: "bg-green-100 text-green-700",
-    overdue: "bg-red-100 text-red-700",
-  };
-
-  const handleSetInvoiceType = (type: "proforma" | "regular" | "tax") => {
+  const handleSetInvoiceType = (type: "proforma" | "invoice" | "tax") => {
     setInvoiceType(type);
   };
 
@@ -461,12 +488,10 @@ export default function InvoiceDetailPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* More actions */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-2 border border-blue-600 rounded-full px-4 py-2 text-sm font-medium hover:bg-blue-100 text-blue-600  transition-colors focus:outline-none focus:ring-2 focus:ring-blue-100">
+            <DropdownMenuTrigger className="flex items-center gap-2 border border-blue-600 rounded-full px-4 py-2 text-sm font-medium hover:bg-blue-100 text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-100">
               More actions <ChevronDown size={14} />
             </DropdownMenuTrigger>
-
             <DropdownMenuContent
               align="end"
               className="w-48 rounded-xl p-1 shadow-lg border-gray-200"
@@ -480,30 +505,14 @@ export default function InvoiceDetailPage() {
                   <span>Edit invoice</span>
                 </DropdownMenuItem>
               )}
-
               <DropdownMenuItem
-                onClick={handleDownloadPDF}
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600"
-              >
-                <FileText size={14} />
-                <span>Download PDF</span>
-              </DropdownMenuItem>
-
-              <DropdownMenuSeparator className="my-1 bg-gray-100" />
-
-              <DropdownMenuItem
-                // onClick={() =>
-                //   toast.error("Invoice deleted")
-                // }
                 onClick={handleDeleteInvoice}
                 className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600"
               >
                 <Trash2 size={14} />
                 <span>Delete invoice</span>
               </DropdownMenuItem>
-
               <DropdownMenuSeparator className="my-1 bg-gray-100" />
-
               {invoiceType !== "proforma" && (
                 <DropdownMenuItem
                   onClick={() => handleSetInvoiceType("proforma")}
@@ -513,17 +522,15 @@ export default function InvoiceDetailPage() {
                   <span>Set as Proforma Invoice</span>
                 </DropdownMenuItem>
               )}
-
-              {invoiceType !== "regular" && (
+              {invoiceType !== "invoice" && (
                 <DropdownMenuItem
-                  onClick={() => handleSetInvoiceType("regular")}
+                  onClick={() => handleSetInvoiceType("invoice")}
                   className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600"
                 >
                   <FileCog size={14} />
                   <span>Set as Regular Invoice</span>
                 </DropdownMenuItem>
               )}
-
               {invoiceType !== "tax" && (
                 <DropdownMenuItem
                   onClick={() => handleSetInvoiceType("tax")}
@@ -550,7 +557,6 @@ export default function InvoiceDetailPage() {
         <div className="w-full max-w-2xl">
           {/* Invoice meta row */}
           <div className="flex justify-between items-start mb-8">
-            {/* Left Group */}
             <div className="flex gap-8">
               <div>
                 <p className="text-xs text-gray-500 font-bold uppercase tracking-wide mb-1">
@@ -566,16 +572,15 @@ export default function InvoiceDetailPage() {
                   </span>
                 )}
               </div>
-
               <div>
-                <p className="text-xs text-gray-500  font-bold uppercase tracking-wide mb-1">
+                <p className="text-xs text-gray-500 font-bold uppercase tracking-wide mb-1">
                   Customer
                 </p>
                 {isCustomerLoading ? (
                   <div className="h-5 w-32 bg-gray-200 animate-pulse rounded" />
                 ) : (
                   <>
-                    <span className="text-blue-600 rounded-md font-semibold capitalize text-2xl ">
+                    <span className="text-blue-600 rounded-md font-semibold capitalize text-2xl">
                       {customerProfile?.name ||
                         invoice?.customerEmail ||
                         "Guest"}
@@ -589,15 +594,12 @@ export default function InvoiceDetailPage() {
                 )}
               </div>
             </div>
-
-            {/* Right Group */}
             <div className="flex gap-8 text-right">
               <div>
                 <p className="text-xs text-gray-500 font-bold uppercase tracking-wide mb-1">
                   Amount due
                 </p>
                 <p className="text-2xl font-semibold text-gray-800">
-                  {/* {invoice?.grandTotal?.toLocaleString()} */}
                   {invoice.paidStatus === "paid" ? (
                     <span className="text-green-600 font-bold">
                       {currency.symbol}0.00
@@ -607,14 +609,15 @@ export default function InvoiceDetailPage() {
                   )}
                 </p>
               </div>
-              <div>
+
+              {/* <div>
                 <p className="text-xs text-gray-500 font-bold uppercase tracking-wide mb-1">
                   Due
                 </p>
                 <p className="text-2xl font-semibold text-gray-800">
                   {dueDateLabel}
                 </p>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -644,7 +647,6 @@ export default function InvoiceDetailPage() {
               </div>
             )}
 
-            {/* Connector */}
             <div className="w-px h-2 rounded-2xl bg-gray-200 ml-9" />
 
             {/* Step 2: Send & Reminders */}
@@ -656,15 +658,7 @@ export default function InvoiceDetailPage() {
               }`}
             >
               <div className="flex items-start gap-4">
-                <div
-                  className="w-10 h-10 rounded-full border-2 flex items-center justify-center shrink-0 border-blue-500 text-blue-600 "
-                  //    ${
-                  //   invoice.sentAt
-                  //     ? "border-blue-500 text-blue-600 bg-blue-50"
-                  //     : "border-gray-300 text-gray-400"
-                  // }
-                  // }
-                >
+                <div className="w-10 h-10 rounded-full border-2 flex items-center justify-center shrink-0 border-blue-500 text-blue-600">
                   {invoice.sentAt ? <Send size={18} /> : <Mail size={18} />}
                 </div>
 
@@ -672,6 +666,7 @@ export default function InvoiceDetailPage() {
                   <h3 className="font-semibold text-gray-800 text-lg">
                     Send Invoice
                   </h3>
+
                   {invoice.sentAt ? (
                     <div className="flex flex-col">
                       <p className="text-sm text-gray-600 mt-0.5">
@@ -696,7 +691,6 @@ export default function InvoiceDetailPage() {
                 </div>
 
                 <Button
-                  // onClick={handleResendInvoice}
                   onClick={openSendInvoiceModal}
                   variant={invoice.sentAt ? "outline" : "default"}
                   className={`rounded-full px-6 ${
@@ -732,7 +726,6 @@ export default function InvoiceDetailPage() {
               </div>
             </div>
 
-            {/* Connector */}
             <div className="w-px h-2 rounded-2xl bg-gray-200 ml-9" />
 
             {/* Step 3: Manage payments */}
@@ -757,7 +750,6 @@ export default function InvoiceDetailPage() {
                     <CreditCard size={18} />
                   )}
                 </div>
-
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-800 text-lg">
                     {invoice.paidStatus === "paid"
@@ -771,8 +763,6 @@ export default function InvoiceDetailPage() {
                     </p>
                   )}
                 </div>
-
-                {/* Only show buttons if the invoice is NOT paid */}
                 {invoice.paidStatus !== "paid" && (
                   <div className="flex items-center gap-2">
                     <Button
@@ -827,84 +817,352 @@ export default function InvoiceDetailPage() {
             </div>
           </div>
 
-          {/* Invoice Preview */}
-          {/* <InvoicePreview
-            invoiceRef={invoiceRef}
-            invoice={invoice}
-            customerProfile={customerProfile}
-            businessProfile={business}
-            proformaTag={invoiceType === "regular" ? "invoice" : invoiceType}
-          /> */}
+          {/* ── Invoice Type Tabs ── */}
+          <div className="mb-6">
+            <div className="flex border-b border-gray-200 gap-1">
+              {(["proforma", "invoice", "tax"] as const).map((tab) => {
+                const label =
+                  tab === "proforma"
+                    ? "Proforma"
+                    : tab === "invoice"
+                      ? "Regular Invoice"
+                      : "Tax Invoice";
+                const isActive = invoiceType === tab;
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setInvoiceType(tab)}
+                    className={`px-6 py-3 text-sm font-semibold rounded-t-lg transition-all ${
+                      isActive
+                        ? "bg-white text-blue-600 border border-b-white border-gray-200 -mb-px"
+                        : "bg-gray-50 text-gray-500 hover:text-gray-700 border border-transparent"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-          <InvoicePreview
-            type={invoiceType === "regular" ? "invoice" : invoiceType}
-            invoiceRef={invoiceRef}
-            invoice={invoice}
-            customerProfile={customerProfile}
-            businessProfile={business}
-          />
+          {/* ── All 3 Previews (only active one visible, all rendered for PDF export) ── */}
+          <div
+            className={
+              invoiceType === "proforma"
+                ? "block"
+                : "absolute -left-[99999px] top-0"
+            }
+          >
+            <InvoicePreview
+              type="proforma"
+              invoiceRef={proformaRef}
+              invoice={invoice}
+              customerProfile={customerProfile}
+              businessProfile={business}
+              billData={billData}
+            />
+          </div>
+
+          <div
+            className={
+              invoiceType === "invoice"
+                ? "block"
+                : "absolute -left-[99999px] top-0"
+            }
+          >
+            <InvoicePreview
+              type="invoice"
+              invoiceRef={regularRef}
+              invoice={invoice}
+              customerProfile={customerProfile}
+              businessProfile={business}
+              billData={billData}
+            />
+          </div>
+
+          <div
+            className={
+              invoiceType === "tax" ? "block" : "absolute -left-[99999px] top-0"
+            }
+          >
+            <InvoicePreview
+              type="tax"
+              invoiceRef={taxRef}
+              invoice={invoice}
+              customerProfile={customerProfile}
+              businessProfile={business}
+              billData={billData}
+            />
+          </div>
         </div>
       </div>
 
+      {/* ── Send Invoice Modal ── */}
       {isSendInvoiceModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
-            <div className="p-6 border-b-2 border-gray-100 flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-gray-600">
-                Send Invoice
-              </h2>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md p-4"
+          onClick={() => setIsSendInvoiceModalOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-3xl rounded-3xl bg-white shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* ── Header ───────────────────────────────────── */}
+            <div className="sticky top-0 z-20 flex items-center justify-between border-b border-gray-100 bg-white/95 backdrop-blur px-6 py-5">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Send Invoice
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Share, download, or email invoice documents
+                </p>
+              </div>
+
               <button
                 onClick={() => setIsSendInvoiceModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 text-2xl cursor-pointer"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200 hover:text-gray-700 cursor-pointer"
               >
-                &times;
+                ✕
               </button>
             </div>
 
-            <div className="p-4 flex flex-col gap-2">
-              <div className="grid grid-cols-2 justify-between p-2  gap-2">
-                <button className="cursor-pointer" onClick={copyPublicLink}>
-                  <div className="bg-white border border-gray-200  flex flex-col justify-between items-center rounded-2xl p-6  gap-4 shadow-md hover:shadow-lg transition duration-300">
-                    <Link className="text-blue-500 " />
-                    <p className="font-semibold text-gray-800 text-xl">
-                      Copy Link
-                    </p>
-                    <p className=" text-gray-800">A link to your invoice</p>
-                  </div>
-                </button>
+            {/* ── Scrollable Content ───────────────────────── */}
+            <div
+              className="max-h-[80vh] overflow-y-auto px-6 py-6 space-y-8"
+              style={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+              }}
+            >
+              {/* Hide scrollbar for webkit */}
+              <style jsx>{`
+                div::-webkit-scrollbar {
+                  display: none;
+                }
+              `}</style>
 
-                <button className="cursor-pointer" onClick={handleDownloadPDF}>
-                  <div className="bg-white border border-gray-200 flex flex-col items-center rounded-2xl p-6  gap-4 shadow-md hover:shadow-lg transition duration-300">
-                    <FileText className="text-blue-500 " />
-                    <p className="font-semibold text-gray-800 text-xl">
-                      Download PDF
+              {/* ── Copy Links ───────────────────────────── */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      Copy Invoice Links
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      Share invoice links instantly
                     </p>
-                    <p className=" text-gray-800">Your invoice in a document</p>
                   </div>
-                </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {[
+                    {
+                      label: "Proforma",
+                      type: "proforma",
+                    },
+                    {
+                      label: "Invoice",
+                      type: "invoice",
+                    },
+                    {
+                      label: "Tax Invoice",
+                      type: "tax",
+                    },
+                  ].map((item) => (
+                    <button
+                      key={item.type}
+                      className="group cursor-pointer"
+                      onClick={() =>
+                        copyPublicLinkForType(
+                          item.type as "proforma" | "invoice" | "tax",
+                        )
+                      }
+                    >
+                      <div className="rounded-2xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                        <div className="h-12 w-12 rounded-2xl bg-blue-50 flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-100 transition">
+                          <Link className="text-blue-600" size={20} />
+                        </div>
+
+                        <h4 className="font-semibold text-gray-800">
+                          {item.label}
+                        </h4>
+
+                        <p className="mt-1 text-sm text-gray-500">
+                          Copy public link
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              <button className="cursor-pointer" onClick={handleResendInvoice}>
-                <div className="bg-yellow-300 border border-gray-200 flex flex-col items-center rounded-2xl p-5  gap-4 shadow-md hover:shadow-lg transition duration-300">
-                  <Mail className="text-blue-500 " />
-                  <h1 className="font-semibold text-gray-800 text-xl">
-                    Send Invoice By Mail
-                  </h1>
-                  <p className=" text-gray-800">
-                    For premium users, mail the invoice directly to your
-                    customers
+              {/* ── Download PDFs ────────────────────────── */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      Download PDFs
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      Generate printable invoice documents
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {[
+                    {
+                      label: "Proforma",
+                      type: "proforma",
+                      ref: proformaRef,
+                    },
+                    {
+                      label: "Invoice",
+                      type: "invoice",
+                      ref: regularRef,
+                    },
+                    {
+                      label: "Tax Invoice",
+                      type: "tax",
+                      ref: taxRef,
+                    },
+                  ].map((item) => (
+                    <button
+                      key={item.type}
+                      className="group cursor-pointer"
+                      onClick={() =>
+                        handleDownloadPDF(
+                          item.ref,
+                          item.type as "proforma" | "invoice" | "tax",
+                        )
+                      }
+                      disabled={generatingFor === item.type}
+                    >
+                      <div className="rounded-2xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                        <div className="h-12 w-12 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4 group-hover:bg-red-100 transition">
+                          <FileText className="text-red-500" size={20} />
+                        </div>
+
+                        <h4 className="font-semibold text-gray-800">
+                          {generatingFor === item.type
+                            ? "Generating..."
+                            : item.label}
+                        </h4>
+
+                        <p className="mt-1 text-sm text-gray-500">
+                          Download as PDF
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── Send Email Section ───────────────────── */}
+              <div className="rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-6 shadow-sm">
+                <div className="flex flex-col items-center text-center">
+                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100 text-blue-600 shadow-sm">
+                    <Mail size={30} />
+                  </div>
+
+                  <h3 className="text-2xl font-bold text-gray-800">
+                    Send Invoice by Email
+                  </h3>
+
+                  <p className="mt-2 max-w-md text-sm text-gray-500">
+                    Select which invoice format you want to send to your
+                    customer. Only one invoice type can be emailed at a time.
                   </p>
                 </div>
-              </button>
+
+                {/* ── Invoice Type Selector ───────────────── */}
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {[
+                    {
+                      label: "Proforma",
+                      value: "proforma",
+                    },
+                    {
+                      label: "Invoice",
+                      value: "invoice",
+                    },
+                    {
+                      label: "Tax Invoice",
+                      value: "tax",
+                    },
+                  ].map((item) => (
+                    <button
+                      key={item.value}
+                      type="button"
+                      // onClick={() =>
+                      //   setSelectedInvoiceType(
+                      //     item.value as "proforma" | "invoice" | "tax",
+                      //   )
+                      // }
+                      // className={`rounded-2xl border-2 p-4 text-left transition-all cursor-pointer ${
+                      //   selectedInvoiceType === item.value
+                      //     ? "border-blue-600 bg-blue-600 text-white shadow-lg"
+                      //     : "border-gray-200 bg-white hover:border-blue-300"
+                      // }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-semibold">{item.label}</p>
+                          <p
+                          // className={`text-sm mt-1 ${
+                          //   selectedInvoiceType === item.value
+                          //     ? "text-blue-100"
+                          //     : "text-gray-500"
+                          // }`}
+                          >
+                            Send this format
+                          </p>
+                        </div>
+
+                        <div
+                        // className={`h-5 w-5 rounded-full border-2 ${
+                        //   selectedInvoiceType === item.value
+                        //     ? "border-white bg-white"
+                        //     : "border-gray-300"
+                        // }`}
+                        />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* ── Action Buttons ─────────────────────── */}
+                <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                  <button
+                    className="flex-1 rounded-2xl bg-blue-600 px-5 py-3.5 font-semibold text-white shadow-md transition-all hover:bg-blue-700 hover:shadow-lg cursor-pointer"
+                    onClick={() => {
+                      setIsSendInvoiceModalOpen(false);
+                      // handleResendInvoice(selectedInvoiceType);
+                    }}
+                  >
+                    Send Selected Invoice
+                  </button>
+
+                  <button
+                    className="flex-1 rounded-2xl border border-gray-300 bg-white px-5 py-3.5 font-semibold text-gray-700 transition-all hover:bg-gray-50 cursor-pointer"
+                    onClick={() => {
+                      setIsSendInvoiceModalOpen(false);
+                      toast("Bulk invoice emailing coming soon");
+                    }}
+                  >
+                    Send All Invoices
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       )}
 
+      {/* ── Payment Modal ── */}
       {isPaymentModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden max-h-[90vh] overflow-y-auto">
-            {/* Header */}
             <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
               <h2 className="text-xl font-semibold text-gray-700">
                 Record Payment
@@ -918,7 +1176,6 @@ export default function InvoiceDetailPage() {
             </div>
 
             <div className="p-6 space-y-5">
-              {/* ── Payment method ── */}
               <div>
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-widest block mb-2">
                   Payment Method
@@ -955,7 +1212,6 @@ export default function InvoiceDetailPage() {
                 </Select>
               </div>
 
-              {/* ── Amounts summary ── */}
               <div className="bg-gray-50 rounded-xl px-4 py-3 space-y-1.5 text-sm">
                 <div className="flex justify-between text-gray-500">
                   <span>Subtotal</span>
@@ -964,7 +1220,6 @@ export default function InvoiceDetailPage() {
                     {subtotalBeforeTax.toFixed(2)}
                   </span>
                 </div>
-
                 {isTaxApplied && (
                   <div className="flex justify-between text-blue-600">
                     <span>Tax</span>
@@ -974,7 +1229,6 @@ export default function InvoiceDetailPage() {
                     </span>
                   </div>
                 )}
-
                 {computedDiscountAmount > 0 && (
                   <div className="flex justify-between text-red-500">
                     <span>Discount</span>
@@ -984,7 +1238,6 @@ export default function InvoiceDetailPage() {
                     </span>
                   </div>
                 )}
-
                 {redeemEnabled && redeemPoints > 0 && !redeemError && (
                   <div className="flex justify-between text-orange-500">
                     <span>Loyalty redeemed</span>
@@ -994,7 +1247,6 @@ export default function InvoiceDetailPage() {
                     </span>
                   </div>
                 )}
-
                 <div className="flex justify-between font-bold text-gray-800 border-t pt-1.5 mt-1">
                   <span>Total payable</span>
                   <span>
@@ -1004,8 +1256,6 @@ export default function InvoiceDetailPage() {
                 </div>
               </div>
 
-              {/* ── Discount section — hidden when tax is applied ── */}
-              {/* {!isTaxApplied && ( */}
               <div>
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-widest block mb-2">
                   Discount
@@ -1026,7 +1276,6 @@ export default function InvoiceDetailPage() {
                   >
                     Fixed Amount
                   </button>
-
                   <button
                     type="button"
                     onClick={() => {
@@ -1078,9 +1327,7 @@ export default function InvoiceDetailPage() {
                   <p className="text-xs text-red-500 mt-1">{discountError}</p>
                 )}
               </div>
-              {/* // )} */}
 
-              {/* ── Redeem loyalty points ── */}
               {customerProfile && (
                 <div className="border border-orange-100 rounded-xl p-4 space-y-3 bg-orange-50/40">
                   <div className="flex items-center justify-between">
@@ -1096,7 +1343,6 @@ export default function InvoiceDetailPage() {
                         available
                       </p>
                     </div>
-                    {/* Toggle */}
                     <button
                       type="button"
                       onClick={() => {
@@ -1117,7 +1363,6 @@ export default function InvoiceDetailPage() {
                       />
                     </button>
                   </div>
-
                   {redeemEnabled && (
                     <div className="space-y-2">
                       <div className="grid grid-cols-2 gap-3 text-xs text-gray-500 bg-white rounded-lg px-3 py-2 border border-orange-100">
@@ -1134,7 +1379,6 @@ export default function InvoiceDetailPage() {
                           </p>
                         </div>
                       </div>
-
                       <div>
                         <input
                           type="number"
@@ -1166,7 +1410,6 @@ export default function InvoiceDetailPage() {
                 </div>
               )}
 
-              {/* ── Final amount display ── */}
               <div className="bg-white rounded-2xl border border-gray-100 p-5 flex justify-between items-center shadow-sm">
                 <div>
                   <p className="text-gray-400 text-xs uppercase font-medium">
@@ -1183,7 +1426,6 @@ export default function InvoiceDetailPage() {
               </div>
             </div>
 
-            {/* Footer */}
             <div className="px-6 pb-6">
               <button
                 onClick={handleRecordPayment}
