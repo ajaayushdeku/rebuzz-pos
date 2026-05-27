@@ -136,7 +136,7 @@ export const navigationConfig: NavigationItem[] = [
     type: "single",
     label: "Expense / Purchase",
     icon: Receipt,
-    href: "/bills",
+    href: "/expenses",
   },
   {
     type: "single",
@@ -155,7 +155,7 @@ export const navigationConfig: NavigationItem[] = [
       },
       {
         label: "Change Password",
-        href: "/settings/profile",
+        href: "/settings/change-password",
       },
       {
         label: "Manage Staffs",

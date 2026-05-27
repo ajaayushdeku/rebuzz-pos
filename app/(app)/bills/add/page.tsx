@@ -1,6 +1,6 @@
 "use client";
 
-import AddBillHeader from "@/components/expenses/AddBillHeader";
+import AddBillHeader from "@/components/expenses/shift/AddBillHeader";
 import BillItemsSelector from "@/components/expenses/BillItemsSelector";
 import { Vendor } from "@/components/expenses/vendors/vendor-columns";
 import VendorSelector from "@/components/expenses/VendorSelector";

@@ -279,7 +279,7 @@ export const getHourlySalesData = async (): Promise<HourlyData[]> => {
     isRefunded: boolean;
   }[] = json?.data?.dailySalesReport?.allBills ?? [];
 
-  console.log("Hour Sales Details:", bills);
+  // console.log("Hour Sales Details:", bills);
 
   return formatHourlyData(bills);
 };

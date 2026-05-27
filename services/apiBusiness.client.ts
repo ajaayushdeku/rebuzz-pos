@@ -11,14 +11,15 @@ interface Business {
   showInOrdering: boolean;
   phoneNumber: string;
   accurateLocation: string;
+  email?: string;
+  logoUrl?: string;
 }
-type BusinessFormValues = {
+export type BusinessFormValues = {
   businessName: string;
   address: string;
   accurateLocation?: string;
   phoneNumber: string;
-
-  panNumber: number;
+  panNo: number;
   owner: string;
   businessType: string;
 };
@@ -35,20 +36,12 @@ export const fetchBusinessData = async (): Promise<Business> => {
   return data;
 };
 
-export const updateBusinessData = async ({
-  businessData,
-}: {
-  businessData: BusinessFormValues;
-}) => {
-  const res = await axios.put(
-    "/api/business",
-    { businessData },
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
+export const updateBusinessData = async (businessData: BusinessFormValues) => {
+  const res = await axios.put("/api/business", businessData, {
+    headers: {
+      "Content-Type": "application/json",
     },
-  );
+  });
 
   const result = res.data;
   // if (!res.ok || result.status !== "success") {

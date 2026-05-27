@@ -208,6 +208,6 @@ export async function SalesLocationChartWrapper() {
 export async function HourlySalesTrendWrapper() {
   const data = await getHourlySalesData();
 
-  console.log("Hours:", data);
+  // console.log("Hours:", data);
   return <HourlySalesTrend data={data} />;
 }

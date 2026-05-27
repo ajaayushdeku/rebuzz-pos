@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  BusinessFormValues,
   fetchBusinessData,
   updateBusinessData,
 } from "@/services/apiBusiness.client";
@@ -25,7 +26,8 @@ export function useUpdateBusiness() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: updateBusinessData,
+    mutationFn: (businessData: BusinessFormValues) =>
+      updateBusinessData(businessData),
     onSuccess: (result) => {
       queryClient.invalidateQueries({
         queryKey: ["business-profile"],

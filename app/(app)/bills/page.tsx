@@ -4,13 +4,12 @@ import { useEffect, useState, useCallback } from "react";
 import toast from "react-hot-toast";
 import { LogOut, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import BillTable from "@/components/expenses/BillTable";
 
-import ShiftOpenForm from "@/components/expenses/ShiftOpenForm";
-import ShiftStatsPanel from "@/components/expenses/ShiftStats";
-import ExpenseForm from "@/components/expenses/ExpenseForm";
-import CurrentShiftTransactions from "@/components/expenses/CurrentShiftTransactions";
-import ShiftCloseModal from "@/components/expenses/ShiftCloseModal";
+import ShiftOpenForm from "@/components/expenses/shift/ShiftOpenForm";
+import ShiftStatsPanel from "@/components/expenses/shift/ShiftStats";
+import ExpenseForm from "@/components/expenses/shift/ExpenseForm";
+import CurrentShiftTransactions from "@/components/expenses/shift/CurrentShiftTransactions";
+import ShiftCloseModal from "@/components/expenses/shift/ShiftCloseModal";
 
 import {
   fetchCurrentShift,
@@ -21,6 +20,7 @@ import {
 
 import type { ShiftStats } from "@/lib/types/shift";
 import type { Transaction } from "@/lib/types/shift";
+import BillTable from "@/components/expenses/shift/BillTable";
 
 export default function ExpensesPage() {
   const [shift, setShift] = useState<ShiftStats | null>(null);
@@ -61,8 +61,14 @@ export default function ExpensesPage() {
 
   // Load transactions when shift becomes active
   useEffect(() => {
-    if (shift?.shiftId) loadTransactions();
-  }, [shift?.shiftId]);
+    if (!shift?.shiftId) return;
+
+    const fetchTransactions = async () => {
+      await loadTransactions();
+    };
+
+    fetchTransactions();
+  }, [shift?.shiftId, loadTransactions]);
 
   // ── Handlers ─────────────────────────────────────────────────────────────
 

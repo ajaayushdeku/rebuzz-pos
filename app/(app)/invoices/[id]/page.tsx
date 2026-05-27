@@ -155,10 +155,20 @@ export default function InvoiceDetailPage() {
 
   const customerProfile = customerData;
   console.log("CUstomer Profile:", customerProfile);
+
+  // Fetch bill/transaction data — works for paid invoices (404 for unpaid is handled silently)
+  const { data: billDataQuery } = useQuery({
+    queryKey: ["bill-detail", invoice?.invoice],
+    queryFn: () => getTransactionDetail(invoice!.invoice),
+    enabled: !!invoice?.invoice,
+    retry: false,
+  });
+
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [billData, setBillData] = useState<null | Awaited<
     ReturnType<typeof getTransactionDetail>
   >>(null);
+  const displayBillData = billData ?? billDataQuery ?? null;
 
   const [isSendInvoiceModalOpen, setIsSendInvoiceModalOpen] = useState(false);
 
@@ -859,7 +869,7 @@ export default function InvoiceDetailPage() {
               invoice={invoice}
               customerProfile={customerProfile}
               businessProfile={business}
-              billData={billData}
+              billData={displayBillData}
             />
           </div>
 
@@ -876,7 +886,7 @@ export default function InvoiceDetailPage() {
               invoice={invoice}
               customerProfile={customerProfile}
               businessProfile={business}
-              billData={billData}
+              billData={displayBillData}
             />
           </div>
 
@@ -891,7 +901,7 @@ export default function InvoiceDetailPage() {
               invoice={invoice}
               customerProfile={customerProfile}
               businessProfile={business}
-              billData={billData}
+              billData={displayBillData}
             />
           </div>
         </div>

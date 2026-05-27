@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { DataTable } from "../ui/data-table";
+// import { DataTable } from "../ui/data-table";
 import { getBillColumns } from "./bill-columns";
 import { BillView } from "@/lib/types/expenses";
 import { fetchExpenseHistory } from "@/services/apiShift.client";
 import { RefreshCw } from "lucide-react";
+import { DataTable } from "@/components/ui/data-table";
 
 export default function BillTable() {
   const { currency } = useCurrency();
