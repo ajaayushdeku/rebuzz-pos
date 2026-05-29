@@ -157,12 +157,12 @@ export default function LoyaltyPointPage() {
     : form.loyaltyPoint > 0 || form.redeemLimit > 0 || form.basePoint > 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-8 md:px-10">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+      <div className="max-w-7xl mx-auto">
+        {/* ── Header ─────────────────────────────────────── */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">
+            <h1 className="font-bold text-xl md:text-2xl truncate">
               Loyalty Points
             </h1>
             <p className="text-sm text-gray-500 mt-0.5">
@@ -173,13 +173,13 @@ export default function LoyaltyPointPage() {
           <Button
             onClick={handleSave}
             disabled={saving || isLoading || !hasChanges}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-5 py-2.5 rounded-lg"
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
           >
             {saving ? (
-              <span className="flex items-center gap-2">
+              <>
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Saving...
-              </span>
+              </>
             ) : (
               "Save changes"
             )}

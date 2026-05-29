@@ -49,10 +49,10 @@ export function DataTable<TData, TValue>({
   onRowClick,
 }: DataTableProps<TData, TValue>) {
   "use no memo";
-  const [sorting, setSorting] =
-    React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] =
-    React.useState<ColumnFiltersState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    [],
+  );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
 
@@ -65,8 +65,7 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel:
-      getPaginationRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     initialState: { pagination: { pageSize } },
     state: {
       sorting,
@@ -87,7 +86,7 @@ export function DataTable<TData, TValue>({
         showColumnToggle={showColumnToggle}
       />
       {/* Table */}
-      <div className="overflow-hidden rounded-md border">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
@@ -97,8 +96,7 @@ export function DataTable<TData, TValue>({
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                          header.column.columnDef
-                            .header,
+                          header.column.columnDef.header,
                           header.getContext(),
                         )}
                   </TableHead>
@@ -108,33 +106,22 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows.length ? (
-              table
-                .getRowModel()
-                .rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    onClick={() =>
-                      onRowClick?.(row.original)
-                    }
-                    className={
-                      onRowClick
-                        ? "cursor-pointer"
-                        : ""
-                    }
-                  >
-                    {row
-                      .getVisibleCells()
-                      .map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef
-                              .cell,
-                            cell.getContext(),
-                          )}
-                        </TableCell>
-                      ))}
-                  </TableRow>
-                ))
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  onClick={() => onRowClick?.(row.original)}
+                  className={onRowClick ? "cursor-pointer" : ""}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
             ) : (
               <TableRow>
                 <TableCell
@@ -152,10 +139,8 @@ export function DataTable<TData, TValue>({
       {/* Pagination */}
       <div className="flex items-center justify-between py-4">
         <span className="text-sm text-gray-500">
-          Page{" "}
-          {table.getState().pagination.pageIndex +
-            1}{" "}
-          of {Math.max(table.getPageCount(), 1)}
+          Page {table.getState().pagination.pageIndex + 1} of{" "}
+          {Math.max(table.getPageCount(), 1)}
         </span>
         <div className="flex gap-2">
           <Button

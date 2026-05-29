@@ -2,20 +2,7 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import {
-  Plus,
-  Search,
-  Pencil,
-  Trash2,
-  Loader2,
-  X,
-  Check,
-  Shield,
-  UserCog,
-  Mail,
-  Phone,
-  Filter,
-} from "lucide-react";
+import { Plus, X, Check, Loader2, UserCog } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,19 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { DataTable } from "@/components/ui/data-table";
+import { StaffMember, getStaffColumns } from "@/components/staff/staff-columns";
 
 // ── Types ───────────────────────────────────────────────────────────────────
-interface StaffMember {
-  _id: string;
-  name: string;
-  email: string;
-  phone: string;
-  role: string;
-  isEmployee?: boolean;
-  isDeactivated?: boolean;
-  emailVerified?: boolean;
-}
-
 interface StaffFormData {
   name: string;
   email: string;
@@ -57,55 +35,10 @@ const emptyForm: StaffFormData = {
 const inputClass =
   "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
 
-// ── Role badge styling ──────────────────────────────────────────────────────
-function RoleBadge({ role }: { role: string }) {
-  const isStaff = role === "staff";
-
-  return (
-    <span
-      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-        isStaff
-          ? "bg-purple-50 text-purple-700 border border-purple-200"
-          : "bg-blue-50 text-blue-700 border border-blue-200"
-      }`}
-    >
-      {isStaff ? (
-        <Shield className="h-3 w-3" />
-      ) : (
-        <UserCog className="h-3 w-3" />
-      )}
-
-      {isStaff ? "Staff" : "Basic"}
-    </span>
-  );
-}
-
-// ── Status badge ────────────────────────────────────────────────────────────
-function StatusBadge({ deactivated }: { deactivated?: boolean }) {
-  return (
-    <span
-      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-        deactivated
-          ? "bg-red-50 text-red-600 border border-red-200"
-          : "bg-green-50 text-green-700 border border-green-200"
-      }`}
-    >
-      <span
-        className={`h-1.5 w-1.5 rounded-full ${
-          deactivated ? "bg-red-500" : "bg-green-500"
-        }`}
-      />
-      {deactivated ? "Disabled" : "Active"}
-    </span>
-  );
-}
-
 export default function StaffManagementPage() {
   // ── State ─────────────────────────────────────────────────────────────────
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all");
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editStaff, setEditStaff] = useState<StaffMember | null>(null);
@@ -141,17 +74,6 @@ export default function StaffManagementPage() {
       fetchStaff();
     })();
   }, []);
-
-  // ── Filter & search ───────────────────────────────────────────────────────
-  const filtered = staff.filter((s) => {
-    const matchesSearch =
-      !search ||
-      s.name?.toLowerCase().includes(search.toLowerCase()) ||
-      s.email?.toLowerCase().includes(search.toLowerCase()) ||
-      s.phone?.includes(search);
-    const matchesRole = roleFilter === "all" || s.role === roleFilter;
-    return matchesSearch && matchesRole;
-  });
 
   // ── Open modal for add/edit ───────────────────────────────────────────────
   const openAdd = () => {
@@ -260,13 +182,26 @@ export default function StaffManagementPage() {
       setFormErrors((prev) => ({ ...prev, [key]: undefined }));
   };
 
+  // ── Role filter config for DataTable ──────────────────────────────────────
+  const roleFilters = [
+    {
+      columnId: "role",
+      label: "Role",
+      options: ["basic", "staff"],
+    },
+  ];
+
+  const columns = getStaffColumns(openEdit, (id: string) =>
+    setDeleteConfirm(id),
+  );
+
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-8 md:px-10">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+      <div className="max-w-7xl mx-auto">
         {/* ── Header ─────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">
+            <h1 className="font-bold text-xl md:text-2xl truncate">
               Manage Staff
             </h1>
             <p className="text-sm text-gray-500 mt-0.5">
@@ -283,156 +218,29 @@ export default function StaffManagementPage() {
           </Button>
         </div>
 
-        {/* ── Search & Filter ────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name, email or phone..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-            />
-          </div>
-
-          <div className="w-full sm:w-48">
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="h-11 rounded-xl border-gray-200 bg-white">
-                <Filter className="h-4 w-4 text-gray-400 mr-1" />
-
-                <SelectValue placeholder="Filter by role" />
-              </SelectTrigger>
-
-              <SelectContent className="rounded-xl border-gray-200 shadow-xl">
-                <SelectItem value="all" className="py-2.5 cursor-pointer">
-                  All Roles
-                </SelectItem>
-
-                <SelectItem value="basic" className="py-2.5 cursor-pointer">
-                  Basic
-                </SelectItem>
-
-                <SelectItem value="staff" className="py-2.5 cursor-pointer">
-                  Staff
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* ── Staff Table ────────────────────────────────── */}
+        {/* ── Staff Table using DataTable ────────────────── */}
         {loading ? (
           <div className="flex items-center justify-center py-24">
             <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
           </div>
-        ) : filtered.length === 0 ? (
+        ) : staff.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-12 text-center">
             <UserCog className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 font-medium">No staff members found</p>
             <p className="text-sm text-gray-400 mt-1">
-              {search || roleFilter !== "all"
-                ? "Try adjusting your search or filters"
-                : "Click \u201cAdd New Staff\u201d to get started"}
+              Click &ldquo;Add New Staff&rdquo; to get started
             </p>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100">
-                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Staff Name
-                    </th>
-                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Email
-                    </th>
-                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Phone
-                    </th>
-                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Role
-                    </th>
-                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="text-right px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {filtered.map((member) => (
-                    <tr
-                      key={member._id}
-                      className="hover:bg-gray-50/50 transition-colors"
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                            <span className="text-sm font-semibold text-blue-600">
-                              {member.name
-                                ?.split(" ")
-                                .map((n) => n[0])
-                                .join("")
-                                .toUpperCase()
-                                .slice(0, 2) || "?"}
-                            </span>
-                          </div>
-                          <span className="text-sm font-medium text-gray-900">
-                            {member.name || "—"}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                          <Mail className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                          {member.email || "—"}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                          <Phone className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                          {member.phone || "—"}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <RoleBadge role={member.role} />
-                      </td>
-                      <td className="px-6 py-4">
-                        <StatusBadge deactivated={member.isDeactivated} />
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => openEdit(member)}
-                            className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                            title="Edit"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => setDeleteConfirm(member._id)}
-                            className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                            title="Delete"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="px-6 py-3 border-t border-gray-100 bg-gray-50/50">
-              <p className="text-xs text-gray-500">
-                Showing {filtered.length} of {staff.length} staff members
-              </p>
-            </div>
-          </div>
+          <DataTable
+            columns={columns}
+            data={staff}
+            searchColumn="name"
+            searchPlaceholder="Search by name, email or phone..."
+            pageSize={10}
+            filters={roleFilters}
+            showColumnToggle
+          />
         )}
 
         {/* ── Add/Edit Modal ──────────────────────────────── */}
@@ -606,7 +414,7 @@ export default function StaffManagementPage() {
             >
               <div className="p-6 text-center">
                 <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
-                  <Trash2 className="h-6 w-6 text-red-500" />
+                  <Loader2 className="h-6 w-6 text-red-500" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900">
                   Delete Staff?

@@ -1,108 +1,77 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { formatCurrency } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { TrendingUp, TrendingDown, Scale } from "lucide-react";
 import { PURPOSE_COLORS, useTracker } from "@/providers/ExpenseContext";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import type {
+  NameType,
+  Payload,
+  ValueType,
+} from "recharts/types/component/DefaultTooltipContent";
 
-function DonutChart({
-  data,
+interface SliceData {
+  purpose: string;
+  amount: number;
+  color: string;
+  pct: number;
+}
+
+const CustomTooltip = ({
+  active,
+  payload,
+  currency,
 }: {
-  data: { purpose: string; amount: number; color: string; pct: number }[];
-}) {
-  const [hovered, setHovered] = useState<string | null>(null);
-  const size = 160;
-  const cx = size / 2;
-  const cy = size / 2;
-  const R = 60;
-  const r = 38;
-
-  const slices = data.reduce(
-    (acc, d) => {
-      const previous = acc[acc.length - 1];
-      const startAngle = previous ? previous.startAngle + previous.sweep : -90;
-      const sweep = (d.pct / 100) * 360;
-      acc.push({ ...d, startAngle, sweep });
-      return acc;
-    },
-    [] as { purpose: string; amount: number; color: string; pct: number; startAngle: number; sweep: number }[],
-  );
-
-  const toRad = (deg: number) => (deg * Math.PI) / 180;
-  const arc = (cx: number, cy: number, r: number, startDeg: number, endDeg: number) => {
-    const sx = cx + r * Math.cos(toRad(startDeg));
-    const sy = cy + r * Math.sin(toRad(startDeg));
-    const ex = cx + r * Math.cos(toRad(endDeg));
-    const ey = cy + r * Math.sin(toRad(endDeg));
-    const large = endDeg - startDeg > 180 ? 1 : 0;
-    return `M${sx},${sy} A${r},${r},0,${large},1,${ex},${ey}`;
-  };
-
-  const hoveredSlice = slices.find((s) => s.purpose === hovered);
-
+  active?: boolean;
+  payload?: Payload<ValueType, NameType>[];
+  currency: any;
+}) => {
+  if (!active || !payload?.length) return null;
+  const entry = payload[0].payload as SliceData;
   return (
-    <div className="relative flex items-center justify-center">
-      <svg width={size} height={size}>
-        {data.length === 0 ? (
-          <circle cx={cx} cy={cy} r={R} fill="none" stroke="#e5e7eb" strokeWidth={R - r} />
-        ) : (
-          slices.map((s) => {
-            if (s.sweep < 0.5) return null;
-            const endAngle = s.startAngle + s.sweep;
-            const outerPath = arc(cx, cy, R, s.startAngle, endAngle);
-            const innerPath = arc(cx, cy, r, endAngle, s.startAngle);
-            const isHovered = hovered === s.purpose;
-            return (
-              <path
-                key={s.purpose}
-                d={`${outerPath} L${cx + r * Math.cos(toRad(endAngle))},${cy + r * Math.sin(toRad(endAngle))} ${innerPath} Z`}
-                fill={s.color}
-                opacity={hovered && !isHovered ? 0.4 : 1}
-                className="transition-opacity duration-200 cursor-pointer"
-                onMouseEnter={() => setHovered(s.purpose)}
-                onMouseLeave={() => setHovered(null)}
-              />
-            );
-          })
-        )}
-      </svg>
-
-      {/* Center text */}
-      <div className="absolute text-center pointer-events-none">
-        {hoveredSlice ? (
-          <>
-            <p className="text-xs text-gray-500 leading-tight">{hoveredSlice.purpose}</p>
-            <p className="text-sm font-bold text-gray-900">{hoveredSlice.pct.toFixed(0)}%</p>
-          </>
-        ) : (
-          <p className="text-xs text-gray-400">Expenses</p>
-        )}
-      </div>
+    <div className="bg-white rounded-xl px-3 py-2 shadow-lg border border-gray-100">
+      <p className="text-gray-500 text-xs mb-0.5">{entry.purpose}</p>
+      <p className="font-bold text-sm" style={{ color: entry.color }}>
+        {formatCurrency(entry.amount, currency)}
+      </p>
+      <p className="text-xs text-gray-400">
+        {entry.pct.toFixed(0)}% of expenses
+      </p>
     </div>
   );
-}
+};
 
 export default function ExpenseTrackerStats() {
   const { transactions } = useTracker();
   const { currency } = useCurrency();
 
   const totalExpense = useMemo(
-    () => transactions.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0),
+    () =>
+      transactions
+        .filter((t) => t.type === "expense")
+        .reduce((s, t) => s + t.amount, 0),
     [transactions],
   );
+
   const totalIncome = useMemo(
-    () => transactions.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0),
+    () =>
+      transactions
+        .filter((t) => t.type === "income")
+        .reduce((s, t) => s + t.amount, 0),
     [transactions],
   );
+
   const net = totalIncome - totalExpense;
 
-  // Group expenses by purpose for donut
-  const expenseByPurpose = useMemo(() => {
+  const expenseByPurpose = useMemo((): SliceData[] => {
     const map: Record<string, number> = {};
-    transactions.filter((t) => t.type === "expense").forEach((t) => {
-      map[t.purpose] = (map[t.purpose] ?? 0) + t.amount;
-    });
+    transactions
+      .filter((t) => t.type === "expense")
+      .forEach((t) => {
+        map[t.purpose] = (map[t.purpose] ?? 0) + t.amount;
+      });
     return Object.entries(map)
       .sort(([, a], [, b]) => b - a)
       .map(([purpose, amount]) => ({
@@ -114,65 +83,192 @@ export default function ExpenseTrackerStats() {
   }, [transactions, totalExpense]);
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 h-full">
-      {/* Summary row */}
-      <div className="grid grid-cols-3 gap-3 mb-5">
-        <div className="bg-red-50 rounded-xl p-3 text-center">
-          <div className="flex items-center justify-center gap-1 mb-1">
-            <TrendingDown size={13} className="text-red-500" />
-            <p className="text-xs text-red-500 font-medium">Expenses</p>
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+      {/* ── Summary cards (2/5 width) ── */}
+      <div className="lg:col-span-2">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+          <h3 className="text-sm font-semibold text-gray-800 mb-4">Overview</h3>
+          <div className="space-y-3">
+            <div className="bg-red-50 rounded-xl p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-lg bg-red-100 flex items-center justify-center">
+                  <TrendingDown size={16} className="text-red-500" />
+                </div>
+                <p className="text-sm font-medium text-red-600">Expenses</p>
+              </div>
+              <p className="text-lg font-bold text-red-700">
+                {formatCurrency(totalExpense, currency)}
+              </p>
+            </div>
+
+            <div className="bg-green-50 rounded-xl p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center">
+                  <TrendingUp size={16} className="text-green-500" />
+                </div>
+                <p className="text-sm font-medium text-green-600">Income</p>
+              </div>
+              <p className="text-lg font-bold text-green-700">
+                {formatCurrency(totalIncome, currency)}
+              </p>
+            </div>
+
+            <div
+              className={`rounded-xl p-4 flex items-center justify-between ${
+                net >= 0 ? "bg-blue-50" : "bg-orange-50"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <div
+                  className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                    net >= 0 ? "bg-blue-100" : "bg-orange-100"
+                  }`}
+                >
+                  <Scale
+                    size={16}
+                    className={net >= 0 ? "text-blue-500" : "text-orange-500"}
+                  />
+                </div>
+                <div>
+                  <p
+                    className={`text-sm font-medium ${
+                      net >= 0 ? "text-blue-600" : "text-orange-600"
+                    }`}
+                  >
+                    Net
+                  </p>
+                  <p
+                    className={`text-xs ${
+                      net >= 0 ? "text-blue-400" : "text-orange-400"
+                    }`}
+                  >
+                    {net >= 0 ? "Positive" : "Negative"}
+                  </p>
+                </div>
+              </div>
+              <p
+                className={`text-lg font-bold ${
+                  net >= 0 ? "text-blue-700" : "text-orange-700"
+                }`}
+              >
+                {net >= 0 ? "+" : ""}
+                {formatCurrency(net, currency)}
+              </p>
+            </div>
           </div>
-          <p className="text-sm font-bold text-red-700">
-            {formatCurrency(totalExpense, currency)}
-          </p>
-        </div>
-        <div className="bg-green-50 rounded-xl p-3 text-center">
-          <div className="flex items-center justify-center gap-1 mb-1">
-            <TrendingUp size={13} className="text-green-500" />
-            <p className="text-xs text-green-500 font-medium">Income</p>
-          </div>
-          <p className="text-sm font-bold text-green-700">
-            {formatCurrency(totalIncome, currency)}
-          </p>
-        </div>
-        <div className={`rounded-xl p-3 text-center ${net >= 0 ? "bg-blue-50" : "bg-orange-50"}`}>
-          <div className="flex items-center justify-center gap-1 mb-1">
-            <Scale size={13} className={net >= 0 ? "text-blue-500" : "text-orange-500"} />
-            <p className={`text-xs font-medium ${net >= 0 ? "text-blue-500" : "text-orange-500"}`}>
-              Net
-            </p>
-          </div>
-          <p className={`text-sm font-bold ${net >= 0 ? "text-blue-700" : "text-orange-700"}`}>
-            {net >= 0 ? "+" : ""}{formatCurrency(net, currency)}
-          </p>
         </div>
       </div>
 
-      {/* Donut + legend */}
-      <div className="flex items-center gap-5">
-        <div className="shrink-0">
-          <DonutChart data={expenseByPurpose} />
-        </div>
-        <div className="flex-1 min-w-0 space-y-1.5 max-h-44 overflow-y-auto pr-1">
+      {/* ── Donut chart card (3/5 width) ── */}
+      <div className="lg:col-span-3">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 h-full">
+          <h3 className="text-sm font-semibold text-gray-800 mb-4">
+            Expense Breakdown
+          </h3>
           {expenseByPurpose.length === 0 ? (
-            <p className="text-xs text-gray-400 text-center py-4">No expense data</p>
+            <div className="flex items-center justify-center py-10 text-gray-400 text-sm">
+              No expense data yet
+            </div>
           ) : (
-            expenseByPurpose.map((d) => (
-              <div key={d.purpose} className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                  <span className="text-xs text-gray-600 truncate">{d.purpose}</span>
-                </div>
-                <div className="text-right shrink-0">
-                  <span className="text-xs font-medium text-gray-800">
-                    {formatCurrency(d.amount, currency)}
-                  </span>
-                  <span className="text-xs text-gray-400 ml-1">
-                    ({d.pct.toFixed(0)}%)
-                  </span>
-                </div>
+            <div className="flex flex-col sm:flex-row items-start gap-6">
+              {/* ── Donut on the left ── */}
+              <div className="shrink-0 w-full sm:w-48 flex justify-center">
+                <ResponsiveContainer width={200} height={200}>
+                  <PieChart>
+                    <Pie
+                      data={expenseByPurpose}
+                      dataKey="amount"
+                      nameKey="purpose"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={55}
+                      outerRadius={90}
+                      paddingAngle={4}
+                      startAngle={90}
+                      endAngle={-270}
+                      strokeWidth={0}
+                    >
+                      {expenseByPurpose.map((entry, idx) => (
+                        <Cell
+                          key={entry.purpose}
+                          fill={entry.color}
+                          stroke="none"
+                        >
+                          <animate
+                            attributeName="opacity"
+                            values="0;1"
+                            dur="0.6s"
+                            begin={`${idx * 0.08}s`}
+                            fill="freeze"
+                          />
+                        </Cell>
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip currency={currency} />} />
+                    {/* Center text */}
+                    <text
+                      x="50%"
+                      y="48%"
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      className="text-lg font-bold fill-gray-800"
+                    >
+                      {totalExpense > 0
+                        ? formatCurrency(totalExpense, currency).replace(
+                            /^.*?(\d[\d,.]*).*$/,
+                            "$1",
+                          )
+                        : "0"}
+                    </text>
+                    <text
+                      x="50%"
+                      y="58%"
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      className="text-xs fill-gray-400"
+                    >
+                      Total
+                    </text>
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
-            ))
+
+              {/* ── Legend with progress bars on the right ── */}
+              <div className="flex-1 w-full space-y-2 max-h-56 overflow-y-auto pr-1">
+                {expenseByPurpose.map((entry) => (
+                  <div
+                    key={entry.purpose}
+                    className="flex items-center gap-2 py-1"
+                  >
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: entry.color }}
+                    />
+                    <span className="text-xs text-gray-600 w-20 truncate shrink-0">
+                      {entry.purpose}
+                    </span>
+                    <div className="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-700 ease-out"
+                        style={{
+                          width: `${entry.pct}%`,
+                          background: `linear-gradient(90deg, ${entry.color}, ${entry.color}dd)`,
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs font-semibold text-gray-700 w-10 text-right shrink-0">
+                      {entry.pct.toFixed(0)}%
+                    </span>
+                    <span className="text-xs text-gray-400 w-16 text-right shrink-0">
+                      {formatCurrency(entry.amount, currency).replace(
+                        /^Rs\s*/,
+                        "",
+                      )}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       </div>

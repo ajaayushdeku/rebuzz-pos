@@ -5,11 +5,22 @@ import {
   Gauge,
   LucideIcon,
   Building,
+  Building2,
   User,
+  Users,
   Settings,
   Package,
   BadgePercent,
   Tag,
+  TrendingUp,
+  HandCoins,
+  UserCog,
+  ClipboardList,
+  LayoutDashboard,
+  FileText,
+  Lock,
+  Award,
+  ScanEye,
 } from "lucide-react";
 
 export type NavigationItem =
@@ -23,7 +34,7 @@ export type NavigationItem =
       type: "section";
       label: string;
       icon: LucideIcon;
-      items: { label: string; href: string }[];
+      items: { label: string; href: string; icon: LucideIcon }[];
     };
 
 export const profileNavigationConfig: NavigationItem[] = [
@@ -53,146 +64,70 @@ export const navigationConfig: NavigationItem[] = [
     label: "Dashboard",
     icon: Gauge,
     items: [
-      { label: "Overview", href: "/dashboard" },
+      { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
       {
         label: "Sales & Revenue",
         href: "/dashboard/sales-revenue",
+        icon: TrendingUp,
       },
       {
         label: "Profit & Cost",
         href: "/dashboard/profit-cost",
+        icon: HandCoins,
       },
-      {
-        label: "Customers",
-        href: "/dashboard/customers",
-      },
-      {
-        label: "Staffs",
-        href: "/dashboard/staff",
-      },
-      {
-        label: "Inventory",
-        href: "/dashboard/inventory",
-      },
+      { label: "Customers", href: "/dashboard/customers", icon: Users },
+      { label: "Staffs", href: "/dashboard/staff", icon: UserCog },
+      { label: "Inventory", href: "/dashboard/inventory", icon: Package },
       {
         label: "Order History",
         href: "/dashboard/order-history",
+        icon: ClipboardList,
       },
     ],
   },
   {
     type: "section",
-    label: "Sales & Payments",
-    icon: CreditCard,
+    label: "Records",
+    icon: FileText,
     items: [
-      // {
-      //   label: "Estimates",
-      //   href: "/estimates",
-      // },
-      { label: "Invoices", href: "/invoices" },
-      // {
-      //   label: "Recurring Invoices",
-      //   href: "/recurring-invoices",
-      // },
-      // {
-      //   label: "Checkouts",
-      //   href: "/checkouts",
-      // },
-      // {
-      //   label: "Customer Statements",
-      //   href: "/customer-statements",
-      // },
-      {
-        label: "Customers",
-        href: "/customers",
-      },
-      {
-        label: "Products",
-        href: "/products",
-      },
+      { label: "Invoices", href: "/invoices", icon: FileText },
+      { label: "Customers", href: "/customers", icon: Users },
+      { label: "Products", href: "/products", icon: Package },
     ],
   },
-  // {
-  //   type: "section",
-  //   label: "Expense / Purchase",
-  //   icon: ShoppingCart,
-  //   items: [
-  //     {
-  //       label: "Bills",
-  //       href: "/bills",
-  //     },
-  //     {
-  //       label: "Vendors",
-  //       href: "/vendors",
-  //     },
-  //     {
-  //       label: "Products & Services",
-  //       href: "/products-services",
-  //     },
-  //   ],
-  // },
-
   {
     type: "single",
     label: "Expense / Purchase",
-    icon: Receipt,
+    icon: ShoppingCart,
     href: "/expenses",
   },
   {
     type: "single",
     label: "Offer",
-    icon: Tag,
+    icon: BadgePercent,
     href: "/offers",
   },
   {
     type: "section",
     label: "Settings",
-    icon: ShoppingCart,
+    icon: Settings,
     items: [
-      {
-        label: "Business",
-        href: "/settings/business",
-      },
+      { label: "Business", href: "/settings/business", icon: Building2 },
       {
         label: "Change Password",
         href: "/settings/change-password",
+        icon: Lock,
       },
-      {
-        label: "Manage Staffs",
-        href: "/settings/staffs",
-      },
-      {
-        label: "Tax",
-        href: "/settings/tax",
-      },
-      {
-        label: "Discount",
-        href: "/settings/discount",
-      },
-      {
-        label: "Loyalty Point",
-        href: "/settings/loyalty-points",
-      },
+      { label: "Manage Staffs", href: "/settings/staffs", icon: UserCog },
+      { label: "Tax", href: "/settings/tax", icon: Receipt },
+      { label: "Discount", href: "/settings/discount", icon: BadgePercent },
+      { label: "Loyalty Point", href: "/settings/loyalty-points", icon: Award },
     ],
   },
-
   {
     type: "single",
     label: "Receipt AI",
-    icon: Receipt,
+    icon: ScanEye,
     href: "/bizexpense",
   },
-
-  // {
-  //   type: "single",
-  //   label: "Loyalty Point",
-  //   icon: BadgePercent,
-  //   href: "/loyalty-points",
-  // },
-  // {
-  //   type: "single",
-  //   label: "Biz Expense",
-  //   icon: Building,
-  //   href: "/bizexpenses",
-  // },
 ];

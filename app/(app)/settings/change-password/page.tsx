@@ -134,18 +134,12 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-8 md:px-10">
-      <div className="max-w-lg mx-auto">
+    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+      <div className="max-w-7xl mx-auto">
         {/* ── Header ─────────────────────────────────────── */}
-        <div className="flex items-center gap-4 mb-8">
-          {/* <button
-            onClick={() => router.back()}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <ArrowLeft size={20} />
-          </button> */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">
+            <h1 className="font-bold text-xl md:text-2xl truncate">
               Change Password
             </h1>
             <p className="text-sm text-gray-500 mt-0.5">
@@ -155,7 +149,7 @@ export default function ChangePasswordPage() {
         </div>
 
         {/* ── Password Card ──────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden max-w-lg">
           {/* Lock icon header */}
           <div className="px-6 pt-6 pb-2 flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">

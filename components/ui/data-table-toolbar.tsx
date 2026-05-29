@@ -43,54 +43,32 @@ export function DataTableToolbar<TData>({
   showDateFilter = false,
   showColumnToggle = false,
 }: DataTableToolbarProps<TData>) {
-  const [dateRange, setDateRange] =
-    React.useState<DateRange | undefined>();
+  const [dateRange, setDateRange] = React.useState<DateRange | undefined>();
 
   // Dynamically check filter values for each FilterConfig
-  const activeFilterCounts = filters?.map(
-    (f) => ({
-      columnId: f.columnId,
-      count:
-        (
-          table
-            .getColumn(f.columnId)
-            ?.getFilterValue() as
-            | string[]
-            | undefined
-        )?.length ?? 0,
-    }),
-  );
+  const activeFilterCounts = filters?.map((f) => ({
+    columnId: f.columnId,
+    count:
+      (table.getColumn(f.columnId)?.getFilterValue() as string[] | undefined)
+        ?.length ?? 0,
+  }));
 
   const isFiltered =
-    activeFilterCounts?.some(
-      (f) => f.count > 0,
-    ) || dateRange?.from;
+    activeFilterCounts?.some((f) => f.count > 0) || dateRange?.from;
 
-  function toggleValue(
-    current: string[],
-    value: string,
-    columnId: string,
-  ) {
+  function toggleValue(current: string[], value: string, columnId: string) {
     const next = current.includes(value)
       ? current.filter((v) => v !== value)
       : [...current, value];
-    table
-      .getColumn(columnId)
-      ?.setFilterValue(
-        next.length ? next : undefined,
-      );
+    table.getColumn(columnId)?.setFilterValue(next.length ? next : undefined);
   }
 
   function clearAll() {
     filters?.forEach((f) =>
-      table
-        .getColumn(f.columnId)
-        ?.setFilterValue(undefined),
+      table.getColumn(f.columnId)?.setFilterValue(undefined),
     );
     if (showDateFilter) {
-      table
-        .getColumn("date")
-        ?.setFilterValue(undefined);
+      table.getColumn("date")?.setFilterValue(undefined);
       setDateRange(undefined);
     }
   }
@@ -102,16 +80,12 @@ export function DataTableToolbar<TData>({
         <Input
           placeholder={searchPlaceholder}
           value={
-            (table
-              .getColumn(searchColumn)
-              ?.getFilterValue() as string) ?? ""
+            (table.getColumn(searchColumn)?.getFilterValue() as string) ?? ""
           }
           onChange={(e) =>
-            table
-              .getColumn(searchColumn)
-              ?.setFilterValue(e.target.value)
+            table.getColumn(searchColumn)?.setFilterValue(e.target.value)
           }
-          className="max-w-xs"
+          className="max-w-xs rounded-xl border-gray-200 bg-white"
         />
       )}
 
@@ -123,32 +97,24 @@ export function DataTableToolbar<TData>({
               {dateRange?.from
                 ? dateRange.to
                   ? `${format(dateRange.from, "MMM d")} – ${format(dateRange.to, "MMM d, yyyy")}`
-                  : format(
-                      dateRange.from,
-                      "MMM d, yyyy",
-                    )
+                  : format(dateRange.from, "MMM d, yyyy")
                 : "Date range"}
             </Button>
           </PopoverTrigger>
-          <PopoverContent
-            className="w-auto p-0"
-            align="start"
-          >
+          <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="range"
               selected={dateRange}
               onSelect={(range) => {
                 setDateRange(range);
-                table
-                  .getColumn("date")
-                  ?.setFilterValue(
-                    range
-                      ? {
-                          from: range.from,
-                          to: range.to,
-                        }
-                      : undefined,
-                  );
+                table.getColumn("date")?.setFilterValue(
+                  range
+                    ? {
+                        from: range.from,
+                        to: range.to,
+                      }
+                    : undefined,
+                );
               }}
               numberOfMonths={2}
             />
@@ -160,9 +126,7 @@ export function DataTableToolbar<TData>({
                   className="w-full"
                   onClick={() => {
                     setDateRange(undefined);
-                    table
-                      .getColumn("date")
-                      ?.setFilterValue(undefined);
+                    table.getColumn("date")?.setFilterValue(undefined);
                   }}
                 >
                   Clear dates
@@ -176,9 +140,8 @@ export function DataTableToolbar<TData>({
       {/* Generic filter dropdowns — one per FilterConfig */}
       {filters?.map((filter) => {
         const selected =
-          (table
-            .getColumn(filter.columnId)
-            ?.getFilterValue() as string[]) ?? [];
+          (table.getColumn(filter.columnId)?.getFilterValue() as string[]) ??
+          [];
         return (
           <DropdownMenu key={filter.columnId}>
             <DropdownMenuTrigger asChild>
@@ -186,35 +149,23 @@ export function DataTableToolbar<TData>({
                 {filter.label}
                 {selected.length > 0 && (
                   <>
-                    <Separator
-                      orientation="vertical"
-                      className="mx-2 h-4"
-                    />
-                    <Badge variant="secondary">
-                      {selected.length}
-                    </Badge>
+                    <Separator orientation="vertical" className="mx-2 h-4" />
+                    <Badge variant="secondary">{selected.length}</Badge>
                   </>
                 )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
               <DropdownMenuLabel>
-                Filter by{" "}
-                {filter.label.toLowerCase()}
+                Filter by {filter.label.toLowerCase()}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {filter.options.map((option) => (
                 <DropdownMenuCheckboxItem
                   key={option}
-                  checked={selected.includes(
-                    option,
-                  )}
+                  checked={selected.includes(option)}
                   onCheckedChange={() =>
-                    toggleValue(
-                      selected,
-                      option,
-                      filter.columnId,
-                    )
+                    toggleValue(selected, option, filter.columnId)
                   }
                   className="capitalize"
                 >
@@ -231,11 +182,7 @@ export function DataTableToolbar<TData>({
       {showColumnToggle && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="ml-auto"
-            >
+            <Button variant="outline" size="sm" className="ml-auto">
               Columns
             </Button>
           </DropdownMenuTrigger>
@@ -248,9 +195,7 @@ export function DataTableToolbar<TData>({
                   key={col.id}
                   className="capitalize"
                   checked={col.getIsVisible()}
-                  onCheckedChange={(value) =>
-                    col.toggleVisibility(!!value)
-                  }
+                  onCheckedChange={(value) => col.toggleVisibility(!!value)}
                 >
                   {col.id}
                 </DropdownMenuCheckboxItem>
@@ -261,11 +206,7 @@ export function DataTableToolbar<TData>({
 
       {/* Reset */}
       {isFiltered && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={clearAll}
-        >
+        <Button variant="ghost" size="sm" onClick={clearAll}>
           Reset <X className="ml-1 h-4 w-4" />
         </Button>
       )}

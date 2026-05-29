@@ -46,10 +46,12 @@ export default function Page() {
     );
 
   return (
-    <div className="min-h-screen p-8">
-      <InvoiceHeader />
-      <InvoiceStats invoices={invoices} />
-      <InvoiceTable invoices={invoices} />
+    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+      <div className="max-w-7xl mx-auto">
+        <InvoiceHeader />
+        <InvoiceStats invoices={invoices} />
+        <InvoiceTable invoices={invoices} />
+      </div>
     </div>
   );
 }

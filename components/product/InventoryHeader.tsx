@@ -11,7 +11,7 @@ const InventoryHeader = ({ items }: { items: InventoryItem[] }) => {
 
   return (
     <>
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="font-bold text-xl md:text-2xl truncate">
             Inventory Management
@@ -20,6 +20,7 @@ const InventoryHeader = ({ items }: { items: InventoryItem[] }) => {
             Monitor stock levels and manage supply intake.
           </p>
         </div>
+
         <div className="flex items-center gap-2">
           <Button
             variant="outline"

@@ -20,29 +20,36 @@ export default function Page() {
   }, []);
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="md:text-4xl text-3xl font-bold text-gray-900">
-          Customers
-        </h1>
-        <Button
-          asChild
-          className="bg-blue-600 hover:bg-blue-700 px-6 py-3 text-white rounded-2xl"
-        >
-          <Link href="/customers/add">
-            <UserPlus />
-            Add new customer
-          </Link>
-        </Button>
-      </div>
-
-      {isLoading ? (
-        <div className="text-center py-12 text-gray-400">
-          Loading customers...
+    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="font-bold text-xl md:text-2xl truncate">
+              Customers
+            </h1>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Manage your customer records
+            </p>
+          </div>
+          <Button
+            asChild
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
+          >
+            <Link href="/customers/add">
+              <UserPlus className="h-4 w-4" />
+              Add new customer
+            </Link>
+          </Button>
         </div>
-      ) : (
-        <CustomerTable customers={customers} />
-      )}
+
+        {isLoading ? (
+          <div className="text-center py-12 text-gray-400">
+            Loading customers...
+          </div>
+        ) : (
+          <CustomerTable customers={customers} />
+        )}
+      </div>
     </div>
   );
 }
