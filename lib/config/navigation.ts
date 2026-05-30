@@ -78,11 +78,6 @@ export const navigationConfig: NavigationItem[] = [
       { label: "Customers", href: "/dashboard/customers", icon: Users },
       { label: "Staffs", href: "/dashboard/staff", icon: UserCog },
       { label: "Inventory", href: "/dashboard/inventory", icon: Package },
-      {
-        label: "Order History",
-        href: "/dashboard/order-history",
-        icon: ClipboardList,
-      },
     ],
   },
   {
@@ -91,8 +86,13 @@ export const navigationConfig: NavigationItem[] = [
     icon: FileText,
     items: [
       { label: "Invoices", href: "/invoices", icon: FileText },
-      { label: "Customers", href: "/customers", icon: Users },
-      { label: "Products", href: "/products", icon: Package },
+      {
+        label: "Order History",
+        href: "/records/order-history",
+        icon: ClipboardList,
+      },
+      { label: "Customers", href: "/records/customers", icon: Users },
+      { label: "Products", href: "/records/products", icon: Package },
     ],
   },
   {

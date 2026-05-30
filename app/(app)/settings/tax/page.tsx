@@ -135,7 +135,7 @@ export default function TaxSettingsPage() {
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* ── Header ─────────────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2 pb-4 border-b border-gray-200">
           <div>
             <h1 className="font-bold text-xl md:text-2xl truncate">
               Tax Settings
@@ -144,6 +144,7 @@ export default function TaxSettingsPage() {
               Manage tax rates and modes
             </p>
           </div>
+
           <div className="flex items-center gap-3 flex-wrap">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600 font-medium">

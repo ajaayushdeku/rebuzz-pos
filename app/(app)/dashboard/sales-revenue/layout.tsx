@@ -9,20 +9,22 @@ export default function SalesRevenueLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="p-3">
-      <div className="flex justify-between items-center w-full py-2">
-        <div className="py-4 px-7">
+    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+      {/* ── Header ── */}
+      <div className="max-w-7xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+        <div>
           <h1 className="font-bold text-xl md:text-2xl truncate">
             Sales & Revenue
           </h1>
-          <p className="text-gray-500 text-sm md:text-base hidden sm:block">
-            Detailed breakdown of your store&apos;s financial performance
+
+          <p className="text-sm text-gray-500 mt-0.5">
+            Detailed breakdown of your store&lsquo;s financial performance
           </p>
         </div>
 
-        <div className="mx-1 md:mx-3">
+        <div className="flex items-center gap-2">
           <Button
-            className="bg-blue-600 hover:bg-blue-700 px-6 py-6 text-white rounded-2xl"
+            className="flex items-center gap-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2"
             asChild
           >
             <Link href="/invoices/add">Create order</Link>
@@ -30,7 +32,8 @@ export default function SalesRevenueLayout({
         </div>
       </div>
 
-      {children}
+      {/* ── Content ── */}
+      <div>{children}</div>
     </div>
   );
 }

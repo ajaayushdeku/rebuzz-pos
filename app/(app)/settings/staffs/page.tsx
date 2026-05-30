@@ -1,8 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import toast from "react-hot-toast";
-import { Plus, X, Check, Loader2, UserCog } from "lucide-react";
+import {
+  Plus,
+  X,
+  Check,
+  Loader2,
+  UserCog,
+  Search,
+  ChevronDown,
+  ChevronUp,
+  ArrowUpDown,
+  Shield,
+  Mail,
+  Phone,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,8 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DataTable } from "@/components/ui/data-table";
-import { StaffMember, getStaffColumns } from "@/components/staff/staff-columns";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 interface StaffFormData {
@@ -23,6 +36,17 @@ interface StaffFormData {
   phone: string;
   role: string;
 }
+
+type StaffMember = {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+  isEmployee?: boolean;
+  isDeactivated?: boolean;
+  emailVerified?: boolean;
+};
 
 const emptyForm: StaffFormData = {
   name: "",
@@ -35,10 +59,58 @@ const emptyForm: StaffFormData = {
 const inputClass =
   "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
 
+type SortConfig = { key: string; direction: "asc" | "desc" } | null;
+
+// ── Role badge ──────────────────────────────────────────────────────────────
+function RoleBadge({ role }: { role: string }) {
+  const isStaff = role === "staff";
+  return (
+    <span
+      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+        isStaff
+          ? "bg-purple-50 text-purple-700 border border-purple-200"
+          : "bg-blue-50 text-blue-700 border border-blue-200"
+      }`}
+    >
+      {isStaff ? (
+        <Shield className="h-3 w-3" />
+      ) : (
+        <UserCog className="h-3 w-3" />
+      )}
+      {isStaff ? "Staff" : "Basic"}
+    </span>
+  );
+}
+
+// ── Status badge ────────────────────────────────────────────────────────────
+function StatusBadge({ deactivated }: { deactivated?: boolean }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+        deactivated
+          ? "bg-red-50 text-red-600 border border-red-200"
+          : "bg-green-50 text-green-700 border border-green-200"
+      }`}
+    >
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${
+          deactivated ? "bg-red-500" : "bg-green-500"
+        }`}
+      />
+      {deactivated ? "Disabled" : "Active"}
+    </span>
+  );
+}
+
 export default function StaffManagementPage() {
   // ── State ─────────────────────────────────────────────────────────────────
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [sortConfig, setSortConfig] = useState<SortConfig>(null);
+  const [page, setPage] = useState(0);
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const pageSize = 10;
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editStaff, setEditStaff] = useState<StaffMember | null>(null);
@@ -115,7 +187,6 @@ export default function StaffManagementPage() {
     setSaving(true);
     try {
       if (editStaff) {
-        // Update
         const res = await fetch("/api/staff", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -131,7 +202,6 @@ export default function StaffManagementPage() {
         if (!res.ok) throw new Error(data.error || "Failed to update staff");
         toast.success("Staff updated successfully");
       } else {
-        // Create
         const res = await fetch("/api/staff", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -182,24 +252,65 @@ export default function StaffManagementPage() {
       setFormErrors((prev) => ({ ...prev, [key]: undefined }));
   };
 
-  // ── Role filter config for DataTable ──────────────────────────────────────
-  const roleFilters = [
-    {
-      columnId: "role",
-      label: "Role",
-      options: ["basic", "staff"],
-    },
-  ];
+  // ── Filter, sort, paginate ────────────────────────────────────────────────
+  const filtered = useMemo(() => {
+    let result = staff;
+    const q = search.toLowerCase();
+    if (q) {
+      result = result.filter(
+        (s) =>
+          s.name.toLowerCase().includes(q) ||
+          s.email.toLowerCase().includes(q) ||
+          s.phone.includes(q),
+      );
+    }
+    if (roleFilter !== "all") {
+      result = result.filter((s) => s.role === roleFilter);
+    }
+    return result;
+  }, [staff, search, roleFilter]);
 
-  const columns = getStaffColumns(openEdit, (id: string) =>
-    setDeleteConfirm(id),
-  );
+  const sorted = useMemo(() => {
+    if (!sortConfig) return filtered;
+    return [...filtered].sort((a, b) => {
+      const aVal = String(
+        (a as unknown as Record<string, unknown>)[sortConfig.key] ?? "",
+      );
+      const bVal = String(
+        (b as unknown as Record<string, unknown>)[sortConfig.key] ?? "",
+      );
+      const cmp = aVal.localeCompare(bVal, undefined, { numeric: true });
+      return sortConfig.direction === "asc" ? cmp : -cmp;
+    });
+  }, [filtered, sortConfig]);
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+  const paged = sorted.slice(page * pageSize, (page + 1) * pageSize);
+
+  const toggleSort = (key: string) => {
+    setSortConfig((prev) =>
+      prev?.key === key && prev.direction === "asc"
+        ? { key, direction: "desc" }
+        : { key, direction: "asc" },
+    );
+  };
+
+  const SortIcon = ({ colKey }: { colKey: string }) =>
+    sortConfig?.key === colKey ? (
+      sortConfig.direction === "asc" ? (
+        <ChevronUp className="h-3 w-3" />
+      ) : (
+        <ChevronDown className="h-3 w-3" />
+      )
+    ) : (
+      <ArrowUpDown className="h-3 w-3 opacity-30" />
+    );
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
       <div className="max-w-7xl mx-auto">
         {/* ── Header ─────────────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2 pb-4 border-b border-gray-200">
           <div>
             <h1 className="font-bold text-xl md:text-2xl truncate">
               Manage Staff
@@ -218,7 +329,38 @@ export default function StaffManagementPage() {
           </Button>
         </div>
 
-        {/* ── Staff Table using DataTable ────────────────── */}
+        {/* ── Search + Filter ── */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
+          <div className="relative flex-1">
+            <Search
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            />
+            <input
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(0);
+              }}
+              placeholder="Search by name, email or phone..."
+              className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            />
+          </div>
+          <select
+            value={roleFilter}
+            onChange={(e) => {
+              setRoleFilter(e.target.value);
+              setPage(0);
+            }}
+            className="px-3 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-600"
+          >
+            <option value="all">All Roles</option>
+            <option value="basic">Basic</option>
+            <option value="staff">Staff</option>
+          </select>
+        </div>
+
+        {/* ── Staff Table ── */}
         {loading ? (
           <div className="flex items-center justify-center py-24">
             <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
@@ -232,15 +374,134 @@ export default function StaffManagementPage() {
             </p>
           </div>
         ) : (
-          <DataTable
-            columns={columns}
-            data={staff}
-            searchColumn="name"
-            searchPlaceholder="Search by name, email or phone..."
-            pageSize={10}
-            filters={roleFilters}
-            showColumnToggle
-          />
+          <>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-xs text-gray-400 border-b border-gray-100">
+                    <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+                      S.No
+                    </th>
+                    <th
+                      className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                      onClick={() => toggleSort("name")}
+                    >
+                      <span className="flex items-center gap-1">
+                        Staff Name {SortIcon({ colKey: "name" })}
+                      </span>
+                    </th>
+                    <th className="text-left pb-3 pt-3 px-4 font-medium">
+                      Email
+                    </th>
+                    <th className="text-left pb-3 pt-3 px-4 font-medium">
+                      Phone
+                    </th>
+                    <th className="text-center pb-3 pt-3 px-4 font-medium">
+                      Role
+                    </th>
+                    <th className="text-center pb-3 pt-3 px-4 font-medium">
+                      Status
+                    </th>
+                    <th className="text-right pb-3 pt-3 px-4 font-medium">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paged.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={7}
+                        className="text-center py-12 text-sm text-gray-400"
+                      >
+                        No staff members found
+                      </td>
+                    </tr>
+                  ) : (
+                    paged.map((staffMember, idx) => (
+                      <tr
+                        key={staffMember._id}
+                        className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="py-3 px-4 text-gray-400 text-xs">
+                          {page * pageSize + idx + 1}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="font-medium text-gray-900">
+                            {staffMember.name || "—"}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                            <Mail className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                            {staffMember.email || "—"}
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                            <Phone className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                            {staffMember.phone || "—"}
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <RoleBadge role={staffMember.role} />
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <StatusBadge
+                            deactivated={staffMember.isDeactivated}
+                          />
+                        </td>
+                        <td className="py-3 px-4">
+                          <div
+                            className="flex items-center justify-end gap-1"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <button
+                              onClick={() => openEdit(staffMember)}
+                              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Edit"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() => setDeleteConfirm(staffMember._id)}
+                              className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Delete"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            <div className="flex items-center justify-between py-4">
+              <span className="text-sm text-gray-500">
+                Page {page + 1} of {totalPages} · {sorted.length} staff members
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setPage(Math.max(0, page - 1))}
+                  disabled={page === 0}
+                  className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
+                  disabled={page >= totalPages - 1}
+                  className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </>
         )}
 
         {/* ── Add/Edit Modal ──────────────────────────────── */}
@@ -275,7 +536,6 @@ export default function StaffManagementPage() {
 
               {/* Modal body */}
               <div className="p-6 space-y-4">
-                {/* Name */}
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1.5 tracking-wide">
                     Staff Name
@@ -294,7 +554,6 @@ export default function StaffManagementPage() {
                   )}
                 </div>
 
-                {/* Email */}
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1.5 tracking-wide">
                     Email
@@ -313,7 +572,6 @@ export default function StaffManagementPage() {
                   )}
                 </div>
 
-                {/* Phone */}
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1.5 tracking-wide">
                     Phone Number
@@ -332,7 +590,6 @@ export default function StaffManagementPage() {
                   )}
                 </div>
 
-                {/* Role */}
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1.5 tracking-wide">
                     Staff Role
@@ -353,7 +610,6 @@ export default function StaffManagementPage() {
                       >
                         Basic
                       </SelectItem>
-
                       <SelectItem
                         value="staff"
                         className="py-2.5 cursor-pointer"
@@ -414,7 +670,7 @@ export default function StaffManagementPage() {
             >
               <div className="p-6 text-center">
                 <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
-                  <Loader2 className="h-6 w-6 text-red-500" />
+                  <Trash2 className="h-6 w-6 text-red-500" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900">
                   Delete Staff?

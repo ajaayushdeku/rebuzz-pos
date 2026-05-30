@@ -1,8 +1,4 @@
-import {
-  QueryClient,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createTicket, updateTicket } from "@/services/apiTicket.client";
 import toast from "react-hot-toast";
 
@@ -25,9 +21,12 @@ export const useUpdateTicket = () => {
 
   return useMutation({
     mutationFn: updateTicket,
-    onSuccess: (result) => {
+    onSuccess: (result, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["tickets"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["ticket", variables.invoiceNumber],
       });
       toast.success("Invoice updated successfully!");
     },

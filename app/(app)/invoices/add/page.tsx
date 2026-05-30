@@ -276,19 +276,26 @@ export default function Page() {
   return (
     <div className="min-h-screen p-8">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="md:text-4xl text-3xl font-bold text-gray-900">
-          New Invoice
-        </h1>
+        <div>
+          {" "}
+          <h1 className="md:text-3xl text-2xl font-bold text-gray-900">
+            New Invoice
+          </h1>
+          <p className="text-sm text-gray-400 mt-0.5">
+            Create A new invoice for your customer
+          </p>
+        </div>
+
         <Button
           onClick={handleSave}
           disabled={isPending}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl"
+          className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
         >
           {isPending ? "Saving..." : "Save and Continue"}
         </Button>
       </div>
 
-      <div className="p-3 border rounded-lg mb-5">
+      <div className="py-3 px-6 border rounded-lg mb-5">
         <div>
           <h2 className="font-bold text-lg">
             {business?.businessName || "My Business"}
@@ -298,14 +305,14 @@ export default function Page() {
         </div>
       </div>
 
-      <div className="border-gray-300 border shadow-lg rounded-lg">
-        <div className="flex justify-between">
+      <div className="border-gray-200 border shadow-sm rounded-xl bg-white">
+        <div className="flex flex-col sm:flex-row justify-between gap-4 p-4 border-b border-gray-100">
           <CustomerSelector
             value={selectedCustomer}
             onCustomerSelect={setSelectedCustomer}
           />
           <form>
-            <div className="flex flex-row items-center gap-3 py-3 px-3">
+            <div className="flex items-center gap-3 self-start pt-1">
               <Label className="text-[16px] font-semibold text-blue-600 whitespace-nowrap">
                 Invoice Title
               </Label>
@@ -320,7 +327,7 @@ export default function Page() {
           </form>
         </div>
 
-        <div className="mt-5">
+        <div className="overflow-x-auto">
           <Table>
             <AddInvoiceHeader />
             <TableBody>

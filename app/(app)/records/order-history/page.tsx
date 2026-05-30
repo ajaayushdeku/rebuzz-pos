@@ -8,19 +8,22 @@ export default async function Page() {
   const isEmpty = !transactions || transactions.length === 0;
   const displayData = isEmpty ? mockTransactions : transactions;
   return (
-    <div className="p-4">
-      <div className="py-2 min-w-0 border-b-2">
+    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+      {/* ── Header ── */}
+      <div className="max-w-7xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
         {isEmpty && <SampleDataBadge />}
-        <h1 className="text-[16px] md:text-xl font-bold truncate">
-          Order History
-        </h1>
-        <p className="text-gray-400 text-sm md:text-base">
-          Browse and search all transactions
-        </p>
+
+        <div>
+          <h1 className="font-bold text-xl md:text-2xl truncate">
+            Order History
+          </h1>
+
+          <p className="text-sm text-gray-500 mt-0.5">
+            Browse and search all transactions
+          </p>
+        </div>
       </div>
-      <div className="flex flex-wrap">
-        <div></div>
-      </div>
+
       {isEmpty ? (
         <Transactions transactions={displayData} />
       ) : (

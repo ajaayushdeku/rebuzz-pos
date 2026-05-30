@@ -56,14 +56,20 @@ export default function User({ initialBusinessName }: UserProps) {
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem className="text-gray-600 cursor-pointer">
+          <DropdownMenuItem
+            className="text-gray-600 cursor-pointer"
+            onClick={() => router.push("/settings/business")}
+          >
             <Link href="/profile" className="flex gap-2">
               <User2 className="mr-2 h-4 w-4" />
               Profile
             </Link>
           </DropdownMenuItem>
 
-          <DropdownMenuItem className="text-gray-600 cursor-pointer">
+          <DropdownMenuItem
+            className="text-gray-600 cursor-pointer"
+            onClick={() => router.push("/settings/change-password")}
+          >
             <Settings className="mr-2 h-4 w-4" />
             Settings
           </DropdownMenuItem>

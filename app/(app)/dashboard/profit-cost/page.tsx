@@ -1,15 +1,6 @@
 import { Suspense } from "react";
 import { TrendingUp } from "lucide-react";
 
-// import {
-//   BudgetTableWrapper,
-//   ExpenseByCategoryChartWrapper,
-//   ExpenseStatsWrapper,
-//   GrossProfitTrendChartWrapper,
-//   ProfitPerProductWrapper,
-//   ProfitStatsWrapper,
-//   RefundAnalysisWrapper,
-// } from "../_components/ProfitCostWrapper";
 import { Button } from "@/components/ui/button";
 import StatSkeleton from "@/components/ui/statskeleton";
 import ChartSkeleton from "@/components/ui/chartskeleton";
@@ -28,95 +19,91 @@ import {
 
 export default async function Page() {
   return (
-    <div className="p-3 md:p-6">
-      <div className="flex justify-between items-center w-full  py-2 border-b-2">
-        <div className="py-2 min-w-0">
-          {/* FOR HEADER TEXT */}
+    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+      {/* ── Header ── */}
+      <div className="max-w-7xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+        <div>
           <h1 className="font-bold text-xl md:text-2xl truncate">
             Profit & Cost
           </h1>
-          <p className="text-gray-500 text-sm md:text-base hidden sm:block">
+
+          <p className="text-sm text-gray-500 mt-0.5">
             Financial health and margin analysis.
           </p>
         </div>
-        <div className="shrink-0">
-          {/* FOR HEADER BUTTONS*/}
-          <Button className="bg-blue-600 hover:bg-blue-700 px-3 md:px-6 py-3 text-white rounded-2xl">
-            <TrendingUp className="shrink-0" />
+
+        <div className="flex items-center gap-2">
+          <Button className="bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-white rounded-xl text-sm font-semibold">
+            <TrendingUp className="h-4 w-4 mr-1.5" />
             Optimize Margins
           </Button>
         </div>
       </div>
 
-      <div>
-        <Suspense
-          fallback={
-            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 my-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <StatSkeleton key={i} />
-              ))}
-            </div>
-          }
-        >
-          <ProfitStatsWrapper />
-        </Suspense>
+      <Suspense
+        fallback={
+          <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <StatSkeleton key={i} />
+            ))}
+          </div>
+        }
+      >
+        <ProfitStatsWrapper />
+      </Suspense>
 
+      <ChartErrorBoundary>
+        <Suspense fallback={<ChartSkeleton />}>
+          <GrossProfitTrendChartWrapper />
+        </Suspense>
+      </ChartErrorBoundary>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
-            <GrossProfitTrendChartWrapper />
+          <Suspense fallback={<TableSkeleton rows={4} />}>
+            <ProfitPerProductWrapper />
           </Suspense>
         </ChartErrorBoundary>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ChartErrorBoundary>
-            <Suspense fallback={<TableSkeleton rows={4} />}>
-              <ProfitPerProductWrapper />
-            </Suspense>
-          </ChartErrorBoundary>
-
-          <ChartErrorBoundary>
-            <Suspense fallback={<TableSkeleton rows={4} />}>
-              <RefundAnalysisWrapper />
-            </Suspense>
-          </ChartErrorBoundary>
-        </div>
+        <ChartErrorBoundary>
+          <Suspense fallback={<TableSkeleton rows={4} />}>
+            <RefundAnalysisWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
       </div>
 
-      <div>
-        <div className=" py-4 border-b-2">
-          <h1 className="font-bold text-xl md:text-2xl truncate ">
-            Expenses breakdown
-          </h1>
+      {/* ── Expenses Section ── */}
+      <div className="border-b border-gray-200 pb-4">
+        <h2 className="text-lg font-bold text-gray-900">Expenses breakdown</h2>
+        <p className="text-xs text-gray-400 mt-0.5">
+          Expenses and budget analysis.
+        </p>
+      </div>
 
-          <p className="text-gray-500 text-sm md:text-base hidden sm:block">
-            Expenses and budget analysis.
-          </p>
-        </div>
+      <Suspense
+        fallback={
+          <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <StatSkeleton key={i} />
+            ))}
+          </div>
+        }
+      >
+        <ExpenseStatsWrapper />
+      </Suspense>
 
-        <Suspense
-          fallback={
-            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 my-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <StatSkeleton key={i} />
-              ))}
-            </div>
-          }
-        >
-          <ExpenseStatsWrapper />
-        </Suspense>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ChartErrorBoundary>
-            <Suspense fallback={<PieChartSkeleton />}>
-              <ExpenseByCategoryChartWrapper />
-            </Suspense>
-          </ChartErrorBoundary>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <ChartErrorBoundary>
+          <Suspense fallback={<PieChartSkeleton />}>
+            <ExpenseByCategoryChartWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
 
-          <ChartErrorBoundary>
-            <Suspense fallback={<TableSkeleton rows={4} />}>
-              <BudgetTableWrapper />
-            </Suspense>
-          </ChartErrorBoundary>
-        </div>
+        <ChartErrorBoundary>
+          <Suspense fallback={<TableSkeleton rows={4} />}>
+            <BudgetTableWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
       </div>
     </div>
   );

@@ -1,28 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { UserPlus } from "lucide-react";
-import { fetchCustomersClient } from "@/services/apiCustomer.client";
+import { useCustomersList } from "@/hooks/useCustomersList";
 import CustomerTable from "@/components/customer/CustomerTable";
-import type { Customer } from "@/components/customer/customer-columns";
 
 export default function Page() {
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetchCustomersClient()
-      .then(setCustomers)
-      .catch(console.error)
-      .finally(() => setIsLoading(false));
-  }, []);
+  const { data: customers = [], isLoading } = useCustomersList();
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2 pb-4 border-b border-gray-200">
           <div>
             <h1 className="font-bold text-xl md:text-2xl truncate">
               Customers

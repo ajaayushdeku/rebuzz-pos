@@ -13,9 +13,7 @@ import {
 
 export default async function Page() {
   return (
-    <div className="p-3 md:p-6">
-      {/* Actual COntent */}
-
+    <div className="space-y-6">
       <ChartErrorBoundary>
         <Suspense fallback={<ChartSkeleton />}>
           <RevenueVsProfitChartWrapper />
@@ -28,7 +26,7 @@ export default async function Page() {
         </Suspense>
       </ChartErrorBoundary>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ChartErrorBoundary>
           <Suspense fallback={<TableSkeleton rows={5} />}>
             <TopProductsWrapper />

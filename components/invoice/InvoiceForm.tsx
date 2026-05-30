@@ -101,13 +101,7 @@ export default function InvoiceForm({
     return [{ id: crypto.randomUUID(), ...DEFAULT_ITEM }];
   });
 
-  // Pre-fill global discounts from initialData
-  const [selectedDiscountIds, setSelectedDiscountIds] = useState<string[]>(
-    () => {
-      const raw = initialData?.ticket?.discounts ?? tickets?.discounts ?? [];
-      return raw.map((d: any) => d._id ?? d.discount ?? d).filter(Boolean);
-    },
-  );
+  const [selectedDiscountIds, setSelectedDiscountIds] = useState<string[]>([]);
 
   // Active tax — surfaced from InvoiceTaxCreate
   const [activeTaxId, setActiveTaxId] = useState<string | null>(null);
@@ -130,16 +124,45 @@ export default function InvoiceForm({
     return sum + (rowRawTotal - rowDiscount);
   }, 0);
 
-  const globalDiscountValue = selectedDiscountIds.reduce((sum, id) => {
-    const d = masterDiscounts.find((m) => m._id === id);
-    if (!d) return sum;
-    return (
-      sum + (d.type === "percentage" ? (itemsSubtotal * d.rate) / 100 : d.rate)
-    );
+  // Subtotal for taxable items only (after item-level discounts)
+  const taxableSubtotal = items.reduce((sum, item) => {
+    if (!item.isTaxable) return sum;
+    const rowRawTotal = item.quantity * item.price;
+    const rowDiscount = item.discounts.reduce((dSum, dId) => {
+      const d = masterDiscounts.find((m) => m._id === dId);
+      if (!d) return dSum;
+      return (
+        dSum + (d.type === "percentage" ? (rowRawTotal * d.rate) / 100 : d.rate)
+      );
+    }, 0);
+    return sum + Math.max(0, rowRawTotal - rowDiscount);
   }, 0);
 
+  // Replace initialDiscountAmount:
+  const initialDiscountAmount =
+    isEditMode && selectedDiscountIds.length === 0
+      ? (tickets?.discount ?? 0) // ← Tickets.discount, not ticket.discount
+      : 0;
+
+  const globalDiscountValue =
+    selectedDiscountIds.length > 0
+      ? selectedDiscountIds.reduce((sum, id) => {
+          const d = masterDiscounts.find((m) => m._id === id);
+          if (!d) return sum;
+          return (
+            sum +
+            (d.type === "percentage" ? (itemsSubtotal * d.rate) / 100 : d.rate)
+          );
+        }, 0)
+      : isEditMode
+        ? (tickets?.discount ?? 0) // ← use stored discount amount in edit mode
+        : 0;
+
   const afterDiscountTotal = Math.max(0, itemsSubtotal - globalDiscountValue);
-  const totalTaxValue = (afterDiscountTotal * activeTaxRate) / 100;
+
+  // Tax is calculated on taxable items subtotal (before global discounts),
+  // matching the per-item tax pill display in InvoiceItemsSelector
+  const totalTaxValue = (taxableSubtotal * activeTaxRate) / 100;
   const finalTotal = afterDiscountTotal + totalTaxValue;
 
   // ── Handlers ──────────────────────────────────────────────────────────────
@@ -179,7 +202,6 @@ export default function InvoiceForm({
   };
 
   // ── Submit ─────────────────────────────────────────────────────────────────
-
   const handleSave = () => {
     if (!selectedCustomer) {
       toast.error("Please select a customer");
@@ -189,6 +211,35 @@ export default function InvoiceForm({
       toast.error("Please add at least one item");
       return;
     }
+
+    console.log("globalDiscountValue:", globalDiscountValue);
+    console.log("selectedDiscountIds:", selectedDiscountIds);
+    console.log("initialDiscountAmount:", initialDiscountAmount);
+
+    const filteredItems = items.filter(
+      (item) => item.name && item.quantity > 0,
+    );
+
+    // ── Shared item payload shape ────────────────────────────────────────────
+    const mappedItems = filteredItems.map((item) => ({
+      id: item.productId, // used by create
+      name: item.name, // used by create
+      quantity: item.quantity,
+      unitPrice: item.price, // ← use unitPrice (matches update API)
+      note: null,
+      isTaxable: item.isTaxable ?? false,
+      discounts: item.discounts.map((id) => {
+        const master = masterDiscounts.find((m) => m._id === id);
+        return {
+          _id: master?._id,
+          name: master?.name,
+          rate: master?.rate,
+          type: master?.type,
+          isEnabled: true,
+          isSelected: true,
+        };
+      }),
+    }));
 
     const ticketData: CreateTicketInput = {
       ticketName: invoiceTitle || selectedCustomer?.name || "Walk-in Customer",
@@ -200,28 +251,7 @@ export default function InvoiceForm({
       grandTotal: finalTotal,
       taxId: activeTaxId,
       note: `${notes}${invoiceNumber ? `|Invoice: ${invoiceNumber}` : ""}`,
-      items: items
-        .filter((item) => item.name && item.quantity > 0)
-        .map((item) => ({
-          id: item.productId,
-          name: item.name,
-          quantity: item.quantity,
-          unitPrice: item.price,
-          note: null,
-          discounts: item.discounts.map((id) => {
-            const master = masterDiscounts.find((m) => m._id === id);
-            return {
-              _id: master?._id,
-              name: master?.name,
-              rate: master?.rate,
-              type: master?.type,
-              isEnabled: true,
-              isSelected: true,
-            };
-          }),
-          // ✅ per-item isTaxable — not tied to global activeTaxId
-          isTaxable: item.isTaxable ?? false,
-        })),
+      items: mappedItems,
     };
 
     if (isEditMode && invoiceNumber) {
@@ -252,7 +282,7 @@ export default function InvoiceForm({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-50 p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="md:text-3xl text-2xl font-bold text-gray-900">
@@ -260,7 +290,7 @@ export default function InvoiceForm({
           </h1>
           {isEditMode && tickets?.createdAt && (
             <p className="text-sm text-gray-400 mt-0.5">
-              Created{" "}
+              Created at{" "}
               {new Date(tickets.createdAt).toLocaleDateString(undefined, {
                 month: "short",
                 day: "numeric",
@@ -269,17 +299,30 @@ export default function InvoiceForm({
             </p>
           )}
         </div>
-        <Button
-          onClick={handleSave}
-          disabled={isPending}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl"
-        >
-          {isPending
-            ? "Saving..."
-            : isEditMode
-              ? "Update Invoice"
-              : "Save and Continue"}
-        </Button>
+
+        <div className="flex items-center gap-3">
+          {isEditMode && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push(`/invoices/${invoiceNumber}`)}
+              className="border-gray-300 text-gray-600 hover:text-gray-800 px-6 py-3 rounded-lg"
+            >
+              Cancel
+            </Button>
+          )}
+          <Button
+            onClick={handleSave}
+            disabled={isPending}
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
+          >
+            {isPending
+              ? "Saving..."
+              : isEditMode
+                ? "Update Invoice"
+                : "Save and Continue"}
+          </Button>
+        </div>
       </div>
 
       <div className="border-gray-200 border shadow-sm rounded-xl bg-white">

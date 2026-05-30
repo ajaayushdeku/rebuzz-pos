@@ -18,78 +18,69 @@ import {
 
 export default async function Page() {
   return (
-    <div className="p-3 md:p-6">
-      <div className="flex justify-between items-center w-full  py-2 border-b-2">
-        <div className="py-2 min-w-0">
-          {/* FOR HEADER TEXT */}
+    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+      {/* ── Header ── */}
+      <div className="max-w-7xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+        <div>
           <h1 className="font-bold text-xl md:text-2xl truncate">
             Customer Analytics
           </h1>
-          <p className="text-gray-500 text-sm md:text-base hidden sm:block">
+
+          <p className="text-sm text-gray-500 mt-0.5">
             Insights into customer behavior and retention.
           </p>
         </div>
 
-        <div className="shrink-0">
-          {/* FOR HEADER BUTTONS*/}
-          <Button className="bg-blue-600 hover:bg-blue-700 px-3 md:px-6 py-3 text-white rounded-2xl">
-            <UserPlus className="shrink-0" />
-            <Link
-              href="/customers/add"
-              // className="hidden sm:inline ml-1"
-            >
-              New Customer
-            </Link>
-          </Button>
-        </div>
+        <Button
+          className="bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
+          asChild
+        >
+          <Link href="/customers/add">
+            <UserPlus className="h-4 w-4 mr-1.5" />
+            New Customer
+          </Link>
+        </Button>
       </div>
 
-      {/* CONTENTS */}
-      <div>
-        {/* Customer Stats */}
-        <Suspense
-          fallback={
-            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 my-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <StatSkeleton key={i} />
-              ))}
-            </div>
-          }
-        >
-          <CustomerStatsWrapper />
-        </Suspense>
+      <Suspense
+        fallback={
+          <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <StatSkeleton key={i} />
+            ))}
+          </div>
+        }
+      >
+        <CustomerStatsWrapper />
+      </Suspense>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* <CustomerSegmentationChart /> */}
-          <ChartErrorBoundary>
-            <Suspense fallback={<PieChartSkeleton />}>
-              <CustomerSegmentationChartWrapper />
-            </Suspense>
-          </ChartErrorBoundary>
-
-          {/* Loyalty Tier Chart */}
-          <ChartErrorBoundary>
-            <Suspense fallback={<ChartSkeleton />}>
-              <LoyaltyTierChartWrapper />
-            </Suspense>
-          </ChartErrorBoundary>
-        </div>
-
-        {/* Customer Trend Chart */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
-            <CustomerTrendChartWrapper />
+          <Suspense fallback={<PieChartSkeleton />}>
+            <CustomerSegmentationChartWrapper />
           </Suspense>
         </ChartErrorBoundary>
 
-        {/* At Risk Customers Table */}
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <LoyaltyTierChartWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+      </div>
+
+      <ChartErrorBoundary>
+        <Suspense fallback={<ChartSkeleton />}>
+          <CustomerTrendChartWrapper />
+        </Suspense>
+      </ChartErrorBoundary>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <ChartErrorBoundary>
           <Suspense fallback={<TableSkeleton rows={5} />}>
             <AtRiskCustomerWrapper />
           </Suspense>
         </ChartErrorBoundary>
 
-        {/* Top Customers Table */}
         <ChartErrorBoundary>
           <Suspense fallback={<TableSkeleton rows={5} />}>
             <TopCustomersWrapper />

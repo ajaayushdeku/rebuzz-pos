@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Search,
   ChevronDown,
@@ -74,7 +74,7 @@ function EditCustomerModal({
   });
 
   // Sync form when customer changes
-  useMemo(() => {
+  useEffect(() => {
     if (customer) {
       setForm({
         name: customer.name ?? "",
@@ -110,7 +110,7 @@ function EditCustomerModal({
       });
       if (!res.ok) throw new Error("Failed");
       toast.success("Customer updated");
-      queryClient.invalidateQueries({ queryKey: ["customers"] });
+      queryClient.invalidateQueries({ queryKey: ["customers-list"] });
       onClose();
     } catch {
       toast.error("Failed to update customer");
@@ -199,7 +199,7 @@ function LoyaltyPointModal({
   const [saving, setSaving] = useState(false);
 
   // Sync when customer changes
-  useMemo(() => {
+  useEffect(() => {
     if (customer) setPoints(String(customer.loyaltyPoint ?? 0));
   }, [customer]);
 
@@ -219,7 +219,7 @@ function LoyaltyPointModal({
       });
       if (!res.ok) throw new Error("Failed");
       toast.success("Loyalty points updated");
-      queryClient.invalidateQueries({ queryKey: ["customers"] });
+      queryClient.invalidateQueries({ queryKey: ["customers-list"] });
       onClose();
     } catch {
       toast.error("Failed to update loyalty points");

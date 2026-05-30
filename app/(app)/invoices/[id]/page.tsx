@@ -47,6 +47,7 @@ import {
   fetchLoyaltyPointSettings,
   LoyaltyPointSettings,
 } from "@/services/apiLoyaltyPoint";
+import { sendInvoiceScreenshot } from "@/services/sendInvoiceScreenshot";
 
 type InvoiceStatus = "draft" | "sent" | "paid" | "overdue";
 
@@ -75,6 +76,7 @@ export default function InvoiceDetailPage() {
     "fixed",
   );
   const [discountError, setDiscountError] = useState("");
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   const handleDownloadPDF = async (
     ref: React.RefObject<HTMLDivElement | null>,
@@ -383,42 +385,12 @@ export default function InvoiceDetailPage() {
 
   const [moreActionsOpen, setMoreActionsOpen] = useState(false);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">Loading invoice...</p>
-      </div>
-    );
-  }
+  // ── Send invoice modal — selected invoice type state ──
+  const [selectedInvoiceType, setSelectedInvoiceType] = useState<
+    "proforma" | "invoice" | "tax"
+  >("proforma");
 
-  if (!isLoading && !invoice) {
-    console.log("API Response received but no Tickets found:", data);
-  }
-  if (error || !invoice) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">Invoice not found.</p>
-      </div>
-    );
-  }
-
-  const displayStatus: InvoiceStatus =
-    invoice.paidStatus === "paid" ? "paid" : "sent";
-  const isToday =
-    new Date(invoice.dueDate).toDateString() === new Date().toDateString();
-  const dueDateLabel = isToday
-    ? "Today"
-    : new Date(invoice.dueDate).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-
-  const handleSetInvoiceType = (type: "proforma" | "invoice" | "tax") => {
-    setInvoiceType(type);
-  };
-
-  const handleResendInvoice = async () => {
+  const handleResendInvoice = async (invoiceTypeToSend?: string) => {
     const ticketId = invoice.invoice;
 
     if (!ticketId) {
@@ -426,7 +398,11 @@ export default function InvoiceDetailPage() {
       return;
     }
 
-    const sendPromise = fetch(`/api/tickets/${ticketId}/send`, {
+    const url = invoiceTypeToSend
+      ? `/api/tickets/${ticketId}/send?type=${invoiceTypeToSend}`
+      : `/api/tickets/${ticketId}/send`;
+
+    const sendPromise = fetch(url, {
       method: "POST",
     }).then(async (res) => {
       const data = await res.json();
@@ -439,6 +415,7 @@ export default function InvoiceDetailPage() {
     toast.promise(sendPromise, {
       loading: "Sending invoice reminder...",
       success: () => {
+        queryClient.invalidateQueries({ queryKey: ["ticket", id] });
         return "Reminder sent successfully!";
       },
       error: (err) => `${err.message}`,
@@ -481,27 +458,128 @@ export default function InvoiceDetailPage() {
     router.push(`/invoices/`);
   };
 
+  // Add this function inside the component
+  const handleSendInvoiceByEmail = async (
+    type: "proforma" | "invoice" | "tax",
+  ) => {
+    const refMap = {
+      proforma: proformaRef,
+      invoice: regularRef,
+      tax: taxRef,
+    };
+
+    const labelMap = {
+      proforma: "Proforma Invoice",
+      invoice: "Invoice",
+      tax: "Tax Invoice",
+    };
+
+    const ref = refMap[type];
+
+    if (!ref.current) {
+      toast.error("Invoice preview not ready");
+      return;
+    }
+
+    const recipientEmail = customerProfile?.email || invoice?.customerEmail;
+
+    if (!recipientEmail) {
+      toast.error("No customer email found");
+      return;
+    }
+
+    setIsSendingEmail(true);
+    setIsSendInvoiceModalOpen(false);
+
+    // Make sure the correct invoice type is visible before capture
+    setInvoiceType(type);
+
+    // Small delay to let the DOM update before capturing
+    await new Promise((r) => setTimeout(r, 200));
+
+    try {
+      await sendInvoiceScreenshot({
+        element: ref.current,
+        to: recipientEmail,
+        invoiceNumber: String(invoice.invoice),
+        subject: `${labelMap[type]} #${invoice.invoice} from ${business?.businessName ?? "Rebuzz POS"}`,
+      });
+      toast.success(`${labelMap[type]} sent to ${recipientEmail}`);
+    } catch (err) {
+      console.error("Email send error:", err);
+      toast.error("Failed to send invoice email");
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-500">Loading invoice...</p>
+      </div>
+    );
+  }
+
+  if (!isLoading && !invoice) {
+    console.log("API Response received but no Tickets found:", data);
+  }
+  if (error || !invoice) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-500">Invoice not found.</p>
+      </div>
+    );
+  }
+
+  const displayStatus: InvoiceStatus =
+    invoice.paidStatus === "paid" ? "paid" : "sent";
+  const isToday =
+    new Date(invoice.dueDate).toDateString() === new Date().toDateString();
+  const dueDateLabel = isToday
+    ? "Today"
+    : new Date(invoice.dueDate).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+
+  const handleSetInvoiceType = (type: "proforma" | "invoice" | "tax") => {
+    setInvoiceType(type);
+  };
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       {/* Top bar */}
-      <div className="bg-white border-b px-8 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-200 px-8 py-3.5 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-5">
           <button
             onClick={() => router.back()}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="h-9 w-9 flex items-center justify-center rounded-xl bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-all"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={18} />
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Invoice #{invoice?.invoice}
-          </h1>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">
+              Invoice #{invoice?.invoice}
+            </h1>
+            <p className="text-xs text-gray-400 mt-0.5">
+              {invoice.paidStatus === "paid" ? "Paid" : "Unpaid"} · Created{" "}
+              {new Date(invoice.createdAt).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-2 border border-blue-600 rounded-full px-4 py-2 text-sm font-medium hover:bg-blue-100 text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-100">
+            <DropdownMenuTrigger className="flex items-center gap-2 border border-blue-200 rounded-xl px-4 py-2.5 text-sm font-semibold hover:bg-blue-50 text-blue-600 transition-all focus:outline-none focus:ring-2 focus:ring-blue-100">
               More actions <ChevronDown size={14} />
             </DropdownMenuTrigger>
+
             <DropdownMenuContent
               align="end"
               className="w-48 rounded-xl p-1 shadow-lg border-gray-200"
@@ -515,6 +593,7 @@ export default function InvoiceDetailPage() {
                   <span>Edit invoice</span>
                 </DropdownMenuItem>
               )}
+
               <DropdownMenuItem
                 onClick={handleDeleteInvoice}
                 className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600"
@@ -522,6 +601,7 @@ export default function InvoiceDetailPage() {
                 <Trash2 size={14} />
                 <span>Delete invoice</span>
               </DropdownMenuItem>
+
               <DropdownMenuSeparator className="my-1 bg-gray-100" />
               {invoiceType !== "proforma" && (
                 <DropdownMenuItem
@@ -532,6 +612,7 @@ export default function InvoiceDetailPage() {
                   <span>Set as Proforma Invoice</span>
                 </DropdownMenuItem>
               )}
+
               {invoiceType !== "invoice" && (
                 <DropdownMenuItem
                   onClick={() => handleSetInvoiceType("invoice")}
@@ -541,6 +622,7 @@ export default function InvoiceDetailPage() {
                   <span>Set as Regular Invoice</span>
                 </DropdownMenuItem>
               )}
+
               {invoiceType !== "tax" && (
                 <DropdownMenuItem
                   onClick={() => handleSetInvoiceType("tax")}
@@ -555,15 +637,15 @@ export default function InvoiceDetailPage() {
 
           <Button
             onClick={() => router.push("/invoices/add")}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6"
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
           >
-            Create another invoice
+            Create Another Invoice
           </Button>
         </div>
       </div>
 
       {/* Body */}
-      <div className="py-12 flex justify-center">
+      <div className="py-12 flex justify-center bg-white">
         <div className="w-full max-w-2xl">
           {/* Invoice meta row */}
           <div className="flex justify-between items-start mb-8">
@@ -719,19 +801,19 @@ export default function InvoiceDetailPage() {
                   <Bell size={16} className="text-blue-600 mt-0.5 shrink-0" />
                   <div>
                     <p className="text-sm text-gray-700 font-medium">
-                      Automatic Reminders
+                      Send Reminder
                     </p>
                     <p className="text-xs text-gray-500">
-                      Remind customer 3 days before due date.
+                      Send an invoice reminder to the customer.
                     </p>
                   </div>
                 </div>
 
                 <button
-                  onClick={() => toast("Opening scheduler...")}
+                  onClick={() => handleResendInvoice()}
                   className="text-xs bg-blue-50 text-blue-700 font-bold px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors"
                 >
-                  Schedule
+                  Send Reminder
                 </button>
               </div>
             </div>
@@ -1080,87 +1162,161 @@ export default function InvoiceDetailPage() {
                   </h3>
 
                   <p className="mt-2 max-w-md text-sm text-gray-500">
-                    Select which invoice format you want to send to your
-                    customer. Only one invoice type can be emailed at a time.
+                    Select which invoice format you want to send to{" "}
+                    <span className="font-semibold text-gray-700">
+                      {customerProfile?.email ||
+                        invoice?.customerEmail ||
+                        "customer"}
+                    </span>
+                    . The invoice will be captured as an image and sent.
                   </p>
                 </div>
 
-                {/* ── Invoice Type Selector ───────────────── */}
+                {/* ── Invoice Type Selector ── */}
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {[
-                    {
-                      label: "Proforma",
-                      value: "proforma",
-                    },
-                    {
-                      label: "Invoice",
-                      value: "invoice",
-                    },
-                    {
-                      label: "Tax Invoice",
-                      value: "tax",
-                    },
-                  ].map((item) => (
+                  {(
+                    [
+                      { label: "Proforma", value: "proforma" },
+                      { label: "Invoice", value: "invoice" },
+                      { label: "Tax Invoice", value: "tax" },
+                    ] as {
+                      label: string;
+                      value: "proforma" | "invoice" | "tax";
+                    }[]
+                  ).map((item) => (
                     <button
                       key={item.value}
                       type="button"
-                      // onClick={() =>
-                      //   setSelectedInvoiceType(
-                      //     item.value as "proforma" | "invoice" | "tax",
-                      //   )
-                      // }
-                      // className={`rounded-2xl border-2 p-4 text-left transition-all cursor-pointer ${
-                      //   selectedInvoiceType === item.value
-                      //     ? "border-blue-600 bg-blue-600 text-white shadow-lg"
-                      //     : "border-gray-200 bg-white hover:border-blue-300"
-                      // }`}
+                      onClick={() => setSelectedInvoiceType(item.value)}
+                      className={`rounded-2xl border-2 p-4 text-left transition-all cursor-pointer ${
+                        selectedInvoiceType === item.value
+                          ? "border-blue-600 bg-blue-600 text-white shadow-lg"
+                          : "border-gray-200 bg-white hover:border-blue-300"
+                      }`}
                     >
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="font-semibold">{item.label}</p>
                           <p
-                          // className={`text-sm mt-1 ${
-                          //   selectedInvoiceType === item.value
-                          //     ? "text-blue-100"
-                          //     : "text-gray-500"
-                          // }`}
+                            className={`text-sm mt-1 ${
+                              selectedInvoiceType === item.value
+                                ? "text-blue-100"
+                                : "text-gray-500"
+                            }`}
                           >
                             Send this format
                           </p>
                         </div>
-
                         <div
-                        // className={`h-5 w-5 rounded-full border-2 ${
-                        //   selectedInvoiceType === item.value
-                        //     ? "border-white bg-white"
-                        //     : "border-gray-300"
-                        // }`}
-                        />
+                          className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${
+                            selectedInvoiceType === item.value
+                              ? "border-white bg-white"
+                              : "border-gray-300"
+                          }`}
+                        >
+                          {selectedInvoiceType === item.value && (
+                            <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />
+                          )}
+                        </div>
                       </div>
                     </button>
                   ))}
                 </div>
 
-                {/* ── Action Buttons ─────────────────────── */}
-                <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                {/* ── Recipient info ── */}
+                {customerProfile?.email || invoice?.customerEmail ? (
+                  <div className="mt-4 flex items-center gap-2 bg-white rounded-xl border border-blue-100 px-4 py-2.5">
+                    <Mail size={14} className="text-blue-500 shrink-0" />
+                    <p className="text-sm text-gray-600">
+                      Will be sent to:{" "}
+                      <span className="font-semibold text-gray-800">
+                        {customerProfile?.email || invoice?.customerEmail}
+                      </span>
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mt-4 flex items-center gap-2 bg-red-50 rounded-xl border border-red-100 px-4 py-2.5">
+                    <p className="text-sm text-red-600">
+                      No customer email found — cannot send via email
+                    </p>
+                  </div>
+                )}
+
+                {/* ── Action Buttons ── */}
+                <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                  {/* Screenshot email — sends all 3 types individually */}
                   <button
-                    className="flex-1 rounded-2xl bg-blue-600 px-5 py-3.5 font-semibold text-white shadow-md transition-all hover:bg-blue-700 hover:shadow-lg cursor-pointer"
-                    onClick={() => {
-                      setIsSendInvoiceModalOpen(false);
-                      // handleResendInvoice(selectedInvoiceType);
-                    }}
+                    className="flex-1 rounded-2xl bg-blue-600 px-5 py-3.5 font-semibold text-white shadow-md transition-all hover:bg-blue-700 hover:shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    disabled={
+                      isSendingEmail ||
+                      !(customerProfile?.email || invoice?.customerEmail)
+                    }
+                    onClick={() =>
+                      handleSendInvoiceByEmail(selectedInvoiceType)
+                    }
                   >
-                    Send Selected Invoice
+                    {isSendingEmail ? (
+                      <>
+                        <svg
+                          className="animate-spin h-4 w-4 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8z"
+                          />
+                        </svg>
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Mail size={16} />
+                        Send{" "}
+                        {selectedInvoiceType === "proforma"
+                          ? "Proforma"
+                          : selectedInvoiceType === "invoice"
+                            ? "Invoice"
+                            : "Tax Invoice"}
+                      </>
+                    )}
                   </button>
 
+                  {/* Send all 3 formats */}
                   <button
-                    className="flex-1 rounded-2xl border border-gray-300 bg-white px-5 py-3.5 font-semibold text-gray-700 transition-all hover:bg-gray-50 cursor-pointer"
-                    onClick={() => {
+                    className="flex-1 rounded-2xl border border-gray-300 bg-white px-5 py-3.5 font-semibold text-gray-700 transition-all hover:bg-gray-50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={
+                      isSendingEmail ||
+                      !(customerProfile?.email || invoice?.customerEmail)
+                    }
+                    onClick={async () => {
                       setIsSendInvoiceModalOpen(false);
-                      toast("Bulk invoice emailing coming soon");
+                      setIsSendingEmail(true);
+                      const types: ("proforma" | "invoice" | "tax")[] = [
+                        "proforma",
+                        "invoice",
+                        "tax",
+                      ];
+                      for (const type of types) {
+                        try {
+                          await handleSendInvoiceByEmail(type);
+                        } catch {
+                          // individual errors already toasted inside handleSendInvoiceByEmail
+                        }
+                      }
+                      setIsSendingEmail(false);
                     }}
                   >
-                    Send All Invoices
+                    Send All 3 Formats
                   </button>
                 </div>
               </div>

@@ -5,29 +5,18 @@ import { usePathname } from "next/navigation";
 import { Flame, LayoutDashboard, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CurrencySelect from "@/components/dashboardComponents/CurrencySelect";
-import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchUserData } from "@/services/apiProfile";
-import { Customer } from "@/lib/types/customer";
 import { TimeRangeDropdown } from "@/components/dashboardComponents/overviewDash/TimeRangeDropdown";
-import { useStackId } from "recharts/types/cartesian/BarStack";
 
 const tabs = [
-  {
-    label: "Overview",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
+  { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
   {
     label: "Growth Tracker",
     href: "/dashboard/growth-tracker",
     icon: TrendingUp,
   },
-  {
-    label: "Heatmap",
-    href: "/dashboard/heatmap",
-    icon: Flame,
-  },
+  { label: "Heatmap", href: "/dashboard/heatmap", icon: Flame },
 ];
 
 export default function DashboardLayout({
@@ -36,38 +25,32 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const [activeTab, setActiveTab] = useState("Overview");
 
-  const {
-    data: profile,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data: profile, isLoading } = useQuery({
     queryKey: ["profile"],
     queryFn: fetchUserData,
   });
 
-  const userData = profile;
-  // console.log("User Profile:", userData);
-
   return (
-    <div className="p-3">
-      <div className="flex justify-between items-center w-full py-2">
-        <div className="py-4 px-7">
+    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+      {/* ── Header ── */}
+      <div className="max-w-7xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4">
+        <div>
           <h1 className="font-bold text-xl md:text-2xl truncate">
             Dashboard Overview
           </h1>
 
           {!isLoading && (
-            <p className="text-gray-500 text-sm md:text-base hidden sm:block">
-              Welcome back, {userData?.name}. Here&apos;s what&apos;s happening
+            <p className="text-sm text-gray-500 mt-0.5">
+              Welcome back, {profile?.name}. Here&lsquo;s what&lsquo;s happening
               with Rebuzz POS
             </p>
           )}
         </div>
-        <div className="mx-1 md:mx-3">
+
+        <div className="flex items-center gap-2">
           <Button
-            className="bg-blue-600 hover:bg-blue-700 px-6 py-3 text-white rounded-2xl"
+            className="flex items-center gap-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2"
             asChild
           >
             <Link href="/invoices/add">Create order</Link>
@@ -75,8 +58,9 @@ export default function DashboardLayout({
         </div>
       </div>
 
-      <div className="px-1 md:px-2 flex items-center justify-between border-b-2 py-2">
-        <div className="gap-1 md:gap-2 flex items-center">
+      {/* ── Tabs + TimeRange ── */}
+      <div className="flex items-center justify-between  pb-4 border-b border-gray-200">
+        <div className="flex items-center gap-2">
           {tabs.map(({ label, href, icon: Icon }) => (
             <Button
               key={href}
@@ -84,30 +68,28 @@ export default function DashboardLayout({
               variant={pathname === href ? "default" : "outline"}
               className={
                 pathname === href
-                  ? "bg-blue-600 text-white hover:bg-blue-700"
-                  : ""
+                  ? "bg-blue-600 text-white hover:bg-blue-700 rounded-lg"
+                  : "rounded-lg border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
               }
             >
               <Link href={href}>
-                <Icon className="md:mr-2 h-4 w-4 mr-1" />
-                <span className="text-[16px] hidden md:block ">{label}</span>
+                <Icon className="h-4 w-4 mr-1.5" />
+                <span className="text-sm hidden md:block">{label}</span>
               </Link>
             </Button>
           ))}
+        </div>
 
+        <div className="flex items-center gap-2">
           <div className="hidden md:block">
             <CurrencySelect />
           </div>
-        </div>
-        {/* 
-        {activeTab === "Overview" && ( */}
-        <div className="flex items-center gap-2">
           <TimeRangeDropdown />
         </div>
-        {/* )} */}
       </div>
 
-      {children}
+      {/* ── Content ── */}
+      <div>{children}</div>
     </div>
   );
 }

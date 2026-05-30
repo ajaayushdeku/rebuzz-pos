@@ -21,16 +21,19 @@ export const PUT = async (
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify(body), // forward payload as-is
       },
     );
 
     const result = await response.json();
-    return NextResponse.json(result, {
-      status: response.status,
-    });
+
+    if (!response.ok) {
+      console.error("Update ticket API error:", result);
+    }
+
+    return NextResponse.json(result, { status: response.status });
   } catch (error) {
-    console.error(error);
+    console.error("Update ticket route error:", error);
     return NextResponse.json(
       { error: "Failed to update ticket" },
       { status: 500 },
