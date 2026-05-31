@@ -66,7 +66,9 @@ const InvoicePreview = ({
     invoice.customerEmail ||
     "Guest";
 
-  const formattedDate = new Date(invoice.createdAt).toLocaleString(undefined, {
+  const formattedDate = new Date(
+    billData?.createdAt ? billData?.createdAt : invoice.createdAt,
+  ).toLocaleString(undefined, {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -74,16 +76,17 @@ const InvoicePreview = ({
     minute: "2-digit",
   });
 
-  const formattedCancelledDate = new Date(invoice.updatedAt).toLocaleString(
-    undefined,
-    {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    },
-  );
+  const formattedCancelledDate = new Date(
+    billData?.updatedAt ?? invoice.updatedAt,
+  ).toLocaleString(undefined, {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  console.log("Invoice Data:", billData?.createdAt);
 
   const calculatedTaxAmount = invoice.items.reduce((groupSum, group) => {
     const itemTax = group.item.reduce((sum, product) => {
@@ -95,8 +98,8 @@ const InvoicePreview = ({
     return groupSum + itemTax;
   }, 0);
 
-  const discountAmount = invoice.discount ?? 0;
-  const loyaltyRedeemedAmount = invoice.discountByPoints ?? 0;
+  const discountAmount = billData?.discount ?? invoice.discount ?? 0;
+  const loyaltyRedeemedAmount = billData?.discountByPoints ?? 0;
   const taxAmount = calculatedTaxAmount;
 
   // ─────────────────────────────────────────────
@@ -222,23 +225,23 @@ const InvoicePreview = ({
           </p>
         </div>
 
-        {/* Discount */}
-        {isTaxInvoice && discountAmount > 0 && (
-          <div className="flex justify-between">
-            <p className="text-gray-600">Discount</p>
+        {/* Discount
+        {isTaxInvoice && discountAmount > 0 && ( */}
+        <div className="flex justify-between">
+          <p className="text-gray-600">Discount</p>
 
-            <p className="text-blue-500">
-              − {currency.symbol} {discountAmount.toFixed(2)}
-            </p>
-          </div>
-        )}
+          <p className="text-blue-500">
+            − {currency.symbol} {discountAmount.toFixed(2) || 0}
+          </p>
+        </div>
+        {/* )} */}
 
         {/* Loyalty */}
         {loyaltyRedeemedAmount > 0 && (
           <div className="flex justify-between">
-            <p className="text-gray-600">Loyalty Redeemed</p>
+            <p className="text-gray-600">Discount By Points</p>
 
-            <p className="text-orange-500">
+            <p className="text-blue-500">
               − {currency.symbol} {loyaltyRedeemedAmount.toFixed(2)}
             </p>
           </div>
@@ -257,7 +260,9 @@ const InvoicePreview = ({
 
         {/* Total */}
         <div className="flex justify-between pt-2  border-gray-200">
-          <p className="font-bold text-base">Total Payable</p>
+          <p className="font-bold text-base">
+            {billData ? "Grand Total" : "Total Payable"}
+          </p>
 
           <p className="font-bold text-base">
             {currency.symbol} {Number(invoice.grandTotal).toFixed(2)}
@@ -287,7 +292,9 @@ const InvoicePreview = ({
             <p>Date: {formattedDate}</p>
 
             {billData?.status === "refunded" && (
-              <p>Date: {formattedCancelledDate}</p>
+              <p className="text-red-500 font-medium">
+                Date: {formattedCancelledDate}
+              </p>
             )}
           </div>
         </div>

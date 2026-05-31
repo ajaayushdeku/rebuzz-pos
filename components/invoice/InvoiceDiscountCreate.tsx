@@ -110,7 +110,7 @@ export default function InvoiceDiscountCreate({
                   </span>
                 </div>
 
-                <span className="text-red-500 font-medium">
+                <span className="text-blue-500 font-medium">
                   -${amount.toFixed(2)}
                 </span>
               </div>
@@ -130,7 +130,7 @@ export default function InvoiceDiscountCreate({
           </div>
 
           {discountAmount > 0 && (
-            <div className="flex justify-between gap-12 text-sm text-red-500">
+            <div className="flex justify-between gap-12 text-sm text-blue-500">
               <span>Discount</span>
               <span>-${discountAmount.toFixed(2)}</span>
             </div>

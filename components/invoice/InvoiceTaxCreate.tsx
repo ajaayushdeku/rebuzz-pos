@@ -317,7 +317,7 @@ export default function InvoiceTaxCreate({
           </div>
 
           {taxAmount > 0 && (
-            <div className="flex justify-between gap-12 text-sm text-blue-600">
+            <div className="flex justify-between gap-12 text-sm text-red-600">
               <span>Tax</span>
               <span>+${taxAmount.toFixed(2)}</span>
             </div>

@@ -40,6 +40,9 @@ export type Transaction = {
   isRefunded?: boolean;
   currentPoint?: number;
   totalPoints?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  discountByPoints?: number;
   // Only populated in detail response
   customer?: { name: string; email: string; phone: string } | null;
 };

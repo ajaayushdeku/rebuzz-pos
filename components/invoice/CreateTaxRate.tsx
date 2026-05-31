@@ -106,7 +106,10 @@ export const CreateTaxDialog = () => {
       }}
     >
       <DialogTrigger asChild>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2">
+        <Button
+          variant="outline"
+          className="flex items-center gap-2 border-dashed border-blue-400 text-blue-600 hover:bg-blue-50"
+        >
           <Plus className="h-4 w-4" />
           Create Tax
         </Button>
