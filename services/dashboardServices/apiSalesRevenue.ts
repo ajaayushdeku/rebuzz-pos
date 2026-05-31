@@ -7,9 +7,9 @@ import { SlowProduct } from "@/components/dashboardComponents/salesRevenue/slow-
 import { TopProduct } from "@/components/dashboardComponents/salesRevenue/top-product-columns";
 
 import {
-  mockRevenueVsProfit,
+  // mockRevenueVsProfit,
   mockSalesTrendData,
-  mockSlowProducts,
+  // mockSlowProducts,
   // mockTopProducts,
 } from "@/lib/mockData/mock-salesrevenue";
 import { cookies } from "next/headers";
@@ -85,18 +85,66 @@ export const getTopProducts = async (): Promise<TopProduct[]> => {
 };
 
 export async function getSlowProducts(): Promise<SlowProduct[]> {
-  //   const res = await fetch(
-  //     `${process.env.NEXT_PUBLIC_API_URL}/api/products/slowproducts`,
-  //     {
-  //       next: { revalidate: 300 },
-  //     },
-  //   );
-  //   if (!res.ok)
-  //     throw new Error(
-  //       "Failed to fetch slow products",
-  //     );
-  //   return res.json();
-  return mockSlowProducts;
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  const today = new Date().toISOString().split("T")[0];
+  const threeDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0];
+
+  // Fetch all products and sales data in parallel
+  const [productsRes, salesRes] = await Promise.all([
+    fetch(`${BASE}/business/products`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      next: { revalidate: 300 },
+    }),
+    fetch(
+      `${BASE}/business/report/salesByItem?startDate=${threeDaysAgo}&endDate=${today}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        next: { revalidate: 300 },
+      },
+    ),
+  ]);
+
+  // console.log(" Products:", productsRes);
+
+  if (!productsRes.ok)
+    throw new Error(`Failed to fetch products: ${productsRes.status}`);
+  if (!salesRes.ok)
+    throw new Error(`Failed to fetch sales: ${salesRes.status}`);
+
+  const productsJson = await productsRes.json();
+  const salesJson = await salesRes.json();
+
+  const allProducts: { _id: string; name: string; inStock: number }[] =
+    productsJson?.data?.products ?? [];
+  const salesItems: { itemName: string }[] = salesJson?.data ?? [];
+
+  // Build a set of product names that had sales in the last 3 days
+  const soldNames = new Set<string>();
+  salesItems.forEach((item) => soldNames.add(item.itemName));
+
+  // Return products that had NO sales (exceptions) — these are slow-moving
+  return allProducts
+    .filter(
+      (product) =>
+        !soldNames.has(product.name) &&
+        product.name.toLowerCase() !== "customer" &&
+        product.name.toLowerCase() !== "custom",
+    )
+    .map((product) => ({
+      name: product.name,
+      days: 3,
+      stockAmount: product.inStock ?? 0,
+    }));
 }
 
 const RANGE_DAYS: Record<DateRange, number> = {

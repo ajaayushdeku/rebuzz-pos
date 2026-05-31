@@ -24,7 +24,7 @@ export const fetchLoyaltyPointSettings =
     if (!res.ok) throw new Error("Failed to fetch loyalty point settings");
 
     const json = await res.json();
-    console.log("Loyalty Points:", json);
+    // console.log("Loyalty Points:", json);
 
     return json;
   };

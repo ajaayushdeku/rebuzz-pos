@@ -13,7 +13,7 @@ import {
 
 export default async function Page() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mt-6">
       <ChartErrorBoundary>
         <Suspense fallback={<ChartSkeleton />}>
           <RevenueVsProfitChartWrapper />

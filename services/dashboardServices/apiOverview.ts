@@ -136,10 +136,6 @@ export const getTopProducts = async (): Promise<TopProduct[]> => {
 
   // console.log("Start Date:", startDate);
   // console.log("End Date:", endDate);
-  // Dynamic date range — last 7 days
-  // const startDate = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)
-  //   .toISOString()
-  //   .split("T")[0];
 
   const res = await fetch(
     `${BASE}/business/report/salesByItem?startDate=${startDate}&endDate=${endDate}`,
@@ -216,10 +212,15 @@ export const getWeeklyRevenueData = async (): Promise<DataPoint[]> => {
 
   const { startDate, endDate } = getWeekDateRange();
 
+  // console.log("Fetching Weekly Revenue Data with Start Date:", startDate);
+  // console.log("Fetching Weekly Revenue Data with End Date:", endDate);
+
   const url = new URL(`${BASE}/business/report`);
   url.searchParams.set("startDate", startDate);
   url.searchParams.set("endDate", endDate);
   url.searchParams.set("limit", "25");
+
+  // console.log("Constructed URL for Weekly Revenue:", url.toString());
 
   const res = await fetch(url.toString(), {
     headers: {
@@ -232,6 +233,7 @@ export const getWeeklyRevenueData = async (): Promise<DataPoint[]> => {
   if (!res.ok) throw new Error("Failed to fetch weekly revenue");
 
   const json = await res.json();
+  // console.log("Weekly Revenue Report:", json);
 
   const bills: RawBill[] = json?.data?.report?.allBills ?? [];
   // console.log("BIlls:", bills);

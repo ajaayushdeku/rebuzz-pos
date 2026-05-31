@@ -1,27 +1,129 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, ChevronDown, ChevronUp, ArrowUpDown } from "lucide-react";
+import {
+  Search,
+  ChevronDown,
+  ChevronUp,
+  ArrowUpDown,
+  RotateCcw,
+  Loader2,
+} from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { Transaction } from "./transaction-columns";
 import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
 import TransactionDetailModal from "./TransactionDetailModal";
 import { statusStyles, paymentMethods } from "@/lib/config/transaction";
 import { formatCurrency } from "@/utils/helper";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
+// ── Refund confirmation modal ─────────────────────────────────────────────
+
+function RefundModal({
+  open,
+  transaction,
+  onClose,
+  onConfirm,
+  isRefunding,
+}: {
+  open: boolean;
+  transaction: Transaction | null;
+  onClose: () => void;
+  onConfirm: () => void;
+  isRefunding: boolean;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <div className="mx-auto w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mb-2">
+            <RotateCcw className="h-5 w-5 text-orange-600" />
+          </div>
+          <DialogTitle className="text-center text-base font-semibold">
+            Refund Transaction
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="text-center space-y-1 py-1">
+          <p className="text-sm text-gray-600">
+            Are you sure you want to refund{" "}
+            <span className="font-semibold text-gray-900">
+              {transaction?.id}
+            </span>
+            ?
+          </p>
+          {transaction && (
+            <p className="text-xs text-gray-400">
+              Customer: {transaction.invoiceName || "—"} · {transaction.amount}
+            </p>
+          )}
+          <p className="text-xs text-orange-600 bg-orange-50 border border-orange-100 rounded-lg px-3 py-2 mt-2">
+            This action cannot be undone.
+          </p>
+        </div>
+
+        <DialogFooter className="gap-2">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={isRefunding}
+            className="text-sm rounded-lg flex-1"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={onConfirm}
+            disabled={isRefunding}
+            className="bg-orange-500 hover:bg-orange-600 text-white text-sm rounded-lg flex-1"
+          >
+            {isRefunding ? (
+              <span className="flex items-center gap-1.5">
+                <Loader2 size={13} className="animate-spin" />
+                Refunding...
+              </span>
+            ) : (
+              "Confirm Refund"
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Main table ────────────────────────────────────────────────────────────
+
 export default function Transactions({
-  transactions,
+  transactions: initialTransactions,
 }: {
   transactions: Transaction[];
 }) {
+  const router = useRouter();
   const { currency } = useCurrency();
+
+  // Local copy so we can optimistically update status
+  const [transactions, setTransactions] =
+    useState<Transaction[]>(initialTransactions);
 
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+
+  const [refundTarget, setRefundTarget] = useState<Transaction | null>(null);
+  const [isRefunding, setIsRefunding] = useState(false);
+
   const [search, setSearch] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [page, setPage] = useState(0);
@@ -29,20 +131,43 @@ export default function Transactions({
   const [paymentFilter, setPaymentFilter] = useState<string>("all");
   const pageSize = 10;
 
-  const handleRowClick = async (row: Transaction) => {
-    const invoiceNo = parseInt(row.id.replace("ORD-", ""), 10);
-    setModalOpen(true);
-    setIsLoadingDetail(true);
+  // ── Refund handler ──────────────────────────────────────────────────────
+
+  const handleRefund = async () => {
+    if (!refundTarget) return;
+
+    const invoiceNo = refundTarget.invoiceNo;
+    setIsRefunding(true);
 
     try {
-      const detail = await getTransactionDetail(invoiceNo);
-      setSelectedTransaction(detail);
+      const res = await fetch(`/api/tickets/${invoiceNo}/refund`, {
+        method: "POST",
+      });
+      const result = await res.json();
+
+      if (!res.ok || result.status !== "success") {
+        throw new Error(result.message || "Refund failed");
+      }
+
+      // ── Optimistically update status in local state ─────────────────────
+      setTransactions((prev) =>
+        prev.map((t) =>
+          t.invoiceNo === invoiceNo ? { ...t, status: "refunded" } : t,
+        ),
+      );
+
+      toast.success(`Order ${refundTarget.id} refunded successfully`);
+      setRefundTarget(null);
     } catch (err) {
-      console.error("Failed to load transaction detail:", err);
+      toast.error(
+        err instanceof Error ? err.message : "Failed to refund transaction",
+      );
     } finally {
-      setIsLoadingDetail(false);
+      setIsRefunding(false);
     }
   };
+
+  // ── Filters + sort ──────────────────────────────────────────────────────
 
   const filtered = useMemo(() => {
     let result = transactions;
@@ -66,10 +191,8 @@ export default function Transactions({
   const sorted = useMemo(() => {
     if (!sortConfig) return filtered;
     return [...filtered].sort((a, b) => {
-      const aRaw = (a as Record<string, unknown>)[sortConfig.key];
-      const bRaw = (b as Record<string, unknown>)[sortConfig.key];
-      const aVal = String(aRaw ?? "");
-      const bVal = String(bRaw ?? "");
+      const aVal = String((a as Record<string, unknown>)[sortConfig.key] ?? "");
+      const bVal = String((b as Record<string, unknown>)[sortConfig.key] ?? "");
       const cmp = aVal.localeCompare(bVal, undefined, { numeric: true });
       return sortConfig.direction === "asc" ? cmp : -cmp;
     });
@@ -190,13 +313,17 @@ export default function Transactions({
                 </span>
               </th>
               <th className="text-center pb-3 pt-3 px-4 font-medium">Status</th>
+              {/* ── New actions column ── */}
+              <th className="text-center pb-3 pt-3 px-4 font-medium">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
             {paged.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={8}
                   className="text-center py-12 text-sm text-gray-400"
                 >
                   No transactions found
@@ -204,12 +331,19 @@ export default function Transactions({
               </tr>
             ) : (
               paged.map((transaction, idx) => {
-                const s = statusStyles[transaction.status];
-                const p = paymentMethods[transaction.paymentMethod];
+                const s =
+                  statusStyles[transaction.status] ?? statusStyles["pending"];
+                const p =
+                  paymentMethods[transaction.paymentMethod] ??
+                  paymentMethods["Cash"];
+                const isRefunded = transaction.status === "refunded";
+
                 return (
                   <tr
                     key={transaction.id}
-                    onClick={() => handleRowClick(transaction)}
+                    onClick={() =>
+                      router.push(`/invoices/${transaction?.invoiceNo}`)
+                    }
                     className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
                   >
                     <td className="py-3 px-4 text-gray-400 text-xs">
@@ -233,6 +367,7 @@ export default function Transactions({
                         {transaction.invoiceName || "—"}
                       </span>
                     </td>
+
                     <td className="py-3 px-4 text-center">
                       <span
                         className={`${p.badge} ${p.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
@@ -240,15 +375,38 @@ export default function Transactions({
                         {transaction.paymentMethod}
                       </span>
                     </td>
+
                     <td className="py-3 px-4 text-right font-semibold text-gray-900">
                       {formatCurrency(Number(transaction.amount), currency)}
                     </td>
+
                     <td className="py-3 px-4 text-center">
                       <span
                         className={`${s.badge} ${s.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
                       >
                         {transaction.status}
                       </span>
+                    </td>
+
+                    {/* ── Actions cell ── */}
+                    <td
+                      className="py-3 px-4 text-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {isRefunded ? (
+                        <span className="text-xs text-gray-400 italic">
+                          Refunded
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => setRefundTarget(transaction)}
+                          title="Refund this transaction"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-lg transition-colors"
+                        >
+                          <RotateCcw size={12} />
+                          Refund
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
@@ -290,6 +448,15 @@ export default function Transactions({
         transaction={selectedTransaction}
         isLoading={isLoadingDetail}
         currency={currency}
+      />
+
+      {/* Refund confirmation modal */}
+      <RefundModal
+        open={!!refundTarget}
+        transaction={refundTarget}
+        onClose={() => setRefundTarget(null)}
+        onConfirm={handleRefund}
+        isRefunding={isRefunding}
       />
     </div>
   );

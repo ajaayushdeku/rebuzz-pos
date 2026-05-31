@@ -65,7 +65,7 @@ export function getBarPercent(item: InventoryItem): number {
   if (!item.usesStocks) return 0;
 
   // reference stock level
-  const reference = item.lowStock * 20;
+  const reference = 1000;
 
   if (reference <= 0) return 0;
 

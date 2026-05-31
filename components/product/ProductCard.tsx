@@ -98,7 +98,7 @@ export default function ProductCard({ item }: { item: InventoryItem }) {
             <span className="text-3xl font-bold text-gray-900">
               {item.inStock.toLocaleString()}
             </span>
-            <span className="text-sm text-gray-400">units</span>
+            <span className="text-sm text-gray-400">units remain</span>
           </div>
         ) : (
           <div className="flex items-center gap-1.5">
@@ -128,6 +128,8 @@ export default function ProductCard({ item }: { item: InventoryItem }) {
                   : `Threshold: ${item.lowStock} units`}
             </p>
 
+            <p className={`text-xs font-medium ${cfg.text}`}>Max (1000)</p>
+
             {item.orderedCount > 0 && (
               <div className="flex items-center gap-0.5 text-xs text-blue-500">
                 <TrendingUp size={11} />
@@ -142,7 +144,7 @@ export default function ProductCard({ item }: { item: InventoryItem }) {
       <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
         <span className="text-xs text-gray-400">
           Cost:{" "}
-          <span className="font-medium text-gray-600">Rs {item.costPrice}</span>
+          <span className="font-medium text-gray-600">${item.costPrice}</span>
         </span>
         <div className="flex items-center gap-2">
           {item.isTaxable && (

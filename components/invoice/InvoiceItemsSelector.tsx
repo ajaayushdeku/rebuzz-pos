@@ -176,30 +176,56 @@ export default function InvoiceItemsSelector({
                         </CommandEmpty>
 
                         <CommandGroup>
-                          {products.map((product) => (
-                            <CommandItem
-                              key={product.id}
-                              value={product.name}
-                              onSelect={() =>
-                                handleProductSelect(item.id, product.name)
+                          {products
+                            .filter((product) => {
+                              // Hide products with zero stock (if stock tracking is enabled)
+                              if (
+                                product.usesStocks &&
+                                product.inStock !== undefined
+                              ) {
+                                return product.inStock > 0;
                               }
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  item.name === product.name
-                                    ? "opacity-100"
-                                    : "opacity-0",
-                                )}
-                              />
-                              <div className="flex flex-col">
-                                <span>{product.name}</span>
-                                <span className="text-xs text-muted-foreground">
-                                  ${product.price}
-                                </span>
-                              </div>
-                            </CommandItem>
-                          ))}
+                              return true;
+                            })
+                            .map((product) => {
+                              const isLowStock =
+                                product.usesStocks &&
+                                product.inStock !== undefined &&
+                                product.lowStock !== undefined &&
+                                product.inStock > 0 &&
+                                product.inStock <= product.lowStock;
+                              return (
+                                <CommandItem
+                                  key={product.id}
+                                  value={product.name}
+                                  onSelect={() =>
+                                    handleProductSelect(item.id, product.name)
+                                  }
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      item.name === product.name
+                                        ? "opacity-100"
+                                        : "opacity-0",
+                                    )}
+                                  />
+                                  <div className="flex flex-col flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <span>{product.name}</span>
+                                      {isLowStock && (
+                                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200 font-medium whitespace-nowrap">
+                                          Low Stock
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className="text-xs text-muted-foreground">
+                                      ${product.price}
+                                    </span>
+                                  </div>
+                                </CommandItem>
+                              );
+                            })}
                         </CommandGroup>
                       </CommandList>
                     </Command>
@@ -501,6 +527,7 @@ export default function InvoiceItemsSelector({
                       productId: result.id,
                       price: result.price,
                       description: result.description,
+                      isTaxable: result.isTaxable,
                     }
                   : item,
               ),

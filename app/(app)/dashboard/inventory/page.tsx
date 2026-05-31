@@ -12,7 +12,7 @@ export default function InventoryPage() {
   const { data: inventory, isLoading, error } = useInventoryQuery();
   const { data: sales } = useSalesByItemQuery();
 
-  // console.log("Sales:", sales);
+  // console.log("Inventory:", inventory);
 
   if (isLoading) {
     return (

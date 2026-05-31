@@ -377,79 +377,85 @@ export default function ProductFormModal({
 
             {/* Stock fields — shown only when usesStocks is true */}
             {form.usesStocks && (
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <div>
-                  <Label className="text-xs text-gray-500 mb-1.5 block">
-                    In stock
-                  </Label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.inStock}
-                    onChange={(e) => {
-                      set("inStock", Number(e.target.value));
-                      if (form.lowStock > Number(e.target.value)) {
-                        setErrors((prev) => ({
-                          ...prev,
-                          lowStock: "Low stock cannot exceed in stock.",
-                        }));
-                      } else {
-                        setErrors((prev) => ({
-                          ...prev,
-                          lowStock: undefined,
-                        }));
-                      }
-                    }}
-                    className={errors.inStock ? inputErrorClass : inputClass}
-                    placeholder="e.g. 50"
-                  />
-                  {errors.inStock && (
-                    <p className="text-xs text-red-500 mt-1">
-                      {errors.inStock}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <Label className="text-xs text-gray-500 mb-1.5 block">
-                    Low stock threshold
-                  </Label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.lowStock}
-                    onChange={(e) => {
-                      const val = Number(e.target.value);
-                      set("lowStock", val);
-                      if (val > form.inStock) {
-                        setErrors((prev) => ({
-                          ...prev,
-                          lowStock: "Low stock cannot exceed in stock.",
-                        }));
-                      } else {
-                        setErrors((prev) => ({
-                          ...prev,
-                          lowStock: undefined,
-                        }));
-                      }
-                    }}
-                    className={`${errors.lowStock ? inputErrorClass : inputClass} ${
-                      form.lowStock > 0 &&
-                      form.lowStock <= form.inStock &&
-                      form.lowStock <= 5
-                        ? "border-amber-300 focus:ring-amber-400"
-                        : ""
-                    }`}
-                    placeholder="e.g. 5"
-                  />
-                  {errors.lowStock ? (
-                    <p className="text-xs text-red-500 mt-1">
-                      {errors.lowStock}
-                    </p>
-                  ) : form.lowStock > 0 && form.lowStock <= 5 ? (
-                    <p className="text-xs text-amber-500 mt-1">
-                      ⚠ Alert triggers when stock reaches this level
-                    </p>
-                  ) : null}
+              <div className="space-y-3">
+                <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                  ⓘ In the inventory page, the maximum stock threshold for all
+                  products is set to 1,000 units.
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs text-gray-500 mb-1.5 block">
+                      In stock
+                    </Label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={form.inStock}
+                      onChange={(e) => {
+                        set("inStock", Number(e.target.value));
+                        if (form.lowStock > Number(e.target.value)) {
+                          setErrors((prev) => ({
+                            ...prev,
+                            lowStock: "Low stock cannot exceed in stock.",
+                          }));
+                        } else {
+                          setErrors((prev) => ({
+                            ...prev,
+                            lowStock: undefined,
+                          }));
+                        }
+                      }}
+                      className={errors.inStock ? inputErrorClass : inputClass}
+                      placeholder="e.g. 50"
+                    />
+                    {errors.inStock && (
+                      <p className="text-xs text-red-500 mt-1">
+                        {errors.inStock}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-500 mb-1.5 block">
+                      Low stock threshold
+                    </Label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={form.lowStock}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        set("lowStock", val);
+                        if (val > form.inStock) {
+                          setErrors((prev) => ({
+                            ...prev,
+                            lowStock: "Low stock cannot exceed in stock.",
+                          }));
+                        } else {
+                          setErrors((prev) => ({
+                            ...prev,
+                            lowStock: undefined,
+                          }));
+                        }
+                      }}
+                      className={`${errors.lowStock ? inputErrorClass : inputClass} ${
+                        form.lowStock > 0 &&
+                        form.lowStock <= form.inStock &&
+                        form.lowStock <= 5
+                          ? "border-amber-300 focus:ring-amber-400"
+                          : ""
+                      }`}
+                      placeholder="e.g. 5"
+                    />
+                    {errors.lowStock ? (
+                      <p className="text-xs text-red-500 mt-1">
+                        {errors.lowStock}
+                      </p>
+                    ) : form.lowStock > 0 && form.lowStock <= 5 ? (
+                      <p className="text-xs text-amber-500 mt-1">
+                        ⚠ Alert triggers when stock reaches this level
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             )}

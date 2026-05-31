@@ -37,6 +37,9 @@ export type Transaction = {
   qrAmount?: number;
   invoiceNo?: number;
   billNo?: number;
+  isRefunded?: boolean;
+  currentPoint?: number;
+  totalPoints?: number;
   // Only populated in detail response
   customer?: { name: string; email: string; phone: string } | null;
 };

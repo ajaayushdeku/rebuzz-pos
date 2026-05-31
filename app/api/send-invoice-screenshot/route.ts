@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { sendInvoiceScreenshotEmail } from "@/lib/email";
+import { resend } from "@/lib/resend";
 
 export async function POST(request: Request) {
   try {
-    const { to, subject, html, imageBase64, invoiceNumber } =
+    const { to, subject, imageBase64, invoiceNumber, businessName } =
       await request.json();
 
     if (!to) {
@@ -15,34 +15,44 @@ export async function POST(request: Request) {
 
     if (!imageBase64) {
       return NextResponse.json(
-        { error: "Invoice screenshot image is required" },
+        { error: "Invoice image is required" },
         { status: 400 },
       );
     }
 
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    if (!process.env.RESEND_API_KEY) {
       return NextResponse.json(
-        {
-          error: "Email server not configured (EMAIL_USER/EMAIL_PASS env vars)",
-        },
+        { error: "RESEND_API_KEY is not configured" },
         { status: 500 },
       );
     }
 
-    await sendInvoiceScreenshotEmail({
-      to,
-      subject: subject || `Invoice #${invoiceNumber} from Rebuzz POS`,
-      html: html || getDefaultHtml({ invoiceNumber, imageBase64 }),
-      imageBase64,
-      invoiceNumber: invoiceNumber || "unknown",
+    // Strip the data:image/png;base64, prefix
+    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
+
+    const { data, error } = await resend.emails.send({
+      from: `${businessName ?? "Rebuzz POS"} <onboarding@resend.dev>`,
+      // ↑ Use your verified domain in production:
+      // from: `${businessName} <invoices@yourdomain.com>`,
+      to: [to],
+      subject: subject ?? `Invoice #${invoiceNumber}`,
+      html: getEmailHtml({ invoiceNumber, businessName }),
+      attachments: [
+        {
+          filename: `Invoice-${invoiceNumber}.png`,
+          content: base64Data,
+        },
+      ],
     });
 
-    return NextResponse.json({
-      success: true,
-      message: "Invoice sent successfully!",
-    });
+    if (error) {
+      console.error("Resend error:", error);
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    return NextResponse.json({ success: true, id: data?.id });
   } catch (error) {
-    console.error("Failed to send invoice screenshot:", error);
+    console.error("Send invoice error:", error);
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Failed to send email",
@@ -52,38 +62,69 @@ export async function POST(request: Request) {
   }
 }
 
-function getDefaultHtml({
+function getEmailHtml({
   invoiceNumber,
+  businessName,
 }: {
   invoiceNumber: string;
-  imageBase64: string;
+  businessName?: string;
 }) {
   return `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: linear-gradient(135deg, #2563eb, #1d4ed8); padding: 24px; border-radius: 12px; margin-bottom: 24px;">
-        <h1 style="color: white; margin: 0; font-size: 24px;">Invoice #${invoiceNumber}</h1>
-        <p style="color: #bfdbfe; margin: 8px 0 0 0;">From Rebuzz POS</p>
-      </div>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invoice #${invoiceNumber}</title>
+</head>
+<body style="margin:0;padding:0;background:#f9fafb;font-family:Arial,sans-serif;">
 
-      <p style="color: #374151; font-size: 15px; line-height: 1.6;">
-        Please find your invoice attached below. You can view the invoice details
-        directly in this email or download the image for your records.
-      </p>
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
 
-      <div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 8px; margin: 16px 0; background: #f9fafb;">
-        <img
-          src="cid:invoice-screenshot"
-          alt="Invoice #${invoiceNumber}"
-          style="width: 100%; border-radius: 8px; display: block;"
-        />
-      </div>
+          <!-- Header -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#2563eb,#1d4ed8);padding:28px 32px;border-radius:16px 16px 0 0;">
+              <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">
+                Invoice #${invoiceNumber}
+              </h1>
+              <p style="margin:6px 0 0;color:#bfdbfe;font-size:14px;">
+                From ${businessName ?? "Rebuzz POS"}
+              </p>
+            </td>
+          </tr>
 
-      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <!-- Body -->
+          <tr>
+            <td style="background:#ffffff;padding:28px 32px;">
+              <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.6;">
+                Please find your invoice attached to this email as an image.
+                You can also download it for your records.
+              </p>
+              <p style="margin:0;color:#6b7280;font-size:14px;line-height:1.6;">
+                If you have any questions about this invoice, please contact us
+                directly.
+              </p>
+            </td>
+          </tr>
 
-      <p style="color: #6b7280; font-size: 12px; text-align: center;">
-        This invoice was sent from Rebuzz POS. If you have any questions, please
-        contact the sender directly.
-      </p>
-    </div>
+          <!-- Footer -->
+          <tr>
+            <td style="background:#f3f4f6;padding:20px 32px;border-radius:0 0 16px 16px;text-align:center;">
+              <p style="margin:0;color:#9ca3af;font-size:12px;">
+                Sent via Rebuzz POS · ${businessName ?? ""}
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
   `;
 }

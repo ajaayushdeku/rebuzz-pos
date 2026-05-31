@@ -126,7 +126,7 @@ export async function fetchSalesByItem(): Promise<MergedSalesItem[]> {
     return acc;
   }, {});
 
-  console.log("Total Sales:", merged);
+  // console.log("Total Sales:", merged);
 
   return Object.entries(merged)
     .sort(([, a], [, b]) => b.count - a.count)

@@ -27,7 +27,7 @@ export default function PublicPreviewPage({ type }: { type: InvoiceType }) {
   });
 
   const invoice = data?.data?.Tickets;
-  console.log("Invoice Data:", invoice);
+  // console.log("Invoice Data:", invoice);
 
   const { data: customerData, isLoading: isCustomerLoading } = useQuery({
     queryKey: ["customer-lookup", invoice?.phoneNumber, invoice?.customerEmail],
@@ -40,7 +40,7 @@ export default function PublicPreviewPage({ type }: { type: InvoiceType }) {
         : `email=${invoice.customerEmail}`;
       const response = await fetch(`/api/customers/lookup?${query}`);
       const result = await response.json();
-      console.log(result);
+      // console.log(result);
       return result?.data?.users?.[0] || null;
     },
     enabled: !!invoice,
@@ -57,6 +57,8 @@ export default function PublicPreviewPage({ type }: { type: InvoiceType }) {
     enabled: !!invoice?.invoice,
     retry: false,
   });
+
+  // console.log("Bill Data:", billData);
 
   if (invLoading || bizLoading || billLoading)
     return (

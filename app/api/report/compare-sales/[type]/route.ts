@@ -55,7 +55,7 @@ export async function GET(
 
     const data = await res.json();
 
-    console.log("Compare Data:", data);
+    // console.log("Compare Data:", data);
 
     return NextResponse.json(data, {
       status: res.status,

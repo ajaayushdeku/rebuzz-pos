@@ -23,7 +23,7 @@ export async function createProduct(productData: any): Promise<Product> {
   if (!res.ok) throw new Error("Failed to create product");
 
   const result = await res.json();
-  console.log("Raw create product response:", result.data.products);
+  // console.log("Raw create product response:", result.data.products);
   return mapRawProductToProduct(result.data.products);
 }
 

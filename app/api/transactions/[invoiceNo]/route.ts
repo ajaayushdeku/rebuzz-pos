@@ -15,7 +15,7 @@ export const GET = async (
 
   const data = await res.json();
 
-  console.log("BILL DATA:", data);
+  // console.log("BILL DATA:", data);
 
   if (!res.ok) {
     return NextResponse.json(

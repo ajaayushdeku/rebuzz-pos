@@ -8,7 +8,7 @@ export const PUT = async (
   { params }: { params: Promise<{ invoice: string }> },
 ) => {
   const { invoice } = await params;
-  console.log(invoice);
+  // console.log(invoice);
 
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;

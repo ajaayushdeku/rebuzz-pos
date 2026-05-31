@@ -77,6 +77,7 @@ export default function InvoiceDetailPage() {
   );
   const [discountError, setDiscountError] = useState("");
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [isRecordingPayment, setIsRecordingPayment] = useState(false);
 
   const handleDownloadPDF = async (
     ref: React.RefObject<HTMLDivElement | null>,
@@ -149,14 +150,14 @@ export default function InvoiceDetailPage() {
         : `email=${invoice.customerEmail}`;
       const response = await fetch(`/api/customers/lookup?${query}`);
       const result = await response.json();
-      console.log(result);
+      // console.log(result);
       return result?.data?.users?.[0] || null;
     },
     enabled: !!invoice,
   });
 
   const customerProfile = customerData;
-  console.log("CUstomer Profile:", customerProfile);
+  // console.log("CUstomer Profile:", customerProfile);
 
   // Fetch bill/transaction data — works for paid invoices (404 for unpaid is handled silently)
   const { data: billDataQuery } = useQuery({
@@ -277,7 +278,8 @@ export default function InvoiceDetailPage() {
   };
 
   const handleRecordPayment = async () => {
-    if (discountError || redeemError) return;
+    if (discountError || redeemError || isRecordingPayment) return;
+    setIsRecordingPayment(true);
 
     const formattedDate = new Date()
       .toISOString()
@@ -341,6 +343,7 @@ export default function InvoiceDetailPage() {
             "Payment recorded but failed to redeem loyalty points. Please contact support.",
           );
           console.error("Redeem failed:", redeemResult);
+          setIsRecordingPayment(false);
           setIsPaymentModalOpen(false);
           queryClient.invalidateQueries({ queryKey: ["ticket", id] });
           return;
@@ -366,6 +369,8 @@ export default function InvoiceDetailPage() {
     } catch (error) {
       console.error("Fetch Error:", error);
       toast.error("Network error. Please try again.");
+    } finally {
+      setIsRecordingPayment(false);
     }
   };
 
@@ -488,13 +493,9 @@ export default function InvoiceDetailPage() {
       return;
     }
 
-    setIsSendingEmail(true);
-    setIsSendInvoiceModalOpen(false);
-
-    // Make sure the correct invoice type is visible before capture
     setInvoiceType(type);
 
-    // Small delay to let the DOM update before capturing
+    // Wait for DOM to render the correct invoice type
     await new Promise((r) => setTimeout(r, 200));
 
     try {
@@ -502,14 +503,15 @@ export default function InvoiceDetailPage() {
         element: ref.current,
         to: recipientEmail,
         invoiceNumber: String(invoice.invoice),
-        subject: `${labelMap[type]} #${invoice.invoice} from ${business?.businessName ?? "Rebuzz POS"}`,
+        businessName: business?.businessName,
+        subject: `${labelMap[type]} #${invoice.invoice} — ${business?.businessName ?? "Rebuzz POS"}`,
       });
       toast.success(`${labelMap[type]} sent to ${recipientEmail}`);
     } catch (err) {
       console.error("Email send error:", err);
-      toast.error("Failed to send invoice email");
-    } finally {
-      setIsSendingEmail(false);
+      toast.error(
+        err instanceof Error ? err.message : "Failed to send invoice email",
+      );
     }
   };
 
@@ -522,7 +524,7 @@ export default function InvoiceDetailPage() {
   }
 
   if (!isLoading && !invoice) {
-    console.log("API Response received but no Tickets found:", data);
+    // console.log("API Response received but no Tickets found:", data);
   }
   if (error || !invoice) {
     return (
@@ -551,7 +553,7 @@ export default function InvoiceDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top bar */}
-      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-200 px-8 py-3.5 flex items-center justify-between shadow-sm">
+      <div className="sticky top-0 z-30 bg-white/95  pb-4 border-b border-gray-200 px-8 py-4.5 flex items-center justify-between s">
         <div className="flex items-center gap-5">
           <button
             onClick={() => router.back()}
@@ -645,7 +647,7 @@ export default function InvoiceDetailPage() {
       </div>
 
       {/* Body */}
-      <div className="py-12 flex justify-center bg-white">
+      <div className="py-6 flex justify-center bg-white">
         <div className="w-full max-w-2xl">
           {/* Invoice meta row */}
           <div className="flex justify-between items-start mb-8">
@@ -1251,9 +1253,11 @@ export default function InvoiceDetailPage() {
                       isSendingEmail ||
                       !(customerProfile?.email || invoice?.customerEmail)
                     }
-                    onClick={() =>
-                      handleSendInvoiceByEmail(selectedInvoiceType)
-                    }
+                    onClick={async () => {
+                      setIsSendingEmail(true);
+                      await handleSendInvoiceByEmail(selectedInvoiceType);
+                      setIsSendingEmail(false);
+                    }}
                   >
                     {isSendingEmail ? (
                       <>
@@ -1299,7 +1303,6 @@ export default function InvoiceDetailPage() {
                       !(customerProfile?.email || invoice?.customerEmail)
                     }
                     onClick={async () => {
-                      setIsSendInvoiceModalOpen(false);
                       setIsSendingEmail(true);
                       const types: ("proforma" | "invoice" | "tax")[] = [
                         "proforma",
@@ -1595,11 +1598,40 @@ export default function InvoiceDetailPage() {
             <div className="px-6 pb-6">
               <button
                 onClick={handleRecordPayment}
-                disabled={!!discountError || !!redeemError}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-200"
+                disabled={
+                  !!discountError || !!redeemError || isRecordingPayment
+                }
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2"
               >
-                Confirm & Pay {currency.symbol}
-                {finalPayable.toFixed(2)}
+                {isRecordingPayment ? (
+                  <>
+                    <svg
+                      className="animate-spin h-5 w-5 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v8z"
+                      />
+                    </svg>
+                    Processing Payment...
+                  </>
+                ) : (
+                  <>
+                    Confirm & Pay {currency.symbol}
+                    {finalPayable.toFixed(2)}
+                  </>
+                )}
               </button>
             </div>
           </div>

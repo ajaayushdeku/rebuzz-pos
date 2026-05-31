@@ -223,15 +223,19 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                         ORD-{inv.invoice}
                       </span>
                     </td>
+
                     <td className="py-3 px-4 text-gray-600">
                       {inv.customer_name ?? "—"}
                     </td>
+
                     <td className="py-3 px-4 text-left font-semibold text-gray-900">
                       {formatCurrency(Number(inv.amount), currency)}
                     </td>
+
                     <td className="py-3 px-4 text-gray-500 text-xs">
                       {formatDatetime(inv.created_at)}
                     </td>
+
                     <td className="py-3 px-4 text-center">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border capitalize ${STATUS_STYLES[status] ?? "bg-gray-100 text-gray-600 border-gray-200"}`}

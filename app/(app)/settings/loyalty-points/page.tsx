@@ -97,7 +97,7 @@ export default function LoyaltyPointPage() {
           });
         }
 
-        console.log("Loyalty points:", data);
+        // console.log("Loyalty points:", data);
       } catch {
         toast.error("Failed to load loyalty point settings");
       } finally {
@@ -131,7 +131,7 @@ export default function LoyaltyPointPage() {
       if (settings) {
         // Settings already exist → use PUT to update
         const updated = await updateLoyaltyPointSettings(form);
-        console.log("Update Loyalty points:", updated);
+        // console.log("Update Loyalty points:", updated);
         setSettings(updated);
       } else {
         // No settings yet → use POST to create
@@ -139,7 +139,7 @@ export default function LoyaltyPointPage() {
           ...form,
           businessName: business?.businessName ?? "Default",
         });
-        console.log("Created Loyalty points:", created);
+        // console.log("Created Loyalty points:", created);
         setSettings(created);
       }
       toast.success("Loyalty point settings saved");

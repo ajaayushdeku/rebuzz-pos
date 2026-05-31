@@ -31,6 +31,7 @@ interface InvoiceData {
 interface CustomerProfile {
   name?: string;
   loyaltyPoint?: number;
+  customerPan?: string;
 }
 
 interface BusinessProfile {
@@ -73,6 +74,17 @@ const InvoicePreview = ({
     minute: "2-digit",
   });
 
+  const formattedCancelledDate = new Date(invoice.updatedAt).toLocaleString(
+    undefined,
+    {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    },
+  );
+
   const calculatedTaxAmount = invoice.items.reduce((groupSum, group) => {
     const itemTax = group.item.reduce((sum, product) => {
       return (
@@ -109,11 +121,11 @@ const InvoicePreview = ({
       <div className="text-center mb-10">
         <h1 className="text-4xl font-bold tracking-tight">{invoiceTitle}</h1>
 
-        {isProforma && (
+        {/* {isProforma && (
           <p className="text-sm text-gray-500 mt-2">
             This is an estimated invoice and not a final tax invoice.
           </p>
-        )}
+        )} */}
       </div>
 
       {/* ───────────────── Business Info ───────────────── */}
@@ -136,16 +148,9 @@ const InvoicePreview = ({
             {businessProfile?.address || "Nepal"}
           </p>
 
-          {/* Show PAN only for tax invoice */}
-          {isTaxInvoice && (
-            <p className="text-sm mt-1 text-gray-600">
-              PAN No: {businessProfile?.panNumber || "609699393"}
-            </p>
-          )}
-
-          {/* Invoice number */}
-          <p className="text-sm mt-1 text-gray-500">
-            Invoice: #{invoice.invoice}
+          {/* Business PAN — shown for all invoice types, replaces invoice number */}
+          <p className="text-sm mt-1 text-black-600">
+            PAN: {businessProfile?.panNumber || "609699393"}
           </p>
         </div>
       </div>
@@ -154,7 +159,7 @@ const InvoicePreview = ({
 
       {/* ───────────────── Customer Info ───────────────── */}
       <div className="mb-6">
-        <h3 className="font-bold text-lg mb-3">Client Info</h3>
+        <h3 className="font-bold text-lg mb-1">Client Info</h3>
 
         <div className="space-y-1 text-sm">
           <p>
@@ -171,25 +176,35 @@ const InvoicePreview = ({
               <span className="font-medium">Phone:</span> {invoice.phoneNumber}
             </p>
           )}
+
+          <p>
+            <span className="font-medium">Tax ID:</span>{" "}
+            {customerProfile?.customerPan || "N/A"}
+          </p>
         </div>
       </div>
 
-      <div className="border-b border-gray-300 mb-5" />
+      <div className="border-b border-gray-300 mb-3" />
 
       {/* ───────────────── Meta Info ───────────────── */}
-      <div className="flex justify-between items-center text-sm mb-5">
+      <div className="flex justify-between items-center text-sm mb-3">
         <div>
           <p className="font-medium underline">{customerName}</p>
         </div>
 
-        <div className="text-right text-gray-600">
-          <p>Date: {formattedDate}</p>
-
-          {/* {isTaxInvoice && <p className="mt-1">Tax Type: VAT Included</p>} */}
-        </div>
+        {billData ? (
+          <>
+            <p>Invoice No: {billData.invoiceNo || invoice.invoice}</p>
+            <p className="mt-1">Bill No: {billData.billNo || "N/A"}</p>
+          </>
+        ) : (
+          <div className="text-right text-gray-600">
+            <p>Date: {formattedDate}</p>
+          </div>
+        )}
       </div>
 
-      <div className="border-b border-gray-300 mb-6" />
+      <div className="border-b border-gray-300 mb-3" />
 
       {/* ───────────────── Items Table ───────────────── */}
       <InvoiceBillTable invoices={invoice.items} />
@@ -253,14 +268,57 @@ const InvoicePreview = ({
       {/* ───────────────── Footer ───────────────── */}
       <div className="border-b border-gray-300 my-6" />
 
-      <div className="flex justify-between items-start text-sm text-gray-600">
-        <p>Cashier: {billData?.generatedBy || "N/A"}</p>
+      <div className="bg-gray-50 py-4 rounded-lg text-sm">
+        <div className="flex justify-between items-start text-sm text-black-600">
+          <div className="flex flex-col gap-2">
+            <p>Cashier: {billData?.generatedBy || "N/A"}</p>
+            {billData && <p>Counter: N/A</p>}
 
-        <p>Date: {formattedDate}</p>
+            {billData?.status === "refunded" && (
+              <p className="text-red-500 font-medium">Cancelled Bill</p>
+            )}
+          </div>
+
+          <div className="flex flex-col items-end gap-2">
+            {billData && (
+              <p>Payment Mode: {billData?.paymentMethod || "N/A"}</p>
+            )}
+
+            <p>Date: {formattedDate}</p>
+
+            {billData?.status === "refunded" && (
+              <p>Date: {formattedCancelledDate}</p>
+            )}
+          </div>
+        </div>
+
+        {billData && (
+          <div className="flex justify-between items-start text-sm text-black-600 mt-4 gap-2">
+            <div className="flex flex-col justify-between gap-2">
+              <p>Current Point:</p>
+              <p>Total Points:</p>
+            </div>
+
+            <div className="flex flex-col  gap-2 items-end">
+              <span> {billData?.currentPoint || "0"}</span>
+              <span> {billData?.totalPoints || "0"}</span>
+            </div>
+          </div>
+        )}
+
+        {/* ───────────────── Copyright ───────────────── */}
+        <div className="text-center mt-10 text-xs text-gray-500">
+          <p>All rights reserved : Rebuzz POS by</p>
+
+          <p className="mt-1 font-medium">
+            {/* {businessProfile?.businessName || "My Business"} */}
+            Brand Builder Pvt Ltd
+          </p>
+        </div>
       </div>
 
       {/* ───────────────── Notes ───────────────── */}
-      {isProforma && (
+      {/* {isProforma && (
         <div className="mt-8 p-4 rounded-lg bg-yellow-50 border border-yellow-200">
           <p className="text-sm text-yellow-700">
             This Proforma Invoice is for estimation purposes only and does not
@@ -284,16 +342,7 @@ const InvoicePreview = ({
             This is an official tax invoice and includes applicable taxes.
           </p>
         </div>
-      )}
-
-      {/* ───────────────── Copyright ───────────────── */}
-      <div className="text-center mt-10 text-xs text-gray-500">
-        <p>All rights reserved : Rebuzz POS by</p>
-
-        <p className="mt-1 font-medium">
-          {businessProfile?.businessName || "My Business"}
-        </p>
-      </div>
+      )} */}
     </div>
   );
 };

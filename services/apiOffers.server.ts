@@ -32,6 +32,6 @@ export async function fetchOffers(): Promise<Offer[]> {
 
   const json = await res.json();
 
-  console.log("Offers:", json);
+  // console.log("Offers:", json);
   return json?.data?.offerCards ?? json?.offer_cards ?? json?.data ?? [];
 }

@@ -72,7 +72,7 @@ export default function InvoiceForm({
 
   const tickets = initialData?.Tickets;
 
-  console.log("Ticket Data:", tickets);
+  // console.log("Ticket Data:", tickets);
 
   // ── State — pre-filled from initialData in edit mode ─────────────────────
 
@@ -212,9 +212,9 @@ export default function InvoiceForm({
       return;
     }
 
-    console.log("globalDiscountValue:", globalDiscountValue);
-    console.log("selectedDiscountIds:", selectedDiscountIds);
-    console.log("initialDiscountAmount:", initialDiscountAmount);
+    // console.log("globalDiscountValue:", globalDiscountValue);
+    // console.log("selectedDiscountIds:", selectedDiscountIds);
+    // console.log("initialDiscountAmount:", initialDiscountAmount);
 
     const filteredItems = items.filter(
       (item) => item.name && item.quantity > 0,

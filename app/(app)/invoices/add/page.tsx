@@ -259,7 +259,7 @@ export default function Page() {
       })),
     };
 
-    console.log("Ticket Data:", ticketData);
+    // console.log("Ticket Data:", ticketData);
 
     saveTicket(ticketData, {
       onSuccess: (response) => {

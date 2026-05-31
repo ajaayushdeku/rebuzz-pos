@@ -12,7 +12,7 @@ import { fetchOffers } from "@/services/apiOffers.client";
 
 export default function CreateOfferPage() {
   const offers = fetchOffers();
-  console.log("Offer Cards:", offers);
+  // console.log("Offer Cards:", offers);
   return (
     <OfferFormProvider>
       <div className="min-h-screen bg-[#f5f6fa]">

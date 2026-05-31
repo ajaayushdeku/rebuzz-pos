@@ -62,7 +62,7 @@ export const AddressSearch = ({
       .then((res) => res.json())
       .then((data) => {
         if (cancelled) return;
-        console.log("Raw API response:", data);
+        // console.log("Raw API response:", data);
         // The API may return data in different shapes
         const list: Location[] = Array.isArray(data)
           ? data
@@ -79,7 +79,7 @@ export const AddressSearch = ({
                       Array.isArray(data.data.data)
                     ? data.data.data
                     : [];
-        console.log("Parsed locations list:", list);
+        // console.log("Parsed locations list:", list);
         setLocations(list);
         if (list.length > 0) {
           setOpen(true);

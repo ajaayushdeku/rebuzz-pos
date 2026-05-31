@@ -75,7 +75,7 @@ export default function ProductStockEditModal({
     }));
   };
 
-  console.log("Edit product:", edits);
+  // console.log("Edit product:", edits);
 
   // save one
   const handleSave = async (id: string) => {
