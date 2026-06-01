@@ -78,28 +78,28 @@ export const mockGrossProfitTrendData: ProfitTrendData[] = [
   },
 ];
 
-export const mockRefundReason: RefundReason[] = [
-  {
-    name: "Change of Heart",
-    count: 10,
-    loss: 500,
-  },
-  {
-    name: "Wrong Order",
-    count: 20,
-    loss: 1000,
-  },
-  {
-    name: "Quality Issue",
-    count: 4,
-    loss: 150,
-  },
-  {
-    name: "Out of Stock",
-    count: 10,
-    loss: 300,
-  },
-];
+// export const mockRefundReason: RefundReason[] = [
+//   {
+//     name: "Change of Heart",
+//     count: 10,
+//     loss: 500,
+//   },
+//   {
+//     name: "Wrong Order",
+//     count: 20,
+//     loss: 1000,
+//   },
+//   {
+//     name: "Quality Issue",
+//     count: 4,
+//     loss: 150,
+//   },
+//   {
+//     name: "Out of Stock",
+//     count: 10,
+//     loss: 300,
+//   },
+// ];
 
 export const mockProfitPerProduct: Product[] = [
   {

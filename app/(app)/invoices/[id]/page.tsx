@@ -8,6 +8,7 @@ import { useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import {
+  AlertTriangle,
   ArrowLeft,
   Bell,
   Check,
@@ -27,7 +28,7 @@ import { getTicketByInvoice } from "@/services/apiTicket.client";
 import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
 
 import { Button } from "@/components/ui/button";
-import InvoicePreview from "@/components/invoice/InvoicePreview";
+import InvoicePreview from "@/components/dashboardComponents/salesRevenue/invoice/InvoicePreview";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -166,6 +167,8 @@ export default function InvoiceDetailPage() {
     enabled: !!invoice?.invoice,
     retry: false,
   });
+
+  console.log("Fetched Bill Data:", billDataQuery);
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [billData, setBillData] = useState<null | Awaited<
@@ -656,7 +659,12 @@ export default function InvoiceDetailPage() {
                 <p className="text-xs text-gray-500 font-bold uppercase tracking-wide mb-1">
                   Status
                 </p>
-                {invoice.paidStatus === "unpaid" ? (
+
+                {displayBillData && displayBillData?.status === "refunded" ? (
+                  <span className="rounded-md font-semibold capitalize text-xl px-1 py-1 bg-orange-400 text-orange-800">
+                    {displayBillData.status}
+                  </span>
+                ) : invoice.paidStatus === "unpaid" ? (
                   <span className="rounded-md font-semibold capitalize text-xl px-1 py-1 bg-red-400 text-red-700">
                     {invoice.paidStatus}
                   </span>
@@ -694,12 +702,19 @@ export default function InvoiceDetailPage() {
                   Amount due
                 </p>
                 <p className="text-2xl font-semibold text-gray-800">
-                  {invoice.paidStatus === "paid" ? (
+                  {displayBillData && displayBillData.status === "refunded" ? (
+                    <span className="text-orange-600 font-bold">
+                      {currency.symbol}0.00
+                    </span>
+                  ) : invoice.paidStatus === "paid" ? (
                     <span className="text-green-600 font-bold">
                       {currency.symbol}0.00
                     </span>
                   ) : (
-                    ` ${currency.symbol}${invoice.grandTotal.toFixed(2)}`
+                    <span className="text-600 font-bold">
+                      {currency.symbol}
+                      {invoice.grandTotal.toFixed(2)}
+                    </span>
                   )}
                 </p>
               </div>
@@ -833,12 +848,16 @@ export default function InvoiceDetailPage() {
               <div className="flex items-start gap-4">
                 <div
                   className={`w-10 h-10 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                    invoice.paidStatus === "paid"
-                      ? "border-green-500 text-green-600 bg-green-50"
-                      : "border-blue-500 text-blue-600"
+                    displayBillData && displayBillData?.status === "refunded"
+                      ? "border-orange-500 text-orange-600 bg-orange-50"
+                      : invoice.paidStatus === "paid"
+                        ? "border-green-500 text-green-600 bg-green-50"
+                        : "border-blue-500 text-blue-600"
                   }`}
                 >
-                  {invoice.paidStatus === "paid" ? (
+                  {displayBillData && displayBillData?.status === "refunded" ? (
+                    <AlertTriangle size={18} />
+                  ) : invoice.paidStatus === "paid" ? (
                     <Check size={18} />
                   ) : (
                     <CreditCard size={18} />
@@ -846,15 +865,27 @@ export default function InvoiceDetailPage() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-800 text-lg">
-                    {invoice.paidStatus === "paid"
-                      ? "Payment completed"
-                      : "Manage payments"}
+                    {displayBillData && displayBillData?.status === "refunded"
+                      ? "Payment refunded"
+                      : invoice.paidStatus === "paid"
+                        ? "Payment completed"
+                        : "Manage payments"}
                   </h3>
-                  {invoice.paidStatus === "paid" && (
-                    <p className="text-sm text-green-600 font-medium">
-                      Paid via {invoice.paymentMethod || "cash"} on{" "}
-                      {new Date(invoice.updatedAt).toLocaleDateString()}
+                  {displayBillData && displayBillData?.status === "refunded" ? (
+                    <p className="text-sm text-orange-600 font-medium">
+                      This payment was refunded on{" "}
+                      {displayBillData?.updatedAt &&
+                        new Date(
+                          displayBillData.updatedAt,
+                        ).toLocaleDateString()}
                     </p>
+                  ) : (
+                    invoice.paidStatus === "paid" && (
+                      <p className="text-sm text-green-600 font-medium">
+                        Paid via {invoice.paymentMethod || "cash"} on{" "}
+                        {new Date(invoice.updatedAt).toLocaleDateString()}
+                      </p>
+                    )
                   )}
                 </div>
                 {invoice.paidStatus !== "paid" && (
@@ -878,7 +909,9 @@ export default function InvoiceDetailPage() {
               <div className="ml-14 flex items-center justify-between text-sm">
                 <p className="text-gray-600">
                   <span className="font-medium">Amount due:</span>{" "}
-                  {invoice.paidStatus === "paid" ? (
+                  {displayBillData && displayBillData.status === "refunded" ? (
+                    <span className="text-orange-600 font-bold">$0.00</span>
+                  ) : invoice.paidStatus === "paid" ? (
                     <span className="text-green-600 font-bold">$0.00</span>
                   ) : (
                     `$${invoice.grandTotal.toFixed(2)}`
@@ -899,8 +932,10 @@ export default function InvoiceDetailPage() {
 
                 <p className="text-gray-600">
                   <span className="font-medium">Status:</span>{" "}
-                  {invoice.paidStatus === "paid" ? (
-                    <span className="text-green-700">
+                  {displayBillData && displayBillData.status === "refunded" ? (
+                    <span className="text-orange-600 font-bold">Refunded</span>
+                  ) : invoice.paidStatus === "paid" ? (
+                    <span className="text-green-700 font-bold">
                       This invoice has been fully paid
                     </span>
                   ) : (

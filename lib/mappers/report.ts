@@ -4,8 +4,9 @@ import { RawReportResponse } from "../types/report";
 const mapReportToStats = (
   response: RawReportResponse,
   totalProductsSold?: number,
+  netProfit?: number,
 ): StatsApiResponse => {
-  const { totalSales, totalRevenue, profit } = response.data.report; // Adjust these field names based on the actual structure of RawReport
+  const { totalSales, totalRevenue } = response.data.report;
   return {
     totalSales: {
       value: totalRevenue,
@@ -15,7 +16,10 @@ const mapReportToStats = (
       value: totalSales,
       percent: 0,
     },
-    netProfit: { value: profit, percent: 0 },
+    netProfit: {
+      value: netProfit ?? response.data.report.profit ?? 0,
+      percent: 0,
+    },
     productsSold: { value: totalProductsSold ?? 0, percent: 0 },
   };
 };

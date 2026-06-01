@@ -14,13 +14,12 @@ import {
   getRefundReason,
 } from "@/services/dashboardServices/apiProfitCost";
 
-import StatBox from "../dashboardComponents/StatBox";
 import ProfitPerProduct from "../dashboardComponents/profitcostDash/ProfitPerProduct";
 import RefundAnalysis from "../dashboardComponents/profitcostDash/RefundAnalysis";
-import StatBoxGrid from "../dashboardComponents/profitcostDash/ProfitCostStatGrid";
 import GrossProfitTrendChart from "../dashboardComponents/profitcostDash/GrossProfitTrendChart";
 import ExpensesByCategoryChart from "../dashboardComponents/profitcostDash/ExpenseByCategoryChart";
 import BudgetTable from "../dashboardComponents/profitcostDash/BudgetTable";
+import ProfitCostStatBoxGrid from "../dashboardComponents/profitcostDash/ProfitCostStatGrid";
 
 export async function ProfitStatsWrapper() {
   const profitStat = await getProfitStats();
@@ -29,11 +28,10 @@ export async function ProfitStatsWrapper() {
       ...config,
       ...profitStat[config.key],
     }));
+
   return (
     <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 my-4">
-      {stats.map(({ key, ...stat }) => (
-        <StatBox key={key} {...stat} />
-      ))}
+      <ProfitCostStatBoxGrid stats={stats} />
     </div>
   );
 }
@@ -45,7 +43,7 @@ export async function ProfitPerProductWrapper() {
 
 export async function RefundAnalysisWrapper() {
   const refundData = await getRefundReason();
-  return <RefundAnalysis refundReasons={refundData} />;
+  return <RefundAnalysis refundReasons={refundData as any} />;
 }
 
 export async function ExpenseStatsWrapper() {
@@ -58,14 +56,20 @@ export async function ExpenseStatsWrapper() {
   );
   return (
     <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 my-4">
-      <StatBoxGrid stats={stats} />
+      <ProfitCostStatBoxGrid stats={stats} />
     </div>
   );
 }
 
-export async function GrossProfitTrendChartWrapper() {
-  const grossProfitData = await getGrossProfitTrendData();
-  return <GrossProfitTrendChart data={grossProfitData} />;
+// export async function GrossProfitTrendChartWrapper() {
+//   const grossProfitData = await getGrossProfitTrendData();
+//   console.log("Gross Profit Trend Data:", grossProfitData);
+//   return <GrossProfitTrendChart data={grossProfitData} />;
+// }
+
+export function GrossProfitTrendChartWrapper() {
+  // Chart now self-fetches via /api/dashboard/profit-trend
+  return <GrossProfitTrendChart />;
 }
 
 export async function ExpenseByCategoryChartWrapper() {

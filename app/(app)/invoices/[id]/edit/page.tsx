@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { getTicketByInvoice } from "@/services/apiTicket.client";
-import InvoiceForm from "@/components/invoice/InvoiceForm";
+import InvoiceForm from "@/components/dashboardComponents/salesRevenue/invoice/InvoiceForm";
 
 export default function Page() {
   const params = useParams();

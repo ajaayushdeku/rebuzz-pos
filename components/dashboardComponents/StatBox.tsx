@@ -25,7 +25,7 @@ export default function StatBox({
       return new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: currency.code,
-        maximumFractionDigits: 0,
+        maximumFractionDigits: 2,
       }).format(value);
     }
     if (format === "percent") {

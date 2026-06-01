@@ -9,7 +9,7 @@ import { Loader2 } from "lucide-react";
 import { useBusiness } from "@/hooks/useBusiness";
 import { getTicketByInvoice } from "@/services/apiTicket.client";
 import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
-import InvoicePreview from "@/components/invoice/InvoicePreview";
+import InvoicePreview from "@/components/dashboardComponents/salesRevenue/invoice/InvoicePreview";
 
 export default function PublicPreviewPage() {
   const { id } = useParams();

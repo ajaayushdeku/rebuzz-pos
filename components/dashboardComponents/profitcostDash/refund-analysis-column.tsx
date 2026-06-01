@@ -10,8 +10,8 @@ import { formatCurrency } from "@/utils/helper";
 
 export type RefundReason = {
   name: string;
-  count: number;
   loss: number;
+  updatedAt: string;
 };
 
 export const getRefundReasonColumns = (

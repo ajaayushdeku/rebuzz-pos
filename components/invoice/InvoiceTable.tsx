@@ -62,7 +62,7 @@ const STATUS_STYLES: Record<string, string> = {
   overdue: "bg-orange-100 text-orange-700 border-orange-200",
 };
 
-const STATUS_FILTER_OPTIONS = ["paid", "unpaid", "draft", "overdue"];
+const STATUS_FILTER_OPTIONS = ["paid", "unpaid"];
 
 export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
   const { currency } = useCurrency();
@@ -150,7 +150,7 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
           }}
           className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-600 capitalize"
         >
-          <option value="all">All Statuses</option>
+          <option value="all">All Status</option>
           {STATUS_FILTER_OPTIONS.map((s) => (
             <option key={s} value={s} className="capitalize">
               {s}

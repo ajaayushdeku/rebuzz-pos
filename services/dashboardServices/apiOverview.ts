@@ -56,13 +56,19 @@ export const getStatsData = async (
   const data: RawReportResponse = reportRes.data;
 
   // Compute total products sold from salesByItem data
-  const salesItems: { count: number }[] = salesByItemRes.data?.data ?? [];
+  const salesItems: { count: number; netProfit: number }[] =
+    salesByItemRes.data?.data ?? [];
   const totalProductsSold = salesItems.reduce(
     (sum, item) => sum + (item.count ?? 0),
     0,
   );
 
-  return mapReportToStats(data, totalProductsSold);
+  const netProfit =
+    salesItems.reduce((sum, item) => sum + (item.netProfit ?? 0), 0) -
+    salesByItemRes.data.totalDiscount -
+    salesByItemRes.data.totalRedeemPoint;
+
+  return mapReportToStats(data, totalProductsSold, netProfit);
 };
 
 // Fetch the WinningStats by using other api to get specific data

@@ -1,8 +1,7 @@
-import StatBox, {
-  StatBoxProps,
-} from "../StatBox";
+import { StatBoxProps } from "../StatBox";
+import ProfitCostStatBox from "./ProfitCostStatBox";
 
-export default function StatBoxGrid({
+export default function ProfitCostStatBoxGrid({
   stats,
 }: {
   stats: StatBoxProps[];
@@ -10,7 +9,7 @@ export default function StatBoxGrid({
   return (
     <>
       {stats.map(({ key, ...stat }) => (
-        <StatBox key={key} {...stat} />
+        <ProfitCostStatBox key={key} {...stat} />
       ))}
     </>
   );

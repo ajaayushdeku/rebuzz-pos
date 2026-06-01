@@ -9,7 +9,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { InvoiceItemGroup } from "@/lib/types/invoice";
 import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
 
-import InvoiceBillTable from "../ticket/InvoiceBillTable";
+import InvoiceBillTable from "../../../ticket/InvoiceBillTable";
 
 interface InvoiceData {
   _id: string;
@@ -230,7 +230,7 @@ const InvoicePreview = ({
         <div className="flex justify-between">
           <p className="text-gray-600">Discount</p>
 
-          <p className="text-blue-500">
+          <p className="font-medium">
             − {currency.symbol} {discountAmount.toFixed(2) || 0}
           </p>
         </div>
@@ -241,7 +241,7 @@ const InvoicePreview = ({
           <div className="flex justify-between">
             <p className="text-gray-600">Discount By Points</p>
 
-            <p className="text-blue-500">
+            <p className="font-medium">
               − {currency.symbol} {loyaltyRedeemedAmount.toFixed(2)}
             </p>
           </div>
@@ -252,7 +252,7 @@ const InvoicePreview = ({
           <div className="flex justify-between">
             <p className="text-gray-600">Tax</p>
 
-            <p className="font-medium text-red-500">
+            <p className="font-medium">
               + {currency.symbol} {taxAmount.toFixed(2)}
             </p>
           </div>

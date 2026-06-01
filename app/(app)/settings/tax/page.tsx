@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Receipt, Search, Loader2, Trash2, Layers } from "lucide-react";
 import { useTaxes, useToggleTax, useUpdateTaxSettings } from "@/hooks/useTaxes";
-import { CreateTaxDialog } from "@/components/invoice/CreateTaxRate";
+import { CreateTaxDialog } from "@/components/dashboardComponents/salesRevenue/invoice/CreateTaxRate";
 import toast from "react-hot-toast";
 
 function Toggle({
