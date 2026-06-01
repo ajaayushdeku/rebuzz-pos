@@ -43,7 +43,7 @@ export async function ProfitPerProductWrapper() {
 
 export async function RefundAnalysisWrapper() {
   const refundData = await getRefundReason();
-  return <RefundAnalysis refundReasons={refundData as any} />;
+  return <RefundAnalysis refundReasons={refundData} />;
 }
 
 export async function ExpenseStatsWrapper() {

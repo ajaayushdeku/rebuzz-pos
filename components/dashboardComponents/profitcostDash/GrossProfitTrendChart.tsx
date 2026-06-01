@@ -25,21 +25,16 @@ export interface ProfitTrendData {
 
 const getYAxisTicks = (data: ProfitTrendData[]): number[] => {
   const values = data.flatMap((d) => [d.grossRevenue, d.netProfit]);
-  const min = Math.min(...values, 0);
   const max = Math.max(...values, 1);
 
-  // Add 20% padding above and below
-  const range = max - min;
-  const paddedMin = min - range * 0.1;
-  const paddedMax = max + range * 0.1;
+  // Add 20% padding above
+  const paddedMax = max * 1.2;
 
-  // Round to nice numbers
-  const step = Math.ceil((paddedMax - paddedMin) / 4 / 1000) * 1000 || 1000;
+  // Round step to a nice number so that we get clean ticks from 0
+  const rawStep = paddedMax / 4;
+  const step = Math.ceil(rawStep / 1000) * 1000 || 1000;
 
-  // Start from the nearest nice number below paddedMin
-  const start = Math.floor(paddedMin / step) * step;
-
-  return [0, step, step * 2, step * 3].map((v) => v + start);
+  return [0, step, step * 2, step * 3, step * 4];
 };
 
 const CustomTooltip = ({
@@ -130,10 +125,14 @@ export default function GrossProfitTrendChart() {
   const displayData = isEmpty ? mockGrossProfitTrendData : data;
   const showSampleBadge = isEmpty && !isLoading;
 
-  const formatYAxis = (value: number): string =>
-    value >= 1000
-      ? `${currency.symbol}${value / 1000}k`
-      : formatCurrency(value, currency);
+  const formatYAxis = (value: number): string => {
+    const abs = Math.abs(value);
+    if (abs >= 1000) {
+      const sign = value < 0 ? "-" : "";
+      return `${sign}${currency.symbol}${abs / 1000}k`;
+    }
+    return formatCurrency(value, currency);
+  };
 
   const yTicks = getYAxisTicks(displayData);
   const yMax = yTicks[yTicks.length - 1] * 1.05;
@@ -177,13 +176,7 @@ export default function GrossProfitTrendChart() {
             margin={{ top: 10, right: 20, left: 10, bottom: 10 }}
           >
             <CartesianGrid vertical={false} stroke="#f3f4f6" />
-            <XAxis
-              dataKey="month"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 12 }}
-              dy={8}
-            />
+
             <YAxis
               tickFormatter={formatYAxis}
               axisLine={false}
@@ -222,6 +215,13 @@ export default function GrossProfitTrendChart() {
                 stroke: "#fff",
                 strokeWidth: 2,
               }}
+            />
+            <XAxis
+              dataKey="month"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "#9ca3af", fontSize: 12 }}
+              dy={8}
             />
           </LineChart>
         </ResponsiveContainer>

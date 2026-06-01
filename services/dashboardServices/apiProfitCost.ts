@@ -109,103 +109,17 @@ export const getProfitStats = async (): Promise<ProfitCostApiResponse> => {
 };
 
 export async function getGrossProfitTrendData(): Promise<ProfitTrendData[]> {
-  const today = new Date();
+  const res = await fetch("/api/profit-trend", {
+    cache: "no-store",
+  });
 
-  // ── Build 12 month ranges ─────────────────────────────────────────────────
-  const monthRanges: { label: string; start: string; end: string }[] = [];
-
-  for (let i = 11; i >= 0; i--) {
-    const year = today.getFullYear();
-    const month = today.getMonth() - i; // can be negative, Date handles it
-
-    const firstDay = new Date(year, month, 1);
-    const isCurrentMonth = i === 0;
-
-    // For current month use today, for past months use last day of that month
-    const lastDay = isCurrentMonth ? today : new Date(year, month + 1, 0); // day 0 of next month = last day of this month
-
-    const label = firstDay.toLocaleDateString("en-US", { month: "short" });
-    const start = firstDay.toISOString().split("T")[0];
-    const end = lastDay.toISOString().split("T")[0];
-
-    monthRanges.push({ label, start, end });
+  if (!res.ok) {
+    console.warn("Failed to fetch profit trend data");
+    return [];
   }
 
-  // Debug — confirm ranges look correct
-  console.log(
-    "Month ranges:",
-    monthRanges.map((m) => `${m.label}: ${m.start} → ${m.end}`),
-  );
-
-  // ── Fetch grossRevenue from compare-sales-by-month ────────────────────────
-  const yearStart = monthRanges[0].start;
-  const yearEnd = monthRanges[monthRanges.length - 1].end;
-
-  const compareRes = await axios.get(
-    `${BASE}/business/report/compare-sales-by-month?startDate=${yearStart}&endDate=${yearEnd}`,
-    { headers: await authHeaders() },
-  );
-
-  const monthlyRevenue: { monthStart: string; totalRevenue: number }[] =
-    compareRes.data?.data ?? [];
-
-  // "Jun" → totalRevenue
-  const revenueMap = new Map<string, number>();
-  for (const m of monthlyRevenue) {
-    const label = new Date(m.monthStart + "T00:00:00").toLocaleDateString(
-      "en-US",
-      { month: "short" },
-    );
-    revenueMap.set(label, m.totalRevenue);
-  }
-
-  // ── Fetch salesByItem per month in parallel ───────────────────────────────
-  const headers = await authHeaders();
-  const salesResults = await Promise.all(
-    monthRanges.map(async ({ label, start, end }) => {
-      try {
-        const res = await axios.get(
-          `${BASE}/business/report/salesByItem?startDate=${start}&endDate=${end}`,
-          { headers },
-        );
-
-        const items: { netProfit?: number }[] = res.data?.data ?? [];
-        const totalDiscount: number = res.data?.totalDiscount ?? 0;
-        const totalRedeemPoint: number = res.data?.totalRedeemPoint ?? 0;
-
-        const rawNetProfit = items.reduce(
-          (sum, item) => sum + (item.netProfit ?? 0),
-          0,
-        );
-
-        const netProfit =
-          Math.round((rawNetProfit - totalDiscount - totalRedeemPoint) * 100) /
-          100;
-
-        return { label, netProfit };
-      } catch (err) {
-        console.warn(
-          `No sales data for ${label} (${start} → ${end}): ${err instanceof Error ? err.message : err}`,
-        );
-        return { label, netProfit: 0 };
-      }
-    }),
-  );
-
-  const netProfitMap = new Map<string, number>(
-    salesResults.map(({ label, netProfit }) => [label, netProfit]),
-  );
-
-  // ── Assemble final result ─────────────────────────────────────────────────
-  const result: ProfitTrendData[] = monthRanges.map(({ label }) => ({
-    month: label,
-    grossRevenue: revenueMap.get(label) ?? 0,
-    netProfit: netProfitMap.get(label) ?? 0,
-  }));
-
-  console.log("Final profit trend:", result);
-
-  return result;
+  const json = await res.json();
+  return json.data ?? [];
 }
 
 export async function getProfitPerProduct(): Promise<Product[]> {

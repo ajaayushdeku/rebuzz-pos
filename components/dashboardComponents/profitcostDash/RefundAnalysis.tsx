@@ -7,7 +7,6 @@ import { formatCurrency } from "@/utils/helper";
 
 type RefundReason = {
   name: string;
-  customer: string;
   loss: number;
   updatedAt: string;
 };
@@ -39,11 +38,7 @@ export default function RefundAnalysis({
   const filtered = useMemo(() => {
     if (!search) return refundReasons;
     const q = search.toLowerCase();
-    return refundReasons.filter(
-      (r) =>
-        r.name.toLowerCase().includes(q) ||
-        r.customer.toLowerCase().includes(q),
-    );
+    return refundReasons.filter((r) => r.name.toLowerCase().includes(q));
   }, [refundReasons, search]);
 
   const sorted = useMemo(() => {
