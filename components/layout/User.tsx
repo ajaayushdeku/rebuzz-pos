@@ -60,7 +60,7 @@ export default function User({ initialBusinessName }: UserProps) {
             className="text-gray-600 cursor-pointer"
             onClick={() => router.push("/settings/business")}
           >
-            <Link href="/profile" className="flex gap-2">
+            <Link href="/settings/business" className="flex gap-2">
               <User2 className="mr-2 h-4 w-4" />
               Profile
             </Link>
