@@ -25,7 +25,7 @@ export default function Page() {
             asChild
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
           >
-            <Link href="/customers/add">
+            <Link href="records/customers/add">
               <UserPlus className="h-4 w-4" />
               Add new customer
             </Link>

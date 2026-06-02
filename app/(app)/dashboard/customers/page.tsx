@@ -35,7 +35,7 @@ export default async function Page() {
           className="bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
           asChild
         >
-          <Link href="/customers/add">
+          <Link href="records/customers/add">
             <UserPlus className="h-4 w-4 mr-1.5" />
             New Customer
           </Link>
