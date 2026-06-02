@@ -1,5 +1,4 @@
 import {
-  getRevenueVsProfitData,
   getSlowProducts,
   getTopProducts,
 } from "@/services/dashboardServices/apiSalesRevenue";
@@ -7,7 +6,7 @@ import {
 import TopProducts from "../dashboardComponents/salesRevenue/TopProducts";
 import SalesTrendChart from "../dashboardComponents/salesRevenue/SalesTrendChart";
 import SlowProducts from "../dashboardComponents/salesRevenue/SlowProducts";
-import { RevenueVsProfitChartClient } from "../dashboardComponents/salesRevenue/RevenueVsProfitChartClient";
+import RevenueVsProfitChart from "../dashboardComponents/salesRevenue/RevenueVsProfitChart";
 
 export async function TopProductsWrapper() {
   const data = await getTopProducts();
@@ -19,14 +18,12 @@ export async function SlowProductsWrapper() {
   return <SlowProducts slowProducts={data} />;
 }
 
-export async function RevenueVsProfitChartWrapper() {
-  const { rangeData, todayData } = await getRevenueVsProfitData("7d");
-  return (
-    <RevenueVsProfitChartClient initialData={rangeData} todayData={todayData} />
-  );
+export function RevenueVsProfitChartWrapper() {
+  // Chart fetches data internally via useRevenueVsProfit hook
+  return <RevenueVsProfitChart />;
 }
 
 export async function SalesTrendChartWrapper() {
-  // SalesTrendChart now fetches data internally via useSalesTrends hook
+  // SalesTrendChart fetches data internally via useSalesTrends hook
   return <SalesTrendChart />;
 }

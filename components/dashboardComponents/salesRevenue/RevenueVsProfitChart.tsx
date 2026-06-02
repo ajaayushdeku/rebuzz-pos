@@ -1,6 +1,6 @@
 "use client";
+
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import {
   BarChart,
   Bar,
@@ -23,6 +23,7 @@ import type {
 import { formatCurrency } from "@/utils/helper";
 import { CurrencyConfig, useCurrency } from "@/providers/CurrencyContext";
 import { mockRevenueVsProfit } from "@/lib/mockData/mock-salesrevenue";
+import { useRevenueVsProfit } from "@/hooks/useRevenueVsProfit";
 
 // Types
 
@@ -32,53 +33,14 @@ export interface ProductData {
   profit: number;
 }
 
-interface Props {
-  initialData: ProductData[];
-  todayData: ProductData[];
-  initialRange?: DateRange;
-  onRangeChange?: (range: DateRange) => void;
-}
-
-export type DateRange = "today" | "7d" | "30d" | "90d" | "180d"; // ← add "today"
-
-export const fetchRevenueProfit = async (
-  range: DateRange,
-): Promise<ProductData[]> => {
-  const today = new Date().toISOString().split("T")[0];
-
-  const endDate = today;
-  const startDate =
-    range === "today"
-      ? today
-      : new Date(Date.now() - RANGE_DAYS[range] * 24 * 60 * 60 * 1000)
-          .toISOString()
-          .split("T")[0];
-
-  const res = await fetch(
-    `https://appapi.rebuzzpos.com/api/report/sales-by-item?startDate=${startDate}&endDate=${endDate}`,
-  );
-  if (!res.ok) throw new Error("Failed to fetch revenue vs profit data");
-  return res.json();
-};
-
-// Add "today" to RANGE_DAYS so TypeScript doesn't complain
-const RANGE_DAYS: Record<DateRange, number> = {
-  today: 1,
-  "7d": 6,
-  "30d": 29,
-  "90d": 89,
-  "180d": 179,
-};
-
-// Sub-components
-
-const RANGE_OPTIONS: { label: string; value: DateRange }[] = [
-  { label: "Today", value: "today" }, // ← new
+const RANGE_OPTIONS: { label: string; value: string }[] = [
   { label: "7 days", value: "7d" },
   { label: "30 days", value: "30d" },
   { label: "90 days", value: "90d" },
   { label: "6 months", value: "180d" },
 ];
+
+// Sub-components
 
 const RevenueBar = (props: BarShapeProps) => (
   <Rectangle {...props} radius={[4, 4, 0, 0]} fill="#60a5fa" />
@@ -149,42 +111,15 @@ const CustomTooltip = ({
   );
 };
 
-// Chart — accepts initialData from Server Component
+// Chart — fetches data via hook
 
-export default function RevenueVsProfitChart({
-  initialData,
-  todayData,
-  initialRange = "7d",
-  onRangeChange,
-}: Props) {
-  const [range, setRange] = useState<DateRange>(initialRange);
+export default function RevenueVsProfitChart() {
+  const [range, setRange] = useState("30d");
+  const { data, isFetching, isError } = useRevenueVsProfit(range);
   const { currency } = useCurrency();
 
-  const isEmpty = !initialData?.length;
-  const displayData = isEmpty ? mockRevenueVsProfit : initialData;
-
-  const {
-    data = range === "today" ? todayData : displayData,
-    isFetching,
-    isError,
-  } = useQuery({
-    queryKey: ["revenue-profit", range],
-    queryFn: () => fetchRevenueProfit(range),
-    // Use SSR data for the matching range — skip initial fetch
-    initialData:
-      range === "today"
-        ? todayData
-        : range === initialRange
-          ? initialData
-          : undefined,
-    staleTime: range === "today" ? 5 * 60 * 1000 : 30 * 60 * 1000,
-    retry: 2,
-  });
-
-  const handleRangeChange = (value: DateRange) => {
-    setRange(value);
-    onRangeChange?.(value); // notify parent shell if needed
-  };
+  const isEmpty = !data?.length;
+  const displayData = isEmpty ? mockRevenueVsProfit : data;
 
   const formatYAxis = (value: number): string =>
     value >= 1000 || value <= -1000
@@ -192,15 +127,13 @@ export default function RevenueVsProfitChart({
       : formatCurrency(value, currency);
 
   // ── Dynamic Y-axis that handles negative profit ──
-  const allValues = data.flatMap((d) => [d.revenue, d.profit]);
+  const allValues = displayData.flatMap((d) => [d.revenue, d.profit]);
   const maxValue = Math.max(...allValues, 0);
   const minValue = Math.min(...allValues, 0);
 
-  // Round up/down to nearest clean boundary
   const yAxisMax = Math.ceil(maxValue / 500) * 500 + 500;
   const yAxisMin = minValue < 0 ? Math.floor(minValue / 500) * 500 - 500 : 0;
 
-  // Generate evenly spaced ticks between min and max
   const tickRange = yAxisMax - yAxisMin;
   const tickStep = Math.ceil(tickRange / 5 / 500) * 500;
   const ticks = Array.from(
@@ -231,7 +164,7 @@ export default function RevenueVsProfitChart({
           {RANGE_OPTIONS.map(({ label, value }) => (
             <button
               key={value}
-              onClick={() => handleRangeChange(value)}
+              onClick={() => setRange(value)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 range === value
                   ? "bg-white text-gray-900 shadow-sm"
@@ -251,7 +184,7 @@ export default function RevenueVsProfitChart({
         <div className="h-56 sm:h-72">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={data}
+              data={displayData}
               margin={{
                 top: 10,
                 right: 10,
@@ -262,15 +195,6 @@ export default function RevenueVsProfitChart({
               barGap={4}
             >
               <CartesianGrid vertical={false} stroke="#f3f4f6" />
-              {/* Zero reference line when negatives exist */}
-              {/* {yAxisMin < 0 && (
-                <CartesianGrid
-                  horizontal={false}
-                  verticalPoints={[]}
-                  horizontalPoints={[]}
-                />
-              )} */}
-
               <XAxis
                 dataKey="product"
                 axisLine={false}
