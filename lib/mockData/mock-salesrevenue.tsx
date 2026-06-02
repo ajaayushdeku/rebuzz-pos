@@ -178,7 +178,7 @@ export const mockTopProducts: TopProduct[] = [
     percent: 2,
   },
 ];
-export const mockSalesTrendData: SalesTrendsData = {
+export const mockSalesTrendData = {
   daily: [
     { label: "Mon", revenue: 4200 },
     { label: "Tue", revenue: 3800 },

@@ -5,7 +5,7 @@ export const mockTransactions: Transaction[] = [
     id: "ORD-001",
     date: "Jan 10 2025",
     timestamp: "09:15",
-    customer: "James Holden",
+    invoiceName: "James Holden",
     amount: "42.50",
     paymentMethod: "Card",
     items: [
@@ -26,7 +26,7 @@ export const mockTransactions: Transaction[] = [
     id: "ORD-002",
     date: "Jan 10 2025",
     timestamp: "10:30",
-    customer: "Naomi Nagata",
+    invoiceName: "Naomi Nagata",
     amount: "18.00",
     paymentMethod: "Cash",
     items: [
@@ -47,7 +47,7 @@ export const mockTransactions: Transaction[] = [
     id: "ORD-003",
     date: "Jan 11 2025",
     timestamp: "08:45",
-    customer: "Alex Kamal",
+    invoiceName: "Alex Kamal",
     amount: "67.25",
     paymentMethod: "Loyalty",
     items: [
@@ -73,7 +73,7 @@ export const mockTransactions: Transaction[] = [
     id: "ORD-004",
     date: "Jan 11 2025",
     timestamp: "11:00",
-    customer: "Amos Burton",
+    invoiceName: "Amos Burton",
     amount: "95.00",
     paymentMethod: "Card",
     items: [
@@ -94,7 +94,7 @@ export const mockTransactions: Transaction[] = [
     id: "ORD-005",
     date: "Jan 12 2025",
     timestamp: "13:20",
-    customer: "Chrisjen Avasarala",
+    invoiceName: "Chrisjen Avasarala",
     amount: "33.75",
     paymentMethod: "Card",
     items: [
@@ -115,7 +115,7 @@ export const mockTransactions: Transaction[] = [
     id: "ORD-006",
     date: "Jan 12 2025",
     timestamp: "14:05",
-    customer: "Bobbie Draper",
+    invoiceName: "Bobbie Draper",
     amount: "120.00",
     paymentMethod: "Loyalty",
     items: [
@@ -136,7 +136,7 @@ export const mockTransactions: Transaction[] = [
     id: "ORD-007",
     date: "Jan 13 2025",
     timestamp: "09:50",
-    customer: "Fred Johnson",
+    invoiceName: "Fred Johnson",
     amount: "55.50",
     paymentMethod: "Cash",
     items: [
@@ -157,7 +157,7 @@ export const mockTransactions: Transaction[] = [
     id: "ORD-008",
     date: "Jan 13 2025",
     timestamp: "16:30",
-    customer: "Camina Drummer",
+    invoiceName: "Camina Drummer",
     amount: "28.00",
     paymentMethod: "Card",
     items: [
@@ -178,7 +178,7 @@ export const mockTransactions: Transaction[] = [
     id: "ORD-009",
     date: "Jan 14 2025",
     timestamp: "10:15",
-    customer: "Marco Inaros",
+    invoiceName: "Marco Inaros",
     amount: "76.80",
     paymentMethod: "Loyalty",
     items: [
@@ -204,7 +204,7 @@ export const mockTransactions: Transaction[] = [
     id: "ORD-010",
     date: "Jan 14 2025",
     timestamp: "12:45",
-    customer: "Filip Inaros",
+    invoiceName: "Filip Inaros",
     amount: "15.00",
     paymentMethod: "Cash",
     items: [
@@ -225,7 +225,7 @@ export const mockTransactions: Transaction[] = [
     id: "ORD-011",
     date: "Jan 15 2025",
     timestamp: "08:00",
-    customer: "Clarissa Mao",
+    invoiceName: "Clarissa Mao",
     amount: "49.95",
     paymentMethod: "Card",
     items: [
@@ -246,7 +246,7 @@ export const mockTransactions: Transaction[] = [
     id: "ORD-012",
     date: "Jan 15 2025",
     timestamp: "17:20",
-    customer: "Prax Meng",
+    invoiceName: "Prax Meng",
     amount: "88.40",
     paymentMethod: "Loyalty",
     items: [

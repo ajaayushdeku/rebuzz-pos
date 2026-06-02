@@ -1,4 +1,4 @@
-import { HeatmapDataSet } from "./Heatmap";
+import { HeatmapDataSet } from "@/components/dashboardComponents/overviewDash/heatmap/Heatmap";
 
 // Mock data
 

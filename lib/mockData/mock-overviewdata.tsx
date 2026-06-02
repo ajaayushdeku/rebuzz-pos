@@ -62,7 +62,7 @@ export const mockRecentTransactions: Transaction[] = [
     id: "ORD-007",
     date: "Jan 13 2025",
     timestamp: "09:50",
-    customer: "Fred Johnson",
+    invoiceName: "Fred Johnson",
     amount: "55.50",
     paymentMethod: "Cash",
     items: [
@@ -83,7 +83,7 @@ export const mockRecentTransactions: Transaction[] = [
     id: "ORD-008",
     date: "Jan 13 2025",
     timestamp: "16:30",
-    customer: "Camina Drummer",
+    invoiceName: "Camina Drummer",
     amount: "28.00",
     paymentMethod: "Card",
     items: [

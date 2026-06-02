@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useCurrency } from "@/providers/CurrencyContext";
-// import { DataTable } from "../ui/data-table";
 import { getBillColumns } from "./bill-columns";
 import { BillView } from "@/lib/types/expenses";
 import { fetchExpenseHistory } from "@/services/apiShift.client";

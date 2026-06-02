@@ -1,8 +1,8 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "../ui/button";
 import { ArrowUpDown, AlertCircle } from "lucide-react";
 import type { LoyaltyTier } from "@/lib/types/customer";
+import { Button } from "../ui/button";
 
 export type Customer = {
   id: string;

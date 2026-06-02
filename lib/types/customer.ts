@@ -61,7 +61,7 @@ export function mapRawCustomerToCustomer(raw: RawCustomer): Customer {
     phone: raw.phone,
     numberOfPurchases: raw.numberOfPurchases,
     totalDueAmount: raw.totalDueAmount,
-    loyaltyPoint: raw.loyaltyPoint.toFixed(2),
+    loyaltyPoint: raw.loyaltyPoint,
     loyaltyStatus: getLoyaltyStatus(raw.loyaltyPoint),
     note: raw.note ?? null,
     isDeactivated: raw.isDeactivated ?? false,
