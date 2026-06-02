@@ -2,14 +2,12 @@
 
 import { useState } from "react";
 import {
-  Receipt,
   Search,
   Loader2,
   Trash2,
   Layers,
   Pencil,
   Check,
-  Plus,
   Percent,
 } from "lucide-react";
 import {
