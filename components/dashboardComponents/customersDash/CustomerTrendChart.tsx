@@ -105,7 +105,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
               }}
             />
             <span className="text-xs text-gray-600 capitalize">
-              {entry.name}
+              {entry.name === "new" ? "Inactive" : "Active"}
             </span>
           </div>
           <span className="text-xs font-bold text-gray-800">
@@ -194,11 +194,16 @@ export default function CustomerTrendChart({ data }: CustomerTrendProps) {
           {/* stackId ties both bars together — repeat on bottom, new on top */}
           <Bar
             dataKey="repeat"
-            name="Repeat"
+            name="Active"
             stackId="customers"
             shape={RepeatBar}
           />
-          <Bar dataKey="new" name="New" stackId="customers" shape={NewBar} />
+          <Bar
+            dataKey="new"
+            name="Inactive"
+            stackId="customers"
+            shape={NewBar}
+          />
         </BarChart>
       </ResponsiveContainer>
     </div>

@@ -46,6 +46,14 @@ function offsetDate(days: number): string {
   return d.toISOString().split("T")[0];
 }
 
+function getStartOfMonth(date = new Date()) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function formatDate(date: Date) {
+  return date.toISOString().split("T")[0]; // adjust if your backend expects different format
+}
+
 function monthAbbr(date: Date): string {
   return date.toLocaleString("en-US", { month: "short" });
 }
@@ -104,8 +112,13 @@ async function fetchAllUsers(): Promise<RawUser[]> {
 
 export async function getCustomerStats(): Promise<CustomerApiResponse> {
   try {
-    const startDate = offsetDate(-30);
-    const endDate = offsetDate(0);
+    // const startDate = offsetDate(-30);
+    // const endDate = offsetDate(0);
+
+    const now = new Date();
+
+    const startDate = formatDate(getStartOfMonth(now));
+    const endDate = formatDate(now);
 
     const [users, bills, salesByItemJson] = await Promise.all([
       fetchAllUsers(),
