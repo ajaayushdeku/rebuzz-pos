@@ -156,7 +156,7 @@ const RANGE_DAYS: Record<DateRange, number> = {
 };
 
 export async function getRevenueVsProfitData(
-  range: DateRange = "30d",
+  range: DateRange = "7d",
 ): Promise<{ rangeData: ProductData[]; todayData: ProductData[] }> {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;

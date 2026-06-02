@@ -75,7 +75,7 @@ export const columns: ColumnDef<AtRiskCustomer>[] = [
     header: "Alert Reason",
     cell: () => (
       <p className="border text-sm text-gray-600 border-gray-500 p-1 rounded-2xl w-40 flex items-center justify-center">
-        Haven't been active for about 2 weeks
+        Haven&lsquo;t been active for about 2 weeks
       </p>
     ),
   },

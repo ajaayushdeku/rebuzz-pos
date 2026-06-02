@@ -20,7 +20,7 @@ export async function SlowProductsWrapper() {
 }
 
 export async function RevenueVsProfitChartWrapper() {
-  const { rangeData, todayData } = await getRevenueVsProfitData("30d");
+  const { rangeData, todayData } = await getRevenueVsProfitData("7d");
   return (
     <RevenueVsProfitChartClient initialData={rangeData} todayData={todayData} />
   );
