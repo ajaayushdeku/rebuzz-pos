@@ -105,7 +105,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
               }}
             />
             <span className="text-xs text-gray-600 capitalize">
-              {entry.name === "new" ? "Inactive" : "Active"}
+              {entry.name}
             </span>
           </div>
           <span className="text-xs font-bold text-gray-800">

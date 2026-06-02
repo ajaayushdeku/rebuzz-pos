@@ -165,7 +165,7 @@ export async function getCustomerStats(): Promise<CustomerApiResponse> {
 
 export async function getCustomerSegmentation(): Promise<SegmentData[]> {
   try {
-    const startDate = offsetDate(-30);
+    const startDate = offsetDate(-15);
     const endDate = offsetDate(0);
 
     const [users, bills] = await Promise.all([
@@ -173,7 +173,7 @@ export async function getCustomerSegmentation(): Promise<SegmentData[]> {
       fetchBillsInRange(startDate, endDate),
     ]);
 
-    // Which customer IDs were active in the last 30 days
+    // Which customer IDs were active in the last 15 days
     const activeUserIds = new Set<string>();
     for (const bill of bills) {
       if (bill.customerId) activeUserIds.add(bill.customerId);
@@ -301,7 +301,7 @@ export async function getAtRiskCustomers(): Promise<AtRiskCustomer[]> {
   try {
     const today = new Date();
     const todayStr = offsetDate(0);
-    const lookbackStart = offsetDate(-365); // better to check further back
+    const lookbackStart = offsetDate(-15); // better to check further back
 
     const [users, bills] = await Promise.all([
       fetchAllUsers(),
@@ -382,46 +382,63 @@ export async function getAtRiskCustomers(): Promise<AtRiskCustomer[]> {
 }
 
 // ── getTopCustomers ───────────────────────────────────────────────────────
-
 export async function getTopCustomers(): Promise<TopCustomer[]> {
   try {
-    const endDate = offsetDate(0);
-    const startDate = offsetDate(-365);
+    const now = new Date();
+
+    const startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+      .toISOString()
+      .split("T")[0];
+
+    const endDate = now.toISOString().split("T")[0];
 
     const [users, bills] = await Promise.all([
       fetchAllUsers(),
       fetchBillsInRange(startDate, endDate),
     ]);
 
-    // Calculate total spend from bills
+    // Spend map for THIS MONTH only
     const spendMap = new Map<string, number>();
+    const activeCustomerSet = new Set<string>();
 
     for (const bill of bills) {
       if (!bill.customerId || bill.isRefunded) continue;
 
-      const currentSpend = spendMap.get(bill.customerId) ?? 0;
+      activeCustomerSet.add(bill.customerId);
 
-      spendMap.set(bill.customerId, currentSpend + (bill.grandTotal ?? 0));
+      const current = spendMap.get(bill.customerId) ?? 0;
+      spendMap.set(bill.customerId, current + (bill.grandTotal ?? 0));
     }
 
-    // Rank customers by loyalty points
-    const ranked = users
-      .map((user) => ({
-        rank: 0,
-        customer: user.name || user._id,
+    // Filter only active customers this month
+    const activeUsers = users.filter((u) => activeCustomerSet.has(u._id));
 
-        // From user API
-        numVisits: user.numberOfPurchases ?? 0,
-        loyaltyPoints: user.loyaltyPoint ?? 0,
+    const ranked = activeUsers
+      .map((user) => {
+        const totalSpent =
+          Math.round((spendMap.get(user._id) ?? 0) * 100) / 100;
 
-        // From bills
-        totalSpent: Math.round((spendMap.get(user._id) ?? 0) * 100) / 100,
+        const loyaltyPoints = user.loyaltyPoint ?? 0;
 
-        loyaltyTier: getLoyaltyStatus(
-          user.loyaltyPoint ?? 0,
-        ) as TopCustomer["loyaltyTier"],
-      }))
-      .sort((a, b) => b.loyaltyPoints - a.loyaltyPoints)
+        return {
+          rank: 0,
+          customer: user.name || user._id,
+          numVisits: user.numberOfPurchases ?? 0,
+          loyaltyPoints,
+          totalSpent,
+          loyaltyTier: getLoyaltyStatus(
+            loyaltyPoints,
+          ) as TopCustomer["loyaltyTier"],
+        };
+      })
+      .sort((a, b) => {
+        // primary: total spent
+        if (b.totalSpent !== a.totalSpent) {
+          return b.totalSpent - a.totalSpent;
+        }
+        // secondary: loyalty points
+        return b.loyaltyPoints - a.loyaltyPoints;
+      })
       .slice(0, 20)
       .map((customer, index) => ({
         ...customer,
