@@ -62,7 +62,8 @@ export const fetchRevenueProfit = async (
 };
 
 // Add "today" to RANGE_DAYS so TypeScript doesn't complain
-const RANGE_DAYS: Record<Exclude<DateRange, "today">, number> = {
+const RANGE_DAYS: Record<DateRange, number> = {
+  today: 1,
   "7d": 6,
   "30d": 29,
   "90d": 89,

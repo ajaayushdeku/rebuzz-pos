@@ -2,7 +2,7 @@ import { AtRiskCustomer } from "@/components/dashboardComponents/customersDash/A
 import { SegmentData } from "@/components/dashboardComponents/customersDash/CustomerSegmentationChart";
 import { CustomerTrendData } from "@/components/dashboardComponents/customersDash/CustomerTrendChart";
 import { TierData } from "@/components/dashboardComponents/customersDash/LoyaltyTierChart";
-import { TopCustomer } from "@/components/dashboardComponents/customersDash/top-customer-column";
+import { TopCustomer } from "@/components/dashboardComponents/customersDash/TopCustomer";
 import { CustomerApiResponse } from "@/lib/dashboardstats";
 
 export const mockTierData: TierData[] = [
