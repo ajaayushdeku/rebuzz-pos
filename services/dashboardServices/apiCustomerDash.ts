@@ -243,6 +243,7 @@ export async function getCustomerTrendData(): Promise<CustomerTrendData[]> {
           month: monthLabel,
           repeat: repeatCount,
           new: totalUsers - repeatCount,
+          totalCustomers: totalUsers,
         };
       });
   } catch (err) {

@@ -25,11 +25,7 @@ export interface CustomerTrendData {
   month: string;
   repeat: number;
   new: number;
-}
-
-export interface CustomerTrendProps {
-  data: CustomerTrendData[];
-  totalCustomers: number;
+  totalCustomers?: number; // Optional, can be calculated from new + repeat
 }
 
 // Helpers
@@ -134,6 +130,10 @@ export interface CustomerTrendProps {
 export default function CustomerTrendChart({ data }: CustomerTrendProps) {
   const isEmpty = !data || data.length === 0;
   const displayData = isEmpty ? mockCustomerTrendData : data;
+  const totalCustomers = displayData.reduce(
+    (sum, d) => sum + (d.totalCustomers || 0),
+    0,
+  );
   const { ticks: yTicks, max: yMax } = getYAxisConfig(totalCustomers);
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full mt-4">
