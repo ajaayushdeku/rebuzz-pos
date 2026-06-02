@@ -106,8 +106,12 @@ export default function AddCustomerPage() {
       }));
       setStep(2);
     } else {
-      setCheckError(
-        result.error || "A customer with this phone number already exists.",
+      // setCheckError(
+      //   result.error || "A customer with this phone number already exists.",
+      // );
+
+          setCheckError(
+      "A customer with this phone number already exists.",
       );
     }
 
