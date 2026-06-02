@@ -5,15 +5,15 @@ const BASE = process.env.NEXT_PUBLIC_API_URL;
 
 export const PUT = async (
   request: Request,
-  { params }: { params: Promise<{ doc_id: string; tax_type_id: string }> },
+  { params }: { params: Promise<{ id: string; group_id: string }> },
 ) => {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
   const body = await request.json();
-  const { doc_id, tax_type_id } = await params;
+  const { id, group_id } = await params;
 
   const res = await fetch(
-    `${BASE}/business/tax/${doc_id}/${tax_type_id}/update`,
+    `${BASE}/business/tax/${id}/${group_id}/updategroup`,
     {
       method: "PUT",
       headers: {
@@ -32,14 +32,14 @@ export const PUT = async (
 
 export const DELETE = async (
   _request: Request,
-  { params }: { params: Promise<{ doc_id: string; tax_type_id: string }> },
+  { params }: { params: Promise<{ id: string; group_id: string }> },
 ) => {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
-  const { doc_id, tax_type_id } = await params;
+  const { id, group_id } = await params;
 
   const res = await fetch(
-    `${BASE}/business/tax/${doc_id}/${tax_type_id}/delete`,
+    `${BASE}/business/tax/${id}/${group_id}/delete-group`,
     {
       method: "DELETE",
       headers: {

@@ -27,12 +27,30 @@ export interface CustomerTrendData {
   new: number;
 }
 
+export interface CustomerTrendProps {
+  data: CustomerTrendData[];
+  totalCustomers: number;
+}
+
 // Helpers
 
-const getYAxisTicks = (data: CustomerTrendData[]): number[] => {
-  const max = Math.max(...data.map((d) => d.repeat + d.new));
-  const step = Math.ceil(max / 4 / 25) * 25;
-  return [0, step, step * 2, step * 3, step * 4];
+const getYAxisConfig = (totalCustomers: number) => {
+  if (totalCustomers <= 10) {
+    return {
+      max: 10,
+      ticks: [0, 2, 4, 6, 8, 10],
+    };
+  }
+
+  const step = Math.ceil(totalCustomers / 5);
+  const max = Math.ceil((totalCustomers * 1.1) / step) * step;
+
+  const ticks = Array.from(
+    { length: Math.floor(max / step) + 1 },
+    (_, i) => i * step,
+  );
+
+  return { max, ticks };
 };
 
 // Sub-components
@@ -116,9 +134,7 @@ export interface CustomerTrendProps {
 export default function CustomerTrendChart({ data }: CustomerTrendProps) {
   const isEmpty = !data || data.length === 0;
   const displayData = isEmpty ? mockCustomerTrendData : data;
-  const yTicks = getYAxisTicks(data);
-  const yMax = yTicks[yTicks.length - 1] * 1.05;
-
+  const { ticks: yTicks, max: yMax } = getYAxisConfig(totalCustomers);
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full mt-4">
       {isEmpty && <SampleDataBadge />}
