@@ -1,16 +1,16 @@
 import { Suspense } from "react";
-import { TrendingUp } from "lucide-react";
+// import { TrendingUp } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import StatSkeleton from "@/components/ui/statskeleton";
 import ChartSkeleton from "@/components/ui/chartskeleton";
 import TableSkeleton from "@/components/ui/tableskeleton";
-import PieChartSkeleton from "@/components/ui/piechartskeleton";
+// import PieChartSkeleton from "@/components/ui/piechartskeleton";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import {
-  BudgetTableWrapper,
-  ExpenseByCategoryChartWrapper,
-  ExpenseStatsWrapper,
+  // BudgetTableWrapper,
+  // ExpenseByCategoryChartWrapper,
+  // ExpenseStatsWrapper,
   GrossProfitTrendChartWrapper,
   ProfitPerProductWrapper,
   ProfitStatsWrapper,
@@ -32,12 +32,12 @@ export default async function Page() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* <div className="flex items-center gap-2">
           <Button className="bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-white rounded-xl text-sm font-semibold">
             <TrendingUp className="h-4 w-4 mr-1.5" />
             Optimize Margins
           </Button>
-        </div>
+        </div> */}
       </div>
 
       <Suspense
@@ -73,14 +73,14 @@ export default async function Page() {
       </div>
 
       {/* ── Expenses Section ── */}
-      <div className="border-b border-gray-200 pb-4">
+      {/* <div className="border-b border-gray-200 pb-4">
         <h2 className="text-lg font-bold text-gray-900">Expenses breakdown</h2>
         <p className="text-xs text-gray-400 mt-0.5">
           Expenses and budget analysis.
         </p>
-      </div>
+      </div> */}
 
-      <Suspense
+      {/* <Suspense
         fallback={
           <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -90,9 +90,9 @@ export default async function Page() {
         }
       >
         <ExpenseStatsWrapper />
-      </Suspense>
+      </Suspense> */}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ChartErrorBoundary>
           <Suspense fallback={<PieChartSkeleton />}>
             <ExpenseByCategoryChartWrapper />
@@ -104,7 +104,7 @@ export default async function Page() {
             <BudgetTableWrapper />
           </Suspense>
         </ChartErrorBoundary>
-      </div>
+      </div> */}
     </div>
   );
 }

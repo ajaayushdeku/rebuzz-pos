@@ -226,7 +226,7 @@ export const getWeeklyRevenueData = async (): Promise<DataPoint[]> => {
   url.searchParams.set("endDate", endDate);
   url.searchParams.set("limit", "25");
 
-  // console.log("Constructed URL for Weekly Revenue:", url.toString());
+  console.log("Constructed URL for Weekly Revenue:", url.toString());
 
   const res = await fetch(url.toString(), {
     headers: {
@@ -239,7 +239,7 @@ export const getWeeklyRevenueData = async (): Promise<DataPoint[]> => {
   if (!res.ok) throw new Error("Failed to fetch weekly revenue");
 
   const json = await res.json();
-  // console.log("Weekly Revenue Report:", json);
+  console.log("Weekly Revenue Report:", json);
 
   const bills: RawBill[] = json?.data?.report?.allBills ?? [];
   // console.log("BIlls:", bills);
