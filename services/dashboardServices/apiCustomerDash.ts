@@ -188,45 +188,69 @@ export async function getCustomerTrendData(): Promise<CustomerTrendData[]> {
   try {
     const now = new Date();
 
-    const monthRanges = Array.from({ length: 6 }, (_, i) => {
-      const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
-      return monthRange(d);
-    });
+    const startDate = new Date(now.getFullYear(), now.getMonth() - 5, 1)
+      .toISOString()
+      .split("T")[0];
 
-    const users = await fetchAllUsers();
+    const endDate = offsetDate(0);
 
-    const monthlyBills = await Promise.all(
-      monthRanges.map((r) => fetchBillsInRange(r.start, r.end)),
-    );
+    const [users, bills] = await Promise.all([
+      fetchAllUsers(),
+      fetchBillsInRange(startDate, endDate),
+    ]);
 
-    return monthRanges.map((range, index) => {
-      const bills = monthlyBills[index];
+    const totalUsers = users.length;
 
-      const customerIdsWithBills = new Set<string>();
+    const monthCustomerMap = new Map<string, Set<string>>();
 
-      bills.forEach((bill) => {
-        if (bill.customerId) {
-          customerIdsWithBills.add(bill.customerId);
-        }
+    for (const bill of bills) {
+      if (!bill.customerId) continue;
+
+      const rawDate = bill.paidAt ?? bill.createdAt;
+      if (!rawDate) continue;
+
+      const billDate = new Date(
+        rawDate.includes("T") ? rawDate : rawDate.replace(" ", "T") + "+05:45",
+      );
+
+      const monthKey = `${billDate.getFullYear()}-${String(
+        billDate.getMonth() + 1,
+      ).padStart(2, "0")}`;
+
+      if (!monthCustomerMap.has(monthKey)) {
+        monthCustomerMap.set(monthKey, new Set());
+      }
+
+      monthCustomerMap.get(monthKey)!.add(bill.customerId);
+    }
+
+    return Array.from(monthCustomerMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([monthKey, customerIds]) => {
+        const [year, month] = monthKey.split("-");
+
+        const monthLabel = new Date(
+          Number(year),
+          Number(month) - 1,
+          1,
+        ).toLocaleString("en-US", {
+          month: "short",
+        });
+
+        const repeatCount = customerIds.size;
+
+        return {
+          month: monthLabel,
+          repeat: repeatCount,
+          new: totalUsers - repeatCount,
+        };
       });
-
-      const repeatCount = customerIdsWithBills.size;
-
-      const newCount = users.filter(
-        (user) => !customerIdsWithBills.has(user._id),
-      ).length;
-
-      return {
-        month: range.label,
-        new: newCount,
-        repeat: repeatCount,
-      };
-    });
   } catch (err) {
     console.error("getCustomerTrendData error:", err);
     return mockCustomerTrendData;
   }
 }
+
 // ── getLoyaltyTierData ────────────────────────────────────────────────────
 
 export async function getLoyaltyTierData(): Promise<TierData[]> {

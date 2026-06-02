@@ -32,8 +32,8 @@ export const tierStyles: Record<LoyaltyTier, { cell: string; badge: string }> =
       badge: "bg-gray-200",
     },
     Bronze: {
-      cell: "text-brown-800",
-      badge: "bg-brown-200",
+      cell: "text-amber-800",
+      badge: "bg-amber-100",
     },
     Platinum: {
       cell: "text-indigo-800",

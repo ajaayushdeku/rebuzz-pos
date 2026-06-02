@@ -1,13 +1,13 @@
-import { SalesTrendsData } from "@/components/dashboardComponents/salesRevenue/SalesTrendChart";
+// import { SalesTrendsData } from "@/components/dashboardComponents/salesRevenue/SalesTrendChart";
 import { SlowProduct } from "@/components/dashboardComponents/salesRevenue/slow-product-columns";
 import { TopProduct } from "@/components/dashboardComponents/salesRevenue/top-product-columns";
 
-import {
-  // mockRevenueVsProfit,
-  mockSalesTrendData,
-  // mockSlowProducts,
-  // mockTopProducts,
-} from "@/lib/mockData/mock-salesrevenue";
+// import {
+//   // mockRevenueVsProfit,
+//   mockSalesTrendData,
+//   // mockSlowProducts,
+//   // mockTopProducts,
+// } from "@/lib/mockData/mock-salesrevenue";
 import { cookies } from "next/headers";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
