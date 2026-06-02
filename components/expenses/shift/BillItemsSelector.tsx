@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TableCell, TableRow } from "../ui/table";
+
 import {
   Check,
   ChevronsUpDown,
@@ -8,13 +8,16 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+
+import { cn } from "@/lib/utils";
+import { ProductService } from "../products-services/productservice-columns";
+import { TableCell, TableRow } from "@/components/ui/table";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "../ui/popover";
-import { Button } from "../ui/button";
-import { cn } from "@/lib/utils";
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -22,17 +25,16 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "../ui/command";
-import { ProductService } from "./products-services/productservice-columns";
-import { Input } from "../ui/input";
+} from "@/components/ui/command";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
-import { Label } from "../ui/label";
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 export interface BillItem {
   id: string;
@@ -54,14 +56,10 @@ export default function BillItemsSelector({
   products,
   onItemsChange,
 }: BillItemsSelectorProps) {
-  const [isModalOpen, setIsModalOpen] =
-    useState(false);
-  const [isLoading, setIsLoading] =
-    useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState("");
-  const [activeRowId, setActiveRowId] = useState<
-    string | null
-  >(null);
+  const [activeRowId, setActiveRowId] = useState<string | null>(null);
 
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -80,22 +78,14 @@ export default function BillItemsSelector({
     setSearch("");
   };
 
-  const openCreateModal = (
-    rowId: string,
-    name: string,
-  ) => {
+  const openCreateModal = (rowId: string, name: string) => {
     setActiveRowId(rowId);
     setNewProduct((prev) => ({ ...prev, name }));
     setIsModalOpen(true);
   };
 
-  const handleProductSelect = (
-    itemId: string,
-    productName: string,
-  ) => {
-    const product = products.find(
-      (p) => p.name === productName,
-    );
+  const handleProductSelect = (itemId: string, productName: string) => {
+    const product = products.find((p) => p.name === productName);
 
     onItemsChange(
       items.map((item) => {
@@ -140,10 +130,7 @@ export default function BillItemsSelector({
   return (
     <>
       {items.map((item, idx) => (
-        <TableRow
-          key={idx}
-          className="border-b-0"
-        >
+        <TableRow key={idx} className="border-b-0">
           <TableCell className="w-6 px-1">
             <GripVertical className="h-4 w-4 text-gray-400 cursor-grab" />
           </TableCell>
@@ -156,19 +143,14 @@ export default function BillItemsSelector({
                   role="combobox"
                   className={cn(
                     "w-full justify-between font-normal border-gray-300",
-                    !item.name &&
-                      "text-muted-foreground",
+                    !item.name && "text-muted-foreground",
                   )}
                 >
-                  {item.name ||
-                    "Select product..."}
+                  {item.name || "Select product..."}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent
-                className="w-75 p-0"
-                align="start"
-              >
+              <PopoverContent className="w-75 p-0" align="start">
                 <Command>
                   <CommandInput
                     placeholder="Search product..."
@@ -183,12 +165,7 @@ export default function BillItemsSelector({
                       <Button
                         variant="secondary"
                         className="w-full rounded-none border-t flex items-center justify-start gap-2 px-4 py-2"
-                        onClick={() =>
-                          openCreateModal(
-                            item.id,
-                            search,
-                          )
-                        }
+                        onClick={() => openCreateModal(item.id, search)}
                       >
                         <Plus className="h-4 w-4" />
                         <span>
@@ -203,25 +180,19 @@ export default function BillItemsSelector({
                           key={product.id}
                           value={product.name}
                           onSelect={() =>
-                            handleProductSelect(
-                              item.id,
-                              product.name,
-                            )
+                            handleProductSelect(item.id, product.name)
                           }
                         >
                           <Check
                             className={cn(
                               "mr-2 h-4 w-4",
-                              item.name ===
-                                product.name
+                              item.name === product.name
                                 ? "opacity-100"
                                 : "opacity-0",
                             )}
                           />
                           <div className="flex flex-col">
-                            <span>
-                              {product.name}
-                            </span>
+                            <span>{product.name}</span>
 
                             <span className="text-xs text-muted-foreground">
                               ${product.price}
@@ -240,11 +211,7 @@ export default function BillItemsSelector({
             <Input
               value={item.description}
               onChange={(e) =>
-                updateItem(
-                  item.id,
-                  "description",
-                  e.target.value,
-                )
+                updateItem(item.id, "description", e.target.value)
               }
               placeholder="Description"
             />
@@ -254,11 +221,7 @@ export default function BillItemsSelector({
               type="number"
               value={item.quantity}
               onChange={(e) =>
-                updateItem(
-                  item.id,
-                  "quantity",
-                  Number(e.target.value),
-                )
+                updateItem(item.id, "quantity", Number(e.target.value))
               }
               className="text-right"
             />
@@ -268,11 +231,7 @@ export default function BillItemsSelector({
               type="number"
               value={item.price}
               onChange={(e) =>
-                updateItem(
-                  item.id,
-                  "price",
-                  Number(e.target.value),
-                )
+                updateItem(item.id, "price", Number(e.target.value))
               }
               className="text-right"
             />
@@ -280,8 +239,7 @@ export default function BillItemsSelector({
           <TableCell className="w-24 text-right font-medium">
             $
             {(() => {
-              const rowSubtotal =
-                item.quantity * item.price;
+              const rowSubtotal = item.quantity * item.price;
               return rowSubtotal.toFixed(2);
             })()}
           </TableCell>
@@ -290,11 +248,7 @@ export default function BillItemsSelector({
               variant="ghost"
               size="icon"
               onClick={() =>
-                onItemsChange(
-                  items.filter(
-                    (i) => i.id !== item.id,
-                  ),
-                )
+                onItemsChange(items.filter((i) => i.id !== item.id))
               }
             >
               <Trash2 className="h-4 w-4 text-blue-500 hover:text-red-500" />
@@ -315,10 +269,7 @@ export default function BillItemsSelector({
       </TableRow>
 
       {/* Modal for creating new product */}
-      <Dialog
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-      >
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="text-blue-600">
@@ -327,9 +278,7 @@ export default function BillItemsSelector({
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">
-                Product Name
-              </Label>
+              <Label htmlFor="name">Product Name</Label>
               <Input
                 id="name"
                 value={newProduct.name}
@@ -357,9 +306,7 @@ export default function BillItemsSelector({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="description">
-                Description
-              </Label>
+              <Label htmlFor="description">Description</Label>
               <Input
                 id="description"
                 value={newProduct.description}
@@ -375,9 +322,7 @@ export default function BillItemsSelector({
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() =>
-                setIsModalOpen(false)
-              }
+              onClick={() => setIsModalOpen(false)}
               disabled={isLoading}
             >
               Cancel
@@ -386,9 +331,7 @@ export default function BillItemsSelector({
               //   onClick={handleSaveProduct}
               disabled={isLoading}
             >
-              {isLoading
-                ? "Saving..."
-                : "Save Product"}
+              {isLoading ? "Saving..." : "Save Product"}
             </Button>
           </DialogFooter>
         </DialogContent>
