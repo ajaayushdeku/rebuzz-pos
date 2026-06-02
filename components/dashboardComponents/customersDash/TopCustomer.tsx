@@ -14,6 +14,7 @@ export type TopCustomer = {
   totalSpent: number;
   loyaltyTier: LoyaltyTier;
   loyaltyPoints: number;
+  numberOfPurchases?: number;
 };
 
 export type TopCustomersProps = {

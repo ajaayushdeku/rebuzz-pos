@@ -35,6 +35,7 @@ type RawUser = {
   phone?: string;
   loyaltyPoint: number;
   createdAt?: string;
+  numberOfPurchases?: number;
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────
@@ -187,39 +188,33 @@ export async function getCustomerTrendData(): Promise<CustomerTrendData[]> {
   try {
     const now = new Date();
 
-    // Past 6 months — oldest first
     const monthRanges = Array.from({ length: 6 }, (_, i) => {
       const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
       return monthRange(d);
     });
 
+    const users = await fetchAllUsers();
+
     const monthlyBills = await Promise.all(
       monthRanges.map((r) => fetchBillsInRange(r.start, r.end)),
     );
 
-    // Track all customer IDs seen so far (oldest → newest)
-    // to distinguish "new" vs "repeat"
-    const seenCustomerIds = new Set<string>();
+    return monthRanges.map((range, index) => {
+      const bills = monthlyBills[index];
 
-    return monthRanges.map((range, i) => {
-      const bills = monthlyBills[i];
+      const customerIdsWithBills = new Set<string>();
 
-      const monthCustomerIds = new Set<string>();
-      for (const bill of bills) {
-        if (bill.customerId) monthCustomerIds.add(bill.customerId);
-      }
-
-      let newCount = 0;
-      let repeatCount = 0;
-
-      for (const cid of monthCustomerIds) {
-        if (seenCustomerIds.has(cid)) {
-          repeatCount++;
-        } else {
-          newCount++;
-          seenCustomerIds.add(cid);
+      bills.forEach((bill) => {
+        if (bill.customerId) {
+          customerIdsWithBills.add(bill.customerId);
         }
-      }
+      });
+
+      const repeatCount = customerIdsWithBills.size;
+
+      const newCount = users.filter(
+        (user) => !customerIdsWithBills.has(user._id),
+      ).length;
 
       return {
         month: range.label,
@@ -232,7 +227,6 @@ export async function getCustomerTrendData(): Promise<CustomerTrendData[]> {
     return mockCustomerTrendData;
   }
 }
-
 // ── getLoyaltyTierData ────────────────────────────────────────────────────
 
 export async function getLoyaltyTierData(): Promise<TierData[]> {
@@ -269,27 +263,30 @@ export async function getAtRiskCustomers(): Promise<AtRiskCustomer[]> {
   try {
     const today = new Date();
     const todayStr = offsetDate(0);
-    // Look back 90 days to get the last visit date per customer
-    const lookbackStart = offsetDate(-90);
+    const lookbackStart = offsetDate(-365); // better to check further back
 
     const [users, bills] = await Promise.all([
       fetchAllUsers(),
       fetchBillsInRange(lookbackStart, todayStr),
     ]);
 
-    // Build map: customerId → most recent bill date
+    // customerId -> latest bill date
     const lastVisitMap = new Map<string, Date>();
+
     for (const bill of bills) {
       if (!bill.customerId) continue;
 
-      // Parse paidAt (Nepal time stored without tz suffix)
-      const rawDate = bill.paidAt ?? bill.createdAt ?? "";
+      const rawDate = bill.paidAt ?? bill.createdAt;
+      if (!rawDate) continue;
+
       const normalized = rawDate.includes("T")
         ? rawDate
         : rawDate.replace(" ", "T") + "+05:45";
+
       const billDate = new Date(normalized);
 
       const existing = lastVisitMap.get(bill.customerId);
+
       if (!existing || billDate > existing) {
         lastVisitMap.set(bill.customerId, billDate);
       }
@@ -301,26 +298,41 @@ export async function getAtRiskCustomers(): Promise<AtRiskCustomer[]> {
       return "Low";
     }
 
-    // At-risk = users who haven't visited in the last 14 days
-    // or have never visited at all
     const atRisk = users
-      .map((u) => {
-        const lastVisitDate = lastVisitMap.get(u._id);
+      .map((user) => {
+        const lastVisitDate = lastVisitMap.get(user._id);
+
         const daysSinceVisit = lastVisitDate
           ? Math.floor(
               (today.getTime() - lastVisitDate.getTime()) /
                 (1000 * 60 * 60 * 24),
             )
-          : 999; // never visited
-        return { user: u, daysSinceVisit };
+          : Number.MAX_SAFE_INTEGER;
+
+        return {
+          user,
+          lastVisitDate,
+          daysSinceVisit,
+        };
       })
       .filter(({ daysSinceVisit }) => daysSinceVisit >= 14)
-      .sort((a, b) => b.daysSinceVisit - a.daysSinceVisit) // most at-risk first
+      .sort((a, b) => b.daysSinceVisit - a.daysSinceVisit)
       .slice(0, 20)
-      .map(({ user, daysSinceVisit }, idx) => ({
-        rank: idx + 1,
+      // .map(({ user, lastVisitDate }, index) => ({
+      //   rank: index + 1,
+      //   name: user.name || user._id,
+
+      //   // Actual last visit date
+      //   lastVisit: lastVisitDate
+      //     ? lastVisitDate.toLocaleDateString("en-CA") // YYYY-MM-DD
+      //     : "Never",
+
+      //   spendLevel: toSpendLevel(user.loyaltyPoint ?? 0),
+      // }));
+      .map(({ user, daysSinceVisit }, index) => ({
+        rank: index + 1,
         name: user.name || user._id,
-        lastVisit: daysSinceVisit === 999 ? 90 : daysSinceVisit,
+        lastVisit: daysSinceVisit,
         spendLevel: toSpendLevel(user.loyaltyPoint ?? 0),
       }));
 
@@ -343,41 +355,40 @@ export async function getTopCustomers(): Promise<TopCustomer[]> {
       fetchBillsInRange(startDate, endDate),
     ]);
 
-    // Aggregate spend + visits per customerId
-    const statsMap = new Map<
-      string,
-      { totalSpent: number; numVisits: number }
-    >();
+    // Calculate total spend from bills
+    const spendMap = new Map<string, number>();
 
     for (const bill of bills) {
-      if (!bill.customerId) continue;
-      const existing = statsMap.get(bill.customerId) ?? {
-        totalSpent: 0,
-        numVisits: 0,
-      };
-      existing.totalSpent += bill.grandTotal ?? 0;
-      existing.numVisits += 1;
-      statsMap.set(bill.customerId, existing);
+      if (!bill.customerId || bill.isRefunded) continue;
+
+      const currentSpend = spendMap.get(bill.customerId) ?? 0;
+
+      spendMap.set(bill.customerId, currentSpend + (bill.grandTotal ?? 0));
     }
 
+    // Rank customers by loyalty points
     const ranked = users
-      .map((u) => {
-        const stats = statsMap.get(u._id) ?? {
-          totalSpent: 0,
-          numVisits: 0,
-        };
-        return {
-          rank: 0,
-          customer: u.name || u._id,
-          numVisits: stats.numVisits,
-          totalSpent: Math.round(stats.totalSpent * 100) / 100,
-          loyaltyTier: getLoyaltyStatus(u.loyaltyPoint ?? 0),
-          loyaltyPoints: u.loyaltyPoint ?? 0,
-        } as TopCustomer;
-      })
-      .sort((a, b) => b.totalSpent - a.totalSpent) // sort by actual spend, not just points
+      .map((user) => ({
+        rank: 0,
+        customer: user.name || user._id,
+
+        // From user API
+        numVisits: user.numberOfPurchases ?? 0,
+        loyaltyPoints: user.loyaltyPoint ?? 0,
+
+        // From bills
+        totalSpent: Math.round((spendMap.get(user._id) ?? 0) * 100) / 100,
+
+        loyaltyTier: getLoyaltyStatus(
+          user.loyaltyPoint ?? 0,
+        ) as TopCustomer["loyaltyTier"],
+      }))
+      .sort((a, b) => b.loyaltyPoints - a.loyaltyPoints)
       .slice(0, 20)
-      .map((c, idx) => ({ ...c, rank: idx + 1 }));
+      .map((customer, index) => ({
+        ...customer,
+        rank: index + 1,
+      }));
 
     return ranked;
   } catch (err) {
