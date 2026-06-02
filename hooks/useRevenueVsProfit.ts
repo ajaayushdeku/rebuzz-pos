@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ProductData } from "@/components/dashboardComponents/salesRevenue/RevenueVsProfitChart";
 
 const RANGE_DAYS: Record<string, number> = {
+  today: 0,
   "7d": 6,
   "30d": 29,
   "90d": 89,

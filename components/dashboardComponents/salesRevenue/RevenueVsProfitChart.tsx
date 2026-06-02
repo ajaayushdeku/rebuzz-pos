@@ -34,6 +34,7 @@ export interface ProductData {
 }
 
 const RANGE_OPTIONS: { label: string; value: string }[] = [
+  { label: "Today", value: "today" },
   { label: "7 days", value: "7d" },
   { label: "30 days", value: "30d" },
   { label: "90 days", value: "90d" },

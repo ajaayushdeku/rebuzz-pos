@@ -1,13 +1,15 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { UserPlus } from "lucide-react";
 import { useCustomersList } from "@/hooks/useCustomersList";
 import CustomerTable from "@/components/customer/CustomerTable";
+import CustomerFormModal from "@/components/invoice/CustomerFormModal";
+import { useState } from "react";
 
 export default function Page() {
   const { data: customers = [], isLoading } = useCustomersList();
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
@@ -22,13 +24,11 @@ export default function Page() {
             </p>
           </div>
           <Button
-            asChild
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
+            onClick={() => setCreateModalOpen(true)}
           >
-            <Link href="records/customers/add">
-              <UserPlus className="h-4 w-4" />
-              Add new customer
-            </Link>
+            <UserPlus className="h-4 w-4" />
+            Add new customer
           </Button>
         </div>
 
@@ -40,6 +40,11 @@ export default function Page() {
           <CustomerTable customers={customers} />
         )}
       </div>
+
+      <CustomerFormModal
+        open={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+      />
     </div>
   );
 }

@@ -1,12 +1,10 @@
-import Link from "next/link";
-import { UserPlus } from "lucide-react";
 import { Suspense } from "react";
-import { Button } from "@/components/ui/button";
 import TableSkeleton from "@/components/ui/tableskeleton";
 import ChartSkeleton from "@/components/ui/chartskeleton";
 import PieChartSkeleton from "@/components/ui/piechartskeleton";
 import StatSkeleton from "@/components/ui/statskeleton";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
+import CreateCustomerButton from "@/components/customer/CreateCustomerButton";
 import {
   CustomerStatsWrapper,
   AtRiskCustomerWrapper,
@@ -31,15 +29,7 @@ export default async function Page() {
           </p>
         </div>
 
-        <Button
-          className="bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
-          asChild
-        >
-          <Link href="records/customers/add">
-            <UserPlus className="h-4 w-4 mr-1.5" />
-            New Customer
-          </Link>
-        </Button>
+        <CreateCustomerButton />
       </div>
 
       <Suspense
