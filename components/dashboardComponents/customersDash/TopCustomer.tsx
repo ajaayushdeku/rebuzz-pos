@@ -5,7 +5,7 @@ import { Search, ChevronDown, ChevronUp, ArrowUpDown } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrency } from "@/utils/helper";
 
-export type LoyaltyTier = "Gold" | "Silver" | "Bronze" | "None";
+export type LoyaltyTier = "Gold" | "Silver" | "Bronze" | "Platinum" | "None";
 
 export type TopCustomer = {
   rank: number;
@@ -34,6 +34,10 @@ export const tierStyles: Record<LoyaltyTier, { cell: string; badge: string }> =
     Bronze: {
       cell: "text-brown-800",
       badge: "bg-brown-200",
+    },
+    Platinum: {
+      cell: "text-indigo-800",
+      badge: "bg-indigo-200",
     },
     None: {
       cell: "text-gray-800",
