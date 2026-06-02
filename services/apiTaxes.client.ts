@@ -3,6 +3,7 @@ export type Tax = {
   name: string;
   isEnabled: boolean;
   rate: number;
+  _docId?: string;
 };
 
 export type GroupedTax = {
@@ -10,6 +11,7 @@ export type GroupedTax = {
   name: string;
   taxIds: string[];
   isEnabled: boolean;
+  _docId?: string;
 };
 
 export type TaxSettings = {
@@ -23,17 +25,17 @@ export type TaxResponse = {
   taxSettings: TaxSettings;
 };
 
-type TaxPayload = {
-  taxes: {
-    name: string;
-    rate: number;
-    _id: null;
-    adminId: null;
-    isSelected: boolean;
-    isEnabled: boolean;
-    isToogleLoading: boolean;
-  }[];
-};
+// type TaxPayload = {
+//   taxes: {
+//     name: string;
+//     rate: number;
+//     _id: null;
+//     adminId: null;
+//     isSelected: boolean;
+//     isEnabled: boolean;
+//     isToogleLoading: boolean;
+//   }[];
+// };
 
 // Fetch/Get All Taxes
 export const fetchTaxes = async (): Promise<TaxResponse> => {
@@ -45,11 +47,15 @@ export const fetchTaxes = async (): Promise<TaxResponse> => {
 
   const json = await res.json();
 
-  // console.log("Tax API test data:", json);
+  const parent = json?.data?.tax?.[0];
+  const docId: string | undefined = parent?._id;
+  const rawTaxes: Tax[] = parent?.taxes ?? [];
+  const rawGrouped: GroupedTax[] = parent?.groupedTaxes ?? [];
+
   return {
-    taxes: json?.data?.tax[0]?.taxes ?? [],
-    groupedTaxes: json?.data?.tax[0]?.groupedTaxes ?? [],
-    taxSettings: json?.data?.tax[0]?.taxSettings ?? {
+    taxes: rawTaxes.map((t) => ({ ...t, _docId: docId })),
+    groupedTaxes: rawGrouped.map((g) => ({ ...g, _docId: docId })),
+    taxSettings: parent?.taxSettings ?? {
       mode: "none",
       isAddonTaxEnabled: false,
     },
@@ -57,6 +63,7 @@ export const fetchTaxes = async (): Promise<TaxResponse> => {
 };
 
 // Create New Tax Rate
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const createTaxes = async (taxData: any): Promise<Tax> => {
   const res = await fetch("/api/taxes", {
     method: "POST",
@@ -69,25 +76,6 @@ export const createTaxes = async (taxData: any): Promise<Tax> => {
   if (!res.ok) throw new Error("Failed to create tax rate");
   return res.json();
 };
-
-// export const createTaxes = async (payload: {
-//   taxes: {
-//     name: string;
-//     rate: number;
-//     _id: null;
-//     adminId: null;
-//     isSelected: boolean;
-//     isEnabled: boolean;
-//     isToogleLoading: boolean;
-//   }[];
-// }): Promise<void> => {
-//   const res = await fetch("/api/taxes/create", {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify(payload),
-//   });
-//   if (!res.ok) throw new Error("Failed to create tax");
-// };
 
 export const createGroupTax = async (payload: {
   groupName: string;
@@ -130,4 +118,90 @@ export const toggleTaxEnabled = async (
   });
 
   if (!res.ok) throw new Error("Failed to toggle tax");
+};
+
+// Update Normal Tax
+export const updateNormalTax = async ({
+  docId,
+  taxId,
+  payload,
+}: {
+  docId: string;
+  taxId: string;
+  payload: { name: string; rate: number };
+}): Promise<Record<string, unknown>> => {
+  const res = await fetch(`/api/taxes/${docId}/normal/${taxId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to update tax");
+  }
+  return res.json();
+};
+
+// Delete Normal Tax
+export const deleteNormalTax = async ({
+  docId,
+  taxId,
+}: {
+  docId: string;
+  taxId: string;
+}): Promise<Record<string, unknown>> => {
+  const res = await fetch(`/api/taxes/${docId}/normal/${taxId}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to delete tax");
+  }
+  return res.json();
+};
+
+// Update Group Tax
+export const updateGroupTax = async ({
+  docId,
+  groupId,
+  payload,
+}: {
+  docId: string;
+  groupId: string;
+  payload: { name: string; taxIds: string[] };
+}): Promise<Record<string, unknown>> => {
+  const res = await fetch(`/api/taxes/${docId}/group/${groupId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to update group tax");
+  }
+  return res.json();
+};
+
+// Delete Group Tax
+export const deleteGroupTax = async ({
+  docId,
+  groupId,
+}: {
+  docId: string;
+  groupId: string;
+}): Promise<Record<string, unknown>> => {
+  const res = await fetch(`/api/taxes/${docId}/group/${groupId}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to delete group tax");
+  }
+  return res.json();
 };

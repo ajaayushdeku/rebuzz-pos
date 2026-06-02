@@ -28,7 +28,6 @@ import { getTicketByInvoice } from "@/services/apiTicket.client";
 import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
 
 import { Button } from "@/components/ui/button";
-import InvoicePreview from "@/components/dashboardComponents/salesRevenue/invoice/InvoicePreview";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,6 +48,7 @@ import {
   LoyaltyPointSettings,
 } from "@/services/apiLoyaltyPoint";
 import { sendInvoiceScreenshot } from "@/services/sendInvoiceScreenshot";
+import InvoicePreview from "@/components/invoice/InvoicePreview";
 
 type InvoiceStatus = "draft" | "sent" | "paid" | "overdue";
 
@@ -189,13 +189,25 @@ export default function InvoiceDetailPage() {
   const subtotalBeforeTax = invoice?.total ?? 0;
 
   // ✅ Correct — sum each item's actual taxAmount × quantity
+  type ProductForTax = {
+    taxApplied?: boolean;
+    taxAmount?: number;
+    quantity?: number;
+  };
+
+  type ItemGroupForTax = {
+    item?: ProductForTax[];
+  };
+
   const taxAmount =
-    invoice?.items?.reduce((groupSum: number, group: any) => {
+    invoice?.items?.reduce((groupSum: number, group: ItemGroupForTax) => {
       const groupTax =
-        group.item?.reduce((sum: number, product: any) => {
+        group.item?.reduce((sum: number, product: ProductForTax) => {
           return (
             sum +
-            (product.taxApplied ? product.taxAmount * product.quantity : 0)
+            (product.taxApplied
+              ? (product.taxAmount ?? 0) * (product.quantity ?? 0)
+              : 0)
           );
         }, 0) ?? 0;
       return groupSum + groupTax;
@@ -391,7 +403,7 @@ export default function InvoiceDetailPage() {
     );
   };
 
-  const [moreActionsOpen, setMoreActionsOpen] = useState(false);
+  // const [moreActionsOpen, setMoreActionsOpen] = useState(false);
 
   // ── Send invoice modal — selected invoice type state ──
   const [selectedInvoiceType, setSelectedInvoiceType] = useState<

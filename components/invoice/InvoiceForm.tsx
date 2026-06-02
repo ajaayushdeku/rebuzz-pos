@@ -13,10 +13,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
-import { Button } from "../../../ui/button";
-import { Label } from "../../../ui/label";
-import { Input } from "../../../ui/input";
-import { Table, TableBody } from "../../../ui/table";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody } from "@/components/ui/table";
 
 import CustomerSelector from "./CustomerSelector";
 import AddInvoiceHeader from "./AddInvoiceHeader";

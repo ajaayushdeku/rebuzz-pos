@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import {
-  Tag,
   Search,
   Pencil,
   Trash2,
@@ -11,7 +10,12 @@ import {
   Percent,
   DollarSign,
 } from "lucide-react";
-import { useDiscounts, useCreateDiscount } from "@/hooks/useDiscounts";
+import {
+  useDiscounts,
+  useCreateDiscount,
+  useUpdateDiscount,
+  useDeleteDiscount,
+} from "@/hooks/useDiscounts";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +34,15 @@ type DiscountForm = {
   rate: number;
 };
 
+interface Discount {
+  _id: string;
+  name: string;
+  isEnabled: boolean;
+  rate: number;
+  type: "percentage" | "fixed";
+  _docId?: string;
+}
+
 const inputClass =
   "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
 
@@ -39,9 +52,9 @@ function DiscountTable({
   onEdit,
   onDelete,
 }: {
-  discounts: any[];
+  discounts: Discount[];
   search: string;
-  onEdit: (d: any) => void;
+  onEdit: (d: Discount) => void;
   onDelete: (id: string) => void;
 }) {
   const filtered = discounts.filter((d) =>
@@ -101,9 +114,11 @@ function DiscountTable({
 export default function DiscountSettingsPage() {
   const { data: discounts = [], isLoading } = useDiscounts();
   const { mutate: createDiscount, isPending: creating } = useCreateDiscount();
+  const { mutate: updateDiscount, isPending: updating } = useUpdateDiscount();
+  const { mutate: deleteDiscount, isPending: deleting } = useDeleteDiscount();
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
-  const [editTarget, setEditTarget] = useState<any | null>(null);
+  const [editTarget, setEditTarget] = useState<Discount | null>(null);
   const [form, setForm] = useState<DiscountForm>({
     name: "",
     type: "percentage",
@@ -121,33 +136,79 @@ export default function DiscountSettingsPage() {
     setModalOpen(true);
   };
 
-  const openEdit = (d: any) => {
+  const openEdit = (d: Discount) => {
     setEditTarget(d);
     setForm({ name: d.name, type: d.type, rate: d.rate });
     setModalOpen(true);
   };
 
-  const handleSave = () => {
-    if (!form.name.trim() || form.rate <= 0) return;
-    createDiscount(
-      {
-        discounts: [
-          {
-            name: form.name,
-            rate: form.rate,
-            type: form.type,
-            isEnabled: false,
-          },
-        ],
-      },
+  const handleDelete = (id: string) => {
+    const target = discounts.find((d: Discount) => d._id === id);
+    if (!target?._docId) {
+      toast.error("Missing document reference");
+      return;
+    }
+    if (
+      !window.confirm(
+        `Delete discount "${target.name}"? This cannot be undone.`,
+      )
+    )
+      return;
+    deleteDiscount(
+      { docId: target._docId, discountId: id },
       {
         onSuccess: () => {
-          toast.success("Discount created");
-          setModalOpen(false);
+          toast.success("Discount deleted");
         },
-        onError: () => toast.error("Failed to create discount"),
+        onError: () => toast.error("Failed to delete discount"),
       },
     );
+  };
+
+  const handleSave = () => {
+    if (!form.name.trim() || form.rate <= 0) return;
+
+    if (editTarget) {
+      if (!editTarget._docId) {
+        toast.error("Missing document reference");
+        return;
+      }
+
+      updateDiscount(
+        {
+          docId: editTarget._docId,
+          discountId: editTarget._id,
+          payload: { name: form.name, rate: form.rate, type: form.type },
+        },
+        {
+          onSuccess: () => {
+            toast.success("Discount updated");
+            setModalOpen(false);
+          },
+          onError: () => toast.error("Failed to update discount"),
+        },
+      );
+    } else {
+      createDiscount(
+        {
+          discounts: [
+            {
+              name: form.name,
+              rate: form.rate,
+              type: form.type,
+              isEnabled: false,
+            },
+          ],
+        },
+        {
+          onSuccess: () => {
+            toast.success("Discount created");
+            setModalOpen(false);
+          },
+          onError: () => toast.error("Failed to create discount"),
+        },
+      );
+    }
   };
 
   return (
@@ -201,7 +262,7 @@ export default function DiscountSettingsPage() {
                 discounts={percentageDiscounts}
                 search={search}
                 onEdit={openEdit}
-                onDelete={(id) => toast("Delete not wired yet")}
+                onDelete={handleDelete}
               />
             )}
           </div>
@@ -220,7 +281,7 @@ export default function DiscountSettingsPage() {
                 discounts={fixedDiscounts}
                 search={search}
                 onEdit={openEdit}
-                onDelete={(id) => toast("Delete not wired yet")}
+                onDelete={handleDelete}
               />
             )}
           </div>
@@ -306,10 +367,10 @@ export default function DiscountSettingsPage() {
               </Button>
               <Button
                 onClick={handleSave}
-                disabled={creating}
+                disabled={creating || updating || deleting}
                 className="bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg"
               >
-                {creating ? (
+                {creating || updating ? (
                   <>
                     <Loader2 size={13} className="animate-spin mr-1.5" />
                     Saving...

@@ -2,14 +2,12 @@
 
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
-
 import { Loader2 } from "lucide-react";
 
 import { useBusiness } from "@/hooks/useBusiness";
 import { getTicketByInvoice } from "@/services/apiTicket.client";
 import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
-import InvoicePreview from "@/components/dashboardComponents/salesRevenue/invoice/InvoicePreview";
+import InvoicePreview from "../invoice/InvoicePreview";
 
 type InvoiceType = "proforma" | "invoice" | "tax";
 

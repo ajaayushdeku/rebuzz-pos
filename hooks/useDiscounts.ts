@@ -1,4 +1,9 @@
-import { createDiscount, fetchDiscounts } from "@/services/apiDiscounts.client";
+import {
+  createDiscount,
+  fetchDiscounts,
+  updateDiscount,
+  deleteDiscount,
+} from "@/services/apiDiscounts.client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
@@ -23,6 +28,36 @@ export const useCreateDiscount = () => {
         queryKey: ["discount"],
       });
       toast.success("Discount created successfully");
+    },
+  });
+};
+
+// Update Discount Coupon
+export const useUpdateDiscount = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateDiscount,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["discount"],
+      });
+      toast.success("Discount updated successfully");
+    },
+  });
+};
+
+// Delete Discount Coupon
+export const useDeleteDiscount = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteDiscount,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["discount"],
+      });
+      toast.success("Discount deleted successfully");
     },
   });
 };

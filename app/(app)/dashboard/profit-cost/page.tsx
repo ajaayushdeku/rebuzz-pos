@@ -32,12 +32,12 @@ export default async function Page() {
           </p>
         </div>
 
-        {/* <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <Button className="bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-white rounded-xl text-sm font-semibold">
             <TrendingUp className="h-4 w-4 mr-1.5" />
             Optimize Margins
           </Button>
-        </div> */}
+        </div>
       </div>
 
       <Suspense

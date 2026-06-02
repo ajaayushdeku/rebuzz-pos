@@ -7,9 +7,9 @@ import { useInvoiceStore } from "@/stores/invoiceStore";
 import { fetchInvoicesClient } from "@/services/apiInvoice.client";
 
 import { Spinner } from "@/components/ui/spinner";
-import InvoiceStats from "@/components/dashboardComponents/salesRevenue/invoice/InvoiceStats";
-import InvoiceTable from "@/components/dashboardComponents/salesRevenue/invoice/InvoiceTable";
-import InvoiceHeader from "@/components/dashboardComponents/salesRevenue/invoice/InvoiceHeader";
+import InvoiceHeader from "@/components/invoice/InvoiceHeader";
+import InvoiceStats from "@/components/invoice/InvoiceStats";
+import InvoiceTable from "@/components/invoice/InvoiceTable";
 
 export default function Page() {
   // zustand store to manage invoice state across the app. We fetch invoices here and update the store, so other components can access the data without refetching.

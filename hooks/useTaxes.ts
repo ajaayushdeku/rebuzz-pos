@@ -4,6 +4,10 @@ import {
   toggleTaxEnabled,
   createTaxes,
   createGroupTax,
+  updateNormalTax,
+  deleteNormalTax,
+  updateGroupTax,
+  deleteGroupTax,
 } from "@/services/apiTaxes.client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -60,5 +64,57 @@ export const useToggleTax = () => {
       queryClient.invalidateQueries({ queryKey: ["taxes"] });
     },
     onError: () => toast.error("Failed to update tax"),
+  });
+};
+
+// Update Normal Tax
+export const useUpdateNormalTax = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateNormalTax,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["taxes"] });
+      toast.success("Tax updated successfully");
+    },
+    onError: () => toast.error("Failed to update tax"),
+  });
+};
+
+// Delete Normal Tax
+export const useDeleteNormalTax = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteNormalTax,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["taxes"] });
+      toast.success("Tax deleted successfully");
+    },
+    onError: () => toast.error("Failed to delete tax"),
+  });
+};
+
+// Update Group Tax
+export const useUpdateGroupTax = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateGroupTax,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["taxes"] });
+      toast.success("Group tax updated successfully");
+    },
+    onError: () => toast.error("Failed to update group tax"),
+  });
+};
+
+// Delete Group Tax
+export const useDeleteGroupTax = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteGroupTax,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["taxes"] });
+      toast.success("Group tax deleted successfully");
+    },
+    onError: () => toast.error("Failed to delete group tax"),
   });
 };

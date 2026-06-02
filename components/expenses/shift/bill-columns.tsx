@@ -2,16 +2,22 @@ import { CurrencyConfig } from "@/lib/config/store";
 import { BillView } from "@/lib/types/expenses";
 import { formatCurrency, formatDatetime } from "@/utils/helper";
 import { ColumnDef, FilterFn } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, Pencil, Trash2, Wallet } from "lucide-react";
-import { Badge } from "../ui/badge";
+import {
+  ArrowUpDown,
+  Badge,
+  ChevronDown,
+  Pencil,
+  Trash2,
+  Wallet,
+} from "lucide-react";
+import { endOfDay, isWithinInterval, startOfDay } from "date-fns";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { Button } from "../ui/button";
-import { endOfDay, isWithinInterval, startOfDay } from "date-fns";
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 type BillStatus = "Pay In" | "Pay Out" | "Sales";
 

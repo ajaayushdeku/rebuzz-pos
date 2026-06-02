@@ -8,8 +8,7 @@ import businessLogo from "@/public/rebuzz.png";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { InvoiceItemGroup } from "@/lib/types/invoice";
 import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
-
-import InvoiceBillTable from "../../../ticket/InvoiceBillTable";
+import InvoiceBillTable from "./InvoiceBillTable";
 
 interface InvoiceData {
   _id: string;

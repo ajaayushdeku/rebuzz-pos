@@ -14,18 +14,17 @@ import { Table, TableBody } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import CustomerSelector from "@/components/dashboardComponents/salesRevenue/invoice/CustomerSelector";
-import AddInvoiceHeader from "@/components/dashboardComponents/salesRevenue/invoice/AddInvoiceHeader";
-import InvoiceItemsSelector from "@/components/dashboardComponents/salesRevenue/invoice/InvoiceItemsSelector";
-import InvoiceDiscountCreate from "@/components/dashboardComponents/salesRevenue/invoice/InvoiceDiscountCreate";
-import InvoiceTaxCreate from "@/components/dashboardComponents/salesRevenue/invoice/InvoiceTaxCreate";
-
 import { Customer } from "@/lib/types/customer";
 import { InvoiceItem } from "@/lib/types/invoice";
 import { CreateTicketInput } from "@/lib/types/ticket";
 import { useTaxes } from "@/hooks/useTaxes";
 import { createProduct } from "@/services/product/apiProduct.client";
 import { useQueryClient } from "@tanstack/react-query";
+import CustomerSelector from "@/components/invoice/CustomerSelector";
+import AddInvoiceHeader from "@/components/invoice/AddInvoiceHeader";
+import InvoiceItemsSelector from "@/components/invoice/InvoiceItemsSelector";
+import InvoiceDiscountCreate from "@/components/invoice/InvoiceDiscountCreate";
+import InvoiceTaxCreate from "@/components/invoice/InvoiceTaxCreate";
 
 const DEFAULT_ITEM: Omit<InvoiceItem, "id"> = {
   productId: "",
