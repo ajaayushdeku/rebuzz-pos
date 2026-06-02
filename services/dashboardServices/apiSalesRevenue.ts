@@ -243,14 +243,14 @@ function formatSalesByItem(
     }));
 }
 
-export async function getSalesTrends(): Promise<SalesTrendsData> {
-  // try {
-  //   const res = await fetch(
-  //     `${process.env.NEXT_PUBLIC_API_URL}/api/sales/trends`,
-  //     { next: { revalidate: 300 } },
-  //   );
-  //   if (!res.ok) throw new Error();
-  //   return res.json();
-  // } catch {
-  return mockSalesTrendData;
-}
+// export async function getSalesTrends(): Promise<SalesTrendsData> {
+//   // try {
+//   //   const res = await fetch(
+//   //     `${process.env.NEXT_PUBLIC_API_URL}/api/sales/trends`,
+//   //     { next: { revalidate: 300 } },
+//   //   );
+//   //   if (!res.ok) throw new Error();
+//   //   return res.json();
+//   // } catch {
+//   return mockSalesTrendData;
+// }
