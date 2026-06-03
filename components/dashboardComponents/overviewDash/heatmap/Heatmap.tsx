@@ -4,22 +4,22 @@ import { useState } from "react";
 
 // Types
 
-// Weekly: { day -> { hour -> count } }
-export interface WeeklyHeatmapData {
+// Current Week: { day -> { hour -> count } }
+export interface CurrentWeekHeatmapData {
   [day: string]: { [hour: string]: number };
 }
 
-// Monthly: { week -> { day -> count } }
-export interface MonthlyHeatmapData {
+// Current Month: { week -> { day -> count } }
+export interface CurrentMonthHeatmapData {
   [week: string]: { [day: string]: number };
 }
 
 export interface HeatmapDataSet {
-  weekly: WeeklyHeatmapData;
-  monthly: MonthlyHeatmapData;
+  currentWeek: CurrentWeekHeatmapData;
+  currentMonth: CurrentMonthHeatmapData;
 }
 
-type ViewMode = "weekly" | "monthly";
+type ViewMode = "currentWeek" | "currentMonth";
 
 // Color schemes — easy to extend or swap
 
@@ -143,7 +143,7 @@ const getCellTextColor = (
 
 // Stats helpers
 
-interface WeeklyStats {
+interface CurrentWeekStats {
   peakDay: string;
   peakHour: string;
   peakValue: number;
@@ -154,7 +154,7 @@ interface WeeklyStats {
   busiestDayTotal: number;
 }
 
-interface MonthlyStats {
+interface CurrentMonthStats {
   peakWeek: string;
   peakDay: string;
   peakValue: number;
@@ -165,7 +165,9 @@ interface MonthlyStats {
   busiestWeekTotal: number;
 }
 
-const deriveWeeklyStats = (data: WeeklyHeatmapData): WeeklyStats => {
+const deriveCurrentWeekStats = (
+  data: CurrentWeekHeatmapData,
+): CurrentWeekStats => {
   let peakValue = -Infinity,
     peakDay = "",
     peakHour = "";
@@ -204,7 +206,9 @@ const deriveWeeklyStats = (data: WeeklyHeatmapData): WeeklyStats => {
   };
 };
 
-const deriveMonthlyStats = (data: MonthlyHeatmapData): MonthlyStats => {
+const deriveCurrentMonthStats = (
+  data: CurrentMonthHeatmapData,
+): CurrentMonthStats => {
   let peakValue = -Infinity,
     peakWeek = "",
     peakDay = "";
@@ -249,8 +253,8 @@ const VIEW_OPTIONS: {
   label: string;
   value: ViewMode;
 }[] = [
-  { label: "Weekly", value: "weekly" },
-  { label: "Monthly", value: "monthly" },
+  { label: "Current Week", value: "currentWeek" },
+  { label: "Current Month", value: "currentMonth" },
 ];
 
 interface LegendProps {
@@ -289,29 +293,29 @@ export default function Heatmap({
   data,
   defaultColorScheme = "blue",
 }: SalesHeatmapProps) {
-  const [view, setView] = useState<ViewMode>("weekly");
+  const [view, setView] = useState<ViewMode>("currentWeek");
   const [schemeKey, setSchemeKey] =
     useState<keyof typeof COLOR_SCHEMES>(defaultColorScheme);
   const scheme = COLOR_SCHEMES[schemeKey];
 
-  // --- Weekly view ---
-  const weeklyValues = DAYS.flatMap((day) =>
-    HOURS.map((hour) => data.weekly[day]?.[hour] ?? 0),
+  // --- Current week view ---
+  const currentWeekValues = DAYS.flatMap((day) =>
+    HOURS.map((hour) => data.currentWeek[day]?.[hour] ?? 0),
   );
-  const weeklyMin = Math.min(...weeklyValues);
-  const weeklyMax = Math.max(...weeklyValues);
-  const weeklyStats = deriveWeeklyStats(data.weekly);
+  const currentWeekMin = Math.min(...currentWeekValues);
+  const currentWeekMax = Math.max(...currentWeekValues);
+  const currentWeekStats = deriveCurrentWeekStats(data.currentWeek);
 
-  // --- Monthly view ---
-  const monthlyValues = WEEKS.flatMap((week) =>
-    DAYS.map((day) => data.monthly[week]?.[day] ?? 0),
+  // --- Current month view ---
+  const currentMonthValues = WEEKS.flatMap((week) =>
+    DAYS.map((day) => data.currentMonth[week]?.[day] ?? 0),
   );
-  const monthlyMin = Math.min(...monthlyValues);
-  const monthlyMax = Math.max(...monthlyValues);
-  const monthlyStats = deriveMonthlyStats(data.monthly);
+  const currentMonthMin = Math.min(...currentMonthValues);
+  const currentMonthMax = Math.max(...currentMonthValues);
+  const currentMonthStats = deriveCurrentMonthStats(data.currentMonth);
 
-  const min = view === "weekly" ? weeklyMin : monthlyMin;
-  const max = view === "weekly" ? weeklyMax : monthlyMax;
+  const min = view === "currentWeek" ? currentWeekMin : currentMonthMin;
+  const max = view === "currentWeek" ? currentWeekMax : currentMonthMax;
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mt-2 p-4 md:p-6 w-full">
@@ -322,7 +326,7 @@ export default function Heatmap({
             Sales Activity Heatmap
           </h2>
           <p className="text-sm text-gray-400 mt-0.5">
-            Order counts by day of week and hour — darker = busier
+            Order counts by day and hour — darker cells = more orders
           </p>
         </div>
         <Legend scheme={scheme} min={min} max={max} />
@@ -372,7 +376,7 @@ export default function Heatmap({
 
       {/* Grid */}
       <div className="overflow-x-auto">
-        {view === "weekly" ? (
+        {view === "currentWeek" ? (
           <div style={{ minWidth: 360 }}>
             {/* Hour headers */}
             <div className="flex mb-1 ml-12">
@@ -396,7 +400,7 @@ export default function Heatmap({
                 </div>
                 <div className="flex flex-1 gap-0.5 sm:gap-1">
                   {HOURS.map((hour) => {
-                    const value = data.weekly[day]?.[hour] ?? 0;
+                    const value = data.currentWeek[day]?.[hour] ?? 0;
                     return (
                       <div
                         key={hour}
@@ -404,14 +408,14 @@ export default function Heatmap({
                         style={{
                           backgroundColor: getCellColor(
                             value,
-                            weeklyMin,
-                            weeklyMax,
+                            currentWeekMin,
+                            currentWeekMax,
                             scheme,
                           ),
                           color: getCellTextColor(
                             value,
-                            weeklyMin,
-                            weeklyMax,
+                            currentWeekMin,
+                            currentWeekMax,
                             scheme,
                           ),
                         }}
@@ -450,7 +454,7 @@ export default function Heatmap({
                 </div>
                 <div className="flex flex-1 gap-0.5 sm:gap-1">
                   {DAYS.map((day) => {
-                    const value = data.monthly[week]?.[day] ?? 0;
+                    const value = data.currentMonth[week]?.[day] ?? 0;
                     return (
                       <div
                         key={day}
@@ -458,14 +462,14 @@ export default function Heatmap({
                         style={{
                           backgroundColor: getCellColor(
                             value,
-                            monthlyMin,
-                            monthlyMax,
+                            currentMonthMin,
+                            currentMonthMax,
                             scheme,
                           ),
                           color: getCellTextColor(
                             value,
-                            monthlyMin,
-                            monthlyMax,
+                            currentMonthMin,
+                            currentMonthMax,
                             scheme,
                           ),
                         }}
@@ -484,25 +488,25 @@ export default function Heatmap({
 
       {/* Stats footer */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-4 border-t border-gray-100">
-        {view === "weekly" ? (
+        {view === "currentWeek" ? (
           <>
             {[
               {
                 label: "Peak Slot",
-                primary: `${weeklyStats.peakDay} @ ${weeklyStats.peakHour}`,
-                secondary: `${weeklyStats.peakValue} orders`,
+                primary: `${currentWeekStats.peakDay} @ ${currentWeekStats.peakHour}`,
+                secondary: `${currentWeekStats.peakValue} orders`,
                 secondaryColor: `rgb(${scheme.stops[1].join(",")})`,
               },
               {
                 label: "Quietest Slot",
-                primary: `${weeklyStats.quietDay} @ ${weeklyStats.quietHour}`,
-                secondary: `${weeklyStats.quietValue} orders`,
+                primary: `${currentWeekStats.quietDay} @ ${currentWeekStats.quietHour}`,
+                secondary: `${currentWeekStats.quietValue} orders`,
                 secondaryColor: undefined,
               },
               {
                 label: "Busiest Day",
-                primary: weeklyStats.busiestDay,
-                secondary: `${weeklyStats.busiestDayTotal} total orders`,
+                primary: currentWeekStats.busiestDay,
+                secondary: `${currentWeekStats.busiestDayTotal} total orders`,
                 secondaryColor: "#22c55e",
               },
             ].map(({ label, primary, secondary, secondaryColor }) => (
@@ -530,20 +534,20 @@ export default function Heatmap({
             {[
               {
                 label: "Peak Slot",
-                primary: `${monthlyStats.peakWeek} · ${monthlyStats.peakDay}`,
-                secondary: `${monthlyStats.peakValue} orders`,
+                primary: `${currentMonthStats.peakWeek} · ${currentMonthStats.peakDay}`,
+                secondary: `${currentMonthStats.peakValue} orders`,
                 secondaryColor: `rgb(${scheme.stops[1].join(",")})`,
               },
               {
                 label: "Quietest Slot",
-                primary: `${monthlyStats.quietWeek} · ${monthlyStats.quietDay}`,
-                secondary: `${monthlyStats.quietValue} orders`,
+                primary: `${currentMonthStats.quietWeek} · ${currentMonthStats.quietDay}`,
+                secondary: `${currentMonthStats.quietValue} orders`,
                 secondaryColor: undefined,
               },
               {
                 label: "Busiest Week",
-                primary: monthlyStats.busiestWeek,
-                secondary: `${monthlyStats.busiestWeekTotal} total orders`,
+                primary: currentMonthStats.busiestWeek,
+                secondary: `${currentMonthStats.busiestWeekTotal} total orders`,
                 secondaryColor: "#22c55e",
               },
             ].map(({ label, primary, secondary, secondaryColor }) => (

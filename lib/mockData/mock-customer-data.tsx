@@ -63,13 +63,11 @@ export const mockAtRiskCustomers: AtRiskCustomer[] = [
   {
     rank: 1,
     name: "Mary Linton",
-    lastVisit: 15,
     spendLevel: "High",
   },
   {
     rank: 2,
     name: "Strauss",
-    lastVisit: 2,
     spendLevel: "Medium",
   },
 ];

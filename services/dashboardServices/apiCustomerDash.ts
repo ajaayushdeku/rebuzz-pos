@@ -296,81 +296,46 @@ export async function getLoyaltyTierData(): Promise<TierData[]> {
 }
 
 // ── getAtRiskCustomers ────────────────────────────────────────────────────
-
 export async function getAtRiskCustomers(): Promise<AtRiskCustomer[]> {
   try {
-    const today = new Date();
     const todayStr = offsetDate(0);
-    const lookbackStart = offsetDate(-15); // better to check further back
+    const lookbackStart = offsetDate(-15);
+
+    console.log(
+      "Fetching at-risk customers with lookback:",
+      lookbackStart,
+      "to",
+      todayStr,
+    );
 
     const [users, bills] = await Promise.all([
       fetchAllUsers(),
       fetchBillsInRange(lookbackStart, todayStr),
     ]);
 
-    // customerId -> latest bill date
-    const lastVisitMap = new Map<string, Date>();
-
+    console.log("Users fetched:", users);
+    console.log("Bills: ", bills);
+    // Customers who made at least one purchase in the last 15 days
+    const activeCustomerIds = new Set<string>();
     for (const bill of bills) {
-      if (!bill.customerId) continue;
-
-      const rawDate = bill.paidAt ?? bill.createdAt;
-      if (!rawDate) continue;
-
-      const normalized = rawDate.includes("T")
-        ? rawDate
-        : rawDate.replace(" ", "T") + "+05:45";
-
-      const billDate = new Date(normalized);
-
-      const existing = lastVisitMap.get(bill.customerId);
-
-      if (!existing || billDate > existing) {
-        lastVisitMap.set(bill.customerId, billDate);
-      }
+      if (bill.customerId) activeCustomerIds.add(bill.customerId);
     }
 
-    function toSpendLevel(points: number): "High" | "Medium" | "Low" {
+    console.log("Active customer IDs in last 15 days:", activeCustomerIds);
+
+    const toSpendLevel = (points: number): "High" | "Medium" | "Low" => {
       if (points >= 1000) return "High";
       if (points >= 500) return "Medium";
       return "Low";
-    }
+    };
 
+    // At-risk = customers with no purchases in the last 15 days
     const atRisk = users
-      .map((user) => {
-        const lastVisitDate = lastVisitMap.get(user._id);
-
-        const daysSinceVisit = lastVisitDate
-          ? Math.floor(
-              (today.getTime() - lastVisitDate.getTime()) /
-                (1000 * 60 * 60 * 24),
-            )
-          : Number.MAX_SAFE_INTEGER;
-
-        return {
-          user,
-          lastVisitDate,
-          daysSinceVisit,
-        };
-      })
-      .filter(({ daysSinceVisit }) => daysSinceVisit >= 14)
-      .sort((a, b) => b.daysSinceVisit - a.daysSinceVisit)
+      .filter((user) => !activeCustomerIds.has(user._id))
       .slice(0, 20)
-      // .map(({ user, lastVisitDate }, index) => ({
-      //   rank: index + 1,
-      //   name: user.name || user._id,
-
-      //   // Actual last visit date
-      //   lastVisit: lastVisitDate
-      //     ? lastVisitDate.toLocaleDateString("en-CA") // YYYY-MM-DD
-      //     : "Never",
-
-      //   spendLevel: toSpendLevel(user.loyaltyPoint ?? 0),
-      // }));
-      .map(({ user, daysSinceVisit }, index) => ({
+      .map((user, index) => ({
         rank: index + 1,
         name: user.name || user._id,
-        lastVisit: daysSinceVisit,
         spendLevel: toSpendLevel(user.loyaltyPoint ?? 0),
       }));
 

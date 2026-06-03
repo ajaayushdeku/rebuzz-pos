@@ -9,7 +9,6 @@ type SpendingLevel = "High" | "Medium" | "Low";
 export type AtRiskCustomer = {
   rank: number;
   name: string;
-  lastVisit: number;
   spendLevel: SpendingLevel;
 };
 
@@ -94,7 +93,8 @@ export default function AtRiskCustomer({
             At-Risk Customers
           </h1>
           <p className="text-gray-400 text-sm mt-0.5">
-            Inactive customers who need re-engagement
+            Inactive customers ({numCustomers}) for about 2 weeks who need
+            re-engagement
           </p>
         </div>
         <div className="text-yellow-600 border-yellow-500 border bg-yellow-100 flex items-center rounded-2xl px-2 py-0.5 gap-1 shrink-0">
@@ -122,9 +122,9 @@ export default function AtRiskCustomer({
         />
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <table className="w-full text-sm">
+      {/* Table - horizontally scrollable on mobile */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+        <table className="w-full text-sm min-w-[500px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
               <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
@@ -136,14 +136,6 @@ export default function AtRiskCustomer({
               >
                 <span className="flex items-center gap-1">
                   Name {SortIcon({ colKey: "name" })}
-                </span>
-              </th>
-              <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("lastVisit")}
-              >
-                <span className="flex items-center gap-1">
-                  Last Visit {SortIcon({ colKey: "lastVisit" })}
                 </span>
               </th>
               <th className="text-left pb-3 pt-3 px-4 font-medium">
@@ -164,7 +156,7 @@ export default function AtRiskCustomer({
             {paged.length === 0 ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={5}
                   className="text-center py-12 text-sm text-gray-400"
                 >
                   No customers found
@@ -185,13 +177,8 @@ export default function AtRiskCustomer({
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    <span className="text-sm text-gray-600">
-                      {customer.lastVisit} days ago
-                    </span>
-                  </td>
-                  <td className="py-3 px-4">
                     <span className="border text-sm text-gray-600 border-gray-500 p-1 rounded-2xl inline-block px-3">
-                      {"Haven't been active for about 2 weeks"}
+                      {`Inactive for about 2 weeks`}
                     </span>
                   </td>
                   <td className="py-3 px-4">
@@ -204,7 +191,10 @@ export default function AtRiskCustomer({
                     </span>
                   </td>
                   <td className="py-3 px-4 text-right">
-                    <button className="px-3 py-1.5 text-sm rounded-lg bg-gray-50 text-blue-600 hover:bg-blue-600 hover:text-gray-100 border border-blue-500 transition-colors">
+                    <button
+                      className="px-3 py-1.5 text-sm rounded-lg bg-blue-500
+                    font-semibold text-gray-100 hover:bg-blue-600 hover:text-gray-100 border border-blue-500 transition-colors"
+                    >
                       Send Offer
                     </button>
                   </td>

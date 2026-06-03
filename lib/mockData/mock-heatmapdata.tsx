@@ -3,7 +3,7 @@ import { HeatmapDataSet } from "@/components/dashboardComponents/overviewDash/he
 // Mock data
 
 export const MOCK_DATA: HeatmapDataSet = {
-  weekly: {
+  currentWeek: {
     Mon: {
       "7am": 8,
       "8am": 18,
@@ -124,7 +124,7 @@ export const MOCK_DATA: HeatmapDataSet = {
       "9pm": 24,
     },
   },
-  monthly: {
+  currentMonth: {
     "Wk 1": {
       Mon: 312,
       Tue: 280,
