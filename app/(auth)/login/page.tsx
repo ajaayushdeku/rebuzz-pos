@@ -25,18 +25,36 @@ const LoginPage = () => {
     formState: { errors },
   } = useForm<LoginFormValues>();
 
+  const checkBusinessAndRedirect = async () => {
+    try {
+      const res = await fetch("/api/business");
+      if (res.ok) {
+        const data = await res.json();
+        // If business data exists (has _id or businessName), go to dashboard
+        if (
+          data?.status === "success" &&
+          (data?.data?.business?._id || data?.data?.business?.businessName)
+        ) {
+          router.push("/dashboard");
+          return;
+        }
+      }
+    } catch {
+      // If the fetch fails or no business, redirect to onboarding
+      console.log("No business found, redirecting to onboarding");
+    }
+    router.push("/onboarding");
+  };
+
   const onSubmit = async (loginData: LoginFormValues) => {
     setServerError(null);
     setIsLoading(true);
 
-    const result = await loginUser(
-      // BUSINESS_SLUG,
-      {
-        email_or_phone: loginData.email,
-        password: loginData.password,
-        deviceToken: "",
-      },
-    );
+    const result = await loginUser({
+      email_or_phone: loginData.email,
+      password: loginData.password,
+      deviceToken: "",
+    });
 
     setIsLoading(false);
 
@@ -45,7 +63,7 @@ const LoginPage = () => {
       return;
     }
 
-    router.push("/dashboard");
+    await checkBusinessAndRedirect();
   };
 
   return (

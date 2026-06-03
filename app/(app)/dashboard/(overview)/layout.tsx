@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import CurrencySelect from "@/components/dashboardComponents/CurrencySelect";
 import { useQuery } from "@tanstack/react-query";
 import { fetchUserData } from "@/services/apiProfile";
-import { TimeRangeDropdown } from "@/components/dashboardComponents/overviewDash/TimeRangeDropdown";
 
 const tabs = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -84,7 +83,6 @@ export default function DashboardLayout({
           <div className="hidden md:block">
             <CurrencySelect />
           </div>
-          <TimeRangeDropdown />
         </div>
       </div>
 

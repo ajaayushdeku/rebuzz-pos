@@ -40,7 +40,7 @@ export const getStatsData = async (
   const params = new URLSearchParams({
     startDate: start,
     endDate: end,
-    limit: "25",
+    limit: "5000",
   });
 
   const [reportRes, salesByItemRes] = await Promise.all([
@@ -67,6 +67,10 @@ export const getStatsData = async (
     salesItems.reduce((sum, item) => sum + (item.netProfit ?? 0), 0) -
     salesByItemRes.data.totalDiscount -
     salesByItemRes.data.totalRedeemPoint;
+
+  console.log("Total Revenue:", data.data.report.totalRevenue);
+  console.log("Total Products Sold:", totalProductsSold);
+  console.log("Net Profit:", netProfit);
 
   return mapReportToStats(data, totalProductsSold, netProfit);
 };
@@ -226,7 +230,7 @@ export const getWeeklyRevenueData = async (): Promise<DataPoint[]> => {
   url.searchParams.set("endDate", endDate);
   url.searchParams.set("limit", "25");
 
-  console.log("Constructed URL for Weekly Revenue:", url.toString());
+  // console.log("Constructed URL for Weekly Revenue:", url.toString());
 
   const res = await fetch(url.toString(), {
     headers: {
@@ -239,7 +243,7 @@ export const getWeeklyRevenueData = async (): Promise<DataPoint[]> => {
   if (!res.ok) throw new Error("Failed to fetch weekly revenue");
 
   const json = await res.json();
-  console.log("Weekly Revenue Report:", json);
+  // console.log("Weekly Revenue Report:", json);
 
   const bills: RawBill[] = json?.data?.report?.allBills ?? [];
   // console.log("BIlls:", bills);

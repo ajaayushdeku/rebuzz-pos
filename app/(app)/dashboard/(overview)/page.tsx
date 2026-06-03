@@ -5,6 +5,7 @@ import TableSkeleton from "@/components/ui/tableskeleton";
 import ChartSkeleton from "@/components/ui/chartskeleton";
 import PieChartSkeleton from "@/components/ui/piechartskeleton";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
+import { TimeRangeDropdown } from "@/components/dashboardComponents/overviewDash/TimeRangeDropdown";
 
 import {
   HourlySalesTrendWrapper,
@@ -29,6 +30,14 @@ const Page = async ({
       <div className="w-full px-4">
         {/* ACTUAL CONTENTS */}
         <div>
+          {/* Time Range Filter + Stats */}
+          <div className="flex items-center justify-between my-4">
+            <h2 className="text-base font-semibold text-gray-900">
+              Statistics Overview
+            </h2>
+            <TimeRangeDropdown />
+          </div>
+
           <Suspense
             fallback={
               <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 my-4">

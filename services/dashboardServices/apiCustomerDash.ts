@@ -301,27 +301,16 @@ export async function getAtRiskCustomers(): Promise<AtRiskCustomer[]> {
     const todayStr = offsetDate(0);
     const lookbackStart = offsetDate(-15);
 
-    console.log(
-      "Fetching at-risk customers with lookback:",
-      lookbackStart,
-      "to",
-      todayStr,
-    );
-
     const [users, bills] = await Promise.all([
       fetchAllUsers(),
       fetchBillsInRange(lookbackStart, todayStr),
     ]);
 
-    console.log("Users fetched:", users);
-    console.log("Bills: ", bills);
     // Customers who made at least one purchase in the last 15 days
     const activeCustomerIds = new Set<string>();
     for (const bill of bills) {
       if (bill.customerId) activeCustomerIds.add(bill.customerId);
     }
-
-    console.log("Active customer IDs in last 15 days:", activeCustomerIds);
 
     const toSpendLevel = (points: number): "High" | "Medium" | "Low" => {
       if (points >= 1000) return "High";

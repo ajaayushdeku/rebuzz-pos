@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Loader2, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,7 @@ interface FormState {
 const TOTAL_STEPS = 3;
 
 const OnBoarding = () => {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [animating, setAnimating] = useState(false);
   const [direction, setDirection] = useState<1 | -1>(1);
@@ -104,7 +106,8 @@ const OnBoarding = () => {
       });
 
       if (!res.ok) throw new Error("Failed to create business");
-      alert("Welcome aboard!");
+      // Force full page navigation so all server-side data (business, profile) is fetched fresh
+      window.location.href = "/dashboard";
     } catch (err) {
       console.error(err);
       alert("Something went wrong. Please try again.");
@@ -116,7 +119,7 @@ const OnBoarding = () => {
   // Array of condition checking for fields, if they are fully filled or not.
   const canProceed = [
     !!(form.firstName && form.lastName && form.businessName),
-    !!(form.businessName && form.industry && form.businessType),
+    !!(form.industry && form.address && form.phoneNumber),
     form.goals.length > 0,
   ][step - 1];
 
@@ -172,7 +175,7 @@ const OnBoarding = () => {
                   </>
                 ) : (
                   <>
-                    Let &lsquo s get to it
+                    Let&lsquo;s get to it
                     <Rocket className="h-4 w-4" />
                   </>
                 )}

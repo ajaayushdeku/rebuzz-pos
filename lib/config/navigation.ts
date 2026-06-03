@@ -21,6 +21,7 @@ import {
   Lock,
   Award,
   ScanEye,
+  Coins,
 } from "lucide-react";
 
 export type NavigationItem =
@@ -119,6 +120,7 @@ export const navigationConfig: NavigationItem[] = [
         icon: Lock,
       },
       { label: "Manage Staffs", href: "/settings/staffs", icon: UserCog },
+      { label: "Currency", href: "/settings/currency", icon: Coins },
       { label: "Tax", href: "/settings/tax", icon: Receipt },
       { label: "Discount", href: "/settings/discount", icon: BadgePercent },
       { label: "Loyalty Point", href: "/settings/loyalty-points", icon: Award },

@@ -9,6 +9,23 @@ const CURRENCIES: CurrencyConfig[] = [
   { code: "EUR", symbol: "€", locale: "de-DE" },
   { code: "GBP", symbol: "£", locale: "en-GB" },
   { code: "NPR", symbol: "Rs", locale: "ne-NP" },
+  { code: "INR", symbol: "₹", locale: "en-IN" },
+  { code: "AUD", symbol: "A$", locale: "en-AU" },
+  { code: "CAD", symbol: "C$", locale: "en-CA" },
+  { code: "JPY", symbol: "¥", locale: "ja-JP" },
+  { code: "CNY", symbol: "¥", locale: "zh-CN" },
+  { code: "SGD", symbol: "S$", locale: "en-SG" },
+  { code: "AED", symbol: "د.إ", locale: "ar-AE" },
+  { code: "SAR", symbol: "﷼", locale: "ar-SA" },
+  { code: "NZD", symbol: "NZ$", locale: "en-NZ" },
+  { code: "KRW", symbol: "₩", locale: "ko-KR" },
+  { code: "MYR", symbol: "RM", locale: "ms-MY" },
+  { code: "THB", symbol: "฿", locale: "th-TH" },
+  { code: "PHP", symbol: "₱", locale: "en-PH" },
+  { code: "CHF", symbol: "CHF", locale: "de-CH" },
+  { code: "SEK", symbol: "kr", locale: "sv-SE" },
+  { code: "HKD", symbol: "HK$", locale: "en-HK" },
+  { code: "BRL", symbol: "R$", locale: "pt-BR" },
 ];
 
 interface CurrencyContextValue {

@@ -25,9 +25,8 @@ import WeeklyRevenueChart from "../dashboardComponents/overviewDash/WeeklyRevenu
 import SalesLocationChart from "../dashboardComponents/overviewDash/SalesLocationChart";
 import HourlySalesTrend from "../dashboardComponents/overviewDash/HourlySalesChart";
 
-/** Convert a range key to [startDate, endDate] ISO date strings */
-const getDateRange = (range: string): [string, string] => {
-  const now = new Date();
+/** Convert a range key to [startDate, endDate] ISO date strings using a fixed reference date */
+const getDateRange = (range: string, now: Date): [string, string] => {
   const end = now.toISOString().split("T")[0];
   const start = new Date(now);
 
@@ -51,11 +50,8 @@ const getDateRange = (range: string): [string, string] => {
   return [start.toISOString().split("T")[0], end];
 };
 
-/** Convert a range key to [prevStartDate, prevEndDate] for the previous period */
-const getPreviousDateRange = (range: string): [string, string] => {
-  const now = new Date();
-
-  // The previous period ends the day before the current period starts
+/** Convert a range key to [prevStartDate, prevEndDate] for the previous period using a fixed reference date */
+const getPreviousDateRange = (range: string, now: Date): [string, string] => {
   const end = new Date(now);
   const start = new Date(now);
 
@@ -106,16 +102,18 @@ export const OverviewStatsWrapper = async ({
   range?: string;
 }) => {
   const periodLabel = getPeriodLabel(range);
-  const [startDate, endDate] = getDateRange(range);
-  const [prevStartDate, prevEndDate] = getPreviousDateRange(range);
+  // Use a single fixed reference date to prevent date drift across calls
+  const now = new Date();
+  const [startDate, endDate] = getDateRange(range, now);
+  const [prevStartDate, prevEndDate] = getPreviousDateRange(range, now);
 
   const [currentStats, previousStats] = await Promise.all([
     getStatsData(startDate, endDate),
     getStatsData(prevStartDate, prevEndDate),
   ]);
 
-  // console.log("Current Stats:", currentStats);
-  // console.log("Previous Stats:", previousStats);
+  console.log("Current Stats:", currentStats);
+  console.log("Previous Stats:", previousStats);
 
   const stats: MergedSerializableConfig[] = STATS_CONFIG.map((config) => {
     const cur = currentStats[config.key];

@@ -129,21 +129,21 @@ const getHeatmapData = async (): Promise<HeatmapDataSet> => {
     .toISOString()
     .split("T")[0];
 
-  console.log("Heatmap fetch ranges:", {
-    weekStart,
-    weekEnd: todayStr,
-    monthStart,
-    monthEnd: todayStr,
-  });
+  // console.log("Heatmap fetch ranges:", {
+  //   weekStart,
+  //   weekEnd: todayStr,
+  //   monthStart,
+  //   monthEnd: todayStr,
+  // });
 
   const [weekBills, monthBills] = await Promise.all([
     fetchBills(weekStart, todayStr),
     fetchBills(monthStart, todayStr),
   ]);
 
-  console.log("Week bills count:", weekBills.length);
-  console.log("Month bills count:", monthBills.length);
-  console.log("Sample bill:", weekBills || monthBills[0] || "No bills");
+  // console.log("Week bills count:", weekBills.length);
+  // console.log("Month bills count:", monthBills.length);
+  // console.log("Sample bill:", weekBills || monthBills[0] || "No bills");
 
   // ── Build current-week heatmap ────────────────────────────────────────
   const currentWeek: HeatmapDataSet["currentWeek"] = {};
@@ -226,8 +226,8 @@ const getHeatmapData = async (): Promise<HeatmapDataSet> => {
     }
   }
 
-  console.log("Current-week heatmap:", currentWeek);
-  console.log("Current-month heatmap:", currentMonth);
+  // console.log("Current-week heatmap:", currentWeek);
+  // console.log("Current-month heatmap:", currentMonth);
 
   return { currentWeek, currentMonth };
 };
