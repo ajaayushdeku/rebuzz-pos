@@ -29,8 +29,11 @@ export interface YoYData {
 // Helpers
 
 const getYAxisTicks = (data: YoYData[]): number[] => {
-  const max = Math.max(...data.flatMap((d) => [d.lastYear, d.thisYear]));
-  const step = Math.ceil(max / 4 / 10000) * 10000;
+  const max = Math.max(...data.flatMap((d) => [d.lastYear, d.thisYear]), 1);
+  const rawStep = max / 4;
+  // Round step up to nice human-readable numbers
+  const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep) || 0));
+  const step = Math.ceil(rawStep / magnitude) * magnitude;
   return [0, step, step * 2, step * 3, step * 4];
 };
 

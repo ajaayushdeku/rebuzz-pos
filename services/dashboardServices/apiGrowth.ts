@@ -85,6 +85,7 @@ async function fetchBills(start: string, end: string): Promise<RawBill[]> {
   );
   if (!res.ok) return [];
   const json = await res.json();
+  console.log("Fetched bills:", { start, end, bills: json?.data?.bill ?? [] });
   // Client-side filter — ensures only bills for the exact month range are counted
   const allBills: RawBill[] = json?.data?.bill ?? [];
   return allBills.filter((b) => isBillInRange(b, start, end));
@@ -93,10 +94,12 @@ async function fetchBills(start: string, end: string): Promise<RawBill[]> {
 async function fetchCompareSalesByMonth(
   start: string,
   end: string,
+  cacheBust?: number,
 ): Promise<RawMonthCompare[]> {
+  const _t = cacheBust ?? Date.now();
   const res = await fetch(
-    `${BASE}/business/report/compare-sales-by-month?startDate=${start}&endDate=${end}`,
-    { headers: await authHeaders(), next: { revalidate: 300 } },
+    `${BASE}/business/report/compare-sales-by-month?startDate=${start}&endDate=${end}&_t=${_t}`,
+    { headers: await authHeaders(), cache: "no-store" },
   );
   if (!res.ok) return [];
   const json = await res.json();
@@ -131,23 +134,29 @@ export const getGrowthData = async (): Promise<GrowthStatsApiResponse> => {
     lastDayOfMonth(today.getFullYear(), today.getMonth() - 1),
   );
 
-  console.log("Fetching growth data with params:", {
-    currMonthStart,
-    currMonthEnd,
+  // Single fetch from prev month start to today covers both periods
+  const monthlyData = await fetchCompareSalesByMonth(
     prevMonthStart,
-    prevMonthEnd,
-  });
+    currMonthEnd,
+  );
 
-  const currCompare = await fetchCompareSalesByMonth(
-    currMonthStart,
-    currMonthEnd,
+  // Filter compare-sales-by-month into current month vs previous month
+  const currCompare = monthlyData.filter(
+    (d) => d.monthStart >= currMonthStart && d.monthStart <= currMonthEnd,
   );
-  const prevCompare = await fetchCompareSalesByMonth(
-    prevMonthStart,
-    prevMonthEnd,
+  const prevCompare = monthlyData.filter(
+    (d) => d.monthStart >= prevMonthStart && d.monthStart <= prevMonthEnd,
   );
-  const currBills = await fetchBills(currMonthStart, currMonthEnd);
-  const prevBills = await fetchBills(prevMonthStart, prevMonthEnd);
+
+  // Single bills fetch covering both periods, then filter client-side
+  const allBills = await fetchBills(prevMonthStart, currMonthEnd);
+  const currBills = allBills.filter((b) =>
+    isBillInRange(b, currMonthStart, currMonthEnd),
+  );
+  const prevBills = allBills.filter((b) =>
+    isBillInRange(b, prevMonthStart, prevMonthEnd),
+  );
+
   const currSalesByItem = await fetchSalesByItemForPeriod(
     currMonthStart,
     currMonthEnd,
@@ -156,14 +165,6 @@ export const getGrowthData = async (): Promise<GrowthStatsApiResponse> => {
     prevMonthStart,
     prevMonthEnd,
   );
-  console.log("Fetched growth data:", {
-    currCompare,
-    prevCompare,
-    currBills,
-    prevBills,
-    currSalesByItem,
-    prevSalesByItem,
-  });
 
   // ── Revenue & Orders from compare-sales-by-month ──────────────────────────
   const aggregateCompare = (data: RawMonthCompare[]) => {
@@ -229,7 +230,7 @@ export const getGrowthData = async (): Promise<GrowthStatsApiResponse> => {
 
   const pct = (c: number, p: number): number => {
     if (p === 0) return c > 0 ? 100 : 0;
-    return Math.round(((c - p) / p) * 1000) / 10;
+    return Math.round(((c - p) / Math.abs(p)) * 1000) / 10;
   };
 
   return {
@@ -321,18 +322,26 @@ export const getYoYData = async (): Promise<YoYData[]> => {
   const lastYearStart = toDateStr(new Date(year - 1, 0, 1));
   const lastYearEnd = toDateStr(new Date(year - 1, 11, 31));
 
-  // Fetch compare-sales-by-month for each year range
-  // Fetch monthly compare-sales individually
-  const thisYearMonthly = await fetchCompareSalesByMonth(
-    thisYearStart,
-    thisYearEnd,
-  );
-  const lastYearMonthly = await fetchCompareSalesByMonth(
-    lastYearStart,
-    lastYearEnd,
-  );
+  // ── Cache-bust: unique timestamp per invocation ──────────────────────────
+  const _ts = Date.now();
 
-  // console.log("Fetched YoY data:", { thisYearMonthly, lastYearMonthly });
+  // Fetch compare-sales-by-month for each year range
+  const [thisYearMonthly, lastYearMonthly] = await Promise.all([
+    fetchCompareSalesByMonth(thisYearStart, thisYearEnd, _ts),
+    fetchCompareSalesByMonth(lastYearStart, lastYearEnd, _ts + 1),
+  ]);
+
+  console.log("Fetched YoY data:", { thisYearMonthly, lastYearMonthly });
+
+  // Filter to keep only entries matching the expected year
+  const filterByYear = (data: RawMonthCompare[], targetYear: number) =>
+    data.filter((d) => {
+      const dYear = new Date(d.monthStart + "T00:00:00").getFullYear();
+      return dYear === targetYear;
+    });
+
+  const filteredThisYear = filterByYear(thisYearMonthly, year);
+  const filteredLastYear = filterByYear(lastYearMonthly, year - 1);
 
   // Build maps: month label → revenue
   const buildRevenueMap = (data: RawMonthCompare[]): Map<string, number> => {
@@ -344,8 +353,8 @@ export const getYoYData = async (): Promise<YoYData[]> => {
     return map;
   };
 
-  const thisMap = buildRevenueMap(thisYearMonthly);
-  const lastMap = buildRevenueMap(lastYearMonthly);
+  const thisMap = buildRevenueMap(filteredThisYear);
+  const lastMap = buildRevenueMap(filteredLastYear);
 
   const ALL_MONTHS = [
     "Jan",
