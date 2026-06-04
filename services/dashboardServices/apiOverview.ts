@@ -34,10 +34,6 @@ const compareEndpoint = (type: "date" | "week" | "month" | "year"): string => {
   }
 };
 
-/**
- * Fetch aggregated stats for a given date range using the appropriate
- * compare-sales-* API (date/week/month/year) depending on the filter type.
- */
 export const getStatsData = async (
   startDateStr?: string,
   endDateStr?: string,
@@ -252,7 +248,12 @@ export const getRecentTransactions = async (): Promise<Transaction[]> => {
 
 // fetch Weekly Revenue Data
 export const getWeeklyRevenueData = async (): Promise<DataPoint[]> => {
-  const { startDate, endDate } = getWeekDateRange();
+  // const { startDate, endDate } = getWeekDateRange();
+
+  const endDate = new Date().toISOString().split("T")[0];
+  const startDate = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0];
 
   const res = await fetch(
     `${BASE}/business/report/compare-sales-by-date?startDate=${startDate}&endDate=${endDate}`,

@@ -61,7 +61,7 @@ const getPreviousDateRange = (range: string, now: Date): [string, string] => {
       start.setDate(now.getDate() - 1);
       break;
     case "week":
-      end.setDate(now.getDate() - 6);
+      end.setDate(now.getDate() - 7);
       start.setDate(now.getDate() - 13);
       break;
     case "month":
@@ -189,7 +189,7 @@ export const RecentTransactionWrapper = async () => {
 export const WeeklyRevenueChartWrapper = async () => {
   const data = await getWeeklyRevenueData();
 
-  // console.log("Weekly DATA:", data);
+  console.log("Weekly DATA:", data);
 
   const computePeakDay = (data: DataPoint[]): string => {
     return data.reduce((peak, curr) =>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   ComposedChart,
   Area,
@@ -104,48 +104,46 @@ const CustomLegend = () => (
   </div>
 );
 
+/** Merge server data with localStorage targets */
+function mergeWithSavedTargets(
+  serverData: TargetActualData[],
+): TargetActualData[] {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const savedTargets: Record<string, number> = JSON.parse(saved);
+      return serverData.map((row) => ({
+        ...row,
+        target: savedTargets[row.month] ?? row.target,
+      }));
+    }
+  } catch {
+    // ignore
+  }
+  return serverData;
+}
+
 export interface TargetVsActualProps {
   data: TargetActualData[];
 }
 
 export default function TargetVsActualChart({ data }: TargetVsActualProps) {
   const { currency } = useCurrency();
-  const [chartData, setChartData] = useState<TargetActualData[]>(data);
+  const [chartData, setChartData] = useState<TargetActualData[]>(() =>
+    mergeWithSavedTargets(data),
+  );
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalVersion, setModalVersion] = useState(0);
 
-  // ── Load saved targets from localStorage on mount ─────────────────────
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (!saved) return;
-      const savedTargets: Record<string, number> = JSON.parse(saved);
-
-      // Merge saved targets into the actual data from API
-      setChartData((prev) =>
-        prev.map((row) => ({
-          ...row,
-          target: savedTargets[row.month] ?? row.target,
-        })),
-      );
-    } catch {
-      // localStorage unavailable or corrupt — ignore
-    }
-  }, [data]);
-
-  // Sync when server data updates (e.g. navigation)
-  useEffect(() => {
-    setChartData((prev) =>
-      data.map((row) => ({
-        ...row,
-        // preserve user-set targets
-        target: prev.find((p) => p.month === row.month)?.target ?? row.target,
-      })),
-    );
-  }, [data]);
+  // Track previous data to detect prop changes
+  const [prevData, setPrevData] = useState(data);
+  if (data !== prevData) {
+    setPrevData(data);
+    setChartData(mergeWithSavedTargets(data));
+  }
 
   const handleSaveTargets = (updated: TargetActualData[]) => {
     setChartData(updated);
-    // ── Persist targets to localStorage ──────────────────────────────────
     try {
       const targetsMap: Record<string, number> = {};
       for (const row of updated) {
@@ -198,7 +196,10 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
           </div>
 
           <button
-            onClick={() => setModalOpen(true)}
+            onClick={() => {
+              setModalOpen(true);
+              setModalVersion((v) => v + 1);
+            }}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-xl hover:bg-blue-50 transition-colors shrink-0"
           >
             <svg
@@ -285,6 +286,7 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
       </div>
 
       <SetTargetsModal
+        key={modalVersion}
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         data={chartData}

@@ -22,6 +22,19 @@ type RawMonthCompare = {
   totalSales: number;
 };
 
+type RawSalesItem = {
+  itemName: string;
+  totalRevenue: number;
+  netProfit: number;
+  count: number;
+};
+
+type RawSalesByItemResponse = {
+  data: RawSalesItem[];
+  totalDiscount?: number;
+  totalRedeemPoint?: number;
+};
+
 // ── Helpers ───────────────────────────────────────────────────────────────
 
 function toDateStr(date: Date): string {
@@ -87,8 +100,20 @@ async function fetchCompareSalesByMonth(
   );
   if (!res.ok) return [];
   const json = await res.json();
-  console.log("Raw compare-sales-by-month response:", json);
   return json?.data ?? [];
+}
+
+async function fetchSalesByItemForPeriod(
+  start: string,
+  end: string,
+): Promise<RawSalesByItemResponse> {
+  const res = await fetch(
+    `${BASE}/business/report/salesByItem?startDate=${start}&endDate=${end}`,
+    { headers: await authHeaders(), next: { revalidate: 300 } },
+  );
+  if (!res.ok) return { data: [], totalDiscount: 0, totalRedeemPoint: 0 };
+  const json = await res.json();
+  return json ?? { data: [], totalDiscount: 0, totalRedeemPoint: 0 };
 }
 
 // ── getGrowthData — 6 stat cards (current month vs last month) ────────────
@@ -106,53 +131,101 @@ export const getGrowthData = async (): Promise<GrowthStatsApiResponse> => {
     lastDayOfMonth(today.getFullYear(), today.getMonth() - 1),
   );
 
-  const [currBills, prevBills] = await Promise.all([
-    fetchBills(currMonthStart, currMonthEnd),
-    fetchBills(prevMonthStart, prevMonthEnd),
-  ]);
+  console.log("Fetching growth data with params:", {
+    currMonthStart,
+    currMonthEnd,
+    prevMonthStart,
+    prevMonthEnd,
+  });
 
-  console.log("Current month bills:", currBills);
-  console.log("Previous month bills:", prevBills);
+  const currCompare = await fetchCompareSalesByMonth(
+    currMonthStart,
+    currMonthEnd,
+  );
+  const prevCompare = await fetchCompareSalesByMonth(
+    prevMonthStart,
+    prevMonthEnd,
+  );
+  const currBills = await fetchBills(currMonthStart, currMonthEnd);
+  const prevBills = await fetchBills(prevMonthStart, prevMonthEnd);
+  const currSalesByItem = await fetchSalesByItemForPeriod(
+    currMonthStart,
+    currMonthEnd,
+  );
+  const prevSalesByItem = await fetchSalesByItemForPeriod(
+    prevMonthStart,
+    prevMonthEnd,
+  );
+  console.log("Fetched growth data:", {
+    currCompare,
+    prevCompare,
+    currBills,
+    prevBills,
+    currSalesByItem,
+    prevSalesByItem,
+  });
 
-  const calc = (bills: RawBill[]) => {
+  // ── Revenue & Orders from compare-sales-by-month ──────────────────────────
+  const aggregateCompare = (data: RawMonthCompare[]) => {
+    const totalRevenue = data.reduce((s, d) => s + d.totalRevenue, 0);
+    const totalOrders = data.reduce((s, d) => s + d.totalSales, 0);
+    return { revenue: totalRevenue, orders: totalOrders };
+  };
+
+  const currCompareAgg = aggregateCompare(currCompare);
+  const prevCompareAgg = aggregateCompare(prevCompare);
+
+  // ── Profit Margin from salesByItem ────────────────────────────────────────
+  const getNetProfit = (res: RawSalesByItemResponse) => {
+    const itemProfit = res.data.reduce(
+      (s, item) => s + (item.netProfit ?? 0),
+      0,
+    );
+    return itemProfit - (res.totalDiscount ?? 0) - (res.totalRedeemPoint ?? 0);
+  };
+
+  const currNetProfit = getNetProfit(currSalesByItem);
+  const prevNetProfit = getNetProfit(prevSalesByItem);
+
+  // ── Refund rate & customer growth from bills (keep current way) ──────────
+  const calcBillStats = (bills: RawBill[]) => {
     const nonRefunded = bills.filter((b) => !b.isRefunded);
     const refunded = bills.filter((b) => b.isRefunded);
 
-    console.log("Refunded bills:", refunded);
-
-    // Revenue & Net Profit
-    const revenue = nonRefunded.reduce((s, b) => s + (b.grandTotal ?? 0), 0);
-    const cost = nonRefunded.reduce((s, b) => s + (b.costPrice ?? 0), 0);
-    const netProfit = revenue - cost;
-
-    // Orders (number of non-refunded bills)
-    const orders = nonRefunded.length;
-
-    // Avg Order Value
-    const avgOrder =
-      orders > 0 ? Math.round((revenue / orders) * 100) / 100 : 0;
-
-    // Profit Margin (net profit / revenue)
-    const margin =
-      revenue > 0 ? Math.round((netProfit / revenue) * 10000) / 100 : 0;
-
-    // Refund Rate (% of all bills that are refunded)
-    const refundCount = refunded.length;
     const refundRate =
       bills.length > 0
-        ? Math.round((refundCount / bills.length) * 10000) / 100
+        ? Math.round((refunded.length / bills.length) * 10000) / 100
         : 0;
 
-    // Customer Growth (unique non-null customerIds)
     const uniqueCustomers = new Set(
       nonRefunded.filter((b) => b.customerId).map((b) => b.customerId),
     ).size;
 
-    return { revenue, orders, avgOrder, margin, refundRate, uniqueCustomers };
+    return { refundRate, uniqueCustomers };
   };
 
-  const curr = calc(currBills);
-  const prev = calc(prevBills);
+  const currBillStats = calcBillStats(currBills);
+  const prevBillStats = calcBillStats(prevBills);
+
+  // ── Derived stats ────────────────────────────────────────────────────────
+  const currRevenue = currCompareAgg.revenue;
+  const prevRevenue = prevCompareAgg.revenue;
+  const currOrders = currCompareAgg.orders;
+  const prevOrders = prevCompareAgg.orders;
+
+  const currAvgOrder =
+    currOrders > 0 ? Math.round((currRevenue / currOrders) * 100) / 100 : 0;
+  const prevAvgOrder =
+    prevOrders > 0 ? Math.round((prevRevenue / prevOrders) * 100) / 100 : 0;
+
+  const currMargin =
+    currRevenue > 0
+      ? Math.round((currNetProfit / currRevenue) * 10000) / 100
+      : 0;
+  const prevMargin =
+    prevRevenue > 0
+      ? Math.round((prevNetProfit / prevRevenue) * 10000) / 100
+      : 0;
 
   const pct = (c: number, p: number): number => {
     if (p === 0) return c > 0 ? 100 : 0;
@@ -161,34 +234,37 @@ export const getGrowthData = async (): Promise<GrowthStatsApiResponse> => {
 
   return {
     revenue: {
-      value: Math.round(curr.revenue * 100) / 100,
-      prev: Math.round(prev.revenue * 100) / 100,
-      percent: pct(curr.revenue, prev.revenue),
+      value: Math.round(currRevenue * 100) / 100,
+      prev: Math.round(prevRevenue * 100) / 100,
+      percent: pct(currRevenue, prevRevenue),
     },
     orders: {
-      value: curr.orders,
-      prev: prev.orders,
-      percent: pct(curr.orders, prev.orders),
+      value: currOrders,
+      prev: prevOrders,
+      percent: pct(currOrders, prevOrders),
     },
     avgOrder: {
-      value: curr.avgOrder,
-      prev: prev.avgOrder,
-      percent: pct(curr.avgOrder, prev.avgOrder),
+      value: currAvgOrder,
+      prev: prevAvgOrder,
+      percent: pct(currAvgOrder, prevAvgOrder),
     },
     customers: {
-      value: curr.uniqueCustomers,
-      prev: prev.uniqueCustomers,
-      percent: pct(curr.uniqueCustomers, prev.uniqueCustomers),
+      value: currBillStats.uniqueCustomers,
+      prev: prevBillStats.uniqueCustomers,
+      percent: pct(
+        currBillStats.uniqueCustomers,
+        prevBillStats.uniqueCustomers,
+      ),
     },
     margin: {
-      value: curr.margin,
-      prev: prev.margin,
-      percent: pct(curr.margin, prev.margin),
+      value: currMargin,
+      prev: prevMargin,
+      percent: pct(currMargin, prevMargin),
     },
     refunds: {
-      value: curr.refundRate,
-      prev: prev.refundRate,
-      percent: pct(curr.refundRate, prev.refundRate),
+      value: currBillStats.refundRate,
+      prev: prevBillStats.refundRate,
+      percent: pct(currBillStats.refundRate, prevBillStats.refundRate),
     },
   };
 };
@@ -245,32 +321,31 @@ export const getYoYData = async (): Promise<YoYData[]> => {
   const lastYearStart = toDateStr(new Date(year - 1, 0, 1));
   const lastYearEnd = toDateStr(new Date(year - 1, 11, 31));
 
-  // Fetch raw bills for each year range — this endpoint properly filters by date
-  const [thisYearBills, lastYearBills] = await Promise.all([
-    fetchBills(thisYearStart, thisYearEnd),
-    fetchBills(lastYearStart, lastYearEnd),
-  ]);
+  // Fetch compare-sales-by-month for each year range
+  // Fetch monthly compare-sales individually
+  const thisYearMonthly = await fetchCompareSalesByMonth(
+    thisYearStart,
+    thisYearEnd,
+  );
+  const lastYearMonthly = await fetchCompareSalesByMonth(
+    lastYearStart,
+    lastYearEnd,
+  );
 
-  // Aggregate revenue by month label for each year
-  const aggregateByMonth = (
-    bills: RawBill[],
-    targetYear: number,
-  ): Map<string, number> => {
+  // console.log("Fetched YoY data:", { thisYearMonthly, lastYearMonthly });
+
+  // Build maps: month label → revenue
+  const buildRevenueMap = (data: RawMonthCompare[]): Map<string, number> => {
     const map = new Map<string, number>();
-    for (const bill of bills) {
-      // Only count non-refunded bills
-      if (bill.isRefunded) continue;
-      const date = new Date(bill.paidAt ?? bill.createdAt ?? "");
-      // Safety check: ensure the bill's year matches the expected year
-      if (date.getFullYear() !== targetYear) continue;
-      const label = monthLabel(date);
-      map.set(label, (map.get(label) ?? 0) + (bill.grandTotal ?? 0));
+    for (const m of data) {
+      const label = monthLabel(new Date(m.monthStart + "T00:00:00"));
+      map.set(label, m.totalRevenue);
     }
     return map;
   };
 
-  const thisMap = aggregateByMonth(thisYearBills, year);
-  const lastMap = aggregateByMonth(lastYearBills, year - 1);
+  const thisMap = buildRevenueMap(thisYearMonthly);
+  const lastMap = buildRevenueMap(lastYearMonthly);
 
   const ALL_MONTHS = [
     "Jan",

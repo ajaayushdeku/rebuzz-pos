@@ -13,6 +13,25 @@ interface Props {
   onSave: (updated: TargetActualData[]) => void;
 }
 
+const STORAGE_KEY = "growth_targets";
+
+/** Build initial draft by merging server data with localStorage targets */
+function buildInitialDraft(data: TargetActualData[]): TargetActualData[] {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const savedTargets: Record<string, number> = JSON.parse(saved);
+      return data.map((row) => ({
+        ...row,
+        target: savedTargets[row.month] ?? row.target,
+      }));
+    }
+  } catch {
+    // ignore
+  }
+  return data;
+}
+
 // Component
 
 export default function SetTargetsModal({
@@ -21,7 +40,9 @@ export default function SetTargetsModal({
   data,
   onSave,
 }: Props) {
-  const [draft, setDraft] = useState<TargetActualData[]>(data);
+  const [draft, setDraft] = useState<TargetActualData[]>(() =>
+    buildInitialDraft(data),
+  );
   const { currency } = useCurrency();
 
   if (!isOpen) return null;
@@ -47,6 +68,16 @@ export default function SetTargetsModal({
 
   const totalTarget = draft.reduce((sum, d) => sum + d.target, 0);
 
+  // Compute variance safely - avoid Infinity%
+  const getVariance = (actual: number, target: number): string => {
+    if (target === 0) {
+      if (actual === 0) return "0.0";
+      // When target is 0 and actual > 0, show as 100% achieved
+      return "100.0";
+    }
+    return Math.abs(((actual - target) / target) * 100).toFixed(1);
+  };
+
   return (
     // Backdrop
     <div
@@ -55,7 +86,7 @@ export default function SetTargetsModal({
     >
       {/* Modal panel */}
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -77,55 +108,56 @@ export default function SetTargetsModal({
         </div>
 
         {/* Input rows */}
-        <div className="px-6 py-4 max-h-96 overflow-y-auto space-y-2">
-          {draft.map((row) => (
-            <div
-              key={row.month}
-              className="flex items-center justify-between gap-4"
-            >
-              <span className="text-sm text-gray-600 w-10 shrink-0">
-                {row.month}
-              </span>
-
-              {/* Actual — read only for reference */}
-              <div className="flex items-center gap-1 text-xs text-gray-400">
-                <span>Actual:</span>
-                <span className="font-medium text-blue-500">
-                  {formatCurrency(row.actual, currency)}
-                </span>
-              </div>
-
-              {/* Target input */}
-              <div className="relative flex items-center">
-                <span className="absolute left-3 text-sm text-gray-400">
-                  {currency.symbol}
-                </span>
-                <input
-                  type="number"
-                  value={row.target}
-                  onChange={(e) => handleChange(row.month, e.target.value)}
-                  className="w-36 pl-7 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg
-                             focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400
-                             text-gray-800 font-medium"
-                  min={0}
-                  step={1000}
-                />
-              </div>
-
-              {/* Variance indicator */}
-              <span
-                className={`text-xs font-semibold w-16 text-right shrink-0 ${
-                  row.actual >= row.target ? "text-green-500" : "text-red-400"
-                }`}
+        <div className="px-6 py-4 max-h-96 overflow-y-auto space-y-3">
+          {draft.map((row) => {
+            const variance = getVariance(row.actual, row.target);
+            const isOnTrack = row.target === 0 || row.actual >= row.target;
+            return (
+              <div
+                key={row.month}
+                className="flex items-center justify-between gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                {row.actual >= row.target ? "▲" : "▼"}{" "}
-                {Math.abs(
-                  ((row.actual - row.target) / row.target) * 100,
-                ).toFixed(1)}
-                %
-              </span>
-            </div>
-          ))}
+                <span className="text-sm font-semibold text-gray-700 w-10 shrink-0">
+                  {row.month}
+                </span>
+
+                {/* Actual — read only for reference */}
+                <div className="flex items-center gap-1 text-xs text-gray-400">
+                  <span>Actual:</span>
+                  <span className="font-medium text-blue-500">
+                    {formatCurrency(row.actual, currency)}
+                  </span>
+                </div>
+
+                {/* Target input */}
+                <div className="relative flex items-center">
+                  <span className="absolute left-3 text-sm text-gray-400">
+                    {currency.symbol}
+                  </span>
+                  <input
+                    type="number"
+                    value={row.target}
+                    onChange={(e) => handleChange(row.month, e.target.value)}
+                    className="w-36 pl-7 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg
+                               focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400
+                               text-gray-800 font-medium"
+                    min={0}
+                    step={1000}
+                  />
+                </div>
+
+                {/* Variance indicator */}
+                <span
+                  className={`text-xs font-semibold w-20 text-right shrink-0 ${
+                    isOnTrack ? "text-green-500" : "text-red-400"
+                  }`}
+                >
+                  <span className="mr-0.5">{isOnTrack ? "▲" : "▼"}</span>
+                  {variance}%
+                </span>
+              </div>
+            );
+          })}
         </div>
 
         {/* Footer */}

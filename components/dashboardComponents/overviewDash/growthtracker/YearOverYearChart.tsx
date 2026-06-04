@@ -81,14 +81,27 @@ const CustomTooltip = ({
   if (!active || !payload?.length) return null;
   const lastYear = payload.find((p) => p.dataKey === "lastYear");
   const thisYear = payload.find((p) => p.dataKey === "thisYear");
-  const growth =
-    lastYear && thisYear
-      ? (
-          (((thisYear.value as number) - (lastYear.value as number)) /
-            (lastYear.value as number)) *
-          100
-        ).toFixed(1)
-      : null;
+  const lastVal = (lastYear?.value as number) ?? 0;
+  const thisVal = (thisYear?.value as number) ?? 0;
+
+  // Compute YoY growth percentage
+  // When last year was $0 and this year has revenue → show +100% growth
+  // When both are $0 → show 0%
+  let growth: string | null = null;
+  if (lastVal === 0 && thisVal === 0) {
+    growth = "0.0";
+  } else if (lastVal === 0 && thisVal > 0) {
+    growth = "100.0";
+  } else if (lastVal === 0 && thisVal < 0) {
+    growth = "-100.0";
+  } else {
+    const pct = ((thisVal - lastVal) / lastVal) * 100;
+    if (isFinite(pct)) {
+      growth = pct.toFixed(1);
+    } else {
+      growth = "0.0";
+    }
+  }
 
   return (
     <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100 min-w-40">
@@ -116,7 +129,7 @@ const CustomTooltip = ({
         </div>
       ))}
 
-      {growth && (
+      {growth !== null && (
         <div className="border-t border-gray-100 mt-2 pt-2 flex justify-between">
           <span className="text-xs text-gray-400">YoY Growth</span>
 

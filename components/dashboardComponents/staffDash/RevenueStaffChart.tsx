@@ -57,6 +57,12 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
     value >= 1000
       ? `${currency.symbol}${value / 1000}k`
       : formatCurrency(value, currency);
+
+  // Replace the hardcoded ticks/domain with dynamic calculation:
+  const maxRevenue = Math.max(...displayData.map((d) => d.revenue), 1);
+  const step = Math.ceil(maxRevenue / 4 / 1000) * 1000 || 1000;
+  const yTicks = [0, step, step * 2, step * 3, step * 4];
+  const yMax = yTicks[yTicks.length - 1] * 1.05;
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition duration-300 md:p-6 w-full">
       {isEmpty && <SampleDataBadge />}
@@ -100,12 +106,9 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
               tickFormatter={formatYAxis}
               axisLine={false}
               tickLine={false}
-              tick={{
-                fill: "#9ca3af",
-                fontSize: 12,
-              }}
-              ticks={[0, 2000, 4000, 6000, 8000]}
-              domain={[0, 8500]}
+              tick={{ fill: "#9ca3af", fontSize: 12 }}
+              ticks={yTicks}
+              domain={[0, yMax]}
               width={60}
             />
 
