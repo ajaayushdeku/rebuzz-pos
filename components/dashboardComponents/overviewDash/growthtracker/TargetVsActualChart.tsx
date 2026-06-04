@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import {
   ComposedChart,
   Area,
@@ -11,29 +12,26 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-
 import SetTargetsModal from "./SetTargetsModal";
 import SampleDataBadge from "@/components/ui/sampledatabadge";
 import { CustomTooltipProps } from "@/lib/types/chart";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { mockTargetActualData } from "@/lib/mockData/mock-growthtrackerdata";
 import { formatCurrency } from "@/utils/helper";
 
-// Types
 export interface TargetActualData {
   month: string;
   actual: number;
   target: number;
 }
 
-// Helpers
+const STORAGE_KEY = "growth_targets";
+
 const getYAxisTicks = (data: TargetActualData[]): number[] => {
-  const max = Math.max(...data.flatMap((d) => [d.actual, d.target]));
-  const step = Math.ceil(max / 4 / 10000) * 10000;
+  const max = Math.max(...data.flatMap((d) => [d.actual, d.target]), 1);
+  const step = Math.ceil(max / 4 / 1000) * 1000 || 1000;
   return [0, step, step * 2, step * 3, step * 4];
 };
 
-// Sub-components
 const CustomTooltip = ({
   active,
   payload,
@@ -43,7 +41,6 @@ const CustomTooltip = ({
   if (!active || !payload?.length) return null;
   const actual = payload.find((p) => p.dataKey === "actual");
   const target = payload.find((p) => p.dataKey === "target");
-
   const variance =
     actual && target
       ? (actual.value as number) - (target.value as number)
@@ -52,28 +49,23 @@ const CustomTooltip = ({
   return (
     <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100 min-w-40">
       <p className="text-gray-400 text-xs mb-2 font-medium">{label}</p>
-      {payload.map((entry) => (
+      {payload.map((entry, idx) => (
         <div
-          key={entry.name}
+          key={`${entry.name ?? "tooltip"}-${idx}`}
           className="flex items-center justify-between gap-4"
         >
           <div className="flex items-center gap-1.5">
             <span
               className="w-2 h-2 rounded-full shrink-0"
-              style={{
-                backgroundColor: entry.color as string,
-              }}
+              style={{ backgroundColor: entry.color as string }}
             />
-
             <span className="text-xs text-gray-600">{entry.name}</span>
           </div>
-
           <span className="text-xs font-bold text-gray-800">
             {formatCurrency(entry.value as number, currency)}
           </span>
         </div>
       ))}
-
       {variance !== null && (
         <div className="border-t border-gray-100 mt-2 pt-2 flex justify-between">
           <span className="text-xs text-gray-400">Variance</span>
@@ -81,7 +73,7 @@ const CustomTooltip = ({
             className={`text-xs font-bold ${variance >= 0 ? "text-green-500" : "text-red-400"}`}
           >
             {variance >= 0 ? "+" : ""}
-            {formatCurrency(variance as number, currency)}
+            {formatCurrency(variance, currency)}
           </span>
         </div>
       )}
@@ -93,10 +85,8 @@ const CustomLegend = () => (
   <div className="flex items-center justify-center gap-6 mt-2">
     <div className="flex items-center gap-1.5">
       <span className="w-2 h-2 rounded-full bg-blue-400" />
-
       <span className="text-xs font-semibold text-blue-500">Actual</span>
     </div>
-
     <div className="flex items-center gap-2">
       <svg width="20" height="8">
         <line
@@ -109,48 +99,80 @@ const CustomLegend = () => (
           strokeDasharray="4 3"
         />
       </svg>
-
       <span className="text-xs font-semibold text-gray-400">Target</span>
     </div>
   </div>
 );
 
-// Chart
 export interface TargetVsActualProps {
   data: TargetActualData[];
 }
 
-const TargetVsActualChart = ({ data }: TargetVsActualProps) => {
-  const isEmpty = !data || data.length === 0;
-  const displayData = isEmpty ? mockTargetActualData : data;
-  const [chartData, setChartData] = useState<TargetActualData[]>(displayData);
+export default function TargetVsActualChart({ data }: TargetVsActualProps) {
+  const { currency } = useCurrency();
+  const [chartData, setChartData] = useState<TargetActualData[]>(data);
   const [modalOpen, setModalOpen] = useState(false);
 
-  const { currency } = useCurrency();
+  // ── Load saved targets from localStorage on mount ─────────────────────
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return;
+      const savedTargets: Record<string, number> = JSON.parse(saved);
+
+      // Merge saved targets into the actual data from API
+      setChartData((prev) =>
+        prev.map((row) => ({
+          ...row,
+          target: savedTargets[row.month] ?? row.target,
+        })),
+      );
+    } catch {
+      // localStorage unavailable or corrupt — ignore
+    }
+  }, [data]);
+
+  // Sync when server data updates (e.g. navigation)
+  useEffect(() => {
+    setChartData((prev) =>
+      data.map((row) => ({
+        ...row,
+        // preserve user-set targets
+        target: prev.find((p) => p.month === row.month)?.target ?? row.target,
+      })),
+    );
+  }, [data]);
+
+  const handleSaveTargets = (updated: TargetActualData[]) => {
+    setChartData(updated);
+    // ── Persist targets to localStorage ──────────────────────────────────
+    try {
+      const targetsMap: Record<string, number> = {};
+      for (const row of updated) {
+        targetsMap[row.month] = row.target;
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(targetsMap));
+    } catch {
+      // ignore
+    }
+  };
+
+  const isEmpty =
+    !chartData || chartData.every((d) => d.actual === 0 && d.target === 0);
 
   const formatYAxis = (value: number): string =>
     value >= 1000
       ? `${currency.symbol}${value / 1000}k`
       : formatCurrency(value, currency);
+
   const yTicks = getYAxisTicks(chartData);
   const yMax = yTicks[yTicks.length - 1] * 1.05;
-
-  // Called by modal on Save — replaces targets in chartData
-  const handleSaveTargets = (updated: TargetActualData[]) => {
-    setChartData(updated);
-    // TODO: persist to backend
-    // await fetch("/api/targets", { method: "POST", body: JSON.stringify(updated) });
-  };
 
   return (
     <>
       <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-6 w-full">
-        {isEmpty && (
-          <div className="mt-5 ml-10">
-            <SampleDataBadge />
-          </div>
-        )}
-        {/* Header */}
+        {isEmpty && <SampleDataBadge />}
+
         <div className="flex items-start justify-between mb-6">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -175,11 +197,9 @@ const TargetVsActualChart = ({ data }: TargetVsActualProps) => {
             </p>
           </div>
 
-          {/* Set Targets button */}
           <button
             onClick={() => setModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600
-                       border border-blue-200 rounded-xl hover:bg-blue-50 transition-colors shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-xl hover:bg-blue-50 transition-colors shrink-0"
           >
             <svg
               width="12"
@@ -199,12 +219,7 @@ const TargetVsActualChart = ({ data }: TargetVsActualProps) => {
         <ResponsiveContainer width="100%" height={300}>
           <ComposedChart
             data={chartData}
-            margin={{
-              top: 10,
-              right: 20,
-              left: 10,
-              bottom: 10,
-            }}
+            margin={{ top: 10, right: 20, left: 10, bottom: 10 }}
           >
             <defs>
               <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
@@ -214,31 +229,27 @@ const TargetVsActualChart = ({ data }: TargetVsActualProps) => {
             </defs>
 
             <CartesianGrid vertical={false} stroke="#f3f4f6" />
+
             <XAxis
               dataKey="month"
               axisLine={false}
               tickLine={false}
-              tick={{
-                fill: "#9ca3af",
-                fontSize: 12,
-              }}
+              tick={{ fill: "#9ca3af", fontSize: 12 }}
               dy={8}
             />
             <YAxis
               tickFormatter={formatYAxis}
               axisLine={false}
               tickLine={false}
-              tick={{
-                fill: "#9ca3af",
-                fontSize: 12,
-              }}
+              tick={{ fill: "#9ca3af", fontSize: 12 }}
               ticks={yTicks}
               domain={[0, yMax]}
               width={50}
             />
-            <Tooltip content={<CustomTooltip currency={currency} />} />
-            <Legend content={<CustomLegend />} />
 
+            <Tooltip content={<CustomTooltip currency={currency} />} />
+
+            <Legend content={<CustomLegend />} />
             <Area
               type="monotone"
               dataKey="actual"
@@ -246,12 +257,7 @@ const TargetVsActualChart = ({ data }: TargetVsActualProps) => {
               stroke="#60a5fa"
               strokeWidth={2.5}
               fill="url(#actualGradient)"
-              dot={{
-                r: 4,
-                fill: "#60a5fa",
-                stroke: "#fff",
-                strokeWidth: 2,
-              }}
+              dot={{ r: 4, fill: "#60a5fa", stroke: "#fff", strokeWidth: 2 }}
               activeDot={{
                 r: 6,
                 fill: "#60a5fa",
@@ -259,7 +265,6 @@ const TargetVsActualChart = ({ data }: TargetVsActualProps) => {
                 strokeWidth: 2,
               }}
             />
-
             <Line
               type="monotone"
               dataKey="target"
@@ -279,7 +284,6 @@ const TargetVsActualChart = ({ data }: TargetVsActualProps) => {
         </ResponsiveContainer>
       </div>
 
-      {/* Modal — rendered outside the card via fragment so it overlays everything */}
       <SetTargetsModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -288,6 +292,4 @@ const TargetVsActualChart = ({ data }: TargetVsActualProps) => {
       />
     </>
   );
-};
-
-export default TargetVsActualChart;
+}

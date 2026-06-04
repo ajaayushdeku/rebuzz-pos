@@ -1,8 +1,5 @@
 import { StatsApiResponse, WinningApiResponse } from "@/lib/dashboardstats";
 import { authHeaders } from "../authServices/session";
-import axios from "axios";
-import { RawReportResponse } from "@/lib/types/report";
-import mapReportToStats from "@/lib/mappers/report";
 import {
   mockSalesLocation,
   // mockHourlySales,
@@ -12,52 +9,85 @@ import {
 } from "@/lib/mockData/mock-overviewdata";
 import { TopProduct } from "@/components/dashboardComponents/overviewDash/TopItems";
 import { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
-import { RawBill, RawBillListResponse } from "@/lib/types/bill";
+import { RawBillListResponse } from "@/lib/types/bill";
 import { DataPoint } from "@/lib/types/chart";
 import { LocationData } from "@/components/dashboardComponents/overviewDash/SalesLocationChart";
 import { HourlyData } from "@/components/dashboardComponents/overviewDash/HourlySalesChart";
 import { mapBillsToTransactions } from "@/lib/mappers/transaction";
-import { formatWeeklyData } from "@/utils/formatWeeklyReportData";
 import { cookies } from "next/headers";
 import { getWeekDateRange } from "@/lib/config/weeklyDateRange";
 import { formatHourlyData } from "@/utils/formatHourReportToday";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
-// Fetch Stat data of the business sales
+/** Map a compare type to the backend endpoint path segment */
+const compareEndpoint = (type: "date" | "week" | "month" | "year"): string => {
+  switch (type) {
+    case "date":
+      return "compare-sales-by-date";
+    case "week":
+      return "compare-sales-by-week";
+    case "month":
+      return "compare-sales-by-month";
+    case "year":
+      return "compare-sales-by-year";
+  }
+};
+
+/**
+ * Fetch aggregated stats for a given date range using the appropriate
+ * compare-sales-* API (date/week/month/year) depending on the filter type.
+ */
 export const getStatsData = async (
   startDateStr?: string,
   endDateStr?: string,
+  compareType: "date" | "week" | "month" | "year" = "date",
 ): Promise<StatsApiResponse> => {
   const today = new Date();
   const defaultStart = new Date(today);
-  defaultStart.setDate(today.getDate() - 30); // 30 days from today by default
+  defaultStart.setDate(today.getDate() - 30);
 
   const start = startDateStr ?? defaultStart.toISOString().split("T")[0];
   const end = endDateStr ?? today.toISOString().split("T")[0];
 
-  // Params for the api fetch for stats data
-  const params = new URLSearchParams({
-    startDate: start,
-    endDate: end,
-    limit: "5000",
-  });
+  // console.log(
+  //   `[getStatsData] Fetching stats from ${start} to ${end} using compare type: ${compareType}`,
+  // );
 
-  const [reportRes, salesByItemRes] = await Promise.all([
-    axios.get(`${BASE}/business/report?${params}`, {
-      headers: await authHeaders(),
-    }),
-    axios.get(
-      `${BASE}/business/report/salesByItem?startDate=${start}&endDate=${end}`,
-      { headers: await authHeaders() },
+  const headers = await authHeaders();
+
+  // Unique per-invocation timestamp to prevent server-side dedup of
+  // concurrent current/previous period requests
+  const _ts = Date.now();
+
+  const [compareRes, salesByItemRes] = await Promise.all([
+    fetch(
+      `${BASE}/business/report/${compareEndpoint(compareType)}?startDate=${start}&endDate=${end}&_t=${_ts}`,
+      { headers, cache: "no-store" },
+    ),
+    fetch(
+      `${BASE}/business/report/salesByItem?startDate=${start}&endDate=${end}&_t=${_ts + 1}`,
+      { headers, cache: "no-store" },
     ),
   ]);
 
-  const data: RawReportResponse = reportRes.data;
+  // Aggregate daily/weekly/monthly/yearly compare-sales data
+  const compareJson = await compareRes.json();
+  const dataPoints: { totalSales: number; totalRevenue: number }[] =
+    compareJson?.data ?? [];
+  const totalOrders = dataPoints.reduce(
+    (sum, d) => sum + (d.totalSales ?? 0),
+    0,
+  );
+  const totalRevenue = dataPoints.reduce(
+    (sum, d) => sum + (d.totalRevenue ?? 0),
+    0,
+  );
 
-  // Compute total products sold from salesByItem data
+  // Compute total products sold and net profit from salesByItem data
+  const salesByItemJson = await salesByItemRes.json();
   const salesItems: { count: number; netProfit: number }[] =
-    salesByItemRes.data?.data ?? [];
+    salesByItemJson?.data ?? [];
   const totalProductsSold = salesItems.reduce(
     (sum, item) => sum + (item.count ?? 0),
     0,
@@ -65,19 +95,35 @@ export const getStatsData = async (
 
   const netProfit =
     salesItems.reduce((sum, item) => sum + (item.netProfit ?? 0), 0) -
-    salesByItemRes.data.totalDiscount -
-    salesByItemRes.data.totalRedeemPoint;
+    (salesByItemJson.totalDiscount ?? 0) -
+    (salesByItemJson.totalRedeemPoint ?? 0);
 
-  console.log("Total Revenue:", data.data.report.totalRevenue);
-  console.log("Total Products Sold:", totalProductsSold);
-  console.log("Net Profit:", netProfit);
+  // console.log(
+  //   "[getStatsData] Type:",
+  //   compareType,
+  //   "Revenue:",
+  //   totalRevenue,
+  //   "Orders:",
+  //   totalOrders,
+  // );
 
-  return mapReportToStats(data, totalProductsSold, netProfit);
+  // console.log("RESULT", {
+  //   start,
+  //   end,
+  //   totalRevenue,
+  //   totalOrders,
+  // });
+
+  return {
+    totalSales: { value: totalRevenue, percent: 0 },
+    totalOrders: { value: totalOrders, percent: 0 },
+    productsSold: { value: totalProductsSold, percent: 0 },
+    netProfit: { value: netProfit, percent: 0 },
+  };
 };
 
 // Fetch the WinningStats by using other api to get specific data
 export const getWinningStats = async (): Promise<WinningApiResponse> => {
-  // Fetch all three in parallel
   const [topProducts, hourlyData, weeklyData] = await Promise.all([
     getTopProducts(),
     getHourlySalesData(),
@@ -93,14 +139,12 @@ export const getWinningStats = async (): Promise<WinningApiResponse> => {
     { hour: "N/A", revenue: 0 },
   );
 
-  // Format as range e.g. "2PM" → "2PM - 3PM"
   const formatPeakHourRange = (hour: string): string => {
     if (hour === "N/A") return "No data";
     const match = hour.match(/^(\d+)(AM|PM)$/);
     if (!match) return hour;
     const num = parseInt(match[1]);
     const period = match[2];
-    // Compute next hour
     let nextNum = num + 1;
     let nextPeriod = period;
     if (num === 11 && period === "AM") {
@@ -144,9 +188,6 @@ export const getTopProducts = async (): Promise<TopProduct[]> => {
   const endDate = new Date().toISOString().split("T")[0];
   const startDate = new Date().toISOString().split("T")[0];
 
-  // console.log("Start Date:", startDate);
-  // console.log("End Date:", endDate);
-
   const res = await fetch(
     `${BASE}/business/report/salesByItem?startDate=${startDate}&endDate=${endDate}`,
     {
@@ -162,8 +203,6 @@ export const getTopProducts = async (): Promise<TopProduct[]> => {
 
   const json = await res.json();
 
-  // console.log("Top Products:", json);
-
   const rawItems: {
     itemName: string;
     totalRevenue: number;
@@ -172,7 +211,6 @@ export const getTopProducts = async (): Promise<TopProduct[]> => {
 
   if (rawItems.length === 0) return [];
 
-  // Merge duplicate item names — sum their count and totalRevenue
   const merged = rawItems.reduce<
     Record<string, { totalRevenue: number; count: number }>
   >((acc, item) => {
@@ -188,9 +226,6 @@ export const getTopProducts = async (): Promise<TopProduct[]> => {
     return acc;
   }, {});
 
-  // console.log("Top 3 Products:", merged);
-
-  // Sort by count descending, take top 3
   const sorted = Object.entries(merged)
     .sort(([, a], [, b]) => b.count - a.count)
     .slice(0, 3);
@@ -217,48 +252,58 @@ export const getRecentTransactions = async (): Promise<Transaction[]> => {
 
 // fetch Weekly Revenue Data
 export const getWeeklyRevenueData = async (): Promise<DataPoint[]> => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-
   const { startDate, endDate } = getWeekDateRange();
 
-  // console.log("Fetching Weekly Revenue Data with Start Date:", startDate);
-  // console.log("Fetching Weekly Revenue Data with End Date:", endDate);
-
-  const url = new URL(`${BASE}/business/report`);
-  url.searchParams.set("startDate", startDate);
-  url.searchParams.set("endDate", endDate);
-  url.searchParams.set("limit", "25");
-
-  // console.log("Constructed URL for Weekly Revenue:", url.toString());
-
-  const res = await fetch(url.toString(), {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
+  const res = await fetch(
+    `${BASE}/business/report/compare-sales-by-date?startDate=${startDate}&endDate=${endDate}`,
+    {
+      headers: {
+        ...(await authHeaders()),
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
     },
-    next: { revalidate: 3600 },
-  });
+  );
 
   if (!res.ok) throw new Error("Failed to fetch weekly revenue");
 
   const json = await res.json();
-  // console.log("Weekly Revenue Report:", json);
 
-  const bills: RawBill[] = json?.data?.report?.allBills ?? [];
-  // console.log("BIlls:", bills);
-  return formatWeeklyData(bills);
+  const raw: { date: string; totalSales: number; totalRevenue: number }[] =
+    json?.data ?? [];
+
+  const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  const formatLocalDate = (d: Date): string => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const last7Days: { date: string; label: string }[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    last7Days.push({
+      date: formatLocalDate(d),
+      label: DAY_LABELS[d.getDay()],
+    });
+  }
+
+  const revenueMap: Record<string, number> = {};
+  raw.forEach((item) => {
+    revenueMap[item.date] = item.totalRevenue;
+  });
+
+  return last7Days.map(({ date, label }) => ({
+    day: label,
+    revenue: revenueMap[date] ?? 0,
+  }));
 };
 
 // Mock Data used for Location Sales
 export const getSalesLocations = async (): Promise<LocationData[]> => {
-  //   const res = await fetch(
-  //     "https://api.com/sales-locations",
-  //     {
-  //       next: { revalidate: 3600 },
-  //     },
-  //   );
-  //   return res.json();
   return mockSalesLocation;
 };
 
@@ -276,7 +321,7 @@ export const getHourlySalesData = async (): Promise<HourlyData[]> => {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      next: { revalidate: 300 }, // revalidate every 5 mins
+      next: { revalidate: 300 },
     },
   );
 
@@ -290,8 +335,6 @@ export const getHourlySalesData = async (): Promise<HourlyData[]> => {
     paidAt: string;
     isRefunded: boolean;
   }[] = json?.data?.dailySalesReport?.allBills ?? [];
-
-  // console.log("Hour Sales Details:", bills);
 
   return formatHourlyData(bills);
 };

@@ -16,6 +16,8 @@ import {
 
 export async function StaffStatWrapper() {
   const staffData = await getStaffData();
+
+  console.log("Fetched staff data:", staffData); // Debug log to check fetched data
   return (
     <Carousel
       opts={{

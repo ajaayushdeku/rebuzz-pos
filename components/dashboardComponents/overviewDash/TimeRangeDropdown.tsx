@@ -10,10 +10,10 @@ import {
 } from "@/components/ui/select";
 
 const timeRanges = [
-  { value: "24h", label: "Past 24 Hours" },
-  { value: "week", label: "Past Week" },
-  { value: "month", label: "Past Month" },
-  { value: "year", label: "Past Year" },
+  { value: "24h", label: "Today" },
+  { value: "week", label: "This Week" },
+  { value: "month", label: "This Month" },
+  { value: "year", label: "This Year" },
 ];
 
 export const TimeRangeDropdown = () => {

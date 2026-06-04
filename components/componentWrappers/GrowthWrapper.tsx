@@ -14,10 +14,13 @@ export const GrowthStatsWrapper = async () => {
   const growthStat = await getGrowthData();
   const stats = GROWTH_STAT_CONFIG.map((config) => ({
     ...config,
-    ...growthStat[config.key],
+    value: growthStat[config.key as keyof typeof growthStat]?.value ?? 0,
+    prev: growthStat[config.key as keyof typeof growthStat]?.prev ?? 0,
+    percent: growthStat[config.key as keyof typeof growthStat]?.percent ?? 0,
   }));
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-3 gap-2 md:gap-3 my-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-3 my-4">
       {stats.map(({ key, ...stat }) => (
         <GrowthTrackCard key={key} {...stat} />
       ))}

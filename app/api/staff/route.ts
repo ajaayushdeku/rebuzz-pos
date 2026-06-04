@@ -4,6 +4,18 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
+const getErrorMessage = (error: unknown, defaultMessage: string) => {
+  if (axios.isAxiosError(error) && error.response?.data?.message) {
+    return error.response.data.message as string;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return defaultMessage;
+};
+
 export const GET = async () => {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
@@ -52,8 +64,8 @@ export const POST = async (request: NextRequest) => {
     );
 
     return NextResponse.json(res.data, { status: res.status });
-  } catch (error: any) {
-    const message = error?.response?.data?.message || "Failed to create staff";
+  } catch (error: unknown) {
+    const message = getErrorMessage(error, "Failed to create staff");
     return NextResponse.json({ error: message }, { status: 500 });
   }
 };
@@ -86,8 +98,8 @@ export const PUT = async (request: NextRequest) => {
     );
 
     return NextResponse.json(res.data, { status: res.status });
-  } catch (error: any) {
-    const message = error?.response?.data?.message || "Failed to update staff";
+  } catch (error: unknown) {
+    const message = getErrorMessage(error, "Failed to update staff");
     return NextResponse.json({ error: message }, { status: 500 });
   }
 };
@@ -115,8 +127,8 @@ export const DELETE = async (request: NextRequest) => {
     });
 
     return NextResponse.json(res.data, { status: res.status });
-  } catch (error: any) {
-    const message = error?.response?.data?.message || "Failed to delete staff";
+  } catch (error: unknown) {
+    const message = getErrorMessage(error, "Failed to delete staff");
     return NextResponse.json({ error: message }, { status: 500 });
   }
 };

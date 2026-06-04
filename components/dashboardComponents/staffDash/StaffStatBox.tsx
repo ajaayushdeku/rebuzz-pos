@@ -7,11 +7,11 @@ import { formatCurrency } from "@/utils/helper";
 
 export interface StaffBoxProps {
   staffName: string;
-  staffPosition: string;
+  staffPosition?: string;
   ordersTaken: number;
   avgTime?: number;
   rating?: number;
-  shiftTime: string;
+  shiftTime?: string;
   amount: number;
 }
 
@@ -38,12 +38,11 @@ const getInitials = (name: string): string =>
     .slice(0, 2);
 export default function StaffStatBox({
   staffName,
-  staffPosition,
+  staffPosition = "Staff",
   ordersTaken,
   avgTime,
   rating,
-
-  shiftTime,
+  shiftTime = "Morning",
   amount,
 }: StaffBoxProps) {
   const shiftClass = shiftStyles[shiftTime] ?? "bg-gray-100 text-gray-600";

@@ -94,9 +94,9 @@ const CustomTooltip = ({
     <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100 min-w-40">
       <p className="text-gray-400 text-xs mb-2 font-medium">{label}</p>
 
-      {payload.map((entry) => (
+      {payload.map((entry, idx) => (
         <div
-          key={entry.name}
+          key={`${entry.name ?? "tooltip"}-${idx}`}
           className="flex items-center justify-between gap-4"
         >
           <div className="flex items-center gap-1.5">

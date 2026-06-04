@@ -32,10 +32,10 @@ const getDateRange = (range: string, now: Date): [string, string] => {
 
   switch (range) {
     case "24h":
-      start.setDate(now.getDate() - 1);
+      start.setDate(now.getDate());
       break;
     case "week":
-      start.setDate(now.getDate() - 7);
+      start.setDate(now.getDate() - 6);
       break;
     case "month":
       start.setMonth(now.getMonth() - 1);
@@ -58,11 +58,11 @@ const getPreviousDateRange = (range: string, now: Date): [string, string] => {
   switch (range) {
     case "24h":
       end.setDate(now.getDate() - 1);
-      start.setDate(now.getDate() - 2);
+      start.setDate(now.getDate() - 1);
       break;
     case "week":
-      end.setDate(now.getDate() - 7);
-      start.setDate(now.getDate() - 14);
+      end.setDate(now.getDate() - 6);
+      start.setDate(now.getDate() - 13);
       break;
     case "month":
       end.setMonth(now.getMonth() - 1);
@@ -107,13 +107,17 @@ export const OverviewStatsWrapper = async ({
   const [startDate, endDate] = getDateRange(range, now);
   const [prevStartDate, prevEndDate] = getPreviousDateRange(range, now);
 
-  const [currentStats, previousStats] = await Promise.all([
-    getStatsData(startDate, endDate),
-    getStatsData(prevStartDate, prevEndDate),
-  ]);
+  // Map filter range to the appropriate compare-sales-* API type
+  const compareType =
+    range === "24h" ? "date" : (range as "date" | "week" | "month" | "year");
 
-  console.log("Current Stats:", currentStats);
-  console.log("Previous Stats:", previousStats);
+  const currentStats = await getStatsData(startDate, endDate, compareType);
+
+  const previousStats = await getStatsData(
+    prevStartDate,
+    prevEndDate,
+    compareType,
+  );
 
   const stats: MergedSerializableConfig[] = STATS_CONFIG.map((config) => {
     const cur = currentStats[config.key];
