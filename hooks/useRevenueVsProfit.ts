@@ -20,6 +20,10 @@ async function fetchRevenueVsProfit(range: RangeKey): Promise<ProductData[]> {
     .toISOString()
     .split("T")[0];
 
+  console.log(
+    `Fetching revenue vs profit for range: ${range} (${startDate} to ${today})`,
+  );
+
   const res = await fetch(
     `/api/report/salesByItem?startDate=${startDate}&endDate=${today}`,
     { headers: { "Content-Type": "application/json" }, cache: "no-store" },
@@ -29,6 +33,7 @@ async function fetchRevenueVsProfit(range: RangeKey): Promise<ProductData[]> {
     throw new Error(`Failed to fetch revenue vs profit: ${res.status}`);
 
   const json = await res.json();
+
   const rawItems: {
     itemName: string;
     totalRevenue: number;

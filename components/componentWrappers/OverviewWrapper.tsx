@@ -28,23 +28,29 @@ import HourlySalesTrend from "../dashboardComponents/overviewDash/HourlySalesCha
 /** Convert a range key to [startDate, endDate] ISO date strings using a fixed reference date */
 const getDateRange = (range: string, now: Date): [string, string] => {
   const end = now.toISOString().split("T")[0];
-  const start = new Date(now);
+  let start: Date;
 
   switch (range) {
     case "24h":
+      // Current day start to now
+      start = new Date(now);
       start.setDate(now.getDate());
       break;
     case "week":
-      start.setDate(now.getDate() - 6);
+      // Sunday of current week → today
+      start = new Date(now);
+      start.setDate(now.getDate() - now.getDay());
       break;
     case "month":
-      start.setMonth(now.getMonth() - 1);
+      // 1st of current month → today
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
       break;
     case "year":
-      start.setFullYear(now.getFullYear() - 1);
+      // Jan 1 of current year → today
+      start = new Date(now.getFullYear(), 0, 1);
       break;
     default:
-      start.setMonth(now.getMonth() - 1);
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
   }
 
   return [start.toISOString().split("T")[0], end];
@@ -52,29 +58,38 @@ const getDateRange = (range: string, now: Date): [string, string] => {
 
 /** Convert a range key to [prevStartDate, prevEndDate] for the previous period using a fixed reference date */
 const getPreviousDateRange = (range: string, now: Date): [string, string] => {
-  const end = new Date(now);
-  const start = new Date(now);
+  let start: Date;
+  let end: Date;
 
   switch (range) {
     case "24h":
-      end.setDate(now.getDate() - 1);
-      start.setDate(now.getDate() - 1);
+      // Full previous day
+      start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+      end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
       break;
-    case "week":
-      end.setDate(now.getDate() - 7);
-      start.setDate(now.getDate() - 13);
+    case "week": {
+      // Previous week: Sunday → Saturday
+      const currentWeekStart = new Date(now);
+      currentWeekStart.setDate(now.getDate() - now.getDay());
+      start = new Date(currentWeekStart);
+      start.setDate(currentWeekStart.getDate() - 7);
+      end = new Date(currentWeekStart);
+      end.setDate(currentWeekStart.getDate() - 1);
       break;
+    }
     case "month":
-      end.setMonth(now.getMonth() - 1);
-      start.setMonth(now.getMonth() - 2);
+      // Previous full month: 1st → last day
+      start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      end = new Date(now.getFullYear(), now.getMonth(), 0);
       break;
     case "year":
-      end.setFullYear(now.getFullYear() - 1);
-      start.setFullYear(now.getFullYear() - 2);
+      // Previous full year: Jan 1 → Dec 31
+      start = new Date(now.getFullYear() - 1, 0, 1);
+      end = new Date(now.getFullYear(), 0, 0);
       break;
     default:
-      end.setMonth(now.getMonth() - 1);
-      start.setMonth(now.getMonth() - 2);
+      start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      end = new Date(now.getFullYear(), now.getMonth(), 0);
   }
 
   return [start.toISOString().split("T")[0], end.toISOString().split("T")[0]];
@@ -118,6 +133,8 @@ export const OverviewStatsWrapper = async ({
     prevEndDate,
     compareType,
   );
+
+  console.log("Date:", { startDate, endDate, prevStartDate, prevEndDate });
 
   const stats: MergedSerializableConfig[] = STATS_CONFIG.map((config) => {
     const cur = currentStats[config.key];

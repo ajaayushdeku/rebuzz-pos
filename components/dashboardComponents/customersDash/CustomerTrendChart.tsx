@@ -23,9 +23,9 @@ import { mockCustomerTrendData } from "@/lib/mockData/mock-customer-data";
 
 export interface CustomerTrendData {
   month: string;
-  repeat: number;
-  new: number;
-  totalCustomers?: number; // Optional, can be calculated from new + repeat
+  active: number;
+  inactive: number;
+  totalCustomers?: number; // Optional, can be calculated from active + inactive
 }
 
 // Helpers
@@ -52,29 +52,27 @@ const getYAxisConfig = (totalCustomers: number) => {
 // Sub-components
 
 // Bottom bar — flat top since another bar sits on it
-const RepeatBar = (props: BarShapeProps) => (
+const ActiveBar = (props: BarShapeProps) => (
   <Rectangle {...props} radius={[0, 0, 0, 0]} fill="#60a5fa" />
 );
 
 // Top bar — rounded top corners only
-const NewBar = (props: BarShapeProps) => (
+const InactiveBar = (props: BarShapeProps) => (
   <Rectangle {...props} radius={[6, 6, 0, 0]} fill="#34d399" />
 );
 
 const CustomLegend = () => (
   <div className="flex items-center justify-center gap-6 mt-2">
     {[
-      { label: "New", color: "#34d399" },
-      { label: "Repeat", color: "#60a5fa" },
+      { label: "Active", color: "#60a5fa" },
+      { label: "Inactive", color: "#34d399" },
     ].map(({ label, color }) => (
       <div key={label} className="flex items-center gap-1.5">
         <span
           className="w-3 h-3 rounded-sm shrink-0"
           style={{ backgroundColor: color }}
         />
-        <span className="text-xs font-semibold" style={{ color }}>
-          {label}
-        </span>
+        <span className="text-xs md:text-sm text-gray-600">{label}</span>
       </div>
     ))}
   </div>
@@ -141,7 +139,7 @@ export default function CustomerTrendChart({ data }: CustomerTrendProps) {
       {/* Header */}
       <div className="mb-4 md:mb-6">
         <h2 className="text-[16px] md:text-xl mt-1 font-bold text-gray-900">
-          New vs Repeat Customer Trend
+          Active vs Inactive Customer Trend
         </h2>
         <p className="text-sm text-gray-400 mt-0.5">
           Monthly breakdown over the last 6 months
@@ -191,18 +189,18 @@ export default function CustomerTrendChart({ data }: CustomerTrendProps) {
           />
           <Legend content={<CustomLegend />} />
 
-          {/* stackId ties both bars together — repeat on bottom, new on top */}
+          {/* stackId ties both bars together — active on bottom, inactive on top */}
           <Bar
-            dataKey="repeat"
+            dataKey="active"
             name="Active"
             stackId="customers"
-            shape={RepeatBar}
+            shape={ActiveBar}
           />
           <Bar
-            dataKey="new"
+            dataKey="inactive"
             name="Inactive"
             stackId="customers"
-            shape={NewBar}
+            shape={InactiveBar}
           />
         </BarChart>
       </ResponsiveContainer>

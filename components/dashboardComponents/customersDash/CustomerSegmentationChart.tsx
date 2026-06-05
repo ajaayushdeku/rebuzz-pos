@@ -59,8 +59,8 @@ export default function CustomerSegmentationChart({
   const coloredData: SegmentDataWithColor[] = (
     isEmpty
       ? [
-          { name: "Repeat", value: 1020 },
-          { name: "New", value: 400 },
+          { name: "Active", value: 1020 },
+          { name: "Inactive", value: 400 },
         ]
       : data
   ).map((entry, i) => ({
@@ -77,7 +77,7 @@ export default function CustomerSegmentationChart({
           Customer Segmentation
         </h2>
         <p className="text-sm  text-gray-400 mt-0.5">
-          New vs Repeat customer distribution
+          Active vs Inactive customer distribution
         </p>
       </div>
 

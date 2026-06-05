@@ -110,6 +110,20 @@ export default function StaffOrdersChart({ data }: StaffOrdersChartProps) {
     ...Object.fromEntries(staff.map((s) => [s.name, s.value])),
   }));
 
+  // Dynamic Y-axis: find the max value across all staff hours, add padding
+  const allValues = flatData.flatMap((entry) =>
+    Object.entries(entry)
+      .filter(([key]) => key !== "hour")
+      .map(([, val]) => Number(val) || 0),
+  );
+  const dataMax = Math.max(...allValues, 0);
+  const paddedMax = Math.ceil((dataMax * 1.2) / 10) * 10 || 60; // 20% padding, round to nearest 10
+  const tickStep = Math.max(1, Math.ceil(paddedMax / 5 / 5) * 5); // ~5 ticks, round to 5
+  const yTicks = Array.from(
+    { length: Math.floor(paddedMax / tickStep) + 1 },
+    (_, i) => i * tickStep,
+  );
+
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg p-6 transition duration-300 w-full">
       {isEmpty && <SampleDataBadge />}
@@ -151,8 +165,8 @@ export default function StaffOrdersChart({ data }: StaffOrdersChartProps) {
                 fill: "#9ca3af",
                 fontSize: 12,
               }}
-              ticks={[0, 15, 30, 45, 60]}
-              domain={[0, 65]}
+              ticks={yTicks}
+              domain={[0, paddedMax]}
               width={30}
             />
             <Tooltip content={<CustomTooltip />} />

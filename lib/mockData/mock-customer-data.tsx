@@ -13,8 +13,8 @@ export const mockTierData: TierData[] = [
 ];
 
 export const mockCustomerSegmentationData: SegmentData[] = [
-  { name: "Repeat", value: 1020 },
-  { name: "New", value: 400 },
+  { name: "Active", value: 1020 },
+  { name: "Inactive", value: 400 },
 ];
 
 export const mockCustomerStats: CustomerApiResponse = {
@@ -24,12 +24,12 @@ export const mockCustomerStats: CustomerApiResponse = {
   pointsPerMember: { value: 120 },
 };
 export const mockCustomerTrendData: CustomerTrendData[] = [
-  { month: "Sep", repeat: 150, new: 55 },
-  { month: "Oct", repeat: 160, new: 70 },
-  { month: "Nov", repeat: 162, new: 58 },
-  { month: "Dec", repeat: 170, new: 125 },
-  { month: "Jan", repeat: 175, new: 100 },
-  { month: "Feb", repeat: 210, new: 85 },
+  { month: "Sep", active: 150, inactive: 55 },
+  { month: "Oct", active: 160, inactive: 70 },
+  { month: "Nov", active: 162, inactive: 58 },
+  { month: "Dec", active: 170, inactive: 125 },
+  { month: "Jan", active: 175, inactive: 100 },
+  { month: "Feb", active: 210, inactive: 85 },
 ];
 
 export const mockTopCustomers: TopCustomer[] = [

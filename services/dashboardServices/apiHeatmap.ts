@@ -11,6 +11,8 @@ type RawBill = {
   grandTotal?: number;
 };
 
+/*
+// OLD parseNepalHour — removed because Date.getHours() returns server timezone
 function parseNepalHour(paidAt: string): {
   hour: number;
   dayOfWeek: number;
@@ -22,7 +24,6 @@ function parseNepalHour(paidAt: string): {
     ? paidAt.replace("Z", "")
     : paidAt.replace(" ", "T");
 
-  // Extract raw hour directly from the string before any conversion
   const timePart = normalized.split("T")[1] ?? "";
   const rawHour = parseInt(timePart.split(":")[0], 10);
   const rawMinute = parseInt(timePart.split(":")[1], 10);
@@ -30,21 +31,64 @@ function parseNepalHour(paidAt: string): {
   let finalDate: Date;
 
   if (rawHour >= 12) {
-    // ── Already Nepal time — use as-is ───────────────────────────────────
-    // e.g. "2026-06-04 14:30:00" is already 2:30 PM Nepal time
     finalDate = new Date(normalized);
   } else {
-    // ── UTC time — convert to Nepal (+5h 45m) ────────────────────────────
-    // e.g. "2026-06-04 06:15:00" is 06:15 UTC = 11:00 AM Nepal
-    finalDate = new Date(normalized + "+00:00"); // treat as UTC
-    // Add 5 hours 45 minutes
+    finalDate = new Date(normalized + "+00:00");
     finalDate.setMinutes(finalDate.getMinutes() + 5 * 60 + 45);
   }
 
   return {
     hour: finalDate.getHours(),
-    dayOfWeek: finalDate.getDay(), // 0=Sun...6=Sat
+    dayOfWeek: finalDate.getDay(),
     dateStr: finalDate.toISOString().split("T")[0],
+  };
+}
+*/
+
+// ── Nepal hour & date extractor (timezone-safe) ──────────────────────────
+// Extracts hour directly from the string; builds a correct Nepal Date for
+// dayOfWeek and dateStr without relying on the server's local timezone.
+
+function parseNepalHour(paidAt: string): {
+  hour: number;
+  dayOfWeek: number;
+  dateStr: string;
+} {
+  if (!paidAt) return { hour: -1, dayOfWeek: -1, dateStr: "" };
+
+  const timePart =
+    (paidAt.includes("T") ? paidAt.split("T")[1] : paidAt.split(" ")[1]) || "";
+  const [h, m] = timePart.split(":").map(Number);
+
+  // ── Compute Nepal hour from string (no Date involved) ──────────────────
+  let nepalHour: number;
+  if (h >= 12) {
+    nepalHour = h; // Already Nepal 24-hour time
+  } else {
+    // UTC time — add 5 hours 45 minutes
+    nepalHour = h + 5;
+    if ((m ?? 0) + 45 >= 60) nepalHour += 1;
+  }
+
+  // ── Build a proper Nepal Date for dayOfWeek and dateStr ─────────────────
+  const rawDate = paidAt.includes("T")
+    ? paidAt.replace("Z", "")
+    : paidAt.replace(" ", "T");
+  let nepalDate: Date;
+
+  if (h >= 12) {
+    // Already Nepal time
+    nepalDate = new Date(rawDate + "+05:45");
+  } else {
+    // UTC — parse as UTC then add offset
+    nepalDate = new Date(rawDate + "+00:00");
+    nepalDate.setMinutes(nepalDate.getMinutes() + 5 * 60 + 45);
+  }
+
+  return {
+    hour: nepalHour,
+    dayOfWeek: nepalDate.getDay(), // 0=Sun...6=Sat
+    dateStr: nepalDate.toISOString().split("T")[0],
   };
 }
 
@@ -167,6 +211,12 @@ const getHeatmapData = async (): Promise<HeatmapDataSet> => {
     if (!bill.paidAt) continue;
 
     const { hour, dayOfWeek, dateStr } = parseNepalHour(bill.paidAt);
+    console.log("Parsed bill:", {
+      paidAt: bill.paidAt,
+      hour,
+      dayOfWeek,
+      dateStr,
+    });
 
     if (hour === -1) continue;
 

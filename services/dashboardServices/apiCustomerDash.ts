@@ -179,15 +179,15 @@ export async function getCustomerSegmentation(): Promise<SegmentData[]> {
       if (bill.customerId) activeUserIds.add(bill.customerId);
     }
 
-    let repeatCount = 0;
+    let activeCount = 0;
     for (const user of users) {
-      if (activeUserIds.has(user._id)) repeatCount++;
+      if (activeUserIds.has(user._id)) activeCount++;
     }
-    const newCount = users.length - repeatCount;
+    const inactiveCount = users.length - activeCount;
 
     return [
-      { name: "Repeat", value: Math.max(repeatCount, 0) },
-      { name: "New", value: Math.max(newCount, 0) },
+      { name: "Active", value: Math.max(activeCount, 0) },
+      { name: "Inactive", value: Math.max(inactiveCount, 0) },
     ];
   } catch (err) {
     console.error("getCustomerSegmentation error:", err);
@@ -250,12 +250,12 @@ export async function getCustomerTrendData(): Promise<CustomerTrendData[]> {
           month: "short",
         });
 
-        const repeatCount = customerIds.size;
+        const activeCount = customerIds.size;
 
         return {
           month: monthLabel,
-          repeat: repeatCount,
-          new: totalUsers - repeatCount,
+          active: activeCount,
+          inactive: totalUsers - activeCount,
           totalCustomers: totalUsers,
         };
       });
@@ -335,49 +335,105 @@ export async function getAtRiskCustomers(): Promise<AtRiskCustomer[]> {
   }
 }
 
+// ── Types for purchase history API ──────────────────────────────────────────
+
+type PurchaseHistoryItem = {
+  grandTotal: number;
+  paidAt?: string;
+  createdAt?: string;
+  isRefunded?: boolean;
+};
+
+type PurchaseHistoryResponse = {
+  status: string;
+  customerPurchases: PurchaseHistoryItem[];
+};
+
 // ── getTopCustomers ───────────────────────────────────────────────────────
 export async function getTopCustomers(): Promise<TopCustomer[]> {
   try {
     const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
 
-    const startDate = new Date(now.getFullYear(), now.getMonth(), 1)
-      .toISOString()
-      .split("T")[0];
+    // console.log("Date:", { currentMonth, currentYear });
 
-    const endDate = now.toISOString().split("T")[0];
+    const users = await fetchAllUsers();
 
-    const [users, bills] = await Promise.all([
-      fetchAllUsers(),
-      fetchBillsInRange(startDate, endDate),
-    ]);
+    // Fetch purchase history for each user in parallel
+    const userHistories = await Promise.all(
+      users.map(async (user) => {
+        try {
+          const res = await fetch(
+            `${BASE}/business/users/${user._id}/history`,
+            {
+              headers: await authHeaders(),
+              next: { revalidate: 300 },
+            },
+          );
+          if (!res.ok) return null;
+          const json: PurchaseHistoryResponse = await res.json();
+          return json;
+        } catch {
+          return null;
+        }
+      }),
+    );
 
-    // Spend map for THIS MONTH only
+    // Calculate this month's spend & visits for each user from their history
     const spendMap = new Map<string, number>();
-    const activeCustomerSet = new Set<string>();
+    const visitMap = new Map<string, number>();
 
-    for (const bill of bills) {
-      if (!bill.customerId || bill.isRefunded) continue;
+    for (let i = 0; i < users.length; i++) {
+      const user = users[i];
+      const history = userHistories[i];
+      if (!history?.customerPurchases?.length) continue;
 
-      activeCustomerSet.add(bill.customerId);
+      let totalSpent = 0;
+      let visits = 0;
 
-      const current = spendMap.get(bill.customerId) ?? 0;
-      spendMap.set(bill.customerId, current + (bill.grandTotal ?? 0));
+      for (const purchase of history.customerPurchases) {
+        if (purchase.isRefunded) continue;
+
+        const rawDate = purchase.paidAt ?? purchase.createdAt;
+        if (!rawDate) continue;
+
+        const purchaseDate = new Date(
+          rawDate.includes("T")
+            ? rawDate
+            : rawDate.replace(" ", "T") + "+05:45",
+        );
+
+        // Filter for current month only
+        if (
+          purchaseDate.getMonth() === currentMonth &&
+          purchaseDate.getFullYear() === currentYear
+        ) {
+          totalSpent += purchase.grandTotal ?? 0;
+          visits++;
+        }
+      }
+
+      if (visits > 0) {
+        spendMap.set(user._id, totalSpent);
+        visitMap.set(user._id, visits);
+      }
     }
 
     // Filter only active customers this month
-    const activeUsers = users.filter((u) => activeCustomerSet.has(u._id));
+    const activeUsers = users.filter((u) => spendMap.has(u._id));
 
     const ranked = activeUsers
       .map((user) => {
         const totalSpent =
           Math.round((spendMap.get(user._id) ?? 0) * 100) / 100;
-
+        const numVisits = visitMap.get(user._id) ?? 0;
         const loyaltyPoints = user.loyaltyPoint ?? 0;
 
         return {
           rank: 0,
           customer: user.name || user._id,
-          numVisits: user.numberOfPurchases ?? 0,
+          numVisits,
           loyaltyPoints,
           totalSpent,
           loyaltyTier: getLoyaltyStatus(

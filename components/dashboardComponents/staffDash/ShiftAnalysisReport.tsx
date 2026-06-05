@@ -48,6 +48,7 @@ export default function ShiftAnalysisReport({
               <TableHead>Staff</TableHead>
             </TableRow>
           </TableHeader>
+
           <TableBody>
             {shifts.map((shift) => (
               <TableRow key={shift.label} className="border-b-2">

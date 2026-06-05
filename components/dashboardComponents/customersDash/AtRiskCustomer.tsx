@@ -93,8 +93,8 @@ export default function AtRiskCustomer({
             At-Risk Customers
           </h1>
           <p className="text-gray-400 text-sm mt-0.5">
-            Inactive customers ({numCustomers}) for about 2 weeks who need
-            re-engagement
+            Customers inactive for over two weeks or with no purchases yet,
+            requiring re-engagement
           </p>
         </div>
         <div className="text-yellow-600 border-yellow-500 border bg-yellow-100 flex items-center rounded-2xl px-2 py-0.5 gap-1 shrink-0">
