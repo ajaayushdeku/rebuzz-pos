@@ -248,21 +248,21 @@ export async function getShiftAnalysisData(
           orders: 0,
           revenue: 0,
           staff: 0,
-          avgTime: 0,
+          // avgTime: 0,
         },
         {
           label: "Afternoon (12pm–5pm)",
           orders: 0,
           revenue: 0,
           staff: 0,
-          avgTime: 0,
+          // avgTime: 0,
         },
         {
           label: "Evening (5pm–11pm)",
           orders: 0,
           revenue: 0,
           staff: 0,
-          avgTime: 0,
+          // avgTime: 0,
         },
       ];
     }
@@ -310,7 +310,7 @@ export async function getShiftAnalysisData(
         orders: accum.orders,
         revenue: Math.round(accum.revenue * 100) / 100,
         staff: accum.staffSet.size,
-        avgTime: 0, // not available from this API
+        // avgTime: 0, // not available from this API
       };
     });
   } catch (err) {

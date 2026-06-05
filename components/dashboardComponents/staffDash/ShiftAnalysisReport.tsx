@@ -14,7 +14,7 @@ import { formatCurrency } from "@/utils/helper";
 export type Shift = {
   label: string;
   orders: number;
-  avgTime: number;
+  // avgTime: number;
   revenue: number;
   staff: number;
 };
