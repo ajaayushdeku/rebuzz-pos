@@ -8,6 +8,7 @@ import StatSkeleton from "@/components/ui/statskeleton";
 import ChartSkeleton from "@/components/ui/chartskeleton";
 import TableSkeleton from "@/components/ui/tableskeleton";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
+import { TimeRangeDropdown } from "@/components/dashboardComponents/overviewDash/TimeRangeDropdown";
 import {
   ShiftAnalysisWrapper,
   StaffOrdersChartWrapper,
@@ -15,7 +16,14 @@ import {
   StaffStatWrapper,
 } from "@/components/componentWrappers/StaffWrapper";
 
-export default function Page() {
+const Page = async ({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string }>;
+}) => {
+  const params = await searchParams;
+  const range = params.range ?? "month";
+
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
       {/* ── Header ── */}
@@ -41,6 +49,14 @@ export default function Page() {
         </Button>
       </div>
 
+      {/* ── Date range filter ── */}
+      <div className="flex items-center justify-between my-4">
+        <h2 className="text-base font-semibold text-gray-900">
+          Staff Statistics
+        </h2>
+        <TimeRangeDropdown />
+      </div>
+
       <ChartErrorBoundary>
         <Suspense
           fallback={
@@ -51,28 +67,30 @@ export default function Page() {
             </div>
           }
         >
-          <StaffStatWrapper />
+          <StaffStatWrapper range={range} />
         </Suspense>
       </ChartErrorBoundary>
 
       <ChartErrorBoundary>
         <Suspense fallback={<ChartSkeleton />}>
-          <StaffOrdersChartWrapper />
+          <StaffOrdersChartWrapper range={range} />
         </Suspense>
       </ChartErrorBoundary>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <ChartErrorBoundary>
           <Suspense fallback={<TableSkeleton rows={3} />}>
-            <ShiftAnalysisWrapper />
+            <ShiftAnalysisWrapper range={range} />
           </Suspense>
         </ChartErrorBoundary>
         <ChartErrorBoundary>
           <Suspense fallback={<ChartSkeleton />}>
-            <StaffRevenueWrapper />
+            <StaffRevenueWrapper range={range} />
           </Suspense>
         </ChartErrorBoundary>
       </div>
     </div>
   );
-}
+};
+
+export default Page;

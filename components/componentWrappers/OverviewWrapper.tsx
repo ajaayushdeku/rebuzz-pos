@@ -25,9 +25,17 @@ import WeeklyRevenueChart from "../dashboardComponents/overviewDash/WeeklyRevenu
 import SalesLocationChart from "../dashboardComponents/overviewDash/SalesLocationChart";
 import HourlySalesTrend from "../dashboardComponents/overviewDash/HourlySalesChart";
 
+/** Format a Date as YYYY-MM-DD using local timezone (not UTC) */
+function fmtLocalDate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 /** Convert a range key to [startDate, endDate] ISO date strings using a fixed reference date */
 const getDateRange = (range: string, now: Date): [string, string] => {
-  const end = now.toISOString().split("T")[0];
+  const end = fmtLocalDate(now);
   let start: Date;
 
   switch (range) {
@@ -53,7 +61,7 @@ const getDateRange = (range: string, now: Date): [string, string] => {
       start = new Date(now.getFullYear(), now.getMonth(), 1);
   }
 
-  return [start.toISOString().split("T")[0], end];
+  return [fmtLocalDate(start), end];
 };
 
 /** Convert a range key to [prevStartDate, prevEndDate] for the previous period using a fixed reference date */
@@ -92,7 +100,7 @@ const getPreviousDateRange = (range: string, now: Date): [string, string] => {
       end = new Date(now.getFullYear(), now.getMonth(), 0);
   }
 
-  return [start.toISOString().split("T")[0], end.toISOString().split("T")[0]];
+  return [fmtLocalDate(start), fmtLocalDate(end)];
 };
 
 /** Get a human-readable label for the previous period */
@@ -205,8 +213,6 @@ export const RecentTransactionWrapper = async () => {
 
 export const WeeklyRevenueChartWrapper = async () => {
   const data = await getWeeklyRevenueData();
-
-  console.log("Weekly DATA:", data);
 
   const computePeakDay = (data: DataPoint[]): string => {
     return data.reduce((peak, curr) =>

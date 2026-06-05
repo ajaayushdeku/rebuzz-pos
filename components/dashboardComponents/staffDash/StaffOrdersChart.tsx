@@ -54,7 +54,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (!activeEntries.length) return null;
 
   return (
-    <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100 min-w-32">
+    <div className="bg-white rounded-xl px-4 py-3 mb-5 shadow-lg border border-gray-100 min-w-32">
       <p className="text-gray-400 text-xs mb-2 font-medium">{label}</p>
       {activeEntries.map((entry) => (
         <div

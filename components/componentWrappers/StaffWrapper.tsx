@@ -1,58 +1,3 @@
-// import {
-//   Carousel,
-//   CarouselContent,
-//   CarouselItem,
-// } from "@/components/ui/carousel";
-// import StaffStatBox from "../dashboardComponents/staffDash/StaffStatBox";
-// import RevenueStaffChart from "../dashboardComponents/staffDash/RevenueStaffChart";
-// import StaffOrdersChart from "../dashboardComponents/staffDash/StaffOrdersChart";
-// import ShiftAnalysisReport from "../dashboardComponents/staffDash/ShiftAnalysisReport";
-// import {
-//   getShiftAnalysisData,
-//   getStaffData,
-//   getStaffOrdersPerHour,
-//   getStaffRevenue,
-// } from "@/services/dashboardServices/apiStaff";
-
-// export async function StaffStatWrapper() {
-//   const staffData = await getStaffData();
-
-//   console.log("Fetched staff data:", staffData); // Debug log to check fetched data
-//   return (
-//     <Carousel
-//       opts={{
-//         align: "start",
-//         dragFree: true,
-//       }}
-//       className="w-full my-4"
-//     >
-//       <CarouselContent className="-ml-3">
-//         {staffData.map((staff) => (
-//           <CarouselItem
-//             key={staff.staffName}
-//             className="pl-3 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4"
-//           >
-//             <StaffStatBox {...staff} />
-//           </CarouselItem>
-//         ))}
-//       </CarouselContent>
-//     </Carousel>
-//   );
-// }
-// export async function StaffRevenueWrapper() {
-//   const staffRevenueData = await getStaffRevenue();
-//   return <RevenueStaffChart data={staffRevenueData} />;
-// }
-// export async function StaffOrdersChartWrapper() {
-//   const staffOrderData = await getStaffOrdersPerHour();
-//   return <StaffOrdersChart data={staffOrderData} />;
-// }
-
-// export async function ShiftAnalysisWrapper() {
-//   const shiftAnalysisData = await getShiftAnalysisData();
-//   return <ShiftAnalysisReport shifts={shiftAnalysisData} />;
-// }
-
 import StaffStatBox from "@/components/dashboardComponents/staffDash/StaffStatBox";
 import StaffOrdersChart from "@/components/dashboardComponents/staffDash/StaffOrdersChart";
 import RevenueStaffChart from "@/components/dashboardComponents/staffDash/RevenueStaffChart";
@@ -65,8 +10,19 @@ import {
   getShiftAnalysisData,
 } from "@/services/dashboardServices/apiStaff";
 
-export async function StaffStatWrapper() {
-  const staffList = await getStaffData();
+const RANGE_OPTIONS: { label: string; value: string }[] = [
+  { label: "Today", value: "today" },
+  { label: "Week", value: "week" },
+  { label: "Month", value: "month" },
+  { label: "Year", value: "year" },
+];
+
+export async function StaffStatWrapper({
+  range = "month",
+}: {
+  range?: string;
+}) {
+  const staffList = await getStaffData(range);
 
   if (staffList.length === 0) {
     return (
@@ -85,17 +41,29 @@ export async function StaffStatWrapper() {
   );
 }
 
-export async function StaffOrdersChartWrapper() {
-  const data = await getStaffOrdersPerHour();
+export async function StaffOrdersChartWrapper({
+  range = "month",
+}: {
+  range?: string;
+}) {
+  const data = await getStaffOrdersPerHour(range);
   return <StaffOrdersChart data={data} />;
 }
 
-export async function StaffRevenueWrapper() {
-  const data = await getStaffRevenue();
+export async function StaffRevenueWrapper({
+  range = "month",
+}: {
+  range?: string;
+}) {
+  const data = await getStaffRevenue(range);
   return <RevenueStaffChart data={data} />;
 }
 
-export async function ShiftAnalysisWrapper() {
-  const shifts = await getShiftAnalysisData();
+export async function ShiftAnalysisWrapper({
+  range = "month",
+}: {
+  range?: string;
+}) {
+  const shifts = await getShiftAnalysisData(range);
   return <ShiftAnalysisReport shifts={shifts} />;
 }

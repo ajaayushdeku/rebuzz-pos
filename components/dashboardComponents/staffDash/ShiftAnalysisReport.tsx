@@ -8,7 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDuration } from "@/lib/utils";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrency } from "@/utils/helper";
 
@@ -33,7 +32,7 @@ export default function ShiftAnalysisReport({
 }: ShiftAnalysisReportProps) {
   const { currency } = useCurrency();
   return (
-    <div className="border border-gray-100 w-full px-4 md:px-10 py-6 rounded-2xl shadow-md hover:shadow-lg transition duration-300">
+    <div className="border border-gray-100 w-full px-4 mt-6 md:px-10 py-6 rounded-2xl shadow-md hover:shadow-lg transition duration-300">
       <h1 className="font-bold text-[16px] md:text-xl">{title}</h1>
       <p className="text-sm text-gray-400 mt-0.5">{description}</p>
 
@@ -43,7 +42,6 @@ export default function ShiftAnalysisReport({
             <TableRow>
               <TableHead>Shift</TableHead>
               <TableHead>Orders</TableHead>
-              <TableHead>Avg Time</TableHead>
               <TableHead>Revenue</TableHead>
               <TableHead>Staff</TableHead>
             </TableRow>
@@ -56,9 +54,6 @@ export default function ShiftAnalysisReport({
                   {shift.label}
                 </TableCell>
                 <TableCell className="font-bold">{shift.orders}</TableCell>
-                <TableCell className="text-gray-600">
-                  {shift.avgTime != null ? formatDuration(shift.avgTime) : "—"}
-                </TableCell>
                 <TableCell className="text-green-600 font-semibold">
                   {formatCurrency(shift.revenue as number, currency)}
                 </TableCell>

@@ -3,10 +3,6 @@ import { Shift } from "@/components/dashboardComponents/staffDash/ShiftAnalysisR
 import { StaffHourlyData } from "@/components/dashboardComponents/staffDash/StaffOrdersChart";
 import { StaffBoxProps } from "@/components/dashboardComponents/staffDash/StaffStatBox";
 import { authHeaders } from "../authServices/session";
-import {
-  mockShiftAnalysisData,
-  mockStaffHourlyOrderData,
-} from "@/lib/mockData/mock-staffdata";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
@@ -25,6 +21,7 @@ type RawBill = {
 type RawEmployee = {
   _id: string;
   name: string;
+  role: string;
   adminId: string;
   totalSales: number;
   totalRevenue: number;
@@ -34,18 +31,42 @@ type RawEmployee = {
 // ── Date helpers ──────────────────────────────────────────────────────────
 
 function toDateStr(date: Date): string {
-  return date.toISOString().split("T")[0];
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
-// Returns last 30 days date range
-function getDateRange(): { startDate: string; endDate: string } {
+function getDateRange(range: string = "month"): {
+  startDate: string;
+  endDate: string;
+} {
   const today = new Date();
-  const start = new Date(today);
-  start.setDate(today.getDate() - 30);
-  return {
-    startDate: toDateStr(start),
-    endDate: toDateStr(today),
-  };
+  const end = toDateStr(today);
+  let start: Date;
+
+  switch (range) {
+    case "today":
+    case "24h":
+      start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      break;
+    case "week": {
+      // Sunday of current week → today
+      start = new Date(today);
+      start.setDate(today.getDate() - today.getDay());
+      break;
+    }
+    case "month":
+      start = new Date(today.getFullYear(), today.getMonth(), 1);
+      break;
+    case "year":
+      start = new Date(today.getFullYear(), 0, 1);
+      break;
+    default:
+      start = new Date(today.getFullYear(), today.getMonth(), 1);
+  }
+
+  return { startDate: toDateStr(start), endDate: end };
 }
 
 // ── Nepal hour extractor ────────────────────────────────────────────────
@@ -77,8 +98,11 @@ function getHourLabel(paidAt: string): string | null {
 
 // ── Core fetcher — salesByAllEmployee ────────────────────────────────────
 
-async function fetchAllEmployeeSales(): Promise<RawEmployee[]> {
-  const { startDate, endDate } = getDateRange();
+async function fetchAllEmployeeSales(
+  range: string = "month",
+): Promise<RawEmployee[]> {
+  const { startDate, endDate } = getDateRange(range);
+
   const res = await fetch(
     `${BASE}/business/report/salesByAllEmployee?startDate=${startDate}&endDate=${endDate}`,
     { headers: await authHeaders(), next: { revalidate: 300 } },
@@ -93,8 +117,10 @@ async function fetchAllEmployeeSales(): Promise<RawEmployee[]> {
 
 async function fetchEmployeeDetail(
   employeeId: string,
+  range: string = "month",
 ): Promise<RawEmployee | null> {
-  const { startDate, endDate } = getDateRange();
+  const { startDate, endDate } = getDateRange(range);
+
   const res = await fetch(
     `${BASE}/business/report/salesByEmployee/${employeeId}?startDate=${startDate}&endDate=${endDate}`,
     { headers: await authHeaders(), next: { revalidate: 300 } },
@@ -107,17 +133,17 @@ async function fetchEmployeeDetail(
 
 // ── getStaffData — stat boxes ─────────────────────────────────────────────
 
-export async function getStaffData(): Promise<StaffBoxProps[]> {
+export async function getStaffData(
+  range: string = "month",
+): Promise<StaffBoxProps[]> {
   try {
-    const employees = await fetchAllEmployeeSales();
+    const employees = await fetchAllEmployeeSales(range);
     if (employees.length === 0) return [];
-
-    console.log("Fetched employees for StaffStatBox:", employees); // Debug log to check fetched data
 
     return employees
       .map((emp) => ({
         staffName: emp.name || emp._id,
-        staffPosition: "Staff",
+        staffPosition: emp.role || "",
         ordersTaken: emp.totalSales ?? 0,
         amount: Math.round((emp.totalRevenue ?? 0) * 100) / 100,
       }))
@@ -130,9 +156,11 @@ export async function getStaffData(): Promise<StaffBoxProps[]> {
 
 // ── getStaffRevenue — revenue bar chart ───────────────────────────────────
 
-export async function getStaffRevenue(): Promise<StaffRevenue[]> {
+export async function getStaffRevenue(
+  range: string = "month",
+): Promise<StaffRevenue[]> {
   try {
-    const employees = await fetchAllEmployeeSales();
+    const employees = await fetchAllEmployeeSales(range);
     if (employees.length === 0) return [];
 
     return employees
@@ -149,10 +177,12 @@ export async function getStaffRevenue(): Promise<StaffRevenue[]> {
 
 // ── getStaffOrdersPerHour — hourly line chart ─────────────────────────────
 
-export async function getStaffOrdersPerHour(): Promise<StaffHourlyData[]> {
+export async function getStaffOrdersPerHour(
+  range: string = "month",
+): Promise<StaffHourlyData[]> {
   try {
-    const employees = await fetchAllEmployeeSales();
-    if (employees.length === 0) return mockStaffHourlyOrderData;
+    const employees = await fetchAllEmployeeSales(range);
+    if (employees.length === 0) return [];
 
     const HOUR_SLOTS = [
       "7am",
@@ -182,7 +212,6 @@ export async function getStaffOrdersPerHour(): Promise<StaffHourlyData[]> {
 
       for (const bill of emp.bills ?? []) {
         const slot = getHourLabel(bill.paidAt);
-        console.log("Slot:", slot);
         if (slot && hourMap.has(slot)) {
           hourMap.set(slot, (hourMap.get(slot) ?? 0) + 1);
         }
@@ -191,7 +220,6 @@ export async function getStaffOrdersPerHour(): Promise<StaffHourlyData[]> {
       staffHourMap.set(name, hourMap);
     }
 
-    console.log("Staff hourly map:", staffHourMap); // Debug log to check mapping
     // Convert to StaffHourlyData[]
     return HOUR_SLOTS.map((hour) => ({
       hour,
@@ -202,16 +230,42 @@ export async function getStaffOrdersPerHour(): Promise<StaffHourlyData[]> {
     }));
   } catch (err) {
     console.error("getStaffOrdersPerHour error:", err);
-    return mockStaffHourlyOrderData;
+    return [];
   }
 }
 
 // ── getShiftAnalysisData — shift breakdown table ──────────────────────────
 
-export async function getShiftAnalysisData(): Promise<Shift[]> {
+export async function getShiftAnalysisData(
+  range: string = "month",
+): Promise<Shift[]> {
   try {
-    const employees = await fetchAllEmployeeSales();
-    if (employees.length === 0) return mockShiftAnalysisData;
+    const employees = await fetchAllEmployeeSales(range);
+    if (employees.length === 0) {
+      return [
+        {
+          label: "Morning (6am–12pm)",
+          orders: 0,
+          revenue: 0,
+          staff: 0,
+          avgTime: 0,
+        },
+        {
+          label: "Afternoon (12pm–5pm)",
+          orders: 0,
+          revenue: 0,
+          staff: 0,
+          avgTime: 0,
+        },
+        {
+          label: "Evening (5pm–11pm)",
+          orders: 0,
+          revenue: 0,
+          staff: 0,
+          avgTime: 0,
+        },
+      ];
+    }
 
     // Shift hour boundaries (Nepal time)
     const SHIFTS = [
@@ -261,6 +315,6 @@ export async function getShiftAnalysisData(): Promise<Shift[]> {
     });
   } catch (err) {
     console.error("getShiftAnalysisData error:", err);
-    return mockShiftAnalysisData;
+    return [];
   }
 }
