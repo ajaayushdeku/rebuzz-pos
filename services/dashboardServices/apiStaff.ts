@@ -147,7 +147,7 @@ export async function getStaffData(
         ordersTaken: emp.totalSales ?? 0,
         amount: Math.round((emp.totalRevenue ?? 0) * 100) / 100,
       }))
-      .sort((a, b) => b.amount - a.amount);
+      .sort((a, b) => a.staffName.localeCompare(b.staffName));
   } catch (err) {
     console.error("getStaffData error:", err);
     return [];
@@ -168,7 +168,7 @@ export async function getStaffRevenue(
         name: emp.name || emp._id,
         revenue: Math.round((emp.totalRevenue ?? 0) * 100) / 100,
       }))
-      .sort((a, b) => b.revenue - a.revenue);
+      .sort((a, b) => a.name.localeCompare(b.name));
   } catch (err) {
     console.error("getStaffRevenue error:", err);
     return [];
@@ -220,12 +220,15 @@ export async function getStaffOrdersPerHour(
       staffHourMap.set(name, hourMap);
     }
 
+    // Sort staff names alphabetically for consistent color mapping
+    const sortedStaffNames = Array.from(staffHourMap.keys()).sort();
+
     // Convert to StaffHourlyData[]
     return HOUR_SLOTS.map((hour) => ({
       hour,
-      staff: Array.from(staffHourMap.entries()).map(([name, hourMap]) => ({
+      staff: sortedStaffNames.map((name) => ({
         name,
-        value: hourMap.get(hour) ?? 0,
+        value: staffHourMap.get(name)?.get(hour) ?? 0,
       })),
     }));
   } catch (err) {

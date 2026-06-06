@@ -11,7 +11,6 @@ import {
 } from "recharts";
 import type { BarShapeProps } from "recharts";
 
-import { mockStaffRevenue } from "../../../lib/mockData/mock-staffdata";
 import SampleDataBadge from "@/components/ui/sampledatabadge";
 import { CustomTooltipProps } from "@/lib/types/chart";
 import { formatCurrency } from "@/utils/helper";
@@ -52,7 +51,7 @@ export interface StaffRevenueProps {
 export default function RevenueStaffChart({ data }: StaffRevenueProps) {
   const { currency } = useCurrency();
   const isEmpty = !data || data.length === 0;
-  const displayData = isEmpty ? mockStaffRevenue : data;
+  const displayData = isEmpty ? [{ name: "No Data", revenue: 0 }] : data;
   const formatYAxis = (value: number): string =>
     value >= 1000
       ? `${currency.symbol}${value / 1000}k`

@@ -10,12 +10,12 @@ import {
   getShiftAnalysisData,
 } from "@/services/dashboardServices/apiStaff";
 
-const RANGE_OPTIONS: { label: string; value: string }[] = [
-  { label: "Today", value: "today" },
-  { label: "Week", value: "week" },
-  { label: "Month", value: "month" },
-  { label: "Year", value: "year" },
-];
+// const RANGE_OPTIONS: { label: string; value: string }[] = [
+//   { label: "Today", value: "today" },
+//   { label: "Week", value: "week" },
+//   { label: "Month", value: "month" },
+//   { label: "Year", value: "year" },
+// ];
 
 export async function StaffStatWrapper({
   range = "month",
@@ -26,20 +26,35 @@ export async function StaffStatWrapper({
 
   if (staffList.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-400 text-sm">
-        No staff data available
+      <div className="flex flex-col items-center py-8 text-gray-400 text-sm">
+        <span className="font-medium">No staff data available</span>
+        <p className="mt-1 text-xs text-gray-300">
+          Try switching to a different date range to see staff members and their
+          performance.
+        </p>
       </div>
     );
   }
 
+  const displayStaff = staffList.slice(0, 8);
+
   return (
     <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 my-4">
-      {staffList.map((staff) => (
-        <StaffStatBox key={staff.staffName} {...staff} />
+      {displayStaff.map((staff, idx) => (
+        <StaffStatBox key={staff.staffName} {...staff} colorIndex={idx} />
       ))}
     </div>
   );
 }
+
+// export async function StaffOrdersChartWrapper({
+//   range = "month",
+// }: {
+//   range?: string;
+// }) {
+//   const data = await getStaffOrdersPerHour(range);
+//   return <StaffOrdersChart data={data} />;
+// }
 
 export async function StaffOrdersChartWrapper({
   range = "month",
@@ -47,7 +62,11 @@ export async function StaffOrdersChartWrapper({
   range?: string;
 }) {
   const data = await getStaffOrdersPerHour(range);
-  return <StaffOrdersChart data={data} />;
+  const limitedData = data.map((hourSlot) => ({
+    ...hourSlot,
+    staff: hourSlot.staff.slice(0, 8),
+  }));
+  return <StaffOrdersChart data={limitedData} />;
 }
 
 export async function StaffRevenueWrapper({

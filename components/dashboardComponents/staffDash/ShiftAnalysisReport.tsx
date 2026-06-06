@@ -1,13 +1,5 @@
 "use client";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrency } from "@/utils/helper";
 
@@ -32,36 +24,69 @@ export default function ShiftAnalysisReport({
 }: ShiftAnalysisReportProps) {
   const { currency } = useCurrency();
   return (
-    <div className="border border-gray-100 w-full px-4 mt-6 md:px-10 py-6 rounded-2xl shadow-md hover:shadow-lg transition duration-300">
-      <h1 className="font-bold text-[16px] md:text-xl">{title}</h1>
-      <p className="text-sm text-gray-400 mt-0.5">{description}</p>
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition duration-300 md:p-6 w-full mt-6">
+      {/* Header */}
+      <div className="mb-4">
+        <h2 className="text-[16px] md:text-xl font-bold text-gray-900">
+          {title}
+        </h2>
+        <p className="text-sm text-gray-400 mt-0.5">{description}</p>
+      </div>
 
-      <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 mt-3">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Shift</TableHead>
-              <TableHead>Orders</TableHead>
-              <TableHead>Revenue</TableHead>
-              <TableHead>Staff</TableHead>
-            </TableRow>
-          </TableHeader>
-
-          <TableBody>
-            {shifts.map((shift) => (
-              <TableRow key={shift.label} className="border-b-2">
-                <TableCell className="whitespace-nowrap">
-                  {shift.label}
-                </TableCell>
-                <TableCell className="font-bold">{shift.orders}</TableCell>
-                <TableCell className="text-green-600 font-semibold">
-                  {formatCurrency(shift.revenue as number, currency)}
-                </TableCell>
-                <TableCell>{shift.staff}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      {/* Table */}
+      <div className="rounded-xl border border-gray-200 overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-xs text-gray-400 border-b border-gray-100">
+              <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+                S.No
+              </th>
+              <th className="text-left pb-3 pt-3 px-4 font-medium">Shift</th>
+              <th className="text-center pb-3 pt-3 px-4 font-medium">Orders</th>
+              <th className="text-center pb-3 pt-3 px-4 font-medium">
+                Revenue
+              </th>
+              <th className="text-center pb-3 pt-3 px-4 font-medium">Staff</th>
+            </tr>
+          </thead>
+          <tbody>
+            {shifts.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={5}
+                  className="text-center py-12 text-sm text-gray-400"
+                >
+                  No shift data available
+                </td>
+              </tr>
+            ) : (
+              shifts.map((shift, idx) => (
+                <tr
+                  key={shift.label}
+                  className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
+                >
+                  <td className="py-3 px-4 text-gray-400 text-xs">{idx + 1}</td>
+                  <td className="py-3 px-4">
+                    <span className="font-medium text-gray-900">
+                      {shift.label}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-center">
+                    <span className="font-semibold text-gray-800">
+                      {shift.orders}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-center font-semibold text-green-600">
+                    {formatCurrency(shift.revenue as number, currency)}
+                  </td>
+                  <td className="py-3 px-4 text-center text-gray-600">
+                    {shift.staff}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
