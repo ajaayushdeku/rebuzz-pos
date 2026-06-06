@@ -1,4 +1,4 @@
-// import { SalesTrendsData } from "@/components/dashboardComponents/salesRevenue/SalesTrendChart";
+k; // import { SalesTrendsData } from "@/components/dashboardComponents/salesRevenue/SalesTrendChart";
 import { SlowProduct } from "@/components/dashboardComponents/salesRevenue/slow-product-columns";
 import { TopProduct } from "@/components/dashboardComponents/salesRevenue/top-product-columns";
 

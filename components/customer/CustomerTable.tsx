@@ -389,123 +389,129 @@ export default function CustomerTable({
         />
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-xs text-gray-400 border-b border-gray-100">
-              <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
-                S.No
-              </th>
-              <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("name")}
-              >
-                <span className="flex items-center gap-1">
-                  Customer Name {SortIcon({ colKey: "name" })}
-                </span>
-              </th>
-              <th className="text-center pb-3 pt-3 px-4 font-medium">
-                Loyalty Status
-              </th>
-              <th className="text-center pb-3 pt-3 px-4 font-medium">Points</th>
-
-              <th className="text-center pb-3 pt-3 px-4 font-medium">
-                Purchases
-              </th>
-
-              <th className="text-center pb-3 pt-3 px-4 font-medium">
-                Due Amount
-              </th>
-              <th className="text-right pb-3 pt-3 px-4 font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paged.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={7}
-                  className="text-center py-12 text-sm text-gray-400"
+      {/* Table — horizontally scrollable on mobile */}
+      <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm min-w-[700px]">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-xs text-gray-400 border-b border-gray-100">
+                <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+                  S.No
+                </th>
+                <th
+                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("name")}
                 >
-                  No customers found
-                </td>
+                  <span className="flex items-center gap-1">
+                    Customer Name {SortIcon({ colKey: "name" })}
+                  </span>
+                </th>
+                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                  Loyalty Status
+                </th>
+                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                  Points
+                </th>
+
+                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                  Purchases
+                </th>
+
+                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                  Due Amount
+                </th>
+                <th className="text-right pb-3 pt-3 px-4 font-medium">
+                  Actions
+                </th>
               </tr>
-            ) : (
-              paged.map((customer, idx) => (
-                <tr
-                  key={customer.id}
-                  onClick={() => handleRowClick(customer)}
-                  className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
-                >
-                  <td className="py-3 px-4 text-gray-400 text-xs">
-                    {page * pageSize + idx + 1}
-                  </td>
-
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900">
-                        {customer.name}
-                      </span>
-                      {customer.isDeactivated && (
-                        <span className="text-xs text-red-500">Inactive</span>
-                      )}
-                    </div>
-                  </td>
-
-                  <td className="py-3 px-4 text-center">
-                    <TierBadge tier={customer.loyaltyStatus} />
-                  </td>
-
-                  <td className="py-3 px-4 text-center">
-                    <div
-                      className="gap-1.5"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <span className="font-semibold text-gray-800">
-                        {customer.loyaltyPoint}
-                      </span>
-
-                      <button
-                        onClick={() => {
-                          setLoyaltyCustomer(customer);
-                          setLoyaltyOpen(true);
-                        }}
-                        className="p-1 px-2 text-blue-300 hover:text-orange-500 hover:bg-orange-50 rounded-md transition-colors"
-                        title="Update loyalty points"
-                      >
-                        <Pencil className="h-3 w-3" />
-                      </button>
-                    </div>
-                  </td>
-
-                  <td className="py-3 px-4 text-center text-gray-600">
-                    {customer.numberOfPurchases ?? "—"}
-                  </td>
-
-                  <td className="py-3 px-4 text-center font-semibold">
-                    {customer.totalDueAmount !== undefined
-                      ? `$${customer.totalDueAmount.toFixed(2)}`
-                      : "—"}
-                  </td>
-                  <td className="py-3 px-4">
-                    <div
-                      className="flex items-center justify-end"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        onClick={(e) => handleEdit(e, customer)}
-                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Edit customer"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
+            </thead>
+            <tbody>
+              {paged.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="text-center py-12 text-sm text-gray-400"
+                  >
+                    No customers found
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                paged.map((customer, idx) => (
+                  <tr
+                    key={customer.id}
+                    onClick={() => handleRowClick(customer)}
+                    className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="py-3 px-4 text-gray-400 text-xs">
+                      {page * pageSize + idx + 1}
+                    </td>
+
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-900">
+                          {customer.name}
+                        </span>
+                        {customer.isDeactivated && (
+                          <span className="text-xs text-red-500">Inactive</span>
+                        )}
+                      </div>
+                    </td>
+
+                    <td className="py-3 px-4 text-center">
+                      <TierBadge tier={customer.loyaltyStatus} />
+                    </td>
+
+                    <td className="py-3 px-4 text-center">
+                      <div
+                        className="gap-1.5"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <span className="font-semibold text-gray-800">
+                          {customer.loyaltyPoint}
+                        </span>
+
+                        <button
+                          onClick={() => {
+                            setLoyaltyCustomer(customer);
+                            setLoyaltyOpen(true);
+                          }}
+                          className="p-1 px-2 text-blue-300 hover:text-orange-500 hover:bg-orange-50 rounded-md transition-colors"
+                          title="Update loyalty points"
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </td>
+
+                    <td className="py-3 px-4 text-center text-gray-600">
+                      {customer.numberOfPurchases ?? "—"}
+                    </td>
+
+                    <td className="py-3 px-4 text-center font-semibold">
+                      {customer.totalDueAmount !== undefined
+                        ? `$${customer.totalDueAmount.toFixed(2)}`
+                        : "—"}
+                    </td>
+                    <td className="py-3 px-4">
+                      <div
+                        className="flex items-center justify-end"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          onClick={(e) => handleEdit(e, customer)}
+                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Edit customer"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Pagination */}

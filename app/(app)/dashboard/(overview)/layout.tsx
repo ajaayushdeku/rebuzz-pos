@@ -49,7 +49,7 @@ export default function DashboardLayout({
 
         <div className="flex items-center gap-2">
           <Button
-            className="flex items-center gap-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2"
+            className="bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
             asChild
           >
             <Link href="/invoices/add">Create order</Link>
@@ -58,8 +58,8 @@ export default function DashboardLayout({
       </div>
 
       {/* ── Tabs + Calendar Date Filter (Overview page only) ── */}
-      <div className="flex items-center justify-between pt-4">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4">
+        <div className="flex items-center gap-2 overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0">
           {tabs.map(({ label, href, icon: Icon }) => (
             <Button
               key={href}

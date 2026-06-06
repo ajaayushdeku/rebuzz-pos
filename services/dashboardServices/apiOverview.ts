@@ -205,9 +205,14 @@ export const getTopProducts = async (): Promise<TopProduct[]> => {
     count: number;
   }[] = json?.data ?? [];
 
-  if (rawItems.length === 0) return [];
+  // Filter out items with no actual sales (count or revenue is zero)
+  const itemsWithSales = rawItems.filter(
+    (item) => item.count > 0 && item.totalRevenue > 0,
+  );
 
-  const merged = rawItems.reduce<
+  if (itemsWithSales.length === 0) return [];
+
+  const merged = itemsWithSales.reduce<
     Record<string, { totalRevenue: number; count: number }>
   >((acc, item) => {
     if (acc[item.itemName]) {

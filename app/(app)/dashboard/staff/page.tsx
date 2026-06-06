@@ -48,7 +48,7 @@ const Page = async ({
         </div>
 
         {/* ── Calendar + Quick date filter ── */}
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col-reverse sm:flex-row-reverse sm:items-center justify-between gap-3 pt-4">
           <CalendarDateFilter />
 
           <Button

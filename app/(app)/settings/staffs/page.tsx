@@ -375,108 +375,112 @@ export default function StaffManagementPage() {
           </div>
         ) : (
           <>
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-xs text-gray-400 border-b border-gray-100">
-                    <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
-                      S.No
-                    </th>
-                    <th
-                      className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                      onClick={() => toggleSort("name")}
-                    >
-                      <span className="flex items-center gap-1">
-                        Staff Name {SortIcon({ colKey: "name" })}
-                      </span>
-                    </th>
-                    <th className="text-left pb-3 pt-3 px-4 font-medium">
-                      Email
-                    </th>
-                    <th className="text-left pb-3 pt-3 px-4 font-medium">
-                      Phone
-                    </th>
-                    <th className="text-center pb-3 pt-3 px-4 font-medium">
-                      Role
-                    </th>
-                    <th className="text-center pb-3 pt-3 px-4 font-medium">
-                      Status
-                    </th>
-                    <th className="text-right pb-3 pt-3 px-4 font-medium">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paged.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={7}
-                        className="text-center py-12 text-sm text-gray-400"
+            <div className="overflow-x-auto -mx-6 px-6 md:mx-0 md:px-0">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm min-w-[800px]">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-xs text-gray-400 border-b border-gray-100">
+                      <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+                        S.No
+                      </th>
+                      <th
+                        className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                        onClick={() => toggleSort("name")}
                       >
-                        No staff members found
-                      </td>
+                        <span className="flex items-center gap-1">
+                          Staff Name {SortIcon({ colKey: "name" })}
+                        </span>
+                      </th>
+                      <th className="text-left pb-3 pt-3 px-4 font-medium">
+                        Email
+                      </th>
+                      <th className="text-left pb-3 pt-3 px-4 font-medium">
+                        Phone
+                      </th>
+                      <th className="text-center pb-3 pt-3 px-4 font-medium">
+                        Role
+                      </th>
+                      <th className="text-center pb-3 pt-3 px-4 font-medium">
+                        Status
+                      </th>
+                      <th className="text-right pb-3 pt-3 px-4 font-medium">
+                        Actions
+                      </th>
                     </tr>
-                  ) : (
-                    paged.map((staffMember, idx) => (
-                      <tr
-                        key={staffMember._id}
-                        className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="py-3 px-4 text-gray-400 text-xs">
-                          {page * pageSize + idx + 1}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className="font-medium text-gray-900">
-                            {staffMember.name || "—"}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                            <Mail className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                            {staffMember.email || "—"}
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                            <Phone className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                            {staffMember.phone || "—"}
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <RoleBadge role={staffMember.role} />
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <StatusBadge
-                            deactivated={staffMember.isDeactivated}
-                          />
-                        </td>
-                        <td className="py-3 px-4">
-                          <div
-                            className="flex items-center justify-end gap-1"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <button
-                              onClick={() => openEdit(staffMember)}
-                              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                              title="Edit"
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              onClick={() => setDeleteConfirm(staffMember._id)}
-                              className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Delete"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
+                  </thead>
+                  <tbody>
+                    {paged.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={7}
+                          className="text-center py-12 text-sm text-gray-400"
+                        >
+                          No staff members found
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      paged.map((staffMember, idx) => (
+                        <tr
+                          key={staffMember._id}
+                          className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="py-3 px-4 text-gray-400 text-xs">
+                            {page * pageSize + idx + 1}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="font-medium text-gray-900">
+                              {staffMember.name || "—"}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                              <Mail className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                              {staffMember.email || "—"}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                              <Phone className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                              {staffMember.phone || "—"}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <RoleBadge role={staffMember.role} />
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <StatusBadge
+                              deactivated={staffMember.isDeactivated}
+                            />
+                          </td>
+                          <td className="py-3 px-4">
+                            <div
+                              className="flex items-center justify-end gap-1"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <button
+                                onClick={() => openEdit(staffMember)}
+                                className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                title="Edit"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  setDeleteConfirm(staffMember._id)
+                                }
+                                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             {/* Pagination */}

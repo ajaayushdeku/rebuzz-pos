@@ -335,57 +335,63 @@ export default function TaxSettingsPage() {
               No taxes yet. Create one above.
             </div>
           ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-xs text-gray-400 border-b border-gray-100">
-                  <th className="text-left pb-2.5 font-medium">Name</th>
-                  <th className="text-left pb-2.5 font-medium">Rate</th>
-                  <th className="text-center pb-2.5 font-medium">Status</th>
-                  <th className="text-right pb-2.5 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredTaxes.map((tax) => (
-                  <tr
-                    key={tax._id}
-                    className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
-                  >
-                    <td className="py-3 font-medium text-gray-800">
-                      {tax.name}
-                    </td>
-                    <td className="py-3 text-gray-500">{tax.rate}%</td>
-                    <td className="py-3 text-center">
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${tax.isEnabled ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"} `}
+            <div className="overflow-x-auto -mx-5 px-5 md:mx-0 md:px-0">
+              <div className="min-w-[500px]">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-xs text-gray-400 border-b border-gray-100">
+                      <th className="text-left pb-2.5 font-medium">Name</th>
+                      <th className="text-left pb-2.5 font-medium">Rate</th>
+                      <th className="text-center pb-2.5 font-medium">Status</th>
+                      <th className="text-right pb-2.5 font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredTaxes.map((tax) => (
+                      <tr
+                        key={tax._id}
+                        className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
                       >
-                        {tax.isEnabled ? "Active" : "Inactive"}
-                      </span>
-                    </td>
-                    <td className="py-3">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => openEditNormal(tax)}
-                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        >
-                          <Pencil size={13} />
-                        </button>
-                        <Toggle
-                          checked={tax.isEnabled}
-                          loading={togglingId === tax._id}
-                          onClick={() => handleToggle(tax._id, tax.isEnabled)}
-                        />
-                        <button
-                          onClick={() => handleDeleteNormal(tax)}
-                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                        <td className="py-3 font-medium text-gray-800">
+                          {tax.name}
+                        </td>
+                        <td className="py-3 text-gray-500">{tax.rate}%</td>
+                        <td className="py-3 text-center">
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium ${tax.isEnabled ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"} `}
+                          >
+                            {tax.isEnabled ? "Active" : "Inactive"}
+                          </span>
+                        </td>
+                        <td className="py-3">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => openEditNormal(tax)}
+                              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            >
+                              <Pencil size={13} />
+                            </button>
+                            <Toggle
+                              checked={tax.isEnabled}
+                              loading={togglingId === tax._id}
+                              onClick={() =>
+                                handleToggle(tax._id, tax.isEnabled)
+                              }
+                            />
+                            <button
+                              onClick={() => handleDeleteNormal(tax)}
+                              className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           )}
         </div>
 
@@ -403,74 +409,74 @@ export default function TaxSettingsPage() {
               No group taxes yet.
             </div>
           ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-xs text-gray-400 border-b border-gray-100">
-                  <th className="text-left pb-2.5 font-medium">Name</th>
-                  <th className="text-left pb-2.5 font-medium">
-                    Combined Rate
-                  </th>
-                  <th className="text-left pb-2.5 font-medium">Includes</th>
-                  <th className="text-center pb-2.5 font-medium">Status</th>
-                  <th className="text-right pb-2.5 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredGroups.map((group) => {
-                  const rate = getGroupRate(group.taxIds);
-                  const names = group.taxIds
-                    .map((id) => taxes.find((t) => t._id === id)?.name ?? "")
-                    .filter(Boolean)
-                    .join(", ");
-                  return (
-                    <tr
-                      key={group._id}
-                      className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
-                    >
-                      <td className="py-3 font-medium text-gray-800">
-                        {group.name}
-                      </td>
-                      <td className="py-3 text-blue-600 font-semibold ">
-                        {rate}%
-                      </td>
-                      <td className="py-3 text-gray-400 text-xs max-w-[180px] truncate">
-                        {names || "—"}
-                      </td>
-                      <td className="py-3 text-center">
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded-full font-medium ${group.isEnabled ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
-                        >
-                          {group.isEnabled ? "Active" : "Inactive"}
-                        </span>
-                      </td>
-                      <td className="py-3">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => openEditGroup(group)}
-                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          >
-                            <Pencil size={13} />
-                          </button>
-                          <Toggle
-                            checked={group.isEnabled}
-                            loading={togglingId === group._id}
-                            onClick={() =>
-                              handleToggle(group._id, group.isEnabled)
-                            }
-                          />
-                          <button
-                            onClick={() => handleDeleteGroup(group)}
-                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        </div>
-                      </td>
+            <div className="overflow-x-auto -mx-5 px-5 md:mx-0 md:px-0">
+              <div className="min-w-[600px]">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-xs text-gray-400 border-b border-gray-100">
+                      <th className="text-left pb-2.5 font-medium">Name</th>
+                      <th className="text-left pb-2.5 font-medium">
+                        Combined Rate
+                      </th>
+                      <th className="text-left pb-2.5 font-medium">Includes</th>
+                      <th className="text-center pb-2.5 font-medium">Status</th>
+                      <th className="text-right pb-2.5 font-medium">Actions</th>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody>
+                    {filteredGroups.map((group) => {
+                      const rate = getGroupRate(group.taxIds);
+                      const names = group.taxIds
+                        .map(
+                          (id) => taxes.find((t) => t._id === id)?.name ?? "",
+                        )
+                        .filter(Boolean)
+                        .join(", ");
+                      return (
+                        <tr
+                          key={group._id}
+                          className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
+                        >
+                          <td className="py-3 font-medium text-gray-800">
+                            {group.name}
+                          </td>
+                          <td className="py-3 text-blue-600 font-semibold">
+                            {rate}%
+                          </td>
+                          <td className="py-3 text-gray-400 text-xs whitespace-normal break-words">
+                            {names || "—"}
+                          </td>
+                          <td className="py-3 text-center">
+                            <span
+                              className={`text-xs px-2 py-0.5 rounded-full font-medium ${group.isEnabled ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
+                            >
+                              {group.isEnabled ? "Active" : "Inactive"}
+                            </span>
+                          </td>
+                          <td className="py-3">
+                            <div className="flex items-center justify-end gap-2">
+                              <Toggle
+                                checked={group.isEnabled}
+                                loading={togglingId === group._id}
+                                onClick={() =>
+                                  handleToggle(group._id, group.isEnabled)
+                                }
+                              />
+                              <button
+                                onClick={() => handleDeleteGroup(group)}
+                                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           )}
         </div>
       </div>

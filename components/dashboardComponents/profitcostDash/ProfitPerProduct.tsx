@@ -57,7 +57,6 @@ export default function ProfitPerProduct({
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const paged = sorted.slice(page * pageSize, (page + 1) * pageSize);
 
-
   const SortIcon = ({ colKey }: { colKey: string }) =>
     sortConfig?.key === colKey ? (
       sortConfig.direction === "asc" ? (
@@ -105,105 +104,107 @@ export default function ProfitPerProduct({
         />
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-xs text-gray-400 border-b border-gray-100">
-              <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
-                S.No
-              </th>
-              <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("name")}
-              >
-                <span className="flex items-center gap-1">
-                  Product {SortIcon({ colKey: "name" })}
-                </span>
-              </th>
-              <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("revenue")}
-              >
-                <span className="flex items-center justify-end gap-1">
-                  Revenue {SortIcon({ colKey: "revenue" })}
-                </span>
-              </th>
-              <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("cogs")}
-              >
-                <span className="flex items-center justify-end gap-1">
-                  COGS {SortIcon({ colKey: "cogs" })}
-                </span>
-              </th>
-              <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("profit")}
-              >
-                <span className="flex items-center justify-end gap-1">
-                  Profit {SortIcon({ colKey: "profit" })}
-                </span>
-              </th>
-              <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("margin")}
-              >
-                <span className="flex items-center justify-end gap-1">
-                  Margin {SortIcon({ colKey: "margin" })}
-                </span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {paged.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={6}
-                  className="text-center py-12 text-sm text-gray-400"
+      {/* Table — horizontally scrollable on mobile */}
+      <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm min-w-[700px]">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-xs text-gray-400 border-b border-gray-100">
+                <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+                  S.No
+                </th>
+                <th
+                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("name")}
                 >
-                  No products found
-                </td>
+                  <span className="flex items-center gap-1">
+                    Product {SortIcon({ colKey: "name" })}
+                  </span>
+                </th>
+                <th
+                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("revenue")}
+                >
+                  <span className="flex items-center justify-end gap-1">
+                    Revenue {SortIcon({ colKey: "revenue" })}
+                  </span>
+                </th>
+                <th
+                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("cogs")}
+                >
+                  <span className="flex items-center justify-end gap-1">
+                    COGS {SortIcon({ colKey: "cogs" })}
+                  </span>
+                </th>
+                <th
+                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("profit")}
+                >
+                  <span className="flex items-center justify-end gap-1">
+                    Profit {SortIcon({ colKey: "profit" })}
+                  </span>
+                </th>
+                <th
+                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("margin")}
+                >
+                  <span className="flex items-center justify-end gap-1">
+                    Margin {SortIcon({ colKey: "margin" })}
+                  </span>
+                </th>
               </tr>
-            ) : (
-              paged.map((product, idx) => (
-                <tr
-                  key={product.name + idx}
-                  className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
-                >
-                  <td className="py-3 px-4 text-gray-400 text-xs">
-                    {page * pageSize + idx + 1}
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="font-semibold text-gray-900">
-                      {product.name}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-right font-semibold text-gray-900">
-                    {formatCurrency(product.revenue, currency)}
-                  </td>
-                  <td className="py-3 px-4 text-right font-semibold text-red-600">
-                    -{formatCurrency(product.cogs, currency)}
-                  </td>
-
+            </thead>
+            <tbody>
+              {paged.length === 0 ? (
+                <tr>
                   <td
-                    className={`py-3 px-4 text-right font-semibold  ${getProfitColor(product.profit)}`}
+                    colSpan={6}
+                    className="text-center py-12 text-sm text-gray-400"
                   >
-                    {formatCurrency(product.profit, currency)}
-                  </td>
-
-                  <td className="py-3 px-4 text-right">
-                    <span
-                      className={`font-semibold ${getMarginColor(product.margin)}`}
-                    >
-                      {product.margin}%
-                    </span>
+                    No products found
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                paged.map((product, idx) => (
+                  <tr
+                    key={product.name + idx}
+                    className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="py-3 px-4 text-gray-400 text-xs">
+                      {page * pageSize + idx + 1}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="font-semibold text-gray-900">
+                        {product.name}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right font-semibold text-gray-900">
+                      {formatCurrency(product.revenue, currency)}
+                    </td>
+                    <td className="py-3 px-4 text-right font-semibold text-red-600">
+                      -{formatCurrency(product.cogs, currency)}
+                    </td>
+
+                    <td
+                      className={`py-3 px-4 text-right font-semibold  ${getProfitColor(product.profit)}`}
+                    >
+                      {formatCurrency(product.profit, currency)}
+                    </td>
+
+                    <td className="py-3 px-4 text-right">
+                      <span
+                        className={`font-semibold ${getMarginColor(product.margin)}`}
+                      >
+                        {product.margin}%
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Pagination */}

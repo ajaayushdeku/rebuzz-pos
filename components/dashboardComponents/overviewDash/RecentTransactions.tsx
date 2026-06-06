@@ -1,28 +1,10 @@
 "use client";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-
-// import { TransactionStatus } from "@/lib/transaction";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../../ui/table";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { Transaction } from "../orderHistory/transaction-columns";
 import { statusStyles } from "@/lib/config/transaction";
 import { formatCurrency } from "@/utils/helper";
-
-// export type Transaction = {
-//   id: string;
-//   timestamp: string;
-//   customer: string;
-//   amount: number;
-//   status: TransactionStatus;
-// };
 
 type RecentTransactionsProps = {
   title?: string;
@@ -39,7 +21,7 @@ export default function RecentTransactions({
 }: RecentTransactionsProps) {
   const { currency } = useCurrency();
   return (
-    <div className="flex-2  bg-white rounded-2xl shadow-md hover:shadow-lg transition duration-300 border border-gray-100 p-4">
+    <div className="flex-2 bg-white rounded-2xl shadow-md hover:shadow-lg transition duration-300 border border-gray-100 p-4">
       <div className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-[16px] md:text-xl mt-1 font-bold text-gray-900">
@@ -56,42 +38,68 @@ export default function RecentTransactions({
         </Link>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Order</TableHead>
-            <TableHead>Customer</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead>Status</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {transactions.map((tx) => {
-            const styles = statusStyles[tx.status];
-            return (
-              <TableRow key={tx.id}>
-                <TableCell>
-                  <p className="text-[12px] font-semibold">{tx.id}</p>
-                  {/* <p className="text-[10px]">
-                    {tx.timestamp}
-                  </p> */}
-                </TableCell>
-                <TableCell>{tx.invoiceName}</TableCell>
-                <TableCell>
-                  {formatCurrency(Number(tx.amount), currency)}
-                </TableCell>
-                <TableCell className={styles.cell}>
-                  <p
-                    className={`${styles.badge} w-20 px-1 py-0.5 flex items-center justify-center rounded-lg`}
+      {/* Horizontally scrollable table wrapper for mobile */}
+      <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm min-w-[500px]">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-xs text-gray-400 border-b border-gray-100">
+                <th className="text-left pb-3 pt-3 px-4 font-medium">Order</th>
+                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                  Customer
+                </th>
+                <th className="text-right pb-3 pt-3 px-4 font-medium">
+                  Amount
+                </th>
+                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                  Status
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {transactions.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="text-center py-12 text-sm text-gray-400"
                   >
-                    {tx.status}
-                  </p>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+                    No transactions found
+                  </td>
+                </tr>
+              ) : (
+                transactions.map((tx) => {
+                  const styles = statusStyles[tx.status];
+                  return (
+                    <tr
+                      key={tx.id}
+                      className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="py-3 px-4">
+                        <p className="text-[12px] font-semibold text-gray-900">
+                          {tx.id}
+                        </p>
+                      </td>
+                      <td className="py-3 px-4 text-gray-700">
+                        {tx.invoiceName}
+                      </td>
+                      <td className="py-3 px-4 text-right font-semibold text-gray-900">
+                        {formatCurrency(Number(tx.amount), currency)}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <span
+                          className={`${styles.badge} inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold`}
+                        >
+                          {tx.status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
