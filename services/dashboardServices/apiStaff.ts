@@ -37,10 +37,16 @@ function toDateStr(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-function getDateRange(range: string = "month"): {
-  startDate: string;
-  endDate: string;
-} {
+function getDateRange(
+  range: string = "month",
+  startDateOverride?: string,
+  endDateOverride?: string,
+): { startDate: string; endDate: string } {
+  // If direct date overrides are provided, use them
+  if (startDateOverride && endDateOverride) {
+    return { startDate: startDateOverride, endDate: endDateOverride };
+  }
+
   const today = new Date();
   const end = toDateStr(today);
   let start: Date;
@@ -100,8 +106,14 @@ function getHourLabel(paidAt: string): string | null {
 
 async function fetchAllEmployeeSales(
   range: string = "month",
+  startDateOverride?: string,
+  endDateOverride?: string,
 ): Promise<RawEmployee[]> {
-  const { startDate, endDate } = getDateRange(range);
+  const { startDate, endDate } = getDateRange(
+    range,
+    startDateOverride,
+    endDateOverride,
+  );
 
   const res = await fetch(
     `${BASE}/business/report/salesByAllEmployee?startDate=${startDate}&endDate=${endDate}`,
@@ -135,9 +147,11 @@ async function fetchEmployeeDetail(
 
 export async function getStaffData(
   range: string = "month",
+  startDate?: string,
+  endDate?: string,
 ): Promise<StaffBoxProps[]> {
   try {
-    const employees = await fetchAllEmployeeSales(range);
+    const employees = await fetchAllEmployeeSales(range, startDate, endDate);
     if (employees.length === 0) return [];
 
     return employees
@@ -158,9 +172,11 @@ export async function getStaffData(
 
 export async function getStaffRevenue(
   range: string = "month",
+  startDate?: string,
+  endDate?: string,
 ): Promise<StaffRevenue[]> {
   try {
-    const employees = await fetchAllEmployeeSales(range);
+    const employees = await fetchAllEmployeeSales(range, startDate, endDate);
     if (employees.length === 0) return [];
 
     return employees
@@ -179,9 +195,11 @@ export async function getStaffRevenue(
 
 export async function getStaffOrdersPerHour(
   range: string = "month",
+  startDate?: string,
+  endDate?: string,
 ): Promise<StaffHourlyData[]> {
   try {
-    const employees = await fetchAllEmployeeSales(range);
+    const employees = await fetchAllEmployeeSales(range, startDate, endDate);
     if (employees.length === 0) return [];
 
     const HOUR_SLOTS = [
@@ -241,9 +259,11 @@ export async function getStaffOrdersPerHour(
 
 export async function getShiftAnalysisData(
   range: string = "month",
+  startDate?: string,
+  endDate?: string,
 ): Promise<Shift[]> {
   try {
-    const employees = await fetchAllEmployeeSales(range);
+    const employees = await fetchAllEmployeeSales(range, startDate, endDate);
     if (employees.length === 0) {
       return [
         {

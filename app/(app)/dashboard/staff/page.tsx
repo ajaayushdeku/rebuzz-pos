@@ -8,7 +8,7 @@ import StatSkeleton from "@/components/ui/statskeleton";
 import ChartSkeleton from "@/components/ui/chartskeleton";
 import TableSkeleton from "@/components/ui/tableskeleton";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
-import { TimeRangeDropdown } from "@/components/dashboardComponents/overviewDash/TimeRangeDropdown";
+import { CalendarDateFilter } from "@/components/dashboardComponents/staffDash/CalendarDateFilter";
 import {
   ShiftAnalysisWrapper,
   StaffOrdersChartWrapper,
@@ -19,10 +19,19 @@ import {
 const Page = async ({
   searchParams,
 }: {
-  searchParams: Promise<{ range?: string }>;
+  searchParams: Promise<{
+    range?: string;
+    startDate?: string;
+    endDate?: string;
+  }>;
 }) => {
   const params = await searchParams;
-  const range = params.range ?? "month";
+  const range = params.range ?? "";
+  const startDate = params.startDate ?? "";
+  const endDate = params.endDate ?? "";
+
+  // When custom dates are provided, we pass them directly and ignore range preset
+  const hasCustomDates = !!startDate && !!endDate;
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
@@ -38,12 +47,9 @@ const Page = async ({
           </p>
         </div>
 
-        {/* ── Date range filter ── */}
-        <div className="flex items-center justify-between my-4 gap-3">
-          {/* <h2 className="text-base font-semibold text-gray-900">
-            Staff Statistics
-          </h2> */}
-          <TimeRangeDropdown />
+        {/* ── Calendar + Quick date filter ── */}
+        <div className="flex items-center justify-between gap-3">
+          <CalendarDateFilter />
 
           <Button
             className="bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
@@ -67,25 +73,41 @@ const Page = async ({
             </div>
           }
         >
-          <StaffStatWrapper range={range} />
+          <StaffStatWrapper
+            range={range}
+            startDate={hasCustomDates ? startDate : undefined}
+            endDate={hasCustomDates ? endDate : undefined}
+          />
         </Suspense>
       </ChartErrorBoundary>
 
       <ChartErrorBoundary>
         <Suspense fallback={<ChartSkeleton />}>
-          <StaffOrdersChartWrapper range={range} />
+          <StaffOrdersChartWrapper
+            range={range}
+            startDate={hasCustomDates ? startDate : undefined}
+            endDate={hasCustomDates ? endDate : undefined}
+          />
         </Suspense>
       </ChartErrorBoundary>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <ChartErrorBoundary>
           <Suspense fallback={<TableSkeleton rows={3} />}>
-            <ShiftAnalysisWrapper range={range} />
+            <ShiftAnalysisWrapper
+              range={range}
+              startDate={hasCustomDates ? startDate : undefined}
+              endDate={hasCustomDates ? endDate : undefined}
+            />
           </Suspense>
         </ChartErrorBoundary>
         <ChartErrorBoundary>
           <Suspense fallback={<ChartSkeleton />}>
-            <StaffRevenueWrapper range={range} />
+            <StaffRevenueWrapper
+              range={range}
+              startDate={hasCustomDates ? startDate : undefined}
+              endDate={hasCustomDates ? endDate : undefined}
+            />
           </Suspense>
         </ChartErrorBoundary>
       </div>

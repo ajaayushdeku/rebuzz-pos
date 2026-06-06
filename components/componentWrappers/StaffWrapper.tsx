@@ -19,10 +19,14 @@ import {
 
 export async function StaffStatWrapper({
   range = "month",
+  startDate,
+  endDate,
 }: {
   range?: string;
+  startDate?: string;
+  endDate?: string;
 }) {
-  const staffList = await getStaffData(range);
+  const staffList = await getStaffData(range, startDate, endDate);
 
   if (staffList.length === 0) {
     return (
@@ -58,10 +62,14 @@ export async function StaffStatWrapper({
 
 export async function StaffOrdersChartWrapper({
   range = "month",
+  startDate,
+  endDate,
 }: {
   range?: string;
+  startDate?: string;
+  endDate?: string;
 }) {
-  const data = await getStaffOrdersPerHour(range);
+  const data = await getStaffOrdersPerHour(range, startDate, endDate);
   const limitedData = data.map((hourSlot) => ({
     ...hourSlot,
     staff: hourSlot.staff.slice(0, 8),
@@ -71,18 +79,26 @@ export async function StaffOrdersChartWrapper({
 
 export async function StaffRevenueWrapper({
   range = "month",
+  startDate,
+  endDate,
 }: {
   range?: string;
+  startDate?: string;
+  endDate?: string;
 }) {
-  const data = await getStaffRevenue(range);
+  const data = await getStaffRevenue(range, startDate, endDate);
   return <RevenueStaffChart data={data} />;
 }
 
 export async function ShiftAnalysisWrapper({
   range = "month",
+  startDate,
+  endDate,
 }: {
   range?: string;
+  startDate?: string;
+  endDate?: string;
 }) {
-  const shifts = await getShiftAnalysisData(range);
+  const shifts = await getShiftAnalysisData(range, startDate, endDate);
   return <ShiftAnalysisReport shifts={shifts} />;
 }

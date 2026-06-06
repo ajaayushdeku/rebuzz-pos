@@ -5,7 +5,7 @@ import TableSkeleton from "@/components/ui/tableskeleton";
 import ChartSkeleton from "@/components/ui/chartskeleton";
 import PieChartSkeleton from "@/components/ui/piechartskeleton";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
-import { TimeRangeDropdown } from "@/components/dashboardComponents/overviewDash/TimeRangeDropdown";
+import { CalendarDateFilter } from "@/components/dashboardComponents/staffDash/CalendarDateFilter";
 
 import {
   HourlySalesTrendWrapper,
@@ -20,10 +20,18 @@ import {
 const Page = async ({
   searchParams,
 }: {
-  searchParams: Promise<{ range?: string }>;
+  searchParams: Promise<{
+    range?: string;
+    startDate?: string;
+    endDate?: string;
+  }>;
 }) => {
   const params = await searchParams;
-  const range = params.range ?? "month";
+  const range = params.range ?? "";
+  const startDate = params.startDate ?? "";
+  const endDate = params.endDate ?? "";
+
+  const hasCustomDates = !!startDate && !!endDate;
 
   return (
     <>
@@ -35,7 +43,7 @@ const Page = async ({
             <h2 className="text-base font-semibold text-gray-900">
               Statistics Overview
             </h2>
-            <TimeRangeDropdown />
+            <CalendarDateFilter />
           </div>
 
           <Suspense
@@ -47,7 +55,11 @@ const Page = async ({
               </div>
             }
           >
-            <OverviewStatsWrapper range={range} />
+            <OverviewStatsWrapper
+              range={range}
+              startDate={hasCustomDates ? startDate : undefined}
+              endDate={hasCustomDates ? endDate : undefined}
+            />
           </Suspense>
 
           <Suspense

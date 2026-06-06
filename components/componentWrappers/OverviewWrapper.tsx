@@ -121,12 +121,44 @@ const getPeriodLabel = (range: string): string => {
 
 export const OverviewStatsWrapper = async ({
   range = "month",
+  startDate: customStartDate,
+  endDate: customEndDate,
 }: {
   range?: string;
+  startDate?: string;
+  endDate?: string;
 }) => {
-  const periodLabel = getPeriodLabel(range);
-  // Use a single fixed reference date to prevent date drift across calls
+  const hasCustomDates = !!customStartDate && !!customEndDate;
   const now = new Date();
+
+  // Use a single fixed reference date to prevent date drift across calls
+  if (hasCustomDates) {
+    // Custom date range: fetch only the selected range, no previous comparison
+    const compareType = "date";
+    const currentStats = await getStatsData(
+      customStartDate,
+      customEndDate,
+      compareType,
+    );
+
+    const stats: MergedSerializableConfig[] = STATS_CONFIG.map((config) => {
+      const cur = currentStats[config.key];
+      return {
+        ...config,
+        ...cur,
+        percent: 0, // No comparison when custom dates selected
+      };
+    });
+
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 my-4">
+        <OverviewStatBoxGrid stats={stats} periodLabel="" />
+      </div>
+    );
+  }
+
+  // Preset range: show comparison with previous period
+  const periodLabel = getPeriodLabel(range);
   const [startDate, endDate] = getDateRange(range, now);
   const [prevStartDate, prevEndDate] = getPreviousDateRange(range, now);
 
@@ -135,14 +167,11 @@ export const OverviewStatsWrapper = async ({
     range === "24h" ? "date" : (range as "date" | "week" | "month" | "year");
 
   const currentStats = await getStatsData(startDate, endDate, compareType);
-
   const previousStats = await getStatsData(
     prevStartDate,
     prevEndDate,
     compareType,
   );
-
-  console.log("Date:", { startDate, endDate, prevStartDate, prevEndDate });
 
   const stats: MergedSerializableConfig[] = STATS_CONFIG.map((config) => {
     const cur = currentStats[config.key];
@@ -163,7 +192,7 @@ export const OverviewStatsWrapper = async ({
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 my-4">
-      <OverviewStatBoxGrid stats={stats} periodLabel={periodLabel} />{" "}
+      <OverviewStatBoxGrid stats={stats} periodLabel={periodLabel} />
     </div>
   );
 };
