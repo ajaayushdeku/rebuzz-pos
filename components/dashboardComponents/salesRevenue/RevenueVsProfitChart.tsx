@@ -118,8 +118,19 @@ export default function RevenueVsProfitChart() {
   const { data, isFetching, isError } = useRevenueVsProfit(range);
   const { currency } = useCurrency();
 
-  const isEmpty = !data?.length;
-  const displayData = data ?? [];
+  // const isEmpty = !data?.length;
+  // const displayData = data ?? [];
+
+  const displayData =
+    data && data.length > 0
+      ? data
+      : [
+          {
+            product: "No Data",
+            revenue: 0,
+            profit: 0,
+          },
+        ];
 
   const formatYAxis = (value: number): string =>
     value >= 1000 || value <= -1000
@@ -127,11 +138,15 @@ export default function RevenueVsProfitChart() {
       : formatCurrency(value, currency);
 
   // ── Dynamic Y-axis that handles negative profit ──
-  const allValues = displayData.flatMap((d) => [d.revenue, d.profit]);
-  const maxValue = Math.max(...allValues, 0);
-  const minValue = Math.min(...allValues, 0);
+  const allValues =
+    displayData.length > 0
+      ? displayData.flatMap((d) => [d.revenue, d.profit])
+      : [0];
 
-  const yAxisMax = Math.ceil(maxValue / 500) * 500 + 500;
+  const maxValue = Math.max(...allValues);
+  const minValue = Math.min(...allValues);
+
+  const yAxisMax = Math.max(1000, Math.ceil(maxValue / 500) * 500 + 500);
   const yAxisMin = minValue < 0 ? Math.floor(minValue / 500) * 500 - 500 : 0;
 
   const tickRange = yAxisMax - yAxisMin;
@@ -182,61 +197,62 @@ export default function RevenueVsProfitChart() {
         className={`transition-opacity duration-200 ${isFetching ? "opacity-60" : "opacity-100"}`}
       >
         <div className="h-56 sm:h-72">
-          {isEmpty ? (
-            <div className="flex flex-col items-center justify-center h-full text-gray-400 text-sm">
-              No revenue data available for this period.{" "}
-              <p>
-                Suggestion: Try switching to a different date range or check
-                back later.
+          {/* {isEmpty ? (
+            <div className="flex flex-col items-center py-8 text-gray-400 text-sm">
+              <span className="font-medium">
+                No revenue data available for this period.
+              </span>
+              <p className="mt-1 text-xs text-gray-300">
+                Try switching to a different date range or check back later.
               </p>
             </div>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={displayData}
-                margin={{
-                  top: 10,
-                  right: 10,
-                  left: 10,
-                  bottom: 10,
+          ) : ( */}
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={displayData}
+              margin={{
+                top: 10,
+                right: 10,
+                left: 10,
+                bottom: 10,
+              }}
+              barCategoryGap="15%"
+              barGap={4}
+            >
+              <CartesianGrid vertical={false} stroke="#f3f4f6" />
+              <XAxis
+                dataKey="product"
+                axisLine={false}
+                tickLine={false}
+                tick={{
+                  fill: "#9ca3af",
+                  fontSize: 12,
                 }}
-                barCategoryGap="15%"
-                barGap={4}
-              >
-                <CartesianGrid vertical={false} stroke="#f3f4f6" />
-                <XAxis
-                  dataKey="product"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{
-                    fill: "#9ca3af",
-                    fontSize: 12,
-                  }}
-                  dy={8}
-                />
-                <YAxis
-                  tickFormatter={formatYAxis}
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{
-                    fill: "#9ca3af",
-                    fontSize: 12,
-                  }}
-                  domain={[yAxisMin, yAxisMax]}
-                  width={55}
-                />
-                <Tooltip
-                  content={<CustomTooltip currency={currency} />}
-                  cursor={{
-                    fill: "rgba(0,0,0,0.03)",
-                  }}
-                />
-                <Legend content={<CustomLegend />} />
-                <Bar dataKey="revenue" name="Revenue" shape={RevenueBar} />
-                <Bar dataKey="profit" name="Profit" shape={ProfitBar} />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
+                dy={8}
+              />
+              <YAxis
+                tickFormatter={formatYAxis}
+                axisLine={false}
+                tickLine={false}
+                tick={{
+                  fill: "#9ca3af",
+                  fontSize: 12,
+                }}
+                domain={[yAxisMin, yAxisMax]}
+                width={55}
+              />
+              <Tooltip
+                content={<CustomTooltip currency={currency} />}
+                cursor={{
+                  fill: "rgba(0,0,0,0.03)",
+                }}
+              />
+              <Legend content={<CustomLegend />} />
+              <Bar dataKey="revenue" name="Revenue" shape={RevenueBar} />
+              <Bar dataKey="profit" name="Profit" shape={ProfitBar} />
+            </BarChart>
+          </ResponsiveContainer>
+          {/* )} */}
         </div>
       </div>
     </div>
