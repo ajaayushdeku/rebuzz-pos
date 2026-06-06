@@ -120,7 +120,7 @@ const getPeriodLabel = (range: string): string => {
 };
 
 export const OverviewStatsWrapper = async ({
-  range = "month",
+  range = "date",
   startDate: customStartDate,
   endDate: customEndDate,
 }: {
@@ -177,11 +177,18 @@ export const OverviewStatsWrapper = async ({
     const cur = currentStats[config.key];
     const prev = previousStats[config.key];
 
-    // Compute percent change; avoid division by zero
-    const percent =
-      prev?.value > 0
-        ? Math.round(((cur.value - prev.value) / prev.value) * 100)
-        : 0;
+    // Compute percent change
+    const percent = (() => {
+      if (prev?.value > 0) {
+        return Math.round(((cur.value - prev.value) / prev.value) * 100);
+      }
+      // Previous value was 0 but current is non-zero → infinite growth
+      if (prev?.value === 0 && cur.value > 0) {
+        return 100;
+      }
+      // Both zero → no change
+      return 0;
+    })();
 
     return {
       ...config,

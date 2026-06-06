@@ -16,7 +16,14 @@ export const formatDuration = (seconds: number): string => {
 };
 
 export function getPercentColor(percent: number) {
-  return percent >= 0
+  if (percent === 0) {
+    return {
+      text: "text-gray-400",
+      badge: "bg-gray-100 text-gray-600",
+      ArrowIcon: ArrowUpRight,
+    };
+  }
+  return percent > 0
     ? {
         text: "text-green-400",
         badge: "bg-green-100 text-green-800",
