@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Flame, LayoutDashboard, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import CurrencySelect from "@/components/dashboardComponents/CurrencySelect";
+import { CalendarDateFilter } from "@/components/dashboardComponents/staffDash/CalendarDateFilter";
 import { useQuery } from "@tanstack/react-query";
 import { fetchUserData } from "@/services/apiProfile";
 
@@ -57,8 +57,8 @@ export default function DashboardLayout({
         </div>
       </div>
 
-      {/* ── Tabs + TimeRange ── */}
-      <div className="flex items-center justify-between pt-4 ">
+      {/* ── Tabs + Calendar Date Filter (Overview page only) ── */}
+      <div className="flex items-center justify-between pt-4">
         <div className="flex items-center gap-2">
           {tabs.map(({ label, href, icon: Icon }) => (
             <Button
@@ -79,11 +79,7 @@ export default function DashboardLayout({
           ))}
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="hidden md:block">
-            <CurrencySelect />
-          </div>
-        </div>
+        {pathname === "/dashboard" && <CalendarDateFilter />}
       </div>
 
       {/* ── Content ── */}

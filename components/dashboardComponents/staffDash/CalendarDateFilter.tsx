@@ -64,7 +64,11 @@ function getPresetRange(range: string): { startDate: string; endDate: string } {
   return { startDate: toDateStr(start), endDate: end };
 }
 
-export function CalendarDateFilter() {
+export function CalendarDateFilter({
+  showPresets = true,
+}: {
+  showPresets?: boolean;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -197,35 +201,26 @@ export function CalendarDateFilter() {
 
   return (
     <div className="flex items-center gap-2">
-      {/* Mode Toggle - Single vs Range */}
-      <div className="flex items-center rounded-lg border border-gray-200 bg-white p-0.5">
-        <button
-          type="button"
-          onClick={() => setMode("single")}
-          className={cn(
-            "px-3 py-1.5 text-xs font-medium rounded-md transition-colors",
-            mode === "single"
-              ? "bg-blue-600 text-white shadow-sm"
-              : "text-gray-500 hover:text-gray-700",
-          )}
+      {/* Preset dropdown (hidden when showPresets=false) */}
+      {showPresets && (
+        <Select
+          value={currentPreset || "month"}
+          onValueChange={handlePresetChange}
         >
-          Single
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode("range")}
-          className={cn(
-            "px-3 py-1.5 text-xs font-medium rounded-md transition-colors",
-            mode === "range"
-              ? "bg-blue-600 text-white shadow-sm"
-              : "text-gray-500 hover:text-gray-700",
-          )}
-        >
-          Range
-        </button>
-      </div>
+          <SelectTrigger className="w-[140px] h-9 text-sm">
+            <SelectValue placeholder="Quick select" />
+          </SelectTrigger>
+          <SelectContent>
+            {PRESET_RANGES.map(({ value, label }) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
-      {/* Calendar picker with Apply button */}
+      {/* Calendar picker with Apply button and Single/Range toggle inside */}
       <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <Button
@@ -241,6 +236,36 @@ export function CalendarDateFilter() {
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <div>
+            {/* Mode Toggle - Single vs Range (inside popover) */}
+            <div className="flex items-center justify-center gap-1 p-3 pb-0">
+              <div className="flex items-center rounded-lg border border-gray-200 bg-gray-50 p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setMode("single")}
+                  className={cn(
+                    "px-3 py-1 text-xs font-medium rounded-md transition-colors",
+                    mode === "single"
+                      ? "bg-blue-600 text-white shadow-sm"
+                      : "text-gray-500 hover:text-gray-700",
+                  )}
+                >
+                  Single
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode("range")}
+                  className={cn(
+                    "px-3 py-1 text-xs font-medium rounded-md transition-colors",
+                    mode === "range"
+                      ? "bg-blue-600 text-white shadow-sm"
+                      : "text-gray-500 hover:text-gray-700",
+                  )}
+                >
+                  Range
+                </button>
+              </div>
+            </div>
+
             {mode === "single" ? (
               <Calendar
                 mode="single"
@@ -280,23 +305,6 @@ export function CalendarDateFilter() {
           </div>
         </PopoverContent>
       </Popover>
-
-      {/* Preset dropdown (always shown) */}
-      <Select
-        value={currentPreset || "month"}
-        onValueChange={handlePresetChange}
-      >
-        <SelectTrigger className="w-[140px] h-9 text-sm">
-          <SelectValue placeholder="Quick select" />
-        </SelectTrigger>
-        <SelectContent>
-          {PRESET_RANGES.map(({ value, label }) => (
-            <SelectItem key={value} value={value}>
-              {label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
     </div>
   );
 }

@@ -13,19 +13,14 @@ const RANGE_DAYS: Record<string, number> = {
 
 type RangeKey = keyof typeof RANGE_DAYS;
 
-async function fetchRevenueVsProfit(range: RangeKey): Promise<ProductData[]> {
-  const today = new Date().toISOString().split("T")[0];
-  const days = RANGE_DAYS[range];
-  const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .split("T")[0];
-
-  console.log(
-    `Fetching revenue vs profit for range: ${range} (${startDate} to ${today})`,
-  );
+async function fetchRevenueVsProfit(
+  startDate: string,
+  endDate: string,
+): Promise<ProductData[]> {
+  console.log(`Fetching revenue vs profit from ${startDate} to ${endDate}`);
 
   const res = await fetch(
-    `/api/report/salesByItem?startDate=${startDate}&endDate=${today}`,
+    `/api/report/salesByItem?startDate=${startDate}&endDate=${endDate}`,
     { headers: { "Content-Type": "application/json" }, cache: "no-store" },
   );
 
@@ -68,10 +63,10 @@ async function fetchRevenueVsProfit(range: RangeKey): Promise<ProductData[]> {
     }));
 }
 
-export function useRevenueVsProfit(initialRange: RangeKey = "30d") {
+export function useRevenueVsProfit(startDate: string, endDate: string) {
   return useQuery({
-    queryKey: ["revenue-vs-profit", initialRange],
-    queryFn: () => fetchRevenueVsProfit(initialRange),
+    queryKey: ["revenue-vs-profit", startDate, endDate],
+    queryFn: () => fetchRevenueVsProfit(startDate, endDate),
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });

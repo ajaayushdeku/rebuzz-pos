@@ -20,7 +20,7 @@ export const GrowthStatsWrapper = async () => {
   }));
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-3 my-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 md:gap-3 my-4">
       {stats.map(({ key, ...stat }) => (
         <GrowthTrackCard key={key} {...stat} />
       ))}

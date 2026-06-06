@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   BarChart,
   Bar,
@@ -20,9 +19,11 @@ import type {
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
 
+import { useSearchParams } from "next/navigation";
 import { formatCurrency } from "@/utils/helper";
 import { CurrencyConfig, useCurrency } from "@/providers/CurrencyContext";
 import { useRevenueVsProfit } from "@/hooks/useRevenueVsProfit";
+import { CalendarDateFilter } from "@/components/dashboardComponents/staffDash/CalendarDateFilter";
 
 // Types
 
@@ -31,14 +32,6 @@ export interface ProductData {
   revenue: number;
   profit: number;
 }
-
-const RANGE_OPTIONS: { label: string; value: string }[] = [
-  { label: "Today", value: "today" },
-  { label: "7 days", value: "7d" },
-  { label: "30 days", value: "30d" },
-  { label: "90 days", value: "90d" },
-  { label: "6 months", value: "180d" },
-];
 
 // Sub-components
 
@@ -113,13 +106,37 @@ const CustomTooltip = ({
 
 // Chart — fetches data via hook
 
-export default function RevenueVsProfitChart() {
-  const [range, setRange] = useState("30d");
-  const { data, isFetching, isError } = useRevenueVsProfit(range);
-  const { currency } = useCurrency();
+function toDateStr(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
-  // const isEmpty = !data?.length;
-  // const displayData = data ?? [];
+function getDefaultRange(): { startDate: string; endDate: string } {
+  const today = new Date();
+  const endDate = toDateStr(today);
+  const start = new Date(today);
+  start.setDate(today.getDate() - 29);
+  return { startDate: toDateStr(start), endDate };
+}
+
+export default function RevenueVsProfitChart() {
+  // Read dates directly from URL (CalendarDateFilter updates the URL)
+  const searchParams = useSearchParams();
+  const urlStartDate = searchParams.get("startDate");
+  const urlEndDate = searchParams.get("endDate");
+
+  // Fallback to last 30 days if no dates provided
+  const defaultRange = getDefaultRange();
+  const effectiveStartDate = urlStartDate || defaultRange.startDate;
+  const effectiveEndDate = urlEndDate || defaultRange.endDate;
+
+  const { data, isFetching, isError } = useRevenueVsProfit(
+    effectiveStartDate,
+    effectiveEndDate,
+  );
+  const { currency } = useCurrency();
 
   const displayData =
     data && data.length > 0
@@ -174,21 +191,9 @@ export default function RevenueVsProfitChart() {
           )}
         </div>
 
-        {/* Date range filter */}
-        <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 self-start">
-          {RANGE_OPTIONS.map(({ label, value }) => (
-            <button
-              key={value}
-              onClick={() => setRange(value)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                range === value
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+        {/* Calendar date filter */}
+        <div className="self-start">
+          <CalendarDateFilter showPresets={false} />
         </div>
       </div>
 
@@ -197,16 +202,6 @@ export default function RevenueVsProfitChart() {
         className={`transition-opacity duration-200 ${isFetching ? "opacity-60" : "opacity-100"}`}
       >
         <div className="h-56 sm:h-72">
-          {/* {isEmpty ? (
-            <div className="flex flex-col items-center py-8 text-gray-400 text-sm">
-              <span className="font-medium">
-                No revenue data available for this period.
-              </span>
-              <p className="mt-1 text-xs text-gray-300">
-                Try switching to a different date range or check back later.
-              </p>
-            </div>
-          ) : ( */}
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={displayData}
@@ -252,7 +247,6 @@ export default function RevenueVsProfitChart() {
               <Bar dataKey="profit" name="Profit" shape={ProfitBar} />
             </BarChart>
           </ResponsiveContainer>
-          {/* )} */}
         </div>
       </div>
     </div>

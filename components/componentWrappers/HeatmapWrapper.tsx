@@ -5,7 +5,7 @@ export default async function HeatmapWrapper() {
   const heatmapData = await getHeatmapData();
   console.log("Fetched heatmap data:", heatmapData);
   return (
-    <div className="w-full px-4">
+    <div className="w-full">
       <Heatmap data={heatmapData} />
     </div>
   );

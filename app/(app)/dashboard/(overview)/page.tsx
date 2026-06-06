@@ -27,24 +27,26 @@ const Page = async ({
   }>;
 }) => {
   const params = await searchParams;
-  const range = params.range ?? "";
+  const range = params.range || "month";
   const startDate = params.startDate ?? "";
   const endDate = params.endDate ?? "";
 
   const hasCustomDates = !!startDate && !!endDate;
+  // When custom dates are active, clear the range preset
+  const effectiveRange = hasCustomDates ? "" : range;
 
   return (
     <>
-      <div className="w-full px-4">
+      <div className="w-full ">
         {/* ACTUAL CONTENTS */}
         <div>
           {/* Time Range Filter + Stats */}
-          <div className="flex items-center justify-between my-4">
+          {/* <div className="flex items-center justify-between my-4">
             <h2 className="text-base font-semibold text-gray-900">
               Statistics Overview
             </h2>
             <CalendarDateFilter />
-          </div>
+          </div> */}
 
           <Suspense
             fallback={

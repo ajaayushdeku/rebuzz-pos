@@ -318,7 +318,7 @@ export default function Heatmap({
   const max = view === "currentWeek" ? currentWeekMax : currentMonthMax;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mt-2 p-4 md:p-6 w-full">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm  p-4 md:p-6 w-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-5 gap-3">
         <div>

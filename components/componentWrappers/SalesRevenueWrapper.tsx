@@ -20,6 +20,7 @@ export async function SlowProductsWrapper() {
 
 export function RevenueVsProfitChartWrapper() {
   // Chart fetches data internally via useRevenueVsProfit hook
+  // Dates are read directly from URL via useSearchParams + CalendarDateFilter
   return <RevenueVsProfitChart />;
 }
 
