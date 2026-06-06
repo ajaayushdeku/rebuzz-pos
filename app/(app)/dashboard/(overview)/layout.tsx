@@ -33,7 +33,7 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
       {/* ── Header ── */}
-      <div className="max-w-7xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4">
+      <div className="max-w-7xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
         <div>
           <h1 className="font-bold text-xl md:text-2xl truncate">
             Dashboard Overview
@@ -58,7 +58,7 @@ export default function DashboardLayout({
       </div>
 
       {/* ── Tabs + TimeRange ── */}
-      <div className="flex items-center justify-between  pb-4 border-b border-gray-200">
+      <div className="flex items-center justify-between pt-4 ">
         <div className="flex items-center gap-2">
           {tabs.map(({ label, href, icon: Icon }) => (
             <Button

@@ -76,20 +76,35 @@ export function CalendarDateFilter() {
   // Determine mode: if startDate/endDate are present → custom mode, else preset
   const hasCustom = !!currentStartDate || !!currentEndDate;
   const [mode, setMode] = React.useState<DateMode>(
-    hasCustom ? "single" : "range",
+    hasCustom ? "range" : "range",
   );
   const [preset, setPreset] = React.useState(currentPreset || "month");
 
   // For the popover
   const [open, setOpen] = React.useState(false);
 
-  // Parse selected dates
-  const [startDate, setStartDate] = React.useState<Date | undefined>(
+  // Temporary local state for date selection (only applied on "Apply" click)
+  const [tempStartDate, setTempStartDate] = React.useState<Date | undefined>(
     hasCustom ? new Date(currentStartDate) : undefined,
   );
-  const [endDate, setEndDate] = React.useState<Date | undefined>(
+  const [tempEndDate, setTempEndDate] = React.useState<Date | undefined>(
     hasCustom ? new Date(currentEndDate) : undefined,
   );
+
+  // Reset temp state when popover opens
+  const handleOpenChange = (isOpen: boolean) => {
+    if (isOpen) {
+      // Sync temp state with current applied state
+      if (currentStartDate && currentEndDate) {
+        setTempStartDate(new Date(currentStartDate));
+        setTempEndDate(new Date(currentEndDate));
+      } else {
+        setTempStartDate(undefined);
+        setTempEndDate(undefined);
+      }
+    }
+    setOpen(isOpen);
+  };
 
   const applyFilters = (params: {
     startDate?: string;
@@ -116,35 +131,54 @@ export function CalendarDateFilter() {
     setPreset(value);
     const { startDate, endDate } = getPresetRange(value);
     applyFilters({ range: value });
-    setStartDate(new Date(startDate));
-    setEndDate(new Date(endDate));
+    setTempStartDate(new Date(startDate));
+    setTempEndDate(new Date(endDate));
   };
 
-  const handleCustomDateSelect = (date: Date | undefined) => {
+  const handleSingleDateSelect = (date: Date | undefined) => {
     if (!date) return;
-
-    if (mode === "single") {
-      const dateStr = toDateStr(date);
-      setStartDate(date);
-      setEndDate(date);
-      setOpen(false);
-      applyFilters({ startDate: dateStr, endDate: dateStr });
-    }
+    // In single mode, set both start and end to the same date in temp state
+    setTempStartDate(date);
+    setTempEndDate(date);
   };
 
   const handleRangeSelect = (range: { from?: Date; to?: Date } | undefined) => {
-    if (!range?.from || !range?.to) return;
-
-    setStartDate(range.from);
-    setEndDate(range.to);
-    setOpen(false);
-    applyFilters({
-      startDate: toDateStr(range.from),
-      endDate: toDateStr(range.to),
-    });
+    if (range?.from) setTempStartDate(range.from);
+    if (range?.to) setTempEndDate(range.to);
+    // If only "from" selected, clear "to" so user can pick end date
+    if (range?.from && !range?.to) {
+      setTempEndDate(undefined);
+    }
   };
 
-  // Determine display text
+  const handleApply = () => {
+    if (mode === "single") {
+      if (tempStartDate) {
+        const dateStr = toDateStr(tempStartDate);
+        applyFilters({ startDate: dateStr, endDate: dateStr });
+      }
+    } else {
+      // Range mode
+      if (tempStartDate && tempEndDate) {
+        // Ensure start is before end
+        const [start, end] =
+          tempStartDate <= tempEndDate
+            ? [tempStartDate, tempEndDate]
+            : [tempEndDate, tempStartDate];
+        setTempStartDate(start);
+        setTempEndDate(end);
+        applyFilters({
+          startDate: toDateStr(start),
+          endDate: toDateStr(end),
+        });
+      }
+    }
+  };
+
+  const canApply =
+    mode === "single" ? !!tempStartDate : !!tempStartDate && !!tempEndDate;
+
+  // Determine display text from URL params (the actually applied filter)
   const displayText = (() => {
     if (currentStartDate && currentEndDate) {
       if (currentStartDate === currentEndDate) {
@@ -191,7 +225,63 @@ export function CalendarDateFilter() {
         </button>
       </div>
 
-      {/* Preset dropdown (always shown, but when range+preset selected it acts as quick select) */}
+      {/* Calendar picker with Apply button */}
+      <Popover open={open} onOpenChange={handleOpenChange}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={cn(
+              "w-[220px] justify-start text-left font-normal h-9",
+              !currentStartDate && !currentPreset && "text-muted-foreground",
+            )}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {displayText}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <div>
+            {mode === "single" ? (
+              <Calendar
+                mode="single"
+                selected={tempStartDate}
+                onSelect={handleSingleDateSelect}
+                defaultMonth={tempStartDate}
+              />
+            ) : (
+              <Calendar
+                mode="range"
+                selected={{ from: tempStartDate, to: tempEndDate }}
+                onSelect={handleRangeSelect}
+                defaultMonth={tempStartDate}
+                numberOfMonths={2}
+              />
+            )}
+
+            {/* Apply / Cancel buttons */}
+            <div className="flex items-center justify-end gap-2 p-3 border-t border-gray-100">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setOpen(false)}
+                className="text-gray-500"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleApply}
+                disabled={!canApply}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Apply
+              </Button>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+
+      {/* Preset dropdown (always shown) */}
       <Select
         value={currentPreset || "month"}
         onValueChange={handlePresetChange}
@@ -207,40 +297,6 @@ export function CalendarDateFilter() {
           ))}
         </SelectContent>
       </Select>
-
-      {/* Calendar picker */}
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className={cn(
-              "w-[220px] justify-start text-left font-normal h-9",
-              !currentStartDate && !currentPreset && "text-muted-foreground",
-            )}
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {displayText}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          {mode === "single" ? (
-            <Calendar
-              mode="single"
-              selected={startDate}
-              onSelect={handleCustomDateSelect}
-              defaultMonth={startDate}
-            />
-          ) : (
-            <Calendar
-              mode="range"
-              selected={{ from: startDate, to: endDate }}
-              onSelect={handleRangeSelect}
-              defaultMonth={startDate}
-              numberOfMonths={2}
-            />
-          )}
-        </PopoverContent>
-      </Popover>
     </div>
   );
 }
