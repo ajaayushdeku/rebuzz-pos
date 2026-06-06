@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
   ReactNode,
 } from "react";
 
@@ -86,86 +87,51 @@ const ExpenseTrackerContext = createContext<ExpenseTrackerContextType | null>(
   null,
 );
 
-export function ExpenseTrackerProvider({ children }: { children: ReactNode }) {
-  const [transactions, setTransactions] = useState<Transaction[]>([
-    {
-      id: "1",
-      type: "expense",
-      purpose: "Food & Drinks",
-      remarks: "Lunch",
-      amount: 450,
-      date: "2026-05-20",
-      recurring: false,
-    },
-    {
-      id: "2",
-      type: "expense",
-      purpose: "Transportation",
-      remarks: "Taxi",
-      amount: 200,
-      date: "2026-05-21",
-      recurring: false,
-    },
-    {
-      id: "3",
-      type: "income",
-      purpose: "Salary",
-      remarks: "May salary",
-      amount: 50000,
-      date: "2026-05-01",
-      recurring: true,
-      frequency: "monthly",
-    },
-    {
-      id: "4",
-      type: "expense",
-      purpose: "Grocery",
-      remarks: "Weekly shop",
-      amount: 1200,
-      date: "2026-05-18",
-      recurring: true,
-      frequency: "weekly",
-    },
-    {
-      id: "5",
-      type: "income",
-      purpose: "Freelance",
-      remarks: "Logo design",
-      amount: 8000,
-      date: "2026-05-15",
-      recurring: false,
-    },
-    {
-      id: "6",
-      type: "expense",
-      purpose: "Health",
-      remarks: "Doctor visit",
-      amount: 800,
-      date: "2026-05-14",
-      recurring: false,
-    },
-    {
-      id: "7",
-      type: "expense",
-      purpose: "Education",
-      remarks: "Course fee",
-      amount: 3000,
-      date: "2026-05-10",
-      recurring: false,
-    },
-    {
-      id: "8",
-      type: "expense",
-      purpose: "Entertainment",
-      remarks: "Movie night",
-      amount: 600,
-      date: "2026-05-22",
-      recurring: false,
-    },
-  ]);
+const LS_TRANSACTIONS = "expense_tracker_transactions";
+const LS_EXPENSE_PURPOSES = "expense_tracker_expense_purposes";
+const LS_INCOME_PURPOSES = "expense_tracker_income_purposes";
 
-  const [expensePurposes, setExpensePurposes] = useState(EXPENSE_PURPOSES);
-  const [incomePurposes, setIncomePurposes] = useState(INCOME_PURPOSES);
+/** Safe read from localStorage — returns null on SSR / error */
+function readLS<T>(key: string): T | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw) return JSON.parse(raw) as T;
+  } catch {}
+  return null;
+}
+
+/** Lazy initialiser that reads from localStorage */
+function initTransactions(): Transaction[] {
+  return readLS<Transaction[]>(LS_TRANSACTIONS) ?? [];
+}
+
+function initPurposes(key: string, defaults: string[]): string[] {
+  return readLS<string[]>(key) ?? defaults;
+}
+
+export function ExpenseTrackerProvider({ children }: { children: ReactNode }) {
+  const [transactions, setTransactions] =
+    useState<Transaction[]>(initTransactions);
+  const [expensePurposes, setExpensePurposes] = useState<string[]>(() =>
+    initPurposes(LS_EXPENSE_PURPOSES, EXPENSE_PURPOSES),
+  );
+  const [incomePurposes, setIncomePurposes] = useState<string[]>(() =>
+    initPurposes(LS_INCOME_PURPOSES, INCOME_PURPOSES),
+  );
+
+  // Persist to localStorage whenever state changes
+  useEffect(() => {
+    localStorage.setItem(LS_TRANSACTIONS, JSON.stringify(transactions));
+  }, [transactions]);
+
+  useEffect(() => {
+    localStorage.setItem(LS_EXPENSE_PURPOSES, JSON.stringify(expensePurposes));
+  }, [expensePurposes]);
+
+  useEffect(() => {
+    localStorage.setItem(LS_INCOME_PURPOSES, JSON.stringify(incomePurposes));
+  }, [incomePurposes]);
 
   const addTransaction = useCallback((t: Omit<Transaction, "id">) => {
     setTransactions((prev) => [{ ...t, id: crypto.randomUUID() }, ...prev]);
