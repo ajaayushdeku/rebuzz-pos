@@ -67,13 +67,13 @@ export default function StaffStatBox({
   return (
     <div className="relative border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition duration-300 bg-white overflow-hidden">
       {/* Top color bar */}
-      <div className={`h-1.5 w-full ${barColor}`} />
+      {/* <div className={`h-1.5 w-full ${barColor}`} /> */}
 
       <div className="px-4 py-4">
         {/* Header: Avatar + Name + Revenue */}
         <div className="flex items-center gap-3">
           <div
-            className={`rounded-full w-11 h-11 shrink-0 bg-gradient-to-br ${avatarColor} flex items-center text-white font-bold text-sm justify-center shadow-sm`}
+            className={`rounded-full w-9 h-9 shrink-0 bg-gradient-to-br ${avatarColor} flex items-center text-white font-bold text-sm justify-center shadow-sm`}
           >
             {staffInitials}
           </div>

@@ -38,23 +38,23 @@ const Page = async ({
           </p>
         </div>
 
-        <Button
-          className="bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
-          asChild
-        >
-          <Link href="/settings/staffs">
-            <UserPlus className="h-4 w-4 mr-1.5" />
-            Manage Staff
-          </Link>
-        </Button>
-      </div>
+        {/* ── Date range filter ── */}
+        <div className="flex items-center justify-between my-4 gap-3">
+          {/* <h2 className="text-base font-semibold text-gray-900">
+            Staff Statistics
+          </h2> */}
+          <TimeRangeDropdown />
 
-      {/* ── Date range filter ── */}
-      <div className="flex items-center justify-between my-4">
-        <h2 className="text-base font-semibold text-gray-900">
-          Staff Statistics
-        </h2>
-        <TimeRangeDropdown />
+          <Button
+            className="bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
+            asChild
+          >
+            <Link href="/settings/staffs">
+              <UserPlus className="h-4 w-4 mr-1.5" />
+              Manage Staff
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <ChartErrorBoundary>
