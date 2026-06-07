@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import {
   getProfitStats,
   getGrossProfitTrendData,
@@ -11,13 +12,18 @@ import {
 
 // ── Profit stats (gross revenue, net profit, refunds, avg margin) ─────────
 
-export const useProfitStats = () =>
-  useQuery({
-    queryKey: ["profit-stats"],
-    queryFn: getProfitStats,
+export const useProfitStats = () => {
+  const searchParams = useSearchParams();
+  const startDate = searchParams.get("startDate") ?? undefined;
+  const endDate = searchParams.get("endDate") ?? undefined;
+
+  return useQuery({
+    queryKey: ["profit-stats", startDate, endDate],
+    queryFn: () => getProfitStats(startDate, endDate),
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
+};
 
 // ── Gross profit trend (12 months) ───────────────────────────────────────
 
