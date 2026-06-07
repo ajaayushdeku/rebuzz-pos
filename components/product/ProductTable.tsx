@@ -119,152 +119,144 @@ export default function ProductTable({ products }: { products: Product[] }) {
       </div>
 
       {/* ── Table ────────────────────────────────────────── */}
-      <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm min-w-[800px]">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-xs text-gray-400 border-b border-gray-100">
-                <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
-                  S.No
-                </th>
-                <th
-                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                  onClick={() => toggleSort("name")}
-                >
-                  <span className="flex items-center gap-1">
-                    Product
-                    {sortConfig?.key === "name" ? (
-                      sortConfig.direction === "asc" ? (
-                        <ChevronUp className="h-3 w-3" />
-                      ) : (
-                        <ChevronDown className="h-3 w-3" />
-                      )
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+        <table className="w-full text-sm min-w-[800px]">
+          <thead>
+            <tr className="text-xs text-gray-400 border-b border-gray-100">
+              <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+                S.No
+              </th>
+              <th
+                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                onClick={() => toggleSort("name")}
+              >
+                <span className="flex items-center gap-1">
+                  Product
+                  {sortConfig?.key === "name" ? (
+                    sortConfig.direction === "asc" ? (
+                      <ChevronUp className="h-3 w-3" />
                     ) : (
-                      <ArrowUpDown className="h-3 w-3 opacity-30" />
-                    )}
-                  </span>
-                </th>
-                <th className="text-left pb-3 pt-3 px-4 font-medium">
-                  Description
-                </th>
-                <th
-                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                  onClick={() => toggleSort("price")}
-                >
-                  <span className="flex items-center justify-end gap-1">
-                    Price
-                    {sortConfig?.key === "price" ? (
-                      sortConfig.direction === "asc" ? (
-                        <ChevronUp className="h-3 w-3" />
-                      ) : (
-                        <ChevronDown className="h-3 w-3" />
-                      )
+                      <ChevronDown className="h-3 w-3" />
+                    )
+                  ) : (
+                    <ArrowUpDown className="h-3 w-3 opacity-30" />
+                  )}
+                </span>
+              </th>
+              <th className="text-left pb-3 pt-3 px-4 font-medium">
+                Description
+              </th>
+              <th
+                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                onClick={() => toggleSort("price")}
+              >
+                <span className="flex items-center justify-end gap-1">
+                  Price
+                  {sortConfig?.key === "price" ? (
+                    sortConfig.direction === "asc" ? (
+                      <ChevronUp className="h-3 w-3" />
                     ) : (
-                      <ArrowUpDown className="h-3 w-3 opacity-30" />
-                    )}
-                  </span>
-                </th>
-                <th className="text-center pb-3 pt-3 px-4 font-medium">Tax</th>
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
-                  Stock
-                </th>
-                <th className="text-right pb-3 pt-3 px-4 font-medium">
-                  Actions
-                </th>
+                      <ChevronDown className="h-3 w-3" />
+                    )
+                  ) : (
+                    <ArrowUpDown className="h-3 w-3 opacity-30" />
+                  )}
+                </span>
+              </th>
+              <th className="text-center pb-3 pt-3 px-4 font-medium">Tax</th>
+              <th className="text-center pb-3 pt-3 px-4 font-medium">Stock</th>
+              <th className="text-right pb-3 pt-3 px-4 font-medium">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paged.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={7}
+                  className="text-center py-12 text-sm text-gray-400"
+                >
+                  No products found
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {paged.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={7}
-                    className="text-center py-12 text-sm text-gray-400"
-                  >
-                    No products found
+            ) : (
+              paged.map((product, idx) => (
+                <tr
+                  key={product.id}
+                  onClick={() => handleRowClick(product)}
+                  className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
+                >
+                  <td className="py-3 px-4 text-gray-400 text-xs">
+                    {page * pageSize + idx + 1}
+                  </td>
+                  <td className="py-3 px-4">
+                    <span className="font-medium text-gray-900">
+                      {product.name}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4">
+                    <span className="text-sm text-gray-500 truncate max-w-[200px] block">
+                      {product.description || "—"}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-right font-semibold text-gray-900">
+                    {formatCurrency(product.price, currency)}
+                  </td>
+                  <td className="py-3 px-4 text-center">
+                    {product.isTaxable ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                        <Percent className="h-3 w-3" />
+                        Taxable
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-400 border border-gray-200">
+                        Non-taxable
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-3 px-4 text-center">
+                    {!product.usesStocks ? (
+                      <span className="text-xs text-gray-400">Not tracked</span>
+                    ) : (
+                      <div className="flex items-center justify-center gap-1.5">
+                        <Package className="h-3.5 w-3.5 text-blue-500" />
+                        <span className="text-sm font-medium text-gray-700">
+                          {product.inStock ?? 0}
+                        </span>
+                        {product.lowStock !== undefined &&
+                          product.lowStock > 0 && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200">
+                              Low: {product.lowStock}
+                            </span>
+                          )}
+                      </div>
+                    )}
+                  </td>
+                  <td className="py-3 px-4">
+                    <div
+                      className="flex items-center justify-end gap-1"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        onClick={() => handleEdit(product)}
+                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Edit product"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(product)}
+                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete product"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
-              ) : (
-                paged.map((product, idx) => (
-                  <tr
-                    key={product.id}
-                    onClick={() => handleRowClick(product)}
-                    className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="py-3 px-4 text-gray-400 text-xs">
-                      {page * pageSize + idx + 1}
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="font-medium text-gray-900">
-                        {product.name}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-sm text-gray-500 truncate max-w-[200px] block">
-                        {product.description || "—"}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-right font-semibold text-gray-900">
-                      {formatCurrency(product.price, currency)}
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      {product.isTaxable ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
-                          <Percent className="h-3 w-3" />
-                          Taxable
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-400 border border-gray-200">
-                          Non-taxable
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      {!product.usesStocks ? (
-                        <span className="text-xs text-gray-400">
-                          Not tracked
-                        </span>
-                      ) : (
-                        <div className="flex items-center justify-center gap-1.5">
-                          <Package className="h-3.5 w-3.5 text-blue-500" />
-                          <span className="text-sm font-medium text-gray-700">
-                            {product.inStock ?? 0}
-                          </span>
-                          {product.lowStock !== undefined &&
-                            product.lowStock > 0 && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200">
-                                Low: {product.lowStock}
-                              </span>
-                            )}
-                        </div>
-                      )}
-                    </td>
-                    <td className="py-3 px-4">
-                      <div
-                        className="flex items-center justify-end gap-1"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <button
-                          onClick={() => handleEdit(product)}
-                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Edit product"
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(product)}
-                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete product"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* ── Pagination ──────────────────────────────────── */}

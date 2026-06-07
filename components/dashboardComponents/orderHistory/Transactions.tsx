@@ -270,154 +270,150 @@ export default function Transactions({
       </div>
 
       {/* Table — horizontally scrollable on mobile */}
-      <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm min-w-[800px]">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-xs text-gray-400 border-b border-gray-100">
-                <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
-                  S.No
-                </th>
-                <th
-                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                  onClick={() => toggleSort("id")}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+        <table className="w-full text-sm min-w-[800px]">
+          <thead>
+            <tr className="text-xs text-gray-400 border-b border-gray-100">
+              <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+                S.No
+              </th>
+              <th
+                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                onClick={() => toggleSort("id")}
+              >
+                <span className="flex items-center gap-1">
+                  Order ID {SortIcon({ colKey: "id" })}
+                </span>
+              </th>
+              <th
+                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                onClick={() => toggleSort("timestamp")}
+              >
+                <span className="flex items-center gap-1">
+                  Date / Time {SortIcon({ colKey: "timestamp" })}
+                </span>
+              </th>
+              <th
+                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                onClick={() => toggleSort("invoiceName")}
+              >
+                <span className="flex items-center gap-1">
+                  Customer {SortIcon({ colKey: "invoiceName" })}
+                </span>
+              </th>
+              <th className="text-center pb-3 pt-3 px-4 font-medium">
+                Payment
+              </th>
+              <th
+                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                onClick={() => toggleSort("amount")}
+              >
+                <span className="flex items-center justify-end gap-1">
+                  Total {SortIcon({ colKey: "amount" })}
+                </span>
+              </th>
+              <th className="text-center pb-3 pt-3 px-4 font-medium">Status</th>
+              {/* ── New actions column ── */}
+              <th className="text-center pb-3 pt-3 px-4 font-medium">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {paged.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={8}
+                  className="text-center py-12 text-sm text-gray-400"
                 >
-                  <span className="flex items-center gap-1">
-                    Order ID {SortIcon({ colKey: "id" })}
-                  </span>
-                </th>
-                <th
-                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                  onClick={() => toggleSort("timestamp")}
-                >
-                  <span className="flex items-center gap-1">
-                    Date / Time {SortIcon({ colKey: "timestamp" })}
-                  </span>
-                </th>
-                <th
-                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                  onClick={() => toggleSort("invoiceName")}
-                >
-                  <span className="flex items-center gap-1">
-                    Customer {SortIcon({ colKey: "invoiceName" })}
-                  </span>
-                </th>
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
-                  Payment
-                </th>
-                <th
-                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                  onClick={() => toggleSort("amount")}
-                >
-                  <span className="flex items-center justify-end gap-1">
-                    Total {SortIcon({ colKey: "amount" })}
-                  </span>
-                </th>
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
-                  Status
-                </th>
-                {/* ── New actions column ── */}
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
-                  Actions
-                </th>
+                  No transactions found
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {paged.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={8}
-                    className="text-center py-12 text-sm text-gray-400"
+            ) : (
+              paged.map((transaction, idx) => {
+                const s =
+                  statusStyles[transaction.status] ?? statusStyles["pending"];
+                const p =
+                  paymentMethods[transaction.paymentMethod] ??
+                  paymentMethods["Cash"];
+                const isRefunded = transaction.status === "refunded";
+
+                return (
+                  <tr
+                    key={transaction.id}
+                    onClick={() =>
+                      router.push(`/invoices/${transaction?.invoiceNo}`)
+                    }
+                    className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
                   >
-                    No transactions found
-                  </td>
-                </tr>
-              ) : (
-                paged.map((transaction, idx) => {
-                  const s =
-                    statusStyles[transaction.status] ?? statusStyles["pending"];
-                  const p =
-                    paymentMethods[transaction.paymentMethod] ??
-                    paymentMethods["Cash"];
-                  const isRefunded = transaction.status === "refunded";
+                    <td className="py-3 px-4 text-gray-400 text-xs">
+                      {page * pageSize + idx + 1}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="font-semibold text-gray-900">
+                        {transaction.id}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="font-medium text-gray-800 text-xs block">
+                        {transaction.timestamp}
+                      </span>
+                      <span className="text-[11px] text-gray-400">
+                        {transaction.date}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="text-sm text-gray-900">
+                        {transaction.invoiceName || "—"}
+                      </span>
+                    </td>
 
-                  return (
-                    <tr
-                      key={transaction.id}
-                      onClick={() =>
-                        router.push(`/invoices/${transaction?.invoiceNo}`)
-                      }
-                      className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="py-3 px-4 text-gray-400 text-xs">
-                        {page * pageSize + idx + 1}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="font-semibold text-gray-900">
-                          {transaction.id}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="font-medium text-gray-800 text-xs block">
-                          {transaction.timestamp}
-                        </span>
-                        <span className="text-[11px] text-gray-400">
-                          {transaction.date}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="text-sm text-gray-900">
-                          {transaction.invoiceName || "—"}
-                        </span>
-                      </td>
-
-                      <td className="py-3 px-4 text-center">
-                        <span
-                          className={`${p.badge} ${p.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
-                        >
-                          {transaction.paymentMethod}
-                        </span>
-                      </td>
-
-                      <td className="py-3 px-4 text-right font-semibold text-gray-900">
-                        {formatCurrency(Number(transaction.amount), currency)}
-                      </td>
-
-                      <td className="py-3 px-4 text-center">
-                        <span
-                          className={`${s.badge} ${s.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
-                        >
-                          {transaction.status}
-                        </span>
-                      </td>
-
-                      {/* ── Actions cell ── */}
-                      <td
-                        className="py-3 px-4 text-center"
-                        onClick={(e) => e.stopPropagation()}
+                    <td className="py-3 px-4 text-center">
+                      <span
+                        className={`${p.badge} ${p.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
                       >
-                        {isRefunded ? (
-                          <span className="text-xs text-gray-400 italic">
-                            Refunded
-                          </span>
-                        ) : (
-                          <button
-                            onClick={() => setRefundTarget(transaction)}
-                            title="Refund this transaction"
-                            className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-white bg-orange-500 hover:bg-orange-300 border border-orange-200 rounded-lg  transition-colors"
-                          >
-                            <RotateCcw size={12} />
-                            Refund
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                        {transaction.paymentMethod}
+                      </span>
+                    </td>
+
+                    <td className="py-3 px-4 text-right font-semibold text-gray-900">
+                      {formatCurrency(Number(transaction.amount), currency)}
+                    </td>
+
+                    <td className="py-3 px-4 text-center">
+                      <span
+                        className={`${s.badge} ${s.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
+                      >
+                        {transaction.status}
+                      </span>
+                    </td>
+
+                    {/* ── Actions cell ── */}
+                    <td
+                      className="py-3 px-4 text-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {isRefunded ? (
+                        <span className="text-xs text-gray-400 italic">
+                          Refunded
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => setRefundTarget(transaction)}
+                          title="Refund this transaction"
+                          className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-white bg-orange-500 hover:bg-orange-300 border border-orange-200 rounded-lg  transition-colors"
+                        >
+                          <RotateCcw size={12} />
+                          Refund
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Pagination */}

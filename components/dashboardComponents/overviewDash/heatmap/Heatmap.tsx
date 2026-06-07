@@ -421,7 +421,7 @@ export default function Heatmap({
                         }}
                         title={`${day} @ ${hour}: ${value} orders`}
                       >
-                        <span className="hidden sm:block">{value}</span>{" "}
+                        <span>{value}</span>{" "}
                         {/* hide numbers on mobile — too small */}
                       </div>
                     );

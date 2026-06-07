@@ -100,52 +100,64 @@ export default function PredictiveRestockingSuggestions({
       </p>
 
       {suggestions.length === 0 ? (
-        <div className="flex items-center justify-center py-8 text-gray-400 text-sm">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
           All stock levels are healthy
         </div>
       ) : (
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-xs text-gray-400 border-b border-gray-100">
-              <th className="text-left pb-2 font-medium">Item</th>
-              <th className="text-center pb-2 font-medium">
-                Suggested Restock
-              </th>
-              <th className="text-left pb-2 font-medium pl-4">Priority</th>
-              <th className="text-left pb-2 font-medium pl-4">Reason</th>
-            </tr>
-          </thead>
-          <tbody>
-            {suggestions.map((item, idx) => (
-              <tr key={idx} className="border-b border-gray-50 last:border-0">
-                <td className="py-3">
-                  <div className="flex items-center gap-2">
-                    <Pin
-                      size={13}
-                      className={`shrink-0 ${pinColors[item.priority]}`}
-                    />
-                    <span className="font-medium text-gray-800">
-                      {item.name}
-                    </span>
-                  </div>
-                </td>
-                <td className="py-3 text-center font-semibold text-gray-700">
-                  +{item.suggestedRestock} units
-                </td>
-                <td className="py-3 pl-4">
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full ${priorityStyles[item.priority]}`}
-                  >
-                    {item.priority}
-                  </span>
-                </td>
-                <td className="py-3 pl-4 text-xs text-gray-400 max-w-xs">
-                  {item.reason}
-                </td>
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+          <table className="w-full text-sm min-w-[700px]">
+            <thead>
+              <tr className="text-xs text-gray-400 border-b border-gray-100">
+                <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+                  Item
+                </th>
+                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                  Suggested Restock
+                </th>
+                <th className="text-left pb-3 pt-3 px-4 font-medium pl-4">
+                  Priority
+                </th>
+                <th className="text-left pb-3 pt-3 px-4 font-medium pl-4">
+                  Reason
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {suggestions.map((item, idx) => (
+                <tr
+                  key={idx}
+                  className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
+                >
+                  <td className="py-3 px-4 text-gray-400 text-xs">
+                    <div className="flex items-center gap-2">
+                      <Pin
+                        size={13}
+                        className={`shrink-0 ${pinColors[item.priority]}`}
+                      />
+                      <span className="font-medium text-gray-800">
+                        {item.name}
+                      </span>
+                    </div>
+                  </td>
+
+                  <td className="py-3 text-center font-semibold text-gray-700">
+                    +{item.suggestedRestock} units
+                  </td>
+                  <td className="py-3 pl-4">
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full ${priorityStyles[item.priority]}`}
+                    >
+                      {item.priority}
+                    </span>
+                  </td>
+                  <td className="py-3 pl-4 text-xs text-gray-400 max-w-xs">
+                    {item.reason}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

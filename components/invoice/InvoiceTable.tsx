@@ -160,135 +160,127 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
       </div>
 
       {/* Table — horizontally scrollable on mobile */}
-      <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm min-w-[700px]">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-xs text-gray-400 border-b border-gray-100">
-                <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
-                  S.No
-                </th>
-                <th
-                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                  onClick={() => toggleSort("invoice")}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+        <table className="w-full text-sm min-w-[800px]">
+          <thead>
+            <tr className="text-xs text-gray-400 border-b border-gray-100">
+              <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+                S.No
+              </th>
+              <th
+                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                onClick={() => toggleSort("invoice")}
+              >
+                <span className="flex items-center gap-1">
+                  Invoice # {SortIcon({ colKey: "invoice" })}
+                </span>
+              </th>
+              <th className="text-left pb-3 pt-3 px-4 font-medium">Customer</th>
+              <th
+                className="flex items-center pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                onClick={() => toggleSort("amount")}
+              >
+                <span className="flex items-center justify-end gap-1">
+                  Amount {SortIcon({ colKey: "amount" })}
+                </span>
+              </th>
+              <th
+                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                onClick={() => toggleSort("created_at")}
+              >
+                <span className="flex items-center gap-1">
+                  Date {SortIcon({ colKey: "created_at" })}
+                </span>
+              </th>
+              <th className="text-center pb-3 pt-3 px-4 font-medium">Status</th>
+              <th className="text-right pb-3 pt-3 px-4 font-medium">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paged.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={7}
+                  className="text-center py-12 text-sm text-gray-400"
                 >
-                  <span className="flex items-center gap-1">
-                    Invoice # {SortIcon({ colKey: "invoice" })}
-                  </span>
-                </th>
-                <th className="text-left pb-3 pt-3 px-4 font-medium">
-                  Customer
-                </th>
-                <th
-                  className="flex items-center pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                  onClick={() => toggleSort("amount")}
-                >
-                  <span className="flex items-center justify-end gap-1">
-                    Amount {SortIcon({ colKey: "amount" })}
-                  </span>
-                </th>
-                <th
-                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                  onClick={() => toggleSort("created_at")}
-                >
-                  <span className="flex items-center gap-1">
-                    Date {SortIcon({ colKey: "created_at" })}
-                  </span>
-                </th>
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
-                  Status
-                </th>
-                <th className="text-right pb-3 pt-3 px-4 font-medium">
-                  Actions
-                </th>
+                  No invoices found
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {paged.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={7}
-                    className="text-center py-12 text-sm text-gray-400"
+            ) : (
+              paged.map((inv, idx) => {
+                const status = (inv.status ?? "").toLowerCase();
+                return (
+                  <tr
+                    key={inv.invoice}
+                    onClick={() => router.push(`/invoices/${inv.invoice}`)}
+                    className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
                   >
-                    No invoices found
-                  </td>
-                </tr>
-              ) : (
-                paged.map((inv, idx) => {
-                  const status = (inv.status ?? "").toLowerCase();
-                  return (
-                    <tr
-                      key={inv.invoice}
-                      onClick={() => router.push(`/invoices/${inv.invoice}`)}
-                      className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="py-3 px-4 text-gray-400 text-xs">
-                        {page * pageSize + idx + 1}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="font-medium text-gray-900">
-                          ORD-{inv.invoice}
-                        </span>
-                      </td>
+                    <td className="py-3 px-4 text-gray-400 text-xs">
+                      {page * pageSize + idx + 1}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="font-medium text-gray-900">
+                        ORD-{inv.invoice}
+                      </span>
+                    </td>
 
-                      <td className="py-3 px-4 text-gray-600">
-                        {inv.customer_name ?? "—"}
-                      </td>
+                    <td className="py-3 px-4 text-gray-600">
+                      {inv.customer_name ?? "—"}
+                    </td>
 
-                      <td className="py-3 px-4 text-left font-semibold text-gray-900">
-                        {formatCurrency(Number(inv.amount), currency)}
-                      </td>
+                    <td className="py-3 px-4 text-left font-semibold text-gray-900">
+                      {formatCurrency(Number(inv.amount), currency)}
+                    </td>
 
-                      <td className="py-3 px-4 text-gray-500 text-xs">
-                        {formatDatetime(inv.created_at)}
-                      </td>
+                    <td className="py-3 px-4 text-gray-500 text-xs">
+                      {formatDatetime(inv.created_at)}
+                    </td>
 
-                      <td className="py-3 px-4 text-center">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border capitalize ${STATUS_STYLES[status] ?? "bg-gray-100 text-gray-600 border-gray-200"}`}
-                        >
-                          {inv.status ?? "—"}
-                        </span>
-                      </td>
-                      <td
-                        className="py-3 px-4"
-                        onClick={(e) => e.stopPropagation()}
+                    <td className="py-3 px-4 text-center">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border capitalize ${STATUS_STYLES[status] ?? "bg-gray-100 text-gray-600 border-gray-200"}`}
                       >
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() =>
-                              router.push(`/invoices/${inv.invoice}`)
-                            }
-                            className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                            title="Make payment"
-                          >
-                            <Wallet className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            onClick={() =>
-                              router.push(`/invoices/${inv.invoice}/edit`)
-                            }
-                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Edit invoice"
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            onClick={() => {}}
-                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Delete invoice"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                        {inv.status ?? "—"}
+                      </span>
+                    </td>
+                    <td
+                      className="py-3 px-4"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() =>
+                            router.push(`/invoices/${inv.invoice}`)
+                          }
+                          className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                          title="Make payment"
+                        >
+                          <Wallet className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() =>
+                            router.push(`/invoices/${inv.invoice}/edit`)
+                          }
+                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Edit invoice"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => {}}
+                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete invoice"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Pagination */}
