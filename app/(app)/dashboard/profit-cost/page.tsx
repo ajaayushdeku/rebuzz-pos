@@ -12,6 +12,33 @@ import {
   RefundAnalysisWrapper,
 } from "@/components/componentWrappers/ProfitCostWrapper";
 
+function getPresetRange(range: string): { startDate: string; endDate: string } {
+  const today = new Date();
+  const end = today.toISOString().split("T")[0];
+  let start: Date;
+
+  switch (range) {
+    case "24h":
+      start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      break;
+    case "week": {
+      start = new Date(today);
+      start.setDate(today.getDate() - today.getDay());
+      break;
+    }
+    case "month":
+      start = new Date(today.getFullYear(), today.getMonth(), 1);
+      break;
+    case "year":
+      start = new Date(today.getFullYear(), 0, 1);
+      break;
+    default:
+      start = new Date(today.getFullYear(), today.getMonth(), 1);
+  }
+
+  return { startDate: start.toISOString().split("T")[0], endDate: end };
+}
+
 export default async function Page({
   searchParams,
 }: {
@@ -22,9 +49,22 @@ export default async function Page({
   }>;
 }) {
   const params = await searchParams;
+  const range = params.range ?? "";
   const startDate = params.startDate ?? "";
   const endDate = params.endDate ?? "";
   const hasCustomDates = !!startDate && !!endDate;
+
+  let effectiveStartDate: string | undefined;
+  let effectiveEndDate: string | undefined;
+
+  if (hasCustomDates) {
+    effectiveStartDate = startDate;
+    effectiveEndDate = endDate;
+  } else if (range) {
+    const preset = getPresetRange(range);
+    effectiveStartDate = preset.startDate;
+    effectiveEndDate = preset.endDate;
+  }
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
@@ -40,7 +80,9 @@ export default async function Page({
           </p>
         </div>
 
-        <ProfitCostHeader />
+        <div className="self-end">
+          <ProfitCostHeader />
+        </div>
       </div>
 
       <Suspense
@@ -53,8 +95,8 @@ export default async function Page({
         }
       >
         <ProfitStatsWrapper
-          startDate={hasCustomDates ? startDate : undefined}
-          endDate={hasCustomDates ? endDate : undefined}
+          startDate={effectiveStartDate}
+          endDate={effectiveEndDate}
         />
       </Suspense>
 

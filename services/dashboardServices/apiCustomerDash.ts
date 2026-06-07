@@ -110,21 +110,24 @@ async function fetchAllUsers(): Promise<RawUser[]> {
 
 // ── getCustomerStats ──────────────────────────────────────────────────────
 
-export async function getCustomerStats(): Promise<CustomerApiResponse> {
+export async function getCustomerStats(
+  startDate?: string,
+  endDate?: string,
+): Promise<CustomerApiResponse> {
   try {
-    // const startDate = offsetDate(-30);
-    // const endDate = offsetDate(0);
-
     const now = new Date();
 
-    const startDate = formatDate(getStartOfMonth(now));
-    const endDate = formatDate(now);
+    const defaultStart = formatDate(getStartOfMonth(now));
+    const defaultEnd = formatDate(now);
+
+    const effectiveStart = startDate ?? defaultStart;
+    const effectiveEnd = endDate ?? defaultEnd;
 
     const [users, bills, salesByItemJson] = await Promise.all([
       fetchAllUsers(),
-      fetchBillsInRange(startDate, endDate),
+      fetchBillsInRange(effectiveStart, effectiveEnd),
       fetch(
-        `${BASE}/business/report/salesByItem?startDate=${startDate}&endDate=${endDate}`,
+        `${BASE}/business/report/salesByItem?startDate=${effectiveStart}&endDate=${effectiveEnd}`,
         { headers: await authHeaders(), next: { revalidate: 300 } },
       ).then((r) => r.json()),
     ]);

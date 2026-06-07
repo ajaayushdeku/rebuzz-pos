@@ -192,7 +192,7 @@ export default function RevenueVsProfitChart() {
         </div>
 
         {/* Calendar date filter */}
-        <div className="self-start">
+        <div className="self-end">
           <CalendarDateFilter showPresets={false} />
         </div>
       </div>

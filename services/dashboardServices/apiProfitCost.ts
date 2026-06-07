@@ -72,9 +72,12 @@ export const getProfitStats = async (
       `${BASE}/business/report/salesByItem?startDate=${start}&endDate=${end}`,
       { headers: await authHeaders() },
     ),
-    axios.get(`${BASE}/business/ticket/bills?limit=25`, {
-      headers: await authHeaders(),
-    }),
+    axios.get(
+      `${BASE}/business/ticket/bills?startDate=${start}&endDate=${end}&limit=25`,
+      {
+        headers: await authHeaders(),
+      },
+    ),
   ]);
 
   const data: RawReportResponse = reportRes.data;

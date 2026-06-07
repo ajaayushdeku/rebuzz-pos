@@ -14,10 +14,36 @@ import CustomerTrendChart from "../dashboardComponents/customersDash/CustomerTre
 import TopCustomer from "../dashboardComponents/customersDash/TopCustomer";
 import AtRiskCustomer from "../dashboardComponents/customersDash/AtRiskCustomer";
 
-export async function CustomerStatsWrapper() {
-  const customerStat = await getCustomerStats();
+function getActiveLabel(range?: string, startDate?: string): string {
+  if (!range && !startDate) return "Active This Month";
+  switch (range) {
+    case "24h":
+      return "Active Today";
+    case "week":
+      return "Active This Week";
+    case "month":
+      return "Active This Month";
+    case "year":
+      return "Active This Year";
+    default:
+      return startDate ? "Active (Filtered)" : "Active This Month";
+  }
+}
+
+export async function CustomerStatsWrapper({
+  startDate,
+  endDate,
+  range,
+}: {
+  startDate?: string;
+  endDate?: string;
+  range?: string;
+}) {
+  const customerStat = await getCustomerStats(startDate, endDate);
+  const activeLabel = getActiveLabel(range, startDate);
   const stats = CUSTOMER_STAT_CONFIG.map((config) => ({
     ...config,
+    label: config.key === "activeCustomers" ? activeLabel : config.label,
     ...customerStat[config.key],
   }));
   return (

@@ -5,6 +5,7 @@ import PieChartSkeleton from "@/components/ui/piechartskeleton";
 import StatSkeleton from "@/components/ui/statskeleton";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import CreateCustomerButton from "@/components/customer/CreateCustomerButton";
+import CustomerHeader from "@/components/dashboardComponents/customersDash/CustomerHeader";
 import {
   CustomerStatsWrapper,
   AtRiskCustomerWrapper,
@@ -14,7 +15,60 @@ import {
   TopCustomersWrapper,
 } from "@/components/componentWrappers/CustomersWrapper";
 
-export default async function Page() {
+function getPresetRange(range: string): { startDate: string; endDate: string } {
+  const today = new Date();
+  const end = today.toISOString().split("T")[0];
+  let start: Date;
+
+  switch (range) {
+    case "24h":
+      start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      break;
+    case "week": {
+      start = new Date(today);
+      start.setDate(today.getDate() - today.getDay());
+      break;
+    }
+    case "month":
+      start = new Date(today.getFullYear(), today.getMonth(), 1);
+      break;
+    case "year":
+      start = new Date(today.getFullYear(), 0, 1);
+      break;
+    default:
+      start = new Date(today.getFullYear(), today.getMonth(), 1);
+  }
+
+  return { startDate: start.toISOString().split("T")[0], endDate: end };
+}
+
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    range?: string;
+    startDate?: string;
+    endDate?: string;
+  }>;
+}) {
+  const params = await searchParams;
+  const range = params.range ?? "";
+  const startDate = params.startDate ?? "";
+  const endDate = params.endDate ?? "";
+  const hasCustomDates = !!startDate && !!endDate;
+
+  let effectiveStartDate: string | undefined;
+  let effectiveEndDate: string | undefined;
+
+  if (hasCustomDates) {
+    effectiveStartDate = startDate;
+    effectiveEndDate = endDate;
+  } else if (range) {
+    const preset = getPresetRange(range);
+    effectiveStartDate = preset.startDate;
+    effectiveEndDate = preset.endDate;
+  }
+
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
       {/* ── Header ── */}
@@ -29,7 +83,12 @@ export default async function Page() {
           </p>
         </div>
 
-        <CreateCustomerButton />
+        <div className="flex flex-col-reverse sm:flex-row-reverse sm:items-center justify-between gap-3 pt-4">
+          <div className="self-end">
+            <CustomerHeader />
+          </div>
+          <CreateCustomerButton />
+        </div>
       </div>
 
       <Suspense
@@ -41,7 +100,11 @@ export default async function Page() {
           </div>
         }
       >
-        <CustomerStatsWrapper />
+        <CustomerStatsWrapper
+          startDate={effectiveStartDate}
+          endDate={effectiveEndDate}
+          range={range || undefined}
+        />
       </Suspense>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

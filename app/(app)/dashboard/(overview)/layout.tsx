@@ -38,7 +38,6 @@ export default function DashboardLayout({
           <h1 className="font-bold text-xl md:text-2xl truncate">
             Dashboard Overview
           </h1>
-
           {!isLoading && (
             <p className="text-sm text-gray-500 mt-0.5">
               Welcome back, {profile?.name}. Here&lsquo;s what&lsquo;s happening
@@ -57,29 +56,41 @@ export default function DashboardLayout({
         </div>
       </div>
 
-      {/* ── Tabs + Calendar Date Filter (Overview page only) ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4">
-        <div className="flex items-center gap-2 overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0">
-          {tabs.map(({ label, href, icon: Icon }) => (
-            <Button
-              key={href}
-              asChild
-              variant={pathname === href ? "default" : "outline"}
-              className={
-                pathname === href
-                  ? "bg-blue-600 text-white hover:bg-blue-700 rounded-lg"
-                  : "rounded-lg border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-              }
-            >
-              <Link href={href}>
-                <Icon className="h-4 w-4 mr-1.5" />
-                <span className="text-sm hidden md:block">{label}</span>
-              </Link>
-            </Button>
-          ))}
+      {/* ── Tabs + Calendar — single row on all screen sizes ── */}
+      <div className="flex items-center justify-between gap-2 pt-4">
+        {/* Tabs — icons only on mobile, icons + label on md+ */}
+        <div className="flex items-center gap-1.5">
+          {tabs.map(({ label, href, icon: Icon }) => {
+            const active = pathname === href;
+            return (
+              <Button
+                key={href}
+                asChild
+                variant={active ? "default" : "outline"}
+                className={`rounded-lg px-2.5 py-2 md:px-4 ${
+                  active
+                    ? "bg-blue-600 text-white hover:bg-blue-700"
+                    : "border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                }`}
+              >
+                <Link href={href} title={label}>
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {/* Label hidden on mobile, shown on md+ */}
+                  <span className="text-sm hidden md:block md:ml-1.5">
+                    {label}
+                  </span>
+                </Link>
+              </Button>
+            );
+          })}
         </div>
 
-        {pathname === "/dashboard" && <CalendarDateFilter />}
+        {/* Calendar — compact icon-only trigger on mobile */}
+        {pathname === "/dashboard" && (
+          <div className="shrink-0">
+            <CalendarDateFilter />
+          </div>
+        )}
       </div>
 
       {/* ── Content ── */}
