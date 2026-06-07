@@ -112,10 +112,28 @@ export default function TopProducts({ topProducts }: TopProductsProps) {
 
               <th
                 className="text-center pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                onClick={() => toggleSort("count")}
+              >
+                <span className="flex items-center gap-1">
+                  Sold {SortIcon({ colKey: "count" })}
+                </span>
+              </th>
+
+              <th
+                className="text-center pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                 onClick={() => toggleSort("revenue")}
               >
                 <span className="flex items-center gap-1">
                   Revenue {SortIcon({ colKey: "revenue" })}
+                </span>
+              </th>
+
+              <th
+                className="text-center pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                onClick={() => toggleSort("netProfit")}
+              >
+                <span className="flex items-center gap-1">
+                  Net Profit {SortIcon({ colKey: "netProfit" })}
                 </span>
               </th>
 
@@ -134,7 +152,7 @@ export default function TopProducts({ topProducts }: TopProductsProps) {
             {paged.length === 0 ? (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={7}
                   className="text-center py-12 text-sm text-gray-400"
                 >
                   No products found
@@ -160,8 +178,16 @@ export default function TopProducts({ topProducts }: TopProductsProps) {
                     {/* <td className="py-3 px-4 text-gray-600">
                       {product.category}
                     </td> */}
-                    <td className="py-3 px-4 text-left font-semibold text-gray-900">
+                    <td className="py-3 px-4 text-center font-semibold text-gray-900">
+                      {product.count}
+                    </td>
+
+                    <td className="py-3 px-4 text-center font-semibold text-gray-900">
                       {formatCurrency(product.revenue, currency)}
+                    </td>
+
+                    <td className="py-3 px-4 text-center font-semibold text-green-600">
+                      {formatCurrency(product.netProfit, currency)}
                     </td>
 
                     <td className="py-3 px-4 text-right">

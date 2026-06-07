@@ -47,12 +47,15 @@ interface ProfitCostSalesItem {
 //   data?: BillsResponseData;
 // }
 
-export const getProfitStats = async (): Promise<ProfitCostApiResponse> => {
+export const getProfitStats = async (
+  startDate?: string,
+  endDate?: string,
+): Promise<ProfitCostApiResponse> => {
   const today: Date = new Date();
   const defaultStart: Date = new Date(today.getFullYear(), 0, 1); // Start of current year (Jan 1)
 
-  const start: string = defaultStart.toISOString().split("T")[0];
-  const end: string = today.toISOString().split("T")[0];
+  const start: string = startDate ?? defaultStart.toISOString().split("T")[0];
+  const end: string = endDate ?? today.toISOString().split("T")[0];
 
   // Params for the api fetch for stats data
   const params: URLSearchParams = new URLSearchParams({

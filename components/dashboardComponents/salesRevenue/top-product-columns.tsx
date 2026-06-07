@@ -10,6 +10,8 @@ export type TopProduct = {
   category: string;
   revenue: number;
   percent: number;
+  count: number;
+  netProfit: number;
 };
 
 export const getTopProductColumns = (

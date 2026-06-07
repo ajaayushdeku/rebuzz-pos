@@ -46,23 +46,23 @@ export const getStatsData = async (
   const start = startDateStr ?? defaultStart.toISOString().split("T")[0];
   const end = endDateStr ?? today.toISOString().split("T")[0];
 
-  // console.log(
-  //   `[getStatsData] Fetching stats from ${start} to ${end} using compare type: ${compareType}`,
-  // );
-
   const headers = await authHeaders();
 
   // Unique per-invocation timestamp to prevent server-side dedup of
   // concurrent current/previous period requests
   const _ts = Date.now();
 
-  const [compareRes, salesByItemRes] = await Promise.all([
+  const [compareRes, salesByItemRes, reportRes] = await Promise.all([
     fetch(
       `${BASE}/business/report/${compareEndpoint(compareType)}?startDate=${start}&endDate=${end}&_t=${_ts}`,
       { headers, cache: "no-store" },
     ),
     fetch(
       `${BASE}/business/report/salesByItem?startDate=${start}&endDate=${end}&_t=${_ts + 1}`,
+      { headers, cache: "no-store" },
+    ),
+    fetch(
+      `${BASE}/business/report?startDate=${start}&endDate=${end}&_t=${_ts + 2}`,
       { headers, cache: "no-store" },
     ),
   ]);
@@ -80,35 +80,27 @@ export const getStatsData = async (
     0,
   );
 
-  // Compute total products sold and net profit from salesByItem data
+  // Get total products sold from salesByItem data
   const salesByItemJson = await salesByItemRes.json();
-  const salesItems: { count: number; netProfit: number }[] =
-    salesByItemJson?.data ?? [];
+  const salesItems: { count: number }[] = salesByItemJson?.data ?? [];
   const totalProductsSold = salesItems.reduce(
     (sum, item) => sum + (item.count ?? 0),
     0,
   );
 
-  const netProfit =
-    salesItems.reduce((sum, item) => sum + (item.netProfit ?? 0), 0) -
-    (salesByItemJson.totalDiscount ?? 0) -
-    (salesByItemJson.totalRedeemPoint ?? 0);
+  // Get net profit from the /business/report endpoint (direct profit figure)
+  let netProfit: number;
+  try {
+    const reportJson = await reportRes.json();
+    netProfit = reportJson?.data?.report?.profit ?? 0;
+  } catch {
+    netProfit = 0;
+  }
 
-  // console.log(
-  //   "[getStatsData] Type:",
-  //   compareType,
-  //   "Revenue:",
-  //   totalRevenue,
-  //   "Orders:",
-  //   totalOrders,
-  // );
-
-  // console.log("RESULT", {
-  //   start,
-  //   end,
-  //   totalRevenue,
-  //   totalOrders,
-  // });
+  //  netProfit =
+  //   salesItems.reduce((sum, item) => sum + (item.netProfit ?? 0), 0) -
+  //   (salesByItemJson.totalDiscount ?? 0) -
+  //   (salesByItemJson.totalRedeemPoint ?? 0);
 
   return {
     totalSales: { value: totalRevenue, percent: 0 },

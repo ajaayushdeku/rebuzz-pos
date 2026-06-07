@@ -21,8 +21,14 @@ import ExpensesByCategoryChart from "../dashboardComponents/profitcostDash/Expen
 import BudgetTable from "../dashboardComponents/profitcostDash/BudgetTable";
 import ProfitCostStatBoxGrid from "../dashboardComponents/profitcostDash/ProfitCostStatGrid";
 
-export async function ProfitStatsWrapper() {
-  const profitStat = await getProfitStats();
+export async function ProfitStatsWrapper({
+  startDate,
+  endDate,
+}: {
+  startDate?: string;
+  endDate?: string;
+}) {
+  const profitStat = await getProfitStats(startDate, endDate);
   const stats: MergedSerializableConfigCostExpense[] =
     PROFIT_COST_STAT_CONFIG.map((config) => ({
       ...config,

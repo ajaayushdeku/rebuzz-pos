@@ -1,23 +1,31 @@
 import { Suspense } from "react";
-// import { TrendingUp } from "lucide-react";
 
-// import { Button } from "@/components/ui/button";
 import StatSkeleton from "@/components/ui/statskeleton";
 import ChartSkeleton from "@/components/ui/chartskeleton";
 import TableSkeleton from "@/components/ui/tableskeleton";
-// import PieChartSkeleton from "@/components/ui/piechartskeleton";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
+import ProfitCostHeader from "@/components/dashboardComponents/profitcostDash/ProfitCostHeader";
 import {
-  // BudgetTableWrapper,
-  // ExpenseByCategoryChartWrapper,
-  // ExpenseStatsWrapper,
   GrossProfitTrendChartWrapper,
   ProfitPerProductWrapper,
   ProfitStatsWrapper,
   RefundAnalysisWrapper,
 } from "@/components/componentWrappers/ProfitCostWrapper";
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    range?: string;
+    startDate?: string;
+    endDate?: string;
+  }>;
+}) {
+  const params = await searchParams;
+  const startDate = params.startDate ?? "";
+  const endDate = params.endDate ?? "";
+  const hasCustomDates = !!startDate && !!endDate;
+
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
       {/* ── Header ── */}
@@ -32,12 +40,7 @@ export default async function Page() {
           </p>
         </div>
 
-        {/* <div className="flex items-center gap-2">
-          <Button className="bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-white rounded-xl text-sm font-semibold">
-            <TrendingUp className="h-4 w-4 mr-1.5" />
-            Optimize Margins
-          </Button>
-        </div> */}
+        <ProfitCostHeader />
       </div>
 
       <Suspense
@@ -49,7 +52,10 @@ export default async function Page() {
           </div>
         }
       >
-        <ProfitStatsWrapper />
+        <ProfitStatsWrapper
+          startDate={hasCustomDates ? startDate : undefined}
+          endDate={hasCustomDates ? endDate : undefined}
+        />
       </Suspense>
 
       <ChartErrorBoundary>
