@@ -81,7 +81,7 @@ export default function SalesTrendChart() {
   const { currency } = useCurrency();
   const { data: rawData, isLoading, isError, error } = useSalesTrends(view);
 
-  // console.log("Sales Compare:", rawData);
+  console.log("Sales Compare:", rawData);
 
   const formatYAxis = (value: number): string =>
     value >= 1000

@@ -57,9 +57,9 @@ export async function GET() {
           { headers },
         );
 
-        console.log(
-          `${BASE}/business/report/salesByItem?startDate=${start}&endDate=${end}`,
-        );
+        // console.log(
+        //   `${BASE}/business/report/salesByItem?startDate=${start}&endDate=${end}`,
+        // );
 
         const items: { netProfit?: number }[] = res.data?.data ?? [];
         const totalDiscount: number = res.data?.totalDiscount ?? 0;
@@ -85,7 +85,7 @@ export async function GET() {
       netProfit: netProfitMap.get(label) ?? 0,
     }));
 
-    console.log("Profit Trend Result:", result);
+    // console.log("Profit Trend Result:", result);
 
     return NextResponse.json({ data: result });
   } catch (error) {

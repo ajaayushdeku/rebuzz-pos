@@ -276,7 +276,7 @@ const InvoicePreview = ({
         <div className="flex justify-between items-start text-sm text-black-600">
           <div className="flex flex-col gap-2">
             <p>Cashier: {billData?.generatedBy || "N/A"}</p>
-            {billData && <p>Counter: N/A</p>}
+            {billData && <p>Counter: POS12</p>}
 
             {billData?.status === "refunded" && (
               <p className="text-red-500 font-medium">Cancelled Bill</p>

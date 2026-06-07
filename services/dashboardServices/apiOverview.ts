@@ -184,6 +184,10 @@ export const getTopProducts = async (): Promise<TopProduct[]> => {
   const endDate = new Date().toISOString().split("T")[0];
   const startDate = new Date().toISOString().split("T")[0];
 
+  console.log(
+    `[getTopProducts] Fetching top products for date: ${startDate} to ${endDate}`,
+  );
+
   const res = await fetch(
     `${BASE}/business/report/salesByItem?startDate=${startDate}&endDate=${endDate}`,
     {
@@ -198,6 +202,8 @@ export const getTopProducts = async (): Promise<TopProduct[]> => {
   if (!res.ok) throw new Error(`Failed to fetch sales by item: ${res.status}`);
 
   const json = await res.json();
+
+  console.log("[getTopProducts] Raw API response:", json);
 
   const rawItems: {
     itemName: string;

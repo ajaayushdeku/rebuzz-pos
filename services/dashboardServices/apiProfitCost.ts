@@ -49,8 +49,7 @@ interface ProfitCostSalesItem {
 
 export const getProfitStats = async (): Promise<ProfitCostApiResponse> => {
   const today: Date = new Date();
-  const defaultStart: Date = new Date(today);
-  defaultStart.setDate(today.getDate() - 365); // 365 days from today by default
+  const defaultStart: Date = new Date(today.getFullYear(), 0, 1); // Start of current year (Jan 1)
 
   const start: string = defaultStart.toISOString().split("T")[0];
   const end: string = today.toISOString().split("T")[0];
@@ -124,8 +123,7 @@ export async function getGrossProfitTrendData(): Promise<ProfitTrendData[]> {
 
 export async function getProfitPerProduct(): Promise<Product[]> {
   const today = new Date();
-  const defaultStart = new Date(today);
-  defaultStart.setDate(today.getDate() - 365);
+  const defaultStart = new Date(today.getFullYear(), 0, 1); // Start of current year (Jan 1)
 
   const start = defaultStart.toISOString().split("T")[0];
   const end = today.toISOString().split("T")[0];

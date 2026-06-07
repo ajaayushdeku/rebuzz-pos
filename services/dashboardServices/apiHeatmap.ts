@@ -211,12 +211,12 @@ const getHeatmapData = async (): Promise<HeatmapDataSet> => {
     if (!bill.paidAt) continue;
 
     const { hour, dayOfWeek, dateStr } = parseNepalHour(bill.paidAt);
-    console.log("Parsed bill:", {
-      paidAt: bill.paidAt,
-      hour,
-      dayOfWeek,
-      dateStr,
-    });
+    // console.log("Parsed bill:", {
+    //   paidAt: bill.paidAt,
+    //   hour,
+    //   dayOfWeek,
+    //   dateStr,
+    // });
 
     if (hour === -1) continue;
 

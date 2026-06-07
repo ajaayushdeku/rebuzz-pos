@@ -249,8 +249,6 @@ export default function Transactions({
         >
           <option value="all">All Status</option>
           <option value="completed">Completed</option>
-          <option value="pending">Pending</option>
-          <option value="failed">Failed</option>
           <option value="refunded">Refunded</option>
         </select>
         <select
@@ -264,7 +262,6 @@ export default function Transactions({
           <option value="all">All Payment</option>
           <option value="Card">Card</option>
           <option value="Cash">Cash</option>
-          <option value="Loyalty">Loyalty</option>
           <option value="QR">QR</option>
         </select>
       </div>

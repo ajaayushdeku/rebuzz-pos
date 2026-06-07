@@ -83,7 +83,8 @@ export default function ProfitPerProduct({
           Profit per Product
         </h1>
         <p className="text-gray-400 text-sm mt-0.5">
-          Revenue, cost and margins for top selling products.
+          Revenue, cost and margins for top selling products for this current
+          year.
         </p>
       </div>
 

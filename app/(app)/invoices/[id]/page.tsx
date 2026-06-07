@@ -168,7 +168,7 @@ export default function InvoiceDetailPage() {
     retry: false,
   });
 
-  console.log("Fetched Bill Data:", billDataQuery);
+  // console.log("Fetched Bill Data:", billDataQuery);
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [billData, setBillData] = useState<null | Awaited<
@@ -223,6 +223,12 @@ export default function InvoiceDetailPage() {
     }
     return paymentData.discount;
   })();
+
+  // Whether customer has enough points to even start redeeming
+  const canRedeem =
+    !customerProfile ||
+    !loyaltySettings ||
+    customerProfile.loyaltyPoint >= loyaltySettings.basePoint;
 
   // Max redeemable points: min(customer points, subtotal * redeemLimit%)
   const maxRedeemablePoints = loyaltySettings
@@ -1455,7 +1461,7 @@ export default function InvoiceDetailPage() {
                   </div>
                 )}
                 {redeemEnabled && redeemPoints > 0 && !redeemError && (
-                  <div className="flex justify-between text-orange-500">
+                  <div className="flex justify-between text-violet-500">
                     <span>Loyalty redeemed</span>
                     <span>
                       −{currency.symbol}
@@ -1545,7 +1551,7 @@ export default function InvoiceDetailPage() {
               </div>
 
               {customerProfile && (
-                <div className="border border-orange-100 rounded-xl p-4 space-y-3 bg-orange-50/40">
+                <div className="border border-violet-200 rounded-xl p-4 space-y-3 bg-violet-50/40">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-semibold text-gray-800">
@@ -1553,7 +1559,7 @@ export default function InvoiceDetailPage() {
                       </p>
                       <p className="text-xs text-gray-400 mt-0.5">
                         Customer has{" "}
-                        <span className="font-semibold text-orange-600">
+                        <span className="font-semibold text-violet-600">
                           {customerProfile.loyaltyPoint.toFixed(2) ?? 0} pts
                         </span>{" "}
                         available
@@ -1561,13 +1567,18 @@ export default function InvoiceDetailPage() {
                     </div>
                     <button
                       type="button"
+                      disabled={!canRedeem}
                       onClick={() => {
                         setRedeemEnabled((prev) => !prev);
                         setRedeemPoints(0);
                         setRedeemError("");
                       }}
                       className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus:outline-none ${
-                        redeemEnabled ? "bg-orange-500" : "bg-gray-200"
+                        !canRedeem
+                          ? "bg-gray-300 cursor-not-allowed"
+                          : redeemEnabled
+                            ? "bg-violet-500"
+                            : "bg-gray-200"
                       }`}
                     >
                       <span
@@ -1579,9 +1590,22 @@ export default function InvoiceDetailPage() {
                       />
                     </button>
                   </div>
+                  {!canRedeem && loyaltySettings && (
+                    <div className="bg-violet-100/60 rounded-lg px-3 py-2.5 text-xs text-gray-600">
+                      Your loyalty point is lower than the required base point (
+                      <span className="font-semibold text-violet-700">
+                        {loyaltySettings.basePoint} pts
+                      </span>
+                      ). You currently have{" "}
+                      <span className="font-semibold">
+                        {customerProfile.loyaltyPoint.toFixed(2)} pts
+                      </span>
+                      .
+                    </div>
+                  )}
                   {redeemEnabled && (
                     <div className="space-y-2">
-                      <div className="grid grid-cols-2 gap-3 text-xs text-gray-500 bg-white rounded-lg px-3 py-2 border border-orange-100">
+                      <div className="grid grid-cols-2 gap-3 text-xs text-gray-500 bg-white rounded-lg px-3 py-2 border border-violet-200">
                         <div>
                           <p className="text-gray-400">Total points</p>
                           <p className="font-bold text-gray-800 text-sm">
@@ -1590,7 +1614,7 @@ export default function InvoiceDetailPage() {
                         </div>
                         <div>
                           <p className="text-gray-400">Max redeemable</p>
-                          <p className="font-bold text-orange-600 text-sm">
+                          <p className="font-bold text-violet-600 text-sm">
                             {maxRedeemablePoints.toFixed(0)} pts
                           </p>
                         </div>
@@ -1605,8 +1629,8 @@ export default function InvoiceDetailPage() {
                             handleRedeemChange(Number(e.target.value))
                           }
                           placeholder={`Max ${maxRedeemablePoints.toFixed(0)} pts`}
-                          className={`w-full px-4 py-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-orange-400 outline-none text-sm ${
-                            redeemError ? "border-red-300" : "border-orange-200"
+                          className={`w-full px-4 py-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-violet-400 outline-none text-sm ${
+                            redeemError ? "border-red-300" : "border-violet-200"
                           }`}
                         />
                         {redeemError && (
@@ -1615,7 +1639,7 @@ export default function InvoiceDetailPage() {
                           </p>
                         )}
                         {!redeemError && redeemPoints > 0 && (
-                          <p className="text-xs text-orange-500 mt-1">
+                          <p className="text-xs text-violet-500 mt-1">
                             {redeemPoints} pts = {currency.symbol}
                             {redeemPoints.toFixed(2)} off
                           </p>

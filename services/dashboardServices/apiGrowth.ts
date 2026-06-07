@@ -85,7 +85,7 @@ async function fetchBills(start: string, end: string): Promise<RawBill[]> {
   );
   if (!res.ok) return [];
   const json = await res.json();
-  console.log("Fetched bills:", { start, end, bills: json?.data?.bill ?? [] });
+  // console.log("Fetched bills:", { start, end, bills: json?.data?.bill ?? [] });
   // Client-side filter — ensures only bills for the exact month range are counted
   const allBills: RawBill[] = json?.data?.bill ?? [];
   return allBills.filter((b) => isBillInRange(b, start, end));
@@ -331,7 +331,7 @@ export const getYoYData = async (): Promise<YoYData[]> => {
     fetchCompareSalesByMonth(lastYearStart, lastYearEnd, _ts + 1),
   ]);
 
-  console.log("Fetched YoY data:", { thisYearMonthly, lastYearMonthly });
+  // console.log("Fetched YoY data:", { thisYearMonthly, lastYearMonthly });
 
   // Filter to keep only entries matching the expected year
   const filterByYear = (data: RawMonthCompare[], targetYear: number) =>
