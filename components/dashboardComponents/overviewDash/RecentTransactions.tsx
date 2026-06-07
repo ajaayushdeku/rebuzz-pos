@@ -16,7 +16,7 @@ type RecentTransactionsProps = {
 export default function RecentTransactions({
   title = "Recent Transactions",
   description = "Revenue performance - current week",
-  viewAllHref = "/dashboard/order-history",
+  viewAllHref = "/records/order-history",
   transactions,
 }: RecentTransactionsProps) {
   const { currency } = useCurrency();
