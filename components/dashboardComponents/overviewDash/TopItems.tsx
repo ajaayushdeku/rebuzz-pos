@@ -1,5 +1,6 @@
 "use client";
 
+import { TrendingUp } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrency } from "@/utils/helper";
 
@@ -20,10 +21,10 @@ type SingleProductProps = {
   product: TopProduct;
 };
 
-const rankStyles: Record<Rank, { badge: string }> = {
-  1: { badge: "bg-amber-200 text-amber-500" },
-  2: { badge: "bg-gray-200 text-gray-500" },
-  3: { badge: "bg-orange-200 text-orange-500" },
+const rankStyles: Record<Rank, { ring: string; text: string }> = {
+  1: { ring: "ring-amber-200", text: "text-amber-500" },
+  2: { ring: "ring-gray-200", text: "text-gray-500" },
+  3: { ring: "ring-orange-200", text: "text-orange-500" },
 };
 
 const TopProductItem = ({ product }: SingleProductProps) => {
@@ -31,44 +32,66 @@ const TopProductItem = ({ product }: SingleProductProps) => {
   const { currency } = useCurrency();
 
   return (
-    <div className="flex items-center justify-between py-2 md:py-4">
-      <div className="flex items-start gap-2">
+    <div className="group flex items-center justify-between gap-3 py-3 border-b border-gray-100 last:border-0 transition-colors hover:bg-gray-50/50 -mx-2 px-2 rounded-md">
+      <div className="flex items-center gap-3 min-w-0">
         <span
-          className={`font-semibold px-2 py-1 mt-1 border rounded-lg ${styles.badge}`}
+          className={`shrink-0 w-8 h-8 flex items-center justify-center rounded-full ring-1 ${styles.ring} bg-white text-sm font-semibold ${styles.text}`}
         >
-          #{product.rank}
+          {product.rank}
         </span>
-        <div>
-          <p className="font-semibold">{product.productName}</p>
-          <p className="text-[12px] text-gray-500">{product.noOfSale} sold</p>
+        <div className="min-w-0">
+          <p className="font-medium text-sm text-gray-900 truncate">
+            {product.productName}
+          </p>
+          <p className="text-xs text-gray-400 mt-0.5">
+            {product.noOfSale} {product.noOfSale === 1 ? "sale" : "sales"}
+          </p>
         </div>
       </div>
-      <span className="text-green-700 font-semibold">
-        {formatCurrency(product.totalRevenue as number, currency)}
+      <span className="shrink-0 text-sm font-semibold text-green-600">
+        {formatCurrency(product.totalRevenue, currency)}
       </span>
     </div>
   );
 };
 
 const TopItems = ({ topProducts }: TopProductProps) => {
+  const hasData = topProducts && topProducts.length > 0;
+
   return (
-    <div className="flex-2 bg-white rounded-2xl shadow-md hover:shadow-lg transition duration-300 border border-gray-100 p-4">
-      <h1 className="text-[16px] md:text-xl mt-1 font-bold text-gray-900">
-        Top 3 Items Today
-      </h1>
+    <div className="flex-2 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
+            Top 3 Items Today
+          </h2>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Best performers in today&lsquo;s session
+          </p>
+        </div>
+        <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+          <TrendingUp size={16} strokeWidth={2.25} />
+        </div>
+      </div>
 
-      <p className="text-[12px] mt-0.5 md:text-sm text-gray-400  ">
-        Best performers in today&apos;s session
-      </p>
+      {/* Divider */}
+      <div className="h-px bg-gray-100 mb-1" />
 
-      {!topProducts || topProducts.length === 0 ? (
-        <div className="flex items-center justify-center py-4 md:py-8 text-gray-400">
-          <p>No sales data available</p>
+      {/* Body */}
+      {!hasData ? (
+        <div className="flex flex-col items-center justify-center py-10 text-gray-400">
+          <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center mb-2">
+            <TrendingUp size={18} className="text-gray-300" />
+          </div>
+          <p className="text-sm">No sales data available</p>
         </div>
       ) : (
-        topProducts.map((product) => (
-          <TopProductItem key={product.rank} product={product} />
-        ))
+        <div className="mt-1">
+          {topProducts.map((product) => (
+            <TopProductItem key={product.rank} product={product} />
+          ))}
+        </div>
       )}
     </div>
   );

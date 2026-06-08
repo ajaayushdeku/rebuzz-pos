@@ -22,19 +22,22 @@ export default function RecentTransactions({
   const { currency } = useCurrency();
   return (
     <div className="flex-2 bg-white rounded-2xl shadow-md hover:shadow-lg transition duration-300 border border-gray-100 p-4">
-      <div className="mb-6 flex items-start justify-between">
+      <div className="flex items-center justify-between mb-3">
         <div>
-          <h1 className="text-[16px] md:text-xl mt-1 font-bold text-gray-900">
+          <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
             {title}
-          </h1>
-          <p className="text-sm mt-0.5 text-gray-400">{description}</p>
+          </h2>
+          <p className="text-xs text-gray-400 mt-0.5">{description}</p>
         </div>
         <Link
           href={viewAllHref}
-          className="text-blue-500 flex hover:text-blue-600"
+          className="group flex items-center gap-1 rounded-xl px-3 py-2 text-sm font-medium text-blue-600 transition-all hover:bg-blue-50"
         >
           View all
-          <ChevronRight size={22} strokeWidth={1.75} />
+          <ChevronRight
+            size={22}
+            className="transition-transform duration-200 group-hover:translate-x-0.5"
+          />
         </Link>
       </div>
 

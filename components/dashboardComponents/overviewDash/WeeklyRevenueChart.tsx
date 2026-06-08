@@ -69,10 +69,10 @@ const WeeklyRevenueChart = ({ data, peakDay }: WeeklyRevenueChartProps) => {
   return (
     <div className="w-full bg-white rounded-2xl border border-gray-100 p-4 md:p-8 shadow-md hover:shadow-lg transition duration-300">
       <div className="mb-4 md:mb-6">
-        <h1 className="text-[16px] md:text-xl mt-1 font-bold text-gray-900">
+        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
           Daily Sales Trend
-        </h1>
-        <p className="text-sm text-gray-400 mt-0.5">
+        </h2>
+        <p className="text-xs text-gray-400 mt-0.5">
           Revenue performance – current week
         </p>
       </div>

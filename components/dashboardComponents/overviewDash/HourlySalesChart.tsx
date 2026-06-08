@@ -61,11 +61,11 @@ const HourlySalesTrend = ({ data }: HourlyDataProps) => {
     <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition duration-300 p-4 md:p-6 w-full mt-4">
       {/* HEADER */}
       <div className="mb-4 md:mb-6">
-        <h1 className="text-[16px] md:text-xl font-bold mt-1 text-gray-900">
+        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
           Hourly Sales Trend
-        </h1>
+        </h2>
 
-        <p className="text-sm text-gray-400 mt-0.5">
+        <p className="text-xs text-gray-400 mt-0.5">
           Revenue throughput across all operating hours today
         </p>
       </div>
