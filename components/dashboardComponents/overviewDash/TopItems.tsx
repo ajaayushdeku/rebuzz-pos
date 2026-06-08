@@ -52,7 +52,7 @@ const TopProductItem = ({ product }: SingleProductProps) => {
 
 const TopItems = ({ topProducts }: TopProductProps) => {
   return (
-    <div className="rounded-2xl shadow-md hover:shadow-lg transition duration-300 border border-gray-100 p-2 md:p-4  flex-2">
+    <div className="flex-2 bg-white rounded-2xl shadow-md hover:shadow-lg transition duration-300 border border-gray-100 p-4">
       <h1 className="text-[16px] md:text-xl mt-1 font-bold text-gray-900">
         Top 3 Items Today
       </h1>

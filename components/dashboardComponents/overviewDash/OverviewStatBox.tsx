@@ -13,6 +13,7 @@ interface StatBoxProps {
   iconColor?: string;
   format?: "currency" | "number" | "percent";
   periodLabel?: string;
+  isLoading?: boolean;
 }
 
 const OverviewStatBox = ({
@@ -22,12 +23,38 @@ const OverviewStatBox = ({
   iconName,
   iconColor,
   periodLabel = "from previous month",
+  isLoading = false,
   // format = "number",
 }: StatBoxProps) => {
   const { text, ArrowIcon } = getPercentColor(percent);
   const { currency } = useCurrency();
 
   const Icon = ICON_MAP[iconName];
+
+  if (isLoading) {
+    return (
+      <div
+        className="border w-full px-3 md:px-6 py-4 md:py-6 rounded-lg shadow-md animate-pulse bg-white"
+        aria-busy="true"
+        aria-live="polite"
+      >
+        <div className="flex justify-between items-end">
+          <div className="h-3 md:h-4 w-24 bg-gray-200 rounded" />
+          <div className="w-4 h-4 bg-gray-200 rounded mb-1" />
+        </div>
+
+        <div className="py-4 space-y-3">
+          <div className="h-6 md:h-7 w-32 bg-gray-200 rounded" />
+
+          <div className="flex items-center gap-1.5">
+            <div className="w-4 h-4 bg-gray-200 rounded" />
+            <div className="h-3 w-8 bg-gray-200 rounded" />
+            <div className="h-3 w-28 bg-gray-200 rounded" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="border w-full px-3 md:px-6 py-4 md:py-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">

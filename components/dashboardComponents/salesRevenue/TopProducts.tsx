@@ -2,23 +2,51 @@
 
 import { useState, useMemo } from "react";
 import { Search, ChevronDown, ChevronUp, ArrowUpDown } from "lucide-react";
-import { TopProduct, getTopProductColumns } from "./top-product-columns";
+import { TopProduct } from "./top-product-columns";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrency } from "@/utils/helper";
 import { getPercentColor } from "@/lib/utils";
+import { DateRangeFilter } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
+import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
+import { useTopProducts } from "@/hooks/useTopProducts";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
-type TopProductsProps = {
-  topProducts: TopProduct[];
-};
+/** Get last 7 days range (default) */
+function getDefaultRange(): DateRangeValue {
+  const endDate = (() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  })();
+  const start = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000);
+  const y = start.getFullYear();
+  const m = String(start.getMonth() + 1).padStart(2, "0");
+  const day = String(start.getDate()).padStart(2, "0");
+  return { startDate: `${y}-${m}-${day}`, endDate };
+}
 
-export default function TopProducts({ topProducts }: TopProductsProps) {
+export default function TopProducts({
+  topProducts: initialData,
+}: {
+  topProducts?: TopProduct[];
+}) {
   const { currency } = useCurrency();
   const [search, setSearch] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [page, setPage] = useState(0);
   const pageSize = 5;
+
+  // Date filter state (local to this component only)
+  const defaultRange = getDefaultRange();
+  const [startDate, setStartDate] = useState(defaultRange.startDate);
+  const [endDate, setEndDate] = useState(defaultRange.endDate);
+
+  // Fetch data via React Query hook
+  const { data: fetchedData, isFetching } = useTopProducts(startDate, endDate);
+  const topProducts = fetchedData ?? initialData ?? [];
 
   const filtered = useMemo(() => {
     if (!search) return topProducts;
@@ -68,12 +96,25 @@ export default function TopProducts({ topProducts }: TopProductsProps) {
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full">
-      <h1 className="font-bold mt-1 text-[16px] md:text-xl text-gray-900">
-        Top Selling Products of Past 7 Days
-      </h1>
-      <p className="text-gray-400 mt-0.5 text-sm">
-        Products contributing most to revenue growth
-      </p>
+      {/* Header with DateRangeFilter */}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+        <div>
+          <h1 className="font-bold mt-1 text-[16px] md:text-xl text-gray-900">
+            Top Selling Products
+          </h1>
+          <p className="text-gray-400 mt-0.5 text-sm">
+            Products contributing most to revenue growth
+          </p>
+        </div>
+
+        <DateRangeFilter
+          value={{ startDate, endDate }}
+          onChange={({ startDate: s, endDate: e }) => {
+            setStartDate(s);
+            setEndDate(e);
+          }}
+        />
+      </div>
 
       {/* Search */}
       <div className="relative mt-4 mb-4">
@@ -108,7 +149,6 @@ export default function TopProducts({ topProducts }: TopProductsProps) {
                   Product {SortIcon({ colKey: "name" })}
                 </span>
               </th>
-              {/* <th className="text-left pb-3 pt-3 px-4 font-medium">Category</th> */}
 
               <th
                 className="text-center pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
@@ -149,13 +189,22 @@ export default function TopProducts({ topProducts }: TopProductsProps) {
           </thead>
 
           <tbody>
-            {paged.length === 0 ? (
+            {isFetching && !fetchedData ? (
+              <tr>
+                <td colSpan={7} className="text-center py-12">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm text-gray-400">Loading...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : paged.length === 0 ? (
               <tr>
                 <td
                   colSpan={7}
                   className="text-center py-12 text-sm text-gray-400"
                 >
-                  No products found
+                  No products found for selected date range
                 </td>
               </tr>
             ) : (
@@ -175,9 +224,7 @@ export default function TopProducts({ topProducts }: TopProductsProps) {
                         {product.name}
                       </span>
                     </td>
-                    {/* <td className="py-3 px-4 text-gray-600">
-                      {product.category}
-                    </td> */}
+
                     <td className="py-3 px-4 text-center font-semibold text-gray-900">
                       {product.count}
                     </td>

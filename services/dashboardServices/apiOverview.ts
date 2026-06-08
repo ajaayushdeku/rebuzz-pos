@@ -20,6 +20,19 @@ import { formatHourlyData } from "@/utils/formatHourReportToday";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
+/** Safely parse a fetch response as JSON, returning null on any failure
+ * (network error, non-OK status, or non-JSON body such as an HTML error page). */
+const safeJson = async <T = unknown>(res: Response): Promise<T | null> => {
+  try {
+    if (!res.ok) return null;
+    const contentType = res.headers.get("content-type") ?? "";
+    if (!contentType.includes("application/json")) return null;
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
+};
+
 /** Map a compare type to the backend endpoint path segment */
 const compareEndpoint = (type: "date" | "week" | "month" | "year"): string => {
   switch (type) {
@@ -68,7 +81,9 @@ export const getStatsData = async (
   ]);
 
   // Aggregate daily/weekly/monthly/yearly compare-sales data
-  const compareJson = await compareRes.json();
+  const compareJson = await safeJson<{
+    data?: { totalSales: number; totalRevenue: number }[];
+  }>(compareRes);
   const dataPoints: { totalSales: number; totalRevenue: number }[] =
     compareJson?.data ?? [];
   const totalOrders = dataPoints.reduce(
@@ -81,7 +96,9 @@ export const getStatsData = async (
   );
 
   // Get total products sold from salesByItem data
-  const salesByItemJson = await salesByItemRes.json();
+  const salesByItemJson = await safeJson<{ data?: { count: number }[] }>(
+    salesByItemRes,
+  );
   const salesItems: { count: number }[] = salesByItemJson?.data ?? [];
   const totalProductsSold = salesItems.reduce(
     (sum, item) => sum + (item.count ?? 0),
@@ -89,13 +106,10 @@ export const getStatsData = async (
   );
 
   // Get net profit from the /business/report endpoint (direct profit figure)
-  let netProfit: number;
-  try {
-    const reportJson = await reportRes.json();
-    netProfit = reportJson?.data?.report?.profit ?? 0;
-  } catch {
-    netProfit = 0;
-  }
+  const reportJson = await safeJson<{
+    data?: { report?: { profit?: number } };
+  }>(reportRes);
+  const netProfit: number = reportJson?.data?.report?.profit ?? 0;
 
   //  netProfit =
   //   salesItems.reduce((sum, item) => sum + (item.netProfit ?? 0), 0) -
@@ -170,9 +184,6 @@ export const getWinningStats = async (): Promise<WinningApiResponse> => {
 
 // Fetch Top/Popular Products of the Day (Today)
 export const getTopProducts = async (): Promise<TopProduct[]> => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-
   const endDate = new Date().toISOString().split("T")[0];
   const startDate = new Date().toISOString().split("T")[0];
 
@@ -180,8 +191,44 @@ export const getTopProducts = async (): Promise<TopProduct[]> => {
     `[getTopProducts] Fetching top products for date: ${startDate} to ${endDate}`,
   );
 
+  // Step 1: Check the business report for the date range. If `allBills` is
+  // empty, there's nothing to rank — bail out early without hitting the
+  // heavier salesByItem endpoint.
+  const reportCheckUrl = `${BASE}/business/report?startDate=${startDate}&endDate=${endDate}&limit=25`;
+  const reportCheckRes = await fetch(reportCheckUrl, {
+    headers: await authHeaders(),
+    cache: "no-store",
+  });
+
+  // Response shape: { data: { report: { allBills: [...] } } }
+  const reportCheckJson = await safeJson<{
+    data?: { report?: { allBills?: unknown[] } };
+  }>(reportCheckRes);
+  console.log("REPORT TODAY:", reportCheckJson);
+
+  const allBills = reportCheckJson?.data?.report?.allBills;
+  const hasReportData = Array.isArray(allBills) && allBills.length > 0;
+
+  console.log(
+    "Has Report Data:",
+    hasReportData,
+    "allBills count:",
+    allBills?.length,
+  );
+
+  if (!hasReportData) {
+    console.log(
+      "[getTopProducts] Report returned empty data — skipping salesByItem.",
+    );
+    return [];
+  }
+
+  // Step 2: Report has data, so call salesByItem to get per-item details.
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
   const res = await fetch(
-    `${BASE}/business/report/salesByItem?startDate=${startDate}&endDate=${endDate}`,
+    `${BASE}/business/report/salesByItem?startDate=${startDate}&endDate=${endDate}&limit=25`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -189,6 +236,10 @@ export const getTopProducts = async (): Promise<TopProduct[]> => {
       },
       next: { revalidate: 3600 },
     },
+  );
+
+  console.log(
+    `${BASE}/business/report/salesByItem?startDate=${startDate}&endDate=${endDate}`,
   );
 
   if (!res.ok) throw new Error(`Failed to fetch sales by item: ${res.status}`);

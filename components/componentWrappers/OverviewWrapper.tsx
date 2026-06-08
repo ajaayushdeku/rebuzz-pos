@@ -58,7 +58,9 @@ const getDateRange = (range: string, now: Date): [string, string] => {
       start = new Date(now.getFullYear(), 0, 1);
       break;
     default:
-      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      // Default to 24h (today) instead of month for fresh first-load data
+      start = new Date(now);
+      start.setDate(now.getDate());
   }
 
   return [fmtLocalDate(start), end];
@@ -96,8 +98,9 @@ const getPreviousDateRange = (range: string, now: Date): [string, string] => {
       end = new Date(now.getFullYear(), 0, 0);
       break;
     default:
-      start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      end = new Date(now.getFullYear(), now.getMonth(), 0);
+      // Default to 24h (previous day) for consistency with getDateRange
+      start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+      end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
   }
 
   return [fmtLocalDate(start), fmtLocalDate(end)];
@@ -115,12 +118,12 @@ const getPeriodLabel = (range: string): string => {
     case "year":
       return "from previous year";
     default:
-      return "from previous month";
+      return "from previous day";
   }
 };
 
 export const OverviewStatsWrapper = async ({
-  range = "date",
+  range = "24h",
   startDate: customStartDate,
   endDate: customEndDate,
 }: {
