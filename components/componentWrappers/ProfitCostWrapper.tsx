@@ -11,7 +11,6 @@ import {
   getGrossProfitTrendData,
   getProfitPerProduct,
   getProfitStats,
-  getRefundReason,
 } from "@/services/dashboardServices/apiProfitCost";
 
 import ProfitPerProduct from "../dashboardComponents/profitcostDash/ProfitPerProduct";
@@ -47,9 +46,8 @@ export async function ProfitPerProductWrapper() {
   return <ProfitPerProduct products={profitPerProduct} />;
 }
 
-export async function RefundAnalysisWrapper() {
-  const refundData = await getRefundReason();
-  return <RefundAnalysis refundReasons={refundData} />;
+export function RefundAnalysisWrapper() {
+  return <RefundAnalysis />;
 }
 
 export async function ExpenseStatsWrapper() {

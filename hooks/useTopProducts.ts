@@ -3,18 +3,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { TopProduct } from "@/components/dashboardComponents/salesRevenue/top-product-columns";
 
-const BASE = process.env.NEXT_PUBLIC_API_URL;
-
 async function fetchTopProducts(
   startDate: string,
   endDate: string,
 ): Promise<TopProduct[]> {
   const res = await fetch(
-    `${BASE}/business/report/salesByItem?startDate=${startDate}&endDate=${endDate}`,
-    {
-      credentials: "include",
-      cache: "no-store",
-    },
+    `/api/report/salesByItem?startDate=${startDate}&endDate=${endDate}`,
+    { headers: { "Content-Type": "application/json" }, cache: "no-store" },
   );
 
   if (!res.ok) throw new Error(`Failed to fetch sales by item: ${res.status}`);

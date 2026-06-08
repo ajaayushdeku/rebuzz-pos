@@ -4,18 +4,41 @@ import { useState, useMemo } from "react";
 import { Search, ChevronDown, ChevronUp, ArrowUpDown } from "lucide-react";
 import { SlowProduct } from "./slow-product-columns";
 import { getDaysColor } from "@/lib/utils";
+import { useSlowProducts } from "@/hooks/useSlowProducts";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
-type SlowProductsProps = {
-  slowProducts: SlowProduct[];
-};
+const DAYS_PRESETS = [
+  { value: "3", label: "3 days" },
+  { value: "7", label: "7 days" },
+  { value: "14", label: "14 days" },
+  { value: "30", label: "30 days" },
+];
 
-export default function SlowProducts({ slowProducts }: SlowProductsProps) {
+export default function SlowProducts({
+  slowProducts: initialData,
+}: {
+  slowProducts?: SlowProduct[];
+}) {
   const [search, setSearch] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [page, setPage] = useState(0);
   const pageSize = 5;
+
+  // Days filter state (local to this component only)
+  const [days, setDays] = useState(3);
+  const [customDays, setCustomDays] = useState("");
+
+  // Fetch data via React Query hook
+  const { data: fetchedData, isFetching } = useSlowProducts(days);
+  const slowProducts = fetchedData ?? initialData ?? [];
 
   const filtered = useMemo(() => {
     if (!search) return slowProducts;
@@ -65,24 +88,71 @@ export default function SlowProducts({ slowProducts }: SlowProductsProps) {
         Slow Moving Products
       </h1>
       <p className="text-gray-400 mt-0.5 text-sm">
-        No sales in 3+ days, attention required.
+        Products with no sales in selected period, attention required.
       </p>
 
-      {/* Search */}
-      <div className="relative mt-4 mb-4">
-        <Search
-          size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-        />
-        <input
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(0);
-          }}
-          placeholder="Search products..."
-          className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-        />
+      {/* Search + Days preset */}
+      <div className="flex items-center gap-2 mt-4 mb-4">
+        <div className="relative flex-1">
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+          <input
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
+            placeholder="Search products..."
+            className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+          />
+        </div>
+
+        {/* Days preset dropdown + custom input */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Custom days input */}
+          <div className="flex items-center gap-1">
+            <input
+              type="number"
+              min={1}
+              max={365}
+              value={customDays}
+              placeholder="Custom"
+              onChange={(e) => {
+                const val = e.target.value;
+                setCustomDays(val);
+                const num = parseInt(val, 10);
+                if (!isNaN(num) && num > 0) {
+                  setDays(num);
+                  setPage(0);
+                }
+              }}
+              className="w-16 h-9 px-2 text-xs border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+            <span className="text-xs text-gray-400">days</span>
+          </div>
+
+          <Select
+            value={String(days)}
+            onValueChange={(val) => {
+              setDays(Number(val));
+              setCustomDays("");
+              setPage(0);
+            }}
+          >
+            <SelectTrigger className="w-[90px] h-9 text-sm">
+              <SelectValue placeholder="Select days" />
+            </SelectTrigger>
+            <SelectContent>
+              {DAYS_PRESETS.map(({ value, label }) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Table */}
@@ -123,7 +193,16 @@ export default function SlowProducts({ slowProducts }: SlowProductsProps) {
           </thead>
 
           <tbody>
-            {paged.length === 0 ? (
+            {isFetching && !fetchedData ? (
+              <tr>
+                <td colSpan={4} className="text-center py-12">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm text-gray-400">Loading...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : paged.length === 0 ? (
               <tr>
                 <td
                   colSpan={4}

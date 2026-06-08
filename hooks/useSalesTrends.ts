@@ -23,7 +23,7 @@ function getDateRange(view: "daily" | "weekly" | "monthly"): {
       start.setDate(now.getDate() - 30);
       break;
     case "weekly":
-      start.setDate(now.getDate() - 84);
+      start.setDate(now.getDate() - 180);
       break;
     case "monthly":
       start.setFullYear(now.getFullYear() - 1);

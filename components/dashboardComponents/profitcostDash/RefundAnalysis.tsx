@@ -2,14 +2,12 @@
 
 import { useState, useMemo } from "react";
 import { Search, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrency } from "@/utils/helper";
-
-type RefundReason = {
-  name: string;
-  loss: number;
-  updatedAt: string;
-};
+import { DateRangeFilter } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
+import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
+import { useRefundAnalysis } from "@/hooks/useRefundAnalysis";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -24,21 +22,59 @@ function renderSortIcon(colKey: string, sortConfig: SortConfig) {
   return <ArrowUpDown className="h-3 w-3 opacity-30" />;
 }
 
+/** Get last 30 days range (default) */
+function getDefaultRange(): DateRangeValue {
+  const endDate = (() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  })();
+  const start = new Date(Date.now() - 29 * 24 * 60 * 60 * 1000);
+  const y = start.getFullYear();
+  const m = String(start.getMonth() + 1).padStart(2, "0");
+  const day = String(start.getDate()).padStart(2, "0");
+  return { startDate: `${y}-${m}-${day}`, endDate };
+}
+
 export default function RefundAnalysis({
-  refundReasons,
+  refundReasons: initialData,
 }: {
-  refundReasons: RefundReason[];
+  refundReasons?: {
+    name: string;
+    loss: number;
+    invoiceNo: number;
+    updatedAt: string;
+    createdAt: string;
+  }[];
 }) {
   const { currency } = useCurrency();
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [page, setPage] = useState(0);
   const pageSize = 5;
 
+  // Date filter state (local to this component only)
+  const defaultRange = getDefaultRange();
+  const [startDate, setStartDate] = useState(defaultRange.startDate);
+  const [endDate, setEndDate] = useState(defaultRange.endDate);
+
+  // Fetch data via React Query hook
+  const { data: fetchedData, isFetching } = useRefundAnalysis(
+    startDate,
+    endDate,
+  );
+  const refundReasons = fetchedData ?? initialData ?? [];
+
   const filtered = useMemo(() => {
     if (!search) return refundReasons;
     const q = search.toLowerCase();
-    return refundReasons.filter((r) => r.name.toLowerCase().includes(q));
+    return refundReasons.filter(
+      (r) =>
+        r.name.toLowerCase().includes(q) || String(r.invoiceNo).includes(q),
+    );
   }, [refundReasons, search]);
 
   const sorted = useMemo(() => {
@@ -71,6 +107,15 @@ export default function RefundAnalysis({
     setPage(0);
   };
 
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "—";
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full mt-4 overflow-hidden">
       <div className="min-w-0 mb-4">
@@ -82,26 +127,36 @@ export default function RefundAnalysis({
         </p>
       </div>
 
-      {/* Search */}
-      <div className="relative mb-4">
-        <Search
-          size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-        />
-        <input
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(0);
+      {/* Search + DateRangeFilter on the same line */}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="relative flex-1">
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+          <input
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
+            placeholder="Search by bill name, invoice #..."
+            className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+          />
+        </div>
+
+        <DateRangeFilter
+          value={{ startDate, endDate }}
+          onChange={({ startDate: s, endDate: e }) => {
+            setStartDate(s);
+            setEndDate(e);
           }}
-          placeholder="Search by bill name or customer..."
-          className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
         />
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+        <table className="w-full text-sm min-w-[580px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
               <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
@@ -115,7 +170,14 @@ export default function RefundAnalysis({
                   Bill Name {renderSortIcon("name", sortConfig)}
                 </span>
               </th>
-
+              <th
+                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                onClick={() => toggleSort("createdAt")}
+              >
+                <span className="flex items-center gap-1">
+                  Bill Date {renderSortIcon("createdAt", sortConfig)}
+                </span>
+              </th>
               <th
                 className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                 onClick={() => toggleSort("updatedAt")}
@@ -135,49 +197,61 @@ export default function RefundAnalysis({
             </tr>
           </thead>
           <tbody>
-            {paged.length === 0 ? (
+            {isFetching && !fetchedData ? (
+              <tr>
+                <td colSpan={5} className="text-center py-12">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm text-gray-400">Loading...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : paged.length === 0 ? (
               <tr>
                 <td
-                  colSpan={4}
+                  colSpan={5}
                   className="text-center py-12 text-sm text-gray-400"
                 >
                   No refunds found
                 </td>
               </tr>
             ) : (
-              paged.map((item, idx) => {
-                const dateStr = item.updatedAt
-                  ? new Date(item.updatedAt).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })
-                  : "—";
-                return (
-                  <tr
-                    key={item.name + idx}
-                    className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="py-3 px-4 text-gray-400 text-xs">
-                      {page * pageSize + idx + 1}
-                    </td>
+              paged.map((item, idx) => (
+                <tr
+                  key={item.invoiceNo}
+                  onClick={() => router.push(`/invoices/${item.invoiceNo}`)}
+                  className="border-b border-gray-50 last:border-0 hover:bg-blue-50 transition-colors cursor-pointer"
+                >
+                  <td className="py-3 px-4 text-gray-400 text-xs">
+                    {page * pageSize + idx + 1}
+                  </td>
 
-                    <td className="py-3 px-4">
-                      <span className="font-semibold text-gray-900">
-                        {item.name}
-                      </span>
-                    </td>
+                  <td className="py-3 px-4">
+                    <span className="font-semibold text-gray-900">
+                      {item.name}
+                    </span>
+                    <span className="text-gray-400 text-xs ml-2">
+                      #{item.invoiceNo}
+                    </span>
+                  </td>
 
-                    <td className="py-3 px-4">
-                      <span className="text-gray-500 text-xs">{dateStr}</span>
-                    </td>
+                  <td className="py-3 px-4">
+                    <span className="text-gray-500 text-xs">
+                      {formatDate(item.createdAt)}
+                    </span>
+                  </td>
 
-                    <td className="py-3 px-4 text-right font-semibold text-red-600">
-                      -{formatCurrency(item.loss, currency)}
-                    </td>
-                  </tr>
-                );
-              })
+                  <td className="py-3 px-4">
+                    <span className="text-gray-500 text-xs">
+                      {formatDate(item.updatedAt)}
+                    </span>
+                  </td>
+
+                  <td className="py-3 px-4 text-right font-semibold text-red-600">
+                    -{formatCurrency(item.loss, currency)}
+                  </td>
+                </tr>
+              ))
             )}
           </tbody>
         </table>

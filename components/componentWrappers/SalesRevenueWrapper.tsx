@@ -1,21 +1,14 @@
-import {
-  getSlowProducts,
-  getTopProducts,
-} from "@/services/dashboardServices/apiSalesRevenue";
-
 import TopProducts from "../dashboardComponents/salesRevenue/TopProducts";
 import SalesTrendChart from "../dashboardComponents/salesRevenue/SalesTrendChart";
 import SlowProducts from "../dashboardComponents/salesRevenue/SlowProducts";
 import RevenueVsProfitChart from "../dashboardComponents/salesRevenue/RevenueVsProfitChart";
 
-export async function TopProductsWrapper() {
-  const data = await getTopProducts();
-  return <TopProducts topProducts={data} />;
+export function TopProductsWrapper() {
+  return <TopProducts />;
 }
 
-export async function SlowProductsWrapper() {
-  const data = await getSlowProducts();
-  return <SlowProducts slowProducts={data} />;
+export function SlowProductsWrapper() {
+  return <SlowProducts />;
 }
 
 export function RevenueVsProfitChartWrapper() {

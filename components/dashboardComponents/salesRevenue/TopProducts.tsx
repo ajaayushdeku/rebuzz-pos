@@ -96,7 +96,7 @@ export default function TopProducts({
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full">
-      {/* Header with DateRangeFilter */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
         <div>
           <h1 className="font-bold mt-1 text-[16px] md:text-xl text-gray-900">
@@ -106,6 +106,25 @@ export default function TopProducts({
             Products contributing most to revenue growth
           </p>
         </div>
+      </div>
+
+      {/* Search + DateRangeFilter on the same line */}
+      <div className="flex items-center gap-2 mt-4 mb-4">
+        <div className="relative flex-1">
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+          <input
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
+            placeholder="Search products..."
+            className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+          />
+        </div>
 
         <DateRangeFilter
           value={{ startDate, endDate }}
@@ -113,23 +132,6 @@ export default function TopProducts({
             setStartDate(s);
             setEndDate(e);
           }}
-        />
-      </div>
-
-      {/* Search */}
-      <div className="relative mt-4 mb-4">
-        <Search
-          size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-        />
-        <input
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(0);
-          }}
-          placeholder="Search products..."
-          className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
         />
       </div>
 
