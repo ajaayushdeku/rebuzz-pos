@@ -59,7 +59,7 @@ const TopItems = ({ topProducts }: TopProductProps) => {
   const hasData = topProducts && topProducts.length > 0;
 
   return (
-    <div className="flex-2 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
+    <div className="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div>

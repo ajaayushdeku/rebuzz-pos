@@ -19,60 +19,26 @@ const WinningStatBox = ({
 }: WinningStatBoxProps) => {
   return (
     <div
-      className={`w-full md:px-6 px-3 md:py-3 py-2 ${bgColor} shadow-md hover:shadow-lg  rounded-lg`}
+      className={`w-full px-4 md:px-6 py-4 md:py-5 ${bgColor || "bg-blue-600"} rounded-2xl shadow-sm`}
     >
-      <span className="md:text-[14px] text-[10px] text-gray-300">{label}</span>
-      <div className="flex items-center justify-between mt-4 md:mt-8">
+      <span className="text-xs md:text-sm font-medium text-white/70 uppercase tracking-wider">
+        {label}
+      </span>
+      <div className="flex items-center justify-between mt-3 md:mt-4">
         <div>
-          <span className="font-bold text-[16px] md:text-xl text-gray-100">
+          <span className="font-bold text-lg md:text-2xl text-white">
             {value}
           </span>
-          <p className="md:text-[14px] text-[10px] text-gray-300">{footer}</p>
+          {footer && (
+            <p className="text-xs md:text-sm text-white/60 mt-0.5">{footer}</p>
+          )}
         </div>
-        <Icon className={`${iconColor} shrink-0`} />
+        <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/15">
+          <Icon className={`${iconColor || "text-white"} shrink-0`} size={18} />
+        </div>
       </div>
     </div>
   );
 };
 
 export default WinningStatBox;
-{
-  /* PEAK HOURS */
-}
-{
-  /* <div className="w-full px-6 py-4 shadow-md shadow-purple-600 bg-purple-500 rounded-lg">
-        <span className="text-[14px] text-gray-300">
-          PEAK HOUR
-        </span>
-        <div className="flex items-center justify-between mt-8">
-          <div>
-            <span className="font-bold text-xl text-gray-100">
-              10:00 AM - 11:00 AM
-            </span>
-            <p className="text-[14px] text-gray-300">
-              Busiest window of the day
-            </p>
-          </div>
-          <Clock className="text-gray-100" />
-        </div>
-      </div>
-      {/* BEST DAY */
-}
-{
-  /* <div className="w-full  px-6 py-4 bg-green-700 shadow-green-800 shadow-md rounded-lg">
-        <span className="text-[14px] text-gray-300">
-          BEST DAY OF THE WEEK
-        </span>
-        <div className="flex items-center justify-between mt-8">
-          <div>
-            <span className="font-bold text-xl text-gray-100">
-              SATURDAY
-            </span>
-            <p className="text-[14px] text-gray-300">
-              Average 40% above daily mean
-            </p>
-          </div>
-          <Star className="text-amber-300" />
-        </div>
-      </div>  */
-}

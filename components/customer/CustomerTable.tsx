@@ -50,7 +50,6 @@ type EditForm = {
   phone: string;
   countryCode: string;
   note: string;
-  customerPan: string;
 };
 
 function EditCustomerModal({
@@ -69,8 +68,7 @@ function EditCustomerModal({
     email: customer?.email ?? "",
     phone: customer?.phone ?? "",
     countryCode: "NP +977",
-    note: "",
-    customerPan: "",
+    note: customer?.note ?? "",
   });
 
   // Sync form when customer changes
@@ -81,8 +79,7 @@ function EditCustomerModal({
         email: customer.email ?? "",
         phone: customer.phone ?? "",
         countryCode: "NP +977",
-        note: "",
-        customerPan: "",
+        note: customer.note ?? "",
       });
     }
   }, [customer]);
@@ -105,7 +102,6 @@ function EditCustomerModal({
           phone: form.phone,
           countryCode: form.countryCode,
           note: form.note,
-          customerPan: form.customerPan,
         }),
       });
       if (!res.ok) throw new Error("Failed");
@@ -124,7 +120,6 @@ function EditCustomerModal({
     { key: "email", label: "Email", type: "email" },
     { key: "phone", label: "Phone", type: "tel" },
     { key: "countryCode", label: "Country Code" },
-    { key: "customerPan", label: "PAN Number" },
     { key: "note", label: "Note" },
   ];
 

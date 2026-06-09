@@ -7,11 +7,7 @@ import { Calendar as CalendarIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -90,7 +86,7 @@ export function CalendarDateFilter({
   );
   const [preset, setPreset] = React.useState(currentPreset || "month");
 
-  // Popover open state
+  // Dialog open state
   const [open, setOpen] = React.useState(false);
 
   // Temporary local state for date selection
@@ -109,15 +105,7 @@ export function CalendarDateFilter({
     hasCustom ? currentEndDate : "",
   );
 
-  // Sync text inputs when temp dates change (from calendar select)
-  const syncInputsFromTemp = React.useCallback(() => {
-    if (tempStartDate) setStartInput(toDateStr(tempStartDate));
-    else setStartInput("");
-    if (tempEndDate) setEndInput(toDateStr(tempEndDate));
-    else setEndInput("");
-  }, [tempStartDate, tempEndDate]);
-
-  // Reset temp state when popover opens
+  // Reset temp state when dialog opens
   const handleOpenChange = (isOpen: boolean) => {
     if (isOpen) {
       if (currentStartDate && currentEndDate) {
@@ -220,7 +208,6 @@ export function CalendarDateFilter({
 
   const handleApply = () => {
     if (mode === "single") {
-      // Try to parse input first
       const d = parseDateStr(startInput) || tempStartDate;
       if (d) {
         const dateStr = toDateStr(d);
@@ -231,11 +218,9 @@ export function CalendarDateFilter({
         applyFilters({ startDate: dateStr, endDate: dateStr });
       }
     } else {
-      // Range mode
       const start = parseDateStr(startInput) || tempStartDate;
       const end = parseDateStr(endInput) || tempEndDate;
       if (start && end) {
-        // Ensure start <= end
         const [s, e] = start <= end ? [start, end] : [end, start];
         setTempStartDate(s);
         setTempEndDate(e);
@@ -270,9 +255,8 @@ export function CalendarDateFilter({
 
   return (
     <div className="flex items-center gap-2">
-      {/* Calendar picker — now contains preset dropdown inside */}
-      <Popover open={open} onOpenChange={handleOpenChange}>
-        <PopoverTrigger asChild>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogTrigger asChild>
           <Button
             variant="outline"
             className={cn(
@@ -283,11 +267,14 @@ export function CalendarDateFilter({
             <CalendarIcon className="mr-2 h-4 w-4" />
             {displayText}
           </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[340px] p-0" align="start">
-          <div className="p-3 space-y-3">
-            {/* Mode Toggle — full width tab style */}
-            <div className="flex w-full">
+        </DialogTrigger>
+        <DialogContent
+          showCloseButton={false}
+          className="w-[360px] sm:w-[375px] p-0 rounded-2xl shadow-xl bg-white"
+        >
+          <div className="pt-6 pb-2 px-6">
+            {/* Mode Toggle */}
+            <div className="flex w-full rounded-lg overflow-hidden border border-gray-200">
               <button
                 type="button"
                 onClick={() => {
@@ -299,10 +286,10 @@ export function CalendarDateFilter({
                   }
                 }}
                 className={cn(
-                  "flex-1 py-2 text-sm font-medium rounded-l-lg transition-colors",
+                  "flex-1 py-2 text-sm font-medium transition-colors",
                   mode === "single"
                     ? "bg-blue-600 text-white shadow-sm"
-                    : "bg-gray-100 text-gray-500 hover:text-gray-700 hover:bg-gray-200 border border-gray-200",
+                    : "bg-gray-50 text-gray-500 hover:text-gray-700 hover:bg-gray-100",
                 )}
               >
                 Single
@@ -311,37 +298,39 @@ export function CalendarDateFilter({
                 type="button"
                 onClick={() => setMode("range")}
                 className={cn(
-                  "flex-1 py-2 text-sm font-medium rounded-r-lg transition-colors",
+                  "flex-1 py-2 text-sm font-medium transition-colors",
                   mode === "range"
                     ? "bg-blue-600 text-white shadow-sm"
-                    : "bg-gray-100 text-gray-500 hover:text-gray-700 hover:bg-gray-200 border border-gray-200",
+                    : "bg-gray-50 text-gray-500 hover:text-gray-700 hover:bg-gray-100",
                 )}
               >
                 Range
               </button>
             </div>
 
-            {/* Preset dropdown — below the tabs */}
+            {/* Preset dropdown */}
             {showPresets && (
-              <Select
-                value={currentPreset || "month"}
-                onValueChange={handlePresetChange}
-              >
-                <SelectTrigger className="w-full h-10 text-sm">
-                  <SelectValue placeholder="Quick select" />
-                </SelectTrigger>
-                <SelectContent>
-                  {PRESET_RANGES.map(({ value, label }) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="mt-3">
+                <Select
+                  value={currentPreset || "month"}
+                  onValueChange={handlePresetChange}
+                >
+                  <SelectTrigger className="w-full h-10 text-sm border-gray-200 bg-white rounded-lg">
+                    <SelectValue placeholder="Quick select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRESET_RANGES.map(({ value, label }) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             )}
 
             {/* Date input fields */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mt-3">
               <div className="flex-1">
                 <label className="block text-xs text-gray-500 mb-1">
                   {mode === "single" ? "Date" : "Start Date"}
@@ -351,7 +340,7 @@ export function CalendarDateFilter({
                   value={startInput}
                   onChange={(e) => handleStartInputChange(e.target.value)}
                   onBlur={handleStartBlur}
-                  className="w-full h-9 px-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               {mode === "range" && (
@@ -363,14 +352,14 @@ export function CalendarDateFilter({
                     type="date"
                     value={endInput}
                     onChange={(e) => handleEndInputChange(e.target.value)}
-                    className="w-full h-9 px-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               )}
             </div>
 
-            {/* Calendar — full width */}
-            <div className="w-full">
+            {/* Calendar */}
+            <div className="w-full mt-3">
               {mode === "single" ? (
                 <Calendar
                   mode="single"
@@ -393,12 +382,12 @@ export function CalendarDateFilter({
           </div>
 
           {/* Apply / Cancel buttons */}
-          <div className="flex items-center justify-end gap-2 p-3 border-t border-gray-100">
+          <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setOpen(false)}
-              className="text-gray-500"
+              className="text-gray-500 hover:text-gray-700 hover:bg-gray-200"
             >
               Cancel
             </Button>
@@ -406,13 +395,13 @@ export function CalendarDateFilter({
               size="sm"
               onClick={handleApply}
               disabled={!canApply}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4"
             >
               Apply
             </Button>
           </div>
-        </PopoverContent>
-      </Popover>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

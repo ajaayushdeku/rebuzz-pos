@@ -41,7 +41,7 @@ export default function AtRiskCustomer({
   const [search, setSearch] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [page, setPage] = useState(0);
-  const pageSize = 10;
+  const pageSize = 5;
 
   const filtered = useMemo(() => {
     if (!search) return riskCustomers;
@@ -124,7 +124,7 @@ export default function AtRiskCustomer({
 
       {/* Table - horizontally scrollable on mobile */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
-        <table className="w-full text-sm min-w-[500px]">
+        <table className="w-full text-sm min-w-[600px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
               <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
@@ -177,7 +177,7 @@ export default function AtRiskCustomer({
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    <span className="border text-sm text-gray-600 border-gray-500 p-1 rounded-2xl inline-block px-3">
+                    <span className=" text-sm text-gray-600 p-1 rounded-2xl inline-block px-3">
                       {`Inactive for about 2 weeks`}
                     </span>
                   </td>
@@ -192,7 +192,7 @@ export default function AtRiskCustomer({
                   </td>
                   <td className="py-3 px-4 text-right">
                     <button
-                      className="px-3 py-1.5 text-sm rounded-lg bg-blue-500
+                      className="p-1  text-sm rounded-lg bg-blue-500
                     font-semibold text-gray-100 hover:bg-blue-600 hover:text-gray-100 border border-blue-500 transition-colors"
                     >
                       Send Offer

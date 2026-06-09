@@ -182,7 +182,7 @@ const Page = async () => {
       <section className="px-6 md:px-16 pt-16 md:pt-24 pb-12 text-center max-w-5xl mx-auto">
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-100 rounded-full px-3 py-1 mb-6">
           <Zap size={11} />
-          Built for Nepal&lsqos;s businesses
+          Built for Nepal&lsquo;s businesses
         </span>
 
         <h1 className="text-gray-900 text-4xl sm:text-5xl md:text-6xl font-bold leading-tight tracking-tight max-w-3xl mx-auto">

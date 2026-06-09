@@ -24,7 +24,6 @@ const OverviewStatBox = ({
   iconColor,
   periodLabel = "from previous month",
   isLoading = false,
-  // format = "number",
 }: StatBoxProps) => {
   const { text, ArrowIcon } = getPercentColor(percent);
   const { currency } = useCurrency();
@@ -34,7 +33,7 @@ const OverviewStatBox = ({
   if (isLoading) {
     return (
       <div
-        className="border w-full px-3 md:px-6 py-4 md:py-6 rounded-lg shadow-md animate-pulse bg-white"
+        className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 animate-pulse"
         aria-busy="true"
         aria-live="polite"
       >
@@ -57,32 +56,30 @@ const OverviewStatBox = ({
   }
 
   return (
-    <div className="border w-full px-3 md:px-6 py-4 md:py-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
-      <div className="flex justify-between items-end">
-        <p className="text-gray-500 text-sm md:text-base leading-tight">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6">
+      <div className="flex justify-between items-center">
+        <p className="text-gray-500 text-sm md:text-base font-medium leading-tight">
           {label}
         </p>
 
-        <Icon size={16} className={`${iconColor} mb-1 rounded-lg shrink-0`} />
+        <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-50 shrink-0">
+          <Icon size={16} className={`${iconColor || "text-gray-500"}`} />
+        </div>
       </div>
 
-      <div className="py-4">
-        <span className="font-bold text-lg md:text-2xl">
-          {/* {formatValue(value)} */}
+      <div className="mt-4 md:mt-6">
+        <span className="font-bold text-xl md:text-2xl text-gray-900">
           {label === "Total Orders" || label === "Products Sold"
             ? value
             : formatCurrency(value, currency)}
         </span>
 
-        <div className="flex justify-start gap-0.5">
-          <ArrowIcon size={16} className={`${text} mt-1`} />
-
-          <span className={`text-[12px] md:text-base ${text}`}>
-            {percent}%{" "}
+        <div className="flex items-center gap-1 mt-1.5">
+          <ArrowIcon size={14} className={`${text} shrink-0`} />
+          <span className={`text-xs md:text-sm font-medium ${text}`}>
+            {percent}%
           </span>
-
-          <span className="text-gray-500 text-[12px] md:text-base">
-            {" "}
+          <span className="text-gray-400 text-xs md:text-sm ml-0.5">
             {periodLabel}
           </span>
         </div>

@@ -27,7 +27,7 @@ export default function DashboardError({
           Something went wrong
         </h2>
         <p className="text-gray-500 text-sm leading-relaxed mb-1">
-          We couldn&lsqos;t load this part of your dashboard.
+          We couldn&lsqou;t load this part of your dashboard.
         </p>
         {error.message && (
           <p className="text-gray-400 text-xs bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 mt-2 mb-6 font-mono break-words">

@@ -83,7 +83,7 @@ export default function SlowProducts({
     );
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full">
       <h1 className="font-bold text-[16px] md:text-xl text-gray-900 mt-1">
         Slow Moving Products
       </h1>

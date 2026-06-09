@@ -58,7 +58,7 @@ const HourlySalesTrend = ({ data }: HourlyDataProps) => {
   const ticks = Array.from({ length: tickCount + 1 }, (_, i) => i * tickStep);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition duration-300 p-4 md:p-6 w-full mt-4">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full mt-4">
       {/* HEADER */}
       <div className="mb-4 md:mb-6">
         <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">

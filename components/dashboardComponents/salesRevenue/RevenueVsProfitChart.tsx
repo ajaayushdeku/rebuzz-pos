@@ -174,14 +174,14 @@ export default function RevenueVsProfitChart() {
   );
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm md:p-6 p-4 w-full">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-[16px] md:text-xl mt-1 font-bold text-gray-900">
+          <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
             Revenue vs Profit by Product
           </h2>
-          <p className="text-sm text-gray-400 mt-0.5">
+          <p className="text-xs text-gray-400 mt-0.5">
             Comparing top-line revenue against net profit per product
           </p>
           {isError && (

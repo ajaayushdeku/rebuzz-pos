@@ -5,6 +5,9 @@ import { Search, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react";
 import { Product } from "./profit-per-product-column";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrency } from "@/utils/helper";
+import { DateRangeFilter } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
+import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
+import { useProfitPerProduct } from "@/hooks/useProfitPerProduct";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -20,8 +23,24 @@ function getProfitColor(profit: number): string {
   return "text-gray-600";
 }
 
+/** Get last 30 days range (default) */
+function getDefaultRange(): DateRangeValue {
+  const endDate = (() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  })();
+  const start = new Date(Date.now() - 29 * 24 * 60 * 60 * 1000);
+  const y = start.getFullYear();
+  const m = String(start.getMonth() + 1).padStart(2, "0");
+  const day = String(start.getDate()).padStart(2, "0");
+  return { startDate: `${y}-${m}-${day}`, endDate };
+}
+
 export default function ProfitPerProduct({
-  products,
+  products: initialProducts,
 }: {
   products: Product[];
 }) {
@@ -30,6 +49,18 @@ export default function ProfitPerProduct({
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [page, setPage] = useState(0);
   const pageSize = 5;
+
+  // Date filter state
+  const defaultRange = getDefaultRange();
+  const [startDate, setStartDate] = useState(defaultRange.startDate);
+  const [endDate, setEndDate] = useState(defaultRange.endDate);
+
+  // Fetch data via React Query hook
+  const { data: fetchedData, isFetching } = useProfitPerProduct(
+    startDate,
+    endDate,
+  );
+  const products = fetchedData ?? initialProducts ?? [];
 
   const filtered = useMemo(() => {
     if (!search) return products;
@@ -83,25 +114,34 @@ export default function ProfitPerProduct({
           Profit per Product
         </h1>
         <p className="text-gray-400 text-sm mt-0.5">
-          Revenue, cost and margins for top selling products for this current
-          year.
+          Revenue, cost and margins for top selling products.
         </p>
       </div>
 
-      {/* Search */}
-      <div className="relative mb-4">
-        <Search
-          size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-        />
-        <input
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(0);
+      {/* Search + DateRangeFilter */}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="relative flex-1">
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+          <input
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
+            placeholder="Search products..."
+            className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+          />
+        </div>
+
+        <DateRangeFilter
+          value={{ startDate, endDate }}
+          onChange={({ startDate: s, endDate: e }) => {
+            setStartDate(s);
+            setEndDate(e);
           }}
-          placeholder="Search products..."
-          className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
         />
       </div>
 
@@ -156,7 +196,16 @@ export default function ProfitPerProduct({
             </tr>
           </thead>
           <tbody>
-            {paged.length === 0 ? (
+            {isFetching && !fetchedData ? (
+              <tr>
+                <td colSpan={6} className="text-center py-12">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm text-gray-400">Loading...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : paged.length === 0 ? (
               <tr>
                 <td
                   colSpan={6}
