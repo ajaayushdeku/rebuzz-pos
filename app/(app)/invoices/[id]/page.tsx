@@ -288,7 +288,7 @@ export default function InvoiceDetailPage() {
     openPaymentModal();
     try {
       const response = await fetchLoyaltyPointSettings();
-      const data = response?.data ?? response;
+      const data = response && "data" in response ? response.data : response;
       setLoyaltySettings(data);
     } catch {
       console.error("Failed to fetch loyalty settings");

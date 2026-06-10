@@ -89,7 +89,7 @@ export default function LoyaltyPointPage() {
       try {
         const response = await fetchLoyaltyPointSettings();
 
-        const data = response?.data ?? response;
+        const data = response && "data" in response ? response.data : response;
 
         if (data) {
           setSettings(data);

@@ -9,25 +9,39 @@ export type LoyaltyPointSettings = {
   updatedAt: string;
 };
 
+export type LoyaltyPointSettingsTestingServer = {
+  data: {
+    _id: string;
+    adminId: string;
+    businessId: string;
+    loyaltyPointPercentage: number;
+    redeemLimit: number;
+    basePoint: number;
+    createdAt: string;
+    updatedAt: string;
+  };
+};
+
 export type LoyaltyPointPayload = {
   loyaltyPoint: number; // percentage earned per invoice
   redeemLimit: number; // max points redeemable per invoice
   basePoint: number; // points earned per base unit
 };
 
-export const fetchLoyaltyPointSettings =
-  async (): Promise<LoyaltyPointSettings | null> => {
-    const res = await fetch("/api/loyalty-point");
+export const fetchLoyaltyPointSettings = async (): Promise<
+  LoyaltyPointSettings | LoyaltyPointSettingsTestingServer | null
+> => {
+  const res = await fetch("/api/loyalty-point");
 
-    // If 404, no settings exist yet — return null, don't throw
-    if (res.status === 404) return null;
-    if (!res.ok) throw new Error("Failed to fetch loyalty point settings");
+  // If 404, no settings exist yet — return null, don't throw
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error("Failed to fetch loyalty point settings");
 
-    const json = await res.json();
-    // console.log("Loyalty Points:", json);
+  const json = await res.json();
+  // console.log("Loyalty Points:", json);
 
-    return json;
-  };
+  return json;
+};
 
 export const updateLoyaltyPointSettings = async (
   payload: LoyaltyPointPayload,
