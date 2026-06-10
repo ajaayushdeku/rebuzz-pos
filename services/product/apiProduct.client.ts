@@ -92,3 +92,18 @@ export async function deleteProduct(productId: string): Promise<void> {
     throw new Error(errorData.message || "Failed to delete product");
   }
 }
+
+export async function bulkUpdateStock(
+  products: { productId: string; stockQuantity: number }[],
+): Promise<void> {
+  const res = await fetch("/api/products/bulk-stock", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ products }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to bulk update stock");
+  }
+}
