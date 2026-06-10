@@ -64,14 +64,10 @@ export const getProfitStats = async (
     limit: "25",
   });
 
-  const [reportRes, salesByItemRes, billsRes] = await Promise.all([
+  const [reportRes, billsRes] = await Promise.all([
     axios.get(`${BASE}/business/report?${params}`, {
       headers: await authHeaders(),
     }),
-    axios.get(
-      `${BASE}/business/report/salesByItem?startDate=${start}&endDate=${end}`,
-      { headers: await authHeaders() },
-    ),
     axios.get(
       `${BASE}/business/ticket/bills?startDate=${start}&endDate=${end}&limit=25`,
       {
@@ -91,15 +87,8 @@ export const getProfitStats = async (
     (bill: ProfitCostBill) => bill.isRefunded === true,
   ).length;
 
-  // Net Profit = sum of all netprofit from salesByItem response
-  const salesItems = salesByItemRes.data.data ?? [];
-  const netProfit: number =
-    salesItems.reduce(
-      (sum: number, item: ProfitCostSalesItem) => sum + (item.netProfit ?? 0),
-      0,
-    ) -
-    salesByItemRes.data.totalDiscount -
-    salesByItemRes.data.totalRedeemPoint;
+  // Net Profit = profit from report API
+  const netProfit: number = data.data.report.profit ?? 0;
 
   // Avg Margin = (netProfit / grossRevenue) * 100 as a percentage
   const avgMargin: number =

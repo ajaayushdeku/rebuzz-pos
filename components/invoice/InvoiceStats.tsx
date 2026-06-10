@@ -1,14 +1,44 @@
-import { RefreshCw } from "lucide-react";
+"use client";
 
-// import AlertCard from "./AlertCard";
+import { RefreshCw } from "lucide-react";
+import { useEffect, useState } from "react";
 import { InvoiceStatsProps } from "@/lib/types/invoice";
-import { useInvoiceStore } from "@/stores/invoiceStore";
+// import { useInvoiceStore } from "@/stores/invoiceStore";
+
+function fmtLocalDate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
 
 export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
-  const getFilteredInvoices = useInvoiceStore(
-    (state) => state.getFilteredInvoices,
-  );
-  const filteredInvoices = getFilteredInvoices();
+  // const getFilteredInvoices = useInvoiceStore(
+  //   (state) => state.getFilteredInvoices,
+  // );
+  // const filteredInvoices = getFilteredInvoices();
+
+  // Today's cash/revenue from the API (same as overview "Total Sales" for today)
+  const [todayCash, setTodayCash] = useState<number | null>(null);
+
+  useEffect(() => {
+    const today = fmtLocalDate(new Date());
+    fetch(`/api/report/compare-sales/date?startDate=${today}&endDate=${today}`)
+      .then((res) => res.json())
+      .then((json) => {
+        const data = json?.data ?? [];
+        const totalRevenue = data.reduce(
+          (sum: number, d: { totalRevenue: number }) =>
+            sum + (d.totalRevenue ?? 0),
+          0,
+        );
+        setTodayCash(totalRevenue);
+      })
+      .catch(() => {
+        // Fallback: do not break the page
+        setTodayCash(0);
+      });
+  }, []);
 
   const isToday = (dateString: string) => {
     const date = new Date(dateString);
@@ -24,64 +54,73 @@ export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
     (sum: number, invoice) => sum + invoice.amount,
     0,
   );
-  const numberOfSales = todayInvoices.length;
+
+  // Order count = total invoices (all time)
+  const totalOrderCount = invoices.length;
+
+  // Format current date/time for display
+  const now = new Date();
+  const formattedTime = now.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const formattedDate = now.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 
   return (
     <div className="bg-white rounded-lg border shadow-sm p-6 mb-8">
-      <div className="grid grid-cols-4 gap-8 mb-6">
-        {/* Overdue */}
+      <div className="grid grid-cols-3 gap-8 mb-6">
+        {/* Today's Sales */}
         <div>
-          <p className="text-sm  text-gray-600 mb-1">Today&#39;s Sales</p>
+          <p className="text-sm text-gray-600 mb-1">Today&#39;s Invoice Amt</p>
           <p className="md:text-3xl text-xl font-semibold text-gray-900">
-            ${totalSalesAmount}
-            <span className="md:text-base text-[12px]  font-normal text-gray-500 ml-1">
+            ${totalSalesAmount.toFixed(2)}
+            <span className="md:text-base text-[12px] font-normal text-gray-500 ml-1">
               USD
             </span>
           </p>
         </div>
 
-        {/* Due within next 30 days */}
+        {/* Cash in hand (matches overview's total sales for today) */}
         <div>
           <p className="text-sm text-gray-600 mb-1">Cash in hand</p>
           <p className="md:text-3xl text-xl font-semibold text-gray-900">
-            $0.00
-            <span className="md:text-base text-[12px]  font-normal text-gray-500 ml-1">
+            ${(todayCash ?? 0).toFixed(2)}
+            <span className="md:text-base text-[12px] font-normal text-gray-500 ml-1">
               USD
             </span>
           </p>
         </div>
 
-        {/* Average time to get paid */}
+        {/* Order count */}
         <div>
           <p className="text-sm text-gray-600 mb-1">Order count</p>
           <p className="md:text-3xl text-xl font-semibold text-gray-900">
-            {numberOfSales}
+            {totalOrderCount}
             <span className="md:text-base text-[12px] font-normal text-gray-500 ml-1">
-              {/* {count > 1 ? "orders" : "order"} */}
-              orders
+              {totalOrderCount === 1 ? "order" : "orders"}
             </span>
-          </p>
-        </div>
-
-        {/* Upcoming payout */}
-        <div>
-          <p className="text-sm text-gray-600 mb-1">Upcoming payout</p>
-          <p className="md:text-3xl text-xl font-semibold text-gray-900 underline decoration-dotted underline-offset-4">
-            None
           </p>
         </div>
       </div>
 
-      {/* Last updated & Payment banner */}
+      {/* Refresh & timestamp */}
       <div className="flex items-center justify-between pt-4 border-t">
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <span>Last updated 3 minutes ago.</span>
-          <button className="text-blue-600 hover:text-blue-700">
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <span>
+            As of {formattedDate}, {formattedTime}
+          </span>
+          <button
+            className="text-blue-600 hover:text-blue-700 transition-colors"
+            title="Refresh"
+            onClick={() => window.location.reload()}
+          >
             <RefreshCw className="h-4 w-4" />
           </button>
         </div>
-
-        {/* <AlertCard />  Removed for now*/}
       </div>
     </div>
   );

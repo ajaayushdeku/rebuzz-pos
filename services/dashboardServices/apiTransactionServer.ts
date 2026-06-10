@@ -8,13 +8,18 @@ import { Transaction } from "@/components/dashboardComponents/orderHistory/trans
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
 export async function getTransactions(): Promise<Transaction[]> {
-  const res = await fetch(`${BASE}/business/ticket/bills?limit=10`, {
-    headers: await authHeaders(),
-  });
+  try {
+    const res = await fetch(`${BASE}/business/ticket/bills?limit=10`, {
+      headers: await authHeaders(),
+      next: { revalidate: 60 },
+    });
 
-  if (!res.ok) throw new Error(`Failed to fetch transactions: ${res.status}`);
+    if (!res.ok) throw new Error(`Failed to fetch transactions: ${res.status}`);
 
-  const data: RawBillListResponse = await res.json();
-  return mapBillsToTransactions(data);
-  // return mockTransactions;
+    const data: RawBillListResponse = await res.json();
+    return mapBillsToTransactions(data);
+  } catch (error) {
+    console.error("getTransactions error:", error);
+    return [];
+  }
 }

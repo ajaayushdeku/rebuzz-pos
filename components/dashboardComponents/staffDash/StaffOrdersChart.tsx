@@ -159,58 +159,77 @@ function StaffFilterModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <div>
-            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-              <Users size={15} className="text-blue-500" />
-              Filter Staff
-            </h3>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Select 1–{MAX_STAFF} staff to compare
-            </p>
+        {/* ── Header ────────────────────────────────────────── */}
+        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
+              <Users size={18} className="text-blue-500" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-gray-900">
+                Filter Staff
+              </h3>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Select 1–{MAX_STAFF} staff members to compare
+              </p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
           >
-            <X size={14} />
+            <X size={16} />
           </button>
         </div>
 
-        {/* Count badge */}
-        <div className="px-5 pt-3 pb-1 flex items-center justify-between">
-          <span className="text-xs text-gray-400">
-            {draft.length} / {MAX_STAFF} selected
-          </span>
-          <div className="flex gap-1">
-            {/* Select all (up to 8) */}
+        {/* ── Selection controls ────────────────────────────── */}
+        <div className="px-6 pt-5 pb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700">
+              {draft.length}
+            </span>
+            <span className="text-sm text-gray-400">
+              / {MAX_STAFF} selected
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
             <button
               onClick={() => {
                 setError("");
                 setDraft(allStaff.slice(0, MAX_STAFF));
               }}
-              className="text-xs text-blue-600 hover:text-blue-700 px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
+              className="text-xs font-medium text-blue-600 hover:text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
             >
               Select top {Math.min(MAX_STAFF, allStaff.length)}
             </button>
+            <span className="text-gray-200">|</span>
             <button
               onClick={() => {
                 setError("");
                 setDraft([]);
               }}
-              className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1 rounded-lg hover:bg-gray-50 transition-colors"
+              className="text-xs font-medium text-gray-400 hover:text-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
             >
-              Clear
+              Clear all
             </button>
           </div>
         </div>
 
-        {/* Staff list */}
-        <div className="px-5 pb-3 max-h-72 overflow-y-auto space-y-1.5">
+        {/* ── Progress bar ──────────────────────────────────── */}
+        <div className="px-6 pb-4">
+          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-blue-500 rounded-full transition-all duration-300"
+              style={{ width: `${(draft.length / MAX_STAFF) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        {/* ── Staff list ────────────────────────────────────── */}
+        <div className="px-4 max-h-72 overflow-y-auto space-y-1">
           {allStaff.map((name) => {
             const isSelected = draft.includes(name);
             const color = colorMap.get(name) ?? "#6b7280";
@@ -222,18 +241,23 @@ function StaffFilterModal({
                 type="button"
                 onClick={() => toggle(name)}
                 disabled={isDisabled}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-sm transition-all ${
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-left transition-all ${
                   isSelected
-                    ? "border-blue-200 bg-blue-50"
+                    ? "bg-blue-50 border border-blue-200"
                     : isDisabled
-                      ? "border-gray-100 bg-gray-50 opacity-40 cursor-not-allowed"
-                      : "border-gray-100 hover:border-gray-200 hover:bg-gray-50"
+                      ? "bg-gray-50 border border-transparent opacity-40 cursor-not-allowed"
+                      : "border border-transparent hover:bg-gray-50 hover:border-gray-100"
                 }`}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-3">
                   <span
-                    className="w-2.5 h-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: color }}
+                    className={`w-3 h-3 rounded-full shrink-0 ${isSelected ? "ring-2 ring-offset-1" : ""}`}
+                    style={{
+                      backgroundColor: color,
+                      ...(isSelected
+                        ? { boxShadow: `0 0 0 2px white, 0 0 0 4px ${color}40` }
+                        : {}),
+                    }}
                   />
                   <span
                     className={`text-sm font-medium ${isSelected ? "text-blue-700" : "text-gray-700"}`}
@@ -248,40 +272,36 @@ function StaffFilterModal({
                       : "border-gray-300"
                   }`}
                 >
-                  {isSelected && <Check size={11} className="text-white" />}
+                  {isSelected && <Check size={12} className="text-white" />}
                 </div>
               </button>
             );
           })}
         </div>
 
-        {/* Error */}
-        {error && <p className="text-xs text-red-500 px-5 pb-2">{error}</p>}
-
-        {/* Progress bar */}
-        <div className="px-5 pb-3">
-          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-blue-500 rounded-full transition-all duration-300"
-              style={{ width: `${(draft.length / MAX_STAFF) * 100}%` }}
-            />
+        {/* ── Error message ─────────────────────────────────── */}
+        {error && (
+          <div className="px-6 pt-3">
+            <p className="text-xs font-medium text-red-500 bg-red-50 rounded-lg px-3 py-2">
+              {error}
+            </p>
           </div>
-        </div>
+        )}
 
-        {/* Footer */}
-        <div className="px-5 py-4 border-t border-gray-100 flex gap-2">
+        {/* ── Footer ────────────────────────────────────────── */}
+        <div className="px-6 py-5 mt-2 border-t border-gray-100 flex items-center gap-3">
           <button
             onClick={onClose}
-            className="flex-1 py-2 text-sm text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+            className="flex-1 py-2.5 text-sm font-medium text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleApply}
             disabled={draft.length === 0}
-            className="flex-1 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
-            Apply ({draft.length})
+            Apply Selection ({draft.length})
           </button>
         </div>
       </div>

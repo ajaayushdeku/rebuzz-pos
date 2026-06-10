@@ -28,6 +28,23 @@ type RawEmployee = {
   bills: RawBill[];
 };
 
+type RawShift = {
+  shiftId: string;
+  employeeId: string;
+  employeeName: string;
+  openingTime: string;
+  closingTime: string;
+  totalHours: string; // "HH:MM:SS"
+  totalSale: number;
+  openingCash: number;
+  closingCash: number;
+};
+
+type AllShiftsResponse = {
+  status: string;
+  data: RawShift[];
+};
+
 // ── Date helpers ──────────────────────────────────────────────────────────
 
 function toDateStr(date: Date): string {
@@ -143,6 +160,32 @@ async function fetchEmployeeDetail(
   return json?.data?.employeeData ?? null;
 }
 
+// ── Core fetcher — all shifts ──────────────────────────────────────────
+
+async function fetchAllShifts(): Promise<RawShift[]> {
+  try {
+    const res = await fetch(`${BASE}/business/shift/allshifts`, {
+      headers: await authHeaders(),
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) throw new Error(`allshifts failed: ${res.status}`);
+    const json: AllShiftsResponse = await res.json();
+    return json?.data ?? [];
+  } catch (err) {
+    console.error("fetchAllShifts error:", err);
+    return [];
+  }
+}
+
+// ── Helper: parse "HH:MM:SS" to total minutes ─────────────────────────
+
+function parseHoursToMinutes(totalHours: string): number {
+  if (!totalHours) return 0;
+  const parts = totalHours.split(":").map(Number);
+  if (parts.length !== 3) return 0;
+  return parts[0] * 60 + parts[1] + Math.round(parts[2] / 60);
+}
+
 // ── getStaffData — stat boxes ─────────────────────────────────────────────
 
 export async function getStaffData(
@@ -154,12 +197,45 @@ export async function getStaffData(
     const employees = await fetchAllEmployeeSales(range, startDate, endDate);
     if (employees.length === 0) return [];
 
+    // Fetch all shifts to calculate avg time per employee
+    const allShifts = await fetchAllShifts();
+
+    // Build a map: employeeId → avg time in minutes
+    const avgTimeMap = new Map<string, string>();
+    const shiftGroups = new Map<string, number[]>();
+
+    for (const shift of allShifts) {
+      const empId = shift.employeeId;
+      const minutes = parseHoursToMinutes(shift.totalHours);
+      if (!shiftGroups.has(empId)) {
+        shiftGroups.set(empId, []);
+      }
+      shiftGroups.get(empId)!.push(minutes);
+    }
+
+    for (const [empId, minutesArr] of shiftGroups.entries()) {
+      if (minutesArr.length === 0) {
+        avgTimeMap.set(empId, "0m");
+        continue;
+      }
+      const totalMinutes = minutesArr.reduce((sum, m) => sum + m, 0);
+      const avgMin = Math.round(totalMinutes / minutesArr.length);
+      const hrs = Math.floor(avgMin / 60);
+      const mins = avgMin % 60;
+      if (hrs > 0) {
+        avgTimeMap.set(empId, `${hrs}h ${mins}m`);
+      } else {
+        avgTimeMap.set(empId, `${mins}m`);
+      }
+    }
+
     return employees
       .map((emp) => ({
         staffName: emp.name || emp._id,
         staffPosition: emp.role || "",
         ordersTaken: emp.totalSales ?? 0,
         amount: Math.round((emp.totalRevenue ?? 0) * 100) / 100,
+        avgTime: avgTimeMap.get(emp._id) || "—",
       }))
       .sort((a, b) => a.staffName.localeCompare(b.staffName));
   } catch (err) {
@@ -221,7 +297,6 @@ export async function getStaffOrdersPerHour(
     ];
 
     // Build map: employeeName → hour → count
-    // Bills are already included in the salesByAllEmployee response
     const staffHourMap = new Map<string, Map<string, number>>();
 
     for (const emp of employees) {
@@ -271,21 +346,18 @@ export async function getShiftAnalysisData(
           orders: 0,
           revenue: 0,
           staff: 0,
-          // avgTime: 0,
         },
         {
           label: "Afternoon (12pm–5pm)",
           orders: 0,
           revenue: 0,
           staff: 0,
-          // avgTime: 0,
         },
         {
           label: "Evening (5pm–11pm)",
           orders: 0,
           revenue: 0,
           staff: 0,
-          // avgTime: 0,
         },
       ];
     }
@@ -333,7 +405,6 @@ export async function getShiftAnalysisData(
         orders: accum.orders,
         revenue: Math.round(accum.revenue * 100) / 100,
         staff: accum.staffSet.size,
-        // avgTime: 0, // not available from this API
       };
     });
   } catch (err) {

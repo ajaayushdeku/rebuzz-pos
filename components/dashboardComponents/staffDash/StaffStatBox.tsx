@@ -1,6 +1,5 @@
 "use client";
 
-import { ShoppingCart } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrency } from "@/utils/helper";
 
@@ -9,6 +8,7 @@ export interface StaffBoxProps {
   staffPosition?: string;
   ordersTaken: number;
   amount: number;
+  avgTime?: string;
   colorIndex?: number;
 }
 
@@ -53,6 +53,7 @@ export default function StaffStatBox({
   staffPosition = "Basic",
   ordersTaken,
   amount,
+  avgTime,
   colorIndex = 0,
 }: StaffBoxProps) {
   const staffInitials = getInitials(staffName);
@@ -90,40 +91,36 @@ export default function StaffStatBox({
           </div>
         </div>
 
-        {/* Metrics row */}
-        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-50">
+        {/* Metrics row with three columns */}
+        <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-gray-50">
           {/* Orders */}
-          <div className="flex items-center gap-2">
-            <div className={`rounded-lg p-1.5 ${avatarBg}`}>
-              <ShoppingCart
-                size={14}
-                className={`${avatarColor.replace("from-", "text-").split(" ")[0]}`}
-              />
-            </div>
-            <div>
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
-                Orders
-              </p>
-              <p className="font-bold text-gray-900 text-sm">{ordersTaken}</p>
-            </div>
+          <div className="flex flex-col items-start">
+            <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
+              Orders
+            </p>
+            <p className="font-bold text-gray-900 text-sm mt-0.5">
+              {ordersTaken}
+            </p>
+          </div>
+
+          {/* Avg Time */}
+          <div className="flex flex-col items-center">
+            <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
+              Avg Time
+            </p>
+            <p className="font-bold text-indigo-600 text-sm mt-0.5">
+              {avgTime || "—"}
+            </p>
           </div>
 
           {/* Revenue */}
-          <div className="flex items-center gap-2">
-            {/* <div className={`rounded-lg p-1.5 ${avatarBg}`}>
-              <TrendingUp
-                size={14}
-                className={`${avatarColor.replace("from-", "text-").split(" ")[0]}`}
-              />
-            </div> */}
-            <div className="text-right">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
-                Revenue
-              </p>
-              <p className="font-bold text-green-600 text-sm">
-                {formatCurrency(amount, currency)}
-              </p>
-            </div>
+          <div className="flex flex-col items-end">
+            <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
+              Revenue
+            </p>
+            <p className="font-bold text-green-600 text-sm mt-0.5">
+              {formatCurrency(amount, currency)}
+            </p>
           </div>
         </div>
       </div>

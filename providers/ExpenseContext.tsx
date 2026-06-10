@@ -3,14 +3,16 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useState,
   useCallback,
-  useEffect,
-  ReactNode,
+  useRef,
+  type ReactNode,
 } from "react";
 
-export type TransactionType = "expense" | "income";
+// ── Types ─────────────────────────────────────────────────────────────────
 
+export type TransactionType = "expense" | "income";
 export type Frequency = "daily" | "weekly" | "monthly" | "yearly";
 
 export type Transaction = {
@@ -23,167 +25,328 @@ export type Transaction = {
   recurring: boolean;
   frequency?: Frequency;
   endDate?: string;
+  createdAt: string;
 };
 
-export const EXPENSE_PURPOSES = [
-  "Clothing",
-  "Education",
-  "Entertainment",
-  "Food & Drinks",
-  "Gifts/Donations",
-  "Grocery",
-  "Health",
-  "Housing",
-  "Lending/Borrow",
-  "Personal Care",
-  "Transportation",
-  "Utilities",
-  "Others",
-];
-
-export const INCOME_PURPOSES = [
-  "Freelance",
-  "Gift Received",
-  "Lending/Borrow",
-  "Salary",
-  "Business",
-  "Investments",
-  "Others",
-];
-
-export const PURPOSE_COLORS: Record<string, string> = {
-  Clothing: "#f59e0b",
-  Education: "#3b82f6",
-  Entertainment: "#8b5cf6",
-  "Food & Drinks": "#ef4444",
-  "Gifts/Donations": "#ec4899",
-  Grocery: "#10b981",
-  Health: "#06b6d4",
-  Housing: "#f97316",
-  "Lending/Borrow": "#6366f1",
-  "Personal Care": "#a78bfa",
-  Transportation: "#14b8a6",
-  Utilities: "#84cc16",
-  Others: "#6b7280",
-  Freelance: "#3b82f6",
-  "Gift Received": "#ec4899",
-  Salary: "#10b981",
-  Business: "#f97316",
-  Investments: "#8b5cf6",
+type PurposeStore = {
+  expense: string[];
+  income: string[];
 };
 
-type ExpenseTrackerContextType = {
+type TrackerContextValue = {
   transactions: Transaction[];
-  addTransaction: (t: Omit<Transaction, "id">) => void;
-  deleteTransaction: (id: string) => void;
-  updateTransaction: (id: string, t: Partial<Transaction>) => void;
   expensePurposes: string[];
   incomePurposes: string[];
-  addPurpose: (type: TransactionType, purpose: string) => void;
-  removePurpose: (type: TransactionType, purpose: string) => void;
+  isLoading: boolean;
+  addTransaction: (t: Omit<Transaction, "id" | "createdAt">) => Promise<void>;
+  updateTransaction: (id: string, patch: Partial<Transaction>) => Promise<void>;
+  deleteTransaction: (id: string) => Promise<void>;
+  addPurpose: (type: TransactionType, name: string) => Promise<void>;
+  removePurpose: (type: TransactionType, name: string) => Promise<void>;
 };
 
-const ExpenseTrackerContext = createContext<ExpenseTrackerContextType | null>(
-  null,
-);
+// ── Default purposes ──────────────────────────────────────────────────────
 
-const LS_TRANSACTIONS = "expense_tracker_transactions";
-const LS_EXPENSE_PURPOSES = "expense_tracker_expense_purposes";
-const LS_INCOME_PURPOSES = "expense_tracker_income_purposes";
+const DEFAULT_PURPOSES: PurposeStore = {
+  expense: [
+    "Rent",
+    "Utilities",
+    "Groceries",
+    "Salary",
+    "Marketing",
+    "Supplies",
+    "Transport",
+    "Maintenance",
+  ],
+  income: ["Sales", "Service", "Consultation", "Refund", "Investment", "Other"],
+};
 
-/** Safe read from localStorage — returns null on SSR / error */
-function readLS<T>(key: string): T | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(key);
-    if (raw) return JSON.parse(raw) as T;
-  } catch {}
-  return null;
+// ── Purpose colors ────────────────────────────────────────────────────────
+
+export const PURPOSE_COLORS: Record<string, string> = {
+  Rent: "#ef4444",
+  Utilities: "#f97316",
+  Groceries: "#eab308",
+  Salary: "#6366f1",
+  Marketing: "#8b5cf6",
+  Supplies: "#14b8a6",
+  Transport: "#3b82f6",
+  Maintenance: "#f43f5e",
+  Sales: "#22c55e",
+  Service: "#10b981",
+  Consultation: "#0ea5e9",
+  Refund: "#a78bfa",
+  Investment: "#f59e0b",
+  Other: "#6b7280",
+};
+
+const COLOR_POOL = [
+  "#ef4444",
+  "#f97316",
+  "#eab308",
+  "#22c55e",
+  "#14b8a6",
+  "#3b82f6",
+  "#6366f1",
+  "#8b5cf6",
+  "#ec4899",
+  "#f43f5e",
+  "#0ea5e9",
+  "#10b981",
+  "#a78bfa",
+  "#fb923c",
+  "#4ade80",
+  "#34d399",
+  "#60a5fa",
+  "#c084fc",
+];
+
+let colorIndex = Object.keys(PURPOSE_COLORS).length;
+
+export function getOrAssignColor(name: string): string {
+  if (!PURPOSE_COLORS[name]) {
+    PURPOSE_COLORS[name] = COLOR_POOL[colorIndex % COLOR_POOL.length];
+    colorIndex++;
+  }
+  return PURPOSE_COLORS[name];
 }
 
-/** Lazy initialiser that reads from localStorage */
-function initTransactions(): Transaction[] {
-  return readLS<Transaction[]>(LS_TRANSACTIONS) ?? [];
+// ── IndexedDB helpers ─────────────────────────────────────────────────────
+
+const DB_NAME = "rebuzz_expense_tracker";
+const DB_VERSION = 1;
+const STORE_TRANSACTIONS = "transactions";
+const STORE_PURPOSES = "purposes";
+
+function openDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+
+    req.onupgradeneeded = (e) => {
+      const db = (e.target as IDBOpenDBRequest).result;
+
+      if (!db.objectStoreNames.contains(STORE_TRANSACTIONS)) {
+        const store = db.createObjectStore(STORE_TRANSACTIONS, {
+          keyPath: "id",
+        });
+        store.createIndex("type", "type", { unique: false });
+        store.createIndex("date", "date", { unique: false });
+        store.createIndex("createdAt", "createdAt", { unique: false });
+      }
+
+      if (!db.objectStoreNames.contains(STORE_PURPOSES)) {
+        db.createObjectStore(STORE_PURPOSES, { keyPath: "id" });
+      }
+    };
+
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
 }
 
-function initPurposes(key: string, defaults: string[]): string[] {
-  return readLS<string[]>(key) ?? defaults;
+// Generic read all from a store
+function dbGetAll<T>(db: IDBDatabase, storeName: string): Promise<T[]> {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readonly");
+    const req = tx.objectStore(storeName).getAll();
+    req.onsuccess = () => resolve(req.result as T[]);
+    req.onerror = () => reject(req.error);
+  });
 }
+
+// Generic put (upsert)
+function dbPut(
+  db: IDBDatabase,
+  storeName: string,
+  value: unknown,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readwrite");
+    const req = tx.objectStore(storeName).put(value);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+// Generic delete by key
+function dbDelete(
+  db: IDBDatabase,
+  storeName: string,
+  key: string,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readwrite");
+    const req = tx.objectStore(storeName).delete(key);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+// ── Context ───────────────────────────────────────────────────────────────
+
+const TrackerContext = createContext<TrackerContextValue | null>(null);
 
 export function ExpenseTrackerProvider({ children }: { children: ReactNode }) {
-  const [transactions, setTransactions] =
-    useState<Transaction[]>(initTransactions);
-  const [expensePurposes, setExpensePurposes] = useState<string[]>(() =>
-    initPurposes(LS_EXPENSE_PURPOSES, EXPENSE_PURPOSES),
-  );
-  const [incomePurposes, setIncomePurposes] = useState<string[]>(() =>
-    initPurposes(LS_INCOME_PURPOSES, INCOME_PURPOSES),
-  );
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [purposes, setPurposes] = useState<PurposeStore>(DEFAULT_PURPOSES);
+  const [isLoading, setIsLoading] = useState(true);
+  const dbRef = useRef<IDBDatabase | null>(null);
 
-  // Persist to localStorage whenever state changes
+  // ── Initialize DB and load data ─────────────────────────────────────────
   useEffect(() => {
-    localStorage.setItem(LS_TRANSACTIONS, JSON.stringify(transactions));
-  }, [transactions]);
+    let mounted = true;
 
-  useEffect(() => {
-    localStorage.setItem(LS_EXPENSE_PURPOSES, JSON.stringify(expensePurposes));
-  }, [expensePurposes]);
+    async function init() {
+      try {
+        const db = await openDB();
+        dbRef.current = db;
 
-  useEffect(() => {
-    localStorage.setItem(LS_INCOME_PURPOSES, JSON.stringify(incomePurposes));
-  }, [incomePurposes]);
+        // Load transactions sorted by createdAt desc
+        const txns = await dbGetAll<Transaction>(db, STORE_TRANSACTIONS);
+        txns.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
 
-  const addTransaction = useCallback((t: Omit<Transaction, "id">) => {
-    setTransactions((prev) => [{ ...t, id: crypto.randomUUID() }, ...prev]);
+        // Load purposes (stored as { id: "purposes", expense: [...], income: [...] })
+        const purposeRows = await dbGetAll<{ id: string } & PurposeStore>(
+          db,
+          STORE_PURPOSES,
+        );
+        const savedPurposes = purposeRows.find((r) => r.id === "purposes");
+
+        if (mounted) {
+          setTransactions(txns);
+          if (savedPurposes) {
+            setPurposes({
+              expense: savedPurposes.expense,
+              income: savedPurposes.income,
+            });
+            // Pre-assign colors for saved purposes
+            [...savedPurposes.expense, ...savedPurposes.income].forEach(
+              getOrAssignColor,
+            );
+          }
+          setIsLoading(false);
+        }
+      } catch (err) {
+        console.error("IndexedDB init error:", err);
+        if (mounted) setIsLoading(false);
+      }
+    }
+
+    init();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  const deleteTransaction = useCallback((id: string) => {
+  // ── Persist purposes helper ─────────────────────────────────────────────
+  const savePurposes = useCallback(async (next: PurposeStore) => {
+    const db = dbRef.current;
+    if (!db) return;
+    await dbPut(db, STORE_PURPOSES, { id: "purposes", ...next });
+  }, []);
+
+  // ── addTransaction ──────────────────────────────────────────────────────
+  const addTransaction = useCallback(
+    async (t: Omit<Transaction, "id" | "createdAt">) => {
+      const db = dbRef.current;
+      if (!db) return;
+
+      const newTxn: Transaction = {
+        ...t,
+        id: crypto.randomUUID(),
+        createdAt: new Date().toISOString(),
+      };
+
+      await dbPut(db, STORE_TRANSACTIONS, newTxn);
+      setTransactions((prev) => [newTxn, ...prev]);
+    },
+    [],
+  );
+
+  // ── updateTransaction ───────────────────────────────────────────────────
+  const updateTransaction = useCallback(
+    async (id: string, patch: Partial<Transaction>) => {
+      const db = dbRef.current;
+      if (!db) return;
+
+      setTransactions((prev) => {
+        const updated = prev.map((t) => (t.id === id ? { ...t, ...patch } : t));
+        // Persist the updated record
+        const record = updated.find((t) => t.id === id);
+        if (record) dbPut(db, STORE_TRANSACTIONS, record).catch(console.error);
+        return updated;
+      });
+    },
+    [],
+  );
+
+  // ── deleteTransaction ───────────────────────────────────────────────────
+  const deleteTransaction = useCallback(async (id: string) => {
+    const db = dbRef.current;
+    if (!db) return;
+
+    await dbDelete(db, STORE_TRANSACTIONS, id);
     setTransactions((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const updateTransaction = useCallback(
-    (id: string, updates: Partial<Transaction>) => {
-      setTransactions((prev) =>
-        prev.map((t) => (t.id === id ? { ...t, ...updates } : t)),
-      );
+  // ── addPurpose ──────────────────────────────────────────────────────────
+  const addPurpose = useCallback(
+    async (type: TransactionType, name: string) => {
+      getOrAssignColor(name);
+      setPurposes((prev) => {
+        const next = {
+          ...prev,
+          [type]: prev[type].includes(name)
+            ? prev[type]
+            : [...prev[type], name],
+        };
+        savePurposes(next).catch(console.error);
+        return next;
+      });
     },
-    [],
+    [savePurposes],
   );
 
-  const addPurpose = useCallback((type: TransactionType, purpose: string) => {
-    if (type === "expense") setExpensePurposes((p) => [...p, purpose]);
-    else setIncomePurposes((p) => [...p, purpose]);
-  }, []);
-
+  // ── removePurpose ───────────────────────────────────────────────────────
   const removePurpose = useCallback(
-    (type: TransactionType, purpose: string) => {
-      if (type === "expense")
-        setExpensePurposes((p) => p.filter((x) => x !== purpose));
-      else setIncomePurposes((p) => p.filter((x) => x !== purpose));
+    async (type: TransactionType, name: string) => {
+      setPurposes((prev) => {
+        const next = {
+          ...prev,
+          [type]: prev[type].filter((p) => p !== name),
+        };
+        savePurposes(next).catch(console.error);
+        return next;
+      });
     },
-    [],
+    [savePurposes],
   );
 
   return (
-    <ExpenseTrackerContext.Provider
+    <TrackerContext.Provider
       value={{
         transactions,
+        expensePurposes: purposes.expense,
+        incomePurposes: purposes.income,
+        isLoading,
         addTransaction,
-        deleteTransaction,
         updateTransaction,
-        expensePurposes,
-        incomePurposes,
+        deleteTransaction,
         addPurpose,
         removePurpose,
       }}
     >
       {children}
-    </ExpenseTrackerContext.Provider>
+    </TrackerContext.Provider>
   );
 }
 
 export function useTracker() {
-  const ctx = useContext(ExpenseTrackerContext);
-  if (!ctx) throw new Error("useTracker must be used inside TrackerProvider");
+  const ctx = useContext(TrackerContext);
+  if (!ctx)
+    throw new Error("useTracker must be used inside ExpenseTrackerProvider");
   return ctx;
 }

@@ -33,6 +33,7 @@ type RawSalesByItemResponse = {
   data: RawSalesItem[];
   totalDiscount?: number;
   totalRedeemPoint?: number;
+  totalNetProfit?: number;
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────
@@ -114,9 +115,22 @@ async function fetchSalesByItemForPeriod(
     `${BASE}/business/report/salesByItem?startDate=${start}&endDate=${end}`,
     { headers: await authHeaders(), next: { revalidate: 300 } },
   );
-  if (!res.ok) return { data: [], totalDiscount: 0, totalRedeemPoint: 0 };
+  if (!res.ok)
+    return {
+      data: [],
+      totalDiscount: 0,
+      totalRedeemPoint: 0,
+      totalNetProfit: 0,
+    };
   const json = await res.json();
-  return json ?? { data: [], totalDiscount: 0, totalRedeemPoint: 0 };
+  return (
+    json ?? {
+      data: [],
+      totalDiscount: 0,
+      totalRedeemPoint: 0,
+      totalNetProfit: 0,
+    }
+  );
 }
 
 // ── getGrowthData — 6 stat cards (current month vs last month) ────────────
@@ -171,6 +185,7 @@ export const getGrowthData = async (): Promise<GrowthStatsApiResponse> => {
     const totalRevenue = data.reduce((s, d) => s + d.totalRevenue, 0);
     const totalOrders = data.reduce((s, d) => s + d.totalSales, 0);
     return { revenue: totalRevenue, orders: totalOrders };
+    l;
   };
 
   const currCompareAgg = aggregateCompare(currCompare);
@@ -178,11 +193,11 @@ export const getGrowthData = async (): Promise<GrowthStatsApiResponse> => {
 
   // ── Profit Margin from salesByItem ────────────────────────────────────────
   const getNetProfit = (res: RawSalesByItemResponse) => {
-    const itemProfit = res.data.reduce(
-      (s, item) => s + (item.netProfit ?? 0),
-      0,
+    return (
+      (res.totalNetProfit ?? 0) -
+      (res.totalDiscount ?? 0) -
+      (res.totalRedeemPoint ?? 0)
     );
-    return itemProfit - (res.totalDiscount ?? 0) - (res.totalRedeemPoint ?? 0);
   };
 
   const currNetProfit = getNetProfit(currSalesByItem);

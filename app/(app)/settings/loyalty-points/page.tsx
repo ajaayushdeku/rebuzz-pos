@@ -87,7 +87,10 @@ export default function LoyaltyPointPage() {
     const load = async () => {
       setIsLoading(true);
       try {
-        const data = await fetchLoyaltyPointSettings();
+        const response = await fetchLoyaltyPointSettings();
+
+        const data = response?.data ?? response;
+
         if (data) {
           setSettings(data);
           setForm({
@@ -155,6 +158,8 @@ export default function LoyaltyPointPage() {
       form.redeemLimit !== settings.redeemLimit ||
       form.basePoint !== settings.basePoint
     : form.loyaltyPoint > 0 || form.redeemLimit > 0 || form.basePoint > 0;
+
+  console.log("Loyalty Points Setttings:", settings);
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
