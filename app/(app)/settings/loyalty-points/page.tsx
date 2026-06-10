@@ -91,12 +91,19 @@ export default function LoyaltyPointPage() {
 
         const data = response && "data" in response ? response.data : response;
 
-        if (data) {
-          setSettings(data);
+        if (
+          data &&
+          typeof data === "object" &&
+          "loyaltyPointPercentage" in data &&
+          "redeemLimit" in data &&
+          "basePoint" in data
+        ) {
+          const settingsData = data as LoyaltyPointSettings;
+          setSettings(settingsData);
           setForm({
-            loyaltyPoint: data.loyaltyPointPercentage,
-            redeemLimit: data.redeemLimit,
-            basePoint: data.basePoint,
+            loyaltyPoint: settingsData.loyaltyPointPercentage,
+            redeemLimit: settingsData.redeemLimit,
+            basePoint: settingsData.basePoint,
           });
         }
 

@@ -185,7 +185,6 @@ export const getGrowthData = async (): Promise<GrowthStatsApiResponse> => {
     const totalRevenue = data.reduce((s, d) => s + d.totalRevenue, 0);
     const totalOrders = data.reduce((s, d) => s + d.totalSales, 0);
     return { revenue: totalRevenue, orders: totalOrders };
-    l;
   };
 
   const currCompareAgg = aggregateCompare(currCompare);

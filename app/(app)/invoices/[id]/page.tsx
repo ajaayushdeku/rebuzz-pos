@@ -289,7 +289,7 @@ export default function InvoiceDetailPage() {
     try {
       const response = await fetchLoyaltyPointSettings();
       const data = response && "data" in response ? response.data : response;
-      setLoyaltySettings(data);
+      setLoyaltySettings(data as LoyaltyPointSettings);
     } catch {
       console.error("Failed to fetch loyalty settings");
     }
