@@ -27,7 +27,7 @@ const ProductCardGrid = ({ items }: { items: InventoryItem[] }) => {
   return (
     <div>
       {/* Product Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-3">
         {visibleItems.map((item) => (
           <ProductCard key={item.id} item={item} />
         ))}
@@ -35,7 +35,7 @@ const ProductCardGrid = ({ items }: { items: InventoryItem[] }) => {
 
       {/* Actions */}
       {(hasMore || canHide) && (
-        <div className="flex items-center justify-center gap-3">
+        <div className="flex items-center justify-center gap-3 mb-5">
           {hasMore && (
             <button
               onClick={handleLoadMore}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   ComposedChart,
   Area,
@@ -24,7 +24,57 @@ export interface TargetActualData {
   target: number;
 }
 
-const STORAGE_KEY = "growth_targets";
+// ── IndexedDB config ──────────────────────────────────────────────────────
+
+const DB_NAME = "rebuzz_growth";
+const DB_VERSION = 1;
+const STORE_TARGETS = "targets";
+
+// ── IndexedDB helpers ─────────────────────────────────────────────────────
+
+function openDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+
+    req.onupgradeneeded = (e) => {
+      const db = (e.target as IDBOpenDBRequest).result;
+      if (!db.objectStoreNames.contains(STORE_TARGETS)) {
+        // Each record: { month: "Jan", target: 50000 }
+        db.createObjectStore(STORE_TARGETS, { keyPath: "month" });
+      }
+    };
+
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function dbGetAll<T>(db: IDBDatabase, storeName: string): Promise<T[]> {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readonly");
+    const req = tx.objectStore(storeName).getAll();
+    req.onsuccess = () => resolve(req.result as T[]);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function dbPutAll(
+  db: IDBDatabase,
+  storeName: string,
+  records: { month: string; target: number }[],
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readwrite");
+    const store = tx.objectStore(storeName);
+    for (const record of records) {
+      store.put(record);
+    }
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+// ── Chart helpers ─────────────────────────────────────────────────────────
 
 const getYAxisTicks = (data: TargetActualData[]): number[] => {
   const max = Math.max(...data.flatMap((d) => [d.actual, d.target]), 1);
@@ -51,7 +101,7 @@ const CustomTooltip = ({
       <p className="text-gray-400 text-xs mb-2 font-medium">{label}</p>
       {payload.map((entry, idx) => (
         <div
-          key={`${entry.name ?? "tooltip"}-${idx}`}
+          key={`${entry.name ?? "tip"}-${idx}`}
           className="flex items-center justify-between gap-4"
         >
           <div className="flex items-center gap-1.5">
@@ -104,24 +154,17 @@ const CustomLegend = () => (
   </div>
 );
 
-/** Merge server data with localStorage targets */
-function mergeWithSavedTargets(
-  serverData: TargetActualData[],
-): TargetActualData[] {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const savedTargets: Record<string, number> = JSON.parse(saved);
-      return serverData.map((row) => ({
-        ...row,
-        target: savedTargets[row.month] ?? row.target,
-      }));
-    }
-  } catch {
-    // ignore
-  }
-  return serverData;
-}
+// ── Skeleton ──────────────────────────────────────────────────────────────
+
+const ChartSkeleton = () => (
+  <div className="animate-pulse space-y-3">
+    <div className="h-4 bg-gray-200 rounded w-1/3" />
+    <div className="h-3 bg-gray-200 rounded w-1/2" />
+    <div className="h-72 bg-gray-100 rounded-xl mt-4" />
+  </div>
+);
+
+// ── Main chart ────────────────────────────────────────────────────────────
 
 export interface TargetVsActualProps {
   data: TargetActualData[];
@@ -129,48 +172,116 @@ export interface TargetVsActualProps {
 
 export default function TargetVsActualChart({ data }: TargetVsActualProps) {
   const { currency } = useCurrency();
-  const [chartData, setChartData] = useState<TargetActualData[]>(() =>
-    mergeWithSavedTargets(data),
-  );
+  const dbRef = useRef<IDBDatabase | null>(null);
+  const [chartData, setChartData] = useState<TargetActualData[]>(data);
+  const [isLoadingTargets, setIsLoadingTargets] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalVersion, setModalVersion] = useState(0);
 
-  // Track previous data to detect prop changes
-  const [prevData, setPrevData] = useState(data);
-  if (data !== prevData) {
-    setPrevData(data);
-    setChartData(mergeWithSavedTargets(data));
-  }
+  // ── Open DB and load saved targets on mount ───────────────────────────
+  useEffect(() => {
+    let mounted = true;
 
-  const handleSaveTargets = (updated: TargetActualData[]) => {
-    setChartData(updated);
-    try {
-      const targetsMap: Record<string, number> = {};
-      for (const row of updated) {
-        targetsMap[row.month] = row.target;
+    async function loadTargets() {
+      try {
+        const db = await openDB();
+        dbRef.current = db;
+
+        const saved = await dbGetAll<{ month: string; target: number }>(
+          db,
+          STORE_TARGETS,
+        );
+
+        if (!mounted) return;
+
+        if (saved.length > 0) {
+          // Build a map: "Jan" → target value
+          const targetMap = new Map(saved.map((r) => [r.month, r.target]));
+
+          // Merge saved targets into server data
+          setChartData(
+            data.map((row) => ({
+              ...row,
+              target: targetMap.get(row.month) ?? row.target,
+            })),
+          );
+        } else {
+          setChartData(data);
+        }
+      } catch (err) {
+        console.error("Failed to load targets from IndexedDB:", err);
+        if (mounted) setChartData(data);
+      } finally {
+        if (mounted) setIsLoadingTargets(false);
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(targetsMap));
-    } catch {
-      // ignore
     }
-  };
 
-  const isEmpty =
-    !chartData || chartData.every((d) => d.actual === 0 && d.target === 0);
+    loadTargets();
+    return () => {
+      mounted = false;
+    };
+  }, []); // only on mount — intentionally not re-running on data change
 
+  // ── When server data updates (navigation), merge with saved targets ───
+  useEffect(() => {
+    if (isLoadingTargets) return; // wait for DB load first
+    const db = dbRef.current;
+    if (!db) {
+      setChartData(data);
+      return;
+    }
+
+    dbGetAll<{ month: string; target: number }>(db, STORE_TARGETS)
+      .then((saved) => {
+        const targetMap = new Map(saved.map((r) => [r.month, r.target]));
+        setChartData(
+          data.map((row) => ({
+            ...row,
+            target: targetMap.get(row.month) ?? row.target,
+          })),
+        );
+      })
+      .catch(() => setChartData(data));
+  }, [data]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Save targets to IndexedDB ─────────────────────────────────────────
+  const handleSaveTargets = useCallback(async (updated: TargetActualData[]) => {
+    setChartData(updated);
+
+    const db = dbRef.current;
+    if (!db) return;
+
+    try {
+      // Store each month as a separate record: { month, target }
+      const records = updated.map(({ month, target }) => ({ month, target }));
+      await dbPutAll(db, STORE_TARGETS, records);
+    } catch (err) {
+      console.error("Failed to save targets to IndexedDB:", err);
+    }
+  }, []);
+
+  const isEmpty = chartData.every((d) => d.actual === 0 && d.target === 0);
   const formatYAxis = (value: number): string =>
     value >= 1000
       ? `${currency.symbol}${value / 1000}k`
       : formatCurrency(value, currency);
-
   const yTicks = getYAxisTicks(chartData);
   const yMax = yTicks[yTicks.length - 1] * 1.05;
+
+  if (isLoadingTargets) {
+    return (
+      <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-6 w-full">
+        <ChartSkeleton />
+      </div>
+    );
+  }
 
   return (
     <>
       <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-6 w-full">
         {isEmpty && <SampleDataBadge />}
 
+        {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -230,7 +341,6 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
             </defs>
 
             <CartesianGrid vertical={false} stroke="#f3f4f6" />
-
             <XAxis
               dataKey="month"
               axisLine={false}
@@ -247,10 +357,9 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
               domain={[0, yMax]}
               width={50}
             />
-
             <Tooltip content={<CustomTooltip currency={currency} />} />
-
             <Legend content={<CustomLegend />} />
+
             <Area
               type="monotone"
               dataKey="actual"

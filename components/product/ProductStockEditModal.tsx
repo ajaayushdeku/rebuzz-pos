@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -38,21 +38,28 @@ export default function ProductStockEditModal({
   const [savingId, setSavingId] = useState<string | null>(null);
   const [bulkSaving, setBulkSaving] = useState(false);
 
+  // Track whether edits have been initialized for the current modal session
+  const initializedForOpen = useRef(false);
+
   // simplified local state
   const [edits, setEdits] = useState<Record<string, EditItem>>({});
 
-  // Initialize local edits when modal opens
+  // Initialize local edits ONLY when modal opens, not when items change
   useEffect(() => {
-    if (!open) return;
-    const initial: Record<string, EditItem> = {};
-    for (const item of items) {
-      initial[item.id] = {
-        inStock: item.inStock,
-        lowStock: item.lowStock,
-      };
+    if (open && !initializedForOpen.current) {
+      const initial: Record<string, EditItem> = {};
+      for (const item of items) {
+        initial[item.id] = {
+          inStock: item.inStock,
+          lowStock: item.lowStock,
+        };
+      }
+      setEdits(initial);
+      initializedForOpen.current = true;
     }
-    setEdits(initial);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!open) {
+      initializedForOpen.current = false;
+    }
   }, [open, items]);
 
   // search
@@ -108,6 +115,13 @@ export default function ProductStockEditModal({
           : {}),
       });
 
+      // Sync this item's edit to the saved values so hasChanged returns false
+      // even before the items prop updates
+      setEdits((prev) => ({
+        ...prev,
+        [id]: { inStock: editItem.inStock, lowStock: editItem.lowStock },
+      }));
+
       invalidateInventory();
     } catch (err) {
       console.error(err);
@@ -140,6 +154,18 @@ export default function ProductStockEditModal({
       }));
 
       await bulkUpdateStock(stockPayload);
+
+      // Sync all changed items' edits to their saved values
+      setEdits((prev) => {
+        const updated = { ...prev };
+        for (const item of changedItems) {
+          updated[item.id] = {
+            inStock: edits[item.id].inStock,
+            lowStock: edits[item.id].lowStock,
+          };
+        }
+        return updated;
+      });
 
       invalidateInventory();
     } catch (err) {
@@ -191,8 +217,16 @@ export default function ProductStockEditModal({
           )}
         </div>
 
+        {/* Table header */}
+        <div className="mt-3 grid grid-cols-[1fr_120px_80px_80px] items-center gap-3 px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200">
+          <span>Product</span>
+          <span className="text-left">In Stock</span>
+          <span className="text-left">Low Stock</span>
+          <span className="text-center">Actions</span>
+        </div>
+
         {/* List */}
-        <div className="mt-3 overflow-y-auto flex-1 space-y-2">
+        <div className="overflow-y-auto flex-1 divide-y divide-gray-100">
           {filteredItems.map((item) => {
             const edit = edits[item.id];
 
@@ -203,28 +237,27 @@ export default function ProductStockEditModal({
             return (
               <div
                 key={item.id}
-                className={`border rounded-lg p-3 flex items-center gap-4 transition-colors ${
-                  changed ? "border-blue-200 bg-blue-50/50" : "border-gray-200"
+                className={`grid grid-cols-[1fr_120px_80px_80px] items-center gap-3 px-3 py-3 transition-colors ${
+                  changed ? "bg-blue-50/50" : "hover:bg-gray-50"
                 }`}
               >
                 {/* Product */}
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0">
                   <p className="font-medium text-sm truncate">{item.name}</p>
-
                   <p className="text-xs text-gray-400 capitalize">
                     {item.unit}
                   </p>
                 </div>
 
-                {/* Stock */}
-                <div className="flex items-center gap-1">
+                {/* In Stock */}
+                <div className="flex items-center justify-center gap-0.5">
                   <button
                     onClick={() =>
                       updateField(item.id, "inStock", edit.inStock - 1)
                     }
-                    className="h-8 w-8 border rounded-md flex items-center justify-center hover:bg-gray-100"
+                    className="h-6 w-6 rounded-full flex items-center justify-center bg-red-100 text-red-600 hover:bg-red-200 transition shrink-0"
                   >
-                    <Minus size={14} />
+                    <Minus size={12} />
                   </button>
 
                   <input
@@ -233,45 +266,49 @@ export default function ProductStockEditModal({
                     onChange={(e) =>
                       updateField(item.id, "inStock", Number(e.target.value))
                     }
-                    className="w-16 h-8 border rounded-md text-center text-sm"
+                    className="w-12 h-6 border rounded-md text-center text-xs"
                   />
 
                   <button
                     onClick={() =>
                       updateField(item.id, "inStock", edit.inStock + 1)
                     }
-                    className="h-8 w-8 border rounded-md flex items-center justify-center hover:bg-gray-100"
+                    className="h-6 w-6 rounded-full flex items-center justify-center bg-green-100 text-green-600 hover:bg-green-200 transition shrink-0"
                   >
-                    <Plus size={14} />
+                    <Plus size={12} />
                   </button>
                 </div>
 
-                {/* Low stock */}
-                <input
-                  type="number"
-                  value={edit.lowStock}
-                  onChange={(e) =>
-                    updateField(item.id, "lowStock", Number(e.target.value))
-                  }
-                  className="w-16 h-8 border rounded-md text-center text-sm"
-                />
+                {/* Low Stock */}
+                <div className="flex items-center justify-center">
+                  <input
+                    type="number"
+                    value={edit.lowStock}
+                    onChange={(e) =>
+                      updateField(item.id, "lowStock", Number(e.target.value))
+                    }
+                    className="w-14 h-7 border rounded-md text-center text-sm"
+                  />
+                </div>
 
                 {/* Save individual */}
-                <button
-                  onClick={() => handleSave(item.id)}
-                  disabled={!changed || savingId === item.id}
-                  className={`h-8 px-4 rounded-md text-sm font-medium transition ${
-                    changed
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
-                      : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                  }`}
-                >
-                  {savingId === item.id ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : (
-                    "Save"
-                  )}
-                </button>
+                <div className="flex items-center justify-center">
+                  <button
+                    onClick={() => handleSave(item.id)}
+                    disabled={!changed || savingId === item.id}
+                    className={`h-7 px-3 rounded-md text-xs font-medium transition ${
+                      changed
+                        ? "bg-blue-600 text-white hover:bg-blue-700"
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    }`}
+                  >
+                    {savingId === item.id ? (
+                      <Loader2 size={13} className="animate-spin" />
+                    ) : (
+                      "Save"
+                    )}
+                  </button>
+                </div>
               </div>
             );
           })}
