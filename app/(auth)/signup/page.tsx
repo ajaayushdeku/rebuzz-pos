@@ -1,5 +1,6 @@
 "use client";
-import Divider from "@/components/Divider";
+// import Divider from "@/components/Divider";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import registerUser from "@/services/authServices/apiRegister";
 import Link from "next/link";
@@ -71,32 +72,32 @@ const SignUpPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4 font-sans">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-6 font-sans">
       {/* Logo Section */}
-      <div className="my-8 flex items-center gap-2">
+      <div className="mb-6 md:mb-8 flex items-center gap-2">
         <span className="text-2xl text-blue-900 font-bold tracking-tight">
           <Link href="/">Rebuzz</Link>
         </span>
       </div>
 
       {/* Header */}
-      <div className="text-center max-w-md mb-4">
-        <h1 className="text-[32px] font-bold leading-tight mb-4">
-          Check out Rebuzz — it&apos;s free!
+      <div className="text-center max-w-md mb-6 md:mb-8">
+        <h1 className="text-[24px] sm:text-[28px] md:text-[32px] font-bold leading-tight mb-3">
+          Check out Rebuzz — it&lsquo;s free!
         </h1>
-        <p className="text-gray-600 text-[20px] leading-relaxed">
+        <p className="text-gray-600 text-[14px] sm:text-[16px] md:text-[20px] leading-relaxed">
           Rebuzz helps freelancers, consultants, and small businesses simplify
           their finances.
         </p>
       </div>
 
       {/* Form Container */}
-      <div className="w-full max-w-100">
-        <form className="space-y-2" onSubmit={handleSubmit(onSubmit)}>
+      <div className="w-full max-w-sm">
+        <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
           {/* Full Name */}
           <div>
             <label
-              className="block text-gray-700 text-sm font-bold mb-2"
+              className="block text-gray-700 text-sm font-bold mb-1.5"
               htmlFor="fullName"
             >
               Full Name
@@ -104,13 +105,14 @@ const SignUpPage = () => {
             <input
               type="text"
               id="fullName"
-              className="w-full px-2 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              placeholder="Enter your full name"
+              className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
               {...register("fullName", {
                 required: "Name is required",
               })}
             />
             {errors.fullName && (
-              <p className="mt-1 text-sm text-red-500">
+              <p className="mt-1 text-xs text-red-500">
                 {errors.fullName.message}
               </p>
             )}
@@ -119,7 +121,7 @@ const SignUpPage = () => {
           {/* Email */}
           <div>
             <label
-              className="block text-gray-700 text-sm font-bold mb-2"
+              className="block text-gray-700 text-sm font-bold mb-1.5"
               htmlFor="email"
             >
               Email
@@ -127,7 +129,8 @@ const SignUpPage = () => {
             <input
               id="email"
               type="email"
-              className="w-full px-2 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              placeholder="Enter your email"
+              className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
               {...register("email", {
                 required: "Email is required",
                 pattern: {
@@ -137,7 +140,7 @@ const SignUpPage = () => {
               })}
             />
             {errors.email && (
-              <p className="mt-1 text-sm text-red-500">
+              <p className="mt-1 text-xs text-red-500">
                 {errors.email.message}
               </p>
             )}
@@ -146,7 +149,7 @@ const SignUpPage = () => {
           {/* Phone Number */}
           <div>
             <label
-              className="block text-gray-700 text-sm font-bold mb-2"
+              className="block text-gray-700 text-sm font-bold mb-1.5"
               htmlFor="phone"
             >
               Phone Number
@@ -154,7 +157,8 @@ const SignUpPage = () => {
             <input
               id="phone"
               type="tel"
-              className="w-full px-2 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              placeholder="Enter your phone number"
+              className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
               {...register("phone", {
                 required: "Phone number is required",
                 pattern: {
@@ -164,7 +168,7 @@ const SignUpPage = () => {
               })}
             />
             {errors.phone && (
-              <p className="mt-1 text-sm text-red-500">
+              <p className="mt-1 text-xs text-red-500">
                 {errors.phone.message}
               </p>
             )}
@@ -173,7 +177,7 @@ const SignUpPage = () => {
           {/* Password */}
           <div>
             <label
-              className="block text-sm text-gray-700 font-bold mb-2"
+              className="block text-sm text-gray-700 font-bold mb-1.5"
               htmlFor="password"
             >
               Password
@@ -182,7 +186,8 @@ const SignUpPage = () => {
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
-                className="w-full px-2 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                placeholder="Create a password (min 8 chars)"
+                className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
                 {...register("password", {
                   required: "Password is required",
                   minLength: {
@@ -194,22 +199,22 @@ const SignUpPage = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-600 text-sm font-bold hover:underline"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-blue-600 text-xs font-semibold hover:underline cursor-pointer"
               >
                 {showPassword ? "Hide" : "Show"}
               </button>
             </div>
             {errors.password ? (
-              <p className="mt-2 text-sm text-red-500">
+              <p className="mt-1 text-xs text-red-500">
                 {errors.password.message}
               </p>
             ) : passwordValue.length >= 8 && passwordHints.length > 0 ? (
-              <p className="mt-2 text-[14px] text-amber-600">
+              <p className="mt-1 text-xs text-amber-600">
                 Your password is valid, but adding {passwordHints.join(" and ")}{" "}
                 would make it stronger.
               </p>
             ) : (
-              <p className="mt-2 text-[14px] text-gray-600">
+              <p className="mt-1 text-xs text-gray-500">
                 At least 8 characters, but longer is better.
               </p>
             )}
@@ -218,7 +223,7 @@ const SignUpPage = () => {
           {/* Confirm Password */}
           <div>
             <label
-              className="block text-sm text-gray-700 font-bold mb-2"
+              className="block text-sm text-gray-700 font-bold mb-1.5"
               htmlFor="cpass"
             >
               Confirm Password
@@ -227,7 +232,8 @@ const SignUpPage = () => {
               <input
                 id="cpass"
                 type={showConfirmPassword ? "text" : "password"}
-                className="w-full px-2 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                placeholder="Re-enter your password"
+                className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
                 {...register("cpass", {
                   required: "Please confirm your password",
                   validate: (value) =>
@@ -237,17 +243,17 @@ const SignUpPage = () => {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword((prev) => !prev)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-600 text-sm font-bold hover:underline"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-blue-600 text-xs font-semibold hover:underline cursor-pointer"
               >
                 {showConfirmPassword ? "Hide" : "Show"}
               </button>
             </div>
             {errors.cpass ? (
-              <p className="mt-1 text-sm text-red-500">
+              <p className="mt-1 text-xs text-red-500">
                 {errors.cpass.message}
               </p>
             ) : (
-              <p className="mt-1 text-[14px] text-gray-600">
+              <p className="mt-1 text-xs text-gray-500">
                 Must match your password.
               </p>
             )}
@@ -256,7 +262,7 @@ const SignUpPage = () => {
           {/* Redeem Code (optional) */}
           <div>
             <label
-              className="block text-gray-700 text-sm font-bold mb-2"
+              className="block text-gray-700 text-sm font-bold mb-1.5"
               htmlFor="redeemCode"
             >
               Redeem Code{" "}
@@ -265,42 +271,60 @@ const SignUpPage = () => {
             <input
               type="text"
               id="redeemCode"
-              className="w-full px-2 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              placeholder="Enter redeem code"
+              className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
               {...register("redeemCode")}
             />
           </div>
 
-          <Link
-            href="/login"
-            className="block text-blue-800 font-semibold py-1 text-sm"
-          >
-            Already have an account?
-          </Link>
-
-          {/* Primary CTA */}
+          {/* Server error */}
           {serverError && (
-            <p className="text-sm text-red-500 text-center">{serverError}</p>
+            <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+              <p className="text-xs text-red-600 text-center font-medium">
+                {serverError}
+              </p>
+            </div>
           )}
 
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-5 text-[16px] rounded-full transition-colors duration-200"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 text-sm rounded-full transition-colors duration-200 disabled:opacity-60 cursor-pointer"
           >
             {isLoading ? "Creating account..." : "Get started"}
           </Button>
         </form>
 
-        <Divider />
+        {/* <Divider />
 
         {/* Social Logins */}
-        <div className="space-y-3">
-          <Button className="w-full flex items-center justify-center gap-3 border border-gray-900 py-5 rounded-full hover:bg-blue-200 hover:text-blue-800 hover:border-blue-900 bg-gray-50 text-gray-700 transition-colors text-[16px] font-semibold">
+        {/*}   <div className="space-y-3">
+          <Button className="w-full flex items-center justify-center gap-3 border border-gray-300 bg-gray-50 text-gray-700 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 font-semibold py-2.5 text-sm rounded-full transition-colors">
             Sign up with Google
           </Button>
-          <Button className="w-full flex items-center justify-center gap-3 border border-gray-900 bg-gray-900 text-gray-100 py-5 rounded-full hover:bg-blue-200 hover:text-blue-800 hover:border-blue-900 transition-colors font-semibold text-[16px]">
+          <Button className="w-full flex items-center justify-center gap-3 border border-gray-700 bg-gray-800 text-gray-100 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 font-semibold py-2.5 text-sm rounded-full transition-colors">
             Sign up with Apple
           </Button>
+        </div> */}
+
+        <div className="mb-2 text-center">
+          <Link
+            href="/login"
+            className="text-xs text-gray-500 hover:text-blue-600 transition-colors font-medium"
+          >
+            Already have an account?{" "}
+            <span className="text-blue-600 font-semibold">Log in</span>
+          </Link>
+        </div>
+
+        <div className="mb-6 text-center">
+          <Link
+            href="/"
+            className="text-xs text-gray-500 hover:text-blue-600 transition-colors font-medium inline-flex items-center gap-1"
+          >
+            <ArrowLeft className="h-3 w-3" />
+            Back to home
+          </Link>
         </div>
       </div>
     </div>

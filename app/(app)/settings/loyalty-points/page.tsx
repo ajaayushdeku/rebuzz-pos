@@ -2,7 +2,17 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Loader2, Gift, Coins, ArrowDownUp } from "lucide-react";
+import {
+  Loader2,
+  Gift,
+  Coins,
+  ArrowDownUp,
+  Trophy,
+  Plus,
+  Trash2,
+  Edit3,
+  Diamond,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +27,78 @@ import { useBusiness } from "@/hooks/useBusiness";
 
 const inputClass =
   "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+
+// ── Loyalty Status Types ────────────────────────────────────────────────────
+interface LoyaltyStatus {
+  id: string;
+  name: string;
+  minPoints: number;
+  color: string;
+  bgColor: string;
+}
+
+const STATUS_COLORS: Record<
+  string,
+  { color: string; bg: string; label: string }
+> = {
+  diamond: {
+    color: "text-cyan-700",
+    bg: "bg-cyan-100 border-cyan-200",
+    label: "Diamond",
+  },
+  gold: {
+    color: "text-yellow-700",
+    bg: "bg-yellow-100 border-yellow-200",
+    label: "Gold",
+  },
+  silver: {
+    color: "text-gray-600",
+    bg: "bg-gray-100 border-gray-200",
+    label: "Silver",
+  },
+  bronze: {
+    color: "text-orange-700",
+    bg: "bg-orange-100 border-orange-200",
+    label: "Bronze",
+  },
+  platinum: {
+    color: "text-indigo-700",
+    bg: "bg-indigo-100 border-indigo-200",
+    label: "Platinum",
+  },
+};
+
+// ── Mock Initial Statuses ───────────────────────────────────────────────────
+const MOCK_STATUSES: LoyaltyStatus[] = [
+  {
+    id: "1",
+    name: "Bronze",
+    minPoints: 0,
+    color: "text-orange-700",
+    bgColor: "bg-orange-100",
+  },
+  {
+    id: "2",
+    name: "Silver",
+    minPoints: 500,
+    color: "text-gray-600",
+    bgColor: "bg-gray-100",
+  },
+  {
+    id: "3",
+    name: "Gold",
+    minPoints: 1500,
+    color: "text-yellow-700",
+    bgColor: "bg-yellow-100",
+  },
+  {
+    id: "4",
+    name: "Platinum",
+    minPoints: 5000,
+    color: "text-indigo-700",
+    bgColor: "bg-indigo-100",
+  },
+];
 
 function FieldCard({
   icon: Icon,
@@ -46,28 +128,6 @@ function FieldCard({
 }
 
 export default function LoyaltyPointPage() {
-  // ── React Query approach (commented out) ──────────────────────────────────
-  // const queryClient = useQueryClient();
-  //
-  // const { data: settings, isLoading } = useQuery({
-  //   queryKey: ["loyalty-point"],
-  //   queryFn: fetchLoyaltyPointSettings,
-  //   staleTime: 5 * 60 * 1000,
-  // });
-  //
-  // const { mutate: save, isPending: saving } = useMutation({
-  //   mutationFn: updateLoyaltyPointSettings,
-  //   onSuccess: () => {
-  //     queryClient.invalidateQueries({ queryKey: ["loyalty-point"] });
-  //     toast.success("Loyalty point settings saved");
-  //   },
-  //   onError: () => {
-  //     toast.error("Failed to save settings");
-  //   },
-  // });
-  // ─────────────────────────────────────────────────────────────────────────
-
-  // ── Manual fetch state ────────────────────────────────────────────────────
   const [settings, setSettings] = useState<LoyaltyPointSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -82,13 +142,23 @@ export default function LoyaltyPointPage() {
     Partial<Record<keyof LoyaltyPointPayload, boolean>>
   >({});
 
-  // Fetch on mount
+  // ── Loyalty Status State (mock) ──────────────────────────────────────────
+  const [statuses, setStatuses] = useState<LoyaltyStatus[]>(MOCK_STATUSES);
+  const [statusForm, setStatusForm] = useState<{
+    name: string;
+    minPoints: string;
+  }>({ name: "", minPoints: "" });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [statusErrors, setStatusErrors] = useState<{
+    name?: string;
+    minPoints?: string;
+  }>({});
+
   useEffect(() => {
     const load = async () => {
       setIsLoading(true);
       try {
         const response = await fetchLoyaltyPointSettings();
-
         const data = response && "data" in response ? response.data : response;
 
         if (
@@ -106,8 +176,6 @@ export default function LoyaltyPointPage() {
             basePoint: settingsData.basePoint,
           });
         }
-
-        // console.log("Loyalty points:", data);
       } catch {
         toast.error("Failed to load loyalty point settings");
       } finally {
@@ -139,17 +207,13 @@ export default function LoyaltyPointPage() {
     setSaving(true);
     try {
       if (settings) {
-        // Settings already exist → use PUT to update
         const updated = await updateLoyaltyPointSettings(form);
-        // console.log("Update Loyalty points:", updated);
         setSettings(updated);
       } else {
-        // No settings yet → use POST to create
         const created = await createLoyaltyPointSettings({
           ...form,
           businessName: business?.businessName ?? "Default",
         });
-        // console.log("Created Loyalty points:", created);
         setSettings(created);
       }
       toast.success("Loyalty point settings saved");
@@ -166,13 +230,90 @@ export default function LoyaltyPointPage() {
       form.basePoint !== settings.basePoint
     : form.loyaltyPoint > 0 || form.redeemLimit > 0 || form.basePoint > 0;
 
-  console.log("Loyalty Points Setttings:", settings);
+  // ── Loyalty Status Handlers ──────────────────────────────────────────────
+  const validateStatusForm = (): boolean => {
+    const e: typeof statusErrors = {};
+    if (!statusForm.name.trim()) e.name = "Status name is required";
+    if (
+      !statusForm.minPoints ||
+      isNaN(Number(statusForm.minPoints)) ||
+      Number(statusForm.minPoints) < 0
+    )
+      e.minPoints = "Enter a valid minimum points (0 or more)";
+    setStatusErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const handleAddStatus = () => {
+    if (!validateStatusForm()) return;
+
+    const colorKeys = ["bronze", "silver", "gold", "diamond", "platinum"];
+    const usedColors = statuses.map((s) => s.color);
+    const availableColor = colorKeys.find(
+      (k) => !usedColors.includes(STATUS_COLORS[k]?.color ?? ""),
+    );
+    const fallbackColor = { color: "text-blue-700", bg: "bg-blue-100" };
+
+    if (editingId) {
+      setStatuses((prev) =>
+        prev.map((s) =>
+          s.id === editingId
+            ? {
+                ...s,
+                name: statusForm.name.trim(),
+                minPoints: Number(statusForm.minPoints),
+              }
+            : s,
+        ),
+      );
+      toast.success(`Status "${statusForm.name}" updated`);
+    } else {
+      const colorInfo = availableColor
+        ? STATUS_COLORS[availableColor]
+        : fallbackColor;
+      const newStatus: LoyaltyStatus = {
+        id: crypto.randomUUID(),
+        name: statusForm.name.trim(),
+        minPoints: Number(statusForm.minPoints),
+        color: colorInfo.color,
+        bgColor: colorInfo.bg,
+      };
+      setStatuses((prev) => [...prev, newStatus]);
+      toast.success(`Status "${newStatus.name}" added`);
+    }
+
+    setStatusForm({ name: "", minPoints: "" });
+    setEditingId(null);
+    setStatusErrors({});
+  };
+
+  const handleEditStatus = (status: LoyaltyStatus) => {
+    setEditingId(status.id);
+    setStatusForm({ name: status.name, minPoints: String(status.minPoints) });
+    setStatusErrors({});
+  };
+
+  const handleDeleteStatus = (id: string) => {
+    const status = statuses.find((s) => s.id === id);
+    setStatuses((prev) => prev.filter((s) => s.id !== id));
+    if (editingId === id) {
+      setEditingId(null);
+      setStatusForm({ name: "", minPoints: "" });
+    }
+    toast.success(`Status "${status?.name}" removed`);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setStatusForm({ name: "", minPoints: "" });
+    setStatusErrors({});
+  };
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto space-y-10">
         {/* ── Header ─────────────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-gray-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
           <div>
             <h1 className="font-bold text-xl md:text-2xl truncate">
               Loyalty Points
@@ -204,7 +345,6 @@ export default function LoyaltyPointPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Current settings summary */}
             {settings && (
               <div className="bg-blue-50 border border-blue-100 rounded-xl px-5 py-4 space-y-2">
                 <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">
@@ -233,7 +373,6 @@ export default function LoyaltyPointPage() {
               </div>
             )}
 
-            {/* Loyalty point percentage */}
             <FieldCard
               icon={Gift}
               title="Loyalty Point Percentage"
@@ -270,7 +409,6 @@ export default function LoyaltyPointPage() {
               </div>
             </FieldCard>
 
-            {/* Redeem limit */}
             <FieldCard
               icon={ArrowDownUp}
               title="Redeem Limit"
@@ -302,7 +440,6 @@ export default function LoyaltyPointPage() {
               </div>
             </FieldCard>
 
-            {/* Base point */}
             <FieldCard
               icon={Coins}
               title="Base Point"
@@ -334,6 +471,193 @@ export default function LoyaltyPointPage() {
             </FieldCard>
           </div>
         )}
+
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {/* ── CUSTOMER LOYALTY STATUS SECTION ── */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        <div className="border-t pt-8">
+          <div className="mb-6">
+            <div className="flex items-center gap-2.5 mb-1">
+              <Trophy className="h-5 w-5 text-yellow-500" />
+              <h2 className="text-lg font-bold text-gray-900">
+                Customer Loyalty Status
+              </h2>
+            </div>
+            <p className="text-sm text-gray-500 ml-8">
+              Define loyalty tiers (Bronze, Silver, Gold, Diamond, etc.) and
+              their point thresholds.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            {/* ── Form Section (2 cols) ── */}
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                    {editingId ? (
+                      <Edit3 className="h-4 w-4 text-blue-600" />
+                    ) : (
+                      <Plus className="h-4 w-4 text-blue-600" />
+                    )}
+                  </div>
+                  <p className="text-sm font-semibold text-gray-900">
+                    {editingId ? "Edit Status" : "Add New Status"}
+                  </p>
+                </div>
+
+                <div>
+                  <Label className="text-xs text-gray-500 mb-1.5 block">
+                    Status Name
+                  </Label>
+                  <Input
+                    value={statusForm.name}
+                    onChange={(e) => {
+                      setStatusForm((prev) => ({
+                        ...prev,
+                        name: e.target.value,
+                      }));
+                      if (statusErrors.name)
+                        setStatusErrors((prev) => ({
+                          ...prev,
+                          name: undefined,
+                        }));
+                    }}
+                    placeholder="e.g. Platinum"
+                    className={`${inputClass} ${statusErrors.name ? "border-red-300 focus:ring-red-400" : ""}`}
+                  />
+                  {statusErrors.name && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {statusErrors.name}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <Label className="text-xs text-gray-500 mb-1.5 block">
+                    Minimum Points Required
+                  </Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={statusForm.minPoints}
+                    onChange={(e) => {
+                      setStatusForm((prev) => ({
+                        ...prev,
+                        minPoints: e.target.value,
+                      }));
+                      if (statusErrors.minPoints)
+                        setStatusErrors((prev) => ({
+                          ...prev,
+                          minPoints: undefined,
+                        }));
+                    }}
+                    placeholder="e.g. 10000"
+                    className={`${inputClass} ${statusErrors.minPoints ? "border-red-300 focus:ring-red-400" : ""}`}
+                  />
+                  {statusErrors.minPoints && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {statusErrors.minPoints}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <Button
+                    onClick={handleAddStatus}
+                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm h-9 px-4"
+                  >
+                    {editingId ? "Update Status" : "Add Status"}
+                  </Button>
+                  {editingId && (
+                    <Button
+                      variant="outline"
+                      onClick={handleCancelEdit}
+                      className="rounded-lg text-sm h-9 px-4"
+                    >
+                      Cancel
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* ── Table Section (3 cols) ── */}
+            <div className="lg:col-span-3">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-200">
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          Min Points
+                        </th>
+                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {statuses.length === 0 ? (
+                        <tr>
+                          <td
+                            colSpan={3}
+                            className="px-4 py-8 text-center text-sm text-gray-400"
+                          >
+                            No loyalty statuses defined yet. Add one using the
+                            form.
+                          </td>
+                        </tr>
+                      ) : (
+                        statuses.map((status) => (
+                          <tr
+                            key={status.id}
+                            className="hover:bg-gray-50 transition-colors"
+                          >
+                            <td className="px-4 py-3">
+                              <span
+                                className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${status.bgColor} ${status.color} border-current`}
+                              >
+                                <Diamond className="h-3 w-3" />
+                                {status.name}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-gray-700 font-medium">
+                              {status.minPoints.toLocaleString()} pts
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => handleEditStatus(status)}
+                                  className="p-1.5 rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                                  title="Edit"
+                                >
+                                  <Edit3 className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteStatus(status.id)}
+                                  className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                                  title="Delete"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

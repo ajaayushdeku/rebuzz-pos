@@ -36,7 +36,8 @@ const loginUser = async (
     if (!res.ok) {
       return {
         success: false,
-        error: data?.message ?? `Request failed with status ${res.status}`,
+        error: data?.error ?? data?.message,
+        // `Request failed with status ${res.status}`,
       };
     }
 

@@ -212,6 +212,22 @@ export default function Page() {
       return;
     }
 
+    // ── Stock validation: prevent save if any item exceeds available stock ──
+    for (const item of items) {
+      if (!item.productId) continue;
+      const product = products.find((p) => p.id === item.productId);
+      if (
+        product?.usesStocks &&
+        product.inStock !== undefined &&
+        item.quantity > product.inStock
+      ) {
+        toast.error(
+          `"${item.name}" quantity (${item.quantity}) exceeds available stock (${product.inStock}). Please adjust.`,
+        );
+        return;
+      }
+    }
+
     // Wait for custom product ID if still loading
     const customId = customProductIdRef.current;
     if (!customId) {

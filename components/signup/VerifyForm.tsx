@@ -122,25 +122,31 @@ export default function VerifyForm() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gray-100 px-6 font-sans">
-      <div className="my-8 flex items-center gap-2">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-6 font-sans">
+      {/* Logo */}
+      <div className="mb-6 md:mb-8 flex items-center gap-2">
         <span className="text-2xl text-blue-900 font-bold tracking-tight">
           <Link href="/">Rebuzz</Link>
         </span>
       </div>
 
-      <div className="mt-10 flex-1 flex flex-col">
-        <h1 className="text-[32px] font-semibold leading-tight text-blue-900 mb-4">
-          Time for verification
-        </h1>
-
-        <p className="text-blue-950 text-[15px] mb-8">
-          Please enter the OTP code we have sent you at{" "}
-          <span className="font-semibold">{email}</span>.
-        </p>
+      {/* Card */}
+      <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-200 shadow-sm p-6 md:p-8">
+        <div className="text-center mb-6">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
+            Time for verification
+          </h1>
+          <p className="text-sm text-gray-500">
+            Please enter the OTP code we have sent you at{" "}
+            <span className="font-semibold text-gray-700">{email}</span>.
+          </p>
+        </div>
 
         {/* OTP Inputs */}
-        <div className="flex gap-3 mb-6" onPaste={handlePaste}>
+        <div
+          className="flex justify-center gap-2 md:gap-3 mb-5"
+          onPaste={handlePaste}
+        >
           {digits.map((digit, i) => (
             <input
               key={i}
@@ -154,40 +160,62 @@ export default function VerifyForm() {
               onChange={(e) => handleChange(i, e.target.value)}
               onKeyDown={(e) => handleKeyDown(i, e)}
               disabled={isVerifying}
-              className={`w-12 h-14 text-center text-xl font-bold rounded-xl border-2 bg-white outline-none transition-all 
+              className={`w-10 h-12 md:w-12 md:h-14 text-center text-lg md:text-xl font-bold rounded-xl border-2 bg-white outline-none transition-all 
                 ${isVerifying ? "opacity-50 cursor-not-allowed" : ""} 
                 ${digit ? "border-blue-600 text-blue-900" : "border-gray-200 text-gray-800"}
-                focus:border-blue-500 focus:ring-2 focus:ring-green-200`}
+                focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
             />
           ))}
         </div>
 
         {/* Expiry */}
-        <p className="text-blue-800 text-[13px] mb-2">
-          Note: The code expires in{" "}
+        <p className="text-center text-xs text-gray-500 mb-4">
+          Code expires in{" "}
           <span
-            className={secondsLeft <= 30 ? "text-red-500 font-semibold" : ""}
+            className={
+              secondsLeft <= 30
+                ? "text-red-500 font-semibold"
+                : "font-medium text-gray-700"
+            }
           >
-            {minutes} min {seconds.toString().padStart(2, "0")} seconds
+            {minutes}:{seconds.toString().padStart(2, "0")}
           </span>
-          .
         </p>
 
+        {/* Server error */}
         {serverError && (
-          <p className="mt-2 text-sm text-red-500">{serverError}</p>
+          <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-4">
+            <p className="text-xs text-red-600 text-center font-medium">
+              {serverError}
+            </p>
+          </div>
         )}
 
-        {/* Send Again */}
+        {/* Resend button */}
         <Button
           onClick={handleResend}
           disabled={isResending || secondsLeft > 0}
-          className="w-full bg-blue-300 hover:bg-blue-400 text-white font-bold py-5 text-[16px] rounded-full mb-8 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 text-sm rounded-full transition-colors disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
         >
           <RotateCw
-            className={`w-5 h-5 ${isResending ? "animate-spin" : ""}`}
+            className={`w-4 h-4 ${isResending ? "animate-spin" : ""}`}
           />
           {isResending ? "Sending..." : "Send Again"}
         </Button>
+
+        <p className="text-xs text-gray-400 text-center mt-4">
+          Didn&lsquo;t receive the code? Check your spam folder or try again.
+        </p>
+      </div>
+
+      {/* Back to signup */}
+      <div className="mt-6 text-center">
+        <Link
+          href="/signup"
+          className="text-xs text-gray-500 hover:text-blue-600 transition-colors font-medium"
+        >
+          ← Back to sign up
+        </Link>
       </div>
     </div>
   );
