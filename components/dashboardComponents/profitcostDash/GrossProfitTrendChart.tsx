@@ -160,11 +160,11 @@ export default function GrossProfitTrendChart() {
     <div className="bg-white rounded-2xl px-4 py-3 border min-w-0 border-gray-100 shadow-md">
       {showSampleBadge && <SampleDataBadge />}
 
-      <div>
-        <h2 className="text-[16px] md:text-xl mt-1 font-bold text-gray-900">
+      <div className="mb-6">
+        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
           Gross vs Net Profit Trend
         </h2>
-        <p className="text-sm text-gray-400 mt-0.5">
+        <p className="text-xs text-gray-400 mt-0.5">
           Monthly comparison of revenue and net profit
         </p>
       </div>

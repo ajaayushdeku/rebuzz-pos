@@ -94,6 +94,7 @@ import {
   CheckCircle2,
   Zap,
 } from "lucide-react";
+import NavbarWelcome from "@/components/NavbarWelcome";
 
 const FEATURES = [
   {
@@ -122,40 +123,66 @@ const FEATURES = [
   },
 ];
 
-const HIGHLIGHTS = [
+const GUEST_HIGHLIGHTS = [
   "No setup fees — free to get started",
   "Works on any device",
   "Nepal-ready with NPR support",
   "Inventory & stock tracking",
 ];
 
+const AUTH_HIGHLIGHTS = [
+  "Monitor today's sales",
+  "Manage inventory & stock",
+  "Track expenses in real-time",
+  "View business analytics",
+];
+
+// const UserData = () => {
+//   const { data: profile, isLoading } = useQuery({
+//     queryKey: ["profile"],
+//     queryFn: fetchUserData,
+//   });
+
+//   return { profile, isLoading };
+// };
+
 const Page = async () => {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
+
+  // const userData = UserData();
+  // console.log("User Info:", userData);
 
   return (
     <div className="min-h-screen bg-white">
       {/* ── Navbar ── */}
       <nav className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-100 px-6 md:px-16 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
-            <Zap size={14} className="text-white" />
-          </div>
+          <Image
+            src="/rebuzz.png"
+            alt="ReBuzz Logo"
+            width={32}
+            height={32}
+            className="rounded-lg"
+          />
           <span className="text-gray-900 text-lg font-bold tracking-tight">
             ReBuzz
           </span>
         </div>
 
         {token ? (
-          <Button
-            asChild
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5 py-2 text-sm font-semibold"
-          >
-            <Link href="/dashboard" className="flex items-center gap-1.5">
-              Go to Dashboard
-              <ArrowRight size={14} />
-            </Link>
-          </Button>
+          <div className="flex items-center gap-4">
+            <NavbarWelcome />
+            <Button
+              asChild
+              className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5 py-2 text-sm font-semibold"
+            >
+              <Link href="/dashboard" className="flex items-center gap-1.5">
+                Go to Dashboard
+                <ArrowRight size={14} />
+              </Link>
+            </Button>
+          </div>
         ) : (
           <div className="flex items-center gap-2 md:gap-3">
             <Button
@@ -184,40 +211,72 @@ const Page = async () => {
           <Zap size={11} />
           Built for Nepal&lsquo;s businesses
         </span>
-
         <h1 className="text-gray-900 text-4xl sm:text-5xl md:text-6xl font-bold leading-tight tracking-tight max-w-3xl mx-auto">
-          Run your business <span className="text-blue-600">smarter</span>, not
-          harder
+          {token ? (
+            <>
+              Welcome back to <span className="text-blue-600">ReBuzz POS</span>
+            </>
+          ) : (
+            <>
+              Run your business <span className="text-blue-600">smarter</span>,
+              not harder
+            </>
+          )}
         </h1>
 
         <p className="text-gray-500 text-base md:text-lg mt-5 max-w-xl mx-auto leading-relaxed">
-          Rebuzz POS helps small business owners create invoices, track
-          inventory, accept payments, and understand their numbers — all in one
-          clean dashboard.
+          {token
+            ? "Monitor sales, manage inventory, track expenses, and grow your business from a single dashboard."
+            : "Rebuzz POS helps small business owners create invoices, track inventory, accept payments, and understand their numbers — all in one clean dashboard."}
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
-          <Button
-            asChild
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-7 py-3 text-base font-semibold w-full sm:w-auto"
-          >
-            <Link href="/signup" className="flex items-center gap-2">
-              Start for free
-              <ArrowRight size={16} />
-            </Link>
-          </Button>
-          <Button
-            asChild
-            variant="outline"
-            className="border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl px-7 py-3 text-base font-medium w-full sm:w-auto"
-          >
-            <Link href="/login">Sign in to your account</Link>
-          </Button>
+          {token ? (
+            <>
+              <Button
+                asChild
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-7 py-3 text-base font-semibold w-full sm:w-auto"
+              >
+                <Link href="/sales-revenue" className="flex items-center gap-2">
+                  Manage Sales
+                  <ArrowRight size={16} />
+                </Link>
+              </Button>
+
+              <Button
+                asChild
+                variant="outline"
+                className="border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl px-7 py-3 text-base font-medium w-full sm:w-auto"
+              >
+                <Link href="/dashboard/growth-tracker">View Reports</Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                asChild
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-7 py-3 text-base font-semibold w-full sm:w-auto"
+              >
+                <Link href="/signup" className="flex items-center gap-2">
+                  Start for free
+                  <ArrowRight size={16} />
+                </Link>
+              </Button>
+
+              <Button
+                asChild
+                variant="outline"
+                className="border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl px-7 py-3 text-base font-medium w-full sm:w-auto"
+              >
+                <Link href="/login">Sign in to your account</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Highlights */}
         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-6">
-          {HIGHLIGHTS.map((item) => (
+          {(token ? AUTH_HIGHLIGHTS : GUEST_HIGHLIGHTS).map((item) => (
             <div
               key={item}
               className="flex items-center gap-1.5 text-sm text-gray-500"
@@ -287,18 +346,26 @@ const Page = async () => {
       <section className="px-6 md:px-16 py-16 text-center">
         <div className="max-w-xl mx-auto">
           <h2 className="text-gray-900 text-2xl md:text-3xl font-bold">
-            Ready to simplify your business?
+            {token
+              ? "Continue growing your business"
+              : "Ready to simplify your business?"}
           </h2>
+
           <p className="text-gray-500 mt-3 text-sm md:text-base">
-            Join businesses already using Rebuzz POS to save time and grow
-            faster.
+            {token
+              ? "Access your dashboard, review reports, manage inventory, and track business performance in real time."
+              : "Join businesses already using Rebuzz POS to save time and grow faster."}
           </p>
+
           <Button
             asChild
             className="mt-7 bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-8 py-3 text-base font-semibold"
           >
-            <Link href="/signup" className="flex items-center gap-2">
-              Get started for free
+            <Link
+              href={token ? "/dashboard" : "/signup"}
+              className="flex items-center gap-2"
+            >
+              {token ? "Open Dashboard" : "Get started for free"}
               <ArrowRight size={16} />
             </Link>
           </Button>

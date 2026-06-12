@@ -119,10 +119,10 @@ export default function RefundAnalysis({
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full mt-4 overflow-hidden">
       <div className="min-w-0 mb-4">
-        <h1 className="font-bold md:text-xl text-[16px] text-gray-900">
+        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
           Refund Analysis
-        </h1>
-        <p className="text-gray-400 text-sm mt-0.5">
+        </h2>
+        <p className="text-xs text-gray-400 mt-0.5">
           All the refunded bills with lost value.
         </p>
       </div>

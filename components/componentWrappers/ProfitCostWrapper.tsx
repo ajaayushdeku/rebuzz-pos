@@ -19,6 +19,7 @@ import GrossProfitTrendChart from "../dashboardComponents/profitcostDash/GrossPr
 import ExpensesByCategoryChart from "../dashboardComponents/profitcostDash/ExpenseByCategoryChart";
 import BudgetTable from "../dashboardComponents/profitcostDash/BudgetTable";
 import ProfitCostStatBoxGrid from "../dashboardComponents/profitcostDash/ProfitCostStatGrid";
+import GrossVsCOGSVsNetProfit from "../dashboardComponents/profitcostDash/GrossVsCOGSVsNetProfit";
 
 export async function ProfitStatsWrapper({
   startDate,
@@ -74,6 +75,11 @@ export async function ExpenseStatsWrapper() {
 export function GrossProfitTrendChartWrapper() {
   // Chart now self-fetches via /api/dashboard/profit-trend
   return <GrossProfitTrendChart />;
+}
+
+export function GrossVsCOGSVsNetProfitWrapper() {
+  // Chart now self-fetches via /api/dashboard/profit-trend
+  return <GrossVsCOGSVsNetProfit />;
 }
 
 export async function ExpenseByCategoryChartWrapper() {

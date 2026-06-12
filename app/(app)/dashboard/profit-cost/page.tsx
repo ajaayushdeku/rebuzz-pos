@@ -7,6 +7,7 @@ import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import ProfitCostHeader from "@/components/dashboardComponents/profitcostDash/ProfitCostHeader";
 import {
   GrossProfitTrendChartWrapper,
+  GrossVsCOGSVsNetProfitWrapper,
   ProfitPerProductWrapper,
   ProfitStatsWrapper,
   RefundAnalysisWrapper,
@@ -103,6 +104,12 @@ export default async function Page({
       <ChartErrorBoundary>
         <Suspense fallback={<ChartSkeleton />}>
           <GrossProfitTrendChartWrapper />
+        </Suspense>
+      </ChartErrorBoundary>
+
+      <ChartErrorBoundary>
+        <Suspense fallback={<ChartSkeleton />}>
+          <GrossVsCOGSVsNetProfitWrapper />
         </Suspense>
       </ChartErrorBoundary>
 
