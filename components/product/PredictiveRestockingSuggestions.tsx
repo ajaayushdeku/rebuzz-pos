@@ -104,7 +104,8 @@ export default function PredictiveRestockingSuggestions({
           All stock levels are healthy
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+        // <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+        <div className="bg-white  overflow-x-auto">
           <table className="w-full text-sm min-w-[700px]">
             <thead>
               <tr className="text-xs text-gray-400 border-b border-gray-100">

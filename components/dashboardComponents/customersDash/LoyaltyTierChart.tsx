@@ -67,10 +67,10 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
       {isEmpty && <SampleDataBadge />}
       {/* Header */}
       <div className="mb-4 md:mb-6">
-        <h2 className="text-[16px] md:text-xl mt-1 font-bold text-gray-900">
+        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
           Loyalty Tier Breakdown
         </h2>
-        <p className="text-sm text-gray-400 mt-0.5">
+        <p className="text-xs text-gray-400 mt-0.5">
           Members by loyalty status
         </p>
       </div>

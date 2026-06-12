@@ -278,7 +278,7 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
 
   return (
     <>
-      <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-6 w-full">
+      <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-2 w-full">
         {isEmpty && <SampleDataBadge />}
 
         {/* Header */}
@@ -297,11 +297,11 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
                 <circle cx="12" cy="12" r="6" />
                 <circle cx="12" cy="12" r="2" />
               </svg>
-              <h1 className="text-[16px] md:text-xl mt-1 font-bold text-gray-900">
+              <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
                 Target vs Actual Revenue
-              </h1>
+              </h2>
             </div>
-            <p className="text-sm mt-0.5 text-gray-400">
+            <p className="text-xs text-gray-400 mt-0.5">
               Monthly performance against set targets
             </p>
           </div>

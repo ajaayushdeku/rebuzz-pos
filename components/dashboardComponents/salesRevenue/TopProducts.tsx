@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, ChevronDown, ChevronUp, ArrowUpDown } from "lucide-react";
+import {
+  Search,
+  ChevronDown,
+  ChevronUp,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { TopProduct } from "./top-product-columns";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrency } from "@/utils/helper";
@@ -99,10 +106,10 @@ export default function TopProducts({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
         <div>
-          <h1 className="font-bold mt-1 text-[16px] md:text-xl text-gray-900">
+          <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
             Top Selling Products
-          </h1>
-          <p className="text-gray-400 mt-0.5 text-sm">
+          </h2>
+          <p className="text-xs text-gray-400 mt-0.5">
             Products contributing most to revenue growth
           </p>
         </div>
@@ -136,7 +143,8 @@ export default function TopProducts({
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"> */}
+      <div className="bg-white  overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
@@ -256,26 +264,36 @@ export default function TopProducts({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between py-4">
-        <span className="text-sm text-gray-500">
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+        <button
+          onClick={() => setPage(Math.max(0, page - 1))}
+          disabled={page === 0}
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            page === 0
+              ? "text-gray-300 cursor-not-allowed"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+          }`}
+        >
+          <ChevronLeft size={14} />
+          Previous
+        </button>
+
+        <span className="text-xs text-gray-400 font-medium">
           Page {page + 1} of {totalPages} · {sorted.length} products
         </span>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setPage(Math.max(0, page - 1))}
-            disabled={page === 0}
-            className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-          >
-            Previous
-          </button>
-          <button
-            onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
-            disabled={page >= totalPages - 1}
-            className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-          >
-            Next
-          </button>
-        </div>
+
+        <button
+          onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
+          disabled={page >= totalPages - 1}
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            page >= totalPages - 1
+              ? "text-gray-300 cursor-not-allowed"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+          }`}
+        >
+          Next
+          <ChevronRight size={14} />
+        </button>
       </div>
     </div>
   );

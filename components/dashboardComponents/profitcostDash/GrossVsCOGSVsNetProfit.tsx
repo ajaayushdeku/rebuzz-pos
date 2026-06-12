@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
   BarChart,
   Bar,
@@ -26,6 +26,7 @@ import {
   type DateRangeValue,
 } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { useProfitPerProduct } from "@/hooks/useProfitPerProduct";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -198,6 +199,9 @@ export default function GrossVsCOGSVsNetProfit() {
   const [dateRange, setDateRange] = useState<DateRangeValue>(defaultRange);
   const { currency } = useCurrency();
 
+  const ITEMS_PER_PAGE = 5;
+  const [page, setPage] = useState(0);
+
   const {
     data: products,
     isFetching,
@@ -206,13 +210,12 @@ export default function GrossVsCOGSVsNetProfit() {
 
   // Transform Product[] → ChartDataPoint[]
   // Use same field names and calculations as ProfitPerProduct.tsx
-  const chartData = useMemo<ChartDataPoint[]>(() => {
+  const allChartData = useMemo<ChartDataPoint[]>(() => {
     if (!products || products.length === 0) return [];
 
     return products
       .filter((p) => p.revenue > 0) // exclude zero-revenue items
       .sort((a, b) => b.revenue - a.revenue) // highest revenue first
-      .slice(0, 12) // cap at 12 products for readability
       .map((p) => ({
         product: p.name,
         grossRevenue: p.revenue, // same as ProfitPerProduct "revenue"
@@ -221,10 +224,29 @@ export default function GrossVsCOGSVsNetProfit() {
       }));
   }, [products]);
 
+  const totalPages = Math.max(
+    1,
+    Math.ceil(allChartData.length / ITEMS_PER_PAGE),
+  );
+
+  // Reset page when data changes
+  const chartData = useMemo<ChartDataPoint[]>(() => {
+    const start = page * ITEMS_PER_PAGE;
+    return allChartData.slice(start, start + ITEMS_PER_PAGE);
+  }, [allChartData, page]);
+
   const displayData: ChartDataPoint[] =
     chartData.length > 0
       ? chartData
       : [{ product: "No Data", grossRevenue: 0, cogs: 0, netProfit: 0 }];
+
+  const goToPrevPage = useCallback(() => {
+    setPage((p) => Math.max(0, p - 1));
+  }, []);
+
+  const goToNextPage = useCallback(() => {
+    setPage((p) => Math.min(totalPages - 1, p + 1));
+  }, [totalPages]);
 
   // ── Dynamic Y-axis (handles negative net profit) ──────────────────────
   const allValues = displayData.flatMap((d) => [
@@ -399,8 +421,41 @@ export default function GrossVsCOGSVsNetProfit() {
         )}
       </div>
 
+      {/* Pagination controls */}
+      {allChartData.length > ITEMS_PER_PAGE && (
+        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+          <button
+            onClick={goToPrevPage}
+            disabled={page === 0}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              page === 0
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            }`}
+          >
+            <ChevronLeft size={14} />
+            Prev
+          </button>
+          <span className="text-xs text-gray-400 font-medium">
+            Page {page + 1} of {totalPages} · {allChartData.length} products
+          </span>
+          <button
+            onClick={goToNextPage}
+            disabled={page >= totalPages - 1}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              page >= totalPages - 1
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            }`}
+          >
+            Next
+            <ChevronRight size={14} />
+          </button>
+        </div>
+      )}
+
       {/* Empty state */}
-      {!isFetching && chartData.length === 0 && (
+      {!isFetching && allChartData.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 text-gray-400">
           <p className="text-sm">No product data for this date range</p>
           <p className="text-xs mt-1">Try adjusting the filter above</p>

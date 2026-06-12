@@ -69,14 +69,14 @@ const CustomTooltip = ({
 };
 
 const CustomLegend = () => (
-  <div className="flex items-center justify-center gap-6 mt-2">
+  <div className="flex items-center justify-center gap-4 mt-2">
     {[
       { label: "Gross Revenue", color: "#60a5fa" },
       { label: "Net Profit", color: "#34d399" },
     ].map(({ label, color }) => (
       <div key={label} className="flex items-center gap-1.5">
         <span
-          className="w-2 h-2 rounded-full shrink-0"
+          className="w-3 h-3 rounded-full shrink-0"
           style={{ backgroundColor: color }}
         />
         <span className="text-xs font-semibold" style={{ color }}>

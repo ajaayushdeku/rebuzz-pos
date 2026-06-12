@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, ChevronDown, ChevronUp, ArrowUpDown } from "lucide-react";
+import {
+  Search,
+  ChevronDown,
+  ChevronUp,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrency } from "@/utils/helper";
 
@@ -98,10 +105,10 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full mt-4 overflow-hidden">
-      <h1 className="font-bold text-[16px] md:text-xl">
+      <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
         Top Customers & Loyalty Points
-      </h1>
-      <p className="text-gray-400 text-sm mt-0.5">
+      </h2>
+      <p className="text-xs text-gray-400 mt-0.5">
         Highest value contributors this month
       </p>
 
@@ -123,7 +130,8 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+      {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
+      <div className="bg-white overflow-x-auto">
         <table className="w-full text-sm min-w-[600px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
@@ -219,26 +227,36 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between py-4">
-        <span className="text-sm text-gray-500">
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+        <button
+          onClick={() => setPage(Math.max(0, page - 1))}
+          disabled={page === 0}
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            page === 0
+              ? "text-gray-300 cursor-not-allowed"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+          }`}
+        >
+          <ChevronLeft size={14} />
+          Previous
+        </button>
+
+        <span className="text-xs text-gray-400 font-medium">
           Page {page + 1} of {totalPages} · {sorted.length} customers
         </span>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setPage(Math.max(0, page - 1))}
-            disabled={page === 0}
-            className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-          >
-            Previous
-          </button>
-          <button
-            onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
-            disabled={page >= totalPages - 1}
-            className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-          >
-            Next
-          </button>
-        </div>
+
+        <button
+          onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
+          disabled={page >= totalPages - 1}
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            page >= totalPages - 1
+              ? "text-gray-300 cursor-not-allowed"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+          }`}
+        >
+          Next
+          <ChevronRight size={14} />
+        </button>
       </div>
     </div>
   );

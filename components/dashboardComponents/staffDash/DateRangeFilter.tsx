@@ -236,6 +236,7 @@ export function DateRangeFilter({
             {displayText}
           </Button>
         </DialogTrigger>
+
         <DialogContent
           showCloseButton={false}
           className="w-[360px] sm:w-[375px] p-0 rounded-2xl shadow-xl bg-white"

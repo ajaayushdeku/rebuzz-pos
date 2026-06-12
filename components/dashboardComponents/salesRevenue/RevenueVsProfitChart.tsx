@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useMemo, useCallback } from "react";
 import {
   BarChart,
   Bar,
@@ -24,6 +25,7 @@ import { formatCurrency } from "@/utils/helper";
 import { CurrencyConfig, useCurrency } from "@/providers/CurrencyContext";
 import { useRevenueVsProfit } from "@/hooks/useRevenueVsProfit";
 import { CalendarDateFilter } from "@/components/dashboardComponents/staffDash/CalendarDateFilter";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 // Types
 
@@ -132,15 +134,30 @@ export default function RevenueVsProfitChart() {
   const effectiveStartDate = urlStartDate || defaultRange.startDate;
   const effectiveEndDate = urlEndDate || defaultRange.endDate;
 
+  const ITEMS_PER_PAGE = 5;
+  const [page, setPage] = useState(0);
+
   const { data, isFetching, isError } = useRevenueVsProfit(
     effectiveStartDate,
     effectiveEndDate,
   );
   const { currency } = useCurrency();
 
+  const allData = useMemo<ProductData[]>(() => {
+    if (!data || data.length === 0) return [];
+    return data;
+  }, [data]);
+
+  const totalPages = Math.max(1, Math.ceil(allData.length / ITEMS_PER_PAGE));
+
+  const chartData = useMemo<ProductData[]>(() => {
+    const start = page * ITEMS_PER_PAGE;
+    return allData.slice(start, start + ITEMS_PER_PAGE);
+  }, [allData, page]);
+
   const displayData =
-    data && data.length > 0
-      ? data
+    chartData.length > 0
+      ? chartData
       : [
           {
             product: "No Data",
@@ -148,6 +165,14 @@ export default function RevenueVsProfitChart() {
             profit: 0,
           },
         ];
+
+  const goToPrevPage = useCallback(() => {
+    setPage((p) => Math.max(0, p - 1));
+  }, []);
+
+  const goToNextPage = useCallback(() => {
+    setPage((p) => Math.min(totalPages - 1, p + 1));
+  }, [totalPages]);
 
   const formatYAxis = (value: number): string =>
     value >= 1000 || value <= -1000
@@ -223,7 +248,11 @@ export default function RevenueVsProfitChart() {
                   fill: "#9ca3af",
                   fontSize: 12,
                 }}
+                interval={0}
                 dy={8}
+                tickFormatter={(val: string) =>
+                  val.length > 10 ? val.slice(0, 9) + "…" : val
+                }
               />
               <YAxis
                 tickFormatter={formatYAxis}
@@ -249,6 +278,39 @@ export default function RevenueVsProfitChart() {
           </ResponsiveContainer>
         </div>
       </div>
+
+      {/* Pagination controls */}
+      {allData.length > ITEMS_PER_PAGE && (
+        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+          <button
+            onClick={goToPrevPage}
+            disabled={page === 0}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              page === 0
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            }`}
+          >
+            <ChevronLeft size={14} />
+            Prev
+          </button>
+          <span className="text-xs text-gray-400 font-medium">
+            Page {page + 1} of {totalPages} · {allData.length} products
+          </span>
+          <button
+            onClick={goToNextPage}
+            disabled={page >= totalPages - 1}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              page >= totalPages - 1
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            }`}
+          >
+            Next
+            <ChevronRight size={14} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

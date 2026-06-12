@@ -15,10 +15,10 @@ import {
 export default async function Page() {
   return (
     <div className="py-4 md:py-8 px-2 md:px-4">
-      <h1 className="font-bold text-[16px] md:text-xl text-gray-900 truncate">
+      <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
         Growth Tracker
-      </h1>
-      <p className="text-gray-400 mt-0.5 text-sm md:text-base">
+      </h2>
+      <p className="text-xs text-gray-400 mt-0.5">
         Month-over-month and year-over-year performance analysis
       </p>
 

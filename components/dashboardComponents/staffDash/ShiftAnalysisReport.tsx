@@ -27,14 +27,15 @@ export default function ShiftAnalysisReport({
     <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition duration-300 p-4 md:p-6 w-full mt-6">
       {/* Header */}
       <div className="mb-4">
-        <h2 className="text-[16px] md:text-xl font-bold text-gray-900">
+        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
           {title}
         </h2>
-        <p className="text-sm text-gray-400 mt-0.5">{description}</p>
+        <p className="text-xs text-gray-400 mt-0.5">{description}</p>
       </div>
 
       {/* Table — horizontally scrollable on mobile */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+      {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
+      <div className="bg-white overflow-x-auto">
         <table className="w-full text-sm min-w-[500px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">

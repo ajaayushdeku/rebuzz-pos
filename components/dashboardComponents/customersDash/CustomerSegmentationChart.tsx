@@ -73,10 +73,10 @@ export default function CustomerSegmentationChart({
       {isEmpty && <SampleDataBadge />}
 
       <div>
-        <h2 className="text-[16px] md:text-xl mt-1 font-bold text-gray-900">
+        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
           Customer Segmentation
         </h2>
-        <p className="text-sm  text-gray-400 mt-0.5">
+        <p className="text-xs text-gray-400 mt-0.5">
           Active vs Inactive customer distribution
         </p>
       </div>
