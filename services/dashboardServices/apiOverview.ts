@@ -187,9 +187,9 @@ export const getTopProducts = async (): Promise<TopProduct[]> => {
   const endDate = new Date().toISOString().split("T")[0];
   const startDate = new Date().toISOString().split("T")[0];
 
-  console.log(
-    `[getTopProducts] Fetching top products for date: ${startDate} to ${endDate}`,
-  );
+  // console.log(
+  //   `[getTopProducts] Fetching top products for date: ${startDate} to ${endDate}`,
+  // );
 
   // Step 1: Check the business report for the date range. If `allBills` is
   // empty, there's nothing to rank — bail out early without hitting the
@@ -204,17 +204,17 @@ export const getTopProducts = async (): Promise<TopProduct[]> => {
   const reportCheckJson = await safeJson<{
     data?: { report?: { allBills?: unknown[] } };
   }>(reportCheckRes);
-  console.log("REPORT TODAY:", reportCheckJson);
+  // console.log("REPORT TODAY:", reportCheckJson);
 
   const allBills = reportCheckJson?.data?.report?.allBills;
   const hasReportData = Array.isArray(allBills) && allBills.length > 0;
 
-  console.log(
-    "Has Report Data:",
-    hasReportData,
-    "allBills count:",
-    allBills?.length,
-  );
+  // console.log(
+  //   "Has Report Data:",
+  //   hasReportData,
+  //   "allBills count:",
+  //   allBills?.length,
+  // );
 
   if (!hasReportData) {
     console.log(
@@ -238,15 +238,15 @@ export const getTopProducts = async (): Promise<TopProduct[]> => {
     },
   );
 
-  console.log(
-    `${BASE}/business/report/salesByItem?startDate=${startDate}&endDate=${endDate}`,
-  );
+  // console.log(
+  //   `${BASE}/business/report/salesByItem?startDate=${startDate}&endDate=${endDate}`,
+  // );
 
   if (!res.ok) throw new Error(`Failed to fetch sales by item: ${res.status}`);
 
   const json = await res.json();
 
-  console.log("[getTopProducts] Raw API response:", json);
+  // console.log("[getTopProducts] Raw API response:", json);
 
   const rawItems: {
     itemName: string;

@@ -17,7 +17,7 @@ async function fetchRevenueVsProfit(
   startDate: string,
   endDate: string,
 ): Promise<ProductData[]> {
-  console.log(`Fetching revenue vs profit from ${startDate} to ${endDate}`);
+  // console.log(`Fetching revenue vs profit from ${startDate} to ${endDate}`);
 
   const res = await fetch(
     `/api/report/salesByItem?startDate=${startDate}&endDate=${endDate}`,
