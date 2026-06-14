@@ -631,6 +631,7 @@ export default function InvoiceItemsSelector({
       <ProductFormModal
         open={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
+        initialName={search}
         onSuccess={(result) => {
           if (activeRowId) {
             onItemsChange(

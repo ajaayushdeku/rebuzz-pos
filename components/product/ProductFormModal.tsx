@@ -14,8 +14,6 @@ import { Product } from "@/lib/types/product";
 import { useCreateProduct, useUpdateProduct } from "@/hooks/useProducts";
 import toast from "react-hot-toast";
 
-type SoldBy = "each" | "volume" | "";
-
 type ProductFormData = {
   name: string;
   price: number;
@@ -25,7 +23,6 @@ type ProductFormData = {
   usesStocks: boolean;
   inStock: number;
   lowStock: number;
-  soldBy: SoldBy;
 };
 
 type FormErrors = Partial<Record<keyof ProductFormData, string>>;
@@ -39,7 +36,6 @@ const INITIAL_FORM: ProductFormData = {
   usesStocks: false,
   inStock: 0,
   lowStock: 0,
-  soldBy: "",
 };
 
 // ── Reusable toggle ──
@@ -96,6 +92,8 @@ interface ProductFormModalProps {
   onClose: () => void;
   /** Pass an existing product for edit mode */
   product?: Product | null;
+  /** Pre-fill product name when creating */
+  initialName?: string;
   /**
    * Callback fired after successful save (create or update).
    * Not required — the modal handles its own toasts and invalidation.
@@ -107,6 +105,7 @@ export default function ProductFormModal({
   open,
   onClose,
   product,
+  initialName,
   onSuccess,
 }: ProductFormModalProps) {
   const isEditMode = !!product;
@@ -128,11 +127,10 @@ export default function ProductFormModal({
         usesStocks: product.usesStocks,
         inStock: product.inStock ?? 0,
         lowStock: product.lowStock ?? 0,
-        soldBy: product.soldBy ?? "",
       });
       setErrors({});
     } else if (!product && open) {
-      setForm(INITIAL_FORM);
+      setForm({ ...INITIAL_FORM, name: initialName ?? "" });
       setErrors({});
     }
   }, [product, open]);
@@ -182,7 +180,7 @@ export default function ProductFormModal({
             usesStocks: form.usesStocks,
             inStock: form.inStock,
             lowStock: form.lowStock,
-            soldBy: form.soldBy,
+            soldBy: "each",
           },
         },
         {
@@ -204,8 +202,8 @@ export default function ProductFormModal({
         description: form.description,
         isTaxable: form.isTaxable,
         usesStocks: form.usesStocks,
+        soldBy: "each",
       };
-      if (form.soldBy) payload.soldBy = form.soldBy;
       if (form.usesStocks) {
         payload.inStock = form.inStock;
         payload.lowStock = form.lowStock;
@@ -458,31 +456,6 @@ export default function ProductFormModal({
                   </div>
                 </div>
               </div>
-            )}
-          </Section>
-
-          {/* ── Sold by / Inventory type ── */}
-          <Section title="Inventory Type">
-            <div className="grid grid-cols-2 gap-2">
-              {(["each", "volume"] as SoldBy[]).filter(Boolean).map((opt) => (
-                <button
-                  key={opt}
-                  type="button"
-                  onClick={() => set("soldBy", form.soldBy === opt ? "" : opt)}
-                  className={`py-2.5 px-4 rounded-lg border text-sm font-medium transition ${
-                    form.soldBy === opt
-                      ? "border-blue-600 bg-blue-50 text-blue-700"
-                      : "border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  {opt.charAt(0).toUpperCase() + opt.slice(1)}
-                </button>
-              ))}
-            </div>
-            {!form.soldBy && (
-              <p className="text-xs text-gray-400 mt-1">
-                Optional — select how this product is measured.
-              </p>
             )}
           </Section>
         </div>
