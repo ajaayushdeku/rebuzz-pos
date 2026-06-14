@@ -164,33 +164,91 @@ export async function getCustomerStats(
   }
 }
 
+// ── Nepal time parser (shared) ────────────────────────────────────────────
+
+function parseNepalDate(rawDate: string): Date | null {
+  if (!rawDate) return null;
+  const normalized = rawDate.includes("T")
+    ? rawDate.replace("Z", "")
+    : rawDate.replace(" ", "T");
+  const rawHour = parseInt(normalized.split("T")[1]?.split(":")[0] ?? "12", 10);
+  let date: Date;
+  if (rawHour >= 12) {
+    date = new Date(normalized);
+  } else {
+    date = new Date(normalized + "+00:00");
+    date.setMinutes(date.getMinutes() + 5 * 60 + 45);
+  }
+  return isNaN(date.getTime()) ? null : date;
+}
+
+function toMonthKey(rawDate: string): string | null {
+  const date = parseNepalDate(rawDate);
+  if (!date) return null;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
 // ── getCustomerSegmentation ───────────────────────────────────────────────
 
 export async function getCustomerSegmentation(): Promise<SegmentData[]> {
   try {
-    const startDate = offsetDate(-15);
+    const activeStartDate = offsetDate(-15);
     const endDate = offsetDate(0);
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now);
+    thirtyDaysAgo.setDate(now.getDate() - 30);
 
-    const [users, bills] = await Promise.all([
+    const [users, activeBills] = await Promise.all([
       fetchAllUsers(),
-      fetchBillsInRange(startDate, endDate),
+      fetchBillsInRange(activeStartDate, endDate),
     ]);
 
-    // Which customer IDs were active in the last 15 days
+    // Active = has a bill in last 15 days
     const activeUserIds = new Set<string>();
-    for (const bill of bills) {
+    for (const bill of activeBills) {
       if (bill.customerId) activeUserIds.add(bill.customerId);
     }
 
-    let activeCount = 0;
+    // New = has createdAt within last 30 days
+    // No createdAt → skip new classification, fall into active/inactive
+    const newUserIds = new Set<string>();
     for (const user of users) {
-      if (activeUserIds.has(user._id)) activeCount++;
+      if (!user.createdAt) continue;
+      const created = parseNepalDate(user.createdAt);
+      if (created && created >= thirtyDaysAgo) {
+        newUserIds.add(user._id);
+      }
     }
-    const inactiveCount = users.length - activeCount;
+
+    let newAndActiveCount = 0;
+    let activeOnlyCount = 0;
+    let newOnlyCount = 0;
+    let inactiveCount = 0;
+
+    for (const user of users) {
+      const isActive = activeUserIds.has(user._id);
+      const isNew = newUserIds.has(user._id);
+
+      if (isNew && isActive) {
+        // Created in last 30 days AND has a bill in last 15 days
+        newAndActiveCount++;
+      } else if (isNew) {
+        // Created in last 30 days but no recent bill
+        newOnlyCount++;
+      } else if (isActive) {
+        // Has a bill in last 15 days, not a new customer
+        activeOnlyCount++;
+      } else {
+        // No createdAt or createdAt > 30 days ago, no recent bill
+        inactiveCount++;
+      }
+    }
 
     return [
-      { name: "Active", value: Math.max(activeCount, 0) },
+      { name: "Active", value: Math.max(activeOnlyCount, 0) },
       { name: "Inactive", value: Math.max(inactiveCount, 0) },
+      { name: "New", value: Math.max(newOnlyCount, 0) },
+      { name: "New & Active", value: Math.max(newAndActiveCount, 0) },
     ];
   } catch (err) {
     console.error("getCustomerSegmentation error:", err);
@@ -203,11 +261,9 @@ export async function getCustomerSegmentation(): Promise<SegmentData[]> {
 export async function getCustomerTrendData(): Promise<CustomerTrendData[]> {
   try {
     const now = new Date();
-
     const startDate = new Date(now.getFullYear(), now.getMonth() - 5, 1)
       .toISOString()
       .split("T")[0];
-
     const endDate = offsetDate(0);
 
     const [users, bills] = await Promise.all([
@@ -215,53 +271,115 @@ export async function getCustomerTrendData(): Promise<CustomerTrendData[]> {
       fetchBillsInRange(startDate, endDate),
     ]);
 
-    const totalUsers = users.length;
-
-    const monthCustomerMap = new Map<string, Set<string>>();
+    // ── Step 1: Per-month active customer sets (from bills) ───────────────
+    // monthActiveMap: "YYYY-MM" → Set<customerId>
+    const monthActiveMap = new Map<string, Set<string>>();
 
     for (const bill of bills) {
       if (!bill.customerId) continue;
-
       const rawDate = bill.paidAt ?? bill.createdAt;
       if (!rawDate) continue;
+      const monthKey = toMonthKey(rawDate);
+      if (!monthKey) continue;
 
-      const billDate = new Date(
-        rawDate.includes("T") ? rawDate : rawDate.replace(" ", "T") + "+05:45",
-      );
-
-      const monthKey = `${billDate.getFullYear()}-${String(
-        billDate.getMonth() + 1,
-      ).padStart(2, "0")}`;
-
-      if (!monthCustomerMap.has(monthKey)) {
-        monthCustomerMap.set(monthKey, new Set());
+      if (!monthActiveMap.has(monthKey)) {
+        monthActiveMap.set(monthKey, new Set());
       }
-
-      monthCustomerMap.get(monthKey)!.add(bill.customerId);
+      monthActiveMap.get(monthKey)!.add(bill.customerId);
     }
 
-    return Array.from(monthCustomerMap.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([monthKey, customerIds]) => {
-        const [year, month] = monthKey.split("-");
+    // ── Step 2: Per-month new customer sets (from createdAt only) ─────────
+    // monthNewMap: "YYYY-MM" → Set<customerId>
+    // Customers without createdAt are excluded from new — they go to active/inactive
+    const monthNewMap = new Map<string, Set<string>>();
 
-        const monthLabel = new Date(
-          Number(year),
-          Number(month) - 1,
-          1,
-        ).toLocaleString("en-US", {
-          month: "short",
-        });
+    for (const user of users) {
+      if (!user.createdAt) continue;
+      const monthKey = toMonthKey(user.createdAt);
+      if (!monthKey) continue;
 
-        const activeCount = customerIds.size;
+      if (!monthNewMap.has(monthKey)) {
+        monthNewMap.set(monthKey, new Set());
+      }
+      monthNewMap.get(monthKey)!.add(user._id);
+    }
 
-        return {
-          month: monthLabel,
-          active: activeCount,
-          inactive: totalUsers - activeCount,
-          totalCustomers: totalUsers,
-        };
-      });
+    // ── Step 3: Build userId → createdAt monthKey lookup ─────────────────
+    const userCreationMonthMap = new Map<string, string>();
+    for (const user of users) {
+      if (!user.createdAt) continue;
+      const monthKey = toMonthKey(user.createdAt);
+      if (monthKey) userCreationMonthMap.set(user._id, monthKey);
+    }
+
+    // ── Step 4: Generate all 6 month slots ───────────────────────────────
+    const monthSlots: string[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      monthSlots.push(key);
+    }
+
+    // ── Step 5: Assemble per-month metrics ────────────────────────────────
+    return monthSlots.map((monthKey) => {
+      const [year, month] = monthKey.split("-");
+      const monthLabel = new Date(
+        Number(year),
+        Number(month) - 1,
+        1,
+      ).toLocaleString("en-US", { month: "short" });
+
+      const activeSet = monthActiveMap.get(monthKey) ?? new Set<string>();
+      const newSet = monthNewMap.get(monthKey) ?? new Set<string>();
+
+      // new & active = created THIS month AND has bill THIS month
+      let newActive = 0;
+      // new only = created THIS month but NO bill THIS month
+      let newOnly = 0;
+
+      for (const userId of newSet) {
+        if (activeSet.has(userId)) {
+          newActive++;
+        } else {
+          newOnly++;
+        }
+      }
+
+      // active only = has bill THIS month AND was NOT created this month
+      let activeOnly = 0;
+      for (const userId of activeSet) {
+        if (!newSet.has(userId)) {
+          activeOnly++;
+        }
+      }
+
+      // inactive = customers who existed before this month
+      // (created before monthKey OR no createdAt) and have no bill this month
+      let inactive = 0;
+      for (const user of users) {
+        const isActive = activeSet.has(user._id);
+        const isNew = newSet.has(user._id); // created this month
+
+        if (isActive || isNew) continue; // already counted above
+
+        // Customer existed before this month if:
+        // - no createdAt (legacy record — definitely pre-existing)
+        // - createdAt month < this month
+        const creationMonth = userCreationMonthMap.get(user._id);
+        const existedBefore = !creationMonth || creationMonth < monthKey;
+
+        if (existedBefore) inactive++;
+      }
+
+      return {
+        month: monthLabel,
+        active: activeOnly,
+        inactive,
+        new: newOnly,
+        newActive,
+        totalCustomers: activeOnly + inactive + newOnly + newActive,
+      };
+    });
   } catch (err) {
     console.error("getCustomerTrendData error:", err);
     return mockCustomerTrendData;
@@ -321,9 +439,22 @@ export async function getAtRiskCustomers(): Promise<AtRiskCustomer[]> {
       return "Low";
     };
 
-    // At-risk = customers with no purchases in the last 15 days
+    // Determine new customers (created in the last 30 days) — exclude from at-risk
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // At-risk = customers with no purchases in the last 15 days, excluding new customers
     const atRisk = users
-      .filter((user) => !activeCustomerIds.has(user._id))
+      .filter((user) => {
+        if (activeCustomerIds.has(user._id)) return false;
+        // Exclude newly created customers (last 30 days)
+        if (user.createdAt) {
+          const createdDate = new Date(user.createdAt);
+          if (createdDate >= thirtyDaysAgo) return false;
+        }
+        return true;
+      })
       .slice(0, 20)
       .map((user, index) => ({
         rank: index + 1,

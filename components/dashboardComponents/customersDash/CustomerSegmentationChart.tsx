@@ -21,14 +21,11 @@ interface SegmentDataWithColor extends SegmentData {
 interface CustomerSegmentationChartProps {
   data: SegmentData[];
 }
-
 const COLOR_PALETTE = [
-  "#60a5fa",
-  "#34d399",
-  "#a78bfa",
-  "#f59e0b",
-  "#f87171",
-  "#ec4899",
+  "#2581eb", // Active
+  "#94a3b8", // Inactive
+  "#22c55e", // New
+  "#16f9a2", // New & Active
 ];
 
 const CustomTooltip = ({
@@ -61,6 +58,8 @@ export default function CustomerSegmentationChart({
       ? [
           { name: "Active", value: 1020 },
           { name: "Inactive", value: 400 },
+          { name: "New", value: 150 },
+          { name: "New & Active", value: 80 },
         ]
       : data
   ).map((entry, i) => ({
@@ -77,7 +76,7 @@ export default function CustomerSegmentationChart({
           Customer Segmentation
         </h2>
         <p className="text-xs text-gray-400 mt-0.5">
-          Active vs Inactive customer distribution
+          Active, Inactive, & New Customer distribution over the last 15 days
         </p>
       </div>
 

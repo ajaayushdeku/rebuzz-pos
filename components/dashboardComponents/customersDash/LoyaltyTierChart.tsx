@@ -33,12 +33,21 @@ interface CustomTooltipProps {
   payload?: Payload<ValueType, NameType>[];
 }
 
+const TIER_COLORS: Record<string, string> = {
+  Bronze: "#cd7f32",
+  Silver: "#a0a0a0",
+  Gold: "#ffd700",
+  Platinum: "#a78bfa",
+};
+
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
+    const tierName = (label as string) ?? "";
+    const color = TIER_COLORS[tierName] ?? "#60a5fa";
     return (
       <div className="bg-white rounded-xl px-4 py-2 shadow-lg border border-gray-100">
         <p className="text-gray-400 text-xs">{label}</p>
-        <p className="font-bold text-sm text-blue-500">
+        <p className="font-bold text-sm" style={{ color }}>
           {(payload[0].value as number).toLocaleString()} members
         </p>
       </div>
@@ -47,10 +56,12 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   return null;
 };
 
-// Rounded right-side corners only for horizontal bars
-const CustomBar = (props: BarShapeProps) => (
-  <Rectangle {...props} radius={[0, 6, 6, 0]} fill="#60a5fa" />
-);
+// Rounded right-side corners only for horizontal bars with tier-specific color
+const CustomBar = (props: BarShapeProps) => {
+  const tierName = props.payload?.tier ?? "";
+  const color = TIER_COLORS[tierName] ?? "#60a5fa";
+  return <Rectangle {...props} radius={[0, 6, 6, 0]} fill={color} />;
+};
 
 export default function LoyaltyTierChart({ data }: TierDataProps) {
   const isEmpty = !data || data.length === 0;
