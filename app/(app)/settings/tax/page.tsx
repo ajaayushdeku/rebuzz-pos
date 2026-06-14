@@ -1,15 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Search,
-  Loader2,
-  Trash2,
-  Layers,
-  Pencil,
-  Check,
-  Percent,
-} from "lucide-react";
+import { Search, Loader2, Layers } from "lucide-react";
 import {
   useTaxes,
   useToggleTax,
@@ -21,18 +13,14 @@ import {
 } from "@/hooks/useTaxes";
 import toast from "react-hot-toast";
 import { CreateTaxDialog } from "@/components/invoice/CreateTaxRate";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { GroupedTax, Tax } from "@/services/apiTaxes.client";
+import StandardTaxTable from "@/components/settingsComponents/taxes/StandardTaxTable";
+import GroupTaxTable from "@/components/settingsComponents/taxes/GroupTaxTable";
+import EditNormalTaxModal from "@/components/settingsComponents/taxes/EditNormalTaxModal";
+import EditGroupTaxModal from "@/components/settingsComponents/taxes/EditGroupTaxModal";
+import DeleteConfirmModal from "@/components/settingsComponents/DeleteConfirmModal";
 
-function Toggle({
+const Toggle = ({
   checked,
   loading,
   onClick,
@@ -40,7 +28,7 @@ function Toggle({
   checked: boolean;
   loading: boolean;
   onClick: () => void;
-}) {
+}) => {
   return (
     <button
       type="button"
@@ -56,10 +44,7 @@ function Toggle({
       )}
     </button>
   );
-}
-
-const inputClass =
-  "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+};
 
 export default function TaxSettingsPage() {
   const { data, isLoading } = useTaxes();
@@ -77,28 +62,26 @@ export default function TaxSettingsPage() {
   const [search, setSearch] = useState("");
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
-  // Edit modals
+  // Edit Normal Tax modal state
   const [editNormalOpen, setEditNormalOpen] = useState(false);
-  const [editingNormal, setEditingNormal] = useState<any | null>(null);
+  const [editingNormal, setEditingNormal] = useState<Tax | null>(null);
   const [editNormalForm, setEditNormalForm] = useState({ name: "", rate: 0 });
 
+  // Edit Group Tax modal state
   const [editGroupOpen, setEditGroupOpen] = useState(false);
-  const [editingGroup, setEditingGroup] = useState<any | null>(null);
-  const [editGroupName, setEditGroupName] = useState("");
-  const [editGroupTaxIds, setEditGroupTaxIds] = useState<string[]>([]);
-  const [editGroupSearch, setEditGroupSearch] = useState("");
+  const [editingGroup, setEditingGroup] = useState<GroupedTax | null>(null);
+
+  // Delete confirmation modal state
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    type: "normal" | "group";
+    item: Tax | GroupedTax;
+  } | null>(null);
 
   const taxes = data?.taxes ?? [];
   const groupedTaxes = data?.groupedTaxes ?? [];
   const taxSettings = data?.taxSettings;
   const isExclusive = taxSettings?.mode === "exclusive";
-
-  const filteredTaxes = taxes.filter((t) =>
-    t.name.toLowerCase().includes(search.toLowerCase()),
-  );
-  const filteredGroups = groupedTaxes.filter((g) =>
-    g.name.toLowerCase().includes(search.toLowerCase()),
-  );
 
   const handleToggle = (taxId: string, currentlyEnabled: boolean) => {
     setTogglingId(taxId);
@@ -169,14 +152,8 @@ export default function TaxSettingsPage() {
     );
   };
 
-  const getGroupRate = (taxIds: string[]) =>
-    taxIds.reduce((sum, id) => {
-      const t = taxes.find((x) => x._id === id);
-      return sum + (t?.rate ?? 0);
-    }, 0);
-
   // ── Normal Tax Edit ───────────────────────────────────
-  const openEditNormal = (tax: any) => {
+  const openEditNormal = (tax: Tax) => {
     setEditingNormal(tax);
     setEditNormalForm({ name: tax.name, rate: tax.rate });
     setEditNormalOpen(true);
@@ -206,44 +183,44 @@ export default function TaxSettingsPage() {
   };
 
   // ── Normal Tax Delete ─────────────────────────────────
-  const handleDeleteNormal = (tax: any) => {
+  const openDeleteNormal = (tax: Tax) => {
     if (!tax._docId) {
       toast.error("Missing document reference");
       return;
     }
-    if (!window.confirm(`Delete tax "${tax.name}"? This cannot be undone.`))
-      return;
+    setDeleteTarget({ type: "normal", item: tax });
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDeleteNormal = () => {
+    if (!deleteTarget || deleteTarget.type !== "normal") return;
+    const tax = deleteTarget.item as Tax;
+    if (!tax._docId) return;
     deleteNormalTax(
       { docId: tax._docId, taxId: tax._id },
       {
+        onSuccess: () => {
+          setDeleteModalOpen(false);
+          setDeleteTarget(null);
+        },
         onError: () => toast.error("Failed to delete tax"),
       },
     );
   };
 
   // ── Group Tax Edit ────────────────────────────────────
-  const openEditGroup = (group: any) => {
+  const openEditGroup = (group: GroupedTax) => {
     setEditingGroup(group);
-    setEditGroupName(group.name);
-    setEditGroupTaxIds([...group.taxIds]);
-    setEditGroupSearch("");
     setEditGroupOpen(true);
   };
 
-  const toggleEditGroupTaxId = (id: string) => {
-    setEditGroupTaxIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
-
-  const handleSaveGroupEdit = () => {
-    if (!editingGroup || !editGroupName.trim() || editGroupTaxIds.length === 0)
-      return;
+  const handleSaveGroupEdit = (payload: { name: string; taxIds: string[] }) => {
+    if (!editingGroup || !editingGroup._docId) return;
     updateGroupTax(
       {
         docId: editingGroup._docId,
         groupId: editingGroup._id,
-        payload: { name: editGroupName, taxIds: editGroupTaxIds },
+        payload,
       },
       {
         onSuccess: () => {
@@ -256,20 +233,26 @@ export default function TaxSettingsPage() {
   };
 
   // ── Group Tax Delete ──────────────────────────────────
-  const handleDeleteGroup = (group: any) => {
+  const openDeleteGroup = (group: GroupedTax) => {
     if (!group._docId) {
       toast.error("Missing document reference");
       return;
     }
-    if (
-      !window.confirm(
-        `Delete group tax "${group.name}"? This cannot be undone.`,
-      )
-    )
-      return;
+    setDeleteTarget({ type: "group", item: group });
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDeleteGroup = () => {
+    if (!deleteTarget || deleteTarget.type !== "group") return;
+    const group = deleteTarget.item as GroupedTax;
+    if (!group._docId) return;
     deleteGroupTax(
       { docId: group._docId, groupId: group._id },
       {
+        onSuccess: () => {
+          setDeleteModalOpen(false);
+          setDeleteTarget(null);
+        },
         onError: () => toast.error("Failed to delete group tax"),
       },
     );
@@ -326,73 +309,14 @@ export default function TaxSettingsPage() {
           <h3 className="text-sm font-semibold text-gray-800 mb-4">
             Standard Taxes
           </h3>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 size={16} className="animate-spin text-gray-400" />
-            </div>
-          ) : filteredTaxes.length === 0 ? (
-            <div className="text-center py-8 text-sm text-gray-400">
-              No taxes yet. Create one above.
-            </div>
-          ) : (
-            <div className="overflow-x-auto -mx-5 px-5 md:mx-0 md:px-0">
-              <div className="min-w-[500px]">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-xs text-gray-400 border-b border-gray-100">
-                      <th className="text-left pb-2.5 font-medium">Name</th>
-                      <th className="text-left pb-2.5 font-medium">Rate</th>
-                      <th className="text-center pb-2.5 font-medium">Status</th>
-                      <th className="text-right pb-2.5 font-medium">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredTaxes.map((tax) => (
-                      <tr
-                        key={tax._id}
-                        className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
-                      >
-                        <td className="py-3 font-medium text-gray-800">
-                          {tax.name}
-                        </td>
-                        <td className="py-3 text-gray-500">{tax.rate}%</td>
-                        <td className="py-3 text-center">
-                          <span
-                            className={`text-xs px-2 py-0.5 rounded-full font-medium ${tax.isEnabled ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"} `}
-                          >
-                            {tax.isEnabled ? "Active" : "Inactive"}
-                          </span>
-                        </td>
-                        <td className="py-3">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => openEditNormal(tax)}
-                              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            >
-                              <Pencil size={13} />
-                            </button>
-                            <Toggle
-                              checked={tax.isEnabled}
-                              loading={togglingId === tax._id}
-                              onClick={() =>
-                                handleToggle(tax._id, tax.isEnabled)
-                              }
-                            />
-                            <button
-                              onClick={() => handleDeleteNormal(tax)}
-                              className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          <StandardTaxTable
+            taxes={taxes}
+            search={search}
+            onEdit={openEditNormal}
+            onToggle={handleToggle}
+            onDelete={openDeleteNormal}
+            togglingId={togglingId}
+          />
         </div>
 
         {/* Group taxes */}
@@ -400,89 +324,19 @@ export default function TaxSettingsPage() {
           <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
             <Layers size={14} className="text-blue-500" /> Group Taxes
           </h3>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 size={16} className="animate-spin text-gray-400" />
-            </div>
-          ) : filteredGroups.length === 0 ? (
-            <div className="text-center py-8 text-sm text-gray-400">
-              No group taxes yet.
-            </div>
-          ) : (
-            <div className="overflow-x-auto -mx-5 px-5 md:mx-0 md:px-0">
-              <div className="min-w-[600px]">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-xs text-gray-400 border-b border-gray-100">
-                      <th className="text-left pb-2.5 font-medium">Name</th>
-                      <th className="text-left pb-2.5 font-medium">
-                        Combined Rate
-                      </th>
-                      <th className="text-left pb-2.5 font-medium">Includes</th>
-                      <th className="text-center pb-2.5 font-medium">Status</th>
-                      <th className="text-right pb-2.5 font-medium">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredGroups.map((group) => {
-                      const rate = getGroupRate(group.taxIds);
-                      const names = group.taxIds
-                        .map(
-                          (id) => taxes.find((t) => t._id === id)?.name ?? "",
-                        )
-                        .filter(Boolean)
-                        .join(", ");
-                      return (
-                        <tr
-                          key={group._id}
-                          className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
-                        >
-                          <td className="py-3 font-medium text-gray-800">
-                            {group.name}
-                          </td>
-                          <td className="py-3 text-blue-600 font-semibold">
-                            {rate}%
-                          </td>
-                          <td className="py-3 text-gray-400 text-xs whitespace-normal break-words">
-                            {names || "—"}
-                          </td>
-                          <td className="py-3 text-center">
-                            <span
-                              className={`text-xs px-2 py-0.5 rounded-full font-medium ${group.isEnabled ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
-                            >
-                              {group.isEnabled ? "Active" : "Inactive"}
-                            </span>
-                          </td>
-                          <td className="py-3">
-                            <div className="flex items-center justify-end gap-2">
-                              <Toggle
-                                checked={group.isEnabled}
-                                loading={togglingId === group._id}
-                                onClick={() =>
-                                  handleToggle(group._id, group.isEnabled)
-                                }
-                              />
-                              <button
-                                onClick={() => handleDeleteGroup(group)}
-                                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                              >
-                                <Trash2 size={13} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          <GroupTaxTable
+            groupedTaxes={groupedTaxes}
+            taxes={taxes}
+            search={search}
+            onToggle={handleToggle}
+            onDelete={openDeleteGroup}
+            togglingId={togglingId}
+          />
         </div>
       </div>
 
       {/* ── Edit Normal Tax Modal ─────────────────────────────── */}
-      <Dialog
+      <EditNormalTaxModal
         open={editNormalOpen}
         onOpenChange={(o) => {
           if (!o) {
@@ -490,85 +344,15 @@ export default function TaxSettingsPage() {
             setEditingNormal(null);
           }
         }}
-      >
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-base font-semibold">
-              Edit Tax
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 py-1">
-            <div>
-              <Label className="text-xs text-gray-500 mb-1.5 block">
-                Tax Name
-              </Label>
-              <Input
-                value={editNormalForm.name}
-                onChange={(e) =>
-                  setEditNormalForm((p) => ({ ...p, name: e.target.value }))
-                }
-                placeholder="e.g. VAT"
-              />
-            </div>
-            <div>
-              <Label className="text-xs text-gray-500 mb-1.5 block">
-                Rate (%)
-              </Label>
-              <div className="relative">
-                <Input
-                  type="number"
-                  min={0}
-                  max={100}
-                  className="pl-7"
-                  value={editNormalForm.rate}
-                  onChange={(e) =>
-                    setEditNormalForm((p) => ({
-                      ...p,
-                      rate: Number(e.target.value),
-                    }))
-                  }
-                />
-                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  <Percent className="h-3.5 w-3.5" />
-                </span>
-              </div>
-            </div>
-          </div>
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setEditNormalOpen(false);
-                setEditingNormal(null);
-              }}
-              className="text-sm rounded-lg"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSaveNormalEdit}
-              disabled={
-                updatingNormal ||
-                !editNormalForm.name.trim() ||
-                editNormalForm.rate <= 0
-              }
-              className="bg-blue-600 hover:bg-blue-700 text-sm rounded-lg"
-            >
-              {updatingNormal ? (
-                <>
-                  <Loader2 size={13} className="animate-spin mr-1.5" />
-                  Saving...
-                </>
-              ) : (
-                "Save"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        tax={editingNormal}
+        form={editNormalForm}
+        onFormChange={setEditNormalForm}
+        onSave={handleSaveNormalEdit}
+        isPending={updatingNormal}
+      />
 
       {/* ── Edit Group Tax Modal ──────────────────────────────── */}
-      <Dialog
+      <EditGroupTaxModal
         open={editGroupOpen}
         onOpenChange={(o) => {
           if (!o) {
@@ -576,138 +360,36 @@ export default function TaxSettingsPage() {
             setEditingGroup(null);
           }
         }}
-      >
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-base font-semibold">
-              Edit Group Tax
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 py-1">
-            <div>
-              <Label className="text-xs text-gray-500 mb-1.5 block">
-                Group Name
-              </Label>
-              <Input
-                value={editGroupName}
-                onChange={(e) => setEditGroupName(e.target.value)}
-                placeholder="e.g. Total Tax"
-              />
-            </div>
-            <div>
-              <Label className="text-xs text-gray-500 mb-1.5 block">
-                Select Taxes
-              </Label>
-              <div className="relative mb-2">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                <input
-                  value={editGroupSearch}
-                  onChange={(e) => setEditGroupSearch(e.target.value)}
-                  placeholder="Search taxes..."
-                  className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div className="max-h-40 overflow-y-auto space-y-1">
-                {taxes.length === 0 ? (
-                  <p className="text-xs text-gray-400 text-center py-4">
-                    No normal taxes available.
-                  </p>
-                ) : (
-                  taxes
-                    .filter((t) =>
-                      t.name
-                        .toLowerCase()
-                        .includes(editGroupSearch.toLowerCase()),
-                    )
-                    .map((tax) => {
-                      const isSelected = editGroupTaxIds.includes(tax._id);
-                      return (
-                        <button
-                          key={tax._id}
-                          type="button"
-                          onClick={() => toggleEditGroupTaxId(tax._id)}
-                          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border text-sm transition ${
-                            isSelected
-                              ? "border-blue-500 bg-blue-50 text-blue-700"
-                              : "border-gray-100 hover:border-gray-200 hover:bg-gray-50 text-gray-700"
-                          }`}
-                        >
-                          <div className="text-left">
-                            <p className="font-medium text-xs">{tax.name}</p>
-                            <p className="text-xs text-gray-400">{tax.rate}%</p>
-                          </div>
-                          <div
-                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                              isSelected
-                                ? "border-blue-500 bg-blue-500"
-                                : "border-gray-300"
-                            }`}
-                          >
-                            {isSelected && (
-                              <Check className="h-2.5 w-2.5 text-white" />
-                            )}
-                          </div>
-                        </button>
-                      );
-                    })
-                )}
-              </div>
-            </div>
-            {editGroupTaxIds.length > 0 && (
-              <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-blue-700">
-                      Combined Rate
-                    </p>
-                    <p className="text-xs text-blue-400 mt-0.5">
-                      {editGroupTaxIds
-                        .map((id) => {
-                          const t = taxes.find((x) => x._id === id);
-                          return t ? `${t.name} (${t.rate}%)` : "";
-                        })
-                        .join(" + ")}
-                    </p>
-                  </div>
-                  <p className="text-xl font-bold text-blue-700">
-                    {getGroupRate(editGroupTaxIds)}%
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setEditGroupOpen(false);
-                setEditingGroup(null);
-              }}
-              className="text-sm rounded-lg"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSaveGroupEdit}
-              disabled={
-                updatingGroup ||
-                !editGroupName.trim() ||
-                editGroupTaxIds.length === 0
-              }
-              className="bg-blue-600 hover:bg-blue-700 text-sm rounded-lg"
-            >
-              {updatingGroup ? (
-                <>
-                  <Loader2 size={13} className="animate-spin mr-1.5" />
-                  Saving...
-                </>
-              ) : (
-                "Save"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        group={editingGroup}
+        taxes={taxes}
+        onSave={handleSaveGroupEdit}
+        isPending={updatingGroup}
+      />
+
+      {/* ── Delete Confirmation Modal ─────────────────────────── */}
+      <DeleteConfirmModal
+        open={deleteModalOpen}
+        onOpenChange={(o) => {
+          if (!o) {
+            setDeleteModalOpen(false);
+            setDeleteTarget(null);
+          }
+        }}
+        title={
+          deleteTarget?.type === "normal" ? "Delete Tax" : "Delete Group Tax"
+        }
+        message={
+          deleteTarget
+            ? `Delete "${(deleteTarget.item as Tax | GroupedTax).name}"? This cannot be undone.`
+            : ""
+        }
+        onConfirm={
+          deleteTarget?.type === "normal"
+            ? confirmDeleteNormal
+            : confirmDeleteGroup
+        }
+        isPending={deletingNormal || deletingGroup}
+      />
     </div>
   );
 }

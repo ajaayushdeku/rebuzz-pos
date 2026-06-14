@@ -1,31 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Loader2, Plus, Percent, DollarSign } from "lucide-react";
+import { Search, Plus, Percent, DollarSign } from "lucide-react";
 import {
   useDiscounts,
   useCreateDiscount,
   useUpdateDiscount,
   useDeleteDiscount,
 } from "@/hooks/useDiscounts";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import DiscountTable from "@/components/settingsComponents/discounts/DiscountTable";
-
-type DiscountType = "percentage" | "fixed";
-
-type DiscountForm = {
-  name: string;
-  type: DiscountType;
-  rate: number;
-};
+import EditDiscountModal from "@/components/settingsComponents/discounts/EditDiscountModal";
+import DeleteConfirmModal from "@/components/settingsComponents/DeleteConfirmModal";
+import { Button } from "@/components/ui/button";
 
 export interface Discount {
   _id: string;
@@ -36,8 +23,13 @@ export interface Discount {
   _docId?: string;
 }
 
-const inputClass =
-  "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+type DiscountType = "percentage" | "fixed";
+
+type DiscountForm = {
+  name: string;
+  type: DiscountType;
+  rate: number;
+};
 
 export default function DiscountSettingsPage() {
   const { data: discounts = [], isLoading } = useDiscounts();
@@ -45,6 +37,8 @@ export default function DiscountSettingsPage() {
   const { mutate: updateDiscount, isPending: updating } = useUpdateDiscount();
   const { mutate: deleteDiscount, isPending: deleting } = useDeleteDiscount();
   const [search, setSearch] = useState("");
+
+  // Edit/Create modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Discount | null>(null);
   const [form, setForm] = useState<DiscountForm>({
@@ -53,10 +47,14 @@ export default function DiscountSettingsPage() {
     rate: 0,
   });
 
+  // Delete modal state
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Discount | null>(null);
+
   const percentageDiscounts = discounts.filter(
-    (d: any) => d.type === "percentage",
+    (d: Discount) => d.type === "percentage",
   );
-  const fixedDiscounts = discounts.filter((d: any) => d.type === "fixed");
+  const fixedDiscounts = discounts.filter((d: Discount) => d.type === "fixed");
 
   const openCreate = () => {
     setEditTarget(null);
@@ -70,23 +68,25 @@ export default function DiscountSettingsPage() {
     setModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const openDelete = (id: string) => {
     const target = discounts.find((d: Discount) => d._id === id);
     if (!target?._docId) {
       toast.error("Missing document reference");
       return;
     }
-    if (
-      !window.confirm(
-        `Delete discount "${target.name}"? This cannot be undone.`,
-      )
-    )
-      return;
+    setDeleteTarget(target);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (!deleteTarget?._docId) return;
     deleteDiscount(
-      { docId: target._docId, discountId: id },
+      { docId: deleteTarget._docId, discountId: deleteTarget._id },
       {
         onSuccess: () => {
           toast.success("Discount deleted");
+          setDeleteModalOpen(false);
+          setDeleteTarget(null);
         },
         onError: () => toast.error("Failed to delete discount"),
       },
@@ -183,14 +183,14 @@ export default function DiscountSettingsPage() {
             </h3>
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 size={16} className="animate-spin text-gray-400" />
+                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
               </div>
             ) : (
               <DiscountTable
                 discounts={percentageDiscounts}
                 search={search}
                 onEdit={openEdit}
-                onDelete={handleDelete}
+                onDelete={openDelete}
               />
             )}
           </div>
@@ -202,116 +202,48 @@ export default function DiscountSettingsPage() {
             </h3>
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 size={16} className="animate-spin text-gray-400" />
+                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
               </div>
             ) : (
               <DiscountTable
                 discounts={fixedDiscounts}
                 search={search}
                 onEdit={openEdit}
-                onDelete={handleDelete}
+                onDelete={openDelete}
               />
             )}
           </div>
         </div>
 
         {/* Create/Edit modal */}
-        <Dialog
+        <EditDiscountModal
           open={modalOpen}
-          onOpenChange={(o) => !o && setModalOpen(false)}
-        >
-          <DialogContent className="max-w-sm">
-            <DialogHeader>
-              <DialogTitle className="text-base font-semibold">
-                {editTarget ? "Edit Discount" : "New Discount"}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-3 py-1">
-              <div>
-                <label className="text-xs font-medium text-gray-500 block mb-1.5">
-                  Discount Name
-                </label>
-                <input
-                  value={form.name}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, name: e.target.value }))
-                  }
-                  placeholder="e.g. Seasonal Sale"
-                  className={inputClass}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-medium text-gray-500 block mb-1.5">
-                    Type
-                  </label>
-                  <select
-                    value={form.type}
-                    onChange={(e) =>
-                      setForm((p) => ({
-                        ...p,
-                        type: e.target.value as DiscountType,
-                      }))
-                    }
-                    className={`${inputClass} appearance-none`}
-                  >
-                    <option value="percentage">Percentage (%)</option>
-                    <option value="fixed">Fixed Amount</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-gray-500 block mb-1.5">
-                    Value
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                      {form.type === "percentage" ? (
-                        <Percent size={11} />
-                      ) : (
-                        <DollarSign size={11} />
-                      )}
-                    </span>
-                    <input
-                      type="number"
-                      min={0}
-                      value={form.rate}
-                      onChange={(e) =>
-                        setForm((p) => ({ ...p, rate: Number(e.target.value) }))
-                      }
-                      className={`${inputClass} pl-7`}
-                      placeholder="0"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <DialogFooter className="gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setModalOpen(false)}
-                className="text-sm rounded-lg"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSave}
-                disabled={creating || updating || deleting}
-                className="bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg"
-              >
-                {creating || updating ? (
-                  <>
-                    <Loader2 size={13} className="animate-spin mr-1.5" />
-                    Saving...
-                  </>
-                ) : editTarget ? (
-                  "Update"
-                ) : (
-                  "Create"
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          onOpenChange={setModalOpen}
+          editTarget={editTarget}
+          form={form}
+          onFormChange={setForm}
+          onSave={handleSave}
+          isPending={creating || updating}
+        />
+
+        {/* Delete confirmation modal */}
+        <DeleteConfirmModal
+          open={deleteModalOpen}
+          onOpenChange={(o) => {
+            if (!o) {
+              setDeleteModalOpen(false);
+              setDeleteTarget(null);
+            }
+          }}
+          title="Delete Discount"
+          message={
+            deleteTarget
+              ? `Delete "${deleteTarget.name}"? This cannot be undone.`
+              : ""
+          }
+          onConfirm={confirmDelete}
+          isPending={deleting}
+        />
       </div>
     </div>
   );
