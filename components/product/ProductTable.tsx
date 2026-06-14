@@ -71,9 +71,10 @@ export default function ProductTable({ products }: { products: Product[] }) {
 
   // ── Search & sort ──────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
-    if (!search) return products;
+    const nonCustom = products.filter((p) => p.name.toLowerCase() !== "custom");
+    if (!search) return nonCustom;
     const q = search.toLowerCase();
-    return products.filter((p) => p.name.toLowerCase().includes(q));
+    return nonCustom.filter((p) => p.name.toLowerCase().includes(q));
   }, [products, search]);
 
   const sorted = useMemo(() => {

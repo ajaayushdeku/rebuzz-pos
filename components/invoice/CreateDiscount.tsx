@@ -73,7 +73,12 @@ export const CreateDiscountDialog = () => {
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="discount-name">Discount Name</Label>
+            <Label
+              htmlFor="discount-name"
+              className="text-xs font-medium text-gray-500 block"
+            >
+              Discount Name
+            </Label>
             <Input
               id="discount-name"
               placeholder="e.g., Seasonal Sale"
@@ -88,7 +93,9 @@ export const CreateDiscountDialog = () => {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label>Type</Label>
+              <Label className="text-xs font-medium text-gray-500 block ">
+                Type
+              </Label>
               <Select
                 value={formData.type}
                 onValueChange={(val: "percentage" | "fixed") =>
@@ -108,7 +115,9 @@ export const CreateDiscountDialog = () => {
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label>Value</Label>
+              <Label className="text-xs font-medium text-gray-500 block">
+                Value
+              </Label>
               <div className="relative">
                 <Input
                   type="number"
@@ -121,24 +130,31 @@ export const CreateDiscountDialog = () => {
                     })
                   }
                 />
-                <span className="absolute left-2.5 top-4 text-muted-foreground">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                   {formData.type === "percentage" ? (
-                    <Percent className="h-4 w-4" />
+                    <Percent size={11} />
                   ) : (
-                    <DollarSign className="h-4 w-4" />
+                    <DollarSign size={11} />
                   )}
                 </span>
               </div>
             </div>
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setOpen(false)}
+            className="text-sm rounded-lg"
+          >
+            Cancel
+          </Button>
           <Button
             className="bg-blue-600 hover:bg-blue-700"
             onClick={handleSave}
             disabled={isPending}
           >
-            {isPending ? "Creating..." : "Save Discount"}
+            {isPending ? "Creating..." : "Create"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -41,8 +41,8 @@ const EditDiscountModal = ({
     <Dialog open={open} onOpenChange={(o) => !o && onOpenChange(false)}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle className="text-base font-semibold">
-            {editTarget ? "Edit Discount" : "New Discount"}
+          <DialogTitle className="text-blue-600">
+            {editTarget ? "Edit Discount" : "Create New Discount"}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3 py-1">
@@ -110,6 +110,7 @@ const EditDiscountModal = ({
           >
             Cancel
           </Button>
+
           <Button
             onClick={onSave}
             disabled={isPending || !form.name.trim() || form.rate <= 0}
