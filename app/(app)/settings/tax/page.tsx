@@ -162,6 +162,7 @@ export default function TaxSettingsPage() {
   const handleSaveNormalEdit = () => {
     if (
       !editingNormal ||
+      !editingNormal._docId ||
       !editNormalForm.name.trim() ||
       editNormalForm.rate <= 0
     )
