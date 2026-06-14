@@ -24,12 +24,12 @@ export const mockCustomerStats: CustomerApiResponse = {
   pointsPerMember: { value: 120 },
 };
 export const mockCustomerTrendData: CustomerTrendData[] = [
-  { month: "Sep", active: 150, inactive: 55 },
-  { month: "Oct", active: 160, inactive: 70 },
-  { month: "Nov", active: 162, inactive: 58 },
-  { month: "Dec", active: 170, inactive: 125 },
-  { month: "Jan", active: 175, inactive: 100 },
-  { month: "Feb", active: 210, inactive: 85 },
+  { month: "Sep", active: 150, inactive: 55, new: 20, newActive: 60 },
+  { month: "Oct", active: 160, inactive: 70, new:15,newActive:45 },
+  { month: "Nov", active: 162, inactive: 58 ,new:35,newActive:45 },
+  { month: "Dec", active: 170, inactive: 125 , new:23,newActive:56},
+  { month: "Jan", active: 175, inactive: 100, new:34, newActive:35 },
+  { month: "Feb", active: 210, inactive: 85 ,new:62,newActive:45},
 ];
 
 export const mockTopCustomers: TopCustomer[] = [
