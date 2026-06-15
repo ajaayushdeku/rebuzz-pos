@@ -1,7 +1,7 @@
 "use client";
 
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 export type Shift = {
   label: string;
@@ -78,7 +78,12 @@ export default function ShiftAnalysisReport({
                     </span>
                   </td>
                   <td className="py-3 px-4 text-center font-semibold text-green-600">
-                    {formatCurrency(shift.revenue as number, currency)}
+                    {/* {formatCurrency(shift.revenue as number, currency)} */}
+                    {formatCurrencySymbol(
+                      shift.revenue as number,
+                      currency.symbol,
+                      currency.locale,
+                    )}
                   </td>
                   <td className="py-3 px-4 text-center text-gray-600">
                     {shift.staff}

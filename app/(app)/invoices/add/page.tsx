@@ -34,6 +34,7 @@ const DEFAULT_ITEM: Omit<InvoiceItem, "id"> = {
   price: 0,
   discounts: [],
   taxes: [],
+  isTaxable: false,
 };
 
 const CUSTOM_PRODUCT_NAME = "Custom";
@@ -270,7 +271,7 @@ export default function Page() {
             isSelected: true,
           };
         }),
-        isTaxable: item.isTaxable ?? true,
+        isTaxable: item.isTaxable ?? false,
       })),
     };
 

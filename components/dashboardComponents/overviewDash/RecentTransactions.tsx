@@ -4,7 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { Transaction } from "../orderHistory/transaction-columns";
 import { statusStyles } from "@/lib/config/transaction";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrency, formatCurrencySymbol } from "@/utils/helper";
 
 type RecentTransactionsProps = {
   title?: string;
@@ -81,7 +81,12 @@ export default function RecentTransactions({
                       {tx.invoiceName}
                     </td>
                     <td className="py-3 px-4 text-right font-semibold text-gray-900">
-                      {formatCurrency(Number(tx.amount), currency)}
+                      {/* {formatCurrency(Number(tx.amount), currency)} */}
+                      {formatCurrencySymbol(
+                        Number(tx.amount),
+                        currency.symbol,
+                        currency.locale,
+                      )}
                     </td>
                     <td className="py-3 px-4 text-center">
                       <span

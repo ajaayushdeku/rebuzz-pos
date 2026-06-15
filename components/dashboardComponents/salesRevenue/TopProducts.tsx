@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { TopProduct } from "./top-product-columns";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 import { getPercentColor } from "@/lib/utils";
 import { DateRangeFilter } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
@@ -240,11 +240,21 @@ export default function TopProducts({
                     </td>
 
                     <td className="py-3 px-4 text-center font-semibold text-gray-900">
-                      {formatCurrency(product.revenue, currency)}
+                      {/* {formatCurrency(product.revenue, currency)} */}
+                      {formatCurrencySymbol(
+                        product.revenue,
+                        currency.symbol,
+                        currency.locale,
+                      )}
                     </td>
 
                     <td className="py-3 px-4 text-center font-semibold text-green-600">
-                      {formatCurrency(product.netProfit, currency)}
+                      {/* {formatCurrency(product.netProfit, currency)} */}
+                      {formatCurrencySymbol(
+                        product.netProfit,
+                        currency.symbol,
+                        currency.locale,
+                      )}
                     </td>
 
                     <td className="py-3 px-4 text-right">

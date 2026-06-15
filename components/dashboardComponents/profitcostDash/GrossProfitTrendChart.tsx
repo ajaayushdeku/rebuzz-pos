@@ -11,7 +11,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { mockGrossProfitTrendData } from "@/lib/mockData/mock-profitcostdata";
 import { CustomTooltipProps } from "@/lib/types/chart";
@@ -60,7 +60,12 @@ const CustomTooltip = ({
             <span className="text-xs text-gray-600">{entry.name}</span>
           </div>
           <span className="text-xs font-bold text-gray-800">
-            {formatCurrency(entry.value as number, currency)}
+            {/* {formatCurrency(entry.value as number, currency)} */}
+            {formatCurrencySymbol(
+              entry.value as number,
+              currency.symbol,
+              currency.locale,
+            )}
           </span>
         </div>
       ))}
@@ -129,9 +134,10 @@ export default function GrossProfitTrendChart() {
     const abs = Math.abs(value);
     if (abs >= 1000) {
       const sign = value < 0 ? "-" : "";
-      return `${sign}${currency.symbol}${abs / 1000}k`;
+      return `${sign}${currency.symbol} ${abs / 1000}k`;
     }
-    return formatCurrency(value, currency);
+    // return formatCurrency(value, currency);
+    return formatCurrencySymbol(value, currency.symbol, currency.locale);
   };
 
   const yTicks = getYAxisTicks(displayData);

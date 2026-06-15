@@ -23,6 +23,8 @@ import {
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 const TIER_STYLES: Record<string, string> = {
   Bronze: "bg-amber-100 text-amber-800 border-amber-200",
@@ -300,6 +302,7 @@ export default function CustomerTable({
 }: {
   customers: Customer[];
 }) {
+  const { currency } = useCurrency();
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null,
   );
@@ -389,7 +392,7 @@ export default function CustomerTable({
       {/* Table — horizontally scrollable on mobile */}
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
       <div className="bg-white overflow-x-auto">
-        <table className="w-full text-sm min-w-[700px]">
+        <table className="w-full text-sm min-w-[800px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
               <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
@@ -482,7 +485,11 @@ export default function CustomerTable({
 
                   <td className="py-3 px-4 text-center font-semibold">
                     {customer.totalDueAmount !== undefined
-                      ? `$${customer.totalDueAmount.toFixed(2)}`
+                      ? formatCurrencySymbol(
+                          customer.totalDueAmount,
+                          currency.symbol,
+                          currency.locale,
+                        )
                       : "—"}
                   </td>
                   <td className="py-3 px-4">

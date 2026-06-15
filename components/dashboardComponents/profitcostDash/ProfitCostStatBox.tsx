@@ -2,6 +2,7 @@
 import { ICON_MAP } from "@/lib/config/dashboard";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { StatBoxProps } from "../StatBox";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 export default function StatBox({
   label,
@@ -12,20 +13,19 @@ export default function StatBox({
   format = "number",
 }: StatBoxProps) {
   const { currency } = useCurrency();
-  const formatValue = (value: number) => {
+
+  const formatValue = (val: number) => {
     if (format === "currency") {
-      return new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: currency.code,
-        maximumFractionDigits: 2,
-      }).format(value);
+      return formatCurrencySymbol(val, currency.symbol, currency.locale);
     }
     if (format === "percent") {
-      return `${value}%`;
+      return `${val}%`;
     }
-    return value.toLocaleString();
+    return val.toLocaleString();
   };
+
   const Icon = ICON_MAP[iconName];
+
   return (
     <div className="border w-full px-3 py-4 md:px-6 md:py-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
       <div className="flex justify-between items-end ">

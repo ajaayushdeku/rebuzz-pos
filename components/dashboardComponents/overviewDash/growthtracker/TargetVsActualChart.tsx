@@ -16,7 +16,7 @@ import SetTargetsModal from "./SetTargetsModal";
 import SampleDataBadge from "@/components/ui/sampledatabadge";
 import { CustomTooltipProps } from "@/lib/types/chart";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 export interface TargetActualData {
   month: string;
@@ -112,7 +112,12 @@ const CustomTooltip = ({
             <span className="text-xs text-gray-600">{entry.name}</span>
           </div>
           <span className="text-xs font-bold text-gray-800">
-            {formatCurrency(entry.value as number, currency)}
+            {/* {formatCurrency(entry.value as number, currency)} */}
+            {formatCurrencySymbol(
+              entry.value as number,
+              currency.symbol,
+              currency.locale,
+            )}
           </span>
         </div>
       ))}
@@ -123,7 +128,8 @@ const CustomTooltip = ({
             className={`text-xs font-bold ${variance >= 0 ? "text-green-500" : "text-red-400"}`}
           >
             {variance >= 0 ? "+" : ""}
-            {formatCurrency(variance, currency)}
+            {/* {formatCurrency(variance, currency)} */}
+            {formatCurrencySymbol(variance, currency.symbol, currency.locale)}
           </span>
         </div>
       )}
@@ -263,8 +269,8 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
   const isEmpty = chartData.every((d) => d.actual === 0 && d.target === 0);
   const formatYAxis = (value: number): string =>
     value >= 1000
-      ? `${currency.symbol}${value / 1000}k`
-      : formatCurrency(value, currency);
+      ? `${currency.symbol} ${value / 1000}k`
+      : formatCurrencySymbol(value, currency.symbol, currency.locale);
   const yTicks = getYAxisTicks(chartData);
   const yMax = yTicks[yTicks.length - 1] * 1.05;
 

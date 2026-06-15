@@ -19,7 +19,7 @@ import type {
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
 
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 import { CurrencyConfig, useCurrency } from "@/providers/CurrencyContext";
 import {
   DateRangeFilter,
@@ -141,7 +141,12 @@ const CustomTooltip = ({
                 : "text-gray-800"
             }`}
           >
-            {formatCurrency(entry.value as number, currency)}
+            {/* {formatCurrency(entry.value as number, currency)} */}
+            {formatCurrencySymbol(
+              entry.value as number,
+              currency.symbol,
+              currency.locale,
+            )}
           </span>
         </div>
       ))}
@@ -268,8 +273,9 @@ export default function GrossVsCOGSVsNetProfit() {
 
   const formatYAxis = (value: number): string =>
     value >= 1000 || value <= -1000
-      ? `${currency.symbol}${(value / 1000).toFixed(1)}k`
-      : formatCurrency(value, currency);
+      ? `${currency.symbol} ${value / 1000}k`
+      : // : formatCurrency(value, currency);
+        formatCurrencySymbol(value, currency.symbol, currency.locale);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full mt-4">
@@ -314,17 +320,29 @@ export default function GrossVsCOGSVsNetProfit() {
             return [
               {
                 label: "Gross Revenue",
-                value: formatCurrency(totalGross, currency),
+                value: formatCurrencySymbol(
+                  totalGross,
+                  currency.symbol,
+                  currency.locale,
+                ),
                 color: "bg-gray-100 text-gray-700",
               },
               {
                 label: "COGS",
-                value: formatCurrency(totalCOGS, currency),
+                value: formatCurrencySymbol(
+                  totalCOGS,
+                  currency.symbol,
+                  currency.locale,
+                ),
                 color: "bg-pink-50 text-pink-700",
               },
               {
                 label: "Net Profit",
-                value: formatCurrency(totalNet, currency),
+                value: formatCurrencySymbol(
+                  totalNet,
+                  currency.symbol,
+                  currency.locale,
+                ),
                 color:
                   totalNet >= 0
                     ? "bg-blue-50 text-blue-700"

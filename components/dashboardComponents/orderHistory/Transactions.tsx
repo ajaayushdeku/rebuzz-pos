@@ -13,10 +13,10 @@ import {
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { Transaction } from "./transaction-columns";
-import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
+// import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
 import TransactionDetailModal from "./TransactionDetailModal";
 import { statusStyles, paymentMethods } from "@/lib/config/transaction";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
@@ -271,7 +271,7 @@ export default function Transactions({
       {/* Table — horizontally scrollable on mobile */}
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
       <div className="bg-white overflow-x-auto">
-        <table className="w-full text-sm min-w-[800px]">
+        <table className="w-full text-sm min-w-[900px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
               <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
@@ -377,7 +377,12 @@ export default function Transactions({
                     </td>
 
                     <td className="py-3 px-4 text-right font-semibold text-gray-900">
-                      {formatCurrency(Number(transaction.amount), currency)}
+                      {/* {formatCurrency(Number(transaction.amount), currency)} */}
+                      {formatCurrencySymbol(
+                        Number(transaction.amount),
+                        currency.symbol,
+                        currency.locale,
+                      )}
                     </td>
 
                     <td className="py-3 px-4 text-center">

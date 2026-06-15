@@ -1,6 +1,20 @@
 import { CurrencyConfig } from "@/lib/config/store";
 import { convertCurrency } from "@/lib/utils";
 
+// Format currency symbol only (no conversion)
+// Uses locale-aware number formatting (Indian/Nepali: 1,00,000 | Western: 1,000,000)
+export const formatCurrencySymbol = (
+  amount: number,
+  symbol: string,
+  locale: string = "en-US",
+) => {
+  const formatted = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+  return `${symbol} ${formatted}`;
+};
+
 // Remove this later
 export const formatCurrencyChangeLater = (amount: number) => {
   return new Intl.NumberFormat("en-US", {

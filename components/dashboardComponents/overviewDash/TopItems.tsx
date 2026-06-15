@@ -2,7 +2,7 @@
 
 import { TrendingUp } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 type Rank = 1 | 2 | 3;
 
@@ -49,7 +49,12 @@ const TopProductItem = ({ product }: SingleProductProps) => {
         </div>
       </div>
       <span className="shrink-0 text-sm font-semibold text-green-600">
-        {formatCurrency(product.totalRevenue, currency)}
+        {/* {formatCurrency(product.totalRevenue, currency)} */}
+        {formatCurrencySymbol(
+          product.totalRevenue,
+          currency.symbol,
+          currency.locale,
+        )}
       </span>
     </div>
   );

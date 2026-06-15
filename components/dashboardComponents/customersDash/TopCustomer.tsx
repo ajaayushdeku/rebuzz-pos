@@ -10,7 +10,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 export type LoyaltyTier = "Gold" | "Silver" | "Bronze" | "Platinum" | "None";
 
@@ -205,7 +205,12 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                     </span>
                   </td>
                   <td className="py-3 px-4 text-right font-semibold text-gray-900">
-                    {formatCurrency(customer.totalSpent, currency)}
+                    {/* {formatCurrency(customer.totalSpent, currency)} */}
+                    {formatCurrencySymbol(
+                      customer.totalSpent,
+                      currency.symbol,
+                      currency.locale,
+                    )}
                   </td>
                   <td className="py-3 px-4 text-center">
                     <span

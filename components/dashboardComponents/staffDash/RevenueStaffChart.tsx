@@ -13,7 +13,7 @@ import type { BarShapeProps } from "recharts";
 
 import SampleDataBadge from "@/components/ui/sampledatabadge";
 import { CustomTooltipProps } from "@/lib/types/chart";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 
 export interface StaffRevenue {
@@ -32,7 +32,12 @@ const CustomTooltip = ({
       <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100">
         <p className="text-gray-400 text-xs mb-1">{label}</p>
         <p className="text-blue-500 font-bold text-sm">
-          {formatCurrency(payload[0].value as number, currency)}
+          {/* {formatCurrency(payload[0].value as number, currency)} */}
+          {formatCurrencySymbol(
+            payload[0].value as number,
+            currency.symbol,
+            currency.locale,
+          )}
         </p>
       </div>
     );
@@ -54,8 +59,8 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
   const displayData = isEmpty ? [{ name: "No Data", revenue: 0 }] : data;
   const formatYAxis = (value: number): string =>
     value >= 1000
-      ? `${currency.symbol}${value / 1000}k`
-      : formatCurrency(value, currency);
+      ? `${currency.symbol} ${value / 1000}k`
+      : formatCurrencySymbol(value, currency.symbol, currency.locale);
 
   // Replace the hardcoded ticks/domain with dynamic calculation:
   const maxRevenue = Math.max(...displayData.map((d) => d.revenue), 1);

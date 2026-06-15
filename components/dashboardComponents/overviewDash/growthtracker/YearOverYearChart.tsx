@@ -17,7 +17,7 @@ import SampleDataBadge from "@/components/ui/sampledatabadge";
 import { CustomTooltipProps } from "@/lib/types/chart";
 import { mockYearOverYearData } from "@/lib/mockData/mock-growthtrackerdata";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 // Types
 
 export interface YoYData {
@@ -127,7 +127,12 @@ const CustomTooltip = ({
           </div>
 
           <span className="text-xs font-bold text-gray-800">
-            {formatCurrency(entry.value as number, currency)}
+            {/* {formatCurrency(entry.value as number, currency)} */}
+            {formatCurrencySymbol(
+              entry.value as number,
+              currency.symbol,
+              currency.locale,
+            )}
           </span>
         </div>
       ))}
@@ -160,8 +165,8 @@ export default function YearOverYearChart({ data }: YearOverYearProps) {
 
   const formatYAxis = (value: number): string =>
     value >= 1000
-      ? `${currency.symbol}${value / 1000}k`
-      : formatCurrency(value, currency);
+      ? `${currency.symbol} ${value / 1000}k`
+      : formatCurrencySymbol(value, currency.symbol, currency.locale);
 
   const yTicks = getYAxisTicks(displayData);
   const yMax = yTicks[yTicks.length - 1] * 1.05;

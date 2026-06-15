@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 import { DateRangeFilter } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { useRefundAnalysis } from "@/hooks/useRefundAnalysis";
@@ -256,7 +256,12 @@ export default function RefundAnalysis({
                   </td>
 
                   <td className="py-3 px-4 text-right font-semibold text-red-600">
-                    -{formatCurrency(item.loss, currency)}
+                    {/* -{formatCurrency(item.loss, currency)} */}-
+                    {formatCurrencySymbol(
+                      item.loss,
+                      currency.symbol,
+                      currency.locale,
+                    )}
                   </td>
                 </tr>
               ))

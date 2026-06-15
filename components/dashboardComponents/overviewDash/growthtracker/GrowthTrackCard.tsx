@@ -1,6 +1,7 @@
 "use client";
 
 import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 import {
   ArrowUpRight,
   ArrowDownRight,
@@ -41,49 +42,51 @@ export default function GrowthTrackCard({
 
   const { currency } = useCurrency();
 
-  const formatValue = (value: number) => {
+  const formatValue = (val: number) => {
     if (format === "currency") {
-      return new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: currency.code,
-        maximumFractionDigits: 0,
-      }).format(value);
+      return formatCurrencySymbol(val, currency.symbol, currency.locale);
     }
     if (format === "percent") {
-      return `${value}%`;
+      return `${val}%`;
     }
-    return value.toLocaleString();
+    return val.toLocaleString();
   };
 
   return (
     <div
-      className={`py-4 md:py-6  px-3 md:px-4 w-full border rounded-lg transition duration-300 shadow-md hover:shadow-lg border-gray-100  ${cardBg}`}
+      className={`p-4 md:p-6 w-full border rounded-2xl transition duration-300 shadow-sm hover:shadow-md border-gray-100 ${cardBg}`}
     >
-      <div className="flex items-end justify-between">
-        <p className="text-gray-700 text-[16px]">{label}</p>
-
-        <TrendIcon
-          className={`${iconColor} mb-1 text-[10px] md:text-[14px] shrink-0  ${iconBg} rounded-lg`}
-          size={20}
-        />
-      </div>
-
-      <div className="flex items-center justify-between py-2 md:py-4">
-        <div>
-          <p className="font-semibold text-xl">{formatValue(value)}</p>
-
-          <p className="text-sm text-gray-500">prev: {formatValue(prev)}</p>
-        </div>
+      <div className="flex items-center justify-between">
+        <p className="text-sm md:text-base font-medium text-gray-500">
+          {label}
+        </p>
 
         <div
-          className={`flex items-center ${badgeBg} ${badgeColor} rounded-lg px-1 text-[12px]`}
+          className={`w-8 h-8 flex items-center justify-center rounded-lg ${iconBg} shrink-0`}
         >
-          <ArrowIcon size={14} />
+          <TrendIcon size={16} className={iconColor} />
+        </div>
+      </div>
 
-          <p className="font-bold">
-            {percent > 0 ? "+" : ""}
-            {percent}%
+      <div className="mt-4 md:mt-6">
+        <p className="font-bold text-xl md:text-2xl text-gray-900">
+          {formatValue(value)}
+        </p>
+
+        <div className="flex items-center justify-between mt-1.5">
+          <p className="text-xs md:text-sm text-gray-400">
+            prev: {formatValue(prev)}
           </p>
+
+          <div
+            className={`flex items-center gap-0.5 ${badgeBg} ${badgeColor} rounded-full px-2 py-0.5 text-xs font-semibold`}
+          >
+            <ArrowIcon size={12} />
+            <span>
+              {percent > 0 ? "+" : ""}
+              {percent}%
+            </span>
+          </div>
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import type { TargetActualData } from "./TargetVsActualChart";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrency, formatCurrencySymbol } from "@/utils/helper";
 
 // Types
 
@@ -125,14 +125,19 @@ export default function SetTargetsModal({
                 <div className="flex items-center gap-1 text-xs text-gray-400">
                   <span>Actual:</span>
                   <span className="font-medium text-blue-500">
-                    {formatCurrency(row.actual, currency)}
+                    {/* {formatCurrency(row.actual, currency)} */}
+                    {formatCurrencySymbol(
+                      row.actual,
+                      currency.symbol,
+                      currency.locale,
+                    )}
                   </span>
                 </div>
 
                 {/* Target input */}
                 <div className="relative flex items-center">
                   <span className="absolute left-3 text-sm text-gray-400">
-                    {currency.symbol}
+                    {currency.symbol}{" "}
                   </span>
                   <input
                     type="number"
@@ -165,7 +170,12 @@ export default function SetTargetsModal({
           <div>
             <p className="text-xs text-gray-400">Total annual target</p>
             <p className="text-sm font-bold text-gray-800">
-              {formatCurrency(totalTarget, currency)}
+              {/* {formatCurrency(totalTarget, currency)} */}
+              {formatCurrencySymbol(
+                totalTarget,
+                currency.symbol,
+                currency.locale,
+              )}
             </p>
           </div>
           <div className="flex gap-2">

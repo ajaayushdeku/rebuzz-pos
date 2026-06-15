@@ -53,7 +53,7 @@ import {
 } from "lucide-react";
 import { Invoice } from "@/lib/types/invoice";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrency, formatDatetime } from "@/utils/helper";
+import { formatCurrencySymbol, formatDatetime } from "@/utils/helper";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -164,7 +164,7 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
       {/* Table — horizontally scrollable on mobile */}
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
       <div className="bg-white  overflow-x-auto">
-        <table className="w-full text-sm min-w-[800px]">
+        <table className="w-full text-sm min-w-[900px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
               <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
@@ -232,7 +232,12 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                     </td>
 
                     <td className="py-3 px-4 text-left font-semibold text-gray-900">
-                      {formatCurrency(Number(inv.amount), currency)}
+                      {/* {formatCurrency(Number(inv.amount), currency)} */}
+                      {formatCurrencySymbol(
+                        Number(inv.amount),
+                        currency.symbol,
+                        currency.locale,
+                      )}
                     </td>
 
                     <td className="py-3 px-4 text-gray-500 text-xs">

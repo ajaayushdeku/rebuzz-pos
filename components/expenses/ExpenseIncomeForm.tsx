@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Settings, ChevronDown } from "lucide-react";
+import { Plus, Settings, ChevronDown, ScanLine, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,6 +18,7 @@ import {
   TransactionType,
   useTracker,
 } from "@/providers/ExpenseContext";
+import BillScanner, { ExtractedExpense } from "./BillScanner";
 
 const inputClass =
   "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white";
@@ -37,6 +38,8 @@ export default function ExpenseIncomeForm() {
   const [endDate, setEndDate] = useState("");
   const [managingPurposes, setManagingPurposes] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   const purposes = tab === "expense" ? expensePurposes : incomePurposes;
 
@@ -76,23 +79,98 @@ export default function ExpenseIncomeForm() {
     setOpen(false);
   };
 
+  const handleExtracted = (extracted: ExtractedExpense) => {
+    // Pre-fill the form with extracted data
+    if (extracted.amount > 0) setAmount(String(extracted.amount));
+    if (extracted.date) setDate(extracted.date);
+    if (extracted.remarks) setRemarks(extracted.remarks);
+
+    // Match purpose to available list, fallback to first option
+    const matched = (tab === "expense" ? expensePurposes : incomePurposes).find(
+      (p) => p.toLowerCase() === extracted.purpose?.toLowerCase(),
+    );
+    if (matched) setPurpose(matched);
+    else if (expensePurposes.includes(extracted.purpose)) {
+      setPurpose(extracted.purpose);
+    }
+
+    // Show low-confidence warning
+    if (extracted.confidence < 0.6) {
+      toast("⚠️ Low confidence — please double-check the values", {
+        style: { fontSize: "13px" },
+      });
+    }
+
+    setScannerOpen(false);
+  };
+
   return (
     <>
       {/* ── Trigger button at top right ── */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Add {tab === "expense" ? "Expense" : "Income"}
-          </Button>
-        </DialogTrigger>
+        <div className="flex items-center gap-2">
+          {/* Main add button */}
+          <DialogTrigger asChild>
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Add {tab === "expense" ? "Expense" : "Income"}
+            </Button>
+          </DialogTrigger>
 
-        <DialogContent className="max-w-md">
+          {/* Scan bill button */}
+          <Button
+            variant="outline"
+            onClick={() => {
+              setScannerOpen((p) => !p);
+              setOpen(true);
+            }}
+            className="border-blue-200 text-blue-600 hover:bg-blue-50 rounded-lg flex items-center gap-2"
+          >
+            <ScanLine className="h-4 w-4" />
+            <span className="hidden sm:inline">Scan Bill</span>
+          </Button>
+        </div>
+
+        <DialogContent className="`max-w-md">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold">
               Add Transaction
             </DialogTitle>
           </DialogHeader>
+
+          {/* ── Bill scanner — collapsible ── */}
+          <div
+            className={`overflow-hidden transition-all duration-300 ${
+              scannerOpen ? "max-h-96 mb-2" : "max-h-0"
+            }`}
+          >
+            <div className="border border-blue-100 rounded-xl bg-blue-50/30 p-3">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-semibold text-blue-700 flex items-center gap-1.5">
+                  <ScanLine size={13} />
+                  Auto-fill from bill image
+                </p>
+                <button
+                  onClick={() => setScannerOpen(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X size={13} />
+                </button>
+              </div>
+              <BillScanner onExtracted={handleExtracted} />
+            </div>
+          </div>
+
+          {/* Scan bill toggle inside modal */}
+          {!scannerOpen && (
+            <button
+              onClick={() => setScannerOpen(true)}
+              className="w-full flex items-center justify-center gap-2 py-2 border border-dashed border-blue-200 text-blue-600 text-xs font-medium rounded-xl hover:bg-blue-50 transition-colors"
+            >
+              <ScanLine size={13} />
+              Auto-fill from bill image
+            </button>
+          )}
 
           {/* Tabs */}
           <div className="flex gap-1 bg-gray-100 rounded-lg p-1 mb-4">

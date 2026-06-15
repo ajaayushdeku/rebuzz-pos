@@ -13,7 +13,7 @@ import {
 import type { BarShapeProps } from "recharts";
 
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrency, formatCurrencySymbol } from "@/utils/helper";
 import type { CustomTooltipProps } from "@/lib/types/chart";
 import type { CompareSalesPoint } from "@/services/dashboardServices/apiSalesCompare";
 import { useSalesTrends } from "@/hooks/useSalesTrends";
@@ -50,7 +50,12 @@ const CustomTooltip = ({
     <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100">
       <p className="text-gray-400 text-xs mb-1">{label}</p>
       <p className="text-violet-500 font-bold text-sm">
-        {formatCurrency(payload[0].value as number, currency)}
+        {/* {formatCurrency(payload[0].value as number, currency)} */}
+        {formatCurrencySymbol(
+          payload[0].value as number,
+          currency.symbol,
+          currency.locale,
+        )}
       </p>
     </div>
   );
@@ -85,8 +90,8 @@ export default function SalesTrendChart() {
 
   const formatYAxis = (value: number): string =>
     value >= 1000
-      ? `${currency.symbol}${value / 1000}k`
-      : formatCurrency(value, currency);
+      ? `${currency.symbol} ${value / 1000}k`
+      : formatCurrencySymbol(value, currency.symbol, currency.locale);
 
   const yTicks = rawData ? getYAxisTicks(rawData) : [0, 0, 0, 0, 0];
   const yMax = yTicks[yTicks.length - 1] * 1.08;

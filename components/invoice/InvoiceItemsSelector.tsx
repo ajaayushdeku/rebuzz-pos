@@ -30,7 +30,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { updateProductTaxable } from "@/services/product/apiProduct.client";
 import DiscountPickerModal from "./DiscountPickerModal";
 import ProductDetailModal from "./ProductDetailModal";
 import ProductFormModal from "@/components/product/ProductFormModal";
@@ -122,6 +121,7 @@ export default function InvoiceItemsSelector({
         price: 0,
         discounts: [],
         taxes: [],
+        isTaxable: false,
       },
     ]);
   };
@@ -379,27 +379,13 @@ export default function InvoiceItemsSelector({
               <div className="flex justify-center">
                 <button
                   type="button"
-                  onClick={async () => {
+                  onClick={() => {
                     const newTaxable = !item.isTaxable;
                     onItemsChange(
                       items.map((i) =>
                         i.id === item.id ? { ...i, isTaxable: newTaxable } : i,
                       ),
                     );
-                    if (item.productId) {
-                      try {
-                        await updateProductTaxable(item.productId, newTaxable);
-                      } catch (err) {
-                        console.error("Failed to update isTaxable:", err);
-                        onItemsChange(
-                          items.map((i) =>
-                            i.id === item.id
-                              ? { ...i, isTaxable: !newTaxable }
-                              : i,
-                          ),
-                        );
-                      }
-                    }
                   }}
                   className={`relative inline-flex h-5 w-8 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
                     item.isTaxable ? "bg-blue-500" : "bg-gray-200"
@@ -575,33 +561,15 @@ export default function InvoiceItemsSelector({
                     <button
                       type="button"
                       className="ml-0.5 rounded-full hover:bg-green-300 p-0.5 transition-colors"
-                      onClick={async (e) => {
+                      onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
 
-                        // Optimistically update UI
                         onItemsChange(
                           items.map((i) =>
                             i.id === item.id ? { ...i, isTaxable: false } : i,
                           ),
                         );
-
-                        // Hit update API if product exists
-                        if (item.productId) {
-                          try {
-                            await updateProductTaxable(item.productId, false);
-                          } catch (err) {
-                            console.error("Failed to disable isTaxable:", err);
-                            // Revert on failure
-                            onItemsChange(
-                              items.map((i) =>
-                                i.id === item.id
-                                  ? { ...i, isTaxable: true }
-                                  : i,
-                              ),
-                            );
-                          }
-                        }
                       }}
                     >
                       <X className="w-2.5 h-2.5" />

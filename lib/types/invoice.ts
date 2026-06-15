@@ -52,7 +52,7 @@ export interface InvoiceItem {
   price: number;
   discounts: string[];
   taxes: string[];
-  isTaxable?: boolean;
+  isTaxable: boolean;
 }
 // export interface Discount {
 //   id: string;

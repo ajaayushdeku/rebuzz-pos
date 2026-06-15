@@ -3,6 +3,8 @@ import {
   getStockStatus,
   InventoryItem,
 } from "@/lib/mockData/mock-inventory-data";
+import { formatCurrencySymbol } from "@/utils/helper";
+import { useCurrency } from "@/providers/CurrencyContext";
 import { AlertCircle, TrendingUp } from "lucide-react";
 
 // const statusConfig = {
@@ -66,6 +68,7 @@ export default function ProductCard({ item }: { item: InventoryItem }) {
   const status = getStockStatus(item);
   const barPct = getBarPercent(item);
   const cfg = statusConfig[status];
+  const { currency } = useCurrency();
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 p-4">
@@ -144,7 +147,13 @@ export default function ProductCard({ item }: { item: InventoryItem }) {
       <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
         <span className="text-xs text-gray-400">
           Cost:{" "}
-          <span className="font-medium text-gray-600">${item.costPrice}</span>
+          <span className="font-medium text-gray-600">
+            {formatCurrencySymbol(
+              item.costPrice,
+              currency.symbol,
+              currency.locale,
+            )}
+          </span>
         </span>
         <div className="flex items-center gap-2">
           {item.isTaxable && (

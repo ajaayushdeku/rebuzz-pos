@@ -3,7 +3,7 @@
 import { ICON_MAP } from "@/lib/config/dashboard";
 import { getPercentColor } from "@/lib/utils";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 interface StatBoxProps {
   label: string;
@@ -71,7 +71,8 @@ const OverviewStatBox = ({
         <span className="font-bold text-xl md:text-2xl text-gray-900">
           {label === "Total Orders" || label === "Products Sold"
             ? value
-            : formatCurrency(value, currency)}
+            : //  : formatCurrency(value, currency)}
+              formatCurrencySymbol(value, currency.symbol, currency.locale)}
         </span>
 
         <div className="flex items-center gap-1 mt-1.5">

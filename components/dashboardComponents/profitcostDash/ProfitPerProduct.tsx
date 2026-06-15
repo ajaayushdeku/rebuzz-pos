@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { Product } from "./profit-per-product-column";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 import { DateRangeFilter } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { useProfitPerProduct } from "@/hooks/useProfitPerProduct";
@@ -155,7 +155,7 @@ export default function ProfitPerProduct({
       {/* Table — horizontally scrollable on mobile */}
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
       <div className="bg-white  overflow-x-auto">
-        <table className="w-full text-sm min-w-[500px]">
+        <table className="w-full text-sm min-w-[600px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
               <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
@@ -237,16 +237,29 @@ export default function ProfitPerProduct({
                     </span>
                   </td>
                   <td className="py-3 px-4 text-right font-semibold text-gray-900">
-                    {formatCurrency(product.revenue, currency)}
+                    {formatCurrencySymbol(
+                      product.revenue,
+                      currency.symbol,
+                      currency.locale,
+                    )}
                   </td>
                   <td className="py-3 px-4 text-right font-semibold text-red-600">
-                    -{formatCurrency(product.cogs, currency)}
+                    -
+                    {formatCurrencySymbol(
+                      product.cogs,
+                      currency.symbol,
+                      currency.locale,
+                    )}
                   </td>
 
                   <td
                     className={`py-3 px-4 text-right font-semibold  ${getProfitColor(product.profit)}`}
                   >
-                    {formatCurrency(product.profit, currency)}
+                    {formatCurrencySymbol(
+                      product.profit,
+                      currency.symbol,
+                      currency.locale,
+                    )}
                   </td>
 
                   <td className="py-3 px-4 text-right">

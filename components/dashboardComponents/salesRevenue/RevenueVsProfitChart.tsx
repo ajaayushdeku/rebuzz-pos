@@ -21,7 +21,7 @@ import type {
 } from "recharts/types/component/DefaultTooltipContent";
 
 import { useSearchParams } from "next/navigation";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 import { CurrencyConfig, useCurrency } from "@/providers/CurrencyContext";
 import { useRevenueVsProfit } from "@/hooks/useRevenueVsProfit";
 import { CalendarDateFilter } from "@/components/dashboardComponents/staffDash/CalendarDateFilter";
@@ -98,7 +98,12 @@ const CustomTooltip = ({
             </span>
           </div>
           <span className="text-xs font-bold text-gray-800">
-            {formatCurrency(entry.value as number, currency)}
+            {/* {formatCurrency(entry.value as number, currency)} */}
+            {formatCurrencySymbol(
+              entry.value as number,
+              currency.symbol,
+              currency.locale,
+            )}
           </span>
         </div>
       ))}
@@ -176,8 +181,8 @@ export default function RevenueVsProfitChart() {
 
   const formatYAxis = (value: number): string =>
     value >= 1000 || value <= -1000
-      ? `${currency.symbol}${(value / 1000).toFixed(1)}k`
-      : formatCurrency(value, currency);
+      ? `${currency.symbol} ${(value / 1000).toFixed(1)}k`
+      : formatCurrencySymbol(value, currency.symbol, currency.locale);
 
   // ── Dynamic Y-axis that handles negative profit ──
   const allValues =

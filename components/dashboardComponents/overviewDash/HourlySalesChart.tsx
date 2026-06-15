@@ -2,7 +2,7 @@
 
 import { CustomTooltipProps } from "@/lib/types/chart";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrency, formatCurrencySymbol } from "@/utils/helper";
 
 import {
   AreaChart,
@@ -34,7 +34,12 @@ const CustomTooltip = ({
       <div className="bg-white rounded-xl px-4 py-2 shadow-lg border border-gray-100">
         <p className="text-gray-400 text-xs">{label}</p>
         <p className="font-bold text-sm text-violet-600">
-          {formatCurrency(payload[0].value as number, currency)}
+          {/* {formatCurrency(payload[0].value as number, currency)} */}
+          {formatCurrencySymbol(
+            payload[0].value as number,
+            currency.symbol,
+            currency.locale,
+          )}
         </p>
       </div>
     );

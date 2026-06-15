@@ -14,7 +14,7 @@ import type { BarShapeProps } from "recharts";
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import { CustomTooltipProps, DataPoint } from "@/lib/types/chart";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrency, formatCurrencySymbol } from "@/utils/helper";
 
 interface WeeklyRevenueChartProps {
   data: DataPoint[];
@@ -35,7 +35,12 @@ const CustomTooltip = ({
       <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100">
         <p className="text-gray-400 text-xs mb-1">{label}</p>
         <p className="text-blue-500 font-bold text-base">
-          {formatCurrency(payload[0].value as number, currency)}
+          {/* {formatCurrency(payload[0].value as number, currency)} */}
+          {formatCurrencySymbol(
+            payload[0].value as number,
+            currency.symbol,
+            currency.locale,
+          )}
         </p>
       </div>
     );

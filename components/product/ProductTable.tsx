@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrency, formatCurrencySymbol } from "@/utils/helper";
 import {
   Search,
   ChevronDown,
@@ -71,10 +71,10 @@ export default function ProductTable({ products }: { products: Product[] }) {
 
   // ── Search & sort ──────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
-    const nonCustom = products.filter((p) => p.name.toLowerCase() !== "custom");
-    if (!search) return nonCustom;
+    // const nonCustom = products.filter((p) => p.name.toLowerCase() !== "custom");
+    // if (!search) return nonCustom;
     const q = search.toLowerCase();
-    return nonCustom.filter((p) => p.name.toLowerCase().includes(q));
+    return products.filter((p) => p.name.toLowerCase().includes(q));
   }, [products, search]);
 
   const sorted = useMemo(() => {
@@ -124,7 +124,7 @@ export default function ProductTable({ products }: { products: Product[] }) {
       {/* ── Table ────────────────────────────────────────── */}
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
       <div className="bg-white  overflow-x-auto">
-        <table className="w-full text-sm min-w-[800px]">
+        <table className="w-full text-sm min-w-[900px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
               <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
@@ -203,7 +203,12 @@ export default function ProductTable({ products }: { products: Product[] }) {
                     </span>
                   </td>
                   <td className="py-3 px-4 text-right font-semibold text-gray-900">
-                    {formatCurrency(product.price, currency)}
+                    {/* {formatCurrency(product.price, currency)} */}
+                    {formatCurrencySymbol(
+                      product.price,
+                      currency.symbol,
+                      currency.locale,
+                    )}
                   </td>
                   <td className="py-3 px-4 text-center">
                     {product.isTaxable ? (

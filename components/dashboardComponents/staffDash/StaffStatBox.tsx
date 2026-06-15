@@ -1,7 +1,7 @@
 "use client";
 
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 export interface StaffBoxProps {
   staffName: string;
@@ -91,47 +91,18 @@ export default function StaffStatBox({
           </div>
         </div>
 
-        {/* Metrics: horizontal 3-col on desktop, vertical rows on mobile */}
+        {/* Metrics: vertical rows (same for desktop and mobile) */}
         <div className="mt-4 pt-3 border-t border-gray-50">
-          {/* Desktop: 3 columns side by side */}
-          <div className="hidden sm:grid sm:grid-cols-3 sm:gap-2">
-            <div className="flex flex-col items-start">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
-                Orders
-              </p>
-              <p className="font-bold text-gray-900 text-sm mt-0.5">
-                {ordersTaken}
-              </p>
-            </div>
-            <div className="flex flex-col items-center">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
-                Avg Time
-              </p>
-              <p className="font-bold text-indigo-600 text-sm mt-0.5">
-                {avgTime || "—"}
-              </p>
-            </div>
-            <div className="flex flex-col items-end">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
-                Revenue
-              </p>
-              <p className="font-bold text-green-600 text-sm mt-0.5">
-                {formatCurrency(amount, currency)}
-              </p>
-            </div>
-          </div>
-
-          {/* Mobile: vertical rows with label & value horizontal */}
-          <div className="flex flex-col gap-2.5 sm:hidden">
+          <div className="flex flex-col gap-2.5">
             <div className="flex items-center justify-between">
               <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
-                Orders:
+                Orders
               </p>
               <p className="font-bold text-gray-900 text-sm">{ordersTaken}</p>
             </div>
             <div className="flex items-center justify-between">
               <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
-                Avg Time:
+                Avg Time
               </p>
               <p className="font-bold text-indigo-600 text-sm">
                 {avgTime || "—"}
@@ -139,10 +110,10 @@ export default function StaffStatBox({
             </div>
             <div className="flex items-center justify-between">
               <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
-                Revenue:
+                Revenue
               </p>
               <p className="font-bold text-green-600 text-sm">
-                {formatCurrency(amount, currency)}
+                {formatCurrencySymbol(amount, currency.symbol, currency.locale)}
               </p>
             </div>
           </div>

@@ -3,6 +3,8 @@
 import { RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { InvoiceStatsProps } from "@/lib/types/invoice";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 // import { useInvoiceStore } from "@/stores/invoiceStore";
 
 function fmtLocalDate(date: Date): string {
@@ -13,6 +15,7 @@ function fmtLocalDate(date: Date): string {
 }
 
 export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
+  const { currency } = useCurrency();
   // const getFilteredInvoices = useInvoiceStore(
   //   (state) => state.getFilteredInvoices,
   // );
@@ -77,10 +80,11 @@ export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
         <div>
           <p className="text-sm text-gray-600 mb-1">Today&#39;s Invoice Amt</p>
           <p className="md:text-3xl text-xl font-semibold text-gray-900">
-            ${totalSalesAmount.toFixed(2)}
-            <span className="md:text-base text-[12px] font-normal text-gray-500 ml-1">
-              USD
-            </span>
+            {formatCurrencySymbol(
+              totalSalesAmount,
+              currency.symbol,
+              currency.locale,
+            )}
           </p>
         </div>
 
@@ -88,10 +92,11 @@ export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
         <div>
           <p className="text-sm text-gray-600 mb-1">Cash in hand</p>
           <p className="md:text-3xl text-xl font-semibold text-gray-900">
-            ${(todayCash ?? 0).toFixed(2)}
-            <span className="md:text-base text-[12px] font-normal text-gray-500 ml-1">
-              USD
-            </span>
+            {formatCurrencySymbol(
+              todayCash ?? 0,
+              currency.symbol,
+              currency.locale,
+            )}
           </p>
         </div>
 
