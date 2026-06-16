@@ -1,3 +1,4 @@
+import { useCurrency } from "@/providers/CurrencyContext";
 import {
   Table,
   TableBody,
@@ -8,6 +9,7 @@ import {
 } from "../ui/table";
 
 export default function InvoiceBillTable({ invoices }) {
+  const { currency } = useCurrency();
   return (
     <div className="w-full overflow-hidden">
       <Table className="w-full border-collapse">
@@ -20,10 +22,10 @@ export default function InvoiceBillTable({ invoices }) {
               Quantity
             </TableHead>
             <TableHead className="text-black font-bold text-sm py-3 text-center w-[20%]">
-              Rate ( $)
+              Rate ( {currency.symbol} )
             </TableHead>
             <TableHead className="text-black font-bold text-sm py-3 text-right pr-0 w-[20%]">
-              Amount ($)
+              Amount ( {currency.symbol} )
             </TableHead>
           </TableRow>
         </TableHeader>

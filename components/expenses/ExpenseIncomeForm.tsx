@@ -19,6 +19,8 @@ import {
   useTracker,
 } from "@/providers/ExpenseContext";
 import BillScanner, { ExtractedExpense } from "./BillScanner";
+import { formatCurrencySymbolOnly } from "@/utils/helper";
+import { useCurrency } from "@/providers/CurrencyContext";
 
 const inputClass =
   "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white";
@@ -26,6 +28,8 @@ const inputClass =
 const FREQUENCIES: Frequency[] = ["daily", "weekly", "monthly", "yearly"];
 
 export default function ExpenseIncomeForm() {
+  const { currency } = useCurrency();
+
   const { addTransaction, expensePurposes, incomePurposes } = useTracker();
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<TransactionType>("expense");
@@ -266,7 +270,7 @@ export default function ExpenseIncomeForm() {
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
-                    Rs
+                    {formatCurrencySymbolOnly(currency.symbol)}
                   </span>
                   <input
                     type="number"

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Percent, DollarSign } from "lucide-react";
+import { Plus, Percent } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,8 +19,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCreateDiscount } from "@/hooks/useDiscounts";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbolOnly } from "@/utils/helper";
 
 export const CreateDiscountDialog = () => {
+  const { currency } = useCurrency();
   const [open, setOpen] = useState(false);
   const { mutate: createDiscount, isPending } = useCreateDiscount();
 
@@ -109,8 +112,8 @@ export const CreateDiscountDialog = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="percentage">Percentage (%)</SelectItem>
-                  <SelectItem value="fixed">Fixed Amount ($)</SelectItem>
+                  <SelectItem value="percentage">Percentage ( % )</SelectItem>
+                  <SelectItem value="fixed">Fixed Amount</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -134,7 +137,7 @@ export const CreateDiscountDialog = () => {
                   {formData.type === "percentage" ? (
                     <Percent size={11} />
                   ) : (
-                    <DollarSign size={11} />
+                    formatCurrencySymbolOnly(currency.symbol)
                   )}
                 </span>
               </div>

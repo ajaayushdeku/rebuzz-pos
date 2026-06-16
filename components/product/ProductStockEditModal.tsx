@@ -16,7 +16,10 @@ import {
   bulkUpdateStock,
   BulkStockUpdateItem,
 } from "@/services/product/apiProduct.client";
-import { useInvalidateInventory } from "@/hooks/useInventory";
+import {
+  useInvalidateInventory,
+  useOptimisticInventory,
+} from "@/hooks/useInventory";
 import toast from "react-hot-toast";
 
 type Props = {
@@ -36,6 +39,7 @@ export default function ProductStockEditModal({
   items,
 }: Props) {
   const invalidateInventory = useInvalidateInventory();
+  const { snapshot, applyOptimistic, rollback } = useOptimisticInventory();
   const [search, setSearch] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
   const [bulkSaving, setBulkSaving] = useState(false);
@@ -101,14 +105,29 @@ export default function ProductStockEditModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [edits, items]);
 
-  // save one (individual)
+  // save one (individual) – with optimistic UI update
   const handleSave = async (id: string) => {
+    const editItem = edits[id];
+    const originalItem = items.find((i) => i.id === id);
+    if (!editItem || !originalItem) return;
+
+    // 1. Snapshot current cache for potential rollback
+    const previousData = snapshot();
+
     try {
       setSavingId(id);
 
-      const editItem = edits[id];
-      const originalItem = items.find((i) => i.id === id);
+      // 2. Apply optimistic update – product card reflects new values instantly
+      applyOptimistic([
+        {
+          id,
+          inStock: editItem.inStock,
+          lowStock: editItem.lowStock,
+          usesStocks: originalItem.usesStocks ? undefined : true,
+        },
+      ]);
 
+      // 3. Persist to backend
       await updateProduct(id, {
         inStock: editItem.inStock,
         lowStock: editItem.lowStock,
@@ -117,16 +136,18 @@ export default function ProductStockEditModal({
           : {}),
       });
 
-      // Sync this item's edit to the saved values so hasChanged returns false
-      // even before the items prop updates
+      // 4. Sync local edits so hasChanged returns false
       setEdits((prev) => ({
         ...prev,
         [id]: { inStock: editItem.inStock, lowStock: editItem.lowStock },
       }));
 
+      // 5. Refetch to get the authoritative server state
       invalidateInventory();
     } catch (err) {
       console.error(err);
+      // 6. Rollback on failure
+      rollback(previousData);
     } finally {
       setSavingId(null);
     }
@@ -178,14 +199,39 @@ export default function ProductStockEditModal({
   // };
 
   const handleBulkSave = async () => {
+    const changedItems = items.filter(hasChanged);
+    if (changedItems.length === 0) return;
+
+    // 1. Snapshot current cache for potential rollback
+    const previousData = snapshot();
+
     try {
       setBulkSaving(true);
 
-      const changedItems = items.filter(hasChanged);
+      // 2. Build the updates list for optimistic UI
+      const optimisticUpdates = changedItems.map((item) => ({
+        id: item.id,
+        inStock: Number(edits[item.id].inStock),
+        lowStock: Number(edits[item.id].lowStock),
+        usesStocks: item.usesStocks ? undefined : true,
+      }));
 
-      if (changedItems.length === 0) return;
+      // 3. Apply optimistic update – all product cards reflect new values instantly
+      applyOptimistic(optimisticUpdates);
 
-      // First, enable usesStocks for items that don't have it
+      // 4. Sync local edits so hasChanged returns false immediately
+      setEdits((prev) => {
+        const updated = { ...prev };
+        for (const item of changedItems) {
+          updated[item.id] = {
+            inStock: edits[item.id].inStock,
+            lowStock: edits[item.id].lowStock,
+          };
+        }
+        return updated;
+      });
+
+      // 5. Persist to backend – enable usesStocks for items that need it
       const needsStocksEnabled = changedItems.filter(
         (item) => !item.usesStocks,
       );
@@ -215,24 +261,15 @@ export default function ProductStockEditModal({
         toast.success(`${result.totalItemsUpdated} item(s) updated`);
       }
 
-      // Sync all changed items' edits to their saved values
-      setEdits((prev) => {
-        const updated = { ...prev };
-        for (const item of changedItems) {
-          updated[item.id] = {
-            inStock: edits[item.id].inStock,
-            lowStock: edits[item.id].lowStock,
-          };
-        }
-        return updated;
-      });
-
+      // 6. Refetch to get the authoritative server state
       invalidateInventory();
     } catch (err) {
       console.error("Bulk save error:", err);
       toast.error(
         err instanceof Error ? err.message : "Failed to save changes",
       );
+      // 7. Rollback on failure – revert product cards to previous values
+      rollback(previousData);
     } finally {
       setBulkSaving(false);
     }

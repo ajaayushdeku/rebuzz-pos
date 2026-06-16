@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { CreateDiscountDialog } from "./CreateDiscount";
 import DiscountPickerModal from "./DiscountPickerModal";
+import { formatCurrencySymbol } from "@/utils/helper";
+import { useCurrency } from "@/providers/CurrencyContext";
 // import {
 //   Select,
 //   SelectContent,
@@ -36,6 +38,7 @@ export default function InvoiceDiscountCreate({
   onDiscountSelect,
   onDiscountRemove,
 }: InvoiceDiscountCreateProps) {
+  const { currency } = useCurrency();
   const [modalOpen, setModalOpen] = useState(false);
   const getDiscount = (id: string) => masterDiscounts.find((d) => d._id === id);
 
@@ -106,12 +109,21 @@ export default function InvoiceDiscountCreate({
                   <span>{d.name}</span>
 
                   <span className="text-gray-400 text-xs">
-                    ({d.type === "percentage" ? `${d.rate}%` : `$${d.rate}`})
+                    (
+                    {d.type === "percentage"
+                      ? ` ${d.rate}% `
+                      : ` ${formatCurrencySymbol(d.rate, currency.symbol, currency.locale)} `}
+                    )
                   </span>
                 </div>
 
                 <span className="text-blue-500 font-medium">
-                  -${amount.toFixed(2)}
+                  -{" "}
+                  {formatCurrencySymbol(
+                    amount,
+                    currency.symbol,
+                    currency.locale,
+                  )}
                 </span>
               </div>
             );
@@ -125,20 +137,33 @@ export default function InvoiceDiscountCreate({
           <div className="flex justify-between gap-12 text-sm text-gray-500">
             <span>Subtotal</span>
             <span className="font-medium text-gray-800">
-              ${subtotal.toFixed(2)}
+              {formatCurrencySymbol(subtotal, currency.symbol, currency.locale)}
             </span>
           </div>
 
           {discountAmount > 0 && (
-            <div className="flex justify-between gap-12 text-sm text-blue-500">
+            <div className="flex justify-between gap-12 text-sm text-blue-500 font-medium">
               <span>Discount</span>
-              <span>-${discountAmount.toFixed(2)}</span>
+              <span>
+                -{" "}
+                {formatCurrencySymbol(
+                  discountAmount,
+                  currency.symbol,
+                  currency.locale,
+                )}
+              </span>
             </div>
           )}
 
           <div className="flex justify-between gap-12 text-sm font-semibold text-gray-700 border-t pt-1.5">
             <span>After Discount</span>
-            <span>${Math.max(0, subtotal - discountAmount).toFixed(2)}</span>
+            <span>
+              {formatCurrencySymbol(
+                Math.max(0, subtotal - discountAmount),
+                currency.symbol,
+                currency.locale,
+              )}
+            </span>
           </div>
         </div>
       </div>

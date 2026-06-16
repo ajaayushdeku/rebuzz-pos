@@ -723,16 +723,15 @@ export default function InvoiceDetailPage() {
                 <p className="text-2xl font-semibold text-gray-800">
                   {displayBillData && displayBillData.status === "refunded" ? (
                     <span className="text-orange-600 font-bold">
-                      {currency.symbol}0.00
+                      {currency.symbol} 0.00
                     </span>
                   ) : invoice.paidStatus === "paid" ? (
                     <span className="text-green-600 font-bold">
-                      {currency.symbol}0.00
+                      {currency.symbol} 0.00
                     </span>
                   ) : (
                     <span className="text-600 font-bold">
-                      {currency.symbol}
-                      {invoice.grandTotal.toFixed(2)}
+                      {currency.symbol} {invoice.grandTotal.toFixed(2)}
                     </span>
                   )}
                 </p>
@@ -929,11 +928,15 @@ export default function InvoiceDetailPage() {
                 <p className="text-gray-600">
                   <span className="font-medium">Amount due:</span>{" "}
                   {displayBillData && displayBillData.status === "refunded" ? (
-                    <span className="text-orange-600 font-bold">$0.00</span>
+                    <span className="text-orange-600 font-bold">
+                      {currency.symbol} 0.00
+                    </span>
                   ) : invoice.paidStatus === "paid" ? (
-                    <span className="text-green-600 font-bold">$0.00</span>
+                    <span className="text-green-600 font-bold">
+                      {currency.symbol} 0.00
+                    </span>
                   ) : (
-                    `$${invoice.grandTotal.toFixed(2)}`
+                    `${currency.symbol} ${invoice.grandTotal.toFixed(2)}`
                   )}
                   {invoice.paidStatus !== "paid" && (
                     <>
@@ -1384,7 +1387,7 @@ export default function InvoiceDetailPage() {
 
       {/* ── Payment Modal ── */}
       {isPaymentModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50  p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
               <h2 className="text-xl font-semibold text-gray-700">
@@ -1439,16 +1442,14 @@ export default function InvoiceDetailPage() {
                 <div className="flex justify-between text-gray-500">
                   <span>Subtotal</span>
                   <span className="font-medium text-gray-800">
-                    {currency.symbol}
-                    {subtotalBeforeTax.toFixed(2)}
+                    {currency.symbol} {subtotalBeforeTax.toFixed(2)}
                   </span>
                 </div>
                 {isTaxApplied && (
                   <div className="flex justify-between text-blue-600">
                     <span>Tax</span>
                     <span>
-                      +{currency.symbol}
-                      {taxAmount.toFixed(2)}
+                      +{currency.symbol} {taxAmount.toFixed(2)}
                     </span>
                   </div>
                 )}
@@ -1456,8 +1457,7 @@ export default function InvoiceDetailPage() {
                   <div className="flex justify-between text-red-500">
                     <span>Discount</span>
                     <span>
-                      −{currency.symbol}
-                      {computedDiscountAmount.toFixed(2)}
+                      −{currency.symbol} {computedDiscountAmount.toFixed(2)}
                     </span>
                   </div>
                 )}
@@ -1465,16 +1465,14 @@ export default function InvoiceDetailPage() {
                   <div className="flex justify-between text-violet-500">
                     <span>Loyalty redeemed</span>
                     <span>
-                      −{currency.symbol}
-                      {redeemPoints.toFixed(2)}
+                      −{currency.symbol} {redeemPoints.toFixed(2)}
                     </span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-gray-800 border-t pt-1.5 mt-1">
                   <span>Total payable</span>
                   <span>
-                    {currency.symbol}
-                    {finalPayable.toFixed(2)}
+                    {currency.symbol} {finalPayable.toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -1541,8 +1539,8 @@ export default function InvoiceDetailPage() {
                   paymentData.discount > 0 &&
                   !discountError && (
                     <p className="text-xs text-gray-400 mt-1">
-                      {paymentData.discount}% of {currency.symbol}
-                      {subtotalBeforeTax.toFixed(2)} = {currency.symbol}
+                      {paymentData.discount}% of {currency.symbol}{" "}
+                      {subtotalBeforeTax.toFixed(2)} = {currency.symbol}{" "}
                       {computedDiscountAmount.toFixed(2)} off
                     </p>
                   )}
@@ -1641,7 +1639,7 @@ export default function InvoiceDetailPage() {
                         )}
                         {!redeemError && redeemPoints > 0 && (
                           <p className="text-xs text-violet-500 mt-1">
-                            {redeemPoints} pts = {currency.symbol}
+                            {redeemPoints} pts = {currency.symbol}{" "}
                             {redeemPoints.toFixed(2)} off
                           </p>
                         )}
@@ -1657,8 +1655,7 @@ export default function InvoiceDetailPage() {
                     Final Amount
                   </p>
                   <p className="text-3xl font-bold text-gray-800">
-                    {currency.symbol}
-                    {finalPayable.toFixed(2)}
+                    {currency.symbol} {finalPayable.toFixed(2)}
                   </p>
                 </div>
                 <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full font-medium capitalize">

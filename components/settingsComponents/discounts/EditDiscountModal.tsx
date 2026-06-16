@@ -1,4 +1,4 @@
-import { Loader2, Percent, DollarSign } from "lucide-react";
+import { Loader2, Percent } from "lucide-react";
 import { Discount } from "@/app/(app)/settings/discount/page";
 import {
   Dialog,
@@ -8,6 +8,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { formatCurrencySymbolOnly } from "@/utils/helper";
+import { useCurrency } from "@/providers/CurrencyContext";
 
 type DiscountType = "percentage" | "fixed";
 
@@ -37,6 +39,7 @@ const EditDiscountModal = ({
   onSave: () => void;
   isPending: boolean;
 }) => {
+  const { currency } = useCurrency();
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onOpenChange(false)}>
       <DialogContent className="max-w-sm">
@@ -85,7 +88,7 @@ const EditDiscountModal = ({
                   {form.type === "percentage" ? (
                     <Percent size={11} />
                   ) : (
-                    <DollarSign size={11} />
+                    formatCurrencySymbolOnly(currency.symbol)
                   )}
                 </span>
                 <input

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Discount } from "@/app/(app)/settings/discount/page";
 import { Pencil, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 const PAGE_SIZE = 5;
 
@@ -15,6 +17,7 @@ const DiscountTable = ({
   onEdit: (d: Discount) => void;
   onDelete: (id: string) => void;
 }) => {
+  const { currency } = useCurrency();
   const [page, setPage] = useState(0);
 
   const filtered = discounts.filter((d) =>
@@ -55,7 +58,9 @@ const DiscountTable = ({
             >
               <td className="py-3 font-medium text-gray-800">{d.name}</td>
               <td className="py-3 text-gray-600">
-                {d.type === "percentage" ? `${d.rate}%` : `Rs ${d.rate}`}
+                {d.type === "percentage"
+                  ? `${d.rate}%`
+                  : ` ${formatCurrencySymbol(d.rate, currency.symbol, currency.locale)}`}
               </td>
               <td className="py-3">
                 <div className="flex items-center justify-end gap-1.5">

@@ -33,6 +33,8 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import DiscountPickerModal from "./DiscountPickerModal";
 import ProductDetailModal from "./ProductDetailModal";
 import ProductFormModal from "@/components/product/ProductFormModal";
+import { formatCurrencySymbol, formatCurrencySymbolOnly } from "@/utils/helper";
+import { useCurrency } from "@/providers/CurrencyContext";
 
 export default function InvoiceItemsSelector({
   products,
@@ -44,6 +46,7 @@ export default function InvoiceItemsSelector({
   activeTax,
   // refetchProducts,
 }: InvoiceItemsSelectorProps) {
+  const { currency } = useCurrency();
   const [search, setSearch] = useState("");
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -282,7 +285,11 @@ export default function InvoiceItemsSelector({
                                       )}
                                     </div>
                                     <span className="text-[11px] text-muted-foreground">
-                                      ${product.price}
+                                      {formatCurrencySymbol(
+                                        product.price,
+                                        currency.symbol,
+                                        currency.locale,
+                                      )}
                                     </span>
                                   </div>
                                 </CommandItem>
@@ -343,7 +350,7 @@ export default function InvoiceItemsSelector({
 
             {/* Row total */}
             <TableCell className="min-w-[60px] text-center font-medium text-xs">
-              $
+              {formatCurrencySymbolOnly(currency.symbol)}{" "}
               {(() => {
                 const rowSubtotal = item.quantity * item.price;
                 const rowDiscount = item.discounts.reduce((sum, dId) => {
@@ -529,7 +536,7 @@ export default function InvoiceItemsSelector({
                       ({activeTax.rate}%) :
                     </span>
                     <span className="text-[11px] font-medium  leading-none">
-                      +$
+                      + {formatCurrencySymbolOnly(currency.symbol)}{" "}
                       {(() => {
                         const rowTotal = item.quantity * item.price;
                         const discountTotal = item.discounts.reduce(

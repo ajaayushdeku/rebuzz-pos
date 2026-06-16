@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Product } from "@/lib/types/product";
 import { useCreateProduct, useUpdateProduct } from "@/hooks/useProducts";
 import toast from "react-hot-toast";
+import { formatCurrencySymbol, formatCurrencySymbolOnly } from "@/utils/helper";
+import { useCurrency } from "@/providers/CurrencyContext";
 
 type ProductFormData = {
   name: string;
@@ -108,6 +110,8 @@ export default function ProductFormModal({
   initialName,
   onSuccess,
 }: ProductFormModalProps) {
+  const { currency } = useCurrency();
+
   const isEditMode = !!product;
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();
@@ -284,7 +288,7 @@ export default function ProductFormModal({
                 </Label>
                 <div className="relative">
                   <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
-                    $
+                    {formatCurrencySymbolOnly(currency.symbol)}
                   </span>
                   <input
                     type="number"
@@ -306,7 +310,7 @@ export default function ProductFormModal({
                 </Label>
                 <div className="relative">
                   <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
-                    $
+                   {formatCurrencySymbolOnly(currency.symbol)}
                   </span>
                   <input
                     type="number"

@@ -1,7 +1,8 @@
+import { useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { InventoryItem, MergedSalesItem } from "@/services/apiInventory";
 
-const INVENTORY_KEY = ["inventory"] as const;
+export const INVENTORY_KEY = ["inventory"] as const;
 const SALES_KEY = ["salesByItem"] as const;
 
 // ── Inventory fetcher ─────────────────────────────────────────────────────
@@ -99,6 +100,64 @@ export function useInvalidateInventory() {
   const queryClient = useQueryClient();
   return () => queryClient.invalidateQueries({ queryKey: INVENTORY_KEY });
 }
+
+/**
+ * Provides functions to optimistically update the inventory cache and
+ * rollback on error. This makes bulk (and individual) stock edits feel
+ * instant in the UI instead of waiting for the refetch.
+ */
+export function useOptimisticInventory() {
+  const queryClient = useQueryClient();
+
+  /** Snapshot the current cache so we can rollback on error */
+  const snapshot = useCallback(
+    () => queryClient.getQueryData<InventoryItem[]>(INVENTORY_KEY),
+    [queryClient],
+  );
+
+  /** Apply optimistic values for the given product ids */
+  const applyOptimistic = useCallback(
+    (
+      updates: {
+        id: string;
+        inStock: number;
+        lowStock: number;
+        usesStocks?: boolean;
+      }[],
+    ) => {
+      queryClient.setQueryData<InventoryItem[]>(INVENTORY_KEY, (old) => {
+        if (!old) return old;
+        const updateMap = new Map(updates.map((u) => [u.id, u]));
+        return old.map((item) => {
+          const update = updateMap.get(item.id);
+          if (!update) return item;
+          return {
+            ...item,
+            inStock: update.inStock,
+            lowStock: update.lowStock,
+            ...(update.usesStocks !== undefined
+              ? { usesStocks: update.usesStocks }
+              : {}),
+          };
+        });
+      });
+    },
+    [queryClient],
+  );
+
+  /** Revert the cache to a previous snapshot */
+  const rollback = useCallback(
+    (previous: InventoryItem[] | undefined) => {
+      queryClient.setQueryData<InventoryKey>(INVENTORY_KEY, previous);
+    },
+    [queryClient],
+  );
+
+  return { snapshot, applyOptimistic, rollback } as const;
+}
+
+/** Type helper used by rollback above */
+type InventoryKey = InventoryItem[] | undefined;
 
 export function useInvalidateSales() {
   const queryClient = useQueryClient();

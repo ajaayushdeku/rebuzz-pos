@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { TrendingUp, TrendingDown, Scale } from "lucide-react";
 import { PURPOSE_COLORS, useTracker } from "@/providers/ExpenseContext";
@@ -19,6 +19,11 @@ interface SliceData {
   pct: number;
 }
 
+interface CurrencyType {
+  symbol: string;
+  locale?: string;
+}
+
 const CustomTooltip = ({
   active,
   payload,
@@ -26,7 +31,7 @@ const CustomTooltip = ({
 }: {
   active?: boolean;
   payload?: Payload<ValueType, NameType>[];
-  currency: any;
+  currency: CurrencyType;
 }) => {
   if (!active || !payload?.length) return null;
   const entry = payload[0].payload as SliceData;
@@ -34,7 +39,7 @@ const CustomTooltip = ({
     <div className="bg-white rounded-xl px-3 py-2 shadow-lg border border-gray-100">
       <p className="text-gray-500 text-xs mb-0.5">{entry.purpose}</p>
       <p className="font-bold text-sm" style={{ color: entry.color }}>
-        {formatCurrency(entry.amount, currency)}
+        {formatCurrencySymbol(entry.amount, currency.symbol, currency.locale)}
       </p>
       <p className="text-xs text-gray-400">
         {entry.pct.toFixed(0)}% of expenses
@@ -97,7 +102,11 @@ export default function ExpenseTrackerStats() {
                 <p className="text-sm font-medium text-red-600">Expenses</p>
               </div>
               <p className="text-lg font-bold text-red-700">
-                {formatCurrency(totalExpense, currency)}
+                {formatCurrencySymbol(
+                  totalExpense,
+                  currency.symbol,
+                  currency.locale,
+                )}
               </p>
             </div>
 
@@ -109,7 +118,11 @@ export default function ExpenseTrackerStats() {
                 <p className="text-sm font-medium text-green-600">Income</p>
               </div>
               <p className="text-lg font-bold text-green-700">
-                {formatCurrency(totalIncome, currency)}
+                {formatCurrencySymbol(
+                  totalIncome,
+                  currency.symbol,
+                  currency.locale,
+                )}
               </p>
             </div>
 
@@ -152,7 +165,7 @@ export default function ExpenseTrackerStats() {
                 }`}
               >
                 {net >= 0 ? "+" : ""}
-                {formatCurrency(net, currency)}
+                {formatCurrencySymbol(net, currency.symbol, currency.locale)}
               </p>
             </div>
           </div>
@@ -214,10 +227,11 @@ export default function ExpenseTrackerStats() {
                       className="text-lg font-bold fill-gray-800"
                     >
                       {totalExpense > 0
-                        ? formatCurrency(totalExpense, currency).replace(
-                            /^.*?(\d[\d,.]*).*$/,
-                            "$1",
-                          )
+                        ? formatCurrencySymbol(
+                            totalExpense,
+                            currency.symbol,
+                            currency.locale,
+                          ).replace(/^.*?(\d[\d,.]*).*$/, "$1")
                         : "0"}
                     </text>
                     <text
@@ -260,10 +274,11 @@ export default function ExpenseTrackerStats() {
                       {entry.pct.toFixed(0)}%
                     </span>
                     <span className="text-xs text-gray-400 w-16 text-right shrink-0">
-                      {formatCurrency(entry.amount, currency).replace(
-                        /^Rs\s*/,
-                        "",
-                      )}
+                      {formatCurrencySymbol(
+                        entry.amount,
+                        currency.symbol,
+                        currency.locale,
+                      ).replace(/^Rs\s*/, "")}
                     </span>
                   </div>
                 ))}

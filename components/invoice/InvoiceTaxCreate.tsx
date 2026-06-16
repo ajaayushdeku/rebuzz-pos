@@ -5,6 +5,8 @@ import { Layers, Loader2, Plus } from "lucide-react";
 import { CreateTaxDialog } from "./CreateTaxRate";
 import { useTaxes, useUpdateTaxSettings, useToggleTax } from "@/hooks/useTaxes";
 import TaxPickerModal from "./TaxPickerModal";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 interface InvoiceTaxCreateProps {
   subtotal: number;
@@ -51,6 +53,7 @@ export default function InvoiceTaxCreate({
   finalTotal,
   onActiveTaxChange,
 }: InvoiceTaxCreateProps) {
+  const { currency } = useCurrency();
   const [taxModalOpen, setTaxModalOpen] = useState(false);
   const { data, isLoading } = useTaxes();
   const { mutate: updateSettings, isPending: updatingSettings } =
@@ -312,20 +315,33 @@ export default function InvoiceTaxCreate({
           <div className="flex justify-between gap-12 text-sm text-gray-500">
             <span>After Discount</span>
             <span className="font-medium text-gray-800">
-              ${subtotal.toFixed(2)}
+              {formatCurrencySymbol(subtotal, currency.symbol, currency.locale)}
             </span>
           </div>
 
           {taxAmount > 0 && (
             <div className="flex justify-between gap-12 text-sm text-red-600">
               <span>Tax</span>
-              <span>+${taxAmount.toFixed(2)}</span>
+              <span>
+                +{" "}
+                {formatCurrencySymbol(
+                  taxAmount,
+                  currency.symbol,
+                  currency.locale,
+                )}
+              </span>
             </div>
           )}
 
           <div className="flex justify-between gap-12 text-lg font-bold text-blue-600 border-t pt-2">
             <span>Grand Total</span>
-            <span>${finalTotal.toFixed(2)}</span>
+            <span>
+              {formatCurrencySymbol(
+                finalTotal,
+                currency.symbol,
+                currency.locale,
+              )}
+            </span>
           </div>
         </div>
       </div>

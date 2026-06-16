@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import {
   TrendingDown,
@@ -164,8 +164,12 @@ export default function RecentTransactions() {
                 <div
                   className={`col-span-2 text-right text-xs font-semibold ${color}`}
                 >
-                  {isExpense ? "−" : "+"}
-                  {formatCurrency(t.amount, currency)}
+                  {isExpense ? "− " : "+ "}
+                  {formatCurrencySymbol(
+                    t.amount,
+                    currency.symbol,
+                    currency.locale,
+                  )}
                 </div>
                 <div className="col-span-1 flex justify-end">
                   <button

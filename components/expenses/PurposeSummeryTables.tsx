@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { Pencil, Trash2, Search } from "lucide-react";
 import {
@@ -140,7 +140,11 @@ function TransactionModal({
                           type === "expense" ? "text-red-600" : "text-green-600"
                         }`}
                       >
-                        {formatCurrency(t.amount, currency)}
+                        {formatCurrencySymbol(
+                          t.amount,
+                          currency.symbol,
+                          currency.locale,
+                        )}
                       </span>
                       <button
                         onClick={() => startEdit(t)}
@@ -223,7 +227,11 @@ function SummaryTable({ type }: { type: TransactionType }) {
                     type === "expense" ? "text-red-600" : "text-green-600"
                   }`}
                 >
-                  {formatCurrency(total, currency)}
+                  {formatCurrencySymbol(
+                    total,
+                    currency.symbol,
+                    currency.locale,
+                  )}
                 </td>
               </tr>
             ))}

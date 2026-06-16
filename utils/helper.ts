@@ -15,6 +15,10 @@ export const formatCurrencySymbol = (
   return `${symbol} ${formatted}`;
 };
 
+export const formatCurrencySymbolOnly = (symbol: string) => {
+  return symbol;
+};
+
 // Remove this later
 export const formatCurrencyChangeLater = (amount: number) => {
   return new Intl.NumberFormat("en-US", {

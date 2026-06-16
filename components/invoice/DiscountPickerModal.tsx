@@ -10,6 +10,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 interface Discount {
   _id: string;
@@ -35,6 +37,7 @@ export default function DiscountPickerModal({
   onApply,
   title = "Apply Discounts",
 }: DiscountPickerModalProps) {
+  const { currency } = useCurrency();
   const [search, setSearch] = useState("");
   const [localSelected, setLocalSelected] = useState<string[]>(selectedIds);
 
@@ -105,7 +108,9 @@ export default function DiscountPickerModal({
                   <div className="text-left">
                     <p className="font-medium">{d.name}</p>
                     <p className="text-xs text-gray-400 mt-0.5">
-                      {d.type === "percentage" ? `${d.rate}%` : `Rs ${d.rate}`}{" "}
+                      {d.type === "percentage"
+                        ? `${d.rate}%`
+                        : ` ${formatCurrencySymbol(d.rate, currency.symbol, currency.locale)}`}{" "}
                       off
                     </p>
                   </div>

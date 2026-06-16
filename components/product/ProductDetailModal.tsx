@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/dialog";
 import { Product } from "@/lib/types/product";
 import { Badge } from "@/components/ui/badge";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 interface ProductDetailModalProps {
   open: boolean;
@@ -21,6 +23,8 @@ export default function ProductDetailModal({
   onClose,
   product,
 }: ProductDetailModalProps) {
+  const { currency } = useCurrency();
+
   if (!product) return null;
 
   return (
@@ -59,7 +63,11 @@ export default function ProductDetailModal({
                 Selling Price
               </div>
               <p className="text-lg font-bold text-gray-900">
-                ${product.price.toFixed(2)}
+                {formatCurrencySymbol(
+                  product.price,
+                  currency.symbol,
+                  currency.locale,
+                )}
               </p>
             </div>
             {product.costPrice !== undefined && product.costPrice > 0 && (
@@ -69,7 +77,11 @@ export default function ProductDetailModal({
                   Cost Price
                 </div>
                 <p className="text-lg font-bold text-gray-900">
-                  ${product.costPrice.toFixed(2)}
+                  {formatCurrencySymbol(
+                    product.costPrice,
+                    currency.symbol,
+                    currency.locale,
+                  )}
                 </p>
               </div>
             )}
