@@ -11,11 +11,11 @@ import {
   HourlySalesTrendWrapper,
   OverviewStatsWrapper,
   RecentTransactionWrapper,
-  SalesLocationChartWrapper,
   TopItemsWrapper,
   WeeklyRevenueChartWrapper,
   WinningStatsWrapper,
 } from "@/components/componentWrappers/OverviewWrapper";
+import SalesCategoryChartWrapper from "@/components/componentWrappers/SalesCategoryChartWrapper";
 
 const Page = async ({
   searchParams,
@@ -85,7 +85,7 @@ const Page = async ({
 
             <ChartErrorBoundary>
               <Suspense fallback={<PieChartSkeleton />}>
-                <SalesLocationChartWrapper />
+                <SalesCategoryChartWrapper />
               </Suspense>
             </ChartErrorBoundary>
           </div>

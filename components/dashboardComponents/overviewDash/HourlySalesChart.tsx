@@ -2,7 +2,7 @@
 
 import { CustomTooltipProps } from "@/lib/types/chart";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrency, formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 import {
   AreaChart,
@@ -52,8 +52,8 @@ const HourlySalesTrend = ({ data }: HourlyDataProps) => {
 
   const formatYAxis = (value: number): string =>
     value >= 1000
-      ? `${currency.symbol}${value / 1000}k`
-      : formatCurrency(value, currency);
+      ? `${currency.symbol} ${value / 1000}k`
+      : formatCurrencySymbol(value, currency.symbol, currency.locale);
 
   const maxRevenue = Math.max(...data.map((d) => d.revenue), 0);
   const domainMax =

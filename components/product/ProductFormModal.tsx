@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Product } from "@/lib/types/product";
 import { useCreateProduct, useUpdateProduct } from "@/hooks/useProducts";
+import { useCategories, useCreateCategory } from "@/hooks/useCategories";
 import toast from "react-hot-toast";
 import { formatCurrencySymbol, formatCurrencySymbolOnly } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -25,6 +26,7 @@ type ProductFormData = {
   usesStocks: boolean;
   inStock: number;
   lowStock: number;
+  categoryId: string;
 };
 
 type FormErrors = Partial<Record<keyof ProductFormData, string>>;
@@ -38,6 +40,7 @@ const INITIAL_FORM: ProductFormData = {
   usesStocks: false,
   inStock: 0,
   lowStock: 0,
+  categoryId: "",
 };
 
 // ── Reusable toggle ──
@@ -115,9 +118,15 @@ export default function ProductFormModal({
   const isEditMode = !!product;
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();
+  const { data: categories = [] } = useCategories();
+  const createCategoryMutation = useCreateCategory();
 
   const [form, setForm] = useState<ProductFormData>(INITIAL_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryColor, setNewCategoryColor] = useState("#60a5fa");
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
 
   // Populate form when editing
   useEffect(() => {
@@ -131,6 +140,7 @@ export default function ProductFormModal({
         usesStocks: product.usesStocks,
         inStock: product.inStock ?? 0,
         lowStock: product.lowStock ?? 0,
+        categoryId: product.categories ?? "",
       });
       setErrors({});
     } else if (!product && open) {
@@ -150,6 +160,9 @@ export default function ProductFormModal({
   const resetForm = () => {
     setForm(INITIAL_FORM);
     setErrors({});
+    setShowNewCategory(false);
+    setNewCategoryName("");
+    setNewCategoryColor("#60a5fa");
   };
 
   // ── Validation ──
@@ -171,6 +184,21 @@ export default function ProductFormModal({
   const handleSave = async () => {
     if (!validate()) return;
 
+    // If user is creating a new category inline, create it first
+    let categoryId = form.categoryId;
+    if (showNewCategory && newCategoryName.trim()) {
+      try {
+        const newCat = await createCategoryMutation.mutateAsync({
+          name: newCategoryName.trim(),
+          color: newCategoryColor.replace("#", ""),
+        });
+        categoryId = newCat._id;
+      } catch {
+        toast.error("Failed to create category");
+        return;
+      }
+    }
+
     if (isEditMode && product) {
       await updateMutation.mutateAsync(
         {
@@ -185,6 +213,7 @@ export default function ProductFormModal({
             inStock: form.inStock,
             lowStock: form.lowStock,
             soldBy: "each",
+            categories: categoryId,
           },
         },
         {
@@ -207,6 +236,7 @@ export default function ProductFormModal({
         isTaxable: form.isTaxable,
         usesStocks: form.usesStocks,
         soldBy: "each",
+        categories: categoryId,
       };
       if (form.usesStocks) {
         payload.inStock = form.inStock;
@@ -264,6 +294,128 @@ export default function ProductFormModal({
                   <p className="text-xs text-red-500 mt-1">{errors.name}</p>
                 )}
               </div>
+
+              {/* Category dropdown */}
+              <div>
+                <Label className="text-xs text-gray-500 mb-1.5 block">
+                  Category
+                </Label>
+                {showNewCategory ? (
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        placeholder="Category name"
+                        className={`${inputClass} flex-1`}
+                      />
+                      <input
+                        type="color"
+                        value={newCategoryColor}
+                        onChange={(e) => setNewCategoryColor(e.target.value)}
+                        className="h-9 w-9 rounded-lg border border-gray-200 cursor-pointer shrink-0"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowNewCategory(false);
+                          setNewCategoryName("");
+                          setNewCategoryColor("#60a5fa");
+                        }}
+                        className="text-xs text-gray-500 hover:text-gray-700"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!newCategoryName.trim()) {
+                            toast.error("Category name is required");
+                            return;
+                          }
+                          try {
+                            const newCat =
+                              await createCategoryMutation.mutateAsync({
+                                name: newCategoryName.trim(),
+                                color: newCategoryColor.replace("#", ""),
+                              });
+                            set("categoryId", newCat._id);
+                            setShowNewCategory(false);
+                            setNewCategoryName("");
+                            setNewCategoryColor("#60a5fa");
+                          } catch {
+                            toast.error("Failed to create category");
+                          }
+                        }}
+                        disabled={createCategoryMutation.isPending}
+                        className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                      >
+                        {createCategoryMutation.isPending
+                          ? "Creating..."
+                          : "Create & Select"}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <div className="relative flex-1" ref={categoryDropdownRef}>
+                      <select
+                        value={form.categoryId}
+                        onChange={(e) => set("categoryId", e.target.value)}
+                        className={`${inputClass} appearance-none pr-8`}
+                      >
+                        <option value="">No category</option>
+                        {categories.map((cat) => (
+                          <option key={cat._id} value={cat._id}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 12 12"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M3 4.5L6 7.5L9 4.5"
+                            stroke="#9CA3AF"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowNewCategory(true)}
+                      className="h-9 w-9 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 transition shrink-0"
+                      title="Create new category"
+                    >
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 14 14"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M7 1V13M1 7H13"
+                          stroke="#6B7280"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div>
                 <Label className="text-xs text-gray-500 mb-1.5 block">
                   Description
@@ -310,7 +462,7 @@ export default function ProductFormModal({
                 </Label>
                 <div className="relative">
                   <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
-                   {formatCurrencySymbolOnly(currency.symbol)}
+                    {formatCurrencySymbolOnly(currency.symbol)}
                   </span>
                   <input
                     type="number"

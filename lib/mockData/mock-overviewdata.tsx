@@ -1,7 +1,6 @@
 import { StatsApiResponse, WinningApiResponse } from "@/lib/dashboardstats";
 import { DataPoint } from "@/lib/types/chart";
 import { HourlyData } from "../../components/dashboardComponents/overviewDash/HourlySalesChart";
-import { LocationData } from "../../components/dashboardComponents/overviewDash/SalesLocationChart";
 import { TopProduct } from "../../components/dashboardComponents/overviewDash/TopItems";
 import { Transaction } from "../../components/dashboardComponents/orderHistory/transaction-columns";
 
@@ -110,21 +109,6 @@ export const mockWeeklyRevenue: DataPoint[] = [
   { day: "Fri", revenue: 17000 },
   { day: "Sat", revenue: 22000 },
   { day: "Sun", revenue: 18000 },
-];
-
-export const mockSalesLocation: LocationData[] = [
-  {
-    name: "Pokhara",
-    value: 45,
-  },
-  {
-    name: "Patan",
-    value: 25,
-  },
-  {
-    name: "Kathmandu",
-    value: 30,
-  },
 ];
 
 export const mockHourlySales: HourlyData[] = [

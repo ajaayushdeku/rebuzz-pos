@@ -14,7 +14,7 @@ import type { BarShapeProps } from "recharts";
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import { CustomTooltipProps, DataPoint } from "@/lib/types/chart";
-import { formatCurrency, formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 interface WeeklyRevenueChartProps {
   data: DataPoint[];
@@ -68,8 +68,8 @@ const WeeklyRevenueChart = ({ data, peakDay }: WeeklyRevenueChartProps) => {
   const { currency } = useCurrency();
   const formatYAxis = (value: number): string =>
     value >= 1000
-      ? `${currency.symbol}${value / 1000}k`
-      : formatCurrency(value, currency);
+      ? `${currency.symbol} ${value / 1000}k`
+      : formatCurrencySymbol(value, currency.symbol, currency.locale);
 
   return (
     <div className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6">

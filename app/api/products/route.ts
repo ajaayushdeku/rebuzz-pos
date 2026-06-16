@@ -8,7 +8,7 @@ export const GET = async () => {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
-  const res = await axios.get(`${BASE}/business/products`, {
+  const res = await axios.get(`${BASE}/business/products/popular`, {
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",

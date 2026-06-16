@@ -1,17 +1,10 @@
 import { StatsApiResponse, WinningApiResponse } from "@/lib/dashboardstats";
 import { authHeaders } from "../authServices/session";
-import {
-  mockSalesLocation,
-  // mockHourlySales,
-  // mockTopProducts,
-  // mockWeeklyRevenue,
-  // mockWinningStats,
-} from "@/lib/mockData/mock-overviewdata";
 import { TopProduct } from "@/components/dashboardComponents/overviewDash/TopItems";
 import { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
 import { RawBillListResponse } from "@/lib/types/bill";
 import { DataPoint } from "@/lib/types/chart";
-import { LocationData } from "@/components/dashboardComponents/overviewDash/SalesLocationChart";
+import { CategorySalesData } from "@/components/dashboardComponents/overviewDash/SalesCategoryChart";
 import { HourlyData } from "@/components/dashboardComponents/overviewDash/HourlySalesChart";
 import { mapBillsToTransactions } from "@/lib/mappers/transaction";
 import { cookies } from "next/headers";
@@ -357,9 +350,45 @@ export const getWeeklyRevenueData = async (): Promise<DataPoint[]> => {
   }));
 };
 
-// Mock Data used for Location Sales
-export const getSalesLocations = async (): Promise<LocationData[]> => {
-  return mockSalesLocation;
+// Fetch Sales by Category from backend API
+export const getSalesByCategory = async (): Promise<CategorySalesData[]> => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  const endDate = new Date().toISOString().split("T")[0];
+  const startDate = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0];
+
+  const res = await fetch(
+    `${BASE}/business/report/salesByCategory?startDate=${startDate}&endDate=${endDate}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      next: { revalidate: 3600 },
+    },
+  );
+
+  if (!res.ok)
+    throw new Error(`Failed to fetch sales by category: ${res.status}`);
+
+  const json = await res.json();
+
+  const rawItems: {
+    productCategory: string;
+    totalSales: number;
+    totalRevenue: number;
+    netProfit: number;
+  }[] = json?.data?.result ?? [];
+
+  return rawItems.map((item) => ({
+    name: item.productCategory ?? "No Category",
+    totalSales: item.totalSales ?? 0,
+    totalRevenue: item.totalRevenue ?? 0,
+    netProfit: item.netProfit ?? 0,
+  }));
 };
 
 // Fetch Hourly Sales of the Day (Today)

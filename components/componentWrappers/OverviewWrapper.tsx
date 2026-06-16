@@ -12,7 +12,6 @@ import {
 import {
   getHourlySalesData,
   getRecentTransactions,
-  getSalesLocations,
   getStatsData,
   getTopProducts,
   getWeeklyRevenueData,
@@ -22,7 +21,6 @@ import {
 import { Carousel, CarouselContent, CarouselItem } from "../ui/carousel";
 import { DataPoint } from "@/lib/types/chart";
 import WeeklyRevenueChart from "../dashboardComponents/overviewDash/WeeklyRevenueChart";
-import SalesLocationChart from "../dashboardComponents/overviewDash/SalesLocationChart";
 import HourlySalesTrend from "../dashboardComponents/overviewDash/HourlySalesChart";
 
 /** Format a Date as YYYY-MM-DD using local timezone (not UTC) */
@@ -263,11 +261,6 @@ export const WeeklyRevenueChartWrapper = async () => {
 
   return <WeeklyRevenueChart data={data} peakDay={peakDay} />;
 };
-
-export async function SalesLocationChartWrapper() {
-  const data = await getSalesLocations();
-  return <SalesLocationChart data={data} />;
-}
 
 export async function HourlySalesTrendWrapper() {
   const data = await getHourlySalesData();
