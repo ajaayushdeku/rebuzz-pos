@@ -14,8 +14,10 @@ import { InventoryItem } from "@/lib/mockData/mock-inventory-data";
 import {
   updateProduct,
   bulkUpdateStock,
+  BulkStockUpdateItem,
 } from "@/services/product/apiProduct.client";
 import { useInvalidateInventory } from "@/hooks/useInventory";
+import toast from "react-hot-toast";
 
 type Props = {
   open: boolean;
@@ -131,6 +133,50 @@ export default function ProductStockEditModal({
   };
 
   // bulk save all changed items
+  // const handleBulkSave = async () => {
+  //   try {
+  //     setBulkSaving(true);
+
+  //     const changedItems = items.filter(hasChanged);
+
+  //     if (changedItems.length === 0) return;
+
+  //     // First, enable usesStocks for items that don't have it
+  //     const needsStocksEnabled = changedItems.filter(
+  //       (item) => !item.usesStocks,
+  //     );
+  //     for (const item of needsStocksEnabled) {
+  //       await updateProduct(item.id, { usesStocks: true });
+  //     }
+
+  //     // Then bulk update stock quantities
+  //     const stockPayload = changedItems.map((item) => ({
+  //       productId: item.id,
+  //       stockQuantity: edits[item.id].inStock,
+  //     }));
+
+  //     await bulkUpdateStock(stockPayload);
+
+  //     // Sync all changed items' edits to their saved values
+  //     setEdits((prev) => {
+  //       const updated = { ...prev };
+  //       for (const item of changedItems) {
+  //         updated[item.id] = {
+  //           inStock: edits[item.id].inStock,
+  //           lowStock: edits[item.id].lowStock,
+  //         };
+  //       }
+  //       return updated;
+  //     });
+
+  //     invalidateInventory();
+  //   } catch (err) {
+  //     console.error("Bulk save error:", err);
+  //   } finally {
+  //     setBulkSaving(false);
+  //   }
+  // };
+
   const handleBulkSave = async () => {
     try {
       setBulkSaving(true);
@@ -147,13 +193,27 @@ export default function ProductStockEditModal({
         await updateProduct(item.id, { usesStocks: true });
       }
 
-      // Then bulk update stock quantities
-      const stockPayload = changedItems.map((item) => ({
-        productId: item.id,
-        stockQuantity: edits[item.id].inStock,
+      // ── Build stockUpdates payload matching the backend contract ──────────
+      const stockUpdates: BulkStockUpdateItem[] = changedItems.map((item) => ({
+        id: item.id,
+        inStock: Number(edits[item.id].inStock),
+        lowStock: Number(edits[item.id].lowStock),
       }));
 
-      await bulkUpdateStock(stockPayload);
+      const result = await bulkUpdateStock(stockUpdates);
+
+      // ── Surface partial failures to the user ──────────────────────────────
+      if (result.notFoundCount > 0) {
+        console.warn(
+          `${result.notFoundCount} item(s) not found:`,
+          result.notFound,
+        );
+        toast.error(
+          `${result.totalItemsUpdated} updated, ${result.notFoundCount} not found`,
+        );
+      } else {
+        toast.success(`${result.totalItemsUpdated} item(s) updated`);
+      }
 
       // Sync all changed items' edits to their saved values
       setEdits((prev) => {
@@ -170,6 +230,9 @@ export default function ProductStockEditModal({
       invalidateInventory();
     } catch (err) {
       console.error("Bulk save error:", err);
+      toast.error(
+        err instanceof Error ? err.message : "Failed to save changes",
+      );
     } finally {
       setBulkSaving(false);
     }

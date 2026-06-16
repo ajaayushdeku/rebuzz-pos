@@ -93,17 +93,60 @@ export async function deleteProduct(productId: string): Promise<void> {
   }
 }
 
+// export async function bulkUpdateStock(
+//   products: { productId: string; stockQuantity: number }[],
+// ): Promise<void> {
+//   const res = await fetch("/api/products/bulk-stock", {
+//     method: "PUT",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify({ products }),
+//   });
+
+//   if (!res.ok) {
+//     const errorData = await res.json().catch(() => ({}));
+//     throw new Error(errorData.message || "Failed to bulk update stock");
+//   }
+// }
+
+export type BulkStockUpdateItem =
+  | { id: string; inStock: number; lowStock: number; isVariant?: false }
+  | { isVariant: true; variantId: string; inStock: number; lowStock: number };
+
+export type BulkStockUpdateResult = {
+  status: string;
+  message: string;
+  totalItemsProcessed: number;
+  totalItemsUpdated: number;
+  productsUpdated: number;
+  variantsUpdated: number;
+  notFoundCount: number;
+  notFound: (
+    | { type: "product" | "variant"; id: string }
+    | { index: number; reason: string }
+  )[];
+};
+
 export async function bulkUpdateStock(
-  products: { productId: string; stockQuantity: number }[],
-): Promise<void> {
+  stockUpdates: BulkStockUpdateItem[],
+): Promise<BulkStockUpdateResult> {
+  if (!stockUpdates.length) {
+    throw new Error("No items to update");
+  }
+
   const res = await fetch("/api/products/bulk-stock", {
-    method: "POST",
+    method: "PUT", // ← was POST
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ products }),
+    body: JSON.stringify({ stockUpdates }), // ← was { products }
   });
 
+  const result = await res.json();
+
   if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.message || "Failed to bulk update stock");
+    // 400 has only `message`; 500 has `status` + `message`/`error`
+    throw new Error(
+      result.message || result.error || "Failed to bulk update stock",
+    );
   }
+
+  return result as BulkStockUpdateResult;
 }
