@@ -5,6 +5,7 @@ import { StaffHourlyData } from "../../components/dashboardComponents/staffDash/
 
 export const mockStaffData: StaffBoxProps[] = [
   {
+    staffId: "staff-1",
     staffName: "Arthur Morgan",
     staffPosition: "Senior Barista",
     ordersTaken: 5,
@@ -14,6 +15,7 @@ export const mockStaffData: StaffBoxProps[] = [
     amount: 5000,
   },
   {
+    staffId: "staff-2",
     staffName: "Dutch Vanderlinde",
     staffPosition: "Senior Barista",
     ordersTaken: 3,
@@ -23,6 +25,7 @@ export const mockStaffData: StaffBoxProps[] = [
     amount: 2000,
   },
   {
+    staffId: "staff-3",
     staffName: "John Marston",
     staffPosition: "Barista",
     ordersTaken: 6,
@@ -32,6 +35,7 @@ export const mockStaffData: StaffBoxProps[] = [
     amount: 3000,
   },
   {
+    staffId: "staff-4",
     staffName: "Charles",
     staffPosition: "Barista",
     ordersTaken: 7,
@@ -41,6 +45,7 @@ export const mockStaffData: StaffBoxProps[] = [
     amount: 2000,
   },
   {
+    staffId: "staff-5",
     staffName: "Micah",
     staffPosition: "Barista",
     ordersTaken: 2,
