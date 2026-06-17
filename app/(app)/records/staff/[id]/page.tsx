@@ -277,7 +277,7 @@ export default function StaffDetailPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => router.push("/records/staff")}
+              onClick={() => router.push("/dashboard/staff")}
               className="p-2 text-gray-400 hover:text-gray-700 hover:bg-white rounded-lg transition-colors shadow-sm"
             >
               <ArrowLeft size={18} />
