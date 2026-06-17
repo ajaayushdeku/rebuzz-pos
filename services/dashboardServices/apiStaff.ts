@@ -231,6 +231,7 @@ export async function getStaffData(
 
     return employees
       .map((emp) => ({
+        staffId: emp._id,
         staffName: emp.name || emp._id,
         staffPosition: emp.role || "",
         ordersTaken: emp.totalSales ?? 0,

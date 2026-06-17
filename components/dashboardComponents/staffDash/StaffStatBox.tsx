@@ -2,8 +2,10 @@
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { useRouter } from "next/navigation";
 
 export interface StaffBoxProps {
+  staffId: string;
   staffName: string;
   staffPosition?: string;
   ordersTaken: number;
@@ -49,6 +51,7 @@ const getInitials = (name: string): string =>
     .slice(0, 2);
 
 export default function StaffStatBox({
+  staffId,
   staffName,
   staffPosition = "Basic",
   ordersTaken,
@@ -56,6 +59,7 @@ export default function StaffStatBox({
   avgTime,
   colorIndex = 0,
 }: StaffBoxProps) {
+  const router = useRouter();
   const staffInitials = getInitials(staffName);
 
   const idx = colorIndex % avatarColors.length;
@@ -116,6 +120,14 @@ export default function StaffStatBox({
                 {formatCurrencySymbol(amount, currency.symbol, currency.locale)}
               </p>
             </div>
+          </div>
+
+          <div
+            onClick={() => router.push(`/records/staff/${staffId}`)}
+            className="mt-4 border-t border-gray-100 pt-3 flex items-center justify-between text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
+          >
+            <span>View Details</span>
+            <span>→</span>
           </div>
         </div>
       </div>
