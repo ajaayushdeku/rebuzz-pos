@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import {
   Search,
   ChevronDown,
@@ -54,6 +55,7 @@ type EditForm = {
   phone: string;
   countryCode: string;
   note: string;
+  customerPan: string;
 };
 
 const EditCustomerModal = ({
@@ -73,20 +75,22 @@ const EditCustomerModal = ({
     phone: customer?.phone ?? "",
     countryCode: "NP +977",
     note: customer?.note ?? "",
+    customerPan: customer?.customerPan ?? "",
   });
 
-  // Sync form when customer changes
-  useEffect(() => {
-    if (customer) {
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen && customer) {
       setForm({
         name: customer.name ?? "",
         email: customer.email ?? "",
         phone: customer.phone ?? "",
         countryCode: "NP +977",
         note: customer.note ?? "",
+        customerPan: customer.customerPan ?? "",
       });
     }
-  }, [customer]);
+    if (!nextOpen) onClose();
+  };
 
   const handleSave = async () => {
     if (!customer?.id) return;
@@ -106,6 +110,7 @@ const EditCustomerModal = ({
           phone: form.phone,
           countryCode: form.countryCode,
           note: form.note,
+          customerPan: form.customerPan,
         }),
       });
       if (!res.ok) throw new Error("Failed");
@@ -124,11 +129,12 @@ const EditCustomerModal = ({
     { key: "email", label: "Email", type: "email" },
     { key: "phone", label: "Phone", type: "tel" },
     { key: "countryCode", label: "Country Code" },
+    { key: "customerPan", label: "Tax ID / PAN Number" },
     { key: "note", label: "Note" },
   ];
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle className="text-base font-semibold text-gray-900">
@@ -197,10 +203,12 @@ const LoyaltyPointModal = ({
   const [points, setPoints] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // Sync when customer changes
-  useEffect(() => {
-    if (customer) setPoints(String(customer.loyaltyPoint ?? 0));
-  }, [customer]);
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen && customer) {
+      setPoints(String(customer.loyaltyPoint ?? 0));
+    }
+    if (!nextOpen) onClose();
+  };
 
   const handleSave = async () => {
     if (!customer?.id) return;
@@ -228,7 +236,7 @@ const LoyaltyPointModal = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-xs">
         <DialogHeader>
           <DialogTitle className="text-base font-semibold text-gray-900">
@@ -302,6 +310,7 @@ export default function CustomerTable({
 }: {
   customers: Customer[];
 }) {
+  const router = useRouter();
   const { currency } = useCurrency();
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null,
@@ -317,8 +326,7 @@ export default function CustomerTable({
   const pageSize = 10;
 
   const handleRowClick = (customer: Customer) => {
-    setSelectedCustomer(customer);
-    setModalOpen(true);
+    router.push(`/records/customers/${customer.id}`);
   };
 
   const handleEdit = (e: React.MouseEvent, customer: Customer) => {

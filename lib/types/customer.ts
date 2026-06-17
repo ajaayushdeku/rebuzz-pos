@@ -9,6 +9,7 @@ export type RawCustomer = {
   totalDueAmount?: number;
   isDeactivated?: boolean;
   note?: string | null;
+  customerPan?: string | null;
 };
 export type RawCustomerListResponse = {
   status: string;
@@ -30,6 +31,7 @@ export type Customer = {
   loyaltyStatus: LoyaltyTier;
   note?: string | null;
   isDeactivated?: boolean;
+  customerPan?: string | null;
 };
 
 export interface IndividualCustomer {
@@ -65,6 +67,7 @@ export function mapRawCustomerToCustomer(raw: RawCustomer): Customer {
     loyaltyStatus: getLoyaltyStatus(raw.loyaltyPoint),
     note: raw.note ?? null,
     isDeactivated: raw.isDeactivated ?? false,
+    customerPan: raw.customerPan ?? null,
   };
 }
 

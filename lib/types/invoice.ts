@@ -4,6 +4,7 @@ export type Invoice = {
   invoice?: number;
   invoice_id: string;
   customer_name: string;
+  ticket_name: string;
   amount: number;
   created_at: string;
   status: string;

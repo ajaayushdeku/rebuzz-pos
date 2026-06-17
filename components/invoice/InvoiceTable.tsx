@@ -81,7 +81,8 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
       const matchSearch =
         !search ||
         String(inv.invoice).includes(q) ||
-        (inv.customer_name ?? "").toLowerCase().includes(q);
+        (inv.customer_name ?? "").toLowerCase().includes(q) ||
+        (inv.ticket_name ?? "").toLowerCase().includes(q);
       const matchStatus =
         statusFilter === "all" ||
         (inv.status ?? "").toLowerCase() === statusFilter;
@@ -164,7 +165,7 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
       {/* Table — horizontally scrollable on mobile */}
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
       <div className="bg-white  overflow-x-auto">
-        <table className="w-full text-sm min-w-[900px]">
+        <table className="w-full text-sm min-w-[1000px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
               <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
@@ -177,6 +178,9 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                 <span className="flex items-center gap-1">
                   Invoice # {SortIcon({ colKey: "invoice" })}
                 </span>
+              </th>
+              <th className="text-left pb-3 pt-3 px-4 font-medium">
+                Invoice Name
               </th>
               <th className="text-left pb-3 pt-3 px-4 font-medium">Customer</th>
               <th
@@ -203,7 +207,7 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
             {paged.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={9}
                   className="text-center py-12 text-sm text-gray-400"
                 >
                   No invoices found
@@ -226,7 +230,9 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                         ORD-{inv.invoice}
                       </span>
                     </td>
-
+                    <td className="py-3 px-4 text-gray-600">
+                      {inv.ticket_name || "—"}
+                    </td>
                     <td className="py-3 px-4 text-gray-600">
                       {inv.customer_name ?? "—"}
                     </td>

@@ -15,6 +15,7 @@ export type Customer = {
   loyaltyStatus: LoyaltyTier;
   note?: string | null;
   isDeactivated?: boolean;
+  customerPan?: string | null;
 };
 
 // ── Tier badge styling ─────────────────────────────────────────────────────

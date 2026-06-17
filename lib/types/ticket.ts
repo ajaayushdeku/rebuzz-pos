@@ -36,6 +36,12 @@ export type RawTicket = {
   items: RawTicketItem[];
   createdAt: string;
   updatedAt: string;
+  customer?: {
+    name: string;
+    email: string;
+    phone: string;
+    customerPan?: string;
+  } | null;
 };
 
 export type RawTicketListResponse = {

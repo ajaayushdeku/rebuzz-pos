@@ -17,8 +17,26 @@ function normalizePaymentMethod(method: string): PaymentMethod {
   return method as PaymentMethod;
 }
 
+/**
+ * Parse a raw date string (Nepal time, no timezone info) into a Date object.
+ * Hours >= 12 are treated as local time (works for server/client in similar TZ).
+ * Hours < 12 are treated as UTC + 5:45 (Nepal offset) to get correct local time.
+ */
+function parseNepalTime(rawDate: string): Date {
+  const normalized = rawDate.includes("T")
+    ? rawDate.replace("Z", "")
+    : rawDate.replace(" ", "T");
+  const rawHour = parseInt(normalized.split("T")[1]?.split(":")[0] ?? "12", 10);
+  if (rawHour >= 12) {
+    return new Date(normalized);
+  }
+  const date = new Date(normalized + "+00:00");
+  date.setMinutes(date.getMinutes() + 5 * 60 + 45);
+  return date;
+}
+
 function mapBillToTransaction(bill: RawBill, isDetail = false): Transaction {
-  const paidAt = new Date(bill.paidAt);
+  const paidAt = parseNepalTime(bill.paidAt);
   return {
     id: `ORD-${bill.invoiceNo}`,
     date: paidAt.toLocaleDateString("en-US", {

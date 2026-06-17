@@ -76,9 +76,9 @@ export const navigationConfig: NavigationItem[] = [
         href: "/dashboard/profit-cost",
         icon: HandCoins,
       },
-      { label: "Customers", href: "/dashboard/customers", icon: Users },
-      { label: "Staffs", href: "/dashboard/staff", icon: UserCog },
       { label: "Inventory", href: "/dashboard/inventory", icon: Package },
+      { label: "Staffs", href: "/dashboard/staff", icon: UserCog },
+      { label: "Customers", href: "/dashboard/customers", icon: Users },
     ],
   },
   {

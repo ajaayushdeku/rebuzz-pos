@@ -178,7 +178,8 @@ export default function Transactions({
       result = result.filter(
         (t) =>
           t.invoiceName.toLowerCase().includes(q) ||
-          t.id.toLowerCase().includes(q),
+          t.id.toLowerCase().includes(q) ||
+          (t.customer?.name?.toLowerCase().includes(q) ?? false),
       );
     }
     if (statusFilter !== "all") {
@@ -271,7 +272,7 @@ export default function Transactions({
       {/* Table — horizontally scrollable on mobile */}
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
       <div className="bg-white overflow-x-auto">
-        <table className="w-full text-sm min-w-[900px]">
+        <table className="w-full text-sm min-w-[1000px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
               <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
@@ -292,6 +293,9 @@ export default function Transactions({
                 <span className="flex items-center gap-1">
                   Date / Time {SortIcon({ colKey: "timestamp" })}
                 </span>
+              </th>
+              <th className="text-left pb-3 pt-3 px-4 font-medium">
+                Invoice Name
               </th>
               <th
                 className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
@@ -362,10 +366,11 @@ export default function Transactions({
                         {transaction.date}
                       </span>
                     </td>
-                    <td className="py-3 px-4">
-                      <span className="text-sm text-gray-900">
-                        {transaction.invoiceName || "—"}
-                      </span>
+                    <td className="py-3 px-4 text-gray-600">
+                      {transaction.invoiceName || "—"}
+                    </td>
+                    <td className="py-3 px-4 text-gray-600">
+                      {transaction.customer?.name || "—"}
                     </td>
 
                     <td className="py-3 px-4 text-center">

@@ -143,19 +143,60 @@ export default function ProductCard({ item }: { item: InventoryItem }) {
         </>
       )}
 
-      {/* Additional info row */}
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
-        <span className="text-xs text-gray-400">
-          Cost:{" "}
-          <span className="font-medium text-gray-600">
-            {formatCurrencySymbol(
-              item.costPrice,
-              currency.symbol,
-              currency.locale,
-            )}
+      {/* Price details row */}
+      <div className="mt-3 pt-3 border-t border-gray-50 space-y-1.5 flex flex-col  gap-1.5">
+        {/* Selling & Cost per unit */}
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-gray-400">
+            Selling:{" "}
+            <span className="font-medium text-gray-600">
+              {formatCurrencySymbol(
+                item.price,
+                currency.symbol,
+                currency.locale,
+              )}
+            </span>
           </span>
-        </span>
-        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-400">
+            Cost:{" "}
+            <span className="font-medium text-gray-600">
+              {formatCurrencySymbol(
+                item.costPrice,
+                currency.symbol,
+                currency.locale,
+              )}
+            </span>
+          </span>
+        </div>
+
+        {/* Total value based on current stock */}
+        {item.usesStocks && (
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-gray-400">
+              Total Selling:{" "}
+              <span className="font-semibold text-gray-600">
+                {formatCurrencySymbol(
+                  item.price * item.inStock,
+                  currency.symbol,
+                  currency.locale,
+                )}
+              </span>
+            </span>
+            <span className="text-xs text-gray-400">
+              Total Cost:{" "}
+              <span className="font-semibold text-gray-600">
+                {formatCurrencySymbol(
+                  item.costPrice * item.inStock,
+                  currency.symbol,
+                  currency.locale,
+                )}
+              </span>
+            </span>
+          </div>
+        )}
+
+        {/* Badges */}
+        <div className="flex items-center justify-end gap-2">
           {item.isTaxable && (
             <span className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-medium">
               TAXABLE
