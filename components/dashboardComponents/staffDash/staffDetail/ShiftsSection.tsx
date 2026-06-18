@@ -315,43 +315,33 @@ function Pagination({
   onPageChange: (page: number) => void;
 }) {
   return (
-    <div className="flex items-center justify-between mt-5 pt-4 border-t border-gray-100">
+    <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
       <button
         onClick={() => onPageChange(Math.max(0, page - 1))}
         disabled={page === 0}
-        className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-150 ${
+        className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
           page === 0
             ? "text-gray-300 cursor-not-allowed"
-            : "text-gray-600 bg-gray-50 hover:bg-gray-100 hover:text-gray-800 shadow-sm"
+            : "text-gray-600 hover:bg-gray-100"
         }`}
       >
-        <ChevronLeft size={14} /> Previous
+        <ChevronLeft size={14} />
+        Previous
       </button>
-      <div className="flex items-center gap-2">
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i}
-            onClick={() => onPageChange(i)}
-            className={`w-7 h-7 rounded-lg text-xs font-semibold transition-all duration-150 ${
-              page === i
-                ? "bg-amber-500 text-white shadow-sm"
-                : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
-            }`}
-          >
-            {i + 1}
-          </button>
-        ))}
-      </div>
+      <span className="text-xs text-gray-400 font-medium">
+        Page {page + 1} of {totalPages}
+      </span>
       <button
         onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
         disabled={page >= totalPages - 1}
-        className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-150 ${
+        className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
           page >= totalPages - 1
             ? "text-gray-300 cursor-not-allowed"
-            : "text-gray-600 bg-gray-50 hover:bg-gray-100 hover:text-gray-800 shadow-sm"
+            : "text-gray-600 hover:bg-gray-100"
         }`}
       >
-        Next <ChevronRight size={14} />
+        Next
+        <ChevronRight size={14} />
       </button>
     </div>
   );

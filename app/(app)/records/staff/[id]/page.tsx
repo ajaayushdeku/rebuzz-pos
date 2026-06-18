@@ -175,26 +175,11 @@ export default function StaffDetailPage() {
           totalPayOut={totalPayOut}
         />
 
-        {/* Weekly Chart + Bills in same row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="lg:col-span-2">
-            <WeeklySalesChart
-              bills={bills}
-              startDate={dateRange.startDate}
-              endDate={dateRange.endDate}
-            />
-          </div>
-          <div className="lg:col-span-1">
-            <BillsSection
-              bills={bills}
-              billLoading={billLoading}
-              billPage={billPage}
-              pageSize={pageSize}
-              billPages={billPages}
-              onPageChange={setBillPage}
-            />
-          </div>
-        </div>
+        <WeeklySalesChart
+          bills={bills}
+          startDate={dateRange.startDate}
+          endDate={dateRange.endDate}
+        />
 
         <ShiftsSection
           shifts={shifts}
@@ -208,6 +193,15 @@ export default function StaffDetailPage() {
           modalDetail={modalDetail}
           modalLoading={modalLoading}
           onModalClose={handleModalClose}
+        />
+
+        <BillsSection
+          bills={bills}
+          billLoading={billLoading}
+          billPage={billPage}
+          pageSize={pageSize}
+          billPages={billPages}
+          onPageChange={setBillPage}
         />
       </div>
     </div>

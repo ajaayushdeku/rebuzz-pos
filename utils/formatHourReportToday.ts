@@ -2,10 +2,14 @@ import { HourlyData } from "@/components/dashboardComponents/overviewDash/Hourly
 
 export const formatHourlyData = (
   bills: { grandTotal: number; paidAt: string; isRefunded?: boolean }[],
+  hourRange?: { start: number; end: number },
 ): HourlyData[] => {
+  const startHour = hourRange?.start ?? 0;
+  const endHour = hourRange?.end ?? 23;
+
   const hourMap: Record<string, number> = {};
 
-  for (let h = 8; h <= 22; h++) {
+  for (let h = startHour; h <= endHour; h++) {
     hourMap[formatHourLabel(h)] = 0;
   }
 
@@ -56,55 +60,13 @@ export const formatHourlyData = (
 };
 
 export const formatHourLabel = (hour: number): string => {
-  if (hour === 12) return "12PM";
-  if (hour === 0) return "12AM";
-
-  return hour < 12 ? `${hour}AM` : `${hour - 12}PM`;
+  const h = hour.toString().padStart(2, "0");
+  return `${h}:00`;
 };
 
-// import { HourlyData } from "@/components/dashboardComponents/overviewDash/HourlySalesChart";
-
-// export const formatHourlyData = (
-//   bills: { grandTotal: number; paidAt: string; isRefunded?: boolean }[],
-// ): HourlyData[] => {
-//   const hourMap: Record<string, number> = {};
-//   for (let h = 8; h <= 22; h++) {
-//     hourMap[formatHourLabel(h)] = 0;
-//   }
-
-//   bills.forEach((bill) => {
-//     if (bill.isRefunded) return;
-
-//     const paidAt = bill.paidAt ?? "";
-//     if (!paidAt) return;
-
-//     // Handle both formats:
-//     //   ISO:   "2026-05-12T12:24:20.929Z"  (split on "T")
-//     //   Legacy: "2026-05-12 12:24:20.929"   (split on " ")
-//     const timePart = paidAt.includes("T")
-//       ? paidAt.split("T")[1]
-//       : paidAt.split(" ")[1];
-//     if (!timePart) return;
-//     // console.log("timepart:", timePart);
-
-//     const hour = parseInt(timePart.split(":")[0], 10);
-//     const label = formatHourLabel(hour);
-
-//     if (hourMap[label] !== undefined) {
-//       hourMap[label] += bill.grandTotal;
-//     }
-//   });
-
-//   // console.log("Hourly Bills:", bills);
-
-//   return Object.entries(hourMap).map(([hour, revenue]) => ({
-//     hour,
-//     revenue: Math.round(revenue * 100) / 100,
-//   }));
-// };
-
-// export const formatHourLabel = (hour: number): string => {
-//   if (hour === 12) return "12PM";
-//   if (hour === 0) return "12AM";
-//   return hour < 12 ? `${hour}AM` : `${hour - 12}PM`;
-// };
+export const HOUR_RANGES = [
+  { label: "00:00 – 07:59", start: 0, end: 7 },
+  { label: "08:00 – 15:59", start: 8, end: 15 },
+  { label: "16:00 – 23:59", start: 16, end: 23 },
+  { label: "All Day (00:00 – 23:59)", start: 0, end: 23 },
+];
