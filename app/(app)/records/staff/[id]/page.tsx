@@ -189,7 +189,7 @@ export default function StaffDetailPage() {
               bills={bills}
               billLoading={billLoading}
               billPage={billPage}
-              pageSize={3}
+              pageSize={pageSize}
               billPages={billPages}
               onPageChange={setBillPage}
             />

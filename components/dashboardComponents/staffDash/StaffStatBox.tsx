@@ -65,8 +65,8 @@ export default function StaffStatBox({
   const idx = colorIndex % avatarColors.length;
   // console.log("StaffStatBox colorIndex:", colorIndex, "mapped to idx:", idx);
   const avatarColor = avatarColors[idx];
-  const avatarBg = avatarBgColors[idx];
-  const barColor = topBarColors[idx];
+  // const avatarBg = avatarBgColors[idx];
+  // const barColor = topBarColors[idx];
 
   const { currency } = useCurrency();
   return (
