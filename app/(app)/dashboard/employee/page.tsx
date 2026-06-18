@@ -39,7 +39,7 @@ const Page = async ({
       <div className="max-w-7xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
         <div>
           <h1 className="font-bold text-xl md:text-2xl truncate">
-            Staff Performance
+            Employee Performance
           </h1>
 
           <p className="text-sm text-gray-500 mt-0.5">

@@ -187,7 +187,7 @@ export default function StaffOrdersChart({ data }: StaffOrdersChartProps) {
       <div className="flex items-start justify-between mb-6">
         <div>
           <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-            Orders Per Hour by Staff
+            Orders Per Hour by Employee
           </h2>
           <p className="text-xs text-gray-400 mt-0.5">
             Throughput breakdown across the day per team member.
@@ -201,7 +201,7 @@ export default function StaffOrdersChart({ data }: StaffOrdersChartProps) {
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-xl hover:bg-blue-50 transition-colors shrink-0"
           >
             <SlidersHorizontal size={12} />
-            Filter Staff
+            Filter Employee
             {selectedStaff.length < allStaffNames.length && (
               <span className="bg-blue-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold">
                 {selectedStaff.length}

@@ -66,10 +66,10 @@ const StaffFilterModal = ({
             </div>
             <div>
               <h3 className="text-base font-semibold text-gray-900">
-                Filter Staff
+                Filter Employee
               </h3>
               <p className="text-xs text-gray-400 mt-0.5">
-                Select 1 – {MAX_STAFF} staff members to compare
+                Select 1 – {MAX_STAFF} employees to compare
               </p>
             </div>
           </div>

@@ -73,7 +73,7 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
       {/* Header */}
       <div className="mb-6">
         <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-          Revenue per Staff
+          Revenue per Employee
         </h2>
         <p className="text-xs text-gray-400 mt-0.5">
           Individual contribution to total revenue

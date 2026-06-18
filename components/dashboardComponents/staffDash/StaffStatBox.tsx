@@ -12,6 +12,7 @@ export interface StaffBoxProps {
   amount: number;
   avgTime?: string;
   colorIndex?: number;
+  role?: "Basic" | "Staff";
 }
 
 const avatarColors = [
@@ -58,7 +59,10 @@ export default function StaffStatBox({
   amount,
   avgTime,
   colorIndex = 0,
+  role,
 }: StaffBoxProps) {
+  // Determine role based on available data if not explicitly provided
+  const employeeRole = role || (avgTime && amount > 0 ? "Basic" : "Staff");
   const router = useRouter();
   const staffInitials = getInitials(staffName);
 
@@ -86,10 +90,16 @@ export default function StaffStatBox({
             <p className="text-gray-900 font-semibold truncate text-sm">
               {staffName}
             </p>
-            <div className="flex items-center gap-1 mt-0.5">
-              {/* <span
-                className={`inline-block w-1.5 h-1.5 rounded-full ${ordersTaken > 0 ? "bg-green-400" : "bg-gray-300"}`}
-              /> */}
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span
+                className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                  employeeRole === "Basic"
+                    ? "bg-indigo-50 text-indigo-600"
+                    : "bg-amber-50 text-amber-600"
+                }`}
+              >
+                {employeeRole}
+              </span>
               <p className="text-gray-400 text-xs truncate">{staffPosition}</p>
             </div>
           </div>
@@ -104,22 +114,30 @@ export default function StaffStatBox({
               </p>
               <p className="font-bold text-gray-900 text-sm">{ordersTaken}</p>
             </div>
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
-                Avg Time
-              </p>
-              <p className="font-bold text-indigo-600 text-sm">
-                {avgTime || "—"}
-              </p>
-            </div>
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
-                Revenue
-              </p>
-              <p className="font-bold text-green-600 text-sm">
-                {formatCurrencySymbol(amount, currency.symbol, currency.locale)}
-              </p>
-            </div>
+            {employeeRole === "Basic" && (
+              <>
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
+                    Avg Time
+                  </p>
+                  <p className="font-bold text-indigo-600 text-sm">
+                    {avgTime || "—"}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
+                    Revenue
+                  </p>
+                  <p className="font-bold text-green-600 text-sm">
+                    {formatCurrencySymbol(
+                      amount,
+                      currency.symbol,
+                      currency.locale,
+                    )}
+                  </p>
+                </div>
+              </>
+            )}
           </div>
 
           <div
