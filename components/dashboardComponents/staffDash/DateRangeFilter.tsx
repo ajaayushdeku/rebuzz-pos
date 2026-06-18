@@ -354,6 +354,7 @@ export function DateRangeFilter({
                   onSelect={handleSingleDateSelect}
                   defaultMonth={tempStartDate}
                   className="w-full"
+                  disabled={(date) => date > new Date()}
                 />
               ) : (
                 <Calendar
@@ -363,6 +364,7 @@ export function DateRangeFilter({
                   defaultMonth={tempStartDate}
                   numberOfMonths={1}
                   className="w-full"
+                  disabled={(date) => date > new Date()}
                 />
               )}
             </div>
