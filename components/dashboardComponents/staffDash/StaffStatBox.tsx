@@ -123,7 +123,11 @@ export default function StaffStatBox({
           </div>
 
           <div
-            onClick={() => router.push(`/records/staff/${staffId}`)}
+            onClick={() =>
+              router.push(
+                `/records/staff/${staffId}${avgTime ? `?avgTime=${encodeURIComponent(avgTime)}` : ""}`,
+              )
+            }
             className="mt-4 border-t border-gray-100 pt-3 flex items-center justify-between text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
           >
             <span>View Details</span>

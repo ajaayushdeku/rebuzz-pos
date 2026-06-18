@@ -1,0 +1,358 @@
+"use client";
+
+import {
+  Clock,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Circle,
+  Eye,
+} from "lucide-react";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
+import { parseNepalDateTime, extractTime } from "./staffDetailHelpers";
+import type { ShiftSummary, ShiftDetail } from "./staffDetailHelpers";
+import ShiftDetailModal from "./ShiftDetailModal";
+
+interface ShiftsSectionProps {
+  shifts: ShiftSummary[];
+  shiftLoading: boolean;
+  shiftPage: number;
+  pageSize: number;
+  shiftPages: number;
+  onPageChange: (page: number) => void;
+  onFetchShiftDetail: (shiftId: string) => void;
+  modalOpen: boolean;
+  modalDetail: ShiftDetail | null;
+  modalLoading: boolean;
+  onModalClose: () => void;
+}
+
+/* ── Robust date parser with fallback ── */
+
+function tryParse(raw: string | undefined): Date | null {
+  if (!raw) return null;
+  const d = parseNepalDateTime(raw);
+  if (d) return d;
+  const datePart = raw.split("T")[0] ?? raw.split(" ")[0] ?? raw;
+  const fallback = new Date(datePart);
+  if (!isNaN(fallback.getTime())) return fallback;
+  return null;
+}
+
+function formatDateShort(d: Date): string {
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function formatDateFull(d: Date): string {
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatShiftDateRange(
+  openingTime: string | undefined,
+  closingTime: string | undefined,
+): string {
+  const openD = tryParse(openingTime);
+  const closeD = tryParse(closingTime);
+  if (!openD) return "—";
+  if (!closeD) return formatDateFull(openD);
+
+  const sameDay =
+    openD.getDate() === closeD.getDate() &&
+    openD.getMonth() === closeD.getMonth() &&
+    openD.getFullYear() === closeD.getFullYear();
+
+  if (sameDay) return formatDateFull(openD);
+  return `${formatDateShort(openD)} - ${formatDateShort(closeD)}, ${closeD.getFullYear()}`;
+}
+
+/* ── Status badge ── */
+
+function StatusBadge({ closingTime }: { closingTime?: string }) {
+  const isClosed = !!closingTime;
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide ${
+        isClosed
+          ? "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200"
+          : "bg-green-50 text-green-700 ring-1 ring-inset ring-green-200"
+      }`}
+    >
+      <Circle
+        size={5}
+        className={isClosed ? "fill-amber-500" : "fill-green-400"}
+      />
+      {isClosed ? "Closed" : "Open"}
+    </span>
+  );
+}
+
+export default function ShiftsSection({
+  shifts,
+  shiftLoading,
+  shiftPage,
+  pageSize,
+  shiftPages,
+  onPageChange,
+  onFetchShiftDetail,
+  modalOpen,
+  modalDetail,
+  modalLoading,
+  onModalClose,
+}: ShiftsSectionProps) {
+  const { currency } = useCurrency();
+
+  const shiftList = shifts.filter((s) => s.shiftId);
+  const pagedShifts = shiftList.slice(
+    shiftPage * pageSize,
+    (shiftPage + 1) * pageSize,
+  );
+
+  return (
+    <>
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 mb-6">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
+              <Clock size={15} className="text-orange-500" />
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-gray-900">
+                Staff Shifts
+              </h2>
+              <p className="text-[11px] text-gray-400 mt-px">
+                {shiftList.length} {shiftList.length === 1 ? "shift" : "shifts"}{" "}
+                recorded
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {shiftLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 size={20} className="animate-spin text-amber-500" />
+          </div>
+        ) : shiftList.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3">
+              <Clock size={20} className="text-gray-300" />
+            </div>
+            <p className="text-sm font-medium text-gray-500">No shifts found</p>
+            <p className="text-xs text-gray-400 mt-1">
+              Try adjusting your date range
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[900px] text-sm">
+                <thead>
+                  <tr className="text-[11px] text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                    <th className="text-left pb-3 pr-3 pl-0 font-semibold w-8">
+                      S.No.
+                    </th>
+                    <th className="text-left pb-3 px-3 font-semibold">Shift</th>
+                    <th className="text-right pb-3 px-3 font-semibold">
+                      Opening Cash
+                    </th>
+                    <th className="text-right pb-3 px-3 font-semibold">
+                      Cash Movement
+                    </th>
+                    <th className="text-right pb-3 px-3 font-semibold">
+                      Closing Cash
+                    </th>
+                    <th className="text-right pb-3 px-3 font-semibold">
+                      Total Sales
+                    </th>
+                    <th className="text-center pb-3 px-3 font-semibold">
+                      Status
+                    </th>
+                    <th className="text-center pb-3 pl-3 pr-0 font-semibold w-10"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagedShifts.map((shift, idx) => (
+                    <tr
+                      key={shift.shiftId ?? idx}
+                      className="border-b border-gray-50/80 last:border-0 hover:bg-gray-50/40 transition-colors"
+                    >
+                      <td className="py-3.5 pr-3 pl-0 text-[11px] text-gray-300 font-mono align-top">
+                        #{String(shiftPage * pageSize + idx + 1)}
+                      </td>
+                      <td className="py-3.5 px-3 align-top">
+                        <div className="leading-snug">
+                          <p className="text-[11px] text-gray-500 mb-1.5 font-medium">
+                            {formatShiftDateRange(
+                              shift.openingTime,
+                              shift.closingTIme,
+                            )}
+                          </p>
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                                Open
+                              </span>
+                              <span className="text-[13px] font-semibold text-gray-900">
+                                {extractTime(shift.openingTime)}
+                              </span>
+                            </div>
+                            <span className="text-gray-300 text-[10px]">|</span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                                Close
+                              </span>
+                              <span className="text-[13px] font-semibold text-gray-900">
+                                {extractTime(shift.closingTIme)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-3 text-right align-top">
+                        <span className="text-[13px] font-semibold text-gray-800">
+                          {formatCurrencySymbol(
+                            shift.openingCash ?? 0,
+                            currency.symbol,
+                            currency.locale,
+                          )}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-3 text-right align-top">
+                        <div className="leading-tight space-y-1">
+                          <p className="flex items-center justify-end gap-1.5 text-[11px] font-medium text-emerald-600">
+                            <ArrowDownLeft size={10} className="shrink-0" />
+                            {formatCurrencySymbol(
+                              shift.payIn ?? 0,
+                              currency.symbol,
+                              currency.locale,
+                            )}
+                          </p>
+                          <p className="flex items-center justify-end gap-1.5 text-[11px] font-medium text-red-500">
+                            <ArrowUpRight size={10} className="shrink-0" />
+                            {formatCurrencySymbol(
+                              shift.payOut ?? 0,
+                              currency.symbol,
+                              currency.locale,
+                            )}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-3 text-right align-top">
+                        <span className="text-[13px] font-semibold text-gray-800">
+                          {formatCurrencySymbol(
+                            shift.closingCash ?? 0,
+                            currency.symbol,
+                            currency.locale,
+                          )}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-3 text-right align-top">
+                        <p className="text-[13px] font-bold text-gray-900">
+                          {formatCurrencySymbol(
+                            shift.totalSale ?? 0,
+                            currency.symbol,
+                            currency.locale,
+                          )}
+                        </p>
+                      </td>
+                      <td className="py-3.5 px-3 text-center align-top">
+                        <div className="inline-flex">
+                          <StatusBadge closingTime={shift.closingTIme} />
+                        </div>
+                      </td>
+                      <td className="py-3.5 pl-3 pr-0 text-center align-top">
+                        <button
+                          onClick={() =>
+                            shift.shiftId && onFetchShiftDetail(shift.shiftId)
+                          }
+                          className="p-1.5 text-gray-300 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all duration-150"
+                          title="View shift details"
+                        >
+                          <Eye size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {shiftPages > 1 && (
+              <Pagination
+                page={shiftPage}
+                totalPages={shiftPages}
+                onPageChange={onPageChange}
+              />
+            )}
+          </>
+        )}
+      </div>
+
+      <ShiftDetailModal
+        open={modalOpen}
+        shiftDetail={modalDetail}
+        loading={modalLoading}
+        onClose={onModalClose}
+      />
+    </>
+  );
+}
+
+function Pagination({
+  page,
+  totalPages,
+  onPageChange,
+}: {
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between mt-5 pt-4 border-t border-gray-100">
+      <button
+        onClick={() => onPageChange(Math.max(0, page - 1))}
+        disabled={page === 0}
+        className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-150 ${
+          page === 0
+            ? "text-gray-300 cursor-not-allowed"
+            : "text-gray-600 bg-gray-50 hover:bg-gray-100 hover:text-gray-800 shadow-sm"
+        }`}
+      >
+        <ChevronLeft size={14} /> Previous
+      </button>
+      <div className="flex items-center gap-2">
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button
+            key={i}
+            onClick={() => onPageChange(i)}
+            className={`w-7 h-7 rounded-lg text-xs font-semibold transition-all duration-150 ${
+              page === i
+                ? "bg-amber-500 text-white shadow-sm"
+                : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            {i + 1}
+          </button>
+        ))}
+      </div>
+      <button
+        onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
+        disabled={page >= totalPages - 1}
+        className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-150 ${
+          page >= totalPages - 1
+            ? "text-gray-300 cursor-not-allowed"
+            : "text-gray-600 bg-gray-50 hover:bg-gray-100 hover:text-gray-800 shadow-sm"
+        }`}
+      >
+        Next <ChevronRight size={14} />
+      </button>
+    </div>
+  );
+}

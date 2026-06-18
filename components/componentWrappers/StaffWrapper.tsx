@@ -42,8 +42,6 @@ export async function StaffStatWrapper({
 
   const displayStaff = staffList.slice(0, 8);
 
-  console.log("Staff details:", displayStaff);
-
   return (
     <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 my-4">
       {displayStaff.map((staff, idx) => (
