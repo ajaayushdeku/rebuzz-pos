@@ -13,6 +13,7 @@ interface StatBoxProps {
   iconColor?: string;
   format?: "currency" | "number" | "percent";
   periodLabel?: string;
+  currentDateRange?: string;
   isLoading?: boolean;
 }
 
@@ -23,6 +24,7 @@ const OverviewStatBox = ({
   iconName,
   iconColor,
   periodLabel = "from previous month",
+  currentDateRange,
   isLoading = false,
 }: StatBoxProps) => {
   const { text, ArrowIcon } = getPercentColor(percent);
@@ -56,7 +58,7 @@ const OverviewStatBox = ({
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 px-6 py-4">
       <div className="flex justify-between items-center">
         <p className="text-gray-500 text-sm md:text-base font-medium leading-tight">
           {label}
@@ -75,12 +77,18 @@ const OverviewStatBox = ({
               formatCurrencySymbol(value, currency.symbol, currency.locale)}
         </span>
 
-        <div className="flex items-center gap-1 mt-1.5">
+        {currentDateRange && (
+          <p className="text-[10px] text-gray-400 mt-0.5">{currentDateRange}</p>
+        )}
+
+        <div className="flex items-center gap-1 mt-1.5 overflow-hidden">
           <ArrowIcon size={14} className={`${text} shrink-0`} />
-          <span className={`text-xs md:text-sm font-medium ${text}`}>
+          <span
+            className={`text-[10px] font-bold text-gray-400 mt-0.5 ${text} shrink-0`}
+          >
             {percent}%
           </span>
-          <span className="text-gray-400 text-xs md:text-sm ml-0.5">
+          <span className="text-[10px] text-gray-400 mt-0.5 truncate">
             {periodLabel}
           </span>
         </div>

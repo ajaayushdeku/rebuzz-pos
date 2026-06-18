@@ -25,9 +25,9 @@ type DateMode = "single" | "range";
 
 const PRESET_RANGES = [
   { value: "24h", label: "Today" },
-  { value: "week", label: "This Week" },
-  { value: "month", label: "This Month" },
-  { value: "year", label: "This Year" },
+  { value: "week", label: "Last 7 Days" },
+  { value: "month", label: "Last 30 Days" },
+  { value: "year", label: "Last Year" },
 ];
 
 function toDateStr(date: Date): string {
@@ -53,16 +53,34 @@ function getPresetRange(range: string): { startDate: string; endDate: string } {
       start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       break;
     case "week": {
+      // ── Previous calendar-based implementation retained for future use. ──
+      // Calendar week: Sunday to Saturday
+      // const calendarWeekStart = new Date(today);
+      // calendarWeekStart.setDate(today.getDate() - today.getDay());
+      // start = calendarWeekStart;
+      // ── New rolling 7-day period ──
       start = new Date(today);
-      start.setDate(today.getDate() - today.getDay());
+      start.setDate(today.getDate() - 6);
       break;
     }
-    case "month":
-      start = new Date(today.getFullYear(), today.getMonth(), 1);
+    case "month": {
+      // ── Previous calendar-based implementation retained for future use. ──
+      // Calendar month: 1st of current month
+      // start = new Date(today.getFullYear(), today.getMonth(), 1);
+      // ── New rolling 30-day period ──
+      start = new Date(today);
+      start.setDate(today.getDate() - 29);
       break;
-    case "year":
-      start = new Date(today.getFullYear(), 0, 1);
+    }
+    case "year": {
+      // ── Previous calendar-based implementation retained for future use. ──
+      // Calendar year: Jan 1 of current year
+      // start = new Date(today.getFullYear(), 0, 1);
+      // ── New rolling 365-day period ──
+      start = new Date(today);
+      start.setDate(today.getDate() - 364);
       break;
+    }
     default:
       start = new Date(today.getFullYear(), today.getMonth(), 1);
   }

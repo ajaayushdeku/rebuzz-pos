@@ -24,12 +24,16 @@ const Page = async ({
     range?: string;
     startDate?: string;
     endDate?: string;
+    comparisonStartDate?: string;
+    comparisonEndDate?: string;
   }>;
 }) => {
   const params = await searchParams;
   const range = params.range || "month";
   const startDate = params.startDate ?? "";
   const endDate = params.endDate ?? "";
+  const comparisonStartDate = params.comparisonStartDate ?? "";
+  const comparisonEndDate = params.comparisonEndDate ?? "";
 
   const hasCustomDates = !!startDate && !!endDate;
   // When custom dates are active, clear the range preset
@@ -61,6 +65,8 @@ const Page = async ({
               range={range}
               startDate={hasCustomDates ? startDate : undefined}
               endDate={hasCustomDates ? endDate : undefined}
+              comparisonStartDate={comparisonStartDate || undefined}
+              comparisonEndDate={comparisonEndDate || undefined}
             />
           </Suspense>
 

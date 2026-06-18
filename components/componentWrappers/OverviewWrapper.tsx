@@ -18,10 +18,22 @@ import {
   getWinningStats,
 } from "@/services/dashboardServices/apiOverview";
 
+import { format } from "date-fns";
 import { Carousel, CarouselContent, CarouselItem } from "../ui/carousel";
 import { DataPoint } from "@/lib/types/chart";
 import WeeklyRevenueChart from "../dashboardComponents/overviewDash/WeeklyRevenueChart";
 import HourlySalesTrend from "../dashboardComponents/overviewDash/HourlySalesChart";
+
+/** Format date range as "MMM d – MMM d, yyyy" or "MMM d, yyyy" if same day */
+function formatDateRange(start: string, end: string): string {
+  const s = new Date(start);
+  const e = new Date(end);
+  if (isNaN(s.getTime()) || isNaN(e.getTime())) return "";
+  if (start === end) {
+    return format(s, "MMM d, yyyy");
+  }
+  return `${format(s, "MMM d, yyyy")} – ${format(e, "MMM d, yyyy")}`;
+}
 
 /** Format a Date as YYYY-MM-DD using local timezone (not UTC) */
 function fmtLocalDate(date: Date): string {
@@ -42,19 +54,35 @@ const getDateRange = (range: string, now: Date): [string, string] => {
       start = new Date(now);
       start.setDate(now.getDate());
       break;
-    case "week":
-      // Sunday of current week → today
+    case "week": {
+      // ── Previous calendar-based implementation retained for future use. ──
+      // Calendar week: Sunday to Saturday
+      // const calendarWeekStart = new Date(now);
+      // calendarWeekStart.setDate(now.getDate() - now.getDay());
+      // start = calendarWeekStart;
+      // ── New rolling 7-day period ──
       start = new Date(now);
-      start.setDate(now.getDate() - now.getDay());
+      start.setDate(now.getDate() - 6);
       break;
-    case "month":
-      // 1st of current month → today
-      start = new Date(now.getFullYear(), now.getMonth(), 1);
+    }
+    case "month": {
+      // ── Previous calendar-based implementation retained for future use. ──
+      // Calendar month: 1st of current month
+      // start = new Date(now.getFullYear(), now.getMonth(), 1);
+      // ── New rolling 30-day period ──
+      start = new Date(now);
+      start.setDate(now.getDate() - 29);
       break;
-    case "year":
-      // Jan 1 of current year → today
-      start = new Date(now.getFullYear(), 0, 1);
+    }
+    case "year": {
+      // ── Previous calendar-based implementation retained for future use. ──
+      // Calendar year: Jan 1 of current year
+      // start = new Date(now.getFullYear(), 0, 1);
+      // ── New rolling 365-day period ──
+      start = new Date(now);
+      start.setDate(now.getDate() - 364);
       break;
+    }
     default:
       // Default to 24h (today) instead of month for fresh first-load data
       start = new Date(now);
@@ -76,25 +104,45 @@ const getPreviousDateRange = (range: string, now: Date): [string, string] => {
       end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
       break;
     case "week": {
-      // Previous week: Sunday → Saturday
-      const currentWeekStart = new Date(now);
-      currentWeekStart.setDate(now.getDate() - now.getDay());
-      start = new Date(currentWeekStart);
-      start.setDate(currentWeekStart.getDate() - 7);
-      end = new Date(currentWeekStart);
-      end.setDate(currentWeekStart.getDate() - 1);
+      // ── Previous calendar-based implementation retained for future use. ──
+      // Previous calendar week: Sunday → Saturday
+      // const currentWeekStart = new Date(now);
+      // currentWeekStart.setDate(now.getDate() - now.getDay());
+      // start = new Date(currentWeekStart);
+      // start.setDate(currentWeekStart.getDate() - 7);
+      // end = new Date(currentWeekStart);
+      // end.setDate(currentWeekStart.getDate() - 1);
+      // ── New rolling 7-day period: immediately preceding 7 days ──
+      end = new Date(now);
+      end.setDate(now.getDate() - 7);
+      start = new Date(end);
+      start.setDate(end.getDate() - 6);
       break;
     }
-    case "month":
-      // Previous full month: 1st → last day
-      start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      end = new Date(now.getFullYear(), now.getMonth(), 0);
+    case "month": {
+      // ── Previous calendar-based implementation retained for future use. ──
+      // Previous full calendar month: 1st → last day
+      // start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      // end = new Date(now.getFullYear(), now.getMonth(), 0);
+      // ── New rolling 30-day period: immediately preceding 30 days ──
+      end = new Date(now);
+      end.setDate(now.getDate() - 30);
+      start = new Date(end);
+      start.setDate(end.getDate() - 29);
       break;
-    case "year":
-      // Previous full year: Jan 1 → Dec 31
-      start = new Date(now.getFullYear() - 1, 0, 1);
-      end = new Date(now.getFullYear(), 0, 0);
+    }
+    case "year": {
+      // ── Previous calendar-based implementation retained for future use. ──
+      // Previous full calendar year: Jan 1 → Dec 31
+      // start = new Date(now.getFullYear() - 1, 0, 1);
+      // end = new Date(now.getFullYear(), 0, 0);
+      // ── New rolling 365-day period: immediately preceding 365 days ──
+      end = new Date(now);
+      end.setDate(now.getDate() - 365);
+      start = new Date(end);
+      start.setDate(end.getDate() - 364);
       break;
+    }
     default:
       // Default to 24h (previous day) for consistency with getDateRange
       start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
@@ -108,15 +156,15 @@ const getPreviousDateRange = (range: string, now: Date): [string, string] => {
 const getPeriodLabel = (range: string): string => {
   switch (range) {
     case "24h":
-      return "from previous day";
+      return "from yesterday";
     case "week":
-      return "from previous week";
+      return "from previous 7 days";
     case "month":
-      return "from previous month";
+      return "from previous 30 days";
     case "year":
       return "from previous year";
     default:
-      return "from previous day";
+      return "from yesterday";
   }
 };
 
@@ -124,17 +172,22 @@ export const OverviewStatsWrapper = async ({
   range = "24h",
   startDate: customStartDate,
   endDate: customEndDate,
+  comparisonStartDate,
+  comparisonEndDate,
 }: {
   range?: string;
   startDate?: string;
   endDate?: string;
+  comparisonStartDate?: string;
+  comparisonEndDate?: string;
 }) => {
   const hasCustomDates = !!customStartDate && !!customEndDate;
+  const hasComparisonDates = !!comparisonStartDate && !!comparisonEndDate;
   const now = new Date();
 
   // Use a single fixed reference date to prevent date drift across calls
-  if (hasCustomDates) {
-    // Custom date range: fetch only the selected range, no previous comparison
+  if (hasCustomDates && !hasComparisonDates) {
+    // Custom date range without comparison: fetch only the selected range
     const compareType = "date";
     const currentStats = await getStatsData(
       customStartDate,
@@ -158,10 +211,15 @@ export const OverviewStatsWrapper = async ({
     );
   }
 
-  // Preset range: show comparison with previous period
+  // Preset range or range with comparison: show comparison with previous period
   const periodLabel = getPeriodLabel(range);
   const [startDate, endDate] = getDateRange(range, now);
-  const [prevStartDate, prevEndDate] = getPreviousDateRange(range, now);
+  const [prevStartDate, prevEndDate] = hasComparisonDates
+    ? [comparisonStartDate, comparisonEndDate]
+    : getPreviousDateRange(range, now);
+
+  const currentDateRangeLabel = formatDateRange(startDate, endDate);
+  const comparisonDateRangeLabel = formatDateRange(prevStartDate, prevEndDate);
 
   // Map filter range to the appropriate compare-sales-* API type
   const compareType =
@@ -200,7 +258,11 @@ export const OverviewStatsWrapper = async ({
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 my-4">
-      <OverviewStatBoxGrid stats={stats} periodLabel={periodLabel} />
+      <OverviewStatBoxGrid
+        stats={stats}
+        periodLabel={` ${periodLabel} ( ${comparisonDateRangeLabel} )`}
+        currentDateRange={currentDateRangeLabel}
+      />
     </div>
   );
 };

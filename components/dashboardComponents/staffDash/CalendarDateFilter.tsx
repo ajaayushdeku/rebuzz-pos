@@ -21,9 +21,9 @@ type DateMode = "single" | "range";
 
 const PRESET_RANGES = [
   { value: "24h", label: "Today" },
-  { value: "week", label: "This Week" },
-  { value: "month", label: "This Month" },
-  { value: "year", label: "This Year" },
+  { value: "week", label: "Last 7 Days" },
+  { value: "month", label: "Last 30 Days" },
+  { value: "year", label: "Last Year" },
 ];
 
 function toDateStr(date: Date): string {
@@ -39,7 +39,12 @@ function parseDateStr(str: string): Date | undefined {
   return d;
 }
 
-function getPresetRange(range: string): { startDate: string; endDate: string } {
+function getPresetRange(range: string): {
+  startDate: string;
+  endDate: string;
+  comparisonStartDate?: string;
+  comparisonEndDate?: string;
+} {
   const today = new Date();
   const end = toDateStr(today);
   let start: Date;
@@ -49,21 +54,63 @@ function getPresetRange(range: string): { startDate: string; endDate: string } {
       start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       break;
     case "week": {
+      // ── Previous calendar-based implementation retained for future use. ──
+      // Calendar week: Sunday to Saturday
+      // const calendarWeekStart = new Date(today);
+      // calendarWeekStart.setDate(today.getDate() - today.getDay());
+      // start = calendarWeekStart;
+      // ── New rolling 7-day period ──
       start = new Date(today);
-      start.setDate(today.getDate() - today.getDay());
+      start.setDate(today.getDate() - 6);
       break;
     }
     case "month":
-      start = new Date(today.getFullYear(), today.getMonth(), 1);
+      // ── Previous calendar-based implementation retained for future use. ──
+      // Calendar month: 1st of current month
+      // start = new Date(today.getFullYear(), today.getMonth(), 1);
+      // ── New rolling 30-day period ──
+      start = new Date(today);
+      start.setDate(today.getDate() - 29);
       break;
     case "year":
-      start = new Date(today.getFullYear(), 0, 1);
+      // ── Previous calendar-based implementation retained for future use. ──
+      // Calendar year: Jan 1 of current year
+      // start = new Date(today.getFullYear(), 0, 1);
+      // ── New rolling 365-day period ──
+      start = new Date(today);
+      start.setDate(today.getDate() - 364);
       break;
     default:
       start = new Date(today.getFullYear(), today.getMonth(), 1);
   }
 
-  return { startDate: toDateStr(start), endDate: end };
+  const result: {
+    startDate: string;
+    endDate: string;
+    comparisonStartDate?: string;
+    comparisonEndDate?: string;
+  } = {
+    startDate: toDateStr(start),
+    endDate: end,
+  };
+
+  // Add comparison period (same duration, immediately preceding)
+  const diffMs = today.getTime() - start.getTime();
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+  // For "24h" (Today), comparison should be exactly 1 day (yesterday)
+  // For other ranges, use the calculated diffDays
+  const comparisonDays = range === "24h" ? 1 : diffDays;
+
+  const comparisonEnd = new Date(start);
+  comparisonEnd.setDate(comparisonEnd.getDate() - 1);
+  const comparisonStart = new Date(comparisonEnd);
+  comparisonStart.setDate(comparisonStart.getDate() - comparisonDays + 1);
+
+  result.comparisonStartDate = toDateStr(comparisonStart);
+  result.comparisonEndDate = toDateStr(comparisonEnd);
+
+  return result;
 }
 
 export function CalendarDateFilter({
@@ -127,11 +174,15 @@ export function CalendarDateFilter({
     startDate?: string;
     endDate?: string;
     range?: string;
+    comparisonStartDate?: string;
+    comparisonEndDate?: string;
   }) => {
     const sp = new URLSearchParams(searchParams.toString());
     sp.delete("startDate");
     sp.delete("endDate");
     sp.delete("range");
+    sp.delete("comparisonStartDate");
+    sp.delete("comparisonEndDate");
 
     if (params.range) {
       sp.set("range", params.range);
@@ -140,18 +191,24 @@ export function CalendarDateFilter({
       sp.set("endDate", params.endDate);
     }
 
+    if (params.comparisonStartDate && params.comparisonEndDate) {
+      sp.set("comparisonStartDate", params.comparisonStartDate);
+      sp.set("comparisonEndDate", params.comparisonEndDate);
+    }
+
     router.push(`?${sp.toString()}`);
     setOpen(false);
   };
 
   const handlePresetChange = (value: string) => {
     setPreset(value);
-    const { startDate, endDate } = getPresetRange(value);
+    const { startDate, endDate, comparisonStartDate, comparisonEndDate } =
+      getPresetRange(value);
     setTempStartDate(new Date(startDate));
     setTempEndDate(new Date(endDate));
     setStartInput(startDate);
     setEndInput(endDate);
-    applyFilters({ range: value });
+    applyFilters({ range: value, comparisonStartDate, comparisonEndDate });
   };
 
   // Handle text input changes
