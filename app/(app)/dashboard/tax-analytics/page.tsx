@@ -1,7 +1,9 @@
-import React from "react";
+import TaxAnalyticsWrapper from "@/components/componentWrappers/TaxAnalyticsWrapper";
 
-const page = () => {
-  return <div>page</div>;
-};
-
-export default page;
+export default function TaxAnalyticsPage() {
+  return (
+    <div className="px-6 py-8 md:px-10">
+      <TaxAnalyticsWrapper />
+    </div>
+  );
+}
