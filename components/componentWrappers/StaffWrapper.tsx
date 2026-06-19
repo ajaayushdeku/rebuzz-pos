@@ -2,12 +2,14 @@ import StaffStatBox from "@/components/dashboardComponents/staffDash/StaffStatBo
 import StaffOrdersChart from "@/components/dashboardComponents/staffDash/StaffOrdersChart";
 import RevenueStaffChart from "@/components/dashboardComponents/staffDash/RevenueStaffChart";
 import ShiftAnalysisReport from "@/components/dashboardComponents/staffDash/ShiftAnalysisReport";
+import LatestShifts from "@/components/dashboardComponents/staffDash/LatestShifts";
 
 import {
   getStaffData,
   getStaffRevenue,
   getStaffOrdersPerHour,
   getShiftAnalysisData,
+  fetchAllShifts,
 } from "@/services/dashboardServices/apiStaff";
 
 // const RANGE_OPTIONS: { label: string; value: string }[] = [
@@ -43,7 +45,7 @@ export async function StaffStatWrapper({
   const displayStaff = staffList.slice(0, 8);
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 my-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 my-4">
       {displayStaff.map((staff, idx) => (
         <StaffStatBox key={staff.staffName} {...staff} colorIndex={idx} />
       ))}
@@ -101,4 +103,24 @@ export async function ShiftAnalysisWrapper({
 }) {
   const shifts = await getShiftAnalysisData(range, startDate, endDate);
   return <ShiftAnalysisReport shifts={shifts} />;
+}
+
+export async function LatestShiftsWrapper({
+  range = "month",
+  startDate,
+  endDate,
+}: {
+  range?: string;
+  startDate?: string;
+  endDate?: string;
+}) {
+  const shifts = await fetchAllShifts();
+  return (
+    <LatestShifts
+      shifts={shifts}
+      loading={false}
+      startDate={startDate}
+      endDate={endDate}
+    />
+  );
 }

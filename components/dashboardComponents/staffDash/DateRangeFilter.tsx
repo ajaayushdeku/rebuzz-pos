@@ -233,7 +233,7 @@ export function DateRangeFilter({
       if (value.startDate === value.endDate) {
         return format(new Date(value.startDate), "MMM d, yyyy");
       }
-      return `${format(new Date(value.startDate), "MMM d")} – ${format(new Date(value.endDate), "MMM d, yyyy")}`;
+      return `${format(new Date(value.startDate), "MMM d, yyyy")} – ${format(new Date(value.endDate), "MMM d, yyyy")}`;
     }
     const foundPreset = PRESET_RANGES.find((r) => r.value === "month");
     return foundPreset?.label ?? "Select date";
@@ -246,11 +246,11 @@ export function DateRangeFilter({
           <Button
             variant="outline"
             className={cn(
-              "w-[220px] justify-start text-left font-normal h-9",
+              "w-[230px] justify-start text-left font-normal h-9",
               !value.startDate && "text-muted-foreground",
             )}
           >
-            <CalendarIcon className="mr-2 h-4 w-4" />
+            <CalendarIcon className="mr-1 h-4 w-4" />
             {displayText}
           </Button>
         </DialogTrigger>

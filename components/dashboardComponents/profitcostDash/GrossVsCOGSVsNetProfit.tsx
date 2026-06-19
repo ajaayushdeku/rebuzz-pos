@@ -25,13 +25,13 @@ import {
   DateRangeFilter,
   type DateRangeValue,
 } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
-import { useProfitPerProduct } from "@/hooks/useProfitPerProduct";
+import { useSalesByCategory } from "@/hooks/useSalesByCategory";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
 type ChartDataPoint = {
-  product: string;
+  category: string;
   grossRevenue: number;
   cogs: number;
   netProfit: number;
@@ -141,7 +141,6 @@ const CustomTooltip = ({
                 : "text-gray-800"
             }`}
           >
-            {/* {formatCurrency(entry.value as number, currency)} */}
             {formatCurrencySymbol(
               entry.value as number,
               currency.symbol,
@@ -208,26 +207,26 @@ export default function GrossVsCOGSVsNetProfit() {
   const [page, setPage] = useState(0);
 
   const {
-    data: products,
+    data: categories,
     isFetching,
     isError,
-  } = useProfitPerProduct(dateRange.startDate, dateRange.endDate);
+  } = useSalesByCategory(dateRange.startDate, dateRange.endDate);
 
-  // Transform Product[] → ChartDataPoint[]
-  // Use same field names and calculations as ProfitPerProduct.tsx
+  // Transform CategorySalesData[] → ChartDataPoint[]
+  // COGS is derived as: totalRevenue - netProfit
   const allChartData = useMemo<ChartDataPoint[]>(() => {
-    if (!products || products.length === 0) return [];
+    if (!categories || categories.length === 0) return [];
 
-    return products
-      .filter((p) => p.revenue > 0) // exclude zero-revenue items
-      .sort((a, b) => b.revenue - a.revenue) // highest revenue first
-      .map((p) => ({
-        product: p.name,
-        grossRevenue: p.revenue, // same as ProfitPerProduct "revenue"
-        cogs: p.cogs, // same as ProfitPerProduct "cogs"
-        netProfit: p.profit, // same as ProfitPerProduct "profit"
+    return categories
+      .filter((c) => c.totalRevenue > 0) // exclude zero-revenue categories
+      .sort((a, b) => b.totalRevenue - a.totalRevenue) // highest revenue first
+      .map((c) => ({
+        category: c.name,
+        grossRevenue: c.totalRevenue,
+        cogs: c.totalRevenue - c.netProfit,
+        netProfit: c.netProfit,
       }));
-  }, [products]);
+  }, [categories]);
 
   const totalPages = Math.max(
     1,
@@ -243,7 +242,7 @@ export default function GrossVsCOGSVsNetProfit() {
   const displayData: ChartDataPoint[] =
     chartData.length > 0
       ? chartData
-      : [{ product: "No Data", grossRevenue: 0, cogs: 0, netProfit: 0 }];
+      : [{ category: "No Data", grossRevenue: 0, cogs: 0, netProfit: 0 }];
 
   const goToPrevPage = useCallback(() => {
     setPage((p) => Math.max(0, p - 1));
@@ -274,8 +273,7 @@ export default function GrossVsCOGSVsNetProfit() {
   const formatYAxis = (value: number): string =>
     value >= 1000 || value <= -1000
       ? `${currency.symbol} ${value / 1000}k`
-      : // : formatCurrency(value, currency);
-        formatCurrencySymbol(value, currency.symbol, currency.locale);
+      : formatCurrencySymbol(value, currency.symbol, currency.locale);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full mt-4">
@@ -286,7 +284,7 @@ export default function GrossVsCOGSVsNetProfit() {
             Gross Revenue vs COGS vs Net Profit
           </h2>
           <p className="text-xs text-gray-400 mt-0.5">
-            Per-product breakdown of revenue, cost, and profitability
+            Per-category breakdown of revenue, cost, and profitability
           </p>
           {isError && (
             <p className="text-xs text-amber-400 mt-1">
@@ -305,7 +303,7 @@ export default function GrossVsCOGSVsNetProfit() {
       </div>
 
       {/* Summary pills */}
-      {chartData.length > 0 && (
+      {/* {chartData.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-5">
           {(() => {
             const totalGross = chartData.reduce(
@@ -369,7 +367,7 @@ export default function GrossVsCOGSVsNetProfit() {
             ));
           })()}
         </div>
-      )}
+      )} */}
 
       {/* Chart */}
       <div
@@ -393,13 +391,13 @@ export default function GrossVsCOGSVsNetProfit() {
                 <CartesianGrid vertical={false} stroke="#f3f4f6" />
 
                 <XAxis
-                  dataKey="product"
+                  dataKey="category"
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: "#9ca3af", fontSize: 11 }}
                   dy={8}
                   interval={0}
-                  // Truncate long product names on X axis
+                  // Truncate long category names on X axis
                   tickFormatter={(val: string) =>
                     val.length > 10 ? val.slice(0, 9) + "…" : val
                   }
@@ -455,7 +453,7 @@ export default function GrossVsCOGSVsNetProfit() {
             Prev
           </button>
           <span className="text-xs text-gray-400 font-medium">
-            Page {page + 1} of {totalPages} · {allChartData.length} products
+            Page {page + 1} of {totalPages} · {allChartData.length} categories
           </span>
           <button
             onClick={goToNextPage}
@@ -475,7 +473,7 @@ export default function GrossVsCOGSVsNetProfit() {
       {/* Empty state */}
       {!isFetching && allChartData.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-          <p className="text-sm">No product data for this date range</p>
+          <p className="text-sm">No category data for this date range</p>
           <p className="text-xs mt-1">Try adjusting the filter above</p>
         </div>
       )}

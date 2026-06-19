@@ -72,6 +72,41 @@ function formatShiftDateRange(
   return `${formatDateShort(openD)} - ${formatDateShort(closeD)}, ${closeD.getFullYear()}`;
 }
 
+/* ── Time with AM/PM ── */
+const extractTimeWithAmPm = (raw: string | undefined): string => {
+  if (!raw) return "—";
+
+  const d = parseNepalDateTime(raw);
+  if (d) {
+    return d.toLocaleString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  }
+
+  // ── Fallback: raw string already has explicit AM/PM, e.g. "2026-05-21 04:34:09 PM" ──
+  const match = raw.match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)/i);
+  if (match) {
+    const hour = match[1];
+    const minute = match[2];
+    const ampm = match[3].toUpperCase();
+    return `${hour}:${minute} ${ampm}`;
+  }
+
+  // Fallback for 24-hour format without AM/PM marker
+  const fallback = raw.match(/(\d{1,2}):(\d{2})/);
+  if (fallback) {
+    const h = parseInt(fallback[1], 10);
+    const m = fallback[2];
+    const ampm = h >= 12 ? "PM" : "AM";
+    const hour12 = h % 12 || 12;
+    return `${hour12}:${m} ${ampm}`;
+  }
+
+  return raw;
+};
+
 /* ── Status badge ── */
 
 function StatusBadge({ closingTime }: { closingTime?: string }) {
@@ -199,8 +234,8 @@ export default function ShiftsSection({
                               <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
                                 Open
                               </span>
-                              <span className="text-[13px] font-semibold text-gray-900">
-                                {extractTime(shift.openingTime)}
+                              <span className="text-[10px] font-semibold text-gray-900">
+                                {extractTimeWithAmPm(shift.openingTime)}
                               </span>
                             </div>
                             <span className="text-gray-300 text-[10px]">|</span>
@@ -208,8 +243,8 @@ export default function ShiftsSection({
                               <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
                                 Close
                               </span>
-                              <span className="text-[13px] font-semibold text-gray-900">
-                                {extractTime(shift.closingTIme)}
+                              <span className="text-[10px] font-semibold text-gray-900">
+                                {extractTimeWithAmPm(shift.closingTIme)}
                               </span>
                             </div>
                           </div>

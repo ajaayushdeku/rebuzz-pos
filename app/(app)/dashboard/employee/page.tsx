@@ -14,6 +14,7 @@ import {
   StaffOrdersChartWrapper,
   StaffRevenueWrapper,
   StaffStatWrapper,
+  LatestShiftsWrapper,
 } from "@/components/componentWrappers/StaffWrapper";
 
 const Page = async ({
@@ -94,7 +95,7 @@ const Page = async ({
       </ChartErrorBoundary>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ChartErrorBoundary>
+        {/* <ChartErrorBoundary>
           <Suspense fallback={<TableSkeleton rows={3} />}>
             <ShiftAnalysisWrapper
               range={range}
@@ -102,7 +103,17 @@ const Page = async ({
               endDate={hasCustomDates ? endDate : undefined}
             />
           </Suspense>
+        </ChartErrorBoundary> */}
+        <ChartErrorBoundary>
+          <Suspense fallback={<TableSkeleton rows={3} />}>
+            <LatestShiftsWrapper
+              range={range}
+              startDate={hasCustomDates ? startDate : undefined}
+              endDate={hasCustomDates ? endDate : undefined}
+            />
+          </Suspense>
         </ChartErrorBoundary>
+
         <ChartErrorBoundary>
           <Suspense fallback={<ChartSkeleton />}>
             <StaffRevenueWrapper

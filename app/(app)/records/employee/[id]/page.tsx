@@ -153,7 +153,9 @@ export default function StaffDetailPage() {
       <div className="min-h-screen bg-gray-50/50 px-6 py-8 md:px-10">
         <div className="max-w-6xl mx-auto flex items-center justify-center py-20">
           <Loader2 size={24} className="animate-spin text-blue-500" />
-          <span className="ml-3 text-sm text-gray-500">Loading staff...</span>
+          <span className="ml-3 text-sm text-gray-500">
+            Loading employee details...
+          </span>
         </div>
       </div>
     );

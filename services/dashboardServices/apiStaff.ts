@@ -162,7 +162,7 @@ async function fetchEmployeeDetail(
 
 // ── Core fetcher — all shifts ──────────────────────────────────────────
 
-async function fetchAllShifts(): Promise<RawShift[]> {
+export async function fetchAllShifts(): Promise<RawShift[]> {
   try {
     const res = await fetch(`${BASE}/business/shift/allshifts`, {
       headers: await authHeaders(),

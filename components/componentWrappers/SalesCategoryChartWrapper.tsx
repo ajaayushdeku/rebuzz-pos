@@ -25,6 +25,7 @@ export default function SalesCategoryChartWrapper() {
     dateRange.startDate,
     dateRange.endDate,
   );
+  console.log("Category:", data);
 
   return (
     <div className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6">
