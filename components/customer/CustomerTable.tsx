@@ -79,16 +79,6 @@ const EditCustomerModal = ({
   });
 
   const handleOpenChange = (nextOpen: boolean) => {
-    if (nextOpen && customer) {
-      setForm({
-        name: customer.name ?? "",
-        email: customer.email ?? "",
-        phone: customer.phone ?? "",
-        countryCode: "NP +977",
-        note: customer.note ?? "",
-        customerPan: customer.customerPan ?? "",
-      });
-    }
     if (!nextOpen) onClose();
   };
 
@@ -124,12 +114,17 @@ const EditCustomerModal = ({
     }
   };
 
-  const fields: { key: keyof EditForm; label: string; type?: string }[] = [
+  const fields: {
+    key: keyof EditForm;
+    label: string;
+    type?: string;
+    disabled?: boolean;
+  }[] = [
     { key: "name", label: "Full Name" },
     { key: "email", label: "Email", type: "email" },
     { key: "phone", label: "Phone", type: "tel" },
     { key: "countryCode", label: "Country Code" },
-    { key: "customerPan", label: "Tax ID / PAN Number" },
+    { key: "customerPan", label: "Tax ID / PAN Number", disabled: true },
     { key: "note", label: "Note" },
   ];
 
@@ -143,7 +138,7 @@ const EditCustomerModal = ({
         </DialogHeader>
 
         <div className="space-y-3 py-1">
-          {fields.map(({ key, label, type }) => (
+          {fields.map(({ key, label, type, disabled }) => (
             <div key={key}>
               <label className="text-xs font-medium text-gray-500 block mb-1.5">
                 {label}
@@ -155,7 +150,8 @@ const EditCustomerModal = ({
                   setForm((p) => ({ ...p, [key]: e.target.value }))
                 }
                 placeholder={label}
-                className={inputClass}
+                disabled={disabled}
+                className={`${inputClass} ${disabled ? "bg-gray-50 text-gray-500 cursor-not-allowed" : ""}`}
               />
             </div>
           ))}
@@ -200,7 +196,7 @@ const LoyaltyPointModal = ({
   onClose: () => void;
 }) => {
   const queryClient = useQueryClient();
-  const [points, setPoints] = useState("");
+  const [points, setPoints] = useState(String(customer?.loyaltyPoint ?? 0));
   const [saving, setSaving] = useState(false);
 
   const handleOpenChange = (nextOpen: boolean) => {
@@ -564,6 +560,7 @@ export default function CustomerTable({
       />
 
       <EditCustomerModal
+        key={editCustomer?.id ?? "no-customer"}
         customer={editCustomer}
         open={editOpen}
         onClose={() => {
@@ -573,6 +570,7 @@ export default function CustomerTable({
       />
 
       <LoyaltyPointModal
+        key={loyaltyCustomer?.id ?? "no-customer"}
         customer={loyaltyCustomer}
         open={loyaltyOpen}
         onClose={() => {

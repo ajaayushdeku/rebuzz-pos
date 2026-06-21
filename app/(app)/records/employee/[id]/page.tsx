@@ -164,8 +164,9 @@ export default function StaffDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50 px-6 py-8 md:px-10">
-      <div className="max-w-6xl mx-auto">
+    // <div className="min-h-screen bg-gray-50/50 px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+      <div>
         <StaffDetailHeader
           employeeId={employeeId}
           name={overview?.name ?? ""}
@@ -179,8 +180,8 @@ export default function StaffDetailPage() {
           totalPayOut={totalPayOut}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-2">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-2">
+          <div className="lg:col-span-1">
             <WeeklySalesChart
               bills={bills}
               startDate={dateRange.startDate}
