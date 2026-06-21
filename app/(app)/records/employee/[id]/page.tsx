@@ -19,6 +19,7 @@ import StatsCardGrid from "@/components/dashboardComponents/staffDash/staffDetai
 import ShiftsSection from "@/components/dashboardComponents/staffDash/staffDetail/ShiftsSection";
 import WeeklySalesChart from "@/components/dashboardComponents/staffDash/staffDetail/WeeklySalesChart";
 import BillsSection from "@/components/dashboardComponents/staffDash/staffDetail/BillsSection";
+import PerformanceRadar from "@/components/dashboardComponents/staffDash/staffDetail/PerformanceRadar";
 
 export default function StaffDetailPage() {
   const params = useParams();
@@ -177,11 +178,22 @@ export default function StaffDetailPage() {
           totalPayOut={totalPayOut}
         />
 
-        <WeeklySalesChart
-          bills={bills}
-          startDate={dateRange.startDate}
-          endDate={dateRange.endDate}
-        />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-2">
+          <div className="lg:col-span-2">
+            <WeeklySalesChart
+              bills={bills}
+              startDate={dateRange.startDate}
+              endDate={dateRange.endDate}
+            />
+          </div>
+          <div className="lg:col-span-1">
+            <PerformanceRadar
+              employeeId={employeeId}
+              avgTime={avgTimeFromUrl}
+              dateRange={dateRange}
+            />
+          </div>
+        </div>
 
         <ShiftsSection
           shifts={shifts}

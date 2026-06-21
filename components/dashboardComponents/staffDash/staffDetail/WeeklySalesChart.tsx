@@ -121,7 +121,7 @@ const WeeklySalesChart = ({
     maxOrders <= 1
       ? [0, 1]
       : Array.from({ length: 5 }, (_, i) => Math.round((maxOrders / 4) * i));
-  const yMax = maxOrders <= 1 ? 2 : maxOrders * 1.5;
+  const yMax = maxOrders <= 1 ? 2 : maxOrders * 3;
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 mb-6">
@@ -180,7 +180,7 @@ const WeeklySalesChart = ({
           </p>
         </div>
       ) : (
-        <div className="h-56 md:h-64">
+        <div className="h-56 md:h-90">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={displayData}
