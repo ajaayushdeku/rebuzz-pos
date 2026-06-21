@@ -20,6 +20,7 @@ import ShiftsSection from "@/components/dashboardComponents/staffDash/staffDetai
 import WeeklySalesChart from "@/components/dashboardComponents/staffDash/staffDetail/WeeklySalesChart";
 import BillsSection from "@/components/dashboardComponents/staffDash/staffDetail/BillsSection";
 import PerformanceRadar from "@/components/dashboardComponents/staffDash/staffDetail/PerformanceRadar";
+import TopItemsSales from "@/components/dashboardComponents/staffDash/staffDetail/TopItemsSales";
 
 export default function StaffDetailPage() {
   const params = useParams();
@@ -195,6 +196,8 @@ export default function StaffDetailPage() {
           </div>
         </div>
 
+        <TopItemsSales employeeId={employeeId} dateRange={dateRange} />
+
         <ShiftsSection
           shifts={shifts}
           shiftLoading={shiftLoading}
@@ -209,14 +212,7 @@ export default function StaffDetailPage() {
           onModalClose={handleModalClose}
         />
 
-        <BillsSection
-          bills={bills}
-          billLoading={billLoading}
-          billPage={billPage}
-          pageSize={pageSize}
-          billPages={billPages}
-          onPageChange={setBillPage}
-        />
+        <BillsSection employeeId={employeeId} dateRange={dateRange} />
       </div>
     </div>
   );

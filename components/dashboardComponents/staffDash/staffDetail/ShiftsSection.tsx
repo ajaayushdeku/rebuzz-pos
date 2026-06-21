@@ -323,6 +323,7 @@ export default function ShiftsSection({
               <Pagination
                 page={shiftPage}
                 totalPages={shiftPages}
+                total={shiftList.length}
                 onPageChange={onPageChange}
               />
             )}
@@ -340,15 +341,17 @@ export default function ShiftsSection({
   );
 }
 
-function Pagination({
+const Pagination = ({
   page,
   totalPages,
+  total,
   onPageChange,
 }: {
   page: number;
   totalPages: number;
+  total: number;
   onPageChange: (page: number) => void;
-}) {
+}) => {
   return (
     <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
       <button
@@ -364,7 +367,7 @@ function Pagination({
         Previous
       </button>
       <span className="text-xs text-gray-400 font-medium">
-        Page {page + 1} of {totalPages}
+        Page {page + 1} of {totalPages} · {total} shifts
       </span>
       <button
         onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
@@ -380,4 +383,4 @@ function Pagination({
       </button>
     </div>
   );
-}
+};

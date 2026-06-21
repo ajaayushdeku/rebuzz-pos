@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import Divider from "@/components/Divider";
 import { ArrowLeft } from "lucide-react";
@@ -19,6 +20,7 @@ const LoginPage = () => {
   const [serverError, setServerError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const {
     register,
@@ -63,6 +65,9 @@ const LoginPage = () => {
       setServerError(result.error);
       return;
     }
+
+    // Invalidate cached business data so the new user's business is fetched
+    await queryClient.invalidateQueries({ queryKey: ["business-profile"] });
 
     await checkBusinessAndRedirect();
   };

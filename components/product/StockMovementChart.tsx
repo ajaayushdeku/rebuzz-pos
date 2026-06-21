@@ -37,12 +37,12 @@ export default function StockMovementChart({
               const pct = (item.count / max) * 100;
               return (
                 <div key={item.name} className="flex items-center gap-3">
-                  <span className="text-xs text-gray-500 w-24 text-right shrink-0 leading-tight truncate">
+                  <span className="text-xs text-gray-500 w-15 text-right shrink-0 leading-tight truncate">
                     {item.name}
                   </span>
-                  <div className="flex-1 bg-gray-100 rounded-full h-5 relative overflow-hidden">
+                  <div className="flex-1 bg-gray-100 rounded-full h-4 relative overflow-hidden">
                     <div
-                      className="h-5 rounded-full transition-all duration-700"
+                      className="h-4 rounded-full transition-all duration-700"
                       style={{
                         width: `${pct}%`,
                         backgroundColor: getBarColor(idx, item.count, max),

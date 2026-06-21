@@ -20,7 +20,7 @@ export async function verifyToken(
   token: string,
 ): Promise<ApiResult> {
   try {
-    const res = await axios.post(
+    const res = await axios.put(
       `${BASE}/${slug}/auth/email_token`,
       { email, token },
       {

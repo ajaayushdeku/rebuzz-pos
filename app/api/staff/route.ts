@@ -119,12 +119,15 @@ export const DELETE = async (request: NextRequest) => {
   }
 
   try {
-    const res = await axios.delete(`${BASE}/java/auth/user/${userId}/delete`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
+    const res = await axios.delete(
+      `${BASE}/business/auth/user/${userId}/delete`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       },
-    });
+    );
 
     return NextResponse.json(res.data, { status: res.status });
   } catch (error: unknown) {
