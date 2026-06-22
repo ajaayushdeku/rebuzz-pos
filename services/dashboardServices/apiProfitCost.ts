@@ -15,6 +15,7 @@ import {
 } from "@/lib/mockData/mock-profitcostdata";
 import { authHeaders } from "../authServices/session";
 import axios from "axios";
+import { RawBill } from "@/lib/types/bill";
 import { RawReportResponse } from "@/lib/types/report";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
@@ -177,6 +178,52 @@ export async function getRefundReason(): Promise<RefundReason[]> {
         minute: "2-digit",
       }),
     }));
+}
+
+export interface RefundBillWithTax {
+  billNumber: string;
+  refundedAmount: number;
+  taxRefunded: number;
+  reason: string;
+  date: string;
+}
+
+export async function getRefundedBillsWithTax(
+  startDate?: string,
+  endDate?: string,
+): Promise<RefundBillWithTax[]> {
+  const today = new Date();
+  const defaultEnd = today.toISOString().split("T")[0];
+  const defaultStart = new Date(today.getFullYear(), today.getMonth(), 1)
+    .toISOString()
+    .split("T")[0];
+
+  const start = startDate ?? defaultStart;
+  const end = endDate ?? defaultEnd;
+
+  const res = await axios.get(
+    `${BASE}/business/ticket/bills?startDate=${start}&endDate=${end}&limit=500`,
+    {
+      headers: await authHeaders(),
+    },
+  );
+
+  const bills: RawBill[] = res.data?.data?.bill ?? [];
+
+  return bills
+    .filter((bill) => bill.isRefunded === true)
+    .map((bill) => ({
+      billNumber: `INV-${bill.invoiceNo}`,
+      refundedAmount: bill.grandTotal ?? 0,
+      taxRefunded: bill.taxamt ?? 0,
+      reason: bill.ticketName || "Refund",
+      date: new Date(bill.updatedAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }),
+    }))
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 export async function getBudgetData(): Promise<BudgetItem[]> {
