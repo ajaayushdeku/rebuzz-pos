@@ -35,11 +35,11 @@ const ProductCardGrid = ({ items }: { items: InventoryItem[] }) => {
 
       {/* Actions */}
       {(hasMore || canHide) && (
-        <div className="flex items-center justify-center gap-3 mb-5">
+        <div className="flex items-center justify-center gap-3 mb-3">
           {hasMore && (
             <button
               onClick={handleLoadMore}
-              className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+              className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition"
             >
               Load More
             </button>
@@ -48,7 +48,7 @@ const ProductCardGrid = ({ items }: { items: InventoryItem[] }) => {
           {canHide && (
             <button
               onClick={handleHide}
-              className="px-4 py-2 rounded-lg border border-gray-200 bg-gray-100 text-sm font-medium text-gray-700 hover:bg-gray-200 transition"
+              className="px-4 py-2 rounded-lg border border-gray-200 bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition"
             >
               Hide
             </button>

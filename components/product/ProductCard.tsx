@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   getBarPercent,
   getStockStatus,
@@ -5,7 +6,7 @@ import {
 } from "@/lib/mockData/mock-inventory-data";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { AlertCircle, TrendingUp } from "lucide-react";
+import { AlertCircle, TrendingUp, ChevronDown, ChevronUp } from "lucide-react";
 
 // const statusConfig = {
 //   critical: {
@@ -65,150 +66,171 @@ const statusConfig = {
 };
 
 export default function ProductCard({ item }: { item: InventoryItem }) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const status = getStockStatus(item);
   const barPct = getBarPercent(item);
   const cfg = statusConfig[status];
   const { currency } = useCurrency();
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 p-4">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-gray-800 truncate">
-            {item.name}
-          </p>
-          {/* <p className="text-xs text-gray-400 capitalize mt-0.5">
-            Sold by {item.unit}
-          </p> */}
-        </div>
-        <div className="flex items-center gap-1 shrink-0 ml-2">
-          <span
-            className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cfg.badge}`}
-          >
-            {cfg.label}
-          </span>
-          {status === "critical" && (
-            <AlertCircle size={13} className="text-red-400" />
-          )}
-        </div>
-      </div>
-
-      {/* Stock number */}
-      <div className="mb-3">
-        {item.usesStocks ? (
-          <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-bold text-gray-900">
-              {item.inStock.toLocaleString()}
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 relative">
+      {/* Collapsed View - Minimal */}
+      <div className="p-4">
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-semibold text-gray-800 truncate">
+              {item.name}
+            </h3>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0 ml-2">
+            <span
+              className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cfg.badge}`}
+            >
+              {cfg.label}
             </span>
-            <span className="text-sm text-gray-400">units remain</span>
-          </div>
-        ) : (
-          <div className="flex items-center gap-1.5">
-            <span className="text-2xl font-bold text-gray-400">—</span>
-            <span className="text-xs text-gray-400">stock not tracked</span>
-          </div>
-        )}
-      </div>
-
-      {/* Progress bar — threshold based, not max based */}
-      {item.usesStocks && (
-        <>
-          <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2">
-            <div
-              className={`h-1.5 rounded-full transition-all duration-500 ${cfg.bar}`}
-              style={{ width: `${barPct}%` }}
-            />
-          </div>
-
-          {/* Threshold info */}
-          <div className="flex items-center justify-between">
-            <p className={`text-xs font-medium ${cfg.text}`}>
-              {status === "critical"
-                ? `Below threshold (min ${item.lowStock})`
-                : status === "warning"
-                  ? `Near threshold (min ${item.lowStock})`
-                  : `Threshold: ${item.lowStock} units`}
-            </p>
-
-            <p className={`text-xs font-medium ${cfg.text}`}>Max (1000)</p>
-
-            {item.orderedCount > 0 && (
-              <div className="flex items-center gap-0.5 text-xs text-blue-500">
-                <TrendingUp size={11} />
-                <span>{item.orderedCount} sold</span>
-              </div>
+            {item.isTaxable && (
+              <span className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-medium">
+                TAXABLE
+              </span>
+            )}
+            {status === "critical" && (
+              <AlertCircle size={13} className="text-red-400" />
             )}
           </div>
-        </>
-      )}
-
-      {/* Price details row */}
-      <div className="mt-3 pt-3 border-t border-gray-50 space-y-1.5 flex flex-col  gap-1.5">
-        {/* Selling & Cost per unit */}
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-400">
-            Selling:{" "}
-            <span className="font-medium text-gray-600">
-              {formatCurrencySymbol(
-                item.price,
-                currency.symbol,
-                currency.locale,
-              )}
-            </span>
-          </span>
-          <span className="text-xs text-gray-400">
-            Cost:{" "}
-            <span className="font-medium text-gray-600">
-              {formatCurrencySymbol(
-                item.costPrice,
-                currency.symbol,
-                currency.locale,
-              )}
-            </span>
-          </span>
         </div>
 
-        {/* Total value based on current stock */}
+        <div className="flex items-baseline justify-between">
+          <div>
+            {item.usesStocks ? (
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold text-gray-900">
+                  {item.inStock.toLocaleString()}
+                </span>
+                <span className="text-xs text-gray-400">units</span>
+              </div>
+            ) : (
+              <span className="text-sm text-gray-400">Stock not tracked</span>
+            )}
+          </div>
+
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            {isExpanded ? (
+              <>
+                <span>Less</span>
+                <ChevronUp size={14} />
+              </>
+            ) : (
+              <>
+                <span>More</span>
+                <ChevronDown size={14} />
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Progress bar in collapsed view */}
         {item.usesStocks && (
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-400">
-              Total Selling:{" "}
-              <span className="font-semibold text-gray-600">
-                {formatCurrencySymbol(
-                  item.price * item.inStock,
-                  currency.symbol,
-                  currency.locale,
-                )}
-              </span>
-            </span>
-            <span className="text-xs text-gray-400">
-              Total Cost:{" "}
-              <span className="font-semibold text-gray-600">
-                {formatCurrencySymbol(
-                  item.costPrice * item.inStock,
-                  currency.symbol,
-                  currency.locale,
-                )}
-              </span>
-            </span>
+          <div className="mt-3 space-y-1.5">
+            <div className="w-full bg-gray-100 rounded-full h-1.5">
+              <div
+                className={`h-1.5 rounded-full transition-all duration-500 ${cfg.bar}`}
+                style={{ width: `${barPct}%` }}
+              />
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <p className={`font-medium ${cfg.text}`}>
+                {status === "critical"
+                  ? `Below threshold (min ${item.lowStock})`
+                  : status === "warning"
+                    ? `Near threshold (min ${item.lowStock})`
+                    : `Threshold: ${item.lowStock} units`}
+              </p>
+
+              <p className={`text-xs font-medium ${cfg.text}`}>Max (1000)</p>
+
+              {item.orderedCount > 0 && (
+                <div className="flex items-center gap-0.5 text-blue-500">
+                  <TrendingUp size={11} />
+                  <span>{item.orderedCount} sold</span>
+                </div>
+              )}
+            </div>
           </div>
         )}
-
-        {/* Badges */}
-        <div className="flex items-center justify-end gap-2">
-          {item.isTaxable && (
-            <span className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-medium">
-              TAXABLE
-            </span>
-          )}
-          {!item.isAvailable && (
-            <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-medium">
-              Unavailable
-            </span>
-          )}
-        </div>
       </div>
+
+      {/* Expanded View - Overlay */}
+      {isExpanded && (
+        <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-xl border border-gray-200 shadow-lg p-4 z-50">
+          {/* Price details */}
+          <div className="mt-4 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-400">Selling Price</span>
+              <span className="font-medium text-gray-700">
+                {formatCurrencySymbol(
+                  item.price,
+                  currency.symbol,
+                  currency.locale,
+                )}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-400">Cost Price</span>
+              <span className="font-medium text-gray-700">
+                {formatCurrencySymbol(
+                  item.costPrice,
+                  currency.symbol,
+                  currency.locale,
+                )}
+              </span>
+            </div>
+
+            {item.usesStocks && (
+              <>
+                <div className="flex items-center justify-between text-xs pt-2 border-t border-gray-50">
+                  <span className="text-gray-400">Total Selling Value</span>
+                  <span className="font-semibold text-gray-700">
+                    {formatCurrencySymbol(
+                      item.price * item.inStock,
+                      currency.symbol,
+                      currency.locale,
+                    )}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-gray-400">Total Cost Value</span>
+                  <span className="font-semibold text-gray-700">
+                    {formatCurrencySymbol(
+                      item.costPrice * item.inStock,
+                      currency.symbol,
+                      currency.locale,
+                    )}
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Badges */}
+          <div className="mt-3 flex items-center justify-end gap-2">
+            {item.isTaxable && (
+              <span className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded font-medium">
+                TAXABLE
+              </span>
+            )}
+            {!item.isAvailable && (
+              <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded font-medium">
+                Unavailable
+              </span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
