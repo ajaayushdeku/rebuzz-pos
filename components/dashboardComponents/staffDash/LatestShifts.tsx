@@ -46,12 +46,22 @@ export default function LatestShifts({
   const [page, setPage] = useState(0);
   const pageSize = 3;
 
+  // Local state for preset filtering
+  const [localStartDate, setLocalStartDate] = useState<string | undefined>(
+    startDate,
+  );
+  const [localEndDate, setLocalEndDate] = useState<string | undefined>(endDate);
+
+  // Use local dates if set, otherwise fall back to props
+  const effectiveStartDate = localStartDate || startDate;
+  const effectiveEndDate = localEndDate || endDate;
+
   const filteredShifts = shifts.filter((shift) => {
-    if (!startDate || !endDate) return true;
+    if (!effectiveStartDate || !effectiveEndDate) return true;
     const shiftDate =
       shift.openingTime?.split("T")[0] ?? shift.openingTime?.split(" ")[0];
     if (!shiftDate) return true;
-    return shiftDate >= startDate && shiftDate <= endDate;
+    return shiftDate >= effectiveStartDate && shiftDate <= effectiveEndDate;
   });
 
   const totalPages = Math.max(1, Math.ceil(filteredShifts.length / pageSize));
@@ -69,7 +79,16 @@ export default function LatestShifts({
     const start = new Date(today);
     start.setDate(today.getDate() - (days - 1));
     const startDt = start.toISOString().split("T")[0];
+    setLocalStartDate(startDt);
+    setLocalEndDate(end);
     setActivePreset(`${days}days`);
+    setPage(0);
+  };
+
+  const resetFilter = () => {
+    setLocalStartDate(startDate);
+    setLocalEndDate(endDate);
+    setActivePreset("");
     setPage(0);
   };
 
@@ -154,49 +173,63 @@ export default function LatestShifts({
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition duration-300 p-4 md:p-6 w-full mt-6">
-      <div className="mb-4">
-        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-          Latest Shifts
-        </h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          {/* {filteredShifts.length}{" "}
-          {filteredShifts.length === 1 ? "shift" : "shifts"} recorded */}
-          Latest Shifts from all the employees
-        </p>
-      </div>
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <div className="mb-0">
+          <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
+            Latest Shifts
+          </h2>
+          <p className="text-xs text-gray-400 mt-0.5">
+            {/* {filteredShifts.length}{" "}
+            {filteredShifts.length === 1 ? "shift" : "shifts"} recorded */}
+            Latest Shifts from all the employees
+          </p>
+        </div>
 
-      <div className="mb-6">
-        <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 inline-flex">
-          <button
-            onClick={() => applyPreset(3)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              activePreset === "3days"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-400 hover:text-gray-600"
-            }`}
-          >
-            3 Days
-          </button>
-          <button
-            onClick={() => applyPreset(5)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              activePreset === "5days"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-400 hover:text-gray-600"
-            }`}
-          >
-            5 Days
-          </button>
-          <button
-            onClick={() => applyPreset(7)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              activePreset === "7days"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-400 hover:text-gray-600"
-            }`}
-          >
-            7 Days
-          </button>
+        <div className="flex items-center gap-3">
+          <p className=" px-3 pr-0 text-xs font-medium text-gray-500">
+            {" "}
+            For last:
+          </p>
+          <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 inline-flex">
+            <button
+              onClick={() => applyPreset(3)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                activePreset === "3days"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              3 Days
+            </button>
+            <button
+              onClick={() => applyPreset(5)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                activePreset === "5days"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              5 Days
+            </button>
+            <button
+              onClick={() => applyPreset(7)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                activePreset === "7days"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              7 Days
+            </button>
+          </div>
+          {activePreset && (
+            <button
+              onClick={resetFilter}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all"
+            >
+              Reset
+            </button>
+          )}
         </div>
       </div>
 
@@ -319,7 +352,7 @@ export default function LatestShifts({
                 Previous
               </button>
               <span className="text-xs text-gray-400 font-medium">
-                Page {safePage + 1} of {totalPages} . {filteredShifts.length}{" "}
+                Page {safePage + 1} of {totalPages} · {filteredShifts.length}{" "}
                 shifts
               </span>
               <button

@@ -90,7 +90,7 @@ export default function StaffStatBox({
             <p className="text-gray-900 font-semibold truncate text-sm">
               {staffName}
             </p>
-            <div className="flex items-center gap-1.5 mt-0.5">
+            <div className="flex items-center gap-1.5 mt-1">
               <span
                 className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold ${
                   employeeRole === "Basic"
@@ -98,9 +98,12 @@ export default function StaffStatBox({
                     : "bg-amber-50 text-amber-600"
                 }`}
               >
-                {employeeRole}
+                {staffPosition === "basic"
+                  ? "Basic"
+                  : staffPosition === "staff"
+                    ? "Staff"
+                    : staffPosition}
               </span>
-              <p className="text-gray-400 text-xs truncate">{staffPosition}</p>
             </div>
           </div>
         </div>
@@ -114,7 +117,7 @@ export default function StaffStatBox({
               </p>
               <p className="font-bold text-gray-900 text-sm">{ordersTaken}</p>
             </div>
-            {employeeRole === "Basic" && (
+            {staffPosition !== "staff" && (
               <>
                 <div className="flex items-center justify-between">
                   <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
