@@ -45,6 +45,12 @@ type AllShiftsResponse = {
   data: RawShift[];
 };
 
+type RawUser = {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+};
 // ── Date helpers ──────────────────────────────────────────────────────────
 
 function toDateStr(date: Date): string {
@@ -160,17 +166,67 @@ async function fetchEmployeeDetail(
   return json?.data?.employeeData ?? null;
 }
 
-// ── Core fetcher — all shifts ──────────────────────────────────────────
+// ── Core fetcher — all employees from users/roles/employee ────────────
 
-export async function fetchAllShifts(): Promise<RawShift[]> {
+async function fetchAllEmployees(): Promise<RawUser[]> {
   try {
-    const res = await fetch(`${BASE}/business/shift/allshifts`, {
+    const res = await fetch(`${BASE}/business/users/roles/employee`, {
       headers: await authHeaders(),
       next: { revalidate: 300 },
     });
-    if (!res.ok) throw new Error(`allshifts failed: ${res.status}`);
-    const json: AllShiftsResponse = await res.json();
-    return json?.data ?? [];
+    if (!res.ok) throw new Error(`fetchAllEmployees failed: ${res.status}`);
+    const json = await res.json();
+
+    // Log the raw response to confirm the actual shape
+    console.log("fetchAllEmployees raw:", JSON.stringify(json?.data));
+
+    // Handle both { data: [...] } and { data: { users: [...] } }
+    if (Array.isArray(json?.data)) return json.data;
+    if (Array.isArray(json?.data?.users)) return json.data.users;
+
+    return [];
+  } catch (err) {
+    console.error("fetchAllEmployees error:", err);
+    return [];
+  }
+}
+
+// ── Core fetcher — all shifts ──────────────────────────────────────────
+
+export async function fetchAllShifts(
+  range: string = "month",
+  startDate?: string,
+  endDate?: string,
+): Promise<RawShift[]> {
+  try {
+    // Resolve the date range from preset or custom dates
+    const { startDate: from, endDate: to } = getDateRange(
+      range,
+      startDate,
+      endDate,
+    );
+
+    const params = new URLSearchParams();
+    params.set("limit", "15");
+    if (from) params.set("from_date", from);
+    if (to) params.set("to_date", to);
+
+    const res = await fetch(
+      `${BASE}/business/shift/allshifts?${params.toString()}`,
+      {
+        headers: await authHeaders(),
+        next: { revalidate: 300 },
+      },
+    );
+    if (!res.ok) return [];
+
+    const json = await res.json();
+
+    // Backend returns { message: "No shifts found!" } when empty
+    // Guard against any non-array shape
+    if (!json?.data || !Array.isArray(json.data)) return [];
+
+    return json.data;
   } catch (err) {
     console.error("fetchAllShifts error:", err);
     return [];
@@ -187,58 +243,114 @@ function parseHoursToMinutes(totalHours: string): number {
 }
 
 // ── getStaffData — stat boxes ─────────────────────────────────────────────
-
 export async function getStaffData(
   range: string = "month",
   startDate?: string,
   endDate?: string,
 ): Promise<StaffBoxProps[]> {
   try {
-    const employees = await fetchAllEmployeeSales(range, startDate, endDate);
-    if (employees.length === 0) return [];
+    const dateRange = getDateRange(range, startDate, endDate);
 
-    // Fetch all shifts to calculate avg time per employee
-    const allShifts = await fetchAllShifts();
+    // ── Fetch all three sources in parallel ───────────────────────────────
+    const [employees, allUsersRaw, allShiftsRaw] = await Promise.all([
+      fetchAllEmployeeSales(range, startDate, endDate),
+      fetchAllEmployees(),
+      fetchAllShifts(range, dateRange.startDate, dateRange.endDate),
+    ]);
 
-    // Build a map: employeeId → avg time in minutes
-    const avgTimeMap = new Map<string, string>();
+    // `fetchAllEmployees` always returns an array of users.
+    // Guards against any non-array response slipping through
+    const allUsers: RawUser[] = Array.isArray(allUsersRaw)
+      ? allUsersRaw
+      : Array.isArray((allUsersRaw as any)?.users)
+        ? (allUsersRaw as any).users
+        : [];
+
+    const allShifts: RawShift[] = Array.isArray(allShiftsRaw)
+      ? allShiftsRaw
+      : [];
+
+    // console.log("Fetch Data Employee Sales:", employees);
+    // console.log("All Employee:", allUsers);
+    // console.log("All shifts:", allShifts);
+
+    // ── Build avgTime map: employeeId → formatted avg shift duration ──────
     const shiftGroups = new Map<string, number[]>();
-
     for (const shift of allShifts) {
-      const empId = shift.employeeId;
       const minutes = parseHoursToMinutes(shift.totalHours);
-      if (!shiftGroups.has(empId)) {
-        shiftGroups.set(empId, []);
+      if (!shiftGroups.has(shift.employeeId)) {
+        shiftGroups.set(shift.employeeId, []);
       }
-      shiftGroups.get(empId)!.push(minutes);
+      shiftGroups.get(shift.employeeId)!.push(minutes);
     }
 
+    const avgTimeMap = new Map<string, string>();
     for (const [empId, minutesArr] of shiftGroups.entries()) {
-      if (minutesArr.length === 0) {
-        avgTimeMap.set(empId, "0m");
-        continue;
-      }
-      const totalMinutes = minutesArr.reduce((sum, m) => sum + m, 0);
-      const avgMin = Math.round(totalMinutes / minutesArr.length);
+      if (minutesArr.length === 0) continue;
+      const avgMin = Math.round(
+        minutesArr.reduce((sum, m) => sum + m, 0) / minutesArr.length,
+      );
       const hrs = Math.floor(avgMin / 60);
       const mins = avgMin % 60;
-      if (hrs > 0) {
-        avgTimeMap.set(empId, `${hrs}h ${mins}m`);
-      } else {
-        avgTimeMap.set(empId, `${mins}m`);
+      avgTimeMap.set(empId, hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`);
+    }
+
+    // ── Build a unified identity map from ALL sources ─────────────────────
+    // Priority: salesByAllEmployee name > users/roles/employee name
+    const identityMap = new Map<string, { name: string; role: string }>();
+
+    // 1. Seed from /users/roles/employee
+    for (const user of allUsers) {
+      identityMap.set(user._id, {
+        name: user.name || user._id,
+        role: user.role || "",
+      });
+    }
+
+    // 2. Add/override with salesByAllEmployee — this catches owners and
+    //    anyone not in /users/roles/employee (e.g. admin doing shifts)
+    for (const emp of employees) {
+      if (!identityMap.has(emp._id)) {
+        identityMap.set(emp._id, {
+          name: emp.name || emp._id,
+          role: emp.role || "Owner",
+        });
       }
     }
 
-    return employees
-      .map((emp) => ({
-        staffId: emp._id,
-        staffName: emp.name || emp._id,
-        staffPosition: emp.role || "",
-        ordersTaken: emp.totalSales ?? 0,
-        amount: Math.round((emp.totalRevenue ?? 0) * 100) / 100,
-        avgTime: avgTimeMap.get(emp._id) || "—",
-      }))
-      .sort((a, b) => a.staffName.localeCompare(b.staffName));
+    // 3. Also include anyone who has a shift but appears in neither source
+    for (const shift of allShifts) {
+      if (!identityMap.has(shift.employeeId)) {
+        identityMap.set(shift.employeeId, {
+          name: shift.employeeName || shift.employeeId,
+          role: "Owner",
+        });
+      }
+    }
+
+    // ── Build sales map: employeeId → RawEmployee ─────────────────────────
+    const salesMap = new Map<string, RawEmployee>();
+    for (const emp of employees) {
+      salesMap.set(emp._id, emp);
+    }
+
+    // ── Merge everything — every known person gets a card ─────────────────
+    const staffList: StaffBoxProps[] = Array.from(identityMap.entries()).map(
+      ([id, identity], idx) => {
+        const sales = salesMap.get(id);
+        return {
+          staffId: id,
+          staffName: identity.name,
+          staffPosition: identity.role,
+          ordersTaken: sales?.totalSales ?? 0,
+          amount: Math.round((sales?.totalRevenue ?? 0) * 100) / 100,
+          avgTime: avgTimeMap.get(id) ?? "—",
+          colorIndex: idx,
+        };
+      },
+    );
+    // console.log("Staff List:", staffList);
+    return staffList.sort((a, b) => a.staffName.localeCompare(b.staffName));
   } catch (err) {
     console.error("getStaffData error:", err);
     return [];

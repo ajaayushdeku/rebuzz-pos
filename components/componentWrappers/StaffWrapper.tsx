@@ -114,7 +114,7 @@ export async function LatestShiftsWrapper({
   startDate?: string;
   endDate?: string;
 }) {
-  const shifts = await fetchAllShifts();
+  const shifts = await fetchAllShifts(range, startDate, endDate);
   return (
     <LatestShifts
       shifts={shifts}

@@ -182,11 +182,7 @@ export default function StaffDetailPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-2">
           <div className="lg:col-span-1">
-            <WeeklySalesChart
-              bills={bills}
-              startDate={dateRange.startDate}
-              endDate={dateRange.endDate}
-            />
+            <WeeklySalesChart employeeId={employeeId} />
           </div>
           <div className="lg:col-span-1">
             <PerformanceRadar

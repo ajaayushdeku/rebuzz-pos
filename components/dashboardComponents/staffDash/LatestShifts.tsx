@@ -319,7 +319,8 @@ export default function LatestShifts({
                 Previous
               </button>
               <span className="text-xs text-gray-400 font-medium">
-                Page {safePage + 1} of {totalPages}
+                Page {safePage + 1} of {totalPages} . {filteredShifts.length}{" "}
+                shifts
               </span>
               <button
                 onClick={() => setPage(Math.min(totalPages - 1, safePage + 1))}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -13,20 +13,18 @@ import {
 } from "recharts";
 import type { BarShapeProps } from "recharts";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { parseNepalDateTime } from "./staffDetailHelpers";
-import type { BillItem } from "./staffDetailHelpers";
+import { parseNepalDateTime, type BillItem } from "./staffDetailHelpers";
+import { Loader2 } from "lucide-react";
 
 interface WeeklySalesChartProps {
-  bills: BillItem[];
-  startDate: string;
-  endDate: string;
+  employeeId: string;
 }
 
 interface DayData {
   label: string;
   orders: number;
   revenue: number;
-  dateStr: string; // "YYYY-MM-DD" for matching
+  dateStr: string;
 }
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -56,7 +54,6 @@ const CustomBar = (props: BarShapeProps) => (
   <Rectangle {...props} radius={[6, 6, 0, 0]} fill="#3b82f6" />
 );
 
-/** Get YYYY-MM-DD from a Date, using local date parts to avoid timezone shifts */
 const toDateStr = (d: Date): string => {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -64,15 +61,50 @@ const toDateStr = (d: Date): string => {
   return `${y}-${m}-${day}`;
 };
 
-const WeeklySalesChart = ({
-  bills,
-  startDate,
-  endDate,
-}: WeeklySalesChartProps) => {
+/** Compute a 7-day date range starting from 6 days ago to today */
+function getLast7DaysRange(): { startDate: string; endDate: string } {
+  const today = new Date();
+  const end = toDateStr(today);
+  const start = new Date(today);
+  start.setDate(today.getDate() - 6);
+  return { startDate: toDateStr(start), endDate: end };
+}
+
+const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
   const { currency } = useCurrency();
+  const [weekBills, setWeekBills] = useState<BillItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch bills for the last 7 days only — independent of parent date range
+  // Loading starts as true, no need to set it again in the effect
+  useEffect(() => {
+    let cancelled = false;
+    if (!employeeId) return;
+    const { startDate, endDate } = getLast7DaysRange();
+    fetch(
+      `/api/staff/sales-by-employee/${employeeId}?startDate=${startDate}&endDate=${endDate}`,
+    )
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed");
+        return res.json();
+      })
+      .then((json) => {
+        if (!cancelled) setWeekBills(json?.data?.employeeData?.bills ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setWeekBills([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [employeeId]);
+
+  const weekRange = useMemo(() => getLast7DaysRange(), []);
 
   const chartData = useMemo(() => {
-    // Build last 7 days from today (using local date)
     const today = new Date();
     const days: DayData[] = [];
     for (let i = 6; i >= 0; i--) {
@@ -89,12 +121,10 @@ const WeeklySalesChart = ({
       });
     }
 
-    // Build a lookup map: dateStr -> index
     const dateIndexMap = new Map<string, number>();
     days.forEach((day, idx) => dateIndexMap.set(day.dateStr, idx));
 
-    // Group bills by their date string (YYYY-MM-DD)
-    bills.forEach((bill) => {
+    weekBills.forEach((bill) => {
       const d = parseNepalDateTime(bill.paidAt);
       if (!d) return;
       const billDateStr = toDateStr(d);
@@ -109,18 +139,14 @@ const WeeklySalesChart = ({
       name: d.label,
       orders: d.orders,
     }));
-  }, [bills]);
+  }, [weekBills]);
 
-  const isEmpty = chartData.every((d) => d.orders === 0);
+  const isEmpty = !loading && chartData.every((d) => d.orders === 0);
   const displayData = isEmpty
     ? chartData.map((d) => ({ ...d, orders: 0 }))
     : chartData;
 
   const maxOrders = Math.max(...displayData.map((d) => d.orders), 1);
-  const yTicks =
-    maxOrders <= 1
-      ? [0, 1]
-      : Array.from({ length: 5 }, (_, i) => Math.round((maxOrders / 4) * i));
   const yMax = maxOrders <= 1 ? 2 : maxOrders * 3;
 
   return (
@@ -148,14 +174,18 @@ const WeeklySalesChart = ({
               Orders This Week
             </h2>
             <p className="text-[11px] text-gray-400 mt-px">
-              {startDate} to {endDate} &middot;{" "}
+              {weekRange.startDate} to {weekRange.endDate} &middot;{" "}
               {chartData.reduce((s, d) => s + d.orders, 0)} total orders
             </p>
           </div>
         </div>
       </div>
 
-      {isEmpty ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 size={20} className="animate-spin text-blue-500" />
+        </div>
+      ) : isEmpty ? (
         <div className="text-center py-12">
           <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3">
             <svg
