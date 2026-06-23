@@ -74,7 +74,6 @@ export const GET = async (
     const allBills: BillRecord[] =
       billsData?.data?.bill ?? billsData?.bill ?? billsData?.data ?? [];
 
-    console.log("BILLS DATA:", allBills);
     // Filter bills for the selected employee
     const employeeBills = allBills.filter(
       (bill) => bill.generatedById === employeeId,

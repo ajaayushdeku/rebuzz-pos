@@ -1,3 +1,10 @@
+"use client";
+
+import { useState } from "react";
+import {
+  DateRangeFilter,
+  type DateRangeValue,
+} from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import {
   TaxableVsNonTaxableWrapper,
   TaxStatsWrapper,
@@ -6,7 +13,20 @@ import {
   TaxOnRefundedBillsWrapper,
 } from "@/components/componentWrappers/TaxAnalyticsWrappers";
 
+function getDefaultDateRange(): DateRangeValue {
+  const today = new Date();
+  const end = today.toISOString().split("T")[0];
+  const start = new Date(today.getFullYear(), today.getMonth(), 1)
+    .toISOString()
+    .split("T")[0];
+  return { startDate: start, endDate: end };
+}
+
 export default function TaxAnalyticsPage() {
+  const [dateRange, setDateRange] = useState<DateRangeValue>(
+    getDefaultDateRange(),
+  );
+
   return (
     <div className="px-6 py-8 md:px-10">
       <div className="w-full mx-auto space-y-6">
@@ -20,25 +40,41 @@ export default function TaxAnalyticsPage() {
               Overview of tax collected, refunded, and categorized
             </p>
           </div>
+          <DateRangeFilter value={dateRange} onChange={setDateRange} />
         </div>
 
         {/* Taxable vs Non-Taxable - full width */}
-        <TaxableVsNonTaxableWrapper />
+        <TaxableVsNonTaxableWrapper
+          startDate={dateRange.startDate}
+          endDate={dateRange.endDate}
+        />
 
         {/* Tax Stats - full width */}
-        <TaxStatsWrapper />
+        <TaxStatsWrapper
+          startDate={dateRange.startDate}
+          endDate={dateRange.endDate}
+        />
 
         {/* Grid for remaining cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Highest Tax Generated */}
-          <HighestTaxGeneratedWrapper />
+          <HighestTaxGeneratedWrapper
+            startDate={dateRange.startDate}
+            endDate={dateRange.endDate}
+          />
 
           {/* Tax by Category */}
-          <TaxByCategoryWrapper />
+          <TaxByCategoryWrapper
+            startDate={dateRange.startDate}
+            endDate={dateRange.endDate}
+          />
         </div>
 
         {/* Tax on Refunded Bills - full width */}
-        <TaxOnRefundedBillsWrapper />
+        <TaxOnRefundedBillsWrapper
+          startDate={dateRange.startDate}
+          endDate={dateRange.endDate}
+        />
       </div>
     </div>
   );

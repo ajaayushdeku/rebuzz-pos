@@ -40,9 +40,6 @@ export default function Page() {
     }
   }, [invoices, setInvoices]);
 
-  console.log("Invoices:", invoices);
-  console.log("Archived Invoices:", archivedInvoices);
-
   if (isLoading)
     return (
       <div className="flex items-center justify-center min-h-screen ">
@@ -62,6 +59,7 @@ export default function Page() {
         <InvoiceHeader />
         <InvoiceStats invoices={invoices} />
         <InvoiceTable invoices={invoices} />
+        <div className="border-b border-gray-200 w-full" />
         <ArchivedInvoicesTable
           invoices={archivedInvoices}
           isLoading={archivedLoading}

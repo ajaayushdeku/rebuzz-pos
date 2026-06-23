@@ -6,6 +6,7 @@ import {
   type DateRangeValue,
 } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import TaxableVsNonTaxableItems from "@/components/dashboardComponents/taxAnalytics/TaxableVsNonTaxableItems";
+import { useTaxableBreakdown } from "@/hooks/useTaxableBreakdown";
 import TaxStats from "@/components/dashboardComponents/taxAnalytics/TaxStats";
 import HighestTaxGenerated from "@/components/dashboardComponents/taxAnalytics/HighestTaxGenerated";
 import TaxByCategory from "@/components/dashboardComponents/taxAnalytics/TaxByCategory";
@@ -82,15 +83,33 @@ export function TaxableVsNonTaxableWrapper({
   startDate?: string;
   endDate?: string;
 }) {
-  // TODO: Replace with real API call when endpoint is available
-  const data = MOCK_DATA.taxableBreakdown;
+  const effectiveStart = startDate || getDefaultDateRange().startDate;
+  const effectiveEnd = endDate || getDefaultDateRange().endDate;
+
+  const { data, isLoading } = useTaxableBreakdown(effectiveStart, effectiveEnd);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
       <h2 className="text-sm font-semibold text-gray-800 mb-4">
         Taxable & Non-Taxable Items
       </h2>
-      <TaxableVsNonTaxableItems data={data} />
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : (
+        <TaxableVsNonTaxableItems
+          data={
+            data || {
+              taxableRevenue: 0,
+              taxableTaxAmount: 0,
+              nonTaxableRevenue: 0,
+              taxableItems: [],
+              nonTaxableItems: [],
+            }
+          }
+        />
+      )}
     </div>
   );
 }
@@ -109,7 +128,9 @@ export function TaxStatsWrapper({
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-      <h2 className="text-sm font-semibold text-gray-800 mb-4">Tax Stats</h2>
+      <h2 className="text-sm font-semibold text-gray-800 mb-4">
+        Tax Stats (Mock Data)
+      </h2>
       <TaxStats data={data} />
     </div>
   );
@@ -130,7 +151,7 @@ export function HighestTaxGeneratedWrapper({
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
       <h2 className="text-sm font-semibold text-gray-800 mb-4">
-        Highest Tax Generated
+        Highest Tax Generated (Mock Data)
       </h2>
       <HighestTaxGenerated data={data} />
     </div>

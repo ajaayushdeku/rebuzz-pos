@@ -18,7 +18,7 @@ export const GET = async (
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  console.log("Employee Id:", employeeId);
+  // console.log("Employee Id:", employeeId);
 
   try {
     const url = new URL(

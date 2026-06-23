@@ -309,7 +309,7 @@ export default function InvoiceDetailPage() {
       .split(".")[0];
 
     const paymentPayload = {
-      payment: String(finalPayable),
+      payment: Number(finalPayable.toFixed(2)),
       method: paymentData.method,
       discount: Number(computedDiscountAmount.toFixed(2)),
       paidAt: formattedDate,
@@ -318,6 +318,25 @@ export default function InvoiceDetailPage() {
       taxamt: taxAmount,
       grandTotal: Number(finalPayable.toFixed(2)),
       redeemPointDeducted: redeemEnabled ? redeemPoints : 0,
+      customerEmail: invoice.customerEmail ?? "",
+      phoneNumber: invoice.phoneNumber ?? "",
+      items: (invoice.items ?? []).map(
+        (group: {
+          item?: {
+            id?: string;
+            name?: string;
+            quantity?: number;
+            unitPrice?: number;
+            isTaxable?: boolean;
+          }[];
+        }) => ({
+          id: group.item?.[0]?.id ?? "",
+          name: group.item?.[0]?.name ?? "",
+          quantity: group.item?.[0]?.quantity ?? 1,
+          unitPrice: group.item?.[0]?.unitPrice ?? 0,
+          isTaxable: group.item?.[0]?.isTaxable ?? false,
+        }),
+      ),
     };
 
     const ticketId = invoice.invoice;

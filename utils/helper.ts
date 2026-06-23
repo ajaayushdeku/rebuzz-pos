@@ -10,7 +10,8 @@ export const formatCurrencySymbol = (
 ) => {
   const isWholeNumber = amount % 1 === 0;
   const formatted = new Intl.NumberFormat(locale, {
-    minimumFractionDigits: isWholeNumber ? 0 : 2,
+    // minimumFractionDigits: isWholeNumber ? 0 :2,
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);
   return `${symbol} ${formatted}`;

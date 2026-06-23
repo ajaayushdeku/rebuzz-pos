@@ -124,7 +124,7 @@ export default function ArchivedInvoicesTable({
 
   return (
     <>
-      <div className="bg-white p-6">
+      <div className="bg-white ">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Archived Invoices
         </h2>
