@@ -12,6 +12,7 @@ import {
   Package,
   Pencil,
   Trash2,
+  Loader2,
   ChevronRight,
   ChevronLeft,
 } from "lucide-react";
@@ -320,48 +321,57 @@ export default function ProductTable({ products }: { products: Product[] }) {
       />
 
       {/* ── Delete confirmation modal ── */}
-      <Dialog
-        open={!!deleteTarget}
-        onOpenChange={(o) => {
-          if (!o) setDeleteTarget(null);
-        }}
-      >
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-2">
-              <Trash2 className="h-6 w-6 text-red-600" />
+      {deleteTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40  p-4"
+          onClick={() => setDeleteTarget(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 text-center">
+              <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="h-6 w-6 text-red-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Delete Product?
+              </h3>
+              <p className="text-sm text-gray-500 mt-2">
+                This action cannot be undone. The product{" "}
+                <span className="font-medium text-gray-700">
+                  {deleteTarget.name}
+                </span>{" "}
+                will be permanently removed.
+              </p>
             </div>
-            <DialogTitle className="text-center text-lg">
-              Delete Product
-            </DialogTitle>
-            <DialogDescription className="text-center">
-              Are you sure you want to delete{" "}
-              <span className="font-semibold text-gray-900">
-                &ldquo;{deleteTarget?.name}&rdquo;
-              </span>
-              ? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2 sm:justify-center">
-            <Button
-              variant="outline"
-              onClick={() => setDeleteTarget(null)}
-              disabled={deleteMutation.isPending}
-              className="rounded-lg"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={confirmDelete}
-              disabled={deleteMutation.isPending}
-              className="rounded-lg text-white bg-red-600 hover:bg-red-700"
-            >
-              {deleteMutation.isPending ? "Deleting..." : "Delete"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="px-6 pb-6 flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleteMutation.isPending}
+                className="flex-1 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={confirmDelete}
+                disabled={deleteMutation.isPending}
+                className="flex-1 rounded-lg bg-red-600 hover:bg-red-700 text-white"
+              >
+                {deleteMutation.isPending ? (
+                  <span className="flex items-center gap-1.5">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Deleting...
+                  </span>
+                ) : (
+                  "Delete"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

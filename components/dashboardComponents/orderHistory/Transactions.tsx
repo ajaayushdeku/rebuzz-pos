@@ -32,7 +32,7 @@ type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
 // ── Refund confirmation modal ─────────────────────────────────────────────
 
-function RefundModal({
+const RefundModal = ({
   open,
   transaction,
   onClose,
@@ -44,7 +44,7 @@ function RefundModal({
   onClose: () => void;
   onConfirm: () => void;
   isRefunding: boolean;
-}) {
+}) => {
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-sm">
@@ -102,7 +102,7 @@ function RefundModal({
       </DialogContent>
     </Dialog>
   );
-}
+};
 
 // ── Main table ────────────────────────────────────────────────────────────
 

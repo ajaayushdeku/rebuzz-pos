@@ -8,6 +8,7 @@ import {
   ChevronUp,
   ArrowUpDown,
   Pencil,
+  Trash2,
   Loader2,
   ChevronLeft,
   ChevronRight,
@@ -319,6 +320,9 @@ export default function CustomerTable({
   const [search, setSearch] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [page, setPage] = useState(0);
+  const [deleteConfirm, setDeleteConfirm] = useState<Customer | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const queryClient = useQueryClient();
   const pageSize = 10;
 
   const handleRowClick = (customer: Customer) => {
@@ -329,6 +333,33 @@ export default function CustomerTable({
     e.stopPropagation();
     setEditCustomer(customer);
     setEditOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteConfirm?.id) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/customers/${deleteConfirm.id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(
+          data.error || data.message || "Failed to delete customer",
+        );
+      }
+      toast.success("Customer deleted successfully");
+      setDeleteConfirm(null);
+      // Refresh the customer list by invalidating queries or triggering a refetch
+      queryClient.invalidateQueries({ queryKey: ["customers-list"] });
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to delete customer",
+      );
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const filtered = useMemo(() => {
@@ -498,7 +529,7 @@ export default function CustomerTable({
                   </td>
                   <td className="py-3 px-4">
                     <div
-                      className="flex items-center justify-end"
+                      className="flex items-center justify-end gap-1"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <button
@@ -507,6 +538,13 @@ export default function CustomerTable({
                         title="Edit customer"
                       >
                         <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirm(customer)}
+                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete customer"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
                   </td>
@@ -560,7 +598,7 @@ export default function CustomerTable({
       />
 
       <EditCustomerModal
-        key={editCustomer?.id ?? "no-customer"}
+        key={editCustomer?.id ?? "no-edit-customer"}
         customer={editCustomer}
         open={editOpen}
         onClose={() => {
@@ -570,7 +608,7 @@ export default function CustomerTable({
       />
 
       <LoyaltyPointModal
-        key={loyaltyCustomer?.id ?? "no-customer"}
+        key={loyaltyCustomer?.id ?? "no-loyalty-customer"}
         customer={loyaltyCustomer}
         open={loyaltyOpen}
         onClose={() => {
@@ -578,6 +616,55 @@ export default function CustomerTable({
           setLoyaltyCustomer(null);
         }}
       />
+
+      {/* ── Delete Confirmation ─────────────────────────── */}
+      {deleteConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setDeleteConfirm(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 text-center">
+              <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="h-6 w-6 text-red-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Delete Customer?
+              </h3>
+              <p className="text-sm text-gray-500 mt-2">
+                This action cannot be undone. The customer{" "}
+                <span className="font-medium text-gray-700">
+                  {deleteConfirm.name}
+                </span>{" "}
+                will be permanently removed.
+              </p>
+            </div>
+            <div className="px-6 pb-6 flex gap-3">
+              <Button
+                onClick={() => setDeleteConfirm(null)}
+                variant="outline"
+                className="flex-1 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 rounded-lg bg-red-600 hover:bg-red-700 text-white"
+              >
+                {deleting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Delete"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

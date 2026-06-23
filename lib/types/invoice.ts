@@ -8,6 +8,13 @@ export type Invoice = {
   amount: number;
   created_at: string;
   status: string;
+  // Archived invoice fields
+  ticketName?: string;
+  customerName?: string;
+  customerEmail?: string;
+  grandTotal?: number;
+  total?: number;
+  archivedAt?: string;
 };
 
 export interface InvoiceStatsProps {

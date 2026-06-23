@@ -124,7 +124,7 @@ export const navigationConfig: NavigationItem[] = [
         href: "/settings/change-password",
         icon: Lock,
       },
-      { label: "Manage Staffs", href: "/settings/staffs", icon: UserCog },
+      { label: "Manage Employees", href: "/settings/staffs", icon: UserCog },
       { label: "Currency", href: "/settings/currency", icon: Coins },
       { label: "Tax", href: "/settings/tax", icon: Receipt },
       { label: "Discount", href: "/settings/discount", icon: BadgePercent },

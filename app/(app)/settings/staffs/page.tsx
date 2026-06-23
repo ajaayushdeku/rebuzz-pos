@@ -232,11 +232,15 @@ export default function StaffManagementPage() {
   const handleDelete = async (userId: string) => {
     setDeleting(true);
     try {
-      const res = await fetch(`/api/staff?userId=${userId}`, {
+      const res = await fetch(`/api/staff/${userId}`, {
         method: "DELETE",
+        headers: { "Content-Type": "application/json" },
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to delete staff");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok)
+        throw new Error(
+          (data as { error?: string }).error || "Failed to delete staff",
+        );
       toast.success("Staff deleted successfully");
       setDeleteConfirm(null);
       fetchStaff();
@@ -520,7 +524,7 @@ export default function StaffManagementPage() {
         {/* ── Add/Edit Modal ──────────────────────────────── */}
         {modalOpen && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40  p-4"
             onClick={() => setModalOpen(false)}
           >
             <div
@@ -674,7 +678,7 @@ export default function StaffManagementPage() {
         {/* ── Delete Confirmation ─────────────────────────── */}
         {deleteConfirm && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40  p-4"
             onClick={() => setDeleteConfirm(null)}
           >
             <div

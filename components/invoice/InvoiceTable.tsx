@@ -50,10 +50,13 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { Invoice } from "@/lib/types/invoice";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatDatetime } from "@/utils/helper";
+import { Button } from "@/components/ui/button";
+import toast from "react-hot-toast";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -73,6 +76,8 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [page, setPage] = useState(0);
+  const [deleteTarget, setDeleteTarget] = useState<Invoice | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const pageSize = 10;
 
   const filtered = useMemo(() => {
@@ -281,7 +286,7 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
                         <button
-                          onClick={() => {}}
+                          onClick={() => setDeleteTarget(inv)}
                           className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                           title="Delete invoice"
                         >
@@ -329,6 +334,88 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
           <ChevronRight size={14} />
         </button>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setDeleteTarget(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 text-center">
+              <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="h-6 w-6 text-red-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Delete Invoice?
+              </h3>
+              <p className="text-sm text-gray-500 mt-2">
+                This action cannot be undone. The invoice{" "}
+                <span className="font-medium text-gray-700">
+                  ORD-{deleteTarget.invoice}
+                </span>{" "}
+                will be permanently removed.
+              </p>
+            </div>
+            <div className="px-6 pb-6 flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleting}
+                className="flex-1 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  setDeleting(true);
+                  try {
+                    const res = await fetch(
+                      `/api/invoices/${deleteTarget.invoice}/archive`,
+                      {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" },
+                      },
+                    );
+                    if (!res.ok) {
+                      const data = await res.json().catch(() => ({}));
+                      throw new Error(
+                        (data as { error?: string }).error ||
+                          "Failed to delete invoice",
+                      );
+                    }
+                    toast.success("Invoice deleted successfully");
+                    setDeleteTarget(null);
+                    window.location.reload();
+                  } catch (err) {
+                    toast.error(
+                      err instanceof Error
+                        ? err.message
+                        : "Failed to delete invoice",
+                    );
+                  } finally {
+                    setDeleting(false);
+                  }
+                }}
+                disabled={deleting}
+                className="flex-1 rounded-lg bg-red-600 hover:bg-red-700 text-white"
+              >
+                {deleting ? (
+                  <span className="flex items-center gap-1.5">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Deleting...
+                  </span>
+                ) : (
+                  "Delete"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
