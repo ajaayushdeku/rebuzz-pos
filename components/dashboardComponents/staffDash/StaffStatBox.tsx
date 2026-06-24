@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import {
   Crown,
   User,
-  ShoppingBag,
   ShoppingCart,
   TrendingUp,
   Clock,
@@ -149,7 +148,6 @@ export default function StaffStatBox({
 
   const idx = colorIndex % cardColorSchemes.length;
   const colors = cardColorSchemes[idx];
-  const revenueBgTint = "bg-emerald-50/60"; // always green for revenue
 
   return (
     <div
@@ -206,73 +204,72 @@ export default function StaffStatBox({
         {/* ── Metrics grid ── */}
         {roleKey === "Staff" ? (
           /* Staff: only show Orders, but keep 2x2 grid height */
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <div className={`rounded-lg p-2.5 text-center ${colors.bgTint}`}>
+          <div className="mt-3 grid grid-cols-1 gap-1.5">
+            <div className={`rounded-md p-1.5 text-center ${colors.bgTint}`}>
               <ShoppingCart
-                size={14}
+                size={12}
                 className={`mx-auto mb-1 ${colors.accentText}`}
               />
-              <p className="text-lg font-bold text-gray-900 leading-none">
+              <p className="text-xs font-bold text-gray-900 leading-none">
                 {ordersTaken}
               </p>
-              <p className="text-[9px] text-gray-400 uppercase tracking-wider mt-1 font-medium">
+              <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-0.5 font-medium">
                 Orders
               </p>
             </div>
-            <div className={`rounded-lg p-2.5 text-center ${colors.bgTint}`} />
           </div>
         ) : (
           /* Owner / Basic: full metrics grid */
-          <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="mt-3 grid grid-cols-4 gap-1.5">
             {/* Orders */}
-            <div className={`rounded-lg p-2.5 text-center ${colors.bgTint}`}>
+            <div className={`rounded-md p-1.5 text-center ${colors.bgTint}`}>
               <ShoppingCart
-                size={14}
+                size={12}
                 className={`mx-auto mb-1 ${colors.accentText}`}
               />
-              <p className="text-lg font-bold text-gray-900 leading-none">
+              <p className="text-xs font-bold text-gray-900 leading-none">
                 {ordersTaken}
               </p>
-              <p className="text-[9px] text-gray-400 uppercase tracking-wider mt-1 font-medium">
+              <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-0.5 font-medium">
                 Orders
               </p>
             </div>
 
             {/* Sales */}
-            <div className={`rounded-lg p-2.5 text-center ${colors.bgTint}`}>
+            <div className={`rounded-md p-1.5 text-center ${colors.bgTint}`}>
               <TrendingUp
-                size={14}
+                size={12}
                 className={`mx-auto mb-1 ${colors.accentText}`}
               />
-              <p className="text-lg font-bold text-gray-900 leading-none">
+              <p className="text-xs font-bold text-gray-900 leading-none">
                 {salesTaken}
               </p>
-              <p className="text-[9px] text-gray-400 uppercase tracking-wider mt-1 font-medium">
+              <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-0.5 font-medium">
                 Sales
               </p>
             </div>
 
             {/* Revenue (wider column) */}
-            <div className="rounded-lg p-2.5 text-center bg-emerald-50/60">
-              <DollarSign size={14} className="mx-auto mb-1 text-emerald-600" />
-              <p className="text-lg font-bold text-gray-900 leading-none truncate">
+            <div className="rounded-md p-1.5 text-center bg-emerald-50/60">
+              <DollarSign size={12} className="mx-auto mb-1 text-emerald-600" />
+              <p className="text-xs font-bold text-gray-900 leading-none truncate">
                 {formatCurrencySymbol(amount, currency.symbol, currency.locale)}
               </p>
-              <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-1 font-medium">
+              <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-0.5 font-medium">
                 Revenue
               </p>
             </div>
 
             {/* Avg Time */}
-            <div className={`rounded-lg p-2.5 text-center ${colors.bgTint}`}>
+            <div className={`rounded-md p-1.5 text-center ${colors.bgTint}`}>
               <Clock
-                size={14}
+                size={12}
                 className={`mx-auto mb-1 ${colors.accentText}`}
               />
-              <p className="text-sm font-bold text-gray-900 leading-none">
+              <p className="text-xs font-bold text-gray-900 leading-none">
                 {avgTime && avgTime !== "—" ? avgTime : "—"}
               </p>
-              <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-1 font-medium">
+              <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-0.5 font-medium">
                 Avg Time
               </p>
             </div>

@@ -29,3 +29,40 @@ export async function DELETE(
     );
   }
 }
+
+export const GET = async (
+  request: NextRequest,
+  { params }: { params: Promise<{ employeeId: string }> },
+) => {
+  const { employeeId } = await params;
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const res = await fetch(`${BASE}/business/users/${employeeId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      return NextResponse.json(
+        { error: "Failed to fetch user" },
+        { status: res.status },
+      );
+    }
+
+    const data = await res.json();
+    return NextResponse.json(data);
+  } catch {
+    return NextResponse.json(
+      { error: "Failed to fetch user" },
+      { status: 500 },
+    );
+  }
+};

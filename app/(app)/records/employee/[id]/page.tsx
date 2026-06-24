@@ -23,6 +23,24 @@ import PerformanceRadar from "@/components/dashboardComponents/staffDash/staffDe
 import TopItemsSales from "@/components/dashboardComponents/staffDash/staffDetail/TopItemsSales";
 import InvoiceListSection from "@/components/dashboardComponents/staffDash/staffDetail/InvoiceListSection";
 
+export interface StaffUser {
+  _id: string;
+  adminId: string;
+  countryCode: string;
+  currency: string;
+  email: string;
+  emailVerified: boolean;
+  favourites: string[];
+  hasPrinter: string;
+  isSubscribed: boolean;
+  name: string;
+  note: string | null;
+  permissions: string[];
+  phone: string;
+  role: "staff" | "admin";
+  subscriptionType: string;
+}
+
 export default function StaffDetailPage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -35,6 +53,7 @@ export default function StaffDetailPage() {
     endDate: defaults.endDate,
   });
 
+  const [employeeDetail, setEmployeeDetail] = useState<StaffUser | null>();
   const [overview, setOverview] = useState<StaffOverview | null>(null);
   const [shifts, setShifts] = useState<ShiftSummary[]>([]);
   const [bills, setBills] = useState<BillItem[]>([]);
@@ -42,7 +61,6 @@ export default function StaffDetailPage() {
 
   const [loading, setLoading] = useState(true);
   const [shiftLoading, setShiftLoading] = useState(true);
-  const [billLoading, setBillLoading] = useState(true);
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -50,7 +68,6 @@ export default function StaffDetailPage() {
   const [modalLoading, setModalLoading] = useState(false);
 
   const [shiftPage, setShiftPage] = useState(0);
-  const [billPage, setBillPage] = useState(0);
   const pageSize = 5;
 
   // ── Fetch user details (name, role) ─────────────────────────────────────
@@ -59,14 +76,12 @@ export default function StaffDetailPage() {
     if (!employeeId) return;
     const fetchUser = async () => {
       try {
-        const res = await fetch(`/api/business/users/${employeeId}`);
+        const res = await fetch(`/api/staff/${employeeId}`);
         if (res.ok) {
           const data = await res.json();
           const user = data?.data?.user ?? data?.user ?? data;
           if (user) {
-            setOverview((prev) =>
-              prev ? { ...prev, name: user.name ?? prev.name } : prev,
-            );
+            setEmployeeDetail(user);
             if (user.role) {
               setEmployeeRole(user.role);
             }
@@ -85,7 +100,6 @@ export default function StaffDetailPage() {
     if (!employeeId) return;
     const fetchData = async () => {
       setLoading(true);
-      setBillLoading(true);
       try {
         const [salesRes, ticketsRes] = await Promise.all([
           fetch(
@@ -115,17 +129,15 @@ export default function StaffDetailPage() {
             avgTime: avgTimeFromUrl || "—",
           });
           setBills(emp.bills ?? []);
-          setEmployeeRole(emp.role || "Basic");
         }
       } catch {
         toast.error("Failed to load staff data");
       } finally {
         setLoading(false);
-        setBillLoading(false);
       }
     };
     fetchData();
-  }, [employeeId, dateRange.startDate, dateRange.endDate]);
+  }, [employeeId, dateRange.startDate, dateRange.endDate, avgTimeFromUrl]);
 
   // ── Fetch shifts ────────────────────────────────────────────────────────
 
@@ -180,12 +192,10 @@ export default function StaffDetailPage() {
     shiftList.reduce((sum, s) => sum + (s.payOut ?? 0), 0);
 
   const shiftPages = Math.max(1, Math.ceil(shiftList.length / pageSize));
-  const billPages = Math.max(1, Math.ceil(bills.length / pageSize));
 
   const handleDateRangeChange = useCallback((range: DateRangeValue) => {
     setDateRange(range);
     setShiftPage(0);
-    setBillPage(0);
   }, []);
 
   const handleModalClose = useCallback(() => {
@@ -212,7 +222,7 @@ export default function StaffDetailPage() {
       <div>
         <StaffDetailHeader
           employeeId={employeeId}
-          name={overview?.name ?? ""}
+          name={employeeDetail?.name ?? overview?.name ?? ""}
           dateRange={dateRange}
           onDateRangeChange={handleDateRangeChange}
         />
@@ -224,7 +234,7 @@ export default function StaffDetailPage() {
           showOnlyOrders={employeeRole === "staff"}
         />
 
-        {employeeRole !== "Staff" && (
+        {employeeRole !== "staff" && (
           <>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-2">
               <div className="lg:col-span-1">

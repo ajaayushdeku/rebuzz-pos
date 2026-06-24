@@ -47,7 +47,7 @@ export async function StaffStatWrapper({
   return (
     <div className="my-4 -mx-2 sm:mx-0">
       {/* Mobile: horizontal scroll with fixed-width cards, Desktop: grid */}
-      <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 overflow-x-auto pb-2 px-2 sm:px-0 sm:overflow-visible snap-x snap-mandatory scrollbar-thin">
+      <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-2 gap-3 overflow-x-auto pb-2 px-2 sm:px-0 sm:overflow-visible snap-x snap-mandatory scrollbar-thin">
         {displayStaff.map((staff, idx) => (
           <div
             key={staff.staffName}
