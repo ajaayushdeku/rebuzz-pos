@@ -157,7 +157,7 @@ export default function StaffStatBox({
         border-l-4 ${colors.borderLeft} border-t border-r border-b  shadow-sm hover:shadow-md`}
       onClick={() =>
         router.push(
-          `/records/employee/${staffId}?name=${encodeURIComponent(staffName)}${avgTime ? `&avgTime=${encodeURIComponent(avgTime)}` : ""}`,
+          `/records/employee/${staffId}${avgTime ? `?avgTime=${encodeURIComponent(avgTime)}` : ""}`,
         )
       }
     >

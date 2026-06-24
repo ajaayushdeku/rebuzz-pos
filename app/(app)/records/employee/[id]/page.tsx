@@ -27,7 +27,6 @@ export default function StaffDetailPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const employeeId = params.id as string;
-  const nameFromUrl = searchParams.get("name");
   const avgTimeFromUrl = searchParams.get("avgTime");
 
   const defaults = getDefaultDateRange();
@@ -53,6 +52,32 @@ export default function StaffDetailPage() {
   const [shiftPage, setShiftPage] = useState(0);
   const [billPage, setBillPage] = useState(0);
   const pageSize = 5;
+
+  // ── Fetch user details (name, role) ─────────────────────────────────────
+
+  useEffect(() => {
+    if (!employeeId) return;
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(`/api/business/users/${employeeId}`);
+        if (res.ok) {
+          const data = await res.json();
+          const user = data?.data?.user ?? data?.user ?? data;
+          if (user) {
+            setOverview((prev) =>
+              prev ? { ...prev, name: user.name ?? prev.name } : prev,
+            );
+            if (user.role) {
+              setEmployeeRole(user.role);
+            }
+          }
+        }
+      } catch {
+        // Silently fail - user details are optional
+      }
+    };
+    fetchUser();
+  }, [employeeId]);
 
   // ── Fetch staff overview + bills ────────────────────────────────────────
 
@@ -187,7 +212,7 @@ export default function StaffDetailPage() {
       <div>
         <StaffDetailHeader
           employeeId={employeeId}
-          name={(nameFromUrl || overview?.name) ?? ""}
+          name={overview?.name ?? ""}
           dateRange={dateRange}
           onDateRangeChange={handleDateRangeChange}
         />
@@ -199,7 +224,7 @@ export default function StaffDetailPage() {
           showOnlyOrders={employeeRole === "staff"}
         />
 
-        {employeeRole !== "staff" && (
+        {employeeRole !== "Staff" && (
           <>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-2">
               <div className="lg:col-span-1">
