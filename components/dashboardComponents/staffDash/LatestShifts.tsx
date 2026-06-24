@@ -44,7 +44,7 @@ export default function LatestShifts({
   const [modalLoading, setModalLoading] = useState(false);
 
   const [page, setPage] = useState(0);
-  const pageSize = 3;
+  const pageSize = 4;
 
   // Local state for preset filtering
   const [localStartDate, setLocalStartDate] = useState<string | undefined>(
