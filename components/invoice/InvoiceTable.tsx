@@ -57,6 +57,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatDatetime } from "@/utils/helper";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
+import { parseNepalDateTime } from "../dashboardComponents/staffDash/staffDetail/staffDetailHelpers";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -221,6 +222,7 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
             ) : (
               paged.map((inv, idx) => {
                 const status = (inv.status ?? "").toLowerCase();
+                const invoiceDate = parseNepalDateTime(inv.created_at);
                 return (
                   <tr
                     key={inv.invoice}
@@ -251,8 +253,27 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                       )}
                     </td>
 
-                    <td className="py-3 px-4 text-gray-500 text-xs">
-                      {formatDatetime(inv.created_at)}
+                    <td className="py-3 px-4">
+                      {invoiceDate ? (
+                        <div>
+                          <span className="font-medium text-gray-800 text-xs block">
+                            {invoiceDate.toLocaleTimeString("en-US", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: false,
+                            })}
+                          </span>
+                          <span className="text-[11px] text-gray-400">
+                            {invoiceDate.toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
                     </td>
 
                     <td className="py-3 px-4 text-center">
