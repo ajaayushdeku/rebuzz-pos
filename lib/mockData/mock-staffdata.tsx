@@ -1,14 +1,14 @@
 import { Shift } from "../../components/dashboardComponents/staffDash/ShiftAnalysisReport";
 import { StaffRevenue } from "../../components/dashboardComponents/staffDash/RevenueStaffChart";
 import { StaffBoxProps } from "../../components/dashboardComponents/staffDash/StaffStatBox";
-import { StaffHourlyData } from "../../components/dashboardComponents/staffDash/StaffOrdersChart";
+import { StaffHourlyData } from "../../components/dashboardComponents/staffDash/StaffSalesChart";
 
 export const mockStaffData: StaffBoxProps[] = [
   {
     staffId: "staff-1",
     staffName: "Arthur Morgan",
     staffPosition: "Senior Barista",
-    ordersTaken: 5,
+    salesTaken: 5,
     // avgTime: 4.5,
     // rating: 4.9,
     // shiftTime: "Morning",
@@ -18,7 +18,7 @@ export const mockStaffData: StaffBoxProps[] = [
     staffId: "staff-2",
     staffName: "Dutch Vanderlinde",
     staffPosition: "Senior Barista",
-    ordersTaken: 3,
+    salesTaken: 3,
     // avgTime: 4.8,
     // rating: 4.2,
     // shiftTime: "Morning",
@@ -28,7 +28,7 @@ export const mockStaffData: StaffBoxProps[] = [
     staffId: "staff-3",
     staffName: "John Marston",
     staffPosition: "Barista",
-    ordersTaken: 6,
+    salesTaken: 6,
     // avgTime: 4.3,
     // rating: 4.7,
     // shiftTime: "Afternoon",
@@ -38,7 +38,7 @@ export const mockStaffData: StaffBoxProps[] = [
     staffId: "staff-4",
     staffName: "Charles",
     staffPosition: "Barista",
-    ordersTaken: 7,
+    salesTaken: 7,
     // avgTime: 4.3,
     // rating: 4.7,
     // shiftTime: "Evening",
@@ -48,7 +48,7 @@ export const mockStaffData: StaffBoxProps[] = [
     staffId: "staff-5",
     staffName: "Micah",
     staffPosition: "Barista",
-    ordersTaken: 2,
+    salesTaken: 2,
     // avgTime: 5,
     // rating: 2.5,
     // shiftTime: "Evening",

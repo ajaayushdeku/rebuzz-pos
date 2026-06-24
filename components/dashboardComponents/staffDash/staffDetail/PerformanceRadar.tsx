@@ -36,9 +36,9 @@ interface RadarDataPoint {
 
 // ── Constants ───────────────────────────────────────────────────────────────
 
-const RADAR_SIZE = 340;
+const RADAR_SIZE = 360;
 const CENTER = RADAR_SIZE / 2;
-const RADIUS = RADAR_SIZE * 0.35;
+const RADIUS = RADAR_SIZE * 0.3;
 
 // const METRIC_INFO: Record<string, { label: string; description: string }> = {
 //   Revenue: {
@@ -103,6 +103,11 @@ function formatOrders(value: number): string {
 
 function formatPercentage(value: number): string {
   return `${(value * 100).toFixed(1)}%`;
+}
+
+function formatRatioValue(orders: number, sales: number): string {
+  if (sales === 0) return "—";
+  return `${(orders / sales).toFixed(2)}x`;
 }
 
 // ── Hexagon Radar Chart ─────────────────────────────────────────────────────
@@ -317,6 +322,7 @@ export default function PerformanceRadar({
   const [sales, setSales] = useState<EmployeeSales | null>(null);
   const [billsData, setBillsData] = useState<EmployeeBills | null>(null);
   const [totalCustomers, setTotalCustomers] = useState(50);
+  const [totalOrders, setTotalOrders] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -331,21 +337,30 @@ export default function PerformanceRadar({
       setLoading(true);
       setError(null);
       try {
-        const [salesRes, billsRes, customersRes] = await Promise.all([
-          fetch(
-            `/api/staff/sales-by-employee/${employeeId}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
-          ),
-          fetch(
-            `/api/staff/bills/${employeeId}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
-          ),
-          fetch("/api/customers"),
-        ]);
+        const [salesRes, billsRes, customersRes, ticketsRes] =
+          await Promise.all([
+            fetch(
+              `/api/staff/sales-by-employee/${employeeId}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
+            ),
+            fetch(
+              `/api/staff/bills/${employeeId}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
+            ),
+            fetch("/api/customers"),
+            fetch(
+              `/api/staff/${employeeId}/tickets?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
+            ),
+          ]);
 
         if (!salesRes.ok) throw new Error("Failed to load sales data");
         if (!billsRes.ok) throw new Error("Failed to load bill data");
 
         const salesJson = await salesRes.json();
         const billsJson = await billsRes.json();
+
+        if (ticketsRes.ok) {
+          const ticketsJson = await ticketsRes.json();
+          setTotalOrders(ticketsJson?.data?.totalCount ?? 0);
+        }
 
         if (customersRes.ok) {
           const customersJson = await customersRes.json();
@@ -399,21 +414,29 @@ export default function PerformanceRadar({
     if (!sales || !billsData) return [];
 
     const totalRevenue = sales.totalRevenue;
-    const totalOrders = sales.totalSales;
-    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    const totalSalesCount = sales.totalSales;
+    const totalOrdersCount = totalOrders;
+    const avgOrderValue =
+      totalSalesCount > 0 ? totalRevenue / totalSalesCount : 0;
     const customerCount = billsData.customerCount;
     const avgShiftMinutes = parseAvgShiftTime(avgTime);
     const refundRate = billsData.refundRate;
 
+    // Orders-to-Sales ratio (composite stat)
+    const ordersToSalesRatio =
+      totalSalesCount > 0 ? totalOrdersCount / totalSalesCount : 0;
+
     // Normalize each metric to a 0-100 score
     const maxRevenue = Math.max(totalRevenue, 100000);
-    const maxOrders = Math.max(totalOrders, 100);
+    const maxSales = Math.max(totalSalesCount, 100);
+    const maxOrders = Math.max(totalOrdersCount, 100);
     const maxAvgOrderValue = Math.max(avgOrderValue, 100);
     const maxCustomerCount = Math.max(customerCount, totalCustomers);
     const maxShiftMinutes = Math.max(avgShiftMinutes, 600);
 
     const revenueScore = Math.min(100, (totalRevenue / maxRevenue) * 100);
-    const ordersScore = Math.min(100, (totalOrders / maxOrders) * 100);
+    const salesScore = Math.min(100, (totalSalesCount / maxSales) * 100);
+    const ordersScore = Math.min(100, (totalOrdersCount / maxOrders) * 100);
     const avgOrderScore = Math.min(
       100,
       (avgOrderValue / maxAvgOrderValue) * 100,
@@ -427,6 +450,9 @@ export default function PerformanceRadar({
       (avgShiftMinutes / maxShiftMinutes) * 100,
     );
     const refundScore = Math.max(0, 100 - refundRate * 100);
+
+    // Ord-to-Sales: higher ratio = more invoice-to-order conversion. Score capped at 100 for 3x ratio.
+    const ordToSalesScore = Math.min(100, (ordersToSalesRatio / 3) * 100);
 
     return [
       {
@@ -443,12 +469,19 @@ export default function PerformanceRadar({
       {
         label: "Orders",
         score: Math.round(ordersScore),
-        rawValue: totalOrders,
-        unit: formatOrders(totalOrders),
+        rawValue: totalOrdersCount,
+        unit: formatOrders(totalOrdersCount),
+        description: "Total number of invoices/tickets taken",
+      },
+      {
+        label: "Sales",
+        score: Math.round(salesScore),
+        rawValue: totalSalesCount,
+        unit: formatOrders(totalSalesCount),
         description: "Total number of orders/bills handled",
       },
       {
-        label: "Avg Order",
+        label: "Avg Sales",
         score: Math.round(avgOrderScore),
         rawValue: avgOrderValue,
         unit: formatCurrencySymbol(
@@ -457,6 +490,14 @@ export default function PerformanceRadar({
           currency.locale,
         ),
         description: "Revenue ÷ Orders — measures transaction quality",
+      },
+      {
+        label: "Ord-to-Sales",
+        score: Math.round(ordToSalesScore),
+        rawValue: ordersToSalesRatio,
+        unit: formatRatioValue(totalOrdersCount, totalSalesCount),
+        description:
+          "Orders ÷ Sales — measures how many tickets were raised per bill processed",
       },
       {
         label: "Customers",
@@ -481,7 +522,7 @@ export default function PerformanceRadar({
           "Refunded Orders ÷ Total Orders — lower rate = higher score",
       },
     ];
-  }, [sales, billsData, avgTime, totalCustomers]);
+  }, [sales, billsData, avgTime, totalCustomers, totalOrders]);
 
   // Handle hover for tooltip positioning
   const handleHover = (index: number | null, event?: React.MouseEvent) => {
@@ -669,7 +710,7 @@ export default function PerformanceRadar({
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 mb-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between ">
         <div className="flex items-center gap-3">
           <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center">
             <Radar size={16} className="text-violet-500" />
@@ -708,7 +749,7 @@ export default function PerformanceRadar({
 
       {/* Baseline info panel */}
       {showBaseline && (
-        <div className="mb-4 p-3 rounded-xl bg-gray-50 border border-gray-100">
+        <div className=" p-3 rounded-xl bg-gray-50 border border-gray-100">
           <p className="text-[11px] font-semibold text-gray-700 mb-2">
             How Scores Are Calculated
           </p>
@@ -734,7 +775,7 @@ export default function PerformanceRadar({
       )}
 
       {/* Radar chart centered */}
-      <div className="relative flex justify-center pt-7">
+      <div className="relative flex justify-center mb-1">
         <RadarChart
           data={chartData}
           hoveredIndex={hoveredIndex}

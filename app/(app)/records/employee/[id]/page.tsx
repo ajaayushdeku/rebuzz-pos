@@ -21,11 +21,13 @@ import WeeklySalesChart from "@/components/dashboardComponents/staffDash/staffDe
 import BillsSection from "@/components/dashboardComponents/staffDash/staffDetail/BillsSection";
 import PerformanceRadar from "@/components/dashboardComponents/staffDash/staffDetail/PerformanceRadar";
 import TopItemsSales from "@/components/dashboardComponents/staffDash/staffDetail/TopItemsSales";
+import InvoiceListSection from "@/components/dashboardComponents/staffDash/staffDetail/InvoiceListSection";
 
 export default function StaffDetailPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const employeeId = params.id as string;
+  const nameFromUrl = searchParams.get("name");
   const avgTimeFromUrl = searchParams.get("avgTime");
 
   const defaults = getDefaultDateRange();
@@ -37,6 +39,7 @@ export default function StaffDetailPage() {
   const [overview, setOverview] = useState<StaffOverview | null>(null);
   const [shifts, setShifts] = useState<ShiftSummary[]>([]);
   const [bills, setBills] = useState<BillItem[]>([]);
+  const [employeeRole, setEmployeeRole] = useState<string>("Basic");
 
   const [loading, setLoading] = useState(true);
   const [shiftLoading, setShiftLoading] = useState(true);
@@ -59,20 +62,35 @@ export default function StaffDetailPage() {
       setLoading(true);
       setBillLoading(true);
       try {
-        const res = await fetch(
-          `/api/staff/sales-by-employee/${employeeId}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
-        );
-        if (!res.ok) throw new Error("Failed");
-        const json = await res.json();
-        const emp: EmployeeData = json?.data?.employeeData;
+        const [salesRes, ticketsRes] = await Promise.all([
+          fetch(
+            `/api/staff/sales-by-employee/${employeeId}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
+          ),
+          fetch(
+            `/api/staff/${employeeId}/tickets?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
+          ),
+        ]);
+
+        if (!salesRes.ok) throw new Error("Failed to fetch sales data");
+        const salesJson = await salesRes.json();
+        const emp: EmployeeData = salesJson?.data?.employeeData;
+
+        let ticketCount = 0;
+        if (ticketsRes.ok) {
+          const ticketsJson = await ticketsRes.json();
+          ticketCount = ticketsJson?.data?.totalCount ?? 0;
+        }
+
         if (emp) {
           setOverview({
             name: emp.name,
             totalSales: emp.totalSales ?? 0,
             totalRevenue: emp.totalRevenue ?? 0,
+            totalOrders: ticketCount,
             avgTime: avgTimeFromUrl || "—",
           });
           setBills(emp.bills ?? []);
+          setEmployeeRole(emp.role || "Basic");
         }
       } catch {
         toast.error("Failed to load staff data");
@@ -169,7 +187,7 @@ export default function StaffDetailPage() {
       <div>
         <StaffDetailHeader
           employeeId={employeeId}
-          name={overview?.name ?? ""}
+          name={(nameFromUrl || overview?.name) ?? ""}
           dateRange={dateRange}
           onDateRangeChange={handleDateRangeChange}
         />
@@ -178,38 +196,45 @@ export default function StaffDetailPage() {
           overview={overview}
           totalPayIn={totalPayIn}
           totalPayOut={totalPayOut}
+          showOnlyOrders={employeeRole === "staff"}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-2">
-          <div className="lg:col-span-1">
-            <WeeklySalesChart employeeId={employeeId} />
-          </div>
-          <div className="lg:col-span-1">
-            <PerformanceRadar
-              employeeId={employeeId}
-              avgTime={avgTimeFromUrl}
-              dateRange={dateRange}
+        {employeeRole !== "staff" && (
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-2">
+              <div className="lg:col-span-1">
+                <WeeklySalesChart employeeId={employeeId} />
+              </div>
+              <div className="lg:col-span-1">
+                <PerformanceRadar
+                  employeeId={employeeId}
+                  avgTime={avgTimeFromUrl}
+                  dateRange={dateRange}
+                />
+              </div>
+            </div>
+
+            <TopItemsSales employeeId={employeeId} dateRange={dateRange} />
+
+            <ShiftsSection
+              shifts={shifts}
+              shiftLoading={shiftLoading}
+              shiftPage={shiftPage}
+              pageSize={pageSize}
+              shiftPages={shiftPages}
+              onPageChange={setShiftPage}
+              onFetchShiftDetail={fetchShiftDetail}
+              modalOpen={modalOpen}
+              modalDetail={modalDetail}
+              modalLoading={modalLoading}
+              onModalClose={handleModalClose}
             />
-          </div>
-        </div>
 
-        <TopItemsSales employeeId={employeeId} dateRange={dateRange} />
+            <BillsSection employeeId={employeeId} dateRange={dateRange} />
+          </>
+        )}
 
-        <ShiftsSection
-          shifts={shifts}
-          shiftLoading={shiftLoading}
-          shiftPage={shiftPage}
-          pageSize={pageSize}
-          shiftPages={shiftPages}
-          onPageChange={setShiftPage}
-          onFetchShiftDetail={fetchShiftDetail}
-          modalOpen={modalOpen}
-          modalDetail={modalDetail}
-          modalLoading={modalLoading}
-          onModalClose={handleModalClose}
-        />
-
-        <BillsSection employeeId={employeeId} dateRange={dateRange} />
+        <InvoiceListSection employeeId={employeeId} dateRange={dateRange} />
       </div>
     </div>
   );

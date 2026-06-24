@@ -6,7 +6,7 @@ import { RawTicket } from "@/lib/types/ticket";
 
 // Fetch Archived Invoices/Tickets
 export const fetchArchivedInvoicesClient = async (): Promise<Invoice[]> => {
-  const res = await fetch("/api/invoices/archived?limit=15");
+  const res = await fetch("/api/invoices/archived?limit=500");
 
   if (!res.ok) {
     throw new Error(`Failed to fetch archived invoices: ${res.status}`);

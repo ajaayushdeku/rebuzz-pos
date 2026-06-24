@@ -4,6 +4,7 @@ export type StaffOverview = {
   name: string;
   totalSales: number;
   totalRevenue: number;
+  totalOrders: number;
   avgTime: string;
 };
 
@@ -68,6 +69,7 @@ export type BillItem = {
 export type EmployeeData = {
   _id: string;
   name: string;
+  role?: string;
   totalSales: number;
   totalRevenue: number;
   bills: BillItem[];
@@ -115,7 +117,6 @@ export function parseNepalDateTime(raw: string): Date | null {
     date = new Date(normalized);
   } else {
     date = new Date(normalized + "+00:00");
-    date.setMinutes(date.getMinutes() + 5 * 60 + 45);
   }
   return isNaN(date.getTime()) ? null : date;
 }

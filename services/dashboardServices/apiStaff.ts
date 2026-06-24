@@ -1,6 +1,6 @@
 import { StaffRevenue } from "@/components/dashboardComponents/staffDash/RevenueStaffChart";
 import { Shift } from "@/components/dashboardComponents/staffDash/ShiftAnalysisReport";
-import { StaffHourlyData } from "@/components/dashboardComponents/staffDash/StaffOrdersChart";
+import { StaffHourlyData } from "@/components/dashboardComponents/staffDash/StaffSalesChart";
 import { StaffBoxProps } from "@/components/dashboardComponents/staffDash/StaffStatBox";
 import { authHeaders } from "../authServices/session";
 
@@ -51,6 +51,24 @@ type RawUser = {
   email: string;
   role: string;
 };
+
+// ── Ticket API response types ──────────────────────────────────────────
+
+type RawTicket = {
+  _id: string;
+  ticketTakenBy: string;
+  paidStatus: string;
+  grandTotal: number;
+  invoice: number;
+};
+
+type TicketsResponse = {
+  status: string;
+  data: {
+    allTickets: RawTicket[];
+  };
+};
+
 // ── Date helpers ──────────────────────────────────────────────────────────
 
 function toDateStr(date: Date): string {
@@ -233,6 +251,39 @@ export async function fetchAllShifts(
   }
 }
 
+// ── Core fetcher — tickets (for ticketTakenBy-based sales count) ────────
+
+async function fetchAllTickets(
+  range: string = "month",
+  startDateOverride?: string,
+  endDateOverride?: string,
+): Promise<RawTicket[]> {
+  try {
+    const { startDate, endDate } = getDateRange(
+      range,
+      startDateOverride,
+      endDateOverride,
+    );
+
+    const params = new URLSearchParams();
+    params.set("from_date", startDate);
+    params.set("to_date", endDate);
+    params.set("limit", "500");
+
+    const res = await fetch(`${BASE}/business/ticket?${params.toString()}`, {
+      headers: await authHeaders(),
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return [];
+
+    const json: TicketsResponse = await res.json();
+    return json?.data?.allTickets ?? [];
+  } catch (err) {
+    console.error("fetchAllTickets error:", err);
+    return [];
+  }
+}
+
 // ── Helper: parse "HH:MM:SS" to total minutes ─────────────────────────
 
 function parseHoursToMinutes(totalHours: string): number {
@@ -251,11 +302,12 @@ export async function getStaffData(
   try {
     const dateRange = getDateRange(range, startDate, endDate);
 
-    // ── Fetch all three sources in parallel ───────────────────────────────
-    const [employees, allUsersRaw, allShiftsRaw] = await Promise.all([
+    // ── Fetch all four sources in parallel ─────────────────────────────────
+    const [employees, allUsersRaw, allShiftsRaw, tickets] = await Promise.all([
       fetchAllEmployeeSales(range, startDate, endDate),
       fetchAllEmployees(),
       fetchAllShifts(range, dateRange.startDate, dateRange.endDate),
+      fetchAllTickets(range, startDate, endDate),
     ]);
 
     // `fetchAllEmployees` always returns an array of users.
@@ -269,6 +321,15 @@ export async function getStaffData(
     const allShifts: RawShift[] = Array.isArray(allShiftsRaw)
       ? allShiftsRaw
       : [];
+
+    // ── Build ticket count map: ticketTakenBy → number of tickets ─────────
+    const ticketCountMap = new Map<string, number>();
+    for (const ticket of tickets) {
+      const takerId = ticket.ticketTakenBy;
+      if (takerId) {
+        ticketCountMap.set(takerId, (ticketCountMap.get(takerId) ?? 0) + 1);
+      }
+    }
 
     // console.log("Fetch Data Employee Sales:", employees);
     // console.log("All Employee:", allUsers);
@@ -328,6 +389,16 @@ export async function getStaffData(
       }
     }
 
+    // 4. Also include anyone who has taken tickets but appears in none of the above
+    for (const ticket of tickets) {
+      if (ticket.ticketTakenBy && !identityMap.has(ticket.ticketTakenBy)) {
+        identityMap.set(ticket.ticketTakenBy, {
+          name: ticket.ticketTakenBy,
+          role: "Staff",
+        });
+      }
+    }
+
     // ── Build sales map: employeeId → RawEmployee ─────────────────────────
     const salesMap = new Map<string, RawEmployee>();
     for (const emp of employees) {
@@ -338,11 +409,17 @@ export async function getStaffData(
     const staffList: StaffBoxProps[] = Array.from(identityMap.entries()).map(
       ([id, identity], idx) => {
         const sales = salesMap.get(id);
+        // Use the max of totalSales from API or ticket count from the ticket API
+        const salesFromApi = sales?.totalSales ?? 0;
+        const ticketCount = ticketCountMap.get(id) ?? 0;
+        const resolvedSales = Math.max(salesFromApi, ticketCount);
+
         return {
           staffId: id,
           staffName: identity.name,
           staffPosition: identity.role,
-          ordersTaken: sales?.totalSales ?? 0,
+          salesTaken: sales?.totalSales ?? 0,
+          ordersTaken: resolvedSales,
           amount: Math.round((sales?.totalRevenue ?? 0) * 100) / 100,
           avgTime: avgTimeMap.get(id) ?? "—",
           colorIndex: idx,
@@ -350,7 +427,7 @@ export async function getStaffData(
       },
     );
     // console.log("Staff List:", staffList);
-    return staffList.sort((a, b) => a.staffName.localeCompare(b.staffName));
+    return staffList.sort((a, b) => b.amount - a.amount);
   } catch (err) {
     console.error("getStaffData error:", err);
     return [];
@@ -380,9 +457,9 @@ export async function getStaffRevenue(
   }
 }
 
-// ── getStaffOrdersPerHour — hourly line chart ─────────────────────────────
+// ── getStaffSalesPerHour — hourly line chart ─────────────────────────────
 
-export async function getStaffOrdersPerHour(
+export async function getStaffSalesPerHour(
   range: string = "month",
   startDate?: string,
   endDate?: string,
@@ -438,7 +515,7 @@ export async function getStaffOrdersPerHour(
       })),
     }));
   } catch (err) {
-    console.error("getStaffOrdersPerHour error:", err);
+    console.error("getStaffSalesPerHour error:", err);
     return [];
   }
 }

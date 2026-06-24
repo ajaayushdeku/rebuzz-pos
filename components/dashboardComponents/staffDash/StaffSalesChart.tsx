@@ -107,7 +107,7 @@ const CustomLegend = ({
 
 // ── Main chart ────────────────────────────────────────────────────────────
 
-export default function StaffOrdersChart({ data }: StaffOrdersChartProps) {
+export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
   const isEmpty = !data || data.length === 0;
 
   // All unique staff names from data (already limited to 8 by wrapper)
@@ -187,7 +187,7 @@ export default function StaffOrdersChart({ data }: StaffOrdersChartProps) {
       <div className="flex items-start justify-between mb-6">
         <div>
           <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-            Orders Per Hour by Employee
+            Sales Per Hour by Employee
           </h2>
           <p className="text-xs text-gray-400 mt-0.5">
             Throughput breakdown across the day per team member.

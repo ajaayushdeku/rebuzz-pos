@@ -11,7 +11,7 @@ import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import { CalendarDateFilter } from "@/components/dashboardComponents/staffDash/CalendarDateFilter";
 import {
   ShiftAnalysisWrapper,
-  StaffOrdersChartWrapper,
+  StaffSalesChartWrapper,
   StaffRevenueWrapper,
   StaffStatWrapper,
   LatestShiftsWrapper,
@@ -86,7 +86,7 @@ const Page = async ({
 
       <ChartErrorBoundary>
         <Suspense fallback={<ChartSkeleton />}>
-          <StaffOrdersChartWrapper
+          <StaffSalesChartWrapper
             range={range}
             startDate={hasCustomDates ? startDate : undefined}
             endDate={hasCustomDates ? endDate : undefined}

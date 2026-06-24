@@ -1,5 +1,5 @@
 import StaffStatBox from "@/components/dashboardComponents/staffDash/StaffStatBox";
-import StaffOrdersChart from "@/components/dashboardComponents/staffDash/StaffOrdersChart";
+import StaffSalesChart from "@/components/dashboardComponents/staffDash/StaffSalesChart";
 import RevenueStaffChart from "@/components/dashboardComponents/staffDash/RevenueStaffChart";
 import ShiftAnalysisReport from "@/components/dashboardComponents/staffDash/ShiftAnalysisReport";
 import LatestShifts from "@/components/dashboardComponents/staffDash/LatestShifts";
@@ -7,7 +7,7 @@ import LatestShifts from "@/components/dashboardComponents/staffDash/LatestShift
 import {
   getStaffData,
   getStaffRevenue,
-  getStaffOrdersPerHour,
+  getStaffSalesPerHour,
   getShiftAnalysisData,
   fetchAllShifts,
 } from "@/services/dashboardServices/apiStaff";
@@ -45,10 +45,18 @@ export async function StaffStatWrapper({
   const displayStaff = staffList.slice(0, 8);
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 my-4">
-      {displayStaff.map((staff, idx) => (
-        <StaffStatBox key={staff.staffName} {...staff} colorIndex={idx} />
-      ))}
+    <div className="my-4 -mx-2 sm:mx-0">
+      {/* Mobile: horizontal scroll with fixed-width cards, Desktop: grid */}
+      <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 overflow-x-auto pb-2 px-2 sm:px-0 sm:overflow-visible snap-x snap-mandatory scrollbar-thin">
+        {displayStaff.map((staff, idx) => (
+          <div
+            key={staff.staffName}
+            className="snap-start shrink-0 w-[85vw] sm:w-auto sm:shrink"
+          >
+            <StaffStatBox {...staff} colorIndex={idx} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -62,7 +70,7 @@ export async function StaffStatWrapper({
 //   return <StaffOrdersChart data={data} />;
 // }
 
-export async function StaffOrdersChartWrapper({
+export async function StaffSalesChartWrapper({
   range = "month",
   startDate,
   endDate,
@@ -71,12 +79,12 @@ export async function StaffOrdersChartWrapper({
   startDate?: string;
   endDate?: string;
 }) {
-  const data = await getStaffOrdersPerHour(range, startDate, endDate);
+  const data = await getStaffSalesPerHour(range, startDate, endDate);
   const limitedData = data.map((hourSlot) => ({
     ...hourSlot,
     staff: hourSlot.staff.slice(0, 8),
   }));
-  return <StaffOrdersChart data={limitedData} />;
+  return <StaffSalesChart data={limitedData} />;
 }
 
 export async function StaffRevenueWrapper({

@@ -1,5 +1,5 @@
 import { Users, X, Check } from "lucide-react";
-import { MAX_STAFF } from "./StaffOrdersChart";
+import { MAX_STAFF } from "./StaffSalesChart";
 import { useState } from "react";
 
 const StaffFilterModal = ({

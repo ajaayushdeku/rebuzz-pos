@@ -44,7 +44,7 @@ const CustomTooltip = ({
     <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100">
       <p className="text-gray-400 text-xs mb-1">{label}</p>
       <p className="text-blue-500 font-bold text-sm">
-        {payload[0].value} orders
+        {payload[0].value} sales
       </p>
     </div>
   );
@@ -171,11 +171,11 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
           </div>
           <div>
             <h2 className="text-sm font-semibold text-gray-900">
-              Orders This Week
+              Sales This Week
             </h2>
             <p className="text-[11px] text-gray-400 mt-px">
               {weekRange.startDate} to {weekRange.endDate} &middot;{" "}
-              {chartData.reduce((s, d) => s + d.orders, 0)} total orders
+              {chartData.reduce((s, d) => s + d.orders, 0)} total sales
             </p>
           </div>
         </div>
@@ -210,7 +210,7 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
           </p>
         </div>
       ) : (
-        <div className="h-56 md:h-90">
+        <div className="h-56 md:h-85">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={displayData}

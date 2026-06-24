@@ -115,7 +115,6 @@ async function fetchTaxableBreakdown(
       const bills: { taxamt?: number; isRefunded?: boolean }[] =
         billsJson?.data?.bill ?? [];
 
-      console.log("BILLS:", billsJson);
       for (const bill of bills) {
         if (!bill.isRefunded) {
           taxableTaxAmount += bill.taxamt ?? 0;

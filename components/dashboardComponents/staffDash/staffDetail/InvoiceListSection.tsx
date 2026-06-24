@@ -5,46 +5,69 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
-  Receipt,
+  FileText,
   Search,
   X,
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { parseNepalDateTime } from "./staffDetailHelpers";
 import { useRouter } from "next/navigation";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
-import { statusStyles, paymentMethods } from "@/lib/config/transaction";
+import { parseNepalDateTime } from "./staffDetailHelpers";
 
-interface BillRecord {
+interface EnrichedTicket {
   _id: string;
-  invoiceNo: number;
-  paidBillNo: number;
-  totalAmount: number;
+  invoice: number;
   grandTotal: number;
-  paidAt: string;
-  paymentMethod: string;
-  isRefunded: boolean;
+  paidStatus: string;
+  ticketTakenBy: string;
   ticketName?: string;
-  customerId?: string | null;
-  generatedBy?: string;
+  customerName?: string;
+  customerPhone?: string;
+  createdAt?: string;
+  paymentMethod?: string;
+  archivedAt?: string | null;
 }
 
-interface BillsSectionProps {
+interface InvoiceListSectionProps {
   employeeId: string;
   dateRange: DateRangeValue;
 }
 
-const STATUS_OPTIONS = ["all", "completed", "refunded"];
+const STATUS_OPTIONS = ["all", "paid", "unpaid"];
 
-export default function BillsSection({
+const statusStyles: Record<string, { cell: string; badge: string }> = {
+  settled: {
+    cell: "text-emerald-600",
+    badge: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  },
+  pending: {
+    cell: "text-amber-600",
+    badge: "bg-amber-50 text-amber-700 border border-amber-200",
+  },
+  unpaid: {
+    cell: "text-red-600",
+    badge: "bg-red-50 text-red-700 border border-red-200",
+  },
+  default: {
+    cell: "text-gray-600",
+    badge: "bg-gray-50 text-gray-700 border border-gray-200",
+  },
+};
+
+function getStatusStyle(status: string) {
+  const key = status?.toLowerCase();
+  return statusStyles[key] ?? statusStyles.default;
+}
+
+export default function InvoiceListSection({
   employeeId,
   dateRange,
-}: BillsSectionProps) {
+}: InvoiceListSectionProps) {
   const { currency } = useCurrency();
   const router = useRouter();
 
-  const [bills, setBills] = useState<BillRecord[]>([]);
+  const [tickets, setTickets] = useState<EnrichedTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
@@ -55,91 +78,102 @@ export default function BillsSection({
   useEffect(() => {
     if (!employeeId) return;
 
-    const fetchBills = async () => {
+    const fetchTickets = async () => {
       setLoading(true);
       setError(null);
       try {
         const res = await fetch(
-          `/api/staff/bills/${employeeId}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
+          `/api/staff/${employeeId}/tickets?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
         );
 
         if (!res.ok) {
-          throw new Error("Failed to fetch bills");
+          throw new Error("Failed to fetch invoices");
         }
 
         const data = await res.json();
         if (data?.status === "success") {
-          setBills(data.data.bills ?? []);
+          setTickets(data.data.tickets ?? []);
         } else {
-          throw new Error(data?.error || "Failed to fetch bills");
+          throw new Error(data?.error || "Failed to fetch invoices");
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load bills");
+        setError(
+          err instanceof Error ? err.message : "Failed to load invoices",
+        );
       } finally {
         setLoading(false);
       }
     };
 
-    fetchBills();
+    fetchTickets();
   }, [employeeId, dateRange.startDate, dateRange.endDate]);
 
   // Filter by status and search query
-  const filteredBills = useMemo(() => {
-    let result = bills;
+  const filteredTickets = useMemo(() => {
+    let result = tickets;
 
     // Status filter
     if (statusFilter !== "all") {
-      result = result.filter((bill) => {
-        if (statusFilter === "completed") return !bill.isRefunded;
-        if (statusFilter === "refunded") return bill.isRefunded;
-        return true;
-      });
+      result = result.filter(
+        (t) => t.paidStatus?.toLowerCase() === statusFilter,
+      );
     }
 
-    // Search filter (by invoice number, bill number, or customer name)
+    // Search filter (by invoice number, ticket name, or customer name)
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
       result = result.filter(
-        (bill) =>
-          String(bill.invoiceNo).includes(q) ||
-          String(bill.paidBillNo).includes(q) ||
-          bill.generatedBy?.toLowerCase().includes(q) ||
-          bill.ticketName?.toLowerCase().includes(q),
+        (t) =>
+          String(t.invoice).includes(q) ||
+          t.ticketName?.toLowerCase().includes(q) ||
+          t.customerName?.toLowerCase().includes(q) ||
+          t.customerPhone?.toLowerCase().includes(q),
       );
     }
 
     return result;
-  }, [bills, statusFilter, searchQuery]);
+  }, [tickets, statusFilter, searchQuery]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredBills.length / pageSize));
-  const displayBills = filteredBills.slice(
+  const totalPages = Math.max(1, Math.ceil(filteredTickets.length / pageSize));
+  const displayTickets = filteredTickets.slice(
     page * pageSize,
     (page + 1) * pageSize,
   );
 
-  const paymentMethodsRecord = paymentMethods as Record<
-    string,
-    { cell: string; badge: string }
-  >;
+  const paymentMethodsRecord: Record<string, { cell: string; badge: string }> =
+    {
+      Cash: {
+        cell: "text-emerald-600",
+        badge: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+      },
+      Card: {
+        cell: "text-blue-600",
+        badge: "bg-blue-50 text-blue-700 border border-blue-200",
+      },
+      default: {
+        cell: "text-gray-600",
+        badge: "bg-gray-50 text-gray-700 border border-gray-200",
+      },
+    };
 
   if (loading) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center">
-            <Receipt size={16} className="text-purple-500" />
+          <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
+            <FileText size={16} className="text-orange-500" />
           </div>
           <div>
             <h2 className="text-sm font-semibold text-gray-900">
-              Transactions / Bills
+              Order / Invoice List
             </h2>
             <p className="text-[11px] text-gray-400 mt-px">
-              Loading transactions...
+              Loading orders/invoices...
             </p>
           </div>
         </div>
         <div className="flex items-center justify-center py-12">
-          <Loader2 size={20} className="animate-spin text-purple-500" />
+          <Loader2 size={20} className="animate-spin text-orange-500" />
         </div>
       </div>
     );
@@ -149,12 +183,12 @@ export default function BillsSection({
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center">
-            <Receipt size={16} className="text-purple-500" />
+          <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
+            <FileText size={16} className="text-orange-500" />
           </div>
           <div>
             <h2 className="text-sm font-semibold text-gray-900">
-              Transactions / Bills
+              Order / Invoice List
             </h2>
             <p className="text-[11px] text-gray-400 mt-px">
               Unable to load data
@@ -164,8 +198,11 @@ export default function BillsSection({
         <div className="text-center py-8">
           <p className="text-sm font-medium text-gray-500">{error}</p>
           <button
-            onClick={() => setLoading(true)}
-            className="mt-3 px-4 py-1.5 text-xs font-medium text-white bg-purple-500 hover:bg-purple-600 rounded-lg transition-colors"
+            onClick={() => {
+              setLoading(true);
+              setError(null);
+            }}
+            className="mt-3 px-4 py-1.5 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg transition-colors"
           >
             Retry
           </button>
@@ -178,16 +215,16 @@ export default function BillsSection({
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center">
-            <Receipt size={16} className="text-purple-500" />
+          <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
+            <FileText size={16} className="text-orange-500" />
           </div>
           <div>
             <h2 className="text-sm font-semibold text-gray-900">
-              Transactions / Bills
+              Order / Invoice List
             </h2>
             <p className="text-[11px] text-gray-400 mt-px">
-              {filteredBills.length}{" "}
-              {filteredBills.length === 1 ? "bill" : "bills"}
+              {filteredTickets.length}{" "}
+              {filteredTickets.length === 1 ? "order" : "orders"}
             </p>
           </div>
         </div>
@@ -203,13 +240,13 @@ export default function BillsSection({
           />
           <input
             type="text"
-            placeholder="Search by invoice, bill, customer..."
+            placeholder="Search by invoice, name, phone..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
               setPage(0);
             }}
-            className="w-full pl-9 pr-8 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full pl-9 pr-8 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
           />
           {searchQuery && (
             <button
@@ -235,7 +272,7 @@ export default function BillsSection({
               }}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize ${
                 statusFilter === status
-                  ? "bg-purple-500 text-white"
+                  ? "bg-orange-500 text-white"
                   : "bg-gray-50 text-gray-600 hover:bg-gray-100"
               }`}
             >
@@ -245,9 +282,9 @@ export default function BillsSection({
         </div>
       </div>
 
-      {displayBills.length === 0 ? (
+      {displayTickets.length === 0 ? (
         <div className="text-center py-8 text-sm text-gray-400">
-          No transactions found for this date range
+          No invoices found for this date range
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -258,10 +295,7 @@ export default function BillsSection({
                   S.No
                 </th>
                 <th className="text-left pb-3 pt-3 px-4 font-medium">
-                  Bill ID
-                </th>
-                <th className="text-left pb-3 pt-3 px-4 font-medium">
-                  Order ID
+                  Invoice ID
                 </th>
                 <th className="text-left pb-3 pt-3 px-4 font-medium">
                   Date / Time
@@ -269,33 +303,37 @@ export default function BillsSection({
                 <th className="text-left pb-3 pt-3 px-4 font-medium">
                   Invoice Name
                 </th>
+                {/* <th className="text-left pb-3 pt-3 px-4 font-medium">
+                  Customer
+                </th> */}
                 <th className="text-center pb-3 pt-3 px-4 font-medium">
                   Payment
                 </th>
-                <th className="text-right pb-3 pt-3 px-4 font-medium">
-                  <span className="flex items-center justify-end gap-1">
-                    Total
-                  </span>
-                </th>
+                <th className="text-right pb-3 pt-3 px-4 font-medium">Total</th>
                 <th className="text-center pb-3 pt-3 px-4 font-medium">
                   Status
+                </th>
+                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                  Arch.
                 </th>
               </tr>
             </thead>
             <tbody>
-              {displayBills.map((bill, idx) => {
-                const billDate = parseNepalDateTime(bill.paidAt);
-                const s =
-                  statusStyles[bill.isRefunded ? "refunded" : "completed"] ??
-                  statusStyles["completed"];
-                const p =
-                  paymentMethodsRecord[bill.paymentMethod] ??
-                  paymentMethodsRecord["Cash"];
+              {displayTickets.map((ticket, idx) => {
+                const s = getStatusStyle(ticket.paidStatus);
+                const ticketDate = ticket.createdAt
+                  ? parseNepalDateTime(ticket.createdAt)
+                  : null;
+
+                const pm = ticket.paymentMethod
+                  ? (paymentMethodsRecord[ticket.paymentMethod] ??
+                    paymentMethodsRecord.default)
+                  : null;
 
                 return (
                   <tr
-                    key={bill._id}
-                    onClick={() => router.push(`/invoices/${bill.invoiceNo}`)}
+                    key={ticket._id}
+                    onClick={() => router.push(`/invoices/${ticket.invoice}`)}
                     className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
                   >
                     <td className="py-3 px-4 text-gray-400 text-xs">
@@ -303,26 +341,21 @@ export default function BillsSection({
                     </td>
                     <td className="py-3 px-4">
                       <span className="font-semibold text-gray-900">
-                        BILL-{bill.paidBillNo}
+                        ORD-{ticket.invoice}
                       </span>
                     </td>
                     <td className="py-3 px-4">
-                      <span className="font-semibold text-gray-900">
-                        ORD-{bill.invoiceNo}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      {billDate ? (
+                      {ticketDate ? (
                         <div>
                           <span className="font-medium text-gray-800 text-xs block">
-                            {billDate.toLocaleTimeString("en-US", {
+                            {ticketDate.toLocaleTimeString("en-US", {
                               hour: "2-digit",
                               minute: "2-digit",
                               hour12: false,
                             })}
                           </span>
                           <span className="text-[11px] text-gray-400">
-                            {billDate.toLocaleDateString("en-US", {
+                            {ticketDate.toLocaleDateString("en-US", {
                               month: "short",
                               day: "numeric",
                               year: "numeric",
@@ -335,30 +368,45 @@ export default function BillsSection({
                     </td>
 
                     <td className="py-3 px-4 text-gray-600">
-                      {bill.ticketName || "—"}
+                      {ticket.ticketName || "—"}
                     </td>
-
+                    {/* <td className="py-3 px-4 text-gray-600">
+                      {ticket.customerName || ticket.customerPhone || "—"}
+                    </td> */}
                     <td className="py-3 px-4 text-center">
-                      <span
-                        className={`${p.badge} ${p.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
-                      >
-                        {bill.paymentMethod}
-                      </span>
+                      {pm ? (
+                        <span
+                          className={`${pm.badge} ${pm.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
+                        >
+                          {ticket.paymentMethod}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
                     </td>
-
                     <td className="py-3 px-4 text-right font-semibold text-gray-900">
                       {formatCurrencySymbol(
-                        bill.grandTotal ?? 0,
+                        ticket.grandTotal ?? 0,
                         currency.symbol,
                         currency.locale,
                       )}
                     </td>
-
                     <td className="py-3 px-4 text-center">
                       <span
-                        className={`${s.badge} ${s.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
+                        className={`${s.badge} ${s.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block capitalize`}
                       >
-                        {bill.isRefunded ? "refunded" : "completed"}
+                        {ticket.paidStatus}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <span
+                        className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full capitalize ${
+                          ticket.archivedAt
+                            ? "bg-orange-50 text-orange-700 border border-orange-200"
+                            : "bg-gray-50 text-gray-500 border border-gray-200"
+                        }`}
+                      >
+                        {ticket.archivedAt ? "Archived" : "Unarchived"}
                       </span>
                     </td>
                   </tr>
@@ -386,8 +434,7 @@ export default function BillsSection({
           </button>
 
           <span className="text-xs text-gray-400 font-medium">
-            Page {page + 1} of {totalPages} · {filteredBills.length}{" "}
-            transactions
+            Page {page + 1} of {totalPages} · {filteredTickets.length} invoices
           </span>
 
           <button

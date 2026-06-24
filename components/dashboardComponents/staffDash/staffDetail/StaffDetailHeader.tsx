@@ -30,9 +30,9 @@ export default function StaffDetailHeader({
           <ArrowLeft size={18} />
         </button>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
+          {/* <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
             {name?.charAt(0)?.toUpperCase() ?? "S"}
-          </div>
+          </div> */}
           <div>
             <h1 className="font-bold text-xl md:text-2xl text-gray-900">
               {name ?? "Staff"}
