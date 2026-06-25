@@ -103,11 +103,8 @@ export default function StaffDetailPage() {
 
           const user = data?.data?.user;
 
-          console.log("USER:", user);
-
           if (user) {
             setOwnerDetail(user);
-            setEmployeeRole(user.role);
           }
         }
       } catch (error) {
@@ -117,8 +114,6 @@ export default function StaffDetailPage() {
 
     fetchOwner();
   }, []);
-
-  console.log("USER:", ownerDetail?.name);
 
   // ── Fetch staff overview + bills ────────────────────────────────────────
   useEffect(() => {

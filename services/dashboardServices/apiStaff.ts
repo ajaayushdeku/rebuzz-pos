@@ -302,7 +302,6 @@ export async function getStaffData(
   try {
     const dateRange = getDateRange(range, startDate, endDate);
 
-    // ── Fetch all four sources in parallel ─────────────────────────────────
     const [employees, allUsersRaw, allShiftsRaw, tickets] = await Promise.all([
       fetchAllEmployeeSales(range, startDate, endDate),
       fetchAllEmployees(),
@@ -310,8 +309,6 @@ export async function getStaffData(
       fetchAllTickets(range, startDate, endDate),
     ]);
 
-    // `fetchAllEmployees` always returns an array of users.
-    // Guards against any non-array response slipping through
     const allUsers: RawUser[] = Array.isArray(allUsersRaw)
       ? allUsersRaw
       : Array.isArray((allUsersRaw as any)?.users)
@@ -322,7 +319,23 @@ export async function getStaffData(
       ? allShiftsRaw
       : [];
 
-    // ── Build ticket count map: ticketTakenBy → number of tickets ─────────
+    // ── Registered employee IDs — the source of truth for "is staff" ──────
+    const registeredEmployeeIds = new Set(allUsers.map((u) => u._id));
+
+    // ── Build sales map: employeeId → RawEmployee ─────────────────────────
+    const salesMap = new Map<string, RawEmployee>();
+    for (const emp of employees) {
+      salesMap.set(emp._id, emp);
+    }
+
+    // ── IDs that have actual sales data (revenue or sales > 0) ───────────
+    const hasSalesData = (id: string): boolean => {
+      const s = salesMap.get(id);
+      if (!s) return false;
+      return (s.totalSales ?? 0) > 0 || (s.totalRevenue ?? 0) > 0;
+    };
+
+    // ── Build ticket count map ────────────────────────────────────────────
     const ticketCountMap = new Map<string, number>();
     for (const ticket of tickets) {
       const takerId = ticket.ticketTakenBy;
@@ -331,11 +344,7 @@ export async function getStaffData(
       }
     }
 
-    // console.log("Fetch Data Employee Sales:", employees);
-    // console.log("All Employee:", allUsers);
-    // console.log("All shifts:", allShifts);
-
-    // ── Build avgTime map: employeeId → formatted avg shift duration ──────
+    // ── Build avgTime map ─────────────────────────────────────────────────
     const shiftGroups = new Map<string, number[]>();
     for (const shift of allShifts) {
       const minutes = parseHoursToMinutes(shift.totalHours);
@@ -356,11 +365,11 @@ export async function getStaffData(
       avgTimeMap.set(empId, hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`);
     }
 
-    // ── Build a unified identity map from ALL sources ─────────────────────
-    // Priority: salesByAllEmployee name > users/roles/employee name
+    // ── Build identity map ────────────────────────────────────────────────
+
     const identityMap = new Map<string, { name: string; role: string }>();
 
-    // 1. Seed from /users/roles/employee
+    // 1. All registered employees — always included regardless of sales
     for (const user of allUsers) {
       identityMap.set(user._id, {
         name: user.name || user._id,
@@ -368,72 +377,75 @@ export async function getStaffData(
       });
     }
 
-    // 2. Add/override with salesByAllEmployee — this catches owners and
-    //    anyone not in /users/roles/employee (e.g. admin doing shifts)
+    // 2. Non-registered users from salesByAllEmployee (owners/admins)
+    //    — ONLY if they have actual sales data
     for (const emp of employees) {
-      if (!identityMap.has(emp._id)) {
-        identityMap.set(emp._id, {
-          name: emp.name || emp._id,
-          role: emp.role || "Owner",
-        });
-      }
+      if (registeredEmployeeIds.has(emp._id)) continue;
+      if (!hasSalesData(emp._id)) continue; // ← exclude if no real sales
+
+      identityMap.set(emp._id, {
+        name: emp.name || emp._id,
+        role: emp.role || "Owner",
+      });
     }
 
-    // 3. Also include anyone who has a shift but appears in neither source
+    // 3. Non-registered users from shifts
+    //    — ONLY if they also have actual sales data
     for (const shift of allShifts) {
-      if (!identityMap.has(shift.employeeId)) {
-        identityMap.set(shift.employeeId, {
-          name: shift.employeeName || shift.employeeId,
-          role: "Owner",
-        });
-      }
+      if (identityMap.has(shift.employeeId)) continue;
+      if (!hasSalesData(shift.employeeId)) continue; // ← exclude if no real sales
+
+      identityMap.set(shift.employeeId, {
+        name: shift.employeeName || shift.employeeId,
+        role: "Owner",
+      });
     }
 
-    // 4. Also include anyone who has taken tickets but appears in none of the above
+    // 4. Non-registered users from tickets
+    //    — ONLY if they also have actual sales data
     for (const ticket of tickets) {
-      if (ticket.ticketTakenBy && !identityMap.has(ticket.ticketTakenBy)) {
-        identityMap.set(ticket.ticketTakenBy, {
-          name: ticket.ticketTakenBy,
-          role: "Staff",
-        });
-      }
+      if (!ticket.ticketTakenBy) continue;
+      if (identityMap.has(ticket.ticketTakenBy)) continue;
+      if (!hasSalesData(ticket.ticketTakenBy)) continue; // ← exclude if no real sales
+
+      identityMap.set(ticket.ticketTakenBy, {
+        name: ticket.ticketTakenBy,
+        role: "Staff",
+      });
     }
 
-    // ── Build sales map: employeeId → RawEmployee ─────────────────────────
-    const salesMap = new Map<string, RawEmployee>();
-    for (const emp of employees) {
-      salesMap.set(emp._id, emp);
-    }
-
-    // ── Merge everything — every known person gets a card ─────────────────
+    // ── Merge everything ──────────────────────────────────────────────────
     const staffList: StaffBoxProps[] = Array.from(identityMap.entries()).map(
       ([id, identity], idx) => {
         const sales = salesMap.get(id);
-        // Use the max of totalSales from API or ticket count from the ticket API
         const salesFromApi = sales?.totalSales ?? 0;
         const ticketCount = ticketCountMap.get(id) ?? 0;
-        const resolvedSales = Math.max(salesFromApi, ticketCount);
+
+        // For registered employees: use max of both sources
+        // For non-registered (owners): use only sales API data — no ticket inflation
+        const resolvedOrders = registeredEmployeeIds.has(id)
+          ? Math.max(salesFromApi, ticketCount)
+          : salesFromApi;
 
         return {
           staffId: id,
           staffName: identity.name,
           staffPosition: identity.role,
-          salesTaken: sales?.totalSales ?? 0,
-          ordersTaken: resolvedSales,
+          salesTaken: salesFromApi,
+          ordersTaken: resolvedOrders,
           amount: Math.round((sales?.totalRevenue ?? 0) * 100) / 100,
           avgTime: avgTimeMap.get(id) ?? "—",
           colorIndex: idx,
         };
       },
     );
-    // console.log("Staff List:", staffList);
+
     return staffList.sort((a, b) => b.amount - a.amount);
   } catch (err) {
     console.error("getStaffData error:", err);
     return [];
   }
 }
-
 // ── getStaffRevenue — revenue bar chart ───────────────────────────────────
 
 export async function getStaffRevenue(
