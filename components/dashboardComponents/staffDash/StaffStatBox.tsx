@@ -153,11 +153,7 @@ export default function StaffStatBox({
     <div
       className={`relative rounded-xl bg-white overflow-hidden transition-all duration-300 cursor-pointer group
         border-l-4 ${colors.borderLeft} border-t border-r border-b  shadow-sm hover:shadow-md`}
-      onClick={() =>
-        router.push(
-          `/records/employee/${staffId}${avgTime ? `?avgTime=${encodeURIComponent(avgTime)}` : ""}`,
-        )
-      }
+      onClick={() => router.push(`/records/employee/${staffId}`)}
     >
       <div className="p-4">
         {/* ── Header row ── */}

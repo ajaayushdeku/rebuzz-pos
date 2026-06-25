@@ -340,7 +340,7 @@ export default function InvoiceListSection({
                       {page * pageSize + idx + 1}
                     </td>
                     <td className="py-3 px-4">
-                      <span className="font-semibold text-gray-900">
+                      <span className="font-semibold text-xs text-gray-900">
                         ORD-{ticket.invoice}
                       </span>
                     </td>
@@ -367,7 +367,7 @@ export default function InvoiceListSection({
                       )}
                     </td>
 
-                    <td className="py-3 px-4 text-gray-600">
+                    <td className="py-3 px-4 text-xs text-gray-600">
                       {ticket.ticketName || "—"}
                     </td>
                     {/* <td className="py-3 px-4 text-gray-600">
@@ -378,13 +378,16 @@ export default function InvoiceListSection({
                         <span
                           className={`${pm.badge} ${pm.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
                         >
-                          {ticket.paymentMethod}
+                          {ticket.paymentMethod
+                            ? ticket.paymentMethod.charAt(0).toUpperCase() +
+                              ticket.paymentMethod.slice(1)
+                            : "—"}
                         </span>
                       ) : (
                         <span className="text-gray-400">—</span>
                       )}
                     </td>
-                    <td className="py-3 px-4 text-right font-semibold text-gray-900">
+                    <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
                       {formatCurrencySymbol(
                         ticket.grandTotal ?? 0,
                         currency.symbol,

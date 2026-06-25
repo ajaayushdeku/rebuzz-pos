@@ -196,7 +196,7 @@ async function fetchAllEmployees(): Promise<RawUser[]> {
     const json = await res.json();
 
     // Log the raw response to confirm the actual shape
-    console.log("fetchAllEmployees raw:", JSON.stringify(json?.data));
+    // console.log("fetchAllEmployees raw:", JSON.stringify(json?.data));
 
     // Handle both { data: [...] } and { data: { users: [...] } }
     if (Array.isArray(json?.data)) return json.data;

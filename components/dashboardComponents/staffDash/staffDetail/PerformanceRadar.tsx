@@ -5,6 +5,12 @@ import { Loader2, Radar, Info } from "lucide-react";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
+interface AggregatedMetrics {
+  totalRevenue: number;
+  totalSales: number;
+  totalOrders: number;
+  totalBills: number;
+}
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -32,9 +38,9 @@ interface RadarDataPoint {
   rawValue: number;
   unit: string;
   description: string;
+  benchmarkValue: number; // ← the max value used for normalization
+  benchmarkUnit: string; // ← formatted benchmark for display
 }
-
-// ── Constants ───────────────────────────────────────────────────────────────
 
 const RADAR_SIZE = 360;
 const CENTER = RADAR_SIZE / 2;
@@ -282,26 +288,62 @@ function MetricTooltip({
   const metric = data[index];
   if (!metric) return null;
 
+  const isRefund = metric.label === "Refund Rate";
+
   return (
     <div
-      className="absolute z-50 bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100 pointer-events-none"
+      className="absolute z-50 bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100 pointer-events-none min-w-44"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
         transform: "translate(-50%, -110%)",
       }}
     >
-      <p className="text-sm font-bold text-gray-900 mb-1">{metric.label}</p>
-      <div className="space-y-1">
-        <div className="flex items-center justify-between gap-4 text-xs">
-          <span className="text-gray-500">Score</span>
-          <span className="font-bold text-blue-600">{metric.score}/100</span>
+      <p className="text-sm font-bold text-gray-900 mb-2">{metric.label}</p>
+
+      <div className="space-y-1.5">
+        {/* Score */}
+        <div className="flex items-center justify-between gap-6 text-xs">
+          <span className="text-gray-400">Score</span>
+          <span className="font-bold text-blue-600">{metric.score} / 100</span>
         </div>
-        <div className="flex items-center justify-between gap-4 text-xs">
-          <span className="text-gray-500">Value</span>
+
+        {/* Employee value */}
+        <div className="flex items-center justify-between gap-6 text-xs">
+          <span className="text-gray-400">Value</span>
           <span className="font-semibold text-gray-900">{metric.unit}</span>
         </div>
-        <div className="border-t border-gray-100 pt-1 mt-1">
+
+        {/* Benchmark — skip for Refund Rate since lower is better */}
+        {!isRefund && (
+          <div className="flex items-center justify-between gap-6 text-xs">
+            <span className="text-gray-400">Benchmark</span>
+            <span className="font-semibold text-violet-600">
+              {metric.benchmarkUnit}
+            </span>
+          </div>
+        )}
+
+        {/* Visual progress bar */}
+        <div className="pt-1">
+          <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${
+                metric.score >= 75
+                  ? "bg-green-500"
+                  : metric.score >= 50
+                    ? "bg-blue-500"
+                    : metric.score >= 25
+                      ? "bg-amber-500"
+                      : "bg-red-400"
+              }`}
+              style={{ width: `${metric.score}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Description */}
+        <div className="border-t border-gray-100 pt-1.5 mt-1">
           <p className="text-[10px] text-gray-400 leading-tight">
             {metric.description}
           </p>
@@ -323,6 +365,8 @@ export default function PerformanceRadar({
   const [billsData, setBillsData] = useState<EmployeeBills | null>(null);
   const [totalCustomers, setTotalCustomers] = useState(50);
   const [totalOrders, setTotalOrders] = useState(0);
+  const [aggregatedMetrics, setAggregatedMetrics] =
+    useState<AggregatedMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -337,7 +381,7 @@ export default function PerformanceRadar({
       setLoading(true);
       setError(null);
       try {
-        const [salesRes, billsRes, customersRes, ticketsRes] =
+        const [salesRes, billsRes, customersRes, ticketsRes, aggregatedRes] =
           await Promise.all([
             fetch(
               `/api/staff/sales-by-employee/${employeeId}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
@@ -348,6 +392,9 @@ export default function PerformanceRadar({
             fetch("/api/customers"),
             fetch(
               `/api/staff/${employeeId}/tickets?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
+            ),
+            fetch(
+              `/api/staff/aggregated-metrics?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
             ),
           ]);
 
@@ -395,6 +442,12 @@ export default function PerformanceRadar({
             refundRate: 0,
           });
         }
+
+        // Set aggregated metrics from API
+        if (aggregatedRes.ok) {
+          const aggregatedJson = await aggregatedRes.json();
+          setAggregatedMetrics(aggregatedJson);
+        }
       } catch (err) {
         setError(
           err instanceof Error
@@ -421,18 +474,28 @@ export default function PerformanceRadar({
     const customerCount = billsData.customerCount;
     const avgShiftMinutes = parseAvgShiftTime(avgTime);
     const refundRate = billsData.refundRate;
-
-    // Orders-to-Sales ratio (composite stat)
     const ordersToSalesRatio =
       totalSalesCount > 0 ? totalOrdersCount / totalSalesCount : 0;
 
-    // Normalize each metric to a 0-100 score
-    const maxRevenue = Math.max(totalRevenue, 100000);
-    const maxSales = Math.max(totalSalesCount, 100);
-    const maxOrders = Math.max(totalOrdersCount, 100);
-    const maxAvgOrderValue = Math.max(avgOrderValue, 100);
-    const maxCustomerCount = Math.max(customerCount, totalCustomers);
-    const maxShiftMinutes = Math.max(avgShiftMinutes, 600);
+    // ── Benchmark (max) values ─────────────────────────────────────────────
+    const maxRevenue = Math.max(
+      totalRevenue,
+      aggregatedMetrics?.totalRevenue ?? 0,
+      1,
+    );
+    const maxSales = Math.max(
+      totalSalesCount,
+      aggregatedMetrics?.totalBills ?? 0,
+      1,
+    );
+    const maxOrders = Math.max(
+      totalOrdersCount,
+      aggregatedMetrics?.totalOrders ?? 0,
+      1,
+    );
+    const maxAvgOrderValue = Math.max(avgOrderValue, 100, 1);
+    const maxCustomerCount = Math.max(customerCount, totalCustomers, 1);
+    const maxShiftMinutes = Math.max(avgShiftMinutes, 6000);
 
     const revenueScore = Math.min(100, (totalRevenue / maxRevenue) * 100);
     const salesScore = Math.min(100, (totalSalesCount / maxSales) * 100);
@@ -450,8 +513,6 @@ export default function PerformanceRadar({
       (avgShiftMinutes / maxShiftMinutes) * 100,
     );
     const refundScore = Math.max(0, 100 - refundRate * 100);
-
-    // Ord-to-Sales: higher ratio = more invoice-to-order conversion. Score capped at 100 for 3x ratio.
     const ordToSalesScore = Math.min(100, (ordersToSalesRatio / 3) * 100);
 
     return [
@@ -465,6 +526,12 @@ export default function PerformanceRadar({
           currency.locale,
         ),
         description: "Total revenue generated by the employee",
+        benchmarkValue: maxRevenue,
+        benchmarkUnit: formatCurrencySymbol(
+          maxRevenue,
+          currency.symbol,
+          currency.locale,
+        ),
       },
       {
         label: "Orders",
@@ -472,6 +539,8 @@ export default function PerformanceRadar({
         rawValue: totalOrdersCount,
         unit: formatOrders(totalOrdersCount),
         description: "Total number of invoices/tickets taken",
+        benchmarkValue: maxOrders,
+        benchmarkUnit: formatOrders(maxOrders),
       },
       {
         label: "Sales",
@@ -479,6 +548,8 @@ export default function PerformanceRadar({
         rawValue: totalSalesCount,
         unit: formatOrders(totalSalesCount),
         description: "Total number of orders/bills handled",
+        benchmarkValue: maxSales,
+        benchmarkUnit: formatOrders(maxSales),
       },
       {
         label: "Avg Sales",
@@ -490,6 +561,12 @@ export default function PerformanceRadar({
           currency.locale,
         ),
         description: "Revenue ÷ Orders — measures transaction quality",
+        benchmarkValue: maxAvgOrderValue,
+        benchmarkUnit: formatCurrencySymbol(
+          maxAvgOrderValue,
+          currency.symbol,
+          currency.locale,
+        ),
       },
       {
         label: "Ord-to-Sales",
@@ -498,6 +575,8 @@ export default function PerformanceRadar({
         unit: formatRatioValue(totalOrdersCount, totalSalesCount),
         description:
           "Orders ÷ Sales — measures how many tickets were raised per bill processed",
+        benchmarkValue: 3,
+        benchmarkUnit: "3.00x",
       },
       {
         label: "Customers",
@@ -505,13 +584,18 @@ export default function PerformanceRadar({
         rawValue: customerCount,
         unit: customerCount.toString(),
         description: "Unique customers served by the employee",
+        benchmarkValue: maxCustomerCount,
+        benchmarkUnit: maxCustomerCount.toString(),
       },
       {
         label: "Shift Time",
         score: Math.round(shiftTimeScore),
         rawValue: avgShiftMinutes,
         unit: formatAvgShiftTime(avgShiftMinutes),
-        description: "Average shift duration from employee stat card",
+        description:
+          "Average shift duration compared to the longest shift in the period",
+        benchmarkValue: maxShiftMinutes,
+        benchmarkUnit: formatAvgShiftTime(maxShiftMinutes),
       },
       {
         label: "Refund Rate",
@@ -520,9 +604,19 @@ export default function PerformanceRadar({
         unit: formatPercentage(refundRate),
         description:
           "Refunded Orders ÷ Total Orders — lower rate = higher score",
+        benchmarkValue: 0, // lower is better — no meaningful "max benchmark"
+        benchmarkUnit: "0.0%",
       },
     ];
-  }, [sales, billsData, avgTime, totalCustomers, totalOrders]);
+  }, [
+    sales,
+    billsData,
+    avgTime,
+    totalCustomers,
+    totalOrders,
+    aggregatedMetrics,
+    currency,
+  ]);
 
   // Handle hover for tooltip positioning
   const handleHover = (index: number | null, event?: React.MouseEvent) => {

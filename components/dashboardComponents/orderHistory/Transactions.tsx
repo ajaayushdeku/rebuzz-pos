@@ -283,6 +283,14 @@ export default function Transactions({
                 onClick={() => toggleSort("id")}
               >
                 <span className="flex items-center gap-1">
+                  Bill ID {SortIcon({ colKey: "id" })}
+                </span>
+              </th>
+              <th
+                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                onClick={() => toggleSort("id")}
+              >
+                <span className="flex items-center gap-1">
                   Order ID {SortIcon({ colKey: "id" })}
                 </span>
               </th>
@@ -354,8 +362,13 @@ export default function Transactions({
                       {page * pageSize + idx + 1}
                     </td>
                     <td className="py-3 px-4">
-                      <span className="font-semibold text-gray-900">
-                        {transaction.id}
+                      <span className="font-semibold text-xs text-gray-900">
+                        BILL-{transaction.billNo}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="font-semibold text-xs text-gray-900">
+                        ORD-{transaction.invoiceNo}
                       </span>
                     </td>
                     <td className="py-3 px-4">
@@ -366,10 +379,10 @@ export default function Transactions({
                         {transaction.date}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-gray-600">
+                    <td className="py-3 px-4 text-xs text-gray-600">
                       {transaction.invoiceName || "—"}
                     </td>
-                    <td className="py-3 px-4 text-gray-600">
+                    <td className="py-3 px-4 text-xs text-gray-600">
                       {transaction.customer?.name || "—"}
                     </td>
 
@@ -381,7 +394,7 @@ export default function Transactions({
                       </span>
                     </td>
 
-                    <td className="py-3 px-4 text-right font-semibold text-gray-900">
+                    <td className="py-3 px-4 text-right font-semibold text-xs text-gray-900">
                       {/* {formatCurrency(Number(transaction.amount), currency)} */}
                       {formatCurrencySymbol(
                         Number(transaction.amount),
@@ -394,7 +407,8 @@ export default function Transactions({
                       <span
                         className={`${s.badge} ${s.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
                       >
-                        {transaction.status}
+                        {transaction.status.charAt(0).toUpperCase() +
+                          transaction.status.slice(1)}
                       </span>
                     </td>
 

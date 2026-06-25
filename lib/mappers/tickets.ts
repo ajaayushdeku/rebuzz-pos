@@ -13,6 +13,7 @@ export function mapRawTicketToInvoice(raw: RawTicket): Invoice {
     ticket_name: raw.ticketName || "—",
     amount: Number(raw.grandTotal) || 0,
     created_at: raw.createdAt || new Date().toISOString(),
+    archivedAt: raw.archivedAt || new Date().toISOString(),
     status: raw.paidStatus || "pending",
   };
 }

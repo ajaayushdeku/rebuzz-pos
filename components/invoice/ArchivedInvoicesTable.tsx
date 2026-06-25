@@ -17,6 +17,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatDatetime } from "@/utils/helper";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
+import { parseNepalDateTime } from "../dashboardComponents/staffDash/staffDetail/staffDetailHelpers";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -35,6 +36,8 @@ export default function ArchivedInvoicesTable({
   const [restoreTarget, setRestoreTarget] = useState<Invoice | null>(null);
   const [restoring, setRestoring] = useState(false);
   const pageSize = 10;
+
+  console.log("Invoices:", invoices);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -181,7 +184,7 @@ export default function ArchivedInvoicesTable({
                   onClick={() => toggleSort("created_at")}
                 >
                   <span className="flex items-center gap-1">
-                    Date {SortIcon({ colKey: "created_at" })}
+                    Archived Date {SortIcon({ colKey: "created_at" })}
                   </span>
                 </th>
                 <th className="text-right pb-3 pt-3 px-4 font-medium">
@@ -200,51 +203,71 @@ export default function ArchivedInvoicesTable({
                   </td>
                 </tr>
               ) : (
-                paged.map((inv, idx) => (
-                  <tr
-                    key={inv.invoice}
-                    className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="py-3 px-4 text-gray-400 text-xs">
-                      {page * pageSize + idx + 1}
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="font-medium text-gray-900">
-                        ORD-{inv.invoice}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-gray-600">
-                      {inv.ticket_name || "—"}
-                    </td>
-                    <td className="py-3 px-4 text-gray-600">
-                      {inv.customer_name ?? "—"}
-                    </td>
-                    <td className="py-3 px-4 text-left font-semibold text-gray-900">
-                      {formatCurrencySymbol(
-                        Number(inv.amount),
-                        currency.symbol,
-                        currency.locale,
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-gray-500 text-xs">
-                      {formatDatetime(inv.archivedAt || inv.created_at)}
-                    </td>
-                    <td className="py-3 px-4">
-                      <div
-                        className="flex items-center justify-end"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <button
-                          onClick={() => setRestoreTarget(inv)}
-                          className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                          title="Restore invoice"
+                paged.map((inv, idx) => {
+                  const invoiceArchivedDate = parseNepalDateTime(
+                    inv.archivedAt || inv.created_at,
+                  );
+                  return (
+                    <tr
+                      key={inv.invoice}
+                      className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="py-3 px-4 text-gray-400 text-xs">
+                        {page * pageSize + idx + 1}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="font-medium text-xs text-gray-900">
+                          ORD-{inv.invoice}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-xs text-gray-600">
+                        {inv.ticket_name || "—"}
+                      </td>
+                      <td className="py-3 px-4 text-xs text-gray-600">
+                        {inv.customer_name ?? "—"}
+                      </td>
+                      <td className="py-3 px-4 text-xs text-left font-semibold text-gray-900">
+                        {formatCurrencySymbol(
+                          Number(inv.amount),
+                          currency.symbol,
+                          currency.locale,
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-gray-500 text-xs">
+                        {/* {formatDatetime(inv.archivedAt || inv.created_at)} */}
+
+                        <span className="font-medium text-gray-800 text-xs block">
+                          {invoiceArchivedDate?.toLocaleTimeString("en-US", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false,
+                          })}
+                        </span>
+                        <span className="text-[11px] text-gray-400">
+                          {invoiceArchivedDate?.toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div
+                          className="flex items-center justify-end"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          <RotateCcw className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          <button
+                            onClick={() => setRestoreTarget(inv)}
+                            className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            title="Restore invoice"
+                          >
+                            <RotateCcw className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

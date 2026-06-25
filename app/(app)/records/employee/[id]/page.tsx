@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
-
 import type {
   StaffOverview,
   ShiftSummary,
@@ -43,9 +42,7 @@ export interface StaffUser {
 
 export default function StaffDetailPage() {
   const params = useParams();
-  const searchParams = useSearchParams();
   const employeeId = params.id as string;
-  const avgTimeFromUrl = searchParams.get("avgTime");
 
   const defaults = getDefaultDateRange();
   const [dateRange, setDateRange] = useState<DateRangeValue>({
@@ -54,10 +51,12 @@ export default function StaffDetailPage() {
   });
 
   const [employeeDetail, setEmployeeDetail] = useState<StaffUser | null>();
+  const [ownerDetail, setOwnerDetail] = useState<StaffUser | null>();
   const [overview, setOverview] = useState<StaffOverview | null>(null);
   const [shifts, setShifts] = useState<ShiftSummary[]>([]);
   const [bills, setBills] = useState<BillItem[]>([]);
   const [employeeRole, setEmployeeRole] = useState<string>("Basic");
+  const [avgTime, setAvgTime] = useState<string>("—");
 
   const [loading, setLoading] = useState(true);
   const [shiftLoading, setShiftLoading] = useState(true);
@@ -94,19 +93,49 @@ export default function StaffDetailPage() {
     fetchUser();
   }, [employeeId]);
 
-  // ── Fetch staff overview + bills ────────────────────────────────────────
+  useEffect(() => {
+    const fetchOwner = async () => {
+      try {
+        const res = await fetch("/api/profile");
 
+        if (res.ok) {
+          const data = await res.json();
+
+          const user = data?.data?.user;
+
+          console.log("USER:", user);
+
+          if (user) {
+            setOwnerDetail(user);
+            setEmployeeRole(user.role);
+          }
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchOwner();
+  }, []);
+
+  console.log("USER:", ownerDetail?.name);
+
+  // ── Fetch staff overview + bills ────────────────────────────────────────
   useEffect(() => {
     if (!employeeId) return;
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [salesRes, ticketsRes] = await Promise.all([
+        // ── All three fetches in parallel ─────────────────────────────────
+        const [salesRes, ticketsRes, shiftsAllRes] = await Promise.all([
           fetch(
             `/api/staff/sales-by-employee/${employeeId}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
           ),
           fetch(
             `/api/staff/${employeeId}/tickets?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
+          ),
+          fetch(
+            `/api/staff/shifts-all?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
           ),
         ]);
 
@@ -114,11 +143,39 @@ export default function StaffDetailPage() {
         const salesJson = await salesRes.json();
         const emp: EmployeeData = salesJson?.data?.employeeData;
 
+        // ── Ticket count ──────────────────────────────────────────────────
         let ticketCount = 0;
         if (ticketsRes.ok) {
           const ticketsJson = await ticketsRes.json();
           ticketCount = ticketsJson?.data?.totalCount ?? 0;
         }
+
+        // ── avgTime from shifts ───────────────────────────────────────────
+        let computedAvgTime = "—";
+        if (shiftsAllRes.ok) {
+          const shiftsJson = await shiftsAllRes.json();
+          const allShifts: { employeeId: string; totalHours: string }[] =
+            Array.isArray(shiftsJson?.data) ? shiftsJson.data : [];
+
+          const employeeShifts = allShifts.filter(
+            (s) => s.employeeId === employeeId,
+          );
+
+          if (employeeShifts.length > 0) {
+            const totalMinutes = employeeShifts.reduce((sum, shift) => {
+              const parts = shift.totalHours.split(":").map(Number);
+              if (parts.length !== 3) return sum;
+              return sum + parts[0] * 60 + parts[1] + Math.round(parts[2] / 60);
+            }, 0);
+
+            const avgMin = Math.round(totalMinutes / employeeShifts.length);
+            const hrs = Math.floor(avgMin / 60);
+            const mins = avgMin % 60;
+            computedAvgTime = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+          }
+        }
+
+        setAvgTime(computedAvgTime);
 
         if (emp) {
           setOverview({
@@ -126,7 +183,7 @@ export default function StaffDetailPage() {
             totalSales: emp.totalSales ?? 0,
             totalRevenue: emp.totalRevenue ?? 0,
             totalOrders: ticketCount,
-            avgTime: avgTimeFromUrl || "—",
+            avgTime: computedAvgTime,
           });
           setBills(emp.bills ?? []);
         }
@@ -137,10 +194,9 @@ export default function StaffDetailPage() {
       }
     };
     fetchData();
-  }, [employeeId, dateRange.startDate, dateRange.endDate, avgTimeFromUrl]);
+  }, [employeeId, dateRange.startDate, dateRange.endDate]);
 
-  // ── Fetch shifts ────────────────────────────────────────────────────────
-
+  // ── Fetch shifts ─────────────────────────────────────────────────
   useEffect(() => {
     if (!employeeId) return;
     const fetchShifts = async () => {
@@ -151,7 +207,8 @@ export default function StaffDetailPage() {
         );
         if (!res.ok) throw new Error("Failed");
         const json = await res.json();
-        setShifts(json?.data ?? []);
+        const shiftsData = json?.data ?? [];
+        setShifts(shiftsData);
       } catch {
         toast.error("Failed to load shifts");
       } finally {
@@ -205,8 +262,8 @@ export default function StaffDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50/50 px-6 py-8 md:px-10">
-        <div className="max-w-6xl mx-auto flex items-center justify-center py-20">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50/50">
+        <div className="flex items-center">
           <Loader2 size={24} className="animate-spin text-blue-500" />
           <span className="ml-3 text-sm text-gray-500">
             Loading employee details...
@@ -222,7 +279,9 @@ export default function StaffDetailPage() {
       <div>
         <StaffDetailHeader
           employeeId={employeeId}
-          name={employeeDetail?.name ?? overview?.name ?? ""}
+          name={
+            employeeDetail?.name ?? ownerDetail?.name ?? overview?.name ?? ""
+          }
           dateRange={dateRange}
           onDateRangeChange={handleDateRangeChange}
         />
@@ -243,7 +302,7 @@ export default function StaffDetailPage() {
               <div className="lg:col-span-1">
                 <PerformanceRadar
                   employeeId={employeeId}
-                  avgTime={avgTimeFromUrl}
+                  avgTime={avgTime}
                   dateRange={dateRange}
                 />
               </div>

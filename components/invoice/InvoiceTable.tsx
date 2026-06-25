@@ -233,18 +233,18 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                       {page * pageSize + idx + 1}
                     </td>
                     <td className="py-3 px-4">
-                      <span className="font-medium text-gray-900">
+                      <span className="font-medium text-xs text-gray-900">
                         ORD-{inv.invoice}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-gray-600">
+                    <td className="py-3 px-4 text-xs text-gray-600">
                       {inv.ticket_name || "—"}
                     </td>
-                    <td className="py-3 px-4 text-gray-600">
+                    <td className="py-3 px-4 text-xs text-gray-600">
                       {inv.customer_name ?? "—"}
                     </td>
 
-                    <td className="py-3 px-4 text-left font-semibold text-gray-900">
+                    <td className="py-3 px-4 text-xs text-left font-semibold text-gray-900">
                       {/* {formatCurrency(Number(inv.amount), currency)} */}
                       {formatCurrencySymbol(
                         Number(inv.amount),
@@ -276,7 +276,7 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                       )}
                     </td>
 
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-3 px-4  text-center">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border capitalize ${STATUS_STYLES[status] ?? "bg-gray-100 text-gray-600 border-gray-200"}`}
                       >

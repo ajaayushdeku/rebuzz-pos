@@ -479,7 +479,7 @@ export default function CustomerTable({
 
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900">
+                      <span className="font-medium text-xs text-gray-900">
                         {customer.name}
                       </span>
                       {customer.isDeactivated && (
@@ -488,11 +488,11 @@ export default function CustomerTable({
                     </div>
                   </td>
 
-                  <td className="py-3 px-4 text-center">
+                  <td className="py-3 px-4 text-xs text-center font-semibold">
                     <TierBadge tier={customer.loyaltyStatus} />
                   </td>
 
-                  <td className="py-3 px-4 text-center">
+                  <td className="py-3 px-4 text-xs text-center">
                     <div
                       className="gap-1.5"
                       onClick={(e) => e.stopPropagation()}
@@ -514,11 +514,11 @@ export default function CustomerTable({
                     </div>
                   </td>
 
-                  <td className="py-3 px-4 text-center text-gray-600">
+                  <td className="py-3 px-4 text-xs text-center text-gray-600">
                     {customer.numberOfPurchases ?? "—"}
                   </td>
 
-                  <td className="py-3 px-4 text-center font-semibold">
+                  <td className="py-3 px-4 text-xs text-center font-semibold">
                     {customer.totalDueAmount !== undefined
                       ? formatCurrencySymbol(
                           customer.totalDueAmount,

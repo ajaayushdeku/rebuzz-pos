@@ -194,16 +194,16 @@ export default function ProductTable({ products }: { products: Product[] }) {
                     {page * pageSize + idx + 1}
                   </td>
                   <td className="py-3 px-4">
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-xs text-gray-900">
                       {product.name}
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    <span className="text-sm text-gray-500 truncate max-w-[200px] block">
+                    <span className="text-xs text-gray-500 truncate max-w-[200px] block">
                       {product.description || "—"}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-right font-semibold text-gray-900">
+                  <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
                     {/* {formatCurrency(product.price, currency)} */}
                     {formatCurrencySymbol(
                       product.price,

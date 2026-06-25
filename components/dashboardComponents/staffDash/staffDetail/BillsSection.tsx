@@ -302,12 +302,12 @@ export default function BillsSection({
                       {page * pageSize + idx + 1}
                     </td>
                     <td className="py-3 px-4">
-                      <span className="font-semibold text-gray-900">
+                      <span className="font-semibold text-xs text-gray-900">
                         BILL-{bill.paidBillNo}
                       </span>
                     </td>
                     <td className="py-3 px-4">
-                      <span className="font-semibold text-gray-900">
+                      <span className="font-semibold text-xs text-gray-900">
                         ORD-{bill.invoiceNo}
                       </span>
                     </td>
@@ -334,7 +334,7 @@ export default function BillsSection({
                       )}
                     </td>
 
-                    <td className="py-3 px-4 text-gray-600">
+                    <td className="py-3 px-4 text-xs text-gray-600">
                       {bill.ticketName || "—"}
                     </td>
 
@@ -342,11 +342,12 @@ export default function BillsSection({
                       <span
                         className={`${p.badge} ${p.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
                       >
-                        {bill.paymentMethod}
+                        {bill.paymentMethod.charAt(0).toUpperCase() +
+                          bill.paymentMethod.slice(1)}
                       </span>
                     </td>
 
-                    <td className="py-3 px-4 text-right font-semibold text-gray-900">
+                    <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
                       {formatCurrencySymbol(
                         bill.grandTotal ?? 0,
                         currency.symbol,
@@ -358,7 +359,7 @@ export default function BillsSection({
                       <span
                         className={`${s.badge} ${s.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
                       >
-                        {bill.isRefunded ? "refunded" : "completed"}
+                        {bill.isRefunded ? "Refunded" : "Completed"}
                       </span>
                     </td>
                   </tr>
