@@ -420,12 +420,7 @@ export async function getStaffData(
         const sales = salesMap.get(id);
         const salesFromApi = sales?.totalSales ?? 0;
         const ticketCount = ticketCountMap.get(id) ?? 0;
-
-        // For registered employees: use max of both sources
-        // For non-registered (owners): use only sales API data — no ticket inflation
-        const resolvedOrders = registeredEmployeeIds.has(id)
-          ? Math.max(salesFromApi, ticketCount)
-          : salesFromApi;
+        const resolvedOrders = Math.max(salesFromApi, ticketCount);
 
         return {
           staffId: id,

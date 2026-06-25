@@ -39,7 +39,7 @@ export default function DashboardLayout({
             Dashboard Overview
           </h1>
           {!isLoading && (
-            <p className="text-sm text-gray-500 mt-0.5">
+            <p className="text-xs text-gray-400 mt-0.5">
               Welcome back, {profile?.name}. Here&lsquo;s what&lsquo;s happening
               with Rebuzz POS
             </p>

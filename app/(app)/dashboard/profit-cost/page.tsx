@@ -76,7 +76,7 @@ export default async function Page({
             Profit & Cost
           </h1>
 
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-xs text-gray-400 mt-0.5">
             Financial health and margin analysis.
           </p>
         </div>

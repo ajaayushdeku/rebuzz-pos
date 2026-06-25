@@ -36,7 +36,7 @@ export default function TaxAnalyticsPage() {
             <h1 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">
               Tax Analytics (Still in Production)
             </h1>
-            <p className="text-sm text-gray-400 mt-0.5">
+            <p className="text-xs text-gray-400 mt-0.5">
               Overview of tax collected, refunded, and categorized
             </p>
           </div>

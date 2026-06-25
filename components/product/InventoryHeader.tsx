@@ -16,7 +16,7 @@ const InventoryHeader = ({ items }: { items: InventoryItem[] }) => {
           <h1 className="font-bold text-xl md:text-2xl truncate">
             Inventory Management
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-xs text-gray-400 mt-0.5">
             Monitor stock levels and manage supply intake.
           </p>
         </div>

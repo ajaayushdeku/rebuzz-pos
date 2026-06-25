@@ -31,7 +31,7 @@ export default function ProfileSettingsPage() {
             <h1 className="text-2xl font-semibold text-gray-900">
               Profile Settings
             </h1>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <p className="text-xs text-gray-400 mt-0.5">
               View your account information
             </p>
           </div>

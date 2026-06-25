@@ -142,7 +142,7 @@ export default function ChangePasswordPage() {
             <h1 className="font-bold text-xl md:text-2xl truncate">
               Change Password
             </h1>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <p className="text-xs text-gray-400 mt-0.5">
               Update your account password
             </p>
           </div>

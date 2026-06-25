@@ -210,7 +210,7 @@ export default function StaffStatBox({
                 {ordersTaken}
               </p>
               <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-0.5 font-medium">
-                Orders
+                Orders (All Time)
               </p>
             </div>
           </div>
@@ -227,7 +227,7 @@ export default function StaffStatBox({
                 {ordersTaken}
               </p>
               <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-0.5 font-medium">
-                Orders
+                Orders (All Time)
               </p>
             </div>
 

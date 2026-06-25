@@ -18,7 +18,7 @@ export default async function Page() {
             Order History
           </h1>
 
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-xs text-gray-400 mt-0.5">
             Browse and search all transactions
           </p>
         </div>

@@ -43,7 +43,7 @@ const Page = async ({
             Employee Performance
           </h1>
 
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-xs text-gray-400 mt-0.5">
             Insights into employee productivity and shift efficiency.
           </p>
         </div>

@@ -1,8 +1,12 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useParams } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import {
+  DateRangeFilter,
+  type DateRangeValue,
+} from "@/components/dashboardComponents/staffDash/DateRangeFilter";
+import { useParams, useRouter } from "next/navigation";
+import { Loader2, ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
 import type {
   StaffOverview,
@@ -12,8 +16,6 @@ import type {
   EmployeeData,
 } from "@/components/dashboardComponents/staffDash/staffDetail/staffDetailHelpers";
 import { getDefaultDateRange } from "@/components/dashboardComponents/staffDash/staffDetail/staffDetailHelpers";
-import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
-import StaffDetailHeader from "@/components/dashboardComponents/staffDash/staffDetail/StaffDetailHeader";
 import StatsCardGrid from "@/components/dashboardComponents/staffDash/staffDetail/StatsCardGrid";
 import ShiftsSection from "@/components/dashboardComponents/staffDash/staffDetail/ShiftsSection";
 import WeeklySalesChart from "@/components/dashboardComponents/staffDash/staffDetail/WeeklySalesChart";
@@ -65,6 +67,8 @@ export default function StaffDetailPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalDetail, setModalDetail] = useState<ShiftDetail | null>(null);
   const [modalLoading, setModalLoading] = useState(false);
+
+  const router = useRouter();
 
   const [shiftPage, setShiftPage] = useState(0);
   const pageSize = 5;
@@ -272,14 +276,32 @@ export default function StaffDetailPage() {
     // <div className="min-h-screen bg-gray-50/50 px-6 py-8 md:px-10">
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
       <div>
-        <StaffDetailHeader
-          employeeId={employeeId}
-          name={
-            employeeDetail?.name ?? ownerDetail?.name ?? overview?.name ?? ""
-          }
-          dateRange={dateRange}
-          onDateRangeChange={handleDateRangeChange}
-        />
+        {/* ── Inline StaffDetailHeader ──────────────────────────────── */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push("/dashboard/employee")}
+              className="p-2 text-gray-400 hover:text-gray-700 hover:bg-white rounded-lg transition-colors shadow-sm"
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <div className="flex items-center gap-3">
+              <div>
+                <h1 className="font-bold text-xl md:text-2xl text-gray-900">
+                  {employeeDetail?.name ??
+                    ownerDetail?.name ??
+                    overview?.name ??
+                    "Staff"}
+                </h1>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Employee ID: {employeeId.slice(0, 8)}...
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <DateRangeFilter value={dateRange} onChange={handleDateRangeChange} />
+        </div>
 
         <StatsCardGrid
           overview={overview}

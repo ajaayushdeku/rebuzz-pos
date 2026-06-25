@@ -17,7 +17,7 @@ export default function SalesRevenueLayout({
             Sales & Revenue
           </h1>
 
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-xs text-gray-400 mt-0.5">
             Detailed breakdown of your store&lsquo;s financial performance
           </p>
         </div>

@@ -318,7 +318,7 @@ export default function LoyaltyPointPage() {
             <h1 className="font-bold text-xl md:text-2xl truncate">
               Loyalty Points
             </h1>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <p className="text-xs text-gray-400 mt-0.5">
               Configure how customers earn and redeem loyalty points on
               invoices.
             </p>

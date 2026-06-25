@@ -53,7 +53,7 @@ export default function StatsCardGrid({
                 <ShoppingCart size={16} className="text-blue-500" />
               </div>
               <span className="text-xs text-gray-400 font-medium">
-                Total Orders
+                Total Orders (All Time)
               </span>
             </div>
             <p className="text-lg font-bold text-gray-900 truncate">

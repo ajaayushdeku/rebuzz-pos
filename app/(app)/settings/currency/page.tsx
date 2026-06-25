@@ -185,7 +185,7 @@ export default function CurrencyPage() {
           <h2 className="text-base font-semibold text-gray-900">
             Change Currency
           </h2>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-400 mt-0.5">
             Select your preferred currency
           </p>
         </div>
