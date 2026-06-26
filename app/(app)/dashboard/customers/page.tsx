@@ -83,7 +83,7 @@ export default async function Page({
           </p>
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row-reverse sm:items-center justify-between gap-3 pt-4">
+        <div className="flex flex-row sm:items-center justify-between gap-3 ">
           <div className="self-end">
             <CustomerHeader />
           </div>

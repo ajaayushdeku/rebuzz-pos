@@ -180,12 +180,12 @@ export default function AtRiskCustomer({
                     {page * pageSize + idx + 1}
                   </td>
                   <td className="py-3 px-4">
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-xs text-gray-900">
                       {customer.name}
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    <span className=" text-sm text-gray-600 p-1 rounded-2xl inline-block px-3">
+                    <span className=" text-xs text-gray-600 p-1 rounded-2xl inline-block px-3">
                       {`Inactive for about 2 weeks`}
                     </span>
                   </td>
@@ -200,7 +200,7 @@ export default function AtRiskCustomer({
                   </td>
                   <td className="py-3 px-4 text-right">
                     <button
-                      className="p-1  text-sm rounded-lg bg-blue-500
+                      className="p-1  text-xs rounded-lg bg-blue-500
                     font-semibold text-gray-100 hover:bg-blue-600 hover:text-gray-100 border border-blue-500 transition-colors"
                     >
                       Send Offer

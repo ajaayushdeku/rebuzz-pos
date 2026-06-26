@@ -47,7 +47,7 @@ export async function CustomerStatsWrapper({
     ...customerStat[config.key],
   }));
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 my-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 my-4">
       {stats.map(({ key, ...stat }) => (
         <CustomerStatBox key={key} {...stat} />
       ))}

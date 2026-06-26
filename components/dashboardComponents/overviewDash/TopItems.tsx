@@ -40,7 +40,7 @@ const TopProductItem = ({ product }: SingleProductProps) => {
           {product.rank}
         </span>
         <div className="min-w-0">
-          <p className="font-medium text-sm text-gray-900 truncate">
+          <p className="font-medium text-xs text-gray-900 truncate">
             {product.productName}
           </p>
           <p className="text-xs text-gray-400 mt-0.5">
@@ -48,7 +48,7 @@ const TopProductItem = ({ product }: SingleProductProps) => {
           </p>
         </div>
       </div>
-      <span className="shrink-0 text-sm font-semibold text-green-600">
+      <span className="shrink-0 text-xs font-semibold text-green-600">
         {/* {formatCurrency(product.totalRevenue, currency)} */}
         {formatCurrencySymbol(
           product.totalRevenue,

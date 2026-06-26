@@ -32,13 +32,13 @@ export default function StatsCardGrid({
       {showOnlyOrders ? (
         /* Staff role: only show Orders */
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
-              <ShoppingCart size={16} className="text-blue-500" />
-            </div>
+          <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-gray-400 font-medium">
               Total Orders
             </span>
+            <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+              <ShoppingCart size={16} className="text-blue-500" />
+            </div>
           </div>
           <p className="text-lg font-bold text-gray-900 truncate">
             {String(overview?.totalOrders ?? 0)}
@@ -48,13 +48,13 @@ export default function StatsCardGrid({
         <>
           {/* Total Orders */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
-                <ShoppingCart size={16} className="text-blue-500" />
-              </div>
+            <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-gray-400 font-medium">
                 Total Orders (All Time)
               </span>
+              <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                <ShoppingCart size={16} className="text-blue-500" />
+              </div>
             </div>
             <p className="text-lg font-bold text-gray-900 truncate">
               {String(overview?.totalOrders ?? 0)}
@@ -63,13 +63,13 @@ export default function StatsCardGrid({
 
           {/* Total Sales */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center">
-                <TrendingUp size={16} className="text-indigo-500" />
-              </div>
+            <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-gray-400 font-medium">
                 Total Sales
               </span>
+              <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
+                <TrendingUp size={16} className="text-indigo-500" />
+              </div>
             </div>
             <p className="text-lg font-bold text-gray-900 truncate">
               {String(overview?.totalSales ?? 0)}
@@ -78,13 +78,13 @@ export default function StatsCardGrid({
 
           {/* Total Revenue */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 rounded-lg bg-green-50 flex items-center justify-center">
-                <DollarSign size={16} className="text-green-500" />
-              </div>
+            <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-gray-400 font-medium">
                 Total Revenue
               </span>
+              <div className="w-7 h-7 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
+                <DollarSign size={16} className="text-green-500" />
+              </div>
             </div>
             <p className="text-lg font-bold text-gray-900 truncate">
               {formatCurrencySymbol(
@@ -97,13 +97,13 @@ export default function StatsCardGrid({
 
           {/* Avg Time */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center">
-                <Clock size={16} className="text-indigo-500" />
-              </div>
+            <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-gray-400 font-medium">
                 Avg Time
               </span>
+              <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
+                <Clock size={16} className="text-indigo-500" />
+              </div>
             </div>
             <p className="text-lg font-bold text-gray-900 truncate">
               {overview?.avgTime ?? "—"}
@@ -112,13 +112,13 @@ export default function StatsCardGrid({
 
           {/* Total Pay In */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
-                <ArrowDownLeft size={16} className="text-emerald-500" />
-              </div>
+            <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-gray-400 font-medium">
                 Total Pay In
               </span>
+              <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+                <ArrowDownLeft size={16} className="text-emerald-500" />
+              </div>
             </div>
             <p className="text-lg font-bold text-gray-900 truncate">
               {formatCurrencySymbol(
@@ -131,13 +131,13 @@ export default function StatsCardGrid({
 
           {/* Total Pay Out */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center">
-                <ArrowUpRight size={16} className="text-red-500" />
-              </div>
+            <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-gray-400 font-medium">
                 Total Pay Out
               </span>
+              <div className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
+                <ArrowUpRight size={16} className="text-red-500" />
+              </div>
             </div>
             <p className="text-lg font-bold text-gray-900 truncate">
               {formatCurrencySymbol(

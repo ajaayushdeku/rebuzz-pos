@@ -49,13 +49,13 @@ const Page = async ({
         </div>
 
         {/* ── Calendar + Quick date filter ── */}
-        <div className="flex flex-col-reverse sm:flex-row-reverse sm:items-center justify-between gap-3 pt-4">
+        <div className="flex flex-row sm:items-center justify-between gap-3 ">
           <div className="self-end">
             <CalendarDateFilter />
           </div>
 
           <Button
-            className="bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
+            className="bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-white rounded-xl text-sm font-semibold "
             asChild
           >
             <Link href="/settings/staffs">

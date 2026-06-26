@@ -125,7 +125,7 @@ const SalesCategoryChart = ({ data }: SalesCategoryChartProps) => {
                   backgroundColor: entry.color,
                 }}
               />
-              <span className="text-sm text-gray-700">{entry.name}</span>
+              <span className="text-xs text-gray-700">{entry.name}</span>
             </div>
 
             <div className="flex-1 mx-4">
@@ -141,7 +141,7 @@ const SalesCategoryChart = ({ data }: SalesCategoryChartProps) => {
               </div>
             </div>
 
-            <span className="text-sm font-semibold text-gray-700 w-16 text-right">
+            <span className="text-xs font-semibold text-gray-700 w-16 text-right">
               {formatCurrencySymbol(
                 entry.totalRevenue,
                 currency.symbol,

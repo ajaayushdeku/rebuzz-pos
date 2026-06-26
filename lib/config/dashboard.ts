@@ -16,6 +16,7 @@ import {
   Trophy,
   Clock,
   Star,
+  Flame,
 } from "lucide-react";
 
 export const ICON_MAP: Record<string, LucideIcon> = {
@@ -119,6 +120,14 @@ export const WINNING_STAT_CONFIG: ClientStatConfig[] = [
     icon: Star,
     iconColor: "text-amber-300",
     bgColor: "bg-green-700",
+  },
+  {
+    key: "salesStreak",
+    label: "SALES STREAK",
+    footer: "Consecutive days with sales",
+    icon: Flame,
+    iconColor: "text-orange-300",
+    bgColor: "bg-orange-600",
   },
 ];
 

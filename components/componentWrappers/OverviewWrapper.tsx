@@ -19,7 +19,6 @@ import {
 } from "@/services/dashboardServices/apiOverview";
 
 import { format } from "date-fns";
-import { Carousel, CarouselContent, CarouselItem } from "../ui/carousel";
 import { DataPoint } from "@/lib/types/chart";
 import WeeklyRevenueChart from "../dashboardComponents/overviewDash/WeeklyRevenueChart";
 import HourlySalesTrend from "../dashboardComponents/overviewDash/HourlySalesChart";
@@ -257,7 +256,7 @@ export const OverviewStatsWrapper = async ({
   });
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 my-4">
+    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 my-4">
       <OverviewStatBoxGrid
         stats={stats}
         periodLabel={` ${periodLabel} ( ${comparisonDateRangeLabel} )`}
@@ -274,27 +273,14 @@ export const WinningStatsWrapper = async () => {
     ...winningStat[config.key],
   }));
 
-  // console.log("Winning COnfig:", winningStats);
-
   return (
-    <Carousel
-      opts={{
-        align: "start",
-        dragFree: true,
-      }}
-      className="w-full my-4"
-    >
-      <CarouselContent className="-ml-3">
-        {winningStats.map(({ key, ...stat }) => (
-          <CarouselItem
-            key={key}
-            className="pl-3 basis-full sm:basis-1/2 lg:basis-1/3"
-          >
-            <WinningStatBox key={key} {...stat} />
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-    </Carousel>
+    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 my-4">
+      {winningStats.map(({ key, ...stat }) => (
+        <div key={key}>
+          <WinningStatBox {...stat} />
+        </div>
+      ))}
+    </div>
   );
 };
 

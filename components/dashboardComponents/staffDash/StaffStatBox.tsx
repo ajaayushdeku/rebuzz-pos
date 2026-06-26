@@ -46,67 +46,15 @@ function resolveRole(
   return "Basic";
 }
 
-// ── Color-scheme per index (tied to avatarColors) ─────────────────────
-// Each entry: [border-left, full-border, bg-tint, accent-text, avatar-gradient, avatar-ring]
+// ── Consistent card styling ───────────────────────────────────────────
+// All cards share the same color for the left border and avatar;
+// only the role badge uses distinct colors per role.
 
-const cardColorSchemes = [
-  {
-    borderLeft: "border-l-pink-500",
-    border: "border-pink-200",
-    bgTint: "bg-pink-50/60",
-    accentText: "text-pink-600",
-    avatar: "from-pink-500 to-pink-700",
-    avatarRing: "ring-2 ring-pink-300 ring-offset-2",
-  },
-  {
-    borderLeft: "border-l-blue-500",
-    border: "border-blue-200",
-    bgTint: "bg-blue-50/60",
-    accentText: "text-blue-600",
-    avatar: "from-blue-500 to-blue-700",
-    avatarRing: "ring-2 ring-blue-300 ring-offset-2",
-  },
-  {
-    borderLeft: "border-l-amber-500",
-    border: "border-amber-200",
-    bgTint: "bg-amber-50/60",
-    accentText: "text-amber-600",
-    avatar: "from-amber-500 to-amber-700",
-    avatarRing: "ring-2 ring-amber-300 ring-offset-2",
-  },
-  {
-    borderLeft: "border-l-emerald-500",
-    border: "border-emerald-200",
-    bgTint: "bg-emerald-50/60",
-    accentText: "text-emerald-600",
-    avatar: "from-emerald-500 to-emerald-700",
-    avatarRing: "ring-2 ring-emerald-300 ring-offset-2",
-  },
-  {
-    borderLeft: "border-l-purple-500",
-    border: "border-purple-200",
-    bgTint: "bg-purple-50/60",
-    accentText: "text-purple-600",
-    avatar: "from-purple-500 to-purple-700",
-    avatarRing: "ring-2 ring-purple-300 ring-offset-2",
-  },
-  {
-    borderLeft: "border-l-orange-500",
-    border: "border-orange-200",
-    bgTint: "bg-orange-50/60",
-    accentText: "text-orange-600",
-    avatar: "from-orange-500 to-orange-700",
-    avatarRing: "ring-2 ring-orange-300 ring-offset-2",
-  },
-  {
-    borderLeft: "border-l-cyan-500",
-    border: "border-cyan-200",
-    bgTint: "bg-cyan-50/60",
-    accentText: "text-cyan-600",
-    avatar: "from-cyan-500 to-cyan-700",
-    avatarRing: "ring-2 ring-cyan-300 ring-offset-2",
-  },
-];
+const cardColors = {
+  borderLeft: "border-l-blue-500",
+  avatar: "from-blue-500 to-blue-700",
+  avatarRing: "ring-2 ring-blue-300 ring-offset-2",
+};
 
 // ── Role-based configuration (badge + label + icon only) ───────────────
 
@@ -146,13 +94,11 @@ export default function StaffStatBox({
   const staffInitials = getInitials(staffName);
   const { currency } = useCurrency();
 
-  const idx = colorIndex % cardColorSchemes.length;
-  const colors = cardColorSchemes[idx];
-
+  const colors = cardColors;
   return (
     <div
       className={`relative rounded-xl bg-white overflow-hidden transition-all duration-300 cursor-pointer group
-        border-l-4 ${colors.borderLeft} border-t border-r border-b  shadow-sm hover:shadow-md`}
+        border-l-4 border-l-blue-500 border border-gray-200 shadow-sm hover:shadow-md`}
       onClick={() => router.push(`/records/employee/${staffId}`)}
     >
       <div className="p-4">
@@ -180,7 +126,7 @@ export default function StaffStatBox({
                 {staffName}
               </p>
               <div className="flex items-center gap-1.5 mt-1.5">
-                <RoleIcon size={11} className={colors.accentText} />
+                <RoleIcon size={11} className="text-gray-400" />
                 <span
                   className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold leading-tight ${rConfig.badge}`}
                 >
@@ -201,11 +147,8 @@ export default function StaffStatBox({
         {roleKey === "Staff" ? (
           /* Staff: only show Orders, but keep 2x2 grid height */
           <div className="mt-3 grid grid-cols-1 gap-1.5">
-            <div className={`rounded-md p-1.5 text-center ${colors.bgTint}`}>
-              <ShoppingCart
-                size={12}
-                className={`mx-auto mb-1 ${colors.accentText}`}
-              />
+            <div className="rounded-md p-1.5 text-center bg-gray-50/60">
+              <ShoppingCart size={12} className="mx-auto mb-1 text-gray-500" />
               <p className="text-xs font-bold text-gray-900 leading-none">
                 {ordersTaken}
               </p>
@@ -218,11 +161,8 @@ export default function StaffStatBox({
           /* Owner / Basic: full metrics grid */
           <div className="mt-3 grid grid-cols-4 gap-1.5">
             {/* Orders */}
-            <div className={`rounded-md p-1.5 text-center ${colors.bgTint}`}>
-              <ShoppingCart
-                size={12}
-                className={`mx-auto mb-1 ${colors.accentText}`}
-              />
+            <div className="rounded-md p-1.5 text-center bg-gray-50/60">
+              <ShoppingCart size={12} className="mx-auto mb-1 text-gray-500" />
               <p className="text-xs font-bold text-gray-900 leading-none">
                 {ordersTaken}
               </p>
@@ -232,11 +172,8 @@ export default function StaffStatBox({
             </div>
 
             {/* Sales */}
-            <div className={`rounded-md p-1.5 text-center ${colors.bgTint}`}>
-              <TrendingUp
-                size={12}
-                className={`mx-auto mb-1 ${colors.accentText}`}
-              />
+            <div className="rounded-md p-1.5 text-center bg-gray-50/60">
+              <TrendingUp size={12} className="mx-auto mb-1 text-gray-500" />
               <p className="text-xs font-bold text-gray-900 leading-none">
                 {salesTaken}
               </p>
@@ -246,8 +183,8 @@ export default function StaffStatBox({
             </div>
 
             {/* Revenue (wider column) */}
-            <div className="rounded-md p-1.5 text-center bg-emerald-50/60">
-              <DollarSign size={12} className="mx-auto mb-1 text-emerald-600" />
+            <div className="rounded-md p-1.5 text-center bg-gray-50/60">
+              <DollarSign size={12} className="mx-auto mb-1 text-gray-500" />
               <p className="text-xs font-bold text-gray-900 leading-none truncate">
                 {formatCurrencySymbol(amount, currency.symbol, currency.locale)}
               </p>
@@ -257,11 +194,8 @@ export default function StaffStatBox({
             </div>
 
             {/* Avg Time */}
-            <div className={`rounded-md p-1.5 text-center ${colors.bgTint}`}>
-              <Clock
-                size={12}
-                className={`mx-auto mb-1 ${colors.accentText}`}
-              />
+            <div className="rounded-md p-1.5 text-center bg-gray-50/60">
+              <Clock size={12} className="mx-auto mb-1 text-gray-500" />
               <p className="text-xs font-bold text-gray-900 leading-none">
                 {avgTime && avgTime !== "—" ? avgTime : "—"}
               </p>

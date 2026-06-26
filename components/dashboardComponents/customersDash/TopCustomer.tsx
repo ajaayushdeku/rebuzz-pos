@@ -195,16 +195,16 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                     {page * pageSize + idx + 1}
                   </td>
                   <td className="py-3 px-4">
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-xs text-gray-900">
                       {customer.customer}
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    <span className="font-semibold text-gray-900">
+                    <span className="font-semibold text-xs text-gray-900">
                       {customer.numVisits}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-right font-semibold text-gray-900">
+                  <td className="py-3 px-4 text-right text-xs font-semibold text-gray-900">
                     {/* {formatCurrency(customer.totalSpent, currency)} */}
                     {formatCurrencySymbol(
                       customer.totalSpent,
@@ -221,7 +221,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                       {customer.loyaltyTier}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-right font-semibold text-gray-900">
+                  <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
                     {customer.loyaltyPoints}
                   </td>
                 </tr>

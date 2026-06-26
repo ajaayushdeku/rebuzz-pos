@@ -168,10 +168,28 @@ export const getWinningStats = async (): Promise<WinningApiResponse> => {
   const bestDay =
     bestDayData.revenue > 0 ? bestDayData.day : "No sales this week";
 
+  // ── Sales streak — consecutive days with sales (min 3) ───────────────────
+  const salesStreak = (() => {
+    // Walk backwards from the most recent day, counting consecutive days with revenue > 0
+    let streak = 0;
+    for (let i = weeklyData.length - 1; i >= 0; i--) {
+      if (weeklyData[i].revenue > 0) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    if (streak >= 3) {
+      return `${streak} days`;
+    }
+    return "No streak";
+  })();
+
   return {
     topSellingProduct: { value: topSellingProduct },
     peakHour: { value: peakHour },
     bestDay: { value: bestDay },
+    salesStreak: { value: salesStreak },
   };
 };
 

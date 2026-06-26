@@ -73,14 +73,14 @@ export default function RecentTransactions({
                     className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
                   >
                     <td className="py-3 px-4">
-                      <p className="text-[12px] font-semibold text-gray-900">
+                      <p className="text-xs font-semibold text-gray-900">
                         {tx.id}
                       </p>
                     </td>
-                    <td className="py-3 px-4 text-gray-700">
+                    <td className="py-3 px-4 text-xs text-gray-700">
                       {tx.invoiceName}
                     </td>
-                    <td className="py-3 px-4 text-right font-semibold text-gray-900">
+                    <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
                       {/* {formatCurrency(Number(tx.amount), currency)} */}
                       {formatCurrencySymbol(
                         Number(tx.amount),
@@ -92,7 +92,7 @@ export default function RecentTransactions({
                       <span
                         className={`${styles.badge} inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold`}
                       >
-                        {tx.status}
+                        {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
                       </span>
                     </td>
                   </tr>

@@ -1,4 +1,4 @@
-import StaffStatBox from "@/components/dashboardComponents/staffDash/StaffStatBox";
+import StaffBoxContainer from "@/components/dashboardComponents/staffDash/StaffBoxContainer";
 import StaffSalesChart from "@/components/dashboardComponents/staffDash/StaffSalesChart";
 import RevenueStaffChart from "@/components/dashboardComponents/staffDash/RevenueStaffChart";
 import ShiftAnalysisReport from "@/components/dashboardComponents/staffDash/ShiftAnalysisReport";
@@ -30,35 +30,7 @@ export async function StaffStatWrapper({
 }) {
   const staffList = await getStaffData(range, startDate, endDate);
 
-  if (staffList.length === 0) {
-    return (
-      <div className="flex flex-col items-center py-8 text-gray-400 text-sm">
-        <span className="font-medium">No staff data available</span>
-        <p className="mt-1 text-xs text-gray-300">
-          Try switching to a different date range to see staff members and their
-          performance.
-        </p>
-      </div>
-    );
-  }
-
-  const displayStaff = staffList.slice(0, 8);
-
-  return (
-    <div className="my-4 -mx-2 sm:mx-0">
-      {/* Mobile: horizontal scroll with fixed-width cards, Desktop: grid */}
-      <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-2 gap-3 overflow-x-auto pb-2 px-2 sm:px-0 sm:overflow-visible snap-x snap-mandatory scrollbar-thin">
-        {displayStaff.map((staff, idx) => (
-          <div
-            key={staff.staffName}
-            className="snap-start shrink-0 w-[85vw] sm:w-auto sm:shrink"
-          >
-            <StaffStatBox {...staff} colorIndex={idx} />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  return <StaffBoxContainer staffList={staffList} />;
 }
 
 // export async function StaffOrdersChartWrapper({

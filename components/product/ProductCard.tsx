@@ -162,11 +162,11 @@ export default function ProductCard({ item }: { item: InventoryItem }) {
         )}
       </div>
 
-      {/* Expanded View - Overlay */}
+      {/* Expanded View - Inline flow to avoid overlap */}
       {isExpanded && (
-        <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-xl border border-gray-200 shadow-lg p-4 z-50">
+        <div className="border-t border-gray-100 p-4">
           {/* Price details */}
-          <div className="mt-4 space-y-2">
+          <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="text-gray-400">Selling Price</span>
               <span className="font-medium text-gray-700">
