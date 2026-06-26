@@ -8,6 +8,7 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
 import { TopProduct } from "./top-product-columns";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -116,21 +117,30 @@ export default function TopProducts({
       </div>
 
       {/* Search + DateRangeFilter on the same line */}
-      <div className="flex items-center gap-2 mt-4 mb-4">
-        <div className="relative flex-1">
+      <div className="flex justify-between items-center gap-2 mt-4 mb-4">
+        <div className="relative w-full sm:w-64">
           <Search
             size={14}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
           />
           <input
+            type="text"
+            placeholder="Search products..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setPage(0);
             }}
-            placeholder="Search products..."
-            className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="w-full pl-9 pr-8 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black-300 focus:border-transparent"
           />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
 
         <DateRangeFilter
@@ -145,10 +155,10 @@ export default function TopProducts({
       {/* Table */}
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"> */}
       <div className="bg-white  overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="table-auto text-sm w-full">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
-              <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+              <th className="text-left pb-3 pt-3 px-4 font-medium whitespace-nowrap">
                 S.No
               </th>
               <th
@@ -161,16 +171,16 @@ export default function TopProducts({
               </th>
 
               <th
-                className="text-center pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                className="whitespace-nowrap text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                 onClick={() => toggleSort("count")}
               >
-                <span className="flex items-center gap-1">
+                <span className="flex w-fit whitespace-nowrap items-center gap-1">
                   Sold {SortIcon({ colKey: "count" })}
                 </span>
               </th>
 
               <th
-                className="text-center pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                className="whitespace-nowrap text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                 onClick={() => toggleSort("revenue")}
               >
                 <span className="flex items-center gap-1">
@@ -179,7 +189,7 @@ export default function TopProducts({
               </th>
 
               <th
-                className="text-center pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                className="text-center whitespace-nowrap pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                 onClick={() => toggleSort("netProfit")}
               >
                 <span className="flex items-center gap-1">
@@ -230,16 +240,16 @@ export default function TopProducts({
                     </td>
 
                     <td className="py-3 px-4">
-                      <span className="font-medium text-gray-900">
+                      <span className="font-medium text-xs text-gray-900">
                         {product.name}
                       </span>
                     </td>
 
-                    <td className="py-3 px-4 text-center font-semibold text-gray-900">
+                    <td className="py-3 px-4 text-center font-semibold text-xs text-gray-900">
                       {product.count}
                     </td>
 
-                    <td className="py-3 px-4 text-center font-semibold text-gray-900">
+                    <td className="py-3 px-4 text-right font-semibold text-xs text-gray-900">
                       {/* {formatCurrency(product.revenue, currency)} */}
                       {formatCurrencySymbol(
                         product.revenue,
@@ -248,7 +258,7 @@ export default function TopProducts({
                       )}
                     </td>
 
-                    <td className="py-3 px-4 text-center font-semibold text-green-600">
+                    <td className="py-3 px-4 text-right font-semibold text-xs text-green-600">
                       {/* {formatCurrency(product.netProfit, currency)} */}
                       {formatCurrencySymbol(
                         product.netProfit,

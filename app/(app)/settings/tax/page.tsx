@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Loader2, Layers } from "lucide-react";
+import { Search, Loader2, Layers, Receipt } from "lucide-react";
 import {
   useTaxes,
   useToggleTax,
@@ -292,23 +292,23 @@ export default function TaxSettingsPage() {
         </div>
 
         {/* ── Search ──────────────────────────────────────── */}
-        <div className="relative">
+        <div className="relative ">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
           />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search taxes..."
-            className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="w-full h-9 pl-9 pr-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
         {/* Standard taxes */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-          <h3 className="text-sm font-semibold text-gray-800 mb-4">
-            Standard Taxes
+        <div className="bg-white rounded-xl p-5">
+          <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <Receipt size={14} className="text-blue-500" /> Standard Taxes
           </h3>
           <StandardTaxTable
             taxes={taxes}
@@ -320,8 +320,11 @@ export default function TaxSettingsPage() {
           />
         </div>
 
+        {/* Horizontal divider */}
+        <div className="border-t border-gray-200 my-6" />
+
         {/* Group taxes */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+        <div className="bg-white rounded-xl  p-5">
           <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
             <Layers size={14} className="text-blue-500" /> Group Taxes
           </h3>

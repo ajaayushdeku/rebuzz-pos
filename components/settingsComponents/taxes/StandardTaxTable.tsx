@@ -66,9 +66,11 @@ const StandardTaxTable = ({
                   key={tax._id}
                   className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
                 >
-                  <td className="py-3 font-medium text-gray-800">{tax.name}</td>
-                  <td className="py-3 text-gray-500">{tax.rate}%</td>
-                  <td className="py-3 text-center">
+                  <td className="py-3 font-medium text-xs text-gray-800">
+                    {tax.name}
+                  </td>
+                  <td className="py-3 text-xs text-gray-500">{tax.rate}%</td>
+                  <td className="py-3 text-xs text-center">
                     <span
                       className={`text-xs px-2 py-0.5 rounded-full font-medium ${tax.isEnabled ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"} `}
                     >

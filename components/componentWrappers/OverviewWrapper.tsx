@@ -274,7 +274,7 @@ export const WinningStatsWrapper = async () => {
   }));
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 my-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 my-4">
       {winningStats.map(({ key, ...stat }) => (
         <div key={key}>
           <WinningStatBox {...stat} />

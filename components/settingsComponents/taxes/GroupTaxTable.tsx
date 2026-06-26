@@ -73,10 +73,10 @@ const GroupTaxTable = ({
                     key={group._id}
                     className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
                   >
-                    <td className="py-3 font-medium text-gray-800">
+                    <td className="py-3 font-medium text-xs text-gray-800">
                       {group.name}
                     </td>
-                    <td className="py-3 text-blue-600 font-semibold">
+                    <td className="py-3 text-blue-600 text-xs font-semibold">
                       {rate}%
                     </td>
                     <td className="py-3 text-gray-400 text-xs whitespace-normal break-words">

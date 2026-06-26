@@ -56,8 +56,10 @@ const DiscountTable = ({
               key={d._id}
               className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
             >
-              <td className="py-3 font-medium text-gray-800">{d.name}</td>
-              <td className="py-3 text-gray-600">
+              <td className="py-3 font-medium text-xs text-gray-800">
+                {d.name}
+              </td>
+              <td className="py-3 text-xs text-gray-600">
                 {d.type === "percentage"
                   ? `${d.rate}%`
                   : ` ${formatCurrencySymbol(d.rate, currency.symbol, currency.locale)}`}

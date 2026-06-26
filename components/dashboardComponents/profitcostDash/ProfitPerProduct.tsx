@@ -8,6 +8,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
 import { Product } from "./profit-per-product-column";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -126,21 +127,30 @@ export default function ProfitPerProduct({
       </div>
 
       {/* Search + DateRangeFilter */}
-      <div className="flex items-center gap-2 mb-4">
-        <div className="relative flex-1">
+      <div className="flex justify-between items-center gap-2 mb-4">
+        <div className="relative w-full sm:w-64">
           <Search
             size={14}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
           />
           <input
+            type="text"
+            placeholder="Search products..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setPage(0);
             }}
-            placeholder="Search products..."
-            className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="w-full pl-9 pr-8 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black-300 focus:border-transparent"
           />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
 
         <DateRangeFilter
@@ -232,18 +242,18 @@ export default function ProfitPerProduct({
                     {page * pageSize + idx + 1}
                   </td>
                   <td className="py-3 px-4">
-                    <span className="font-semibold text-gray-900">
+                    <span className="font-semibold text-xs text-gray-900">
                       {product.name}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-right font-semibold text-gray-900">
+                  <td className="py-3 px-4 text-right font-semibold text-xs text-gray-900">
                     {formatCurrencySymbol(
                       product.revenue,
                       currency.symbol,
                       currency.locale,
                     )}
                   </td>
-                  <td className="py-3 px-4 text-right font-semibold text-red-600">
+                  <td className="py-3 px-4 text-right font-semibold text-xs text-red-600">
                     -
                     {formatCurrencySymbol(
                       product.cogs,
@@ -253,7 +263,7 @@ export default function ProfitPerProduct({
                   </td>
 
                   <td
-                    className={`py-3 px-4 text-right font-semibold  ${getProfitColor(product.profit)}`}
+                    className={`py-3 px-4 text-right text-xs font-semibold  ${getProfitColor(product.profit)}`}
                   >
                     {formatCurrencySymbol(
                       product.profit,
@@ -262,7 +272,7 @@ export default function ProfitPerProduct({
                     )}
                   </td>
 
-                  <td className="py-3 px-4 text-right">
+                  <td className="py-3 px-4 text-xs text-right">
                     <span
                       className={`font-semibold ${getMarginColor(product.margin)}`}
                     >

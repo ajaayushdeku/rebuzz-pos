@@ -8,6 +8,7 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
 import { SlowProduct } from "./slow-product-columns";
 import { getDaysColor } from "@/lib/utils";
@@ -99,21 +100,30 @@ export default function SlowProducts({
       </p>
 
       {/* Search + Days preset */}
-      <div className="flex items-center gap-2 mt-4 mb-4">
-        <div className="relative flex-1">
+      <div className="flex justify-between items-center gap-2 mt-4 mb-4">
+        <div className="relative w-full sm:w-64">
           <Search
             size={14}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
           />
           <input
+            type="text"
+            placeholder="Search products..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setPage(0);
             }}
-            placeholder="Search products..."
-            className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="w-full pl-9 pr-8 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black-300 focus:border-transparent"
           />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
 
         {/* Days preset dropdown + custom input */}
@@ -232,18 +242,18 @@ export default function SlowProducts({
                     </td>
 
                     <td className="py-3 px-4">
-                      <span className="font-medium text-gray-900">
+                      <span className="font-medium text-xs text-gray-900">
                         {product.name}
                       </span>
                     </td>
 
-                    <td className="py-3 px-4 text-left font-semibold text-gray-900">
+                    <td className="py-3 px-4 text-left font-semibold text-xs text-gray-900">
                       <span className={`font-semibold ${text}`}>
                         {product.days}+ days
                       </span>
                     </td>
 
-                    <td className="py-3 px-4 text-right text-gray-500">
+                    <td className="py-3 px-4 text-right text-xs text-gray-500">
                       {product.stockAmount} units
                     </td>
                   </tr>

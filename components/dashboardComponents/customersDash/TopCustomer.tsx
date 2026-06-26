@@ -8,6 +8,7 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -59,7 +60,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
   const [search, setSearch] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [page, setPage] = useState(0);
-  const pageSize = 10;
+  const pageSize = 5;
 
   const filtered = useMemo(() => {
     if (!search) return topCustomers;
@@ -113,20 +114,29 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
       </p>
 
       {/* Search */}
-      <div className="relative my-4">
+      <div className="relative mt-4 mb-2 w-full sm:w-64">
         <Search
           size={14}
           className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
         />
         <input
+          type="text"
+          placeholder="Search customer..."
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
             setPage(0);
           }}
-          placeholder="Search customer..."
-          className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+          className="w-full pl-9 pr-8 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black-300 focus:border-transparent"
         />
+        {search && (
+          <button
+            onClick={() => setSearch("")}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          >
+            <X size={14} />
+          </button>
+        )}
       </div>
 
       {/* Table */}

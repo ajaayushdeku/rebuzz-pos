@@ -161,22 +161,23 @@ export default function DiscountSettingsPage() {
         </div>
 
         {/* ── Search ──────────────────────────────────────── */}
-        <div className="relative">
+        <div className="relative ">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
           />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search discounts..."
-            className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="w-full h-9 pl-9 pr-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
         {/* Discount Tables side by side */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+        <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-px bg-gray-200" />
+          <div className="bg-white rounded-xl p-5">
             <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <Percent size={14} className="text-blue-500" /> Percentage
               Discounts
@@ -195,7 +196,7 @@ export default function DiscountSettingsPage() {
             )}
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+          <div className="bg-white rounded-xl  p-5">
             <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <DollarSign size={14} className="text-green-500" /> Fixed Amount
               Discounts

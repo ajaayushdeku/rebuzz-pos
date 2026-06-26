@@ -172,24 +172,32 @@ export const getWinningStats = async (): Promise<WinningApiResponse> => {
   const salesStreak = (() => {
     // Walk backwards from the most recent day, counting consecutive days with revenue > 0
     let streak = 0;
+    let streakRevenue = 0;
     for (let i = weeklyData.length - 1; i >= 0; i--) {
       if (weeklyData[i].revenue > 0) {
         streak++;
+        streakRevenue += weeklyData[i].revenue;
       } else {
         break;
       }
     }
     if (streak >= 3) {
-      return `${streak} days`;
+      return {
+        value: `${streak} days`,
+        footer: `Generated $${Math.round(streakRevenue).toLocaleString()} over the last ${streak} days!`,
+      };
     }
-    return "No streak";
+    return {
+      value: "0 days",
+      footer: "No active sales streak",
+    };
   })();
 
   return {
     topSellingProduct: { value: topSellingProduct },
     peakHour: { value: peakHour },
     bestDay: { value: bestDay },
-    salesStreak: { value: salesStreak },
+    salesStreak: salesStreak,
   };
 };
 

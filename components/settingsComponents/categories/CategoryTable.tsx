@@ -56,7 +56,9 @@ const CategoryTable = ({
               key={c._id}
               className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
             >
-              <td className="py-3 font-medium text-gray-800">{c.name}</td>
+              <td className="py-3 font-medium text-xs text-gray-800">
+                {c.name}
+              </td>
               <td className="py-3">
                 <div className="flex items-center gap-2">
                   <span
