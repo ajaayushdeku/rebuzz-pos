@@ -299,7 +299,7 @@ export function CalendarDateFilter({
       if (currentStartDate === currentEndDate) {
         return format(new Date(currentStartDate), "MMM d, yyyy");
       }
-      return `${format(new Date(currentStartDate), "MMM d")} – ${format(new Date(currentEndDate), "MMM d, yyyy")}`;
+      return `${format(new Date(currentStartDate), "MMM d")}  –  ${format(new Date(currentEndDate), "MMM d, yyyy")}`;
     }
     if (currentPreset) {
       return (
@@ -317,7 +317,7 @@ export function CalendarDateFilter({
           <Button
             variant="outline"
             className={cn(
-              "w-[220px] justify-start text-left font-normal h-9",
+              "w-[210px] justify-start text-left text-xs font-normal h-9",
               !currentStartDate && !currentPreset && "text-muted-foreground",
             )}
           >
