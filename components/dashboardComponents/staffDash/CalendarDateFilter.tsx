@@ -317,7 +317,7 @@ export function CalendarDateFilter({
           <Button
             variant="outline"
             className={cn(
-              "w-[210px] justify-start text-left text-xs font-normal h-9",
+              "w-[210px] justify-start text-left text-[13px] font-normal h-9",
               !currentStartDate && !currentPreset && "text-muted-foreground",
             )}
           >

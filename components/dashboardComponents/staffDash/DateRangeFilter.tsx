@@ -246,7 +246,7 @@ export function DateRangeFilter({
           <Button
             variant="outline"
             className={cn(
-              "w-[210px] justify-start text-left text-xs font-normal h-9",
+              "w-[210px] justify-start text-left text-[12px] font-normal h-9",
               !value.startDate && "text-muted-foreground",
             )}
           >
