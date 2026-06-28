@@ -1,11 +1,10 @@
 "use client";
 
-import { RefreshCw } from "lucide-react";
+import { DollarSign, Receipt, Wallet, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { InvoiceStatsProps } from "@/lib/types/invoice";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-// import { useInvoiceStore } from "@/stores/invoiceStore";
 
 function fmtLocalDate(date: Date): string {
   const y = date.getFullYear();
@@ -16,10 +15,6 @@ function fmtLocalDate(date: Date): string {
 
 export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
   const { currency } = useCurrency();
-  // const getFilteredInvoices = useInvoiceStore(
-  //   (state) => state.getFilteredInvoices,
-  // );
-  // const filteredInvoices = getFilteredInvoices();
 
   // Today's cash/revenue from the API (same as overview "Total Sales" for today)
   const [todayCash, setTodayCash] = useState<number | null>(null);
@@ -73,48 +68,83 @@ export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
     year: "numeric",
   });
 
+  const statItems = [
+    {
+      label: "Today's Invoice Amt",
+      value: totalSalesAmount,
+      icon: DollarSign,
+      iconColor: "text-blue-600",
+      bgColor: "bg-blue-50",
+      valueColor: "text-gray-900",
+      format: "currency" as const,
+      subText: "Invoices created today",
+    },
+    {
+      label: "Cash in hand",
+      value: todayCash ?? 0,
+      icon: Wallet,
+      iconColor: "text-emerald-600",
+      bgColor: "bg-emerald-50",
+      valueColor: "text-emerald-700",
+      format: "currency" as const,
+      subText: "Today's total revenue",
+    },
+    {
+      label: "Order count",
+      value: totalOrderCount,
+      icon: Receipt,
+      iconColor: "text-violet-600",
+      bgColor: "bg-violet-50",
+      valueColor: "text-gray-900",
+      format: "number" as const,
+      subText: `${totalOrderCount === 1 ? "Order" : "Orders"} Total`,
+    },
+  ];
+
   return (
-    <div className="bg-white rounded-lg border shadow-sm p-6 mb-8">
-      <div className="grid grid-cols-3 gap-8 mb-6">
-        {/* Today's Sales */}
-        <div>
-          <p className="text-sm text-gray-600 mb-1">Today&#39;s Invoice Amt</p>
-          <p className="md:text-3xl text-xl font-semibold text-gray-900">
-            {formatCurrencySymbol(
-              totalSalesAmount,
-              currency.symbol,
-              currency.locale,
-            )}
-          </p>
-        </div>
+    <div className="bg-white py-2 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {statItems.map((item) => {
+          const displayValue =
+            item.format === "currency"
+              ? formatCurrencySymbol(
+                  item.value,
+                  currency.symbol,
+                  currency.locale,
+                )
+              : item.value.toLocaleString();
 
-        {/* Cash in hand (matches overview's total sales for today) */}
-        <div>
-          <p className="text-sm text-gray-600 mb-1">Cash in hand</p>
-          <p className="md:text-3xl text-xl font-semibold text-gray-900">
-            {formatCurrencySymbol(
-              todayCash ?? 0,
-              currency.symbol,
-              currency.locale,
-            )}
-          </p>
-        </div>
-
-        {/* Order count */}
-        <div>
-          <p className="text-sm text-gray-600 mb-1">Order count</p>
-          <p className="md:text-3xl text-xl font-semibold text-gray-900">
-            {totalOrderCount}
-            <span className="md:text-base text-[12px] font-normal text-gray-500 ml-1">
-              {totalOrderCount === 1 ? "order" : "orders"}
-            </span>
-          </p>
-        </div>
+          return (
+            <div
+              key={item.label}
+              className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-gray-400 font-medium">
+                  {item.label}
+                </span>
+                <div
+                  className={`w-7 h-7 rounded-lg ${item.bgColor} flex items-center justify-center shrink-0`}
+                >
+                  <item.icon size={16} className={item.iconColor} />
+                </div>
+              </div>
+              <p className={`text-lg font-bold truncate ${item.valueColor}`}>
+                {displayValue}
+              </p>
+              {item.subText && (
+                <p className="text-[11px] text-gray-400 truncate">
+                  {item.subText}
+                </p>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Refresh & timestamp */}
-      <div className="flex items-center justify-between pt-4 border-t">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+      <div className="flex items-center justify-between mt-4 pb-4 pl-2 border-b border-gray-100">
+        <div className="flex items-center gap-2 text-xs text-gray-500">
           <span>
             As of {formattedDate}, {formattedTime}
           </span>

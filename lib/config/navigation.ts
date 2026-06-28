@@ -91,7 +91,7 @@ export const navigationConfig: NavigationItem[] = [
     label: "Records",
     icon: FileText,
     items: [
-      { label: "Invoices", href: "/invoices", icon: FileText },
+      { label: "Invoices", href: "/records/invoices", icon: FileText },
       {
         label: "Order History",
         href: "/records/order-history",
