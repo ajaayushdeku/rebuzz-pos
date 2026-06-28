@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { Target } from "lucide-react";
 import type { TargetActualData } from "./TargetVsActualChart";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrency, formatCurrencySymbol } from "@/utils/helper";
@@ -81,115 +82,136 @@ export default function SetTargetsModal({
   return (
     // Backdrop
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       onClick={onClose}
     >
       {/* Modal panel */}
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden"
+        className="relative w-full max-w-lg px-2 py-1 rounded-2xl bg-white shadow-2xl overflow-hidden animate-in fade-in-0 slide-in-from-bottom-6 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div className="sticky top-0 z-20 flex items-center justify-between border-b border-gray-100 bg-white/95 backdrop-blur px-5 py-3.5">
           <div>
-            <h3 className="text-base font-bold text-gray-900">
+            <h3 className="text-lg font-bold text-gray-800">
               Set Monthly Targets
             </h3>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs text-gray-500 mt-0.5">
               Enter revenue targets for each month
             </p>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200 hover:text-gray-700 cursor-pointer text-sm"
           >
             ✕
           </button>
         </div>
 
-        {/* Input rows */}
-        <div className="px-6 py-4 max-h-96 overflow-y-auto space-y-3">
-          {draft.map((row) => {
-            const variance = getVariance(row.actual, row.target);
-            const isOnTrack = row.target === 0 || row.actual >= row.target;
-            return (
-              <div
-                key={row.month}
-                className="flex items-center justify-between gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <span className="text-sm font-semibold text-gray-700 w-10 shrink-0">
-                  {row.month}
-                </span>
+        {/* Scrollable month targets */}
+        <div className="max-h-[50vh] overflow-y-auto px-5 py-3 scrollbar-hide">
+          {/* ── Monthly Targets ──────────────────────────── */}
+          <div className="mb-2">
+            <h3 className="text-xs font-semibold text-gray-800">
+              Monthly Revenue Targets
+            </h3>
+            <p className="text-[11px] text-gray-500">
+              Set a target for each month and track progress
+            </p>
+          </div>
 
-                {/* Actual — read only for reference */}
-                <div className="flex items-center gap-1 text-xs text-gray-400">
-                  <span>Actual:</span>
-                  <span className="font-medium text-blue-500">
-                    {/* {formatCurrency(row.actual, currency)} */}
-                    {formatCurrencySymbol(
-                      row.actual,
-                      currency.symbol,
-                      currency.locale,
-                    )}
-                  </span>
-                </div>
-
-                {/* Target input */}
-                <div className="relative flex items-center">
-                  <span className="absolute left-3 text-sm text-gray-400">
-                    {currency.symbol}{" "}
-                  </span>
-                  <input
-                    type="number"
-                    value={row.target}
-                    onChange={(e) => handleChange(row.month, e.target.value)}
-                    className="w-36 pl-7 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg
-                               focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400
-                               text-gray-800 font-medium"
-                    min={0}
-                    step={1000}
-                  />
-                </div>
-
-                {/* Variance indicator */}
-                <span
-                  className={`text-xs font-semibold w-20 text-right shrink-0 ${
-                    isOnTrack ? "text-green-500" : "text-red-400"
+          <div className="border-t border-gray-200">
+            {draft.map((row, index) => {
+              const variance = getVariance(row.actual, row.target);
+              const isOnTrack = row.target === 0 || row.actual >= row.target;
+              return (
+                <div
+                  key={row.month}
+                  className={`flex items-center justify-between gap-3 px-3 py-3.5 ${
+                    index < draft.length - 1 ? "border-b border-gray-100" : ""
                   }`}
                 >
-                  <span className="mr-0.5">{isOnTrack ? "▲" : "▼"}</span>
-                  {variance}%
-                </span>
+                  <span className="text-xs font-semibold text-gray-700 w-10 shrink-0">
+                    {row.month}
+                  </span>
+
+                  {/* Actual — read only for reference */}
+                  <div className="flex items-center gap-1 text-[11px] text-gray-500">
+                    <span>Actual:</span>
+                    <span className="font-semibold text-blue-600">
+                      {formatCurrencySymbol(
+                        row.actual,
+                        currency.symbol,
+                        currency.locale,
+                      )}
+                    </span>
+                  </div>
+
+                  {/* Target input */}
+                  <div className="relative flex items-center">
+                    <span className="absolute left-2.5 text-[11px] text-gray-400">
+                      {currency.symbol}{" "}
+                    </span>
+                    <input
+                      type="number"
+                      value={row.target}
+                      onChange={(e) => handleChange(row.month, e.target.value)}
+                      className="w-32 pl-6 pr-2 py-1.5 text-xs border border-gray-200 rounded
+                                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                                 text-gray-800 font-medium bg-white"
+                      min={0}
+                      step={1000}
+                    />
+                  </div>
+
+                  {/* Variance indicator */}
+                  <span
+                    className={`text-[11px] font-semibold w-16 text-right shrink-0 ${
+                      isOnTrack ? "text-green-600" : "text-red-500"
+                    }`}
+                  >
+                    <span className="mr-0.5">{isOnTrack ? "▲" : "▼"}</span>
+                    {variance}%
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Fixed total annual target */}
+        <div className="px-5 py-3 border-t border-gray-100 bg-white">
+          <div className="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-3 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 text-blue-600 shadow-sm shrink-0">
+                <Target size={16} />
               </div>
-            );
-          })}
+              <div>
+                <p className="text-[11px] text-gray-500">Total annual target</p>
+                <p className="text-sm font-bold text-gray-800">
+                  {formatCurrencySymbol(
+                    totalTarget,
+                    currency.symbol,
+                    currency.locale,
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
-          <div>
-            <p className="text-xs text-gray-400">Total annual target</p>
-            <p className="text-sm font-bold text-gray-800">
-              {/* {formatCurrency(totalTarget, currency)} */}
-              {formatCurrencySymbol(
-                totalTarget,
-                currency.symbol,
-                currency.locale,
-              )}
-            </p>
-          </div>
+        <div className="px-5 py-4 border-t border-gray-100">
           <div className="flex gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 font-medium
-                         rounded-xl border border-gray-200 hover:border-gray-300 transition-colors"
+              className="flex-1 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all cursor-pointer"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="px-4 py-2 text-sm text-white font-medium bg-blue-500
-                         hover:bg-blue-600 rounded-xl transition-colors"
+              className="flex-1 rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition-all cursor-pointer"
             >
               Save Targets
             </button>

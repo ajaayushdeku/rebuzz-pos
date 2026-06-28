@@ -1070,27 +1070,27 @@ export default function InvoiceDetailPage() {
       {/* ── Send Invoice Modal ── */}
       {isSendInvoiceModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
           onClick={() => setIsSendInvoiceModalOpen(false)}
         >
           <div
-            className="relative w-full max-w-3xl rounded-3xl bg-white shadow-2xl overflow-hidden"
+            className="relative w-full max-w-2xl px-2 py-1 rounded-2xl bg-white shadow-2xl overflow-hidden animate-in fade-in-0 slide-in-from-bottom-6 duration-300"
             onClick={(e) => e.stopPropagation()}
           >
             {/* ── Header ───────────────────────────────────── */}
-            <div className="sticky top-0 z-20 flex items-center justify-between border-b border-gray-100 bg-white/95 backdrop-blur px-6 py-5">
+            <div className="sticky top-0 z-20 flex items-center justify-between border-b border-gray-100 bg-white/95 backdrop-blur px-5 py-3.5">
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">
+                <h2 className="text-lg font-bold text-gray-800">
                   Send Invoice
                 </h2>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 mt-0.5">
                   Share, download, or email invoice documents
                 </p>
               </div>
 
               <button
                 onClick={() => setIsSendInvoiceModalOpen(false)}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200 hover:text-gray-700 cursor-pointer"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200 hover:text-gray-700 cursor-pointer text-sm"
               >
                 ✕
               </button>
@@ -1098,7 +1098,7 @@ export default function InvoiceDetailPage() {
 
             {/* ── Scrollable Content ───────────────────────── */}
             <div
-              className="max-h-[80vh] overflow-y-auto px-6 py-6 space-y-8"
+              className="max-h-[75vh] overflow-y-auto px-5 py-4 space-y-5"
               style={{
                 scrollbarWidth: "none",
                 msOverflowStyle: "none",
@@ -1113,31 +1113,20 @@ export default function InvoiceDetailPage() {
 
               {/* ── Copy Links ───────────────────────────── */}
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      Copy Invoice Links
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      Share invoice links instantly
-                    </p>
-                  </div>
+                <div className="mb-3">
+                  <h3 className="text-sm font-semibold text-gray-800">
+                    Copy Invoice Links
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Share invoice links instantly
+                  </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-3">
                   {[
-                    {
-                      label: "Proforma",
-                      type: "proforma",
-                    },
-                    {
-                      label: "Invoice",
-                      type: "invoice",
-                    },
-                    {
-                      label: "Tax Invoice",
-                      type: "tax",
-                    },
+                    { label: "Proforma", type: "proforma" },
+                    { label: "Invoice", type: "invoice" },
+                    { label: "Tax Invoice", type: "tax" },
                   ].map((item) => (
                     <button
                       key={item.type}
@@ -1148,17 +1137,15 @@ export default function InvoiceDetailPage() {
                         )
                       }
                     >
-                      <div className="rounded-2xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                        <div className="h-12 w-12 rounded-2xl bg-blue-50 flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-100 transition">
-                          <Link className="text-blue-600" size={20} />
+                      <div className="rounded-xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-3 shadow-sm transition-all hover:shadow-md">
+                        <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center mx-auto mb-2 group-hover:bg-blue-100 transition">
+                          <Link className="text-blue-600" size={14} />
                         </div>
-
-                        <h4 className="font-semibold text-gray-800">
+                        <h4 className="text-xs font-semibold text-gray-800">
                           {item.label}
                         </h4>
-
-                        <p className="mt-1 text-sm text-gray-500">
-                          Copy public link
+                        <p className="mt-0.5 text-[11px] text-gray-500">
+                          Copy link
                         </p>
                       </div>
                     </button>
@@ -1168,34 +1155,20 @@ export default function InvoiceDetailPage() {
 
               {/* ── Download PDFs ────────────────────────── */}
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      Download PDFs
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      Generate printable invoice documents
-                    </p>
-                  </div>
+                <div className="mb-3">
+                  <h3 className="text-sm font-semibold text-gray-800">
+                    Download PDFs
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Generate printable invoice documents
+                  </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-3">
                   {[
-                    {
-                      label: "Proforma",
-                      type: "proforma",
-                      ref: proformaRef,
-                    },
-                    {
-                      label: "Invoice",
-                      type: "invoice",
-                      ref: regularRef,
-                    },
-                    {
-                      label: "Tax Invoice",
-                      type: "tax",
-                      ref: taxRef,
-                    },
+                    { label: "Proforma", type: "proforma", ref: proformaRef },
+                    { label: "Invoice", type: "invoice", ref: regularRef },
+                    { label: "Tax Invoice", type: "tax", ref: taxRef },
                   ].map((item) => (
                     <button
                       key={item.type}
@@ -1208,19 +1181,17 @@ export default function InvoiceDetailPage() {
                       }
                       disabled={generatingFor === item.type}
                     >
-                      <div className="rounded-2xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                        <div className="h-12 w-12 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4 group-hover:bg-red-100 transition">
-                          <FileText className="text-red-500" size={20} />
+                      <div className="rounded-xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-3 shadow-sm transition-all hover:shadow-md">
+                        <div className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center mx-auto mb-2 group-hover:bg-red-100 transition">
+                          <FileText className="text-red-500" size={14} />
                         </div>
-
-                        <h4 className="font-semibold text-gray-800">
+                        <h4 className="text-xs font-semibold text-gray-800">
                           {generatingFor === item.type
                             ? "Generating..."
                             : item.label}
                         </h4>
-
-                        <p className="mt-1 text-sm text-gray-500">
-                          Download as PDF
+                        <p className="mt-0.5 text-[11px] text-gray-500">
+                          Download PDF
                         </p>
                       </div>
                     </button>
@@ -1229,29 +1200,29 @@ export default function InvoiceDetailPage() {
               </div>
 
               {/* ── Send Email Section ───────────────────── */}
-              <div className="rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-6 shadow-sm">
+              <div className="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-4 shadow-sm">
                 <div className="flex flex-col items-center text-center">
-                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100 text-blue-600 shadow-sm">
-                    <Mail size={30} />
+                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600 shadow-sm">
+                    <Mail size={18} />
                   </div>
 
-                  <h3 className="text-2xl font-bold text-gray-800">
+                  <h3 className="text-base font-bold text-gray-800">
                     Send Invoice by Email
                   </h3>
 
-                  <p className="mt-2 max-w-md text-sm text-gray-500">
+                  <p className="mt-1 max-w-md text-xs text-gray-500">
                     Select which invoice format you want to send to{" "}
                     <span className="font-semibold text-gray-700">
                       {customerProfile?.email ||
                         invoice?.customerEmail ||
                         "customer"}
                     </span>
-                    . The invoice will be captured as an image and sent.
+                    .
                   </p>
                 </div>
 
                 {/* ── Invoice Type Selector ── */}
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="mt-4 grid grid-cols-3 gap-2">
                   {(
                     [
                       { label: "Proforma", value: "proforma" },
@@ -1266,34 +1237,34 @@ export default function InvoiceDetailPage() {
                       key={item.value}
                       type="button"
                       onClick={() => setSelectedInvoiceType(item.value)}
-                      className={`rounded-2xl border-2 p-4 text-left transition-all cursor-pointer ${
+                      className={`rounded-xl border-2 p-3 text-left transition-all cursor-pointer ${
                         selectedInvoiceType === item.value
-                          ? "border-blue-600 bg-blue-600 text-white shadow-lg"
+                          ? "border-blue-600 bg-blue-600 text-white shadow"
                           : "border-gray-200 bg-white hover:border-blue-300"
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-semibold">{item.label}</p>
+                          <p className="text-xs font-semibold">{item.label}</p>
                           <p
-                            className={`text-sm mt-1 ${
+                            className={`text-[11px] mt-0.5 ${
                               selectedInvoiceType === item.value
                                 ? "text-blue-100"
                                 : "text-gray-500"
                             }`}
                           >
-                            Send this format
+                            Send this
                           </p>
                         </div>
                         <div
-                          className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${
+                          className={`h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
                             selectedInvoiceType === item.value
                               ? "border-white bg-white"
                               : "border-gray-300"
                           }`}
                         >
                           {selectedInvoiceType === item.value && (
-                            <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />
+                            <div className="w-2 h-2 rounded-full bg-blue-600" />
                           )}
                         </div>
                       </div>
@@ -1303,28 +1274,27 @@ export default function InvoiceDetailPage() {
 
                 {/* ── Recipient info ── */}
                 {customerProfile?.email || invoice?.customerEmail ? (
-                  <div className="mt-4 flex items-center gap-2 bg-white rounded-xl border border-blue-100 px-4 py-2.5">
-                    <Mail size={14} className="text-blue-500 shrink-0" />
-                    <p className="text-sm text-gray-600">
-                      Will be sent to:{" "}
+                  <div className="mt-3 flex items-center gap-2 bg-white rounded-lg border border-blue-100 px-3 py-2">
+                    <Mail size={12} className="text-blue-500 shrink-0" />
+                    <p className="text-xs text-gray-600">
+                      To:{" "}
                       <span className="font-semibold text-gray-800">
                         {customerProfile?.email || invoice?.customerEmail}
                       </span>
                     </p>
                   </div>
                 ) : (
-                  <div className="mt-4 flex items-center gap-2 bg-red-50 rounded-xl border border-red-100 px-4 py-2.5">
-                    <p className="text-sm text-red-600">
-                      No customer email found — cannot send via email
+                  <div className="mt-3 flex items-center gap-2 bg-red-50 rounded-lg border border-red-100 px-3 py-2">
+                    <p className="text-xs text-red-600">
+                      No customer email found
                     </p>
                   </div>
                 )}
 
                 {/* ── Action Buttons ── */}
-                <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                  {/* Screenshot email — sends all 3 types individually */}
+                <div className="mt-4 flex gap-2">
                   <button
-                    className="flex-1 rounded-2xl bg-blue-600 px-5 py-3.5 font-semibold text-white shadow-md transition-all hover:bg-blue-700 hover:shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="flex-1 rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
                     disabled={
                       isSendingEmail ||
                       !(customerProfile?.email || invoice?.customerEmail)
@@ -1338,7 +1308,7 @@ export default function InvoiceDetailPage() {
                     {isSendingEmail ? (
                       <>
                         <svg
-                          className="animate-spin h-4 w-4 text-white"
+                          className="animate-spin h-3.5 w-3.5 text-white"
                           fill="none"
                           viewBox="0 0 24 24"
                         >
@@ -1360,7 +1330,7 @@ export default function InvoiceDetailPage() {
                       </>
                     ) : (
                       <>
-                        <Mail size={16} />
+                        <Mail size={13} />
                         Send{" "}
                         {selectedInvoiceType === "proforma"
                           ? "Proforma"
@@ -1371,9 +1341,8 @@ export default function InvoiceDetailPage() {
                     )}
                   </button>
 
-                  {/* Send all 3 formats */}
                   <button
-                    className="flex-1 rounded-2xl border border-gray-300 bg-white px-5 py-3.5 font-semibold text-gray-700 transition-all hover:bg-gray-50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={
                       isSendingEmail ||
                       !(customerProfile?.email || invoice?.customerEmail)
@@ -1395,7 +1364,7 @@ export default function InvoiceDetailPage() {
                       setIsSendingEmail(false);
                     }}
                   >
-                    Send All 3 Formats
+                    Send All 3
                   </button>
                 </div>
               </div>
@@ -1406,21 +1375,47 @@ export default function InvoiceDetailPage() {
 
       {/* ── Payment Modal ── */}
       {isPaymentModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50  p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
-              <h2 className="text-xl font-semibold text-gray-700">
-                Record Payment
-              </h2>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setIsPaymentModalOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-lg px-2 py-1 rounded-2xl bg-white shadow-2xl overflow-hidden animate-in fade-in-0 slide-in-from-bottom-6 duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* ── Header ── */}
+            <div className="sticky top-0 z-20 flex items-center justify-between border-b border-gray-100 bg-white/95 backdrop-blur px-5 py-3.5">
+              <div>
+                <h2 className="text-lg font-bold text-gray-800">
+                  Record Payment
+                </h2>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Process payment for this invoice
+                </p>
+              </div>
               <button
                 onClick={() => setIsPaymentModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200 hover:text-gray-700 cursor-pointer text-sm"
               >
-                &times;
+                ✕
               </button>
             </div>
 
-            <div className="p-6 space-y-5">
+            {/* ── Content ── */}
+            <div
+              className="max-h-[75vh] overflow-y-auto px-5 py-4 space-y-5"
+              style={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+              }}
+            >
+              <style jsx>{`
+                div::-webkit-scrollbar {
+                  display: none;
+                }
+              `}</style>
+
+              {/* Payment Method */}
               <div>
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-widest block mb-2">
                   Payment Method
@@ -1431,25 +1426,25 @@ export default function InvoiceDetailPage() {
                     setPaymentData({ ...paymentData, method: value })
                   }
                 >
-                  <SelectTrigger className="w-full h-11 rounded-xl border-gray-200 bg-gray-50 font-medium capitalize">
+                  <SelectTrigger className="w-full h-10 rounded-xl border-gray-200 bg-white font-medium capitalize text-sm">
                     <SelectValue placeholder="Select method" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-gray-200 shadow-xl">
                     <SelectItem
                       value="cash"
-                      className="py-3 cursor-pointer font-medium"
+                      className="py-2.5 cursor-pointer font-medium text-sm"
                     >
                       Cash
                     </SelectItem>
                     <SelectItem
                       value="card"
-                      className="py-3 cursor-pointer font-medium"
+                      className="py-2.5 cursor-pointer font-medium text-sm"
                     >
                       Credit Card
                     </SelectItem>
                     <SelectItem
                       value="qr"
-                      className="py-3 cursor-pointer font-medium"
+                      className="py-2.5 cursor-pointer font-medium text-sm"
                     >
                       QR / Digital Wallet
                     </SelectItem>
@@ -1457,6 +1452,7 @@ export default function InvoiceDetailPage() {
                 </Select>
               </div>
 
+              {/* Summary */}
               <div className="bg-gray-50 rounded-xl px-4 py-3 space-y-1.5 text-sm">
                 <div className="flex justify-between text-gray-500">
                   <span>Subtotal</span>
@@ -1496,6 +1492,7 @@ export default function InvoiceDetailPage() {
                 </div>
               </div>
 
+              {/* Discount */}
               <div>
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-widest block mb-2">
                   Discount
@@ -1508,7 +1505,7 @@ export default function InvoiceDetailPage() {
                       setPaymentData((prev) => ({ ...prev, discount: 0 }));
                       setDiscountError("");
                     }}
-                    className={`flex-1 py-2 rounded-lg text-sm font-medium border transition ${
+                    className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${
                       discountType === "fixed"
                         ? "bg-blue-600 text-white border-blue-600"
                         : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
@@ -1523,7 +1520,7 @@ export default function InvoiceDetailPage() {
                       setPaymentData((prev) => ({ ...prev, discount: 0 }));
                       setDiscountError("");
                     }}
-                    className={`flex-1 py-2 rounded-lg text-sm font-medium border transition ${
+                    className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${
                       discountType === "percentage"
                         ? "bg-blue-600 text-white border-blue-600"
                         : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
@@ -1546,7 +1543,7 @@ export default function InvoiceDetailPage() {
                     placeholder={
                       discountType === "percentage" ? "e.g. 10" : "e.g. 50"
                     }
-                    className={`w-full px-4 py-2.5 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm pr-10 ${
+                    className={`w-full px-4 py-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm pr-10 ${
                       discountError ? "border-red-300" : "border-gray-200"
                     }`}
                   />
@@ -1568,6 +1565,7 @@ export default function InvoiceDetailPage() {
                 )}
               </div>
 
+              {/* Loyalty */}
               {customerProfile && (
                 <div className="border border-violet-200 rounded-xl p-4 space-y-3 bg-violet-50/40">
                   <div className="flex items-center justify-between">
@@ -1668,33 +1666,35 @@ export default function InvoiceDetailPage() {
                 </div>
               )}
 
-              <div className="bg-white rounded-2xl border border-gray-100 p-5 flex justify-between items-center shadow-sm">
+              {/* Final Amount */}
+              <div className="bg-white rounded-xl border border-gray-100 p-4 flex justify-between items-center shadow-sm">
                 <div>
-                  <p className="text-gray-400 text-xs uppercase font-medium">
+                  <p className="text-gray-400 text-[11px] uppercase font-medium">
                     Final Amount
                   </p>
-                  <p className="text-3xl font-bold text-gray-800">
+                  <p className="text-2xl font-bold text-gray-800">
                     {currency.symbol} {finalPayable.toFixed(2)}
                   </p>
                 </div>
-                <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full font-medium capitalize">
+                <span className="text-[11px] bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full font-medium capitalize">
                   {paymentData.method}
                 </span>
               </div>
             </div>
 
-            <div className="px-6 pb-6">
+            {/* ── Footer ── */}
+            <div className="px-5 py-4 border-t border-gray-100">
               <button
                 onClick={handleRecordPayment}
                 disabled={
                   !!discountError || !!redeemError || isRecordingPayment
                 }
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2"
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-sm"
               >
                 {isRecordingPayment ? (
                   <>
                     <svg
-                      className="animate-spin h-5 w-5 text-white"
+                      className="animate-spin h-4 w-4 text-white"
                       fill="none"
                       viewBox="0 0 24 24"
                     >
