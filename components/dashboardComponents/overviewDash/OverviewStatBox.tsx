@@ -15,6 +15,7 @@ interface StatBoxProps {
   iconColor?: string;
   format?: "currency" | "number" | "percent";
   periodLabel?: string;
+  comparisonDateRangeLabel?: string;
   currentDateRange?: string;
   isLoading?: boolean;
 }
@@ -26,6 +27,7 @@ const OverviewStatBox = ({
   iconName,
   iconColor,
   periodLabel = "from previous month",
+  comparisonDateRangeLabel,
   currentDateRange,
   isLoading = false,
 }: StatBoxProps) => {
@@ -66,8 +68,8 @@ const OverviewStatBox = ({
       </div>
 
       {/* Value with inline percent badge */}
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-lg font-bold text-gray-900 truncate">
+      <div className="flex flitems-center justify-between gap-2">
+        <p className="text-lg flex flex-col font-bold text-gray-900 truncate">
           {label === "Total Orders" || label === "Products Sold"
             ? value
             : formatCurrencySymbol(value, currency.symbol, currency.locale)}
@@ -90,16 +92,19 @@ const OverviewStatBox = ({
       {/* Expandable section with chevron on right */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center justify-between w-full mt-1 text-[10px] text-gray-400 hover:text-gray-600 transition-colors"
+        className="flex items-center justify-between w-full mt-2 text-[10px] text-gray-400 hover:text-gray-600 transition-colors"
       >
         {isExpanded ? (
-          <div className="flex flex-col items-start gap-2">
+          <div className="flex flex-col items-start">
             <span className="flex flex-row items-center gap-1">
               <span className={`text-[10px] font-bold ${text} shrink-0`}>
                 {percent}%
               </span>
               <ArrowIcon size={14} className={`${text} shrink-0`} />
               <span className="truncate">{periodLabel}</span>
+            </span>
+            <span className="pl-1.5  text-gray-400 font-semibold text-[10px]">
+              {comparisonDateRangeLabel}
             </span>
           </div>
         ) : (

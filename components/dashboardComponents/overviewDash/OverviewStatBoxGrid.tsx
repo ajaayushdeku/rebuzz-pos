@@ -6,11 +6,13 @@ import OverviewStatBox from "./OverviewStatBox";
 const OverviewStatBoxGrid = ({
   stats,
   periodLabel = "from previous month",
+  comparisonDateRangeLabel,
   currentDateRange,
   isLoading = false,
 }: {
   stats: MergedSerializableConfig[];
   periodLabel?: string;
+  comparisonDateRangeLabel?: string;
   currentDateRange?: string;
   isLoading?: boolean;
 }) => {
@@ -21,6 +23,7 @@ const OverviewStatBoxGrid = ({
           key={key}
           {...stat}
           periodLabel={periodLabel}
+          comparisonDateRangeLabel={comparisonDateRangeLabel}
           currentDateRange={currentDateRange}
           isLoading={isLoading}
         />
