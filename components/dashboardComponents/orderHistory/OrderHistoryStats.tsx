@@ -2,7 +2,6 @@
 
 import { ShoppingBag, DollarSign, Receipt, RotateCcw } from "lucide-react";
 import OrderHistoryStatBoxGrid from "./OrderHistoryStatBoxGrid";
-import { OrderHistoryStats as StatsData } from "@/services/dashboardServices/apiOrderHistoryStatsServer";
 
 export type OrderHistoryStats = {
   totalOrders: number;
