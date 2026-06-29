@@ -13,7 +13,7 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2 pb-4 border-b border-gray-200">
           <div>
             <h1 className="font-bold text-xl md:text-2xl truncate">

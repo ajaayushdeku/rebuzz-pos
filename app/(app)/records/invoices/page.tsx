@@ -53,7 +53,7 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="w-full mx-auto space-y-8">
         <InvoiceHeader />
         <InvoiceStats invoices={invoices} />
         <InvoiceTable invoices={invoices} />
