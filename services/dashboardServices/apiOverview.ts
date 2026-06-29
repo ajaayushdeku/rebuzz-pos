@@ -128,6 +128,17 @@ export const getWinningStats = async (): Promise<WinningApiResponse> => {
   // ── Top selling product ──────────────────────────────────────────────────
   const topSellingProduct = topProducts[0]?.productName ?? "No sales yet";
 
+  // Footer: how much more volume #1 sold compared to #2.
+  const topSellingFooter = (() => {
+    const first = topProducts[0];
+    const second = topProducts[1];
+    if (!first || !second || second.noOfSale <= 0) {
+      return "No comparison available";
+    }
+    const pct = ((first.noOfSale - second.noOfSale) / second.noOfSale) * 100;
+    return `${pct.toFixed(1)}% more volume than #2`;
+  })();
+
   // ── Peak hour — highest revenue hour ────────────────────────────────────
   const peakHourData = hourlyData.reduce(
     (peak, curr) => (curr.revenue > peak.revenue ? curr : peak),
@@ -168,7 +179,21 @@ export const getWinningStats = async (): Promise<WinningApiResponse> => {
   const bestDay =
     bestDayData.revenue > 0 ? bestDayData.day : "No sales this week";
 
-  // ── Sales streak — consecutive days with sales (min 3) ───────────────────
+  // Footer: how much the best day exceeds the average across all 7 days.
+  const bestDayFooter = (() => {
+    if (weeklyData.length === 0 || bestDayData.revenue <= 0) {
+      return "No comparison available";
+    }
+    const totalRevenue = weeklyData.reduce((sum, d) => sum + d.revenue, 0);
+    const dailyMean = totalRevenue / weeklyData.length;
+    if (dailyMean <= 0) {
+      return "No comparison available";
+    }
+    const pct = ((bestDayData.revenue - dailyMean) / dailyMean) * 100;
+    return `Avg ${pct.toFixed(1)}% above daily mean`;
+  })();
+
+  // ── Sales streak — consecutive days with sales (min 2) ───────────────────
   const salesStreak = (() => {
     // Walk backwards from the most recent day, counting consecutive days with revenue > 0
     let streak = 0;
@@ -181,7 +206,7 @@ export const getWinningStats = async (): Promise<WinningApiResponse> => {
         break;
       }
     }
-    if (streak >= 3) {
+    if (streak >= 2) {
       return {
         value: `${streak} days`,
         footer: `Generated $${Math.round(streakRevenue).toLocaleString()} over the last ${streak} days!`,
@@ -194,9 +219,9 @@ export const getWinningStats = async (): Promise<WinningApiResponse> => {
   })();
 
   return {
-    topSellingProduct: { value: topSellingProduct },
+    topSellingProduct: { value: topSellingProduct, footer: topSellingFooter },
     peakHour: { value: peakHour },
-    bestDay: { value: bestDay },
+    bestDay: { value: bestDay, footer: bestDayFooter },
     salesStreak: salesStreak,
   };
 };
@@ -253,7 +278,8 @@ export const getTopProducts = async (): Promise<TopProduct[]> => {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      next: { revalidate: 3600 },
+
+      cache: "no-store",
     },
   );
 
@@ -265,7 +291,7 @@ export const getTopProducts = async (): Promise<TopProduct[]> => {
 
   const json = await res.json();
 
-  // console.log("[getTopProducts] Raw API response:", json);
+  console.log("[getTopProducts] Raw API response:", json);
 
   const rawItems: {
     itemName: string;
@@ -431,7 +457,8 @@ export const getHourlySalesData = async (): Promise<HourlyData[]> => {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      next: { revalidate: 300 },
+      // next: { revalidate: 300 },
+      cache: "no-store",
     },
   );
 

@@ -20,13 +20,25 @@ interface StatBoxProps {
   isLoading?: boolean;
 }
 
+// Map icon color class to a light bg tint
+const ICON_BG_MAP: Record<string, string> = {
+  "text-blue-500": "bg-blue-50",
+  "text-purple-500": "bg-purple-50",
+  "text-red-500": "bg-red-50",
+  "text-green-500": "bg-green-50",
+  "text-amber-500": "bg-amber-50",
+  "text-pink-500": "bg-pink-50",
+  "text-cyan-500": "bg-cyan-50",
+};
+
 const OverviewStatBox = ({
   label,
   value,
   percent,
   iconName,
-  iconColor,
-  periodLabel = "from previous month",
+  iconColor = "text-blue-500",
+  format = "number",
+  periodLabel = "from last month",
   comparisonDateRangeLabel,
   currentDateRange,
   isLoading = false,
@@ -36,86 +48,86 @@ const OverviewStatBox = ({
   const { currency } = useCurrency();
 
   const Icon = ICON_MAP[iconName];
+  const iconBg = ICON_BG_MAP[iconColor] ?? "bg-gray-50";
+
+  const formattedValue =
+    format === "currency"
+      ? formatCurrencySymbol(value, currency.symbol, currency.locale)
+      : format === "percent"
+        ? `${value}%`
+        : value.toLocaleString();
 
   if (isLoading) {
     return (
-      <div
-        className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 animate-pulse"
-        aria-busy="true"
-        aria-live="polite"
-      >
-        <div className="flex items-center justify-between mb-2">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 animate-pulse">
+        <div className="flex items-center justify-between mb-3">
           <div className="h-3 w-24 bg-gray-200 rounded" />
           <div className="w-7 h-7 bg-gray-200 rounded-lg" />
         </div>
-        <div className="h-6 w-32 bg-gray-200 rounded" />
+        <div className="h-7 w-28 bg-gray-200 rounded mb-2" />
+        <div className="h-3 w-20 bg-gray-100 rounded" />
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs text-gray-400 font-medium">{label}</span>
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-6 py-6 hover:shadow-md transition-shadow duration-200">
+      {/* Label + Icon */}
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs font-medium text-gray-500">{label}</span>
         <div
-          className={`w-7 h-7 rounded-lg ${iconColor?.includes("bg-") ? iconColor : "bg-gray-50"} flex items-center justify-center shrink-0`}
+          className={`w-8 h-8 rounded-lg ${iconBg} flex items-center justify-center shrink-0`}
         >
-          <Icon
-            size={16}
-            className={iconColor?.replace("bg-", "text-") || "text-gray-500"}
-          />
+          <Icon size={16} className={iconColor} />
         </div>
       </div>
 
-      {/* Value with inline percent badge */}
-      <div className="flex flitems-center justify-between gap-2">
-        <p className="text-lg flex flex-col font-bold text-gray-900 truncate">
-          {label === "Total Orders" || label === "Products Sold"
-            ? value
-            : formatCurrencySymbol(value, currency.symbol, currency.locale)}
+      {/* Value */}
+      <p className="text-[25px] font-bold text-gray-900 tracking-tight mb-1.5">
+        {formattedValue}
+      </p>
 
-          {isExpanded && currentDateRange && (
-            <span className=" pl-1.5 text-gray-400 font-semibold text-[10px]">
-              {currentDateRange}
-            </span>
-          )}
-        </p>
-        <span className="flex flex-row item-center gap-1">
-          {" "}
-          <span className={`text-xs font-bold ${text} shrink-0`}>
+      {/* Percent + period — collapsible */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1">
+          <ArrowIcon size={13} className={text} />
+          <span className={`text-xs font-semibold ${text}`}>
+            {percent > 0 ? "+" : ""}
             {percent}%
           </span>
-          <ArrowIcon size={14} className={`${text} shrink-0`} />
-        </span>
+          {!isExpanded && (
+            <span className="text-xs text-gray-400">{periodLabel}</span>
+          )}
+        </div>
+
+        {/* Expand toggle */}
+        <button
+          onClick={() => setIsExpanded((p) => !p)}
+          className="p-0.5 text-gray-300 hover:text-gray-500 transition-colors"
+          aria-label={isExpanded ? "Collapse details" : "Expand details"}
+        >
+          {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+        </button>
       </div>
 
-      {/* Expandable section with chevron on right */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center justify-between w-full mt-2 text-[10px] text-gray-400 hover:text-gray-600 transition-colors"
-      >
-        {isExpanded ? (
-          <div className="flex flex-col items-start">
-            <span className="flex flex-row items-center gap-1">
-              <span className={`text-[10px] font-bold ${text} shrink-0`}>
-                {percent}%
-              </span>
-              <ArrowIcon size={14} className={`${text} shrink-0`} />
-              <span className="truncate">{periodLabel}</span>
-            </span>
-            <span className="pl-1.5  text-gray-400 font-semibold text-[10px]">
+      {/* Expanded date range detail */}
+      {isExpanded && (
+        <div className="mt-2 pt-2 border-t border-gray-50 space-y-0.5">
+          {currentDateRange && (
+            <p className="text-[11px] text-gray-400">
+              <span className="text-gray-500 font-medium">Period: </span>
+              {currentDateRange}
+            </p>
+          )}
+          {comparisonDateRangeLabel && (
+            <p className="text-[11px] text-gray-400">
+              <span className="text-gray-500 font-medium">vs: </span>
               {comparisonDateRangeLabel}
-            </span>
-          </div>
-        ) : (
-          <span className="truncate"></span>
-        )}
-        {isExpanded ? (
-          <ChevronUp size={12} className="shrink-0" />
-        ) : (
-          <ChevronDown size={12} className="shrink-0" />
-        )}
-      </button>
+            </p>
+          )}
+          <p className="text-[11px] text-gray-400">{periodLabel}</p>
+        </div>
+      )}
     </div>
   );
 };

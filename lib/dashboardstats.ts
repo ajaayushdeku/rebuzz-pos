@@ -20,6 +20,8 @@ export type StatsApiResponse = Record<StatKey, Stat>;
 // For winning stats
 export interface WinningStat {
   value: string;
+  // Optional computed footer; overrides the static footer in WINNING_STAT_CONFIG.
+  footer?: string;
 }
 
 export type WinningStatKey = (typeof WINNING_STAT_CONFIG)[number]["key"];
