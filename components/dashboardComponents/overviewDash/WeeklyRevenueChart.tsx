@@ -72,7 +72,7 @@ const WeeklyRevenueChart = ({ data, peakDay }: WeeklyRevenueChartProps) => {
       : formatCurrencySymbol(value, currency.symbol, currency.locale);
 
   return (
-    <div className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6">
+    <div className="w-full bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6">
       <div className="mb-4 md:mb-6">
         <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
           Daily Sales Trend

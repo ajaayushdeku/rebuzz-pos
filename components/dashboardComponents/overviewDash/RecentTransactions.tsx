@@ -21,7 +21,7 @@ export default function RecentTransactions({
 }: RecentTransactionsProps) {
   const { currency } = useCurrency();
   return (
-    <div className="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6">
+    <div className="flex-1 bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6">
       <div className="flex items-center justify-between mb-3">
         <div>
           <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">

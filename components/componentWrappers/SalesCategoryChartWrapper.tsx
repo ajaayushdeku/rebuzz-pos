@@ -28,7 +28,7 @@ export default function SalesCategoryChartWrapper() {
   console.log("Category:", data);
 
   return (
-    <div className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6">
+    <div className="w-full bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">

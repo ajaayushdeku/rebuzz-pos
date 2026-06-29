@@ -77,7 +77,7 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
   const ticks = Array.from({ length: tickCount + 1 }, (_, i) => i * tickStep);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full mt-4">
+    <div className="bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full mt-4">
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6">
         <div>

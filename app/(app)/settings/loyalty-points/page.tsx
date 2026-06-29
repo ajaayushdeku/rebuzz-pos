@@ -365,7 +365,7 @@ export default function LoyaltyPointPage() {
                   </div>
                   <div>
                     <p className="text-lg font-bold text-blue-800">
-                      {settings.redeemLimit}
+                      {settings.redeemLimit}%
                     </p>
                     <p className="text-xs text-blue-500">Redeem limit</p>
                   </div>

@@ -1,41 +1,3 @@
-// "use client";
-
-// import { useRouter } from "next/navigation";
-
-// import { Invoice } from "@/lib/types/invoice";
-
-// import { DataTable } from "@/components/ui/data-table";
-// import { getInvoiceColumns } from "./invoice-columns";
-// import { useCurrency } from "@/providers/CurrencyContext";
-
-// export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
-//   const { currency } = useCurrency();
-//   const columns = getInvoiceColumns(currency);
-//   const router = useRouter();
-
-//   return (
-//     <DataTable
-//       columns={columns}
-//       data={invoices}
-//       searchColumn="invoice"
-//       searchPlaceholder="Search invoice #..."
-//       pageSize={10}
-//       onRowClick={(row: Invoice) => {
-//         console.log(row.invoice);
-//         router.push(`/invoices/${row.invoice}`);
-//       }}
-//       filters={[
-//         {
-//           columnId: "status",
-//           label: "Status",
-//           options: ["unpaid", "completed", "pending"],
-//         },
-//       ]}
-//       showColumnToggle
-//     />
-//   );
-// }
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -45,8 +7,13 @@ import {
   ChevronDown,
   ChevronUp,
   ArrowUpDown,
-  Wallet,
-  Pencil,
+  // Eye,
+  // Wallet,
+  // Pencil,
+  // Copy,
+  // Send,
+  // FileText,
+  // Printer,
   Trash2,
   ChevronLeft,
   ChevronRight,
@@ -56,6 +23,16 @@ import { Invoice } from "@/lib/types/invoice";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatDatetime } from "@/utils/helper";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import RecordPaymentModal from "@/components/invoice/modals/RecordPaymentModal";
+import ExportPdfModal from "@/components/invoice/modals/ExportPdfModal";
+import PrintInvoiceModal from "@/components/invoice/modals/PrintInvoiceModal";
 import toast from "react-hot-toast";
 import { parseNepalDateTime } from "../dashboardComponents/staffDash/staffDetail/staffDetailHelpers";
 
@@ -79,6 +56,9 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
   const [page, setPage] = useState(0);
   const [deleteTarget, setDeleteTarget] = useState<Invoice | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [paymentTarget, setPaymentTarget] = useState<Invoice | null>(null);
+  const [exportTarget, setExportTarget] = useState<Invoice | null>(null);
+  const [printTarget, setPrintTarget] = useState<Invoice | null>(null);
   const pageSize = 10;
 
   const filtered = useMemo(() => {
@@ -118,6 +98,30 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
       prev?.key === key && prev.direction === "asc"
         ? { key, direction: "desc" }
         : { key, direction: "asc" },
+    );
+  };
+
+  // ── Resend invoice (send reminder) ────────────────────────────────────────
+  const handleResend = async (invoice: number | string | undefined) => {
+    if (invoice === undefined || invoice === null || invoice === "") return;
+    await toast.promise(
+      (async () => {
+        const res = await fetch(`/api/tickets/${invoice}/send`, {
+          method: "POST",
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(
+            (data as { error?: string }).error || "Failed to resend invoice",
+          );
+        }
+      })(),
+      {
+        loading: "Resending invoice...",
+        success: `Invoice ORD-${invoice} resent`,
+        error: (err) =>
+          err instanceof Error ? err.message : "Failed to resend invoice",
+      },
     );
   };
 
@@ -287,32 +291,90 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                       className="py-3 px-4"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() =>
-                            router.push(`/invoices/${inv.invoice}`)
-                          }
-                          className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                          title="Make payment"
-                        >
-                          <Wallet className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          onClick={() =>
-                            router.push(`/invoices/${inv.invoice}/edit`)
-                          }
-                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Edit invoice"
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          onClick={() => setDeleteTarget(inv)}
-                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete invoice"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                      <div className="flex items-center justify-end">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              onClick={(e) => e.stopPropagation()}
+                              title="Actions"
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                            >
+                              <ChevronDown className="h-4 w-4" />
+                            </button>
+                          </DropdownMenuTrigger>
+
+                          <DropdownMenuContent
+                            align="end"
+                            className="w-48 rounded-xl p-1.5"
+                          >
+                            <DropdownMenuItem
+                              className="rounded-lg"
+                              onSelect={() =>
+                                router.push(`/invoices/${inv.invoice}`)
+                              }
+                            >
+                              {/* <Eye className="h-4 w-4" /> */}
+                              View
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="rounded-lg"
+                              onSelect={() =>
+                                router.push(`/invoices/${inv.invoice}/edit`)
+                              }
+                            >
+                              {/* <Pencil className="h-4 w-4" /> */}
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="rounded-lg">
+                              {/* <Copy className="h-4 w-4" /> */}
+                              Duplicate
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+
+                            <DropdownMenuItem
+                              className="rounded-lg"
+                              onSelect={() => setPaymentTarget(inv)}
+                            >
+                              {/* <Wallet className="h-4 w-4" /> */}
+                              Record payment
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="rounded-lg"
+                              onSelect={() => handleResend(inv.invoice)}
+                            >
+                              {/* <Send className="h-4 w-4" /> */}
+                              Resend invoice
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+
+                            <DropdownMenuItem
+                              className="rounded-lg"
+                              onSelect={() => setExportTarget(inv)}
+                            >
+                              {/* <FileText className="h-4 w-4" /> */}
+                              Export as PDF
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="rounded-lg"
+                              onSelect={() => setPrintTarget(inv)}
+                            >
+                              {/* <Printer className="h-4 w-4" /> */}
+                              Print
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+
+                            <DropdownMenuItem
+                              className="rounded-lg text-red-600 focus:bg-red-50 focus:text-red-600"
+                              onSelect={() => setDeleteTarget(inv)}
+                            >
+                              {/* <Trash2 className="h-4 w-4 text-red-600" /> */}
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </td>
                   </tr>
@@ -437,6 +499,28 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
           </div>
         </div>
       )}
+
+      {/* Record Payment Modal */}
+      <RecordPaymentModal
+        open={!!paymentTarget}
+        onClose={() => setPaymentTarget(null)}
+        invoiceNo={paymentTarget?.invoice}
+        onSuccess={() => router.refresh()}
+      />
+
+      {/* Export as PDF Modal */}
+      <ExportPdfModal
+        open={!!exportTarget}
+        onClose={() => setExportTarget(null)}
+        invoiceNo={exportTarget?.invoice}
+      />
+
+      {/* Print Invoice Modal */}
+      <PrintInvoiceModal
+        open={!!printTarget}
+        onClose={() => setPrintTarget(null)}
+        invoiceNo={printTarget?.invoice}
+      />
     </>
   );
 }

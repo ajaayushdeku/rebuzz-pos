@@ -30,17 +30,17 @@ const WinningStatBox = ({
 
       {/* Content */}
       <div className="relative z-10 ">
-        <p className="text-[10px] font-semibold text-white/70 uppercase tracking-widest mb-3">
+        <p className="text-[12px] font-semibold text-white/70 uppercase tracking-widest mb-3">
           {label}
         </p>
 
         <div className="w-full flex flex-row justify-between items-center">
           <div>
-            <p className="text-xl md:text-2xl font-bold text-white leading-tight">
+            <p className="text-[20px] md:text-2xl font-bold text-white leading-tight">
               {value}
             </p>
             {footer && (
-              <p className="text-xs text-white/75 mt-1.5 font-medium">
+              <p className="text-xs text-white/60 mt-1.5 font-medium">
                 {footer}
               </p>
             )}

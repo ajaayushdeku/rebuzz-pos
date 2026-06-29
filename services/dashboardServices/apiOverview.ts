@@ -291,7 +291,7 @@ export const getTopProducts = async (): Promise<TopProduct[]> => {
 
   const json = await res.json();
 
-  console.log("[getTopProducts] Raw API response:", json);
+  // console.log("[getTopProducts] Raw API response:", json);
 
   const rawItems: {
     itemName: string;

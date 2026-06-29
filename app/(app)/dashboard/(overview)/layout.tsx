@@ -31,7 +31,7 @@ export default function DashboardLayout({
   });
 
   return (
-    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       {/* ── Header ── */}
       <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
         <div>

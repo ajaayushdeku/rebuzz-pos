@@ -59,7 +59,7 @@ const OverviewStatBox = ({
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 animate-pulse">
+      <div className="bg-surface-card rounded-xl border border-surface-border shadow-sm p-4 animate-pulse">
         <div className="flex items-center justify-between mb-3">
           <div className="h-3 w-24 bg-gray-200 rounded" />
           <div className="w-7 h-7 bg-gray-200 rounded-lg" />
@@ -71,7 +71,7 @@ const OverviewStatBox = ({
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-6 py-6 hover:shadow-md transition-shadow duration-200">
+    <div className="bg-surface-card rounded-xl border border-surface-border shadow-sm px-6 py-6 hover:shadow-md transition-shadow duration-200">
       {/* Label + Icon */}
       <div className="flex items-center justify-between mb-3">
         <span className="text-xs font-medium text-gray-500">{label}</span>

@@ -37,6 +37,10 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  /* Page/card surfaces: cool slate page with a warm complementary card. */
+  --color-surface-page: #f8fafc;
+  --color-surface-card: #fffdf8;
+  --color-surface-border: #e7e5e4;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -153,6 +157,29 @@
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* ── Invoice print isolation ──────────────────────────────────────────────
+   The print root is kept off-screen during normal viewing. When printing,
+   everything else is hidden and only the invoice content is rendered. */
+.invoice-print-root {
+  position: fixed;
+  left: -100000px;
+  top: 0;
+}
+@media print {
+  /* Hide the entire app (sidebar, navbar, tables, modals) and render only the
+     portaled invoice content. Using display:none avoids the blank pages that a
+     visibility:hidden approach leaves behind by reserving layout space. */
+  body > *:not(.invoice-print-root) {
+    display: none !important;
+  }
+  .invoice-print-root {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+  }
 }
 
 /* Hide number input spinners */
