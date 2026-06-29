@@ -5,6 +5,7 @@ import ChartSkeleton from "@/components/ui/chartskeleton";
 import TableSkeleton from "@/components/ui/tableskeleton";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import ProfitCostHeader from "@/components/dashboardComponents/profitcostDash/ProfitCostHeader";
+import { resolveRange } from "@/components/dashboardComponents/profitcostDash/profitCostRange";
 import {
   GrossProfitTrendChartWrapper,
   GrossVsCOGSVsNetProfitWrapper,
@@ -12,33 +13,6 @@ import {
   ProfitStatsWrapper,
   RefundAnalysisWrapper,
 } from "@/components/componentWrappers/ProfitCostWrapper";
-
-function getPresetRange(range: string): { startDate: string; endDate: string } {
-  const today = new Date();
-  const end = today.toISOString().split("T")[0];
-  let start: Date;
-
-  switch (range) {
-    case "24h":
-      start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      break;
-    case "week": {
-      start = new Date(today);
-      start.setDate(today.getDate() - today.getDay());
-      break;
-    }
-    case "month":
-      start = new Date(today.getFullYear(), today.getMonth(), 1);
-      break;
-    case "year":
-      start = new Date(today.getFullYear(), 0, 1);
-      break;
-    default:
-      start = new Date(today.getFullYear(), today.getMonth(), 1);
-  }
-
-  return { startDate: start.toISOString().split("T")[0], endDate: end };
-}
 
 export default async function Page({
   searchParams,
@@ -50,22 +24,14 @@ export default async function Page({
   }>;
 }) {
   const params = await searchParams;
-  const range = params.range ?? "";
-  const startDate = params.startDate ?? "";
-  const endDate = params.endDate ?? "";
-  const hasCustomDates = !!startDate && !!endDate;
 
-  let effectiveStartDate: string | undefined;
-  let effectiveEndDate: string | undefined;
-
-  if (hasCustomDates) {
-    effectiveStartDate = startDate;
-    effectiveEndDate = endDate;
-  } else if (range) {
-    const preset = getPresetRange(range);
-    effectiveStartDate = preset.startDate;
-    effectiveEndDate = preset.endDate;
-  }
+  // Single source of truth: resolve the global date range from the URL.
+  const { startDate: effectiveStartDate, endDate: effectiveEndDate } =
+    resolveRange({
+      range: params.range,
+      startDate: params.startDate,
+      endDate: params.endDate,
+    });
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
@@ -109,20 +75,29 @@ export default async function Page({
 
       <ChartErrorBoundary>
         <Suspense fallback={<ChartSkeleton />}>
-          <GrossVsCOGSVsNetProfitWrapper />
+          <GrossVsCOGSVsNetProfitWrapper
+            startDate={effectiveStartDate}
+            endDate={effectiveEndDate}
+          />
         </Suspense>
       </ChartErrorBoundary>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ChartErrorBoundary>
           <Suspense fallback={<TableSkeleton rows={4} />}>
-            <ProfitPerProductWrapper />
+            <ProfitPerProductWrapper
+              startDate={effectiveStartDate}
+              endDate={effectiveEndDate}
+            />
           </Suspense>
         </ChartErrorBoundary>
 
         <ChartErrorBoundary>
           <Suspense fallback={<TableSkeleton rows={4} />}>
-            <RefundAnalysisWrapper />
+            <RefundAnalysisWrapper
+              startDate={effectiveStartDate}
+              endDate={effectiveEndDate}
+            />
           </Suspense>
         </ChartErrorBoundary>
       </div>

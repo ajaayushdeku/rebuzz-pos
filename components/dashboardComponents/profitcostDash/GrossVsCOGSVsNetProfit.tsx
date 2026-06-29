@@ -21,10 +21,6 @@ import type {
 
 import { formatCurrencySymbol } from "@/utils/helper";
 import { CurrencyConfig, useCurrency } from "@/providers/CurrencyContext";
-import {
-  DateRangeFilter,
-  type DateRangeValue,
-} from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { useSalesByCategory } from "@/hooks/useSalesByCategory";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -36,22 +32,6 @@ type ChartDataPoint = {
   cogs: number;
   netProfit: number;
 };
-
-// ── Helpers ───────────────────────────────────────────────────────────────
-
-function toDateStr(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
-function getDefaultRange(): DateRangeValue {
-  const today = new Date();
-  const start = new Date(today);
-  start.setDate(today.getDate() - 29);
-  return { startDate: toDateStr(start), endDate: toDateStr(today) };
-}
 
 // ── Bar shapes ────────────────────────────────────────────────────────────
 
@@ -198,9 +178,13 @@ const ChartSkeleton = () => (
 
 // ── Main component ────────────────────────────────────────────────────────
 
-export default function GrossVsCOGSVsNetProfit() {
-  const defaultRange = getDefaultRange();
-  const [dateRange, setDateRange] = useState<DateRangeValue>(defaultRange);
+export default function GrossVsCOGSVsNetProfit({
+  startDate,
+  endDate,
+}: {
+  startDate: string;
+  endDate: string;
+}) {
   const { currency } = useCurrency();
 
   const ITEMS_PER_PAGE = 5;
@@ -210,7 +194,7 @@ export default function GrossVsCOGSVsNetProfit() {
     data: categories,
     isFetching,
     isError,
-  } = useSalesByCategory(dateRange.startDate, dateRange.endDate);
+  } = useSalesByCategory(startDate, endDate);
 
   // Transform CategorySalesData[] → ChartDataPoint[]
   // COGS is derived as: totalRevenue - netProfit
@@ -278,28 +262,18 @@ export default function GrossVsCOGSVsNetProfit() {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full mt-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-        <div>
-          <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-            Gross Revenue vs COGS vs Net Profit
-          </h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Per-category breakdown of revenue, cost, and profitability
+      <div className="mb-6">
+        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
+          Gross Revenue vs COGS vs Net Profit
+        </h2>
+        <p className="text-xs text-gray-400 mt-0.5">
+          Per-category breakdown of revenue, cost, and profitability
+        </p>
+        {isError && (
+          <p className="text-xs text-amber-400 mt-1">
+            Could not refresh — showing last known data.
           </p>
-          {isError && (
-            <p className="text-xs text-amber-400 mt-1">
-              Could not refresh — showing last known data.
-            </p>
-          )}
-        </div>
-
-        <div className="self-start sm:self-end shrink-0">
-          <DateRangeFilter
-            value={dateRange}
-            onChange={setDateRange}
-            showPresets
-          />
-        </div>
+        )}
       </div>
 
       {/* Summary pills */}

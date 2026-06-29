@@ -13,8 +13,6 @@ import {
 import { useRouter } from "next/navigation";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { DateRangeFilter } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
-import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { useRefundAnalysis } from "@/hooks/useRefundAnalysis";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
@@ -30,24 +28,10 @@ function renderSortIcon(colKey: string, sortConfig: SortConfig) {
   return <ArrowUpDown className="h-3 w-3 opacity-30" />;
 }
 
-/** Get last 30 days range (default) */
-function getDefaultRange(): DateRangeValue {
-  const endDate = (() => {
-    const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${day}`;
-  })();
-  const start = new Date(Date.now() - 29 * 24 * 60 * 60 * 1000);
-  const y = start.getFullYear();
-  const m = String(start.getMonth() + 1).padStart(2, "0");
-  const day = String(start.getDate()).padStart(2, "0");
-  return { startDate: `${y}-${m}-${day}`, endDate };
-}
-
 export default function RefundAnalysis({
   refundReasons: initialData,
+  startDate,
+  endDate,
 }: {
   refundReasons?: {
     name: string;
@@ -56,6 +40,8 @@ export default function RefundAnalysis({
     updatedAt: string;
     createdAt: string;
   }[];
+  startDate: string;
+  endDate: string;
 }) {
   const { currency } = useCurrency();
   const router = useRouter();
@@ -64,12 +50,7 @@ export default function RefundAnalysis({
   const [page, setPage] = useState(0);
   const pageSize = 5;
 
-  // Date filter state (local to this component only)
-  const defaultRange = getDefaultRange();
-  const [startDate, setStartDate] = useState(defaultRange.startDate);
-  const [endDate, setEndDate] = useState(defaultRange.endDate);
-
-  // Fetch data via React Query hook
+  // Fetch data via React Query hook, driven by the global date range
   const { data: fetchedData, isFetching } = useRefundAnalysis(
     startDate,
     endDate,
@@ -135,7 +116,7 @@ export default function RefundAnalysis({
         </p>
       </div>
 
-      {/* Search + DateRangeFilter on the same line */}
+      {/* Search */}
       <div className="flex  justify-between items-center gap-2 mb-4">
         <div className="relative w-full sm:w-64">
           <Search
@@ -161,14 +142,6 @@ export default function RefundAnalysis({
             </button>
           )}
         </div>
-
-        <DateRangeFilter
-          value={{ startDate, endDate }}
-          onChange={({ startDate: s, endDate: e }) => {
-            setStartDate(s);
-            setEndDate(e);
-          }}
-        />
       </div>
 
       {/* Table */}

@@ -344,7 +344,7 @@ export default function InvoiceItemsSelector({
                 onChange={(e) =>
                   updateItem(item.id, "price", Number(e.target.value))
                 }
-                className="text-right h-8 text-xs px-1.5"
+                className="text-right h-8 text-xs px-1.5 no-spinner"
               />
             </TableCell>
 

@@ -42,13 +42,31 @@ export async function ProfitStatsWrapper({
   );
 }
 
-export async function ProfitPerProductWrapper() {
+export async function ProfitPerProductWrapper({
+  startDate,
+  endDate,
+}: {
+  startDate: string;
+  endDate: string;
+}) {
   const profitPerProduct = await getProfitPerProduct();
-  return <ProfitPerProduct products={profitPerProduct} />;
+  return (
+    <ProfitPerProduct
+      products={profitPerProduct}
+      startDate={startDate}
+      endDate={endDate}
+    />
+  );
 }
 
-export function RefundAnalysisWrapper() {
-  return <RefundAnalysis />;
+export function RefundAnalysisWrapper({
+  startDate,
+  endDate,
+}: {
+  startDate: string;
+  endDate: string;
+}) {
+  return <RefundAnalysis startDate={startDate} endDate={endDate} />;
 }
 
 export async function ExpenseStatsWrapper() {
@@ -77,9 +95,15 @@ export function GrossProfitTrendChartWrapper() {
   return <GrossProfitTrendChart />;
 }
 
-export function GrossVsCOGSVsNetProfitWrapper() {
-  // Chart now self-fetches via /api/dashboard/profit-trend
-  return <GrossVsCOGSVsNetProfit />;
+export function GrossVsCOGSVsNetProfitWrapper({
+  startDate,
+  endDate,
+}: {
+  startDate: string;
+  endDate: string;
+}) {
+  // Chart self-fetches via the global date range passed from the page.
+  return <GrossVsCOGSVsNetProfit startDate={startDate} endDate={endDate} />;
 }
 
 export async function ExpenseByCategoryChartWrapper() {

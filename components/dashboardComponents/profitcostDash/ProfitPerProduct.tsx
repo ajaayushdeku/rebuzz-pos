@@ -13,8 +13,6 @@ import {
 import { Product } from "./profit-per-product-column";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { DateRangeFilter } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
-import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { useProfitPerProduct } from "@/hooks/useProfitPerProduct";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
@@ -31,26 +29,14 @@ function getProfitColor(profit: number): string {
   return "text-gray-600";
 }
 
-/** Get last 30 days range (default) */
-function getDefaultRange(): DateRangeValue {
-  const endDate = (() => {
-    const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${day}`;
-  })();
-  const start = new Date(Date.now() - 29 * 24 * 60 * 60 * 1000);
-  const y = start.getFullYear();
-  const m = String(start.getMonth() + 1).padStart(2, "0");
-  const day = String(start.getDate()).padStart(2, "0");
-  return { startDate: `${y}-${m}-${day}`, endDate };
-}
-
 export default function ProfitPerProduct({
   products: initialProducts,
+  startDate,
+  endDate,
 }: {
   products: Product[];
+  startDate: string;
+  endDate: string;
 }) {
   const { currency } = useCurrency();
   const [search, setSearch] = useState("");
@@ -58,12 +44,7 @@ export default function ProfitPerProduct({
   const [page, setPage] = useState(0);
   const pageSize = 5;
 
-  // Date filter state
-  const defaultRange = getDefaultRange();
-  const [startDate, setStartDate] = useState(defaultRange.startDate);
-  const [endDate, setEndDate] = useState(defaultRange.endDate);
-
-  // Fetch data via React Query hook
+  // Fetch data via React Query hook, driven by the global date range
   const { data: fetchedData, isFetching } = useProfitPerProduct(
     startDate,
     endDate,
@@ -126,7 +107,7 @@ export default function ProfitPerProduct({
         </p>
       </div>
 
-      {/* Search + DateRangeFilter */}
+      {/* Search */}
       <div className="flex justify-between items-center gap-2 mb-4">
         <div className="relative w-full sm:w-64">
           <Search
@@ -152,14 +133,6 @@ export default function ProfitPerProduct({
             </button>
           )}
         </div>
-
-        <DateRangeFilter
-          value={{ startDate, endDate }}
-          onChange={({ startDate: s, endDate: e }) => {
-            setStartDate(s);
-            setEndDate(e);
-          }}
-        />
       </div>
 
       {/* Table — horizontally scrollable on mobile */}
