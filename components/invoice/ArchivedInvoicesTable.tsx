@@ -37,8 +37,6 @@ export default function ArchivedInvoicesTable({
   const [restoring, setRestoring] = useState(false);
   const pageSize = 10;
 
-  console.log("Invoices:", invoices);
-
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     const invoiceList = Array.isArray(invoices) ? invoices : [];

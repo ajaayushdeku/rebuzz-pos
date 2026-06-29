@@ -38,31 +38,16 @@ export default function PrintInvoiceModal({
   const { invoice, customerProfile, business, billData } =
     useInvoiceDocumentData(invoiceNo, open);
 
-  const proformaRef = {
-    current: null,
-  } as React.RefObject<HTMLDivElement | null>;
-  const regularRef = {
-    current: null,
-  } as React.RefObject<HTMLDivElement | null>;
-  const taxRef = { current: null } as React.RefObject<HTMLDivElement | null>;
-
   const [mounted, setMounted] = useState(false);
   const [printType, setPrintType] = useState<InvoiceType | null>(null);
   const [generatingFor, setGeneratingFor] = useState<string | null>(null);
 
   useEffect(() => setMounted(true), []);
 
-  const refMap = {
-    proforma: proformaRef,
-    invoice: regularRef,
-    tax: taxRef,
-  } as const;
-
-  const handlePrint = async (
-    ref: React.RefObject<HTMLDivElement | null>,
-    type: InvoiceType,
-  ) => {
-    if (!ref.current || !invoice) return;
+  const handlePrint = (type: InvoiceType) => {
+    if (!invoice) return;
+    // Render the chosen preview into the print root; the effect below opens
+    // the browser print dialog once it has painted.
     setGeneratingFor(type);
     setPrintType(type);
   };
@@ -141,7 +126,7 @@ export default function PrintInvoiceModal({
                   <button
                     key={item.type}
                     className="group cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                    onClick={() => handlePrint(refMap[item.type], item.type)}
+                    onClick={() => handlePrint(item.type)}
                     disabled={generatingFor === item.type}
                   >
                     <div className="rounded-xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-3 shadow-sm transition-all hover:shadow-md">
