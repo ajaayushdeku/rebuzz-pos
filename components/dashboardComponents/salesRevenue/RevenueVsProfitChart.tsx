@@ -20,11 +20,9 @@ import type {
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
 
-import { useSearchParams } from "next/navigation";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { CurrencyConfig, useCurrency } from "@/providers/CurrencyContext";
 import { useRevenueVsProfit } from "@/hooks/useRevenueVsProfit";
-import { CalendarDateFilter } from "@/components/dashboardComponents/staffDash/CalendarDateFilter";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 // Types
@@ -113,39 +111,17 @@ const CustomTooltip = ({
 
 // Chart — fetches data via hook
 
-function toDateStr(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function getDefaultRange(): { startDate: string; endDate: string } {
-  const today = new Date();
-  const endDate = toDateStr(today);
-  const start = new Date(today);
-  start.setDate(today.getDate() - 29);
-  return { startDate: toDateStr(start), endDate };
-}
-
-export default function RevenueVsProfitChart() {
-  // Read dates directly from URL (CalendarDateFilter updates the URL)
-  const searchParams = useSearchParams();
-  const urlStartDate = searchParams.get("startDate");
-  const urlEndDate = searchParams.get("endDate");
-
-  // Fallback to last 30 days if no dates provided
-  const defaultRange = getDefaultRange();
-  const effectiveStartDate = urlStartDate || defaultRange.startDate;
-  const effectiveEndDate = urlEndDate || defaultRange.endDate;
-
-  const ITEMS_PER_PAGE = 5;
+export default function RevenueVsProfitChart({
+  startDate,
+  endDate,
+}: {
+  startDate: string;
+  endDate: string;
+}) {
+  const ITEMS_PER_PAGE = 6;
   const [page, setPage] = useState(0);
 
-  const { data, isFetching, isError } = useRevenueVsProfit(
-    effectiveStartDate,
-    effectiveEndDate,
-  );
+  const { data, isFetching, isError } = useRevenueVsProfit(startDate, endDate);
   const { currency } = useCurrency();
 
   const allData = useMemo<ProductData[]>(() => {
@@ -206,25 +182,18 @@ export default function RevenueVsProfitChart() {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-        <div>
-          <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-            Revenue vs Profit by Product
-          </h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Comparing top-line revenue against net profit per product
+      <div className="mb-6">
+        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
+          Revenue vs Profit by Product
+        </h2>
+        <p className="text-xs text-gray-400 mt-0.5">
+          Comparing top-line revenue against net profit per product
+        </p>
+        {isError && (
+          <p className="text-xs text-amber-400 mt-1">
+            Could not refresh — showing last known data.
           </p>
-          {isError && (
-            <p className="text-xs text-amber-400 mt-1">
-              Could not refresh — showing last known data.
-            </p>
-          )}
-        </div>
-
-        {/* Calendar date filter */}
-        <div className="self-end">
-          <CalendarDateFilter showPresets={false} />
-        </div>
+        )}
       </div>
 
       {/* Chart */}

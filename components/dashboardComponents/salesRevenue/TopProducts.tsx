@@ -14,32 +14,18 @@ import { TopProduct } from "./top-product-columns";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { getPercentColor } from "@/lib/utils";
-import { DateRangeFilter } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
-import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { useTopProducts } from "@/hooks/useTopProducts";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
-/** Get last 7 days range (default) */
-function getDefaultRange(): DateRangeValue {
-  const endDate = (() => {
-    const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${day}`;
-  })();
-  const start = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000);
-  const y = start.getFullYear();
-  const m = String(start.getMonth() + 1).padStart(2, "0");
-  const day = String(start.getDate()).padStart(2, "0");
-  return { startDate: `${y}-${m}-${day}`, endDate };
-}
-
 export default function TopProducts({
   topProducts: initialData,
+  startDate,
+  endDate,
 }: {
   topProducts?: TopProduct[];
+  startDate: string;
+  endDate: string;
 }) {
   const { currency } = useCurrency();
   const [search, setSearch] = useState("");
@@ -47,12 +33,7 @@ export default function TopProducts({
   const [page, setPage] = useState(0);
   const pageSize = 5;
 
-  // Date filter state (local to this component only)
-  const defaultRange = getDefaultRange();
-  const [startDate, setStartDate] = useState(defaultRange.startDate);
-  const [endDate, setEndDate] = useState(defaultRange.endDate);
-
-  // Fetch data via React Query hook
+  // Fetch data via React Query hook, driven by the global date range
   const { data: fetchedData, isFetching } = useTopProducts(startDate, endDate);
   const topProducts = fetchedData ?? initialData ?? [];
 
@@ -116,7 +97,7 @@ export default function TopProducts({
         </div>
       </div>
 
-      {/* Search + DateRangeFilter on the same line */}
+      {/* Search */}
       <div className="flex justify-between items-center gap-2 mt-4 mb-4">
         <div className="relative w-full sm:w-64">
           <Search
@@ -142,14 +123,6 @@ export default function TopProducts({
             </button>
           )}
         </div>
-
-        <DateRangeFilter
-          value={{ startDate, endDate }}
-          onChange={({ startDate: s, endDate: e }) => {
-            setStartDate(s);
-            setEndDate(e);
-          }}
-        />
       </div>
 
       {/* Table */}
