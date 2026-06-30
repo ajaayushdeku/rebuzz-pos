@@ -10,6 +10,7 @@ import SalesRevenueHeader from "@/components/dashboardComponents/salesRevenue/Sa
 import { resolveRange } from "@/components/dashboardComponents/salesRevenue/salesRevenueRange";
 import {
   PeakHoursAnalysisWrapper,
+  PeakDaysAnalysisWrapper,
   RevenueVsProfitChartWrapper,
   SalesTrendChartWrapper,
   SlowProductsWrapper,
@@ -78,11 +79,29 @@ export default async function Page({
           </Suspense>
         </ChartErrorBoundary>
 
-        <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
-            <PeakHoursAnalysisWrapper startDate={startDate} endDate={endDate} />
-          </Suspense>
-        </ChartErrorBoundary>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="lg:col-span-1">
+            <ChartErrorBoundary>
+              <Suspense fallback={<ChartSkeleton />}>
+                <PeakHoursAnalysisWrapper
+                  startDate={startDate}
+                  endDate={endDate}
+                />
+              </Suspense>
+            </ChartErrorBoundary>
+          </div>
+
+          <div className="lg:col-span-1">
+            <ChartErrorBoundary>
+              <Suspense fallback={<ChartSkeleton />}>
+                <PeakDaysAnalysisWrapper
+                  startDate={startDate}
+                  endDate={endDate}
+                />
+              </Suspense>
+            </ChartErrorBoundary>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <ChartErrorBoundary>

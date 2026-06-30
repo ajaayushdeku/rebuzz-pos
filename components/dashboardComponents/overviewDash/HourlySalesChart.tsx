@@ -194,6 +194,9 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
               </option>
             </select>
 
+            {/* Vertical divider */}
+            <div className="w-px h-6 bg-gray-300 mx-1" />
+
             {/* Custom From / To hour inputs */}
             <div className="flex items-center gap-1.5">
               <label className="text-xs text-gray-400 whitespace-nowrap">

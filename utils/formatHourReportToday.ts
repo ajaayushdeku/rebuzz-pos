@@ -95,17 +95,7 @@ const deriveDateFromPaidAt = (paidAt: string): string | null => {
   return datePart || null;
 };
 
-/**
- * Average order count and revenue for each hour (00–23) across the days that
- * actually have data for that hour.
- *
- * Bills are first grouped by (date, hour) and aggregated into per-day hourly
- * totals; each hour's average is then `sum(per-day totals) / days-with-data`,
- * NOT an average over individual transactions or over every day in the range.
- *
- * Example — 09:00 with Jun 1 → 10, Jun 5 → 5, Jun 8 → 7 orders:
- *   averageSales = (10 + 5 + 7) / 3 = 7.33
- */
+/* Average order count and revenue for each hour (00–23) across the days that*/
 export const formatPeakHourAverages = (
   bills: { grandTotal: number; paidAt: string; isRefunded?: boolean }[],
 ): PeakHourlyData[] => {

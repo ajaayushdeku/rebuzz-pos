@@ -327,8 +327,10 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                               {/* <Pencil className="h-4 w-4" /> */}
                               Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="rounded-lg">
-                              {/* <Copy className="h-4 w-4" /> */}
+                            <DropdownMenuItem
+                              disabled
+                              className="rounded-lg opacity-50 cursor-not-allowed"
+                            >
                               Duplicate
                             </DropdownMenuItem>
 

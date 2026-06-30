@@ -72,7 +72,7 @@ export const navigationConfig: NavigationItem[] = [
         icon: TrendingUp,
       },
       {
-        label: "Profit vs Expense",
+        label: "Income vs Expense",
         href: "/dashboard/profit-cost",
         icon: HandCoins,
       },
@@ -88,7 +88,7 @@ export const navigationConfig: NavigationItem[] = [
   },
   {
     type: "section",
-    label: "Records",
+    label: "Sales & Payments",
     icon: FileText,
     items: [
       { label: "Invoices", href: "/records/invoices", icon: FileText },

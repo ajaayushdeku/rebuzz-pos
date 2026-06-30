@@ -15,6 +15,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Rectangle,
+  Legend,
 } from "recharts";
 import type { BarShapeProps } from "recharts";
 
@@ -31,6 +32,22 @@ interface PeakHourlyDataProps {
 const clampHour = (value: number): number =>
   Math.max(0, Math.min(23, Math.floor(Number.isNaN(value) ? 0 : value)));
 
+const CustomLegend = () => (
+  <div className="flex items-center justify-center gap-5 mt-2">
+    {[{ label: "Avg. Orders", color: "#3a7ced" }].map(({ label, color }) => (
+      <div key={label} className="flex items-center gap-1.5">
+        <span
+          className="w-3 h-3 rounded-sm shrink-0"
+          style={{ backgroundColor: color }}
+        />
+        <span className="text-xs font-semibold" style={{ color }}>
+          {label}
+        </span>
+      </div>
+    ))}
+  </div>
+);
+
 const CustomTooltip = ({
   active,
   payload,
@@ -44,13 +61,13 @@ const CustomTooltip = ({
         <p className="text-gray-400 text-xs mb-1.5">{label}</p>
         <div className="flex items-center justify-between gap-4">
           <span className="text-xs text-gray-500">Avg. Orders</span>
-          <span className="font-bold text-sm text-blue-600">
+          <span className="text-xs font-bold text-blue-800">
             {point.sales.toFixed(2)}
           </span>
         </div>
         <div className="flex items-center justify-between gap-4">
           <span className="text-xs text-gray-500">Avg. Revenue</span>
-          <span className="font-bold text-sm text-violet-600">
+          <span className="text-xs font-bold text-violet-800">
             {formatCurrencySymbol(
               point.revenue,
               currency.symbol,
@@ -177,7 +194,8 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
   return (
     <div className="bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full mt-4">
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4 md:mb-6">
+      <div className="flex flex-row  justify-between gap-3 mb-5">
+        {/* <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"> */}
         <div className="flex-shrink-0">
           <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
             Peak Hours Analysis
@@ -186,10 +204,11 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
             Average number of orders per hour across the selected period
           </p>
         </div>
+        {/* </div> */}
 
         {/* Hour Range Filter */}
-        <div className="flex flex-col gap-1.5">
-          <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-col gap-1.5 items-end ">
+          <div className="flex flex-col items-center gap-2">
             <select
               value={presetValue}
               onChange={(e) => handlePresetChange(e.target.value)}
@@ -210,6 +229,9 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
                 Custom
               </option>
             </select>
+
+            {/* Vertical divider */}
+            {/* <div className="w-px h-6 bg-gray-300 mx-1" /> */}
 
             {/* Custom From / To hour inputs */}
             <div className="flex items-center gap-1.5">
@@ -306,7 +328,7 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
                   left: 10,
                   bottom: 0,
                 }}
-                barCategoryGap="20%"
+                barCategoryGap="5%"
               >
                 <CartesianGrid vertical={false} stroke="#f3f4f6" />
 
@@ -316,7 +338,7 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
                   tickLine={false}
                   tick={{
                     fill: "#9ca3af",
-                    fontSize: 11,
+                    fontSize: 10,
                   }}
                   dy={8}
                   interval="preserveStartEnd"
@@ -340,7 +362,9 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
                   }}
                 />
 
-                <Bar dataKey="sales" shape={CustomBar} />
+                <Legend content={<CustomLegend />} />
+
+                <Bar dataKey="sales" name="Avg. Orders" shape={CustomBar} />
               </BarChart>
             </ResponsiveContainer>
           </div>

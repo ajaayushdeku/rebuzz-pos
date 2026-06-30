@@ -36,7 +36,7 @@ const getYAxisTicks = (data: CompareSalesPoint[]): number[] => {
 
 // Sub-components
 const CustomBar = (props: BarShapeProps) => (
-  <Rectangle {...props} radius={[8, 8, 0, 0]} fill="#eb3367" />
+  <Rectangle {...props} radius={[8, 8, 0, 0]} fill="#ce4d72" />
 );
 
 const CustomTooltip = ({
@@ -49,14 +49,19 @@ const CustomTooltip = ({
   return (
     <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100">
       <p className="text-gray-400 text-xs mb-1">{label}</p>
-      <p className="text-violet-500 font-bold text-sm">
-        {/* {formatCurrency(payload[0].value as number, currency)} */}
-        {formatCurrencySymbol(
-          payload[0].value as number,
-          currency.symbol,
-          currency.locale,
-        )}
-      </p>
+
+      <div className="flex flex-row items-center justify-between gap-4">
+        <span className="text-xs text-gray-600 capitalize">Revenue</span>
+
+        <span className="text-xs font-bold text-violet-800">
+          {/* {formatCurrency(payload[0].value as number, currency)} */}
+          {formatCurrencySymbol(
+            payload[0].value as number,
+            currency.symbol,
+            currency.locale,
+          )}
+        </span>
+      </div>
     </div>
   );
 };
