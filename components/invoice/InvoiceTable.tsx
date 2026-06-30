@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Search,
   ChevronDown,
@@ -50,6 +51,7 @@ const STATUS_FILTER_OPTIONS = ["paid", "unpaid"];
 export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
   const { currency } = useCurrency();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
@@ -505,7 +507,10 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
         open={!!paymentTarget}
         onClose={() => setPaymentTarget(null)}
         invoiceNo={paymentTarget?.invoice}
-        onSuccess={() => router.refresh()}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ["invoice"] });
+          queryClient.invalidateQueries({ queryKey: ["archived-invoices"] });
+        }}
       />
 
       {/* Export as PDF Modal */}

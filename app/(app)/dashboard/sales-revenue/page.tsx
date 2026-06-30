@@ -9,6 +9,7 @@ import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import SalesRevenueHeader from "@/components/dashboardComponents/salesRevenue/SalesRevenueHeader";
 import { resolveRange } from "@/components/dashboardComponents/salesRevenue/salesRevenueRange";
 import {
+  PeakHoursAnalysisWrapper,
   RevenueVsProfitChartWrapper,
   SalesTrendChartWrapper,
   SlowProductsWrapper,
@@ -74,6 +75,12 @@ export default async function Page({
         <ChartErrorBoundary>
           <Suspense fallback={<ChartSkeleton />}>
             <SalesTrendChartWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <PeakHoursAnalysisWrapper startDate={startDate} endDate={endDate} />
           </Suspense>
         </ChartErrorBoundary>
 

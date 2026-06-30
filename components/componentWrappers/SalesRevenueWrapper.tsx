@@ -2,6 +2,8 @@ import TopProducts from "../dashboardComponents/salesRevenue/TopProducts";
 import SalesTrendChart from "../dashboardComponents/salesRevenue/SalesTrendChart";
 import SlowProducts from "../dashboardComponents/salesRevenue/SlowProducts";
 import RevenueVsProfitChart from "../dashboardComponents/salesRevenue/RevenueVsProfitChart";
+import PeakHoursAnalysis from "../dashboardComponents/salesRevenue/PeakHoursAnalysis";
+import { getPeakHoursData } from "@/services/dashboardServices/apiSalesRevenue";
 
 export function TopProductsWrapper({
   startDate,
@@ -32,4 +34,16 @@ export function RevenueVsProfitChartWrapper({
 export async function SalesTrendChartWrapper() {
   // SalesTrendChart fetches data internally via useSalesTrends hook
   return <SalesTrendChart />;
+}
+
+export async function PeakHoursAnalysisWrapper({
+  startDate,
+  endDate,
+}: {
+  startDate: string;
+  endDate: string;
+}) {
+  // Average sales per hour-of-day for the globally selected date range.
+  const data = await getPeakHoursData(startDate, endDate);
+  return <PeakHoursAnalysis data={data} />;
 }

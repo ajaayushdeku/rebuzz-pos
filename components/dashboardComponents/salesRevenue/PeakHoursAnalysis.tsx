@@ -7,23 +7,29 @@ import { formatCurrencySymbol } from "@/utils/helper";
 import { HOUR_RANGES } from "@/utils/formatHourReportToday";
 
 import {
-  AreaChart,
-  Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Rectangle,
 } from "recharts";
+import type { BarShapeProps } from "recharts";
 
-export interface HourlyData {
+export interface PeakHourlyData {
   hour: string;
   revenue: number;
+  sales: number;
 }
 
-interface HourlyDataProps {
-  data: HourlyData[];
+interface PeakHourlyDataProps {
+  data: PeakHourlyData[];
 }
+
+const clampHour = (value: number): number =>
+  Math.max(0, Math.min(23, Math.floor(Number.isNaN(value) ? 0 : value)));
 
 const CustomTooltip = ({
   active,
@@ -32,26 +38,33 @@ const CustomTooltip = ({
   currency,
 }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
+    const point = payload[0].payload as PeakHourlyData;
     return (
-      <div className="bg-white rounded-xl px-4 py-2 shadow-lg border border-gray-100">
-        <p className="text-gray-400 text-xs">{label}</p>
-        <p className="font-bold text-sm text-violet-600">
-          {formatCurrencySymbol(
-            payload[0].value as number,
-            currency.symbol,
-            currency.locale,
-          )}
-        </p>
+      <div className="bg-white rounded-xl px-4 py-2.5 shadow-lg border border-gray-100 min-w-44">
+        <p className="text-gray-400 text-xs mb-1.5">{label}</p>
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-xs text-gray-500">Avg. Orders</span>
+          <span className="font-bold text-sm text-blue-600">
+            {point.sales.toFixed(2)}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-xs text-gray-500">Avg. Revenue</span>
+          <span className="font-bold text-sm text-violet-600">
+            {formatCurrencySymbol(
+              point.revenue,
+              currency.symbol,
+              currency.locale,
+            )}
+          </span>
+        </div>
       </div>
     );
   }
   return null;
 };
 
-const clampHour = (value: number): number =>
-  Math.max(0, Math.min(23, Math.floor(Number.isNaN(value) ? 0 : value)));
-
-export default function HourlySalesChart({ data }: HourlyDataProps) {
+const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
   const { currency } = useCurrency();
   const [selectedRange, setSelectedRange] = useState<{
     start: number;
@@ -117,17 +130,21 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
     });
   }, [data, selectedRange]);
 
+  // ── Y-axis for order counts (integers) ──
   const formatYAxis = (value: number): string =>
-    value >= 1000
-      ? `${currency.symbol} ${value / 1000}k`
-      : formatCurrencySymbol(value, currency.symbol, currency.locale);
+    Number.isInteger(value) ? `${value}` : value.toFixed(1);
 
-  const maxRevenue = Math.max(...filteredData.map((d) => d.revenue), 0);
-  const domainMax =
-    maxRevenue === 0 ? 500 : Math.ceil(maxRevenue / 100) * 100 + 100;
-  const tickCount = 5;
-  const tickStep = Math.ceil(domainMax / tickCount / 100) * 100;
-  const ticks = Array.from({ length: tickCount + 1 }, (_, i) => i * tickStep);
+  const maxSales = Math.max(...filteredData.map((d) => d.sales), 0);
+  const domainMax = maxSales <= 0 ? 5 : Math.max(5, Math.ceil(maxSales * 1.15));
+  const tickStep = Math.max(1, Math.ceil(domainMax / 5));
+  const ticks = Array.from(
+    { length: Math.floor(domainMax / tickStep) + 1 },
+    (_, i) => i * tickStep,
+  );
+
+  const CustomBar = (props: BarShapeProps) => (
+    <Rectangle {...props} radius={[8, 8, 0, 0]} fill="#3a7ced" />
+  );
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -163,10 +180,10 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4 md:mb-6">
         <div className="flex-shrink-0">
           <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-            Hourly Sales Trend
+            Peak Hours Analysis
           </h2>
           <p className="text-xs text-gray-400 mt-0.5">
-            Revenue throughput across all operating hours today
+            Average number of orders per hour across the selected period
           </p>
         </div>
 
@@ -176,7 +193,7 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
             <select
               value={presetValue}
               onChange={(e) => handlePresetChange(e.target.value)}
-              className="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent whitespace-nowrap"
+              className="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent whitespace-nowrap"
             >
               <option value="all">All Day (00:00 – 23:59)</option>
               {HOUR_RANGES.filter((r) => !(r.start === 0 && r.end === 23)).map(
@@ -205,7 +222,7 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                 max={23}
                 value={fromHour}
                 onChange={(e) => handleFromChange(Number(e.target.value))}
-                className="w-14 text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                className="w-14 text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <label className="text-xs text-gray-400 whitespace-nowrap">
                 To
@@ -216,7 +233,7 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                 max={23}
                 value={toHour}
                 onChange={(e) => handleToChange(Number(e.target.value))}
-                className="w-14 text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                className="w-14 text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -281,7 +298,7 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
         >
           <div style={{ minWidth: Math.max(filteredData.length * 60, 600) }}>
             <ResponsiveContainer width="100%" height={280}>
-              <AreaChart
+              <BarChart
                 data={filteredData}
                 margin={{
                   top: 10,
@@ -289,24 +306,8 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                   left: 10,
                   bottom: 0,
                 }}
+                barCategoryGap="20%"
               >
-                <defs>
-                  <linearGradient
-                    id="revenueGradient"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop offset="0%" stopColor="#7c3aed" stopOpacity={0.18} />
-                    <stop
-                      offset="100%"
-                      stopColor="#7c3aed"
-                      stopOpacity={0.01}
-                    />
-                  </linearGradient>
-                </defs>
-
                 <CartesianGrid vertical={false} stroke="#f3f4f6" />
 
                 <XAxis
@@ -328,42 +329,25 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                   tick={{ fill: "#9ca3af", fontSize: 12 }}
                   ticks={ticks}
                   domain={[0, domainMax]}
-                  width={55}
+                  allowDecimals={false}
+                  width={45}
                 />
 
                 <Tooltip
                   content={<CustomTooltip currency={currency} />}
                   cursor={{
-                    stroke: "#7c3aed",
-                    strokeWidth: 1,
-                    strokeDasharray: "4 4",
+                    fill: "rgba(58,124,237,0.06)",
                   }}
                 />
 
-                <Area
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="#7c3aed"
-                  strokeWidth={2.5}
-                  fill="url(#revenueGradient)"
-                  dot={{
-                    r: 4,
-                    fill: "#7c3aed",
-                    stroke: "#fff",
-                    strokeWidth: 2,
-                  }}
-                  activeDot={{
-                    r: 6,
-                    fill: "#7c3aed",
-                    stroke: "#fff",
-                    strokeWidth: 2,
-                  }}
-                />
-              </AreaChart>
+                <Bar dataKey="sales" shape={CustomBar} />
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default PeakHoursAnalysis;

@@ -102,7 +102,7 @@ export const WINNING_STAT_CONFIG: ClientStatConfig[] = [
     label: "TOP SELLING PRODUCT",
     footer: "Statistics",
     icon: Trophy,
-    iconColor: "text-amber-300",
+    iconColor: "text-blue-300",
     bgColor: "bg-blue-700",
   },
   {
@@ -110,7 +110,7 @@ export const WINNING_STAT_CONFIG: ClientStatConfig[] = [
     label: "PEAK HOUR",
     footer: "Busiest window of the day",
     icon: Clock,
-    iconColor: "text-gray-100",
+    iconColor: "text-purple-300",
     bgColor: "bg-purple-700",
   },
   {
@@ -118,7 +118,7 @@ export const WINNING_STAT_CONFIG: ClientStatConfig[] = [
     label: "BEST DAY OF THE WEEK",
     footer: "Above daily mean",
     icon: Star,
-    iconColor: "text-amber-300",
+    iconColor: "text-green-300",
     bgColor: "bg-green-700",
   },
   {

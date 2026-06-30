@@ -1,6 +1,8 @@
 // import { SalesTrendsData } from "@/components/dashboardComponents/salesRevenue/SalesTrendChart";
+import { PeakHourlyData } from "@/components/dashboardComponents/salesRevenue/PeakHoursAnalysis";
 import { SlowProduct } from "@/components/dashboardComponents/salesRevenue/slow-product-columns";
 import { TopProduct } from "@/components/dashboardComponents/salesRevenue/top-product-columns";
+import { formatPeakHourAverages } from "@/utils/formatHourReportToday";
 
 // import {
 //   // mockRevenueVsProfit,
@@ -155,6 +157,47 @@ export async function getSlowProducts(): Promise<SlowProduct[]> {
       stockAmount: product.inStock ?? 0,
     }));
 }
+
+// Peak Hours — average sales per hour-of-day across a date range.
+// Buckets every bill by its hour-of-day, then divides each hour's total by the
+// number of days in the range to get the average sales for that hour.
+export const getPeakHoursData = async (
+  startDate: string,
+  endDate: string,
+): Promise<PeakHourlyData[]> => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  const res = await fetch(
+    `${BASE}/business/report?startDate=${startDate}&endDate=${endDate}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    },
+  );
+
+  if (!res.ok) throw new Error(`Failed to fetch sales report: ${res.status}`);
+
+  const json = await res.json();
+
+  // The report endpoint nests bills under `report` for ranges and
+  // `dailySalesReport` for single days — support both.
+  const bills: {
+    grandTotal: number;
+    paidAt: string;
+    isRefunded: boolean;
+  }[] =
+    json?.data?.report?.allBills ??
+    json?.data?.dailySalesReport?.allBills ??
+    [];
+
+  // For each hour, average the per-day hourly totals across only the days that
+  // have data for that hour (grouped by date + hour).
+  return formatPeakHourAverages(bills);
+};
 
 // export async function getSalesTrends(): Promise<SalesTrendsData> {
 //   // try {

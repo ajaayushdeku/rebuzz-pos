@@ -75,11 +75,11 @@ function normalize<T>(
       case "week": {
         const w = p as unknown as RawWeekly;
         const date = new Date(w.weekStart + "T00:00:00");
-        const month = date.toLocaleDateString("en-US", { month: "long" }); // "May"
+        const month = date.toLocaleDateString("en-US", { month: "short" }); // "Mar", "Apr", etc.
         const day = date.getDate();
         const weekNum = Math.ceil(day / 7);
         return {
-          label: `Week ${weekNum} of ${month}`,
+          label: `Wk ${weekNum} of ${month}`,
           totalSales: w.totalSales,
           totalRevenue: w.totalRevenue,
         };

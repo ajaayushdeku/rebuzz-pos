@@ -19,7 +19,7 @@ const WinningStatBox = ({
 }: WinningStatBoxProps) => {
   return (
     <div
-      className={`relative w-full px-6 pt-4 pb-8 ${bgColor} rounded-2xl overflow-hidden min-h-[120px] flex flex-col justify-center`}
+      className={`relative w-full px-6 pt-4 pb-8 ${bgColor} rounded-2xl overflow-hidden lg:min-h-[180px] flex flex-col justify-center sm:min-h-[120px] `}
     >
       {/* Background ghost icon */}
       <Icon
@@ -30,11 +30,11 @@ const WinningStatBox = ({
 
       {/* Content */}
       <div className="relative z-10 ">
-        <p className="text-[12px] font-semibold text-white/70 uppercase tracking-widest mb-3">
+        <p className="text-[12px] font-semibold text-white/70 uppercase tracking-widest mb-5">
           {label}
         </p>
 
-        <div className="w-full flex flex-row justify-between items-center">
+        <div className="w-full flex flex-row  justify-between items-center">
           <div>
             <p className="text-[20px] md:text-2xl font-bold text-white leading-tight">
               {value}
@@ -49,7 +49,7 @@ const WinningStatBox = ({
           <div className="w-10 h-10 flex items-center justify-center ">
             <Icon
               className={`${iconColor || "text-white"} shrink-0`}
-              size={25}
+              size={30}
             />
           </div>
         </div>

@@ -195,7 +195,49 @@ export const getWinningStats = async (): Promise<WinningApiResponse> => {
 
   // ── Sales streak — consecutive days with sales (min 2) ───────────────────
   const salesStreak = (() => {
-    // Walk backwards from the most recent day, counting consecutive days with revenue > 0
+    const today = weeklyData[weeklyData.length - 1];
+    const yesterday = weeklyData[weeklyData.length - 2];
+    const hasTodaySales = today?.revenue > 0;
+    const hasYesterdaySales = yesterday?.revenue > 0;
+
+    // Case 1: No sales today and no sales yesterday - streak is broken
+    if (!hasTodaySales && !hasYesterdaySales) {
+      return {
+        value: "0 days",
+        footer: "No active sales streak",
+      };
+    }
+
+    // Case 2: No sales today but has sales yesterday - preserve streak up to yesterday
+    if (!hasTodaySales && hasYesterdaySales) {
+      // Count consecutive days backwards from yesterday
+      let streak = 0;
+      let streakRevenue = 0;
+      const startIndex = weeklyData.length - 2; // Start from yesterday
+
+      for (let i = startIndex; i >= 0; i--) {
+        if (weeklyData[i].revenue > 0) {
+          streak++;
+          streakRevenue += weeklyData[i].revenue;
+        } else {
+          break;
+        }
+      }
+
+      if (streak >= 2) {
+        return {
+          value: `${streak} days 🔥`,
+          footer: `Avg $${Math.round(streakRevenue / streak).toLocaleString()}/day · No sales recorded today yet`,
+        };
+      } else {
+        return {
+          value: "Streak Broken 😟",
+          footer: "No active sales streak",
+        };
+      }
+    }
+
+    // Case 3: Has sales today - include today in streak calculation
     let streak = 0;
     let streakRevenue = 0;
     for (let i = weeklyData.length - 1; i >= 0; i--) {
@@ -206,12 +248,14 @@ export const getWinningStats = async (): Promise<WinningApiResponse> => {
         break;
       }
     }
+
     if (streak >= 2) {
       return {
-        value: `${streak} days`,
+        value: `${streak} days 🔥`,
         footer: `Generated $${Math.round(streakRevenue).toLocaleString()} over the last ${streak} days!`,
       };
     }
+
     return {
       value: "0 days",
       footer: "No active sales streak",

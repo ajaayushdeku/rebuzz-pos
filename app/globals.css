@@ -38,8 +38,11 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   /* Page/card surfaces: cool slate page with a warm complementary card. */
-  --color-surface-page: #f8fafc;
+  /* --color-surface-page: #f8fafc;
   --color-surface-card: #f5f8ff;
+  --color-surface-border: #dde6f5; */
+  --color-surface-page: #ffffff;
+  --color-surface-card: #ffffff;
   --color-surface-border: #dde6f5;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
