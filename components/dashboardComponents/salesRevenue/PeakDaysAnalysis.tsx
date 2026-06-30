@@ -28,28 +28,38 @@ const SALES_COLOR = "#3d98ee";
 
 interface DayTooltipProps {
   active?: boolean;
-  payload?: { payload: PeakDayData }[];
+  payload?: Array<{
+    dataKey?: string | number;
+    name?: string;
+    value?: number | string;
+    color?: string;
+    payload: PeakDayData;
+  }>;
   label?: string;
 }
 
 const CustomTooltip = ({ active, payload, label }: DayTooltipProps) => {
   if (active && payload && payload.length) {
-    const point = payload[0].payload as PeakDayData;
     return (
       <div className="bg-white rounded-xl px-4 py-2.5 shadow-lg border border-gray-100 min-w-44">
         <p className="text-gray-400 text-xs mb-1.5">{label}</p>
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-xs text-gray-500">Avg. Orders</span>
-          <span className="text-xs font-bold text-blue-800">
-            {point.averageOrders.toFixed(2)}
-          </span>
-        </div>
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-xs text-gray-500">Avg. Sales</span>
-          <span className="text-xs font-bold text-violet-800">
-            {point.averageSales.toFixed(2)}
-          </span>
-        </div>
+        {payload.map((entry) => (
+          <div
+            key={entry.dataKey as string}
+            className="flex items-center justify-between gap-4 mb-0.5"
+          >
+            <div className="flex items-center gap-1.5">
+              <span
+                className="w-2 h-2 rounded-full shrink-0"
+                style={{ backgroundColor: entry.color as string }}
+              />
+              <span className="text-xs text-gray-600">{entry.name}</span>
+            </div>
+            <span className="text-xs font-bold text-gray-800">
+              {(entry.value as number).toFixed(2)}
+            </span>
+          </div>
+        ))}
       </div>
     );
   }
@@ -158,11 +168,13 @@ const PeakDaysAnalysis = ({ data }: PeakDayDataProps) => {
                   dataKey="averageOrders"
                   name="Avg. Orders"
                   shape={OrdersBar}
+                  fill={ORDERS_COLOR}
                 />
                 <Bar
                   dataKey="averageSales"
                   name="Avg. Sales"
                   shape={SalesBar}
+                  fill={SALES_COLOR}
                 />
               </BarChart>
             </ResponsiveContainer>

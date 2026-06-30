@@ -95,7 +95,7 @@ const CustomTooltip = ({
               {entry.name}
             </span>
           </div>
-          <span className="text-xs font-bold text-gray-800">
+          <span className={`text-xs font-bold text-gray-800 `}>
             {/* {formatCurrency(entry.value as number, currency)} */}
             {formatCurrencySymbol(
               entry.value as number,
@@ -246,8 +246,18 @@ export default function RevenueVsProfitChart({
                 }}
               />
               <Legend content={<CustomLegend />} />
-              <Bar dataKey="revenue" name="Revenue" shape={RevenueBar} />
-              <Bar dataKey="profit" name="Profit" shape={ProfitBar} />
+              <Bar
+                dataKey="revenue"
+                name="Revenue"
+                shape={RevenueBar}
+                fill="#60a5fa"
+              />
+              <Bar
+                dataKey="profit"
+                name="Profit"
+                shape={ProfitBar}
+                fill="#34d399"
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>

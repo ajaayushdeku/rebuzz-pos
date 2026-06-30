@@ -80,46 +80,48 @@ export default function CustomerSegmentationChart({
         </p>
       </div>
 
-      <div className="h-44 sm:h-56 md:h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={coloredData}
-              cx="50%"
-              cy="50%"
-              innerRadius="45%"
-              outerRadius="65%"
-              paddingAngle={3}
-              dataKey="value"
-              startAngle={90}
-              endAngle={-270}
-            >
-              {coloredData.map((entry) => (
-                <Cell key={entry.name} fill={entry.color} stroke="none" />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-center">
+        <div className="h-54 sm:h-56 md:h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={coloredData}
+                cx="50%"
+                cy="50%"
+                innerRadius="45%"
+                outerRadius="65%"
+                paddingAngle={3}
+                dataKey="value"
+                startAngle={90}
+                endAngle={-270}
+              >
+                {coloredData.map((entry) => (
+                  <Cell key={entry.name} fill={entry.color} stroke="none" />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
 
-      <div className="flex items-center justify-center gap-4 md:gap-6 mt-1 mb-1">
-        {coloredData.map((entry) => (
-          <div key={entry.name} className="flex items-center gap-1.5 md:gap-2">
-            <span
-              className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full shrink-0"
-              style={{
-                backgroundColor: entry.color,
-              }}
-            />
-            <span className="text-xs md:text-sm text-gray-600">
-              {entry.name}:{" "}
-              <span className="font-bold text-gray-700">
-                {entry.value.toLocaleString()}
+        <div className="flex flex-col items-start justify-center gap-2 lg:pl-4">
+          {coloredData.map((entry) => (
+            <div key={entry.name} className="flex items-center gap-2">
+              <span
+                className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full shrink-0"
+                style={{
+                  backgroundColor: entry.color,
+                }}
+              />
+              <span className="text-xs md:text-sm text-gray-600">
+                {entry.name}:{" "}
+                <span className="font-bold text-gray-700">
+                  {entry.value.toLocaleString()}
+                </span>
               </span>
-            </span>
-          </div>
-        ))}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

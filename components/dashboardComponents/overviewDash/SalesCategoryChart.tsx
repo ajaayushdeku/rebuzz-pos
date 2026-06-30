@@ -61,17 +61,27 @@ const CustomTooltip = ({
         <p className="font-bold text-sm" style={{ color: entry.color }}>
           {entry.percentage.toFixed(1)}%
         </p>
-        <p className="text-xs text-gray-600 mt-1">
-          Revenue:{" "}
-          {formatCurrencySymbol(
-            entry.totalRevenue,
-            currency.symbol,
-            currency.locale,
-          )}
-        </p>
-        <p className="text-xs text-gray-600">
-          Sales: {formatCurrencySymbol(sales, currency.symbol, currency.locale)}
-        </p>
+
+        <div className="flex flex-col gap-1 mt-2">
+          <div className="flex items-center justify-between  gap-4">
+            {" "}
+            <span className="text-xs text-gray-500 items-left">Revenue</span>
+            <span className="text-xs items-right font-bold  text-gray-600">
+              {formatCurrencySymbol(
+                entry.totalRevenue,
+                currency.symbol,
+                currency.locale,
+              )}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            {" "}
+            <span className="text-xs text-gray-500 items-left">Sales</span>
+            <span className="text-xs font-bold text-gray-600">
+              {formatCurrencySymbol(sales, currency.symbol, currency.locale)}
+            </span>
+          </div>
+        </div>
       </div>
     );
   }
@@ -100,7 +110,7 @@ const SalesCategoryChart = ({ data }: SalesCategoryChartProps) => {
               cy="50%"
               innerRadius={55}
               outerRadius={82}
-              paddingAngle={3}
+              paddingAngle={2}
               dataKey="totalRevenue"
               nameKey="name"
               startAngle={90}

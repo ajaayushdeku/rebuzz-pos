@@ -212,19 +212,28 @@ export default function CustomerTrendChart({ data }: CustomerTrendProps) {
             name="Inactive"
             stackId="customers"
             shape={InactiveBar}
+            fill="#94a3b8"
           />
           <Bar
             dataKey="active"
             name="Active"
             stackId="customers"
             shape={ActiveBar}
+            fill="#2581eb"
           />
-          <Bar dataKey="new" name="New" stackId="customers" shape={NewBar} />
+          <Bar
+            dataKey="new"
+            name="New"
+            stackId="customers"
+            shape={NewBar}
+            fill="#22c55e"
+          />
           <Bar
             dataKey="newActive"
             name="New & Active"
             stackId="customers"
             shape={NewActiveBar}
+            fill="#16f9a2"
           />
         </BarChart>
       </ResponsiveContainer>

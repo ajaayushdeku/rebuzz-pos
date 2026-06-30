@@ -31,14 +31,17 @@ const CustomTooltip = ({
     return (
       <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100">
         <p className="text-gray-400 text-xs mb-1">{label}</p>
-        <p className="text-blue-500 font-bold text-sm">
-          {/* {formatCurrency(payload[0].value as number, currency)} */}
-          {formatCurrencySymbol(
-            payload[0].value as number,
-            currency.symbol,
-            currency.locale,
-          )}
-        </p>
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-xs text-gray-500">Revenue</span>
+          <span className="text-xs font-bold text-blue-500">
+            {/* {formatCurrency(payload[0].value as number, currency)} */}
+            {formatCurrencySymbol(
+              payload[0].value as number,
+              currency.symbol,
+              currency.locale,
+            )}
+          </span>
+        </div>
       </div>
     );
   }

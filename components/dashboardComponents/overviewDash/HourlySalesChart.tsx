@@ -35,13 +35,16 @@ const CustomTooltip = ({
     return (
       <div className="bg-white rounded-xl px-4 py-2 shadow-lg border border-gray-100">
         <p className="text-gray-400 text-xs">{label}</p>
-        <p className="font-bold text-sm text-violet-600">
-          {formatCurrencySymbol(
-            payload[0].value as number,
-            currency.symbol,
-            currency.locale,
-          )}
-        </p>
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-xs text-gray-500">Revenue</span>
+          <span className="text-xs font-bold text-violet-800">
+            {formatCurrencySymbol(
+              payload[0].value as number,
+              currency.symbol,
+              currency.locale,
+            )}
+          </span>
+        </div>
       </div>
     );
   }

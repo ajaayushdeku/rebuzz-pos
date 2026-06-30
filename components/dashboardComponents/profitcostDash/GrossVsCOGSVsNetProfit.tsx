@@ -398,12 +398,19 @@ export default function GrossVsCOGSVsNetProfit({
                   dataKey="grossRevenue"
                   name="Gross Revenue"
                   shape={GrossRevenueBar}
+                  fill="#9ca3af"
                 />
-                <Bar dataKey="cogs" name="COGS" shape={COGSBar} />
+                <Bar
+                  dataKey="cogs"
+                  name="COGS"
+                  shape={COGSBar}
+                  fill="#f472b6"
+                />
                 <Bar
                   dataKey="netProfit"
                   name="Net Profit"
                   shape={NetProfitBar}
+                  fill="#60a5fa"
                 />
               </BarChart>
             </ResponsiveContainer>
