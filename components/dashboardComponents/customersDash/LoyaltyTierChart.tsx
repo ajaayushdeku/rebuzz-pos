@@ -34,10 +34,10 @@ interface CustomTooltipProps {
 }
 
 const TIER_COLORS: Record<string, string> = {
-  Bronze: "#cd7f32",
-  Silver: "#a0a0a0",
-  Gold: "#ffd700",
-  Platinum: "#a78bfa",
+  Bronze: "#eb841e",
+  Silver: "#cdcdcd",
+  Gold: "#f7dd46",
+  Platinum: "#936eff",
 };
 
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
@@ -45,11 +45,19 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     const tierName = (label as string) ?? "";
     const color = TIER_COLORS[tierName] ?? "#60a5fa";
     return (
-      <div className="bg-white rounded-xl px-4 py-2 shadow-lg border border-gray-100">
-        <p className="text-gray-400 text-xs">{label}</p>
-        <p className="font-bold text-sm" style={{ color }}>
+      <div className="flex flex-row gap-2 bg-white rounded-xl px-4 py-2 shadow-lg border border-gray-100">
+        <div className="flex items-center gap-1.5">
+          <span
+            className="w-2 h-2 rounded-full shrink-0"
+            style={{
+              backgroundColor: color as string,
+            }}
+          />
+          <span className="text-xs text-gray-600 capitalize">{label}</span>
+        </div>
+        <span className={`text-xs font-bold text-gray-800 `} style={{ color }}>
           {(payload[0].value as number).toLocaleString()} members
-        </p>
+        </span>
       </div>
     );
   }

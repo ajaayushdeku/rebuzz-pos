@@ -141,7 +141,10 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
 
       {/* Table */}
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
-      <div className="bg-white overflow-x-auto">
+      <div
+        className="bg-white overflow-x-auto pb-2 scrollbar-hide"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+      >
         <table className="w-full text-sm min-w-[600px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">

@@ -107,18 +107,22 @@ export default async function Page({
         />
       </Suspense>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <ChartErrorBoundary>
-          <Suspense fallback={<PieChartSkeleton />}>
-            <CustomerSegmentationChartWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="md:col-span-2">
+          <ChartErrorBoundary>
+            <Suspense fallback={<ChartSkeleton />}>
+              <LoyaltyTierChartWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
+        </div>
 
-        <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
-            <LoyaltyTierChartWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
+        <div className="md:col-span-1">
+          <ChartErrorBoundary>
+            <Suspense fallback={<PieChartSkeleton />}>
+              <CustomerSegmentationChartWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
+        </div>
       </div>
 
       <ChartErrorBoundary>

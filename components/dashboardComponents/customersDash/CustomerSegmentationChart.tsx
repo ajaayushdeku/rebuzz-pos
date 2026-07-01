@@ -21,6 +21,7 @@ interface SegmentDataWithColor extends SegmentData {
 interface CustomerSegmentationChartProps {
   data: SegmentData[];
 }
+
 const COLOR_PALETTE = [
   "#2581eb", // Active
   "#94a3b8", // Inactive
@@ -38,11 +39,22 @@ const CustomTooltip = ({
   if (active && payload?.length) {
     const entry = payload[0].payload as SegmentDataWithColor;
     return (
-      <div className="bg-white rounded-xl px-4 py-2 shadow-lg border border-gray-100">
-        <p className="text-gray-500 text-xs">{entry.name}</p>
-        <p className="font-bold text-sm" style={{ color: entry.color }}>
+      <div className="flex flex-row gap-2 bg-white rounded-xl px-4 py-2 shadow-lg border border-gray-100">
+        <div className="flex items-center gap-1.5">
+          <span
+            className="w-2 h-2 rounded-full shrink-0"
+            style={{
+              backgroundColor: entry.color as string,
+            }}
+          />
+          <span className="text-xs text-gray-600 capitalize">{entry.name}</span>
+        </div>
+        <span
+          className={`text-xs font-bold text-gray-800 `}
+          style={{ color: entry.color }}
+        >
           {entry.value.toLocaleString()}
-        </p>
+        </span>
       </div>
     );
   }
@@ -56,10 +68,10 @@ export default function CustomerSegmentationChart({
   const coloredData: SegmentDataWithColor[] = (
     isEmpty
       ? [
-          { name: "Active", value: 1020 },
-          { name: "Inactive", value: 400 },
-          { name: "New", value: 150 },
-          { name: "New & Active", value: 80 },
+          { name: "Active", value: 0 },
+          { name: "Inactive", value: 0 },
+          { name: "New", value: 0 },
+          { name: "New & Active", value: 0 },
         ]
       : data
   ).map((entry, i) => ({
@@ -68,20 +80,22 @@ export default function CustomerSegmentationChart({
   }));
 
   return (
-    <div className="relative bg-white rounded-2xl px-4 py-3 border min-w-0 border-gray-100 shadow-md">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full min-w-0">
       {isEmpty && <SampleDataBadge />}
 
-      <div>
-        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
+      {/* Header */}
+      <div className="mb-1 ">
+        <h3 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
           Customer Segmentation
-        </h2>
+        </h3>
         <p className="text-xs text-gray-400 mt-0.5">
-          Active, Inactive, & New Customer distribution over the last 15 days
+          Customer Activity distribution over the last 15 days
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-center">
-        <div className="h-54 sm:h-56 md:h-64">
+      {/* Pie Chart + Legend */}
+      <div className="flex flex-col">
+        <div className="h-40 sm:h-60 ">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -104,21 +118,22 @@ export default function CustomerSegmentationChart({
           </ResponsiveContainer>
         </div>
 
-        <div className="flex flex-col items-start justify-center gap-2 lg:pl-4">
+        <div className="grid grid-cols-2 gap-1">
           {coloredData.map((entry) => (
-            <div key={entry.name} className="flex items-center gap-2">
+            <div
+              key={entry.name}
+              className="flex items-center justify-center gap-2 w-20 sm:w-24 md:w-28 lg:w-32 rounded-lg bg-gray-50"
+            >
               <span
-                className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full shrink-0"
-                style={{
-                  backgroundColor: entry.color,
-                }}
+                className="w-2.5 h-2.5 rounded-full shrink-0"
+                style={{ backgroundColor: entry.color }}
               />
-              <span className="text-xs md:text-sm text-gray-600">
-                {entry.name}:{" "}
-                <span className="font-bold text-gray-700">
+              <div className="flex items-baseline gap-1">
+                <span className="text-xs text-gray-500">{entry.name}: </span>
+                <span className="text-xs font-bold text-gray-800">
                   {entry.value.toLocaleString()}
                 </span>
-              </span>
+              </div>
             </div>
           ))}
         </div>

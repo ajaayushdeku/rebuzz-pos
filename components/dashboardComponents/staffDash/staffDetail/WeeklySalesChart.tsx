@@ -43,9 +43,9 @@ const CustomTooltip = ({
   return (
     <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100">
       <p className="text-gray-400 text-xs mb-1">{label}</p>
-      <p className="text-blue-500 font-bold text-sm">
+      <span className="text-xs font-bold text-gray-800 ">
         {payload[0].value} sales
-      </p>
+      </span>
     </div>
   );
 };
