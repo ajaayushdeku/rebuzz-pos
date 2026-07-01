@@ -19,7 +19,7 @@ export const GrowthStatsWrapper = async () => {
     prev: growthStat[config.key as keyof typeof growthStat]?.prev ?? 0,
     percent: growthStat[config.key as keyof typeof growthStat]?.percent ?? 0,
   }));
-  console.log("Growth Data:", growthStat); // Log the fetched growth data for debugging
+  // console.log("Growth Data:", growthStat); // Log the fetched growth data for debugging
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 md:gap-3 my-4">
       {stats.map(({ key, ...stat }) => (

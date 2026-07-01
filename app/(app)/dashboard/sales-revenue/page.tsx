@@ -17,6 +17,9 @@ import {
   TopProductsWrapper,
   TargetTrackerWrapper,
   ForecastCardWrapper,
+  CampaignAnalysisWrapper,
+  PriceChangeImpactWrapper,
+  TimeWiseProductAnalysisWrapper,
 } from "@/components/componentWrappers/SalesRevenueWrapper";
 
 export default async function Page({
@@ -129,6 +132,28 @@ export default async function Page({
           <ChartErrorBoundary>
             <Suspense fallback={<TableSkeleton rows={5} />}>
               <SlowProductsWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4">
+          <ChartErrorBoundary>
+            <Suspense fallback={<ChartSkeleton />}>
+              <TimeWiseProductAnalysisWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <ChartErrorBoundary>
+            <Suspense fallback={<ChartSkeleton />}>
+              <CampaignAnalysisWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
+
+          <ChartErrorBoundary>
+            <Suspense fallback={<ChartSkeleton />}>
+              <PriceChangeImpactWrapper />
             </Suspense>
           </ChartErrorBoundary>
         </div>

@@ -3,7 +3,7 @@ import { getHeatmapData } from "@/services/dashboardServices/apiHeatmap";
 
 export default async function HeatmapWrapper() {
   const heatmapData = await getHeatmapData();
-  console.log("Fetched heatmap data:", heatmapData);
+  // console.log("Fetched heatmap data:", heatmapData);
   return (
     <div className="w-full">
       <Heatmap data={heatmapData} />

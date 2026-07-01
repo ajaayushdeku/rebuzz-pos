@@ -12,6 +12,14 @@ import ForecastCard from "../dashboardComponents/salesRevenue/ForecastCard";
 import { mockForecastData } from "@/lib/mockData/mock-forecast-data";
 import TargetTrackerCard from "../dashboardComponents/salesRevenue/TargetTrackerCard";
 import { mockTargetTrackerData } from "@/lib/mockData/mock-targetperiod-data";
+import CampaignAnalysis from "../dashboardComponents/salesRevenue/CampaignAnalysis";
+import PriceChangeImpact from "../dashboardComponents/salesRevenue/PriceChangeImpact";
+import TimeWiseProductAnalysis from "../dashboardComponents/salesRevenue/TimeWiseProductAnalysis";
+import {
+  mockCampaignAnalysis,
+  mockPriceChangeImpact,
+  mockTimeWiseProductData,
+} from "@/lib/mockData/mockInsightData";
 
 export function TopProductsWrapper({
   startDate,
@@ -51,7 +59,6 @@ export async function PeakHoursAnalysisWrapper({
   startDate: string;
   endDate: string;
 }) {
-  // Average sales per hour-of-day for the globally selected date range.
   const data = await getPeakHoursData(startDate, endDate);
   return <PeakHoursAnalysis data={data} />;
 }
@@ -63,7 +70,6 @@ export async function PeakDaysAnalysisWrapper({
   startDate: string;
   endDate: string;
 }) {
-  // Average orders & sales per weekday for the globally selected date range.
   const data = await getPeakDaysData(startDate, endDate);
   return <PeakDaysAnalysis data={data} />;
 }
@@ -74,4 +80,16 @@ export function ForecastCardWrapper() {
 
 export function TargetTrackerWrapper() {
   return <TargetTrackerCard data={mockTargetTrackerData} />;
+}
+
+export function CampaignAnalysisWrapper() {
+  return <CampaignAnalysis data={mockCampaignAnalysis} />;
+}
+
+export function PriceChangeImpactWrapper() {
+  return <PriceChangeImpact data={mockPriceChangeImpact} />;
+}
+
+export function TimeWiseProductAnalysisWrapper() {
+  return <TimeWiseProductAnalysis data={mockTimeWiseProductData} />;
 }

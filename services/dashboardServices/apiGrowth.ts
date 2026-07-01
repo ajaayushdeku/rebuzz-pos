@@ -129,7 +129,6 @@ async function fetchSalesByItemForPeriod(
     };
   const json = await res.json();
 
-  console.log("Fetched salesByItem:", { start, end, data: json?.data });
   return (
     json ?? {
       data: [],
@@ -159,13 +158,6 @@ export const getGrowthData = async (): Promise<GrowthStatsApiResponse> => {
   const currPeriodEnd = toDateStr(today);
   const prevPeriodStart = toDateStr(prevPeriodStartDate);
   const prevPeriodEnd = toDateStr(prevPeriodEndDate);
-
-  console.log("Growth Data Periods:", {
-    currPeriodStart,
-    currPeriodEnd,
-    prevPeriodStart,
-    prevPeriodEnd,
-  });
 
   /* ── Previous behavior: calendar-month comparison — intentionally preserved ─
      Kept for future use; the app may switch back to month-over-month comparisons.
@@ -212,11 +204,6 @@ export const getGrowthData = async (): Promise<GrowthStatsApiResponse> => {
   const prevBills = allBills.filter((b) =>
     isBillInRange(b, prevPeriodStart, prevPeriodEnd),
   );
-
-  console.log("Fetched bills:", {
-    currBillsCount: currBills.length,
-    prevBillsCount: prevBills.length,
-  });
 
   const currSalesByItem = await fetchSalesByItemForPeriod(
     currPeriodStart,

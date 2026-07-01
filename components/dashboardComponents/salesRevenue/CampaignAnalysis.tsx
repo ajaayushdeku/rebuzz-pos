@@ -1,86 +1,188 @@
 "use client";
 
 import {
-    ResponsiveContainer,
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    Tooltip,
-    CartesianGrid,
+  ComposedChart,
+  Area,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
 } from "recharts";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrency } from "@/utils/helper";
-import { mockCampaignAnalysis } from "@/lib/mockData/mockInsightData";
+import { formatCurrencySymbol } from "@/utils/helper";
+import type { CampaignAnalysisData } from "@/lib/mockData/mockInsightData";
 
-export default function CampaignAnalysis() {
-    const { currency } = useCurrency();
+interface CampaignAnalysisProps {
+  data: CampaignAnalysisData;
+}
 
-    return (
-        <Card className="rounded-2xl h-full">
-            <CardHeader>
-                <CardTitle>
-                    Campaign Analysis
-                </CardTitle>
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+  currency,
+}: {
+  active?: boolean;
+  payload?: {
+    name?: string;
+    value?: number;
+    color?: string;
+    dataKey?: string;
+  }[];
+  label?: string;
+  currency: { symbol: string; locale: string };
+}) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100 min-w-40">
+      <p className="text-gray-400 text-xs mb-2 font-medium">{label}</p>
+      {payload.map((entry, idx) => (
+        <div
+          key={`${entry.name ?? "tip"}-${idx}`}
+          className="flex items-center justify-between gap-4"
+        >
+          <div className="flex items-center gap-1.5">
+            <span
+              className="w-2 h-2 rounded-full shrink-0"
+              style={{ backgroundColor: entry.color as string }}
+            />
+            <span className="text-xs text-gray-600">{entry.name}</span>
+          </div>
+          <span className="text-xs font-bold text-gray-800">
+            {formatCurrencySymbol(
+              entry.value as number,
+              currency.symbol,
+              currency.locale,
+            )}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
 
-                <p className="text-sm text-muted-foreground">
-                    Sales before, during and after the latest discount campaign
-                </p>
-            </CardHeader>
+const CustomLegend = () => (
+  <div className="flex items-center justify-center gap-6 mt-2">
+    <div className="flex items-center gap-1.5">
+      <span className="w-2 h-2 rounded-full bg-violet-500" />
+      <span className="text-xs font-semibold text-violet-600">Revenue</span>
+    </div>
+  </div>
+);
 
-            <CardContent>
+export default function CampaignAnalysis({ data }: CampaignAnalysisProps) {
+  const { currency } = useCurrency();
 
-                <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={mockCampaignAnalysis.data}>
-                            <CartesianGrid strokeDasharray="3 3" />
+  const maxRevenue = Math.max(...data.data.map((d) => d.revenue), 1);
+  const step = Math.ceil(maxRevenue / 4 / 1000) * 1000 || 1000;
+  const yTicks = [0, step, step * 2, step * 3, step * 4];
+  const yMax = yTicks[yTicks.length - 1] * 1.05;
 
-                            <XAxis dataKey="label" />
+  const formatYAxis = (value: number): string =>
+    value >= 1000
+      ? `${currency.symbol}${value / 1000}k`
+      : formatCurrencySymbol(value, currency.symbol, currency.locale);
 
-                            <YAxis
-                                tickFormatter={(v) =>
-                                    formatCurrency(v, currency)
-                                }
-                            />
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full h-full relative select-none">
+      {/* Lock overlay */}
+      <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px] rounded-2xl z-10 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <svg
+            className="w-8 h-8 text-gray-800"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+            />
+          </svg>
+          <span className="text-[15px] font-semibold text-white-700 tracking-wide">
+            Feature locked
+          </span>
+        </div>
+      </div>
+      {/* Header */}
+      <div className="mb-4 md:mb-5">
+        <h3 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
+          Campaign Analysis
+        </h3>
+        <p className="text-xs text-gray-400 mt-0.5">
+          Sales before, during and after the latest discount campaign
+        </p>
+      </div>
 
-                            <Tooltip
-                                formatter={(value) =>
-                                    typeof value === "number"
-                                        ? formatCurrency(value, currency)
-                                        : ""
-                                }
-                            />
+      {/* Chart */}
+      <ResponsiveContainer width="100%" height={260}>
+        <ComposedChart
+          data={data.data}
+          margin={{ top: 10, right: 20, left: 10, bottom: 10 }}
+        >
+          <defs>
+            <linearGradient id="campaignGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.2} />
+              <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.02} />
+            </linearGradient>
+          </defs>
 
-                            <Line
-                                dataKey="revenue"
-                                type="monotone"
-                                strokeWidth={3}
-                                dot={{ r: 5 }}
-                            />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </div>
+          <CartesianGrid vertical={false} stroke="#f3f4f6" />
+          <XAxis
+            dataKey="label"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: "#9ca3af", fontSize: 12 }}
+            dy={8}
+          />
+          <YAxis
+            tickFormatter={formatYAxis}
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: "#9ca3af", fontSize: 12 }}
+            ticks={yTicks}
+            domain={[0, yMax]}
+            width={50}
+          />
+          <Tooltip content={<CustomTooltip currency={currency} />} />
+          <Legend content={<CustomLegend />} />
 
-                <div className="mt-6 flex flex-wrap gap-3">
+          <Area
+            type="monotone"
+            dataKey="revenue"
+            name="Revenue"
+            stroke="#8b5cf6"
+            strokeWidth={2.5}
+            fill="url(#campaignGradient)"
+            dot={{ r: 4, fill: "#8b5cf6", stroke: "#fff", strokeWidth: 2 }}
+            activeDot={{
+              r: 6,
+              fill: "#8b5cf6",
+              stroke: "#fff",
+              strokeWidth: 2,
+            }}
+          />
+        </ComposedChart>
+      </ResponsiveContainer>
 
-                    <Badge variant="secondary">
-                        ← Pre-campaign
-                    </Badge>
-
-                    <Badge>
-                        🎯 During (+{mockCampaignAnalysis.campaignGrowth}%)
-                    </Badge>
-
-                    <Badge variant="outline">
-                        → Post-campaign
-                    </Badge>
-
-                </div>
-
-            </CardContent>
-        </Card>
-    );
+      {/* Badges */}
+      <div className="mt-4 flex flex-wrap gap-2">
+        <span className="text-xs font-semibold px-2.5 py-1 rounded-full border border-gray-200 bg-gray-50 text-gray-500">
+          ← Pre-campaign
+        </span>
+        <span className="text-xs font-semibold px-2.5 py-1 rounded-full border border-violet-200 bg-violet-50 text-violet-700">
+          🎯 During (+{data.campaignGrowth}%)
+        </span>
+        <span className="text-xs font-semibold px-2.5 py-1 rounded-full border border-gray-200 bg-gray-50 text-gray-500">
+          → Post-campaign
+        </span>
+      </div>
+    </div>
+  );
 }
