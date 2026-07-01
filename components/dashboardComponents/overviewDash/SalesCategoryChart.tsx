@@ -26,15 +26,15 @@ interface SalesCategoryChartProps {
 
 const COLOR_PALETTE = [
   "#60a5fa",
+  "#f97316",
+  "#14b8a6",
+  "#f87171",
+  "#06b6d4",
+  "#8b5cf6",
   "#a78bfa",
   "#ec4899",
   "#34d399",
   "#f59e0b",
-  "#f87171",
-  "#06b6d4",
-  "#8b5cf6",
-  "#f97316",
-  "#14b8a6",
 ];
 
 const formatCurrency = (value: number): string => {
@@ -127,19 +127,24 @@ const SalesCategoryChart = ({ data }: SalesCategoryChartProps) => {
 
       <div className="mt-2 space-y-3 px-2">
         {coloredData.map((entry) => (
-          <div key={entry.name} className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+          <div
+            key={entry.name}
+            className="flex items-center justify-between gap-3"
+          >
+            <div className="flex items-center gap-2 min-w-0 flex-shrink">
               <span
                 className="w-2.5 h-2.5 rounded-full shrink-0"
                 style={{
                   backgroundColor: entry.color,
                 }}
               />
-              <span className="text-xs text-gray-700">{entry.name}</span>
+              <span className="text-xs text-gray-700 truncate">
+                {entry.name}
+              </span>
             </div>
 
-            <div className="flex-1 mx-4">
-              <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="w-30 h-1.5 rounded-full bg-gray-100 overflow-hidden">
                 <div
                   className="h-full rounded-full"
                   style={{
@@ -149,15 +154,15 @@ const SalesCategoryChart = ({ data }: SalesCategoryChartProps) => {
                   }}
                 />
               </div>
-            </div>
 
-            <span className="text-xs font-semibold text-gray-700 w-16 text-right">
-              {formatCurrencySymbol(
-                entry.totalRevenue,
-                currency.symbol,
-                currency.locale,
-              )}
-            </span>
+              <span className="text-xs font-semibold text-gray-700 w-20 text-right">
+                {formatCurrencySymbol(
+                  entry.totalRevenue,
+                  currency.symbol,
+                  currency.locale,
+                )}
+              </span>
+            </div>
           </div>
         ))}
       </div>

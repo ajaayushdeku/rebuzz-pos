@@ -15,6 +15,8 @@ import {
   SalesTrendChartWrapper,
   SlowProductsWrapper,
   TopProductsWrapper,
+  TargetTrackerWrapper,
+  ForecastCardWrapper,
 } from "@/components/componentWrappers/SalesRevenueWrapper";
 
 export default async function Page({
@@ -78,6 +80,20 @@ export default async function Page({
             <SalesTrendChartWrapper />
           </Suspense>
         </ChartErrorBoundary>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 my-4">
+          <ChartErrorBoundary>
+            <Suspense fallback={<ChartSkeleton />}>
+              <ForecastCardWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
+
+          <ChartErrorBoundary>
+            <Suspense fallback={<ChartSkeleton />}>
+              <TargetTrackerWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="lg:col-span-1">

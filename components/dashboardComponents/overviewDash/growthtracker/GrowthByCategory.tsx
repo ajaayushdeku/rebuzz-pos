@@ -237,7 +237,7 @@ export default function GrowthByCategory() {
           {loadMoreCategory < rows.length ? (
             <button
               onClick={handleLoadMore}
-              className="mt-3 mx-auto flex items-center justify-center gap-1.5 text-xs font-semibold text-gray-500 bg-gray-50 hover:bg-gray-100 hover:text-gray-700 border border-gray-200 hover:border-gray-300 py-1.5 px-3 rounded-xl transition-all duration-200 active:scale-[0.98]"
+              className="mt-5 mx-auto flex items-center justify-center gap-1.5 text-xs font-semibold text-gray-500  hover:bg-gray-100 hover:text-gray-700 border border-gray-200 hover:border-gray-300 py-1.5 px-3 rounded-xl transition-all duration-200 active:scale-[0.98]"
             >
               <svg
                 className="w-3.5 h-3.5"
@@ -257,7 +257,7 @@ export default function GrowthByCategory() {
           ) : (
             <button
               onClick={() => setLoadMoreCategory(4)}
-              className="mt-3 mx-auto flex items-center justify-center gap-1.5 text-xs font-semibold text-gray-400 bg-gray-50 hover:bg-gray-100 hover:text-gray-600 border border-gray-200 hover:border-gray-300 py-1.5 px-3 rounded-xl transition-all duration-200 active:scale-[0.98]"
+              className="mt-5 mx-auto flex items-center justify-center gap-1.5 text-xs font-semibold text-gray-400 bg-white-50 hover:bg-gray-100 hover:text-gray-600 border border-gray-200 hover:border-gray-300 py-1.5 px-3 rounded-xl transition-all duration-200 active:scale-[0.98]"
             >
               <svg
                 className="w-3.5 h-3.5"

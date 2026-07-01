@@ -8,6 +8,10 @@ import {
   getPeakHoursData,
   getPeakDaysData,
 } from "@/services/dashboardServices/apiSalesRevenue";
+import ForecastCard from "../dashboardComponents/salesRevenue/ForecastCard";
+import { mockForecastData } from "@/lib/mockData/mock-forecast-data";
+import TargetTrackerCard from "../dashboardComponents/salesRevenue/TargetTrackerCard";
+import { mockTargetTrackerData } from "@/lib/mockData/mock-targetperiod-data";
 
 export function TopProductsWrapper({
   startDate,
@@ -62,4 +66,12 @@ export async function PeakDaysAnalysisWrapper({
   // Average orders & sales per weekday for the globally selected date range.
   const data = await getPeakDaysData(startDate, endDate);
   return <PeakDaysAnalysis data={data} />;
+}
+
+export function ForecastCardWrapper() {
+  return <ForecastCard data={mockForecastData} />;
+}
+
+export function TargetTrackerWrapper() {
+  return <TargetTrackerCard data={mockTargetTrackerData} />;
 }
