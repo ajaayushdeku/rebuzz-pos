@@ -27,6 +27,7 @@ type RawSalesItem = {
   totalRevenue: number;
   netProfit: number;
   count: number;
+  category?: string | null;
 };
 
 type RawSalesByItemResponse = {
@@ -49,10 +50,14 @@ function monthLabel(date: Date): string {
   return date.toLocaleDateString("en-US", { month: "short" });
 }
 
+// Retained for the preserved month-based comparison in getGrowthData (see the
+// commented-out block there); the app may switch back to calendar months later.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function firstDayOfMonth(year: number, month: number): Date {
   return new Date(year, month, 1);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function lastDayOfMonth(year: number, month: number): Date {
   return new Date(year, month + 1, 0);
 }
@@ -82,7 +87,7 @@ function isBillInRange(
 async function fetchBills(start: string, end: string): Promise<RawBill[]> {
   const res = await fetch(
     `${BASE}/business/ticket/bills?startDate=${start}&endDate=${end}&limit=5000`,
-    { headers: await authHeaders(), next: { revalidate: 300 } },
+    { headers: await authHeaders(), cache: "no-store" },
   );
   if (!res.ok) return [];
   const json = await res.json();
@@ -113,7 +118,7 @@ async function fetchSalesByItemForPeriod(
 ): Promise<RawSalesByItemResponse> {
   const res = await fetch(
     `${BASE}/business/report/salesByItem?startDate=${start}&endDate=${end}`,
-    { headers: await authHeaders(), next: { revalidate: 300 } },
+    { headers: await authHeaders(), cache: "no-store" },
   );
   if (!res.ok)
     return {
@@ -123,6 +128,8 @@ async function fetchSalesByItemForPeriod(
       totalNetProfit: 0,
     };
   const json = await res.json();
+
+  console.log("Fetched salesByItem:", { start, end, data: json?.data });
   return (
     json ?? {
       data: [],
@@ -133,62 +140,113 @@ async function fetchSalesByItemForPeriod(
   );
 }
 
-// ── getGrowthData — 6 stat cards (current month vs last month) ────────────
+// ── getGrowthData — 6 stat cards (current 30-day period vs previous 30 days) ─
 
 export const getGrowthData = async (): Promise<GrowthStatsApiResponse> => {
   const today = new Date();
-  const currMonthStart = toDateStr(
+
+  // ── Rolling 30-day periods (current vs the 30 days immediately before) ────
+  // Current period:  the last 30 days, ending today       (e.g. Jun 11 → Jul 10).
+  // Previous period: the 30 days immediately before it     (e.g. May 12 → Jun 10).
+  const currPeriodStartDate = new Date(today);
+  currPeriodStartDate.setDate(today.getDate() - 29);
+  const prevPeriodEndDate = new Date(today);
+  prevPeriodEndDate.setDate(today.getDate() - 30);
+  const prevPeriodStartDate = new Date(today);
+  prevPeriodStartDate.setDate(today.getDate() - 59);
+
+  const currPeriodStart = toDateStr(currPeriodStartDate);
+  const currPeriodEnd = toDateStr(today);
+  const prevPeriodStart = toDateStr(prevPeriodStartDate);
+  const prevPeriodEnd = toDateStr(prevPeriodEndDate);
+
+  console.log("Growth Data Periods:", {
+    currPeriodStart,
+    currPeriodEnd,
+    prevPeriodStart,
+    prevPeriodEnd,
+  });
+
+  /* ── Previous behavior: calendar-month comparison — intentionally preserved ─
+     Kept for future use; the app may switch back to month-over-month comparisons.
+       Current Month:  first day of the current month  → today.
+       Previous Month: first day of the previous month → last day of previous month.
+
+  const currPeriodStart = toDateStr(
     firstDayOfMonth(today.getFullYear(), today.getMonth()),
   );
-  const currMonthEnd = toDateStr(today);
-  const prevMonthStart = toDateStr(
+  const currPeriodEnd = toDateStr(today);
+  const prevPeriodStart = toDateStr(
     firstDayOfMonth(today.getFullYear(), today.getMonth() - 1),
   );
-  const prevMonthEnd = toDateStr(
+  const prevPeriodEnd = toDateStr(
     lastDayOfMonth(today.getFullYear(), today.getMonth() - 1),
   );
+  */
 
-  // Single fetch from prev month start to today covers both periods
+  /* ── Month-bucketed revenue/orders source — preserved for calendar-month mode ─
+     compare-sales-by-month returns whole-month buckets keyed by `monthStart`
+     (the 1st of each month). Filtering those buckets by an arbitrary rolling
+     window mis-attributes data (it drops the partial current/previous month),
+     which is why the numbers looked stale after the date range changed.
+     Revenue & orders are now derived from the exact-range bills below instead.
+     Re-enable this when switching back to calendar-month comparisons.
+
   const monthlyData = await fetchCompareSalesByMonth(
-    prevMonthStart,
-    currMonthEnd,
+    prevPeriodStart,
+    currPeriodEnd,
   );
-
-  // Filter compare-sales-by-month into current month vs previous month
   const currCompare = monthlyData.filter(
-    (d) => d.monthStart >= currMonthStart && d.monthStart <= currMonthEnd,
+    (d) => d.monthStart >= currPeriodStart && d.monthStart <= currPeriodEnd,
   );
   const prevCompare = monthlyData.filter(
-    (d) => d.monthStart >= prevMonthStart && d.monthStart <= prevMonthEnd,
+    (d) => d.monthStart >= prevPeriodStart && d.monthStart <= prevPeriodEnd,
   );
+  */
 
   // Single bills fetch covering both periods, then filter client-side
-  const allBills = await fetchBills(prevMonthStart, currMonthEnd);
+  const allBills = await fetchBills(prevPeriodStart, currPeriodEnd);
   const currBills = allBills.filter((b) =>
-    isBillInRange(b, currMonthStart, currMonthEnd),
+    isBillInRange(b, currPeriodStart, currPeriodEnd),
   );
   const prevBills = allBills.filter((b) =>
-    isBillInRange(b, prevMonthStart, prevMonthEnd),
+    isBillInRange(b, prevPeriodStart, prevPeriodEnd),
   );
+
+  console.log("Fetched bills:", {
+    currBillsCount: currBills.length,
+    prevBillsCount: prevBills.length,
+  });
 
   const currSalesByItem = await fetchSalesByItemForPeriod(
-    currMonthStart,
-    currMonthEnd,
+    currPeriodStart,
+    currPeriodEnd,
   );
   const prevSalesByItem = await fetchSalesByItemForPeriod(
-    prevMonthStart,
-    prevMonthEnd,
+    prevPeriodStart,
+    prevPeriodEnd,
   );
 
-  // ── Revenue & Orders from compare-sales-by-month ──────────────────────────
+  // ── Revenue & Orders from the exact-range bills (accurate for rolling windows) ─
+  const aggregateBills = (bills: RawBill[]) => {
+    const nonRefunded = bills.filter((b) => !b.isRefunded);
+    const revenue = nonRefunded.reduce((s, b) => s + (b.grandTotal ?? 0), 0);
+    const orders = nonRefunded.length;
+    return { revenue, orders };
+  };
+
+  const currCompareAgg = aggregateBills(currBills);
+  const prevCompareAgg = aggregateBills(prevBills);
+
+  /* Previous (month-bucket) aggregation — preserved for calendar-month mode:
   const aggregateCompare = (data: RawMonthCompare[]) => {
     const totalRevenue = data.reduce((s, d) => s + d.totalRevenue, 0);
     const totalOrders = data.reduce((s, d) => s + d.totalSales, 0);
     return { revenue: totalRevenue, orders: totalOrders };
   };
-
   const currCompareAgg = aggregateCompare(currCompare);
   const prevCompareAgg = aggregateCompare(prevCompare);
+  */
 
   // ── Profit Margin from salesByItem ────────────────────────────────────────
   const getNetProfit = (res: RawSalesByItemResponse) => {

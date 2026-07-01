@@ -9,6 +9,7 @@ import {
 } from "@/services/dashboardServices/apiGrowth";
 
 import { GROWTH_STAT_CONFIG } from "@/lib/config/dashboard";
+import GrowthByCategory from "../dashboardComponents/overviewDash/growthtracker/GrowthByCategory";
 
 export const GrowthStatsWrapper = async () => {
   const growthStat = await getGrowthData();
@@ -18,7 +19,7 @@ export const GrowthStatsWrapper = async () => {
     prev: growthStat[config.key as keyof typeof growthStat]?.prev ?? 0,
     percent: growthStat[config.key as keyof typeof growthStat]?.percent ?? 0,
   }));
-
+  console.log("Growth Data:", growthStat); // Log the fetched growth data for debugging
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 md:gap-3 my-4">
       {stats.map(({ key, ...stat }) => (
@@ -36,4 +37,8 @@ export const TargetVsActualWrapper = async () => {
 export const YearOverYearWrapper = async () => {
   const data = await getYoYData();
   return <YearOverYearChart data={data} />;
+};
+
+export const GrowthByCategoryWrapper = () => {
+  return <GrowthByCategory />;
 };

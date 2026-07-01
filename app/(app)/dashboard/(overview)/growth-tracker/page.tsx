@@ -10,6 +10,7 @@ import {
   GrowthStatsWrapper,
   TargetVsActualWrapper,
   YearOverYearWrapper,
+  GrowthByCategoryWrapper,
 } from "@/components/componentWrappers/GrowthWrapper";
 
 export default async function Page() {
@@ -42,6 +43,12 @@ export default async function Page() {
         </ChartErrorBoundary>
         {/* <YearOverYearChart data={yoyData} /> */}
       </div>
+
+      <ChartErrorBoundary>
+        <Suspense fallback={<ChartSkeleton />}>
+          <GrowthByCategoryWrapper />
+        </Suspense>
+      </ChartErrorBoundary>
     </div>
   );
 }
