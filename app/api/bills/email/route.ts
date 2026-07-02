@@ -5,11 +5,11 @@ const BASE = process.env.NEXT_PUBLIC_API_URL;
 
 /**
  * Proxy for the backend "email bill" endpoint:
- *   POST {BASE}/:business_slug/bills/email
+ *   POST {BASE}/business/bills/email
  *
- * The browser can't read the httpOnly `token` cookie or know the business slug,
- * so this route reads the session token server-side, resolves the slug from the
- * business profile, and forwards the frontend-generated PDF to the backend.
+ * The browser can't read the httpOnly `token` cookie, so this route reads the
+ * session token server-side and forwards the frontend-generated PDF, using the
+ * token-scoped `business` context (same as the app's other authenticated calls).
  */
 export const POST = async (request: Request) => {
   const cookieStore = await cookies();
@@ -24,39 +24,8 @@ export const POST = async (request: Request) => {
 
   const body = await request.json();
 
-  // ── Resolve the business slug from the business profile ──
-  let slug: string | undefined;
   try {
-    const bizRes = await fetch(`${BASE}/business/aboutBusiness`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
-    });
-    const bizJson = await bizRes.json();
-    const business = bizJson?.data?.business;
-    slug =
-      business?.slug ??
-      business?.businessSlug ??
-      business?.slugName ??
-      undefined;
-  } catch (error) {
-    console.error("email bill: failed to resolve business slug", error);
-  }
-
-  if (!slug) {
-    return NextResponse.json(
-      {
-        status: "fail",
-        message: "Could not resolve business. Please try again.",
-      },
-      { status: 400 },
-    );
-  }
-
-  try {
-    const res = await fetch(`${BASE}/${slug}/bills/email`, {
+    const res = await fetch(`${BASE}/business/bills/email`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

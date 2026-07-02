@@ -2,7 +2,7 @@
 
 import jsPDF from "jspdf";
 import toast from "react-hot-toast";
-import { toPng } from "html-to-image";
+import { toJpeg } from "html-to-image";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { FileText, Link as LinkIcon, Mail } from "lucide-react";
@@ -62,12 +62,20 @@ export default function SendInvoiceModal({
     ref: React.RefObject<HTMLDivElement | null>,
   ): Promise<jsPDF | null> => {
     if (!ref.current) return null;
-    const dataUrl = await toPng(ref.current, {
+    // JPEG + a modest pixel ratio + PDF deflate keeps the base64 payload small
+    // enough to stay under the serverless request-size limit.
+    const dataUrl = await toJpeg(ref.current, {
       cacheBust: true,
-      pixelRatio: 2,
+      quality: 0.7,
+      pixelRatio: 1.5,
       backgroundColor: "#ffffff",
     });
-    const pdf = new jsPDF("p", "mm", "a4");
+    const pdf = new jsPDF({
+      orientation: "p",
+      unit: "mm",
+      format: "a4",
+      compress: true,
+    });
     const pageWidth = 210;
     const pageHeight = 297;
     const imgProps = pdf.getImageProperties(dataUrl);
@@ -76,12 +84,21 @@ export default function SendInvoiceModal({
 
     let heightLeft = imgHeight;
     let position = 0;
-    pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
+    pdf.addImage(dataUrl, "JPEG", 0, position, imgWidth, imgHeight, undefined, "FAST");
     heightLeft -= pageHeight;
     while (heightLeft > 0) {
       position = heightLeft - imgHeight;
       pdf.addPage();
-      pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
+      pdf.addImage(
+        dataUrl,
+        "JPEG",
+        0,
+        position,
+        imgWidth,
+        imgHeight,
+        undefined,
+        "FAST",
+      );
       heightLeft -= pageHeight;
     }
     return pdf;
