@@ -122,7 +122,7 @@ export default function CustomerSegmentationChart({
           {coloredData.map((entry) => (
             <div
               key={entry.name}
-              className="flex items-center justify-center gap-2 w-20 sm:w-24 md:w-28 lg:w-32 rounded-lg bg-gray-50"
+              className="flex items-center justify-center gap-2 w-20 sm:w-24 md:w-28 lg:w-32 "
             >
               <span
                 className="w-2.5 h-2.5 rounded-full shrink-0"

@@ -59,11 +59,11 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
   const [selectedRange, setSelectedRange] = useState<{
     start: number;
     end: number;
-  } | null>(null);
+  } | null>({ start: 10, end: 17 });
 
   // Custom hour-range inputs
-  const [fromHour, setFromHour] = useState(0);
-  const [toHour, setToHour] = useState(23);
+  const [fromHour, setFromHour] = useState(10);
+  const [toHour, setToHour] = useState(17);
   const [rangeError, setRangeError] = useState("");
 
   const applyCustomRange = (from: number, to: number) => {
@@ -334,7 +334,7 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                   tick={{ fill: "#9ca3af", fontSize: 12 }}
                   ticks={ticks}
                   domain={[0, domainMax]}
-                  width={55}
+                  width={65}
                 />
 
                 <Tooltip

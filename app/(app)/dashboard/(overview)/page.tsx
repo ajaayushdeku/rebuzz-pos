@@ -16,6 +16,7 @@ import {
   WinningStatsWrapper,
 } from "@/components/componentWrappers/OverviewWrapper";
 import SalesCategoryChartWrapper from "@/components/componentWrappers/SalesCategoryChartWrapper";
+import PaymentMethodsChartWrapper from "@/components/componentWrappers/PaymentMethodsWrapper";
 
 const Page = async ({
   searchParams,
@@ -96,11 +97,19 @@ const Page = async ({
             </ChartErrorBoundary>
           </div>
 
-          <ChartErrorBoundary>
-            <Suspense fallback={<ChartSkeleton />}>
-              <HourlySalesTrendWrapper />
-            </Suspense>
-          </ChartErrorBoundary>
+          <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
+            <ChartErrorBoundary>
+              <Suspense fallback={<ChartSkeleton />}>
+                <HourlySalesTrendWrapper />
+              </Suspense>
+            </ChartErrorBoundary>
+
+            <ChartErrorBoundary>
+              <Suspense fallback={<PieChartSkeleton />}>
+                <PaymentMethodsChartWrapper />
+              </Suspense>
+            </ChartErrorBoundary>
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 my-4">
             <ChartErrorBoundary>

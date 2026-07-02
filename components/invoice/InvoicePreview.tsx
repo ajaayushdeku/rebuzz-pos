@@ -552,8 +552,8 @@ export default function InvoicePreview({
         </div>
 
         <button
-          onClick={() => router.push("/invoices/")}
-          className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+          onClick={() => router.push(`/invoices/${invoice.invoice}`)}
+          className="text-sm font-semibold cursor-pointer text-blue-600 hover:text-blue-700 transition-colors"
         >
           Go Back to Rebuzz
         </button>

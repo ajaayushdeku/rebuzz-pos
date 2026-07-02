@@ -1,29 +1,25 @@
 "use client";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { ChevronDown } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import type {
   NameType,
   Payload,
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
+import { DateRangeFilter, DateRangeValue } from "../staffDash/DateRangeFilter";
+import { getDefaultDateRange } from "../staffDash/staffDetail/staffDetailHelpers";
+import { useEffect, useRef, useState } from "react";
+import { PaymentMethodRevenue } from "@/services/paymentMethods.client";
+import { ChevronDown } from "lucide-react";
 
-export interface CategorySalesData {
-  name: string;
-  totalSales: number;
-  totalRevenue: number;
-  netProfit: number;
-}
-
-interface CategorySalesDataWithColor extends CategorySalesData {
+interface PaymentMethodDataWithColor extends PaymentMethodRevenue {
   color: string;
   percentage: number;
 }
 
-interface SalesCategoryChartProps {
-  data: CategorySalesData[];
+interface PaymentMethodsChartProps {
+  data: PaymentMethodRevenue[];
 }
 
 const COLOR_PALETTE = [
@@ -55,11 +51,11 @@ const CustomTooltip = ({
   const { currency } = useCurrency();
 
   if (active && payload?.length) {
-    const entry = payload[0].payload as CategorySalesDataWithColor;
-    const sales = entry.totalSales;
+    const entry = payload[0].payload as PaymentMethodDataWithColor;
+    const sales = entry.transactionCount;
     return (
       <div className="bg-white rounded-xl px-4 py-2 shadow-lg border border-gray-100">
-        <p className="text-gray-500 text-xs">{entry.name}</p>
+        <p className="text-gray-500 text-xs">{entry.paymentMethod}</p>
         <p className="font-bold text-sm" style={{ color: entry.color }}>
           {entry.percentage.toFixed(1)}%
         </p>
@@ -90,11 +86,11 @@ const CustomTooltip = ({
   return null;
 };
 
-const SalesCategoryChart = ({ data }: SalesCategoryChartProps) => {
+const PaymentMethodsChart = ({ data }: PaymentMethodsChartProps) => {
   const { currency } = useCurrency();
   const totalRevenue = data.reduce((sum, d) => sum + d.totalRevenue, 0);
 
-  const coloredData: CategorySalesDataWithColor[] = data.map((entry, i) => ({
+  const coloredData: PaymentMethodDataWithColor[] = data.map((entry, i) => ({
     ...entry,
     color: COLOR_PALETTE[i % COLOR_PALETTE.length],
     percentage:
@@ -144,7 +140,11 @@ const SalesCategoryChart = ({ data }: SalesCategoryChartProps) => {
               endAngle={-270}
             >
               {coloredData.map((entry) => (
-                <Cell key={entry.name} fill={entry.color} stroke="none" />
+                <Cell
+                  key={entry.paymentMethod}
+                  fill={entry.color}
+                  stroke="none"
+                />
               ))}
             </Pie>
             <Tooltip content={<CustomTooltip />} />
@@ -155,7 +155,7 @@ const SalesCategoryChart = ({ data }: SalesCategoryChartProps) => {
       <div className="relative">
         <div
           ref={scrollRef}
-          className="  mt-2
+          className=" mt-2
     px-2
     h-20
     overflow-y-auto
@@ -167,7 +167,7 @@ const SalesCategoryChart = ({ data }: SalesCategoryChartProps) => {
         >
           {coloredData.map((entry) => (
             <div
-              key={entry.name}
+              key={entry.paymentMethod}
               className="flex items-center justify-between gap-3"
             >
               <div className="flex items-center gap-2 min-w-0 flex-shrink">
@@ -178,7 +178,7 @@ const SalesCategoryChart = ({ data }: SalesCategoryChartProps) => {
                   }}
                 />
                 <span className="text-xs text-gray-700 truncate">
-                  {entry.name}
+                  {entry.paymentMethod}
                 </span>
               </div>
 
@@ -216,4 +216,4 @@ const SalesCategoryChart = ({ data }: SalesCategoryChartProps) => {
   );
 };
 
-export default SalesCategoryChart;
+export default PaymentMethodsChart;

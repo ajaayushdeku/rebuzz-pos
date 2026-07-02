@@ -104,7 +104,7 @@ const WeeklyRevenueChart = ({ data, peakDay }: WeeklyRevenueChartProps) => {
               tickLine={false}
               tick={{
                 fill: "#9ca3af",
-                fontSize: 13,
+                fontSize: 12,
               }}
             />
             <YAxis
@@ -116,7 +116,7 @@ const WeeklyRevenueChart = ({ data, peakDay }: WeeklyRevenueChartProps) => {
                 fontSize: 12,
               }}
               domain={[0, domainMax]}
-              width={42}
+              width={60}
             />
             <Tooltip
               content={<CustomTooltip currency={currency} />}

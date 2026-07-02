@@ -771,7 +771,7 @@ const InvoiceDetailPage = () => {
               customerProfile={customerProfile}
               businessProfile={business}
               billData={displayBillData}
-              withControls={true}
+              // withControls={true}
             />
           </div>
 
@@ -788,7 +788,7 @@ const InvoiceDetailPage = () => {
               customerProfile={customerProfile}
               businessProfile={business}
               billData={displayBillData}
-              withControls={true}
+              // withControls={true}
             />
           </div>
 
@@ -803,7 +803,7 @@ const InvoiceDetailPage = () => {
               customerProfile={customerProfile}
               businessProfile={business}
               billData={displayBillData}
-              withControls={true}
+              // withControls={true}
             />
           </div>
         </div>

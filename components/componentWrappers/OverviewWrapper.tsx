@@ -22,6 +22,7 @@ import { format } from "date-fns";
 import { DataPoint } from "@/lib/types/chart";
 import WeeklyRevenueChart from "../dashboardComponents/overviewDash/WeeklyRevenueChart";
 import HourlySalesTrend from "../dashboardComponents/overviewDash/HourlySalesChart";
+import PaymentMethodsChart from "../dashboardComponents/overviewDash/PaymentMethodsChart";
 
 /** Format date range as "MMM d – MMM d, yyyy" or "MMM d, yyyy" if same day */
 function formatDateRange(start: string, end: string): string {
@@ -287,13 +288,11 @@ export const WinningStatsWrapper = async () => {
 
 export const TopItemsWrapper = async () => {
   const data = await getTopProducts();
-
   return <TopItems topProducts={data} />;
 };
 
 export const RecentTransactionWrapper = async () => {
   const data = await getRecentTransactions();
-
   return <RecentTransactions transactions={data} />;
 };
 
@@ -313,7 +312,5 @@ export const WeeklyRevenueChartWrapper = async () => {
 
 export async function HourlySalesTrendWrapper() {
   const data = await getHourlySalesData();
-
-  // console.log("Hours:", data);
   return <HourlySalesTrend data={data} />;
 }

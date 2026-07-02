@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import SalesCategoryChart from "../dashboardComponents/overviewDash/SalesCategoryChart";
-import { useSalesByCategory } from "@/hooks/useSalesByCategory";
 import {
   DateRangeFilter,
   type DateRangeValue,
 } from "../dashboardComponents/staffDash/DateRangeFilter";
+import PaymentMethodsChart from "../dashboardComponents/overviewDash/PaymentMethodsChart";
+import { usePaymentMethods } from "@/hooks/usePaymentMethods";
 
 function getDefaultDateRange(): DateRangeValue {
   const today = new Date();
@@ -17,24 +17,24 @@ function getDefaultDateRange(): DateRangeValue {
   return { startDate: start, endDate: end };
 }
 
-export default function SalesCategoryChartWrapper() {
+export default function PaymentMethodsChartWrapper() {
   const [dateRange, setDateRange] =
     useState<DateRangeValue>(getDefaultDateRange);
 
-  const { data, isLoading, error } = useSalesByCategory(
+  const { data, isLoading, error } = usePaymentMethods(
     dateRange.startDate,
     dateRange.endDate,
   );
 
   return (
-    <div className="w-full bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6">
+    <div className="w-full bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-4 mt-4 md:p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-            Sales by Category
+            Payment Methods
           </h2>
           <p className="text-xs text-gray-400 mt-0.5">
-            Revenue share across product categories
+            Revenue split by payment type
           </p>
         </div>
         <DateRangeFilter value={dateRange} onChange={setDateRange} />
@@ -75,7 +75,7 @@ export default function SalesCategoryChartWrapper() {
           </p>
         </div>
       ) : (
-        <SalesCategoryChart data={data} />
+        <PaymentMethodsChart data={data} />
       )}
     </div>
   );
