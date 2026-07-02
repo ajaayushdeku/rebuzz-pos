@@ -85,7 +85,7 @@ const InvoicePreview = ({
     minute: "2-digit",
   });
 
-  console.log("Invoice Data:", billData?.createdAt);
+  // console.log("Invoice Data:", billData?.createdAt);
 
   const calculatedTaxAmount = invoice.items.reduce((groupSum, group) => {
     const itemTax = group.item.reduce((sum, product) => {

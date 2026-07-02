@@ -11,6 +11,7 @@ import {
   Bell,
   Check,
   ChevronDown,
+  Circle,
   CreditCard,
   FileCog,
   FileEdit,
@@ -36,6 +37,9 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import InvoicePreview from "@/components/invoice/InvoicePreview";
 import RecordPaymentModal from "@/components/invoice/modals/RecordPaymentModal";
 import SendInvoiceModal from "@/components/invoice/modals/SendInvoiceModal";
+import ExportPdfModal from "@/components/invoice/modals/ExportPdfModal";
+import PrintInvoiceModal from "@/components/invoice/modals/PrintInvoiceModal";
+import CustomerPreviewModal from "@/components/invoice/modals/CustomerPreviewModal";
 import { formatCurrencySymbol } from "@/utils/helper";
 
 export default function InvoiceDetailPage() {
@@ -51,6 +55,9 @@ export default function InvoiceDetailPage() {
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isSendInvoiceModalOpen, setIsSendInvoiceModalOpen] = useState(false);
+  const [isExportPdfOpen, setIsExportPdfOpen] = useState(false);
+  const [isPrintOpen, setIsPrintOpen] = useState(false);
+  const [isCustomerPreviewOpen, setIsCustomerPreviewOpen] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["ticket", id],
@@ -158,7 +165,10 @@ export default function InvoiceDetailPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">Loading invoice...</p>
+        <div className="flex items-center gap-2 text-gray-400 text-sm">
+          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          Loading invoice...
+        </div>
       </div>
     );
   }
@@ -166,7 +176,7 @@ export default function InvoiceDetailPage() {
   if (error || !invoice) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">Invoice not found.</p>
+        <p className="text-gray-500 text-sm">Invoice not found.</p>
       </div>
     );
   }
@@ -175,20 +185,33 @@ export default function InvoiceDetailPage() {
     setInvoiceType(type);
   };
 
+  // ── Derived status ────────────────────────────────────────────────────────
+  const isRefunded = displayBillData?.status === "refunded";
+  const isPaid = invoice.paidStatus === "paid";
+
+  const isOverdue = !isPaid && !isRefunded;
+
+  const statusLabel = isRefunded ? "Refunded" : isPaid ? "Paid" : "Unpaid";
+  const statusColor = isRefunded
+    ? "bg-orange-100 text-orange-700 border-orange-200"
+    : isPaid
+      ? "bg-green-100 text-green-700 border-green-200"
+      : "bg-red-100 text-red-700 border-red-200";
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Top bar */}
-      <div className="sticky top-0 z-30 bg-white/95  pb-4 border-b border-gray-200 px-8 py-4.5 flex items-center justify-between s">
-        <div className="flex items-center gap-5">
+    <div className="min-h-screen ">
+      {/* ── Top bar ── */}
+      <div className="sticky top-0 z-30 bg-white border-b border-gray-200 px-6 md:px-10 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-4">
           <button
             onClick={() => router.back()}
-            className="h-9 w-9 flex items-center justify-center rounded-xl bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-all"
+            className="h-8 w-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
           >
             <ArrowLeft size={18} />
           </button>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">
-              Invoice #{invoice?.invoice}
+            <h1 className="text-base font-bold text-gray-900">
+              {invoice.ticketName || "Invoice"} #{invoice?.invoice}
             </h1>
             <p className="text-xs text-gray-400 mt-0.5">
               {invoice.paidStatus === "paid" ? "Paid" : "Unpaid"} · Created{" "}
@@ -196,144 +219,193 @@ export default function InvoiceDetailPage() {
                 month: "short",
                 day: "numeric",
                 year: "numeric",
-              })}
+              })}{" "}
+              GMT+5:45
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          {/* Online payments pill */}
+          <div className="hidden sm:flex items-center gap-2 border border-gray-200 rounded-full px-3 py-1.5 text-xs font-medium text-gray-400 opacity-60 cursor-not-allowed">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            Online Payments
+            <span className="flex items-center gap-1 text-red-400">
+              <Circle size={6} className="fill-red-400" /> OFF
+            </span>
+          </div>
+
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-2 border border-blue-200 rounded-xl px-4 py-2.5 text-sm font-semibold hover:bg-blue-50 text-blue-600 transition-all focus:outline-none focus:ring-2 focus:ring-blue-100">
-              More actions <ChevronDown size={14} />
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-1.5 border border-gray-200 rounded-full px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+                More actions <ChevronDown size={13} />
+              </button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent
               align="end"
-              className="w-48 rounded-xl p-1 shadow-lg border-gray-200"
+              className="w-45 rounded-xl p-1 shadow-lg border-gray-200"
             >
-              {invoice.paidStatus === "unpaid" && (
+              {!isPaid && (
                 <DropdownMenuItem
                   onClick={handleEditInvoice}
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600"
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
                 >
-                  <FileEdit size={14} />
-                  <span>Edit invoice</span>
+                  Edit invoice
                 </DropdownMenuItem>
               )}
 
               <DropdownMenuItem
-                onClick={handleDeleteInvoice}
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600"
+                onClick={() => setIsCustomerPreviewOpen(true)}
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
               >
-                <Trash2 size={14} />
-                <span>Delete invoice</span>
+                Preview as Customer
               </DropdownMenuItem>
 
               <DropdownMenuSeparator className="my-1 bg-gray-100" />
-              {invoiceType !== "proforma" && (
-                <DropdownMenuItem
-                  onClick={() => handleSetInvoiceType("proforma")}
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600"
-                >
-                  <FileCog size={14} />
-                  <span>Set as Proforma Invoice</span>
-                </DropdownMenuItem>
-              )}
 
-              {invoiceType !== "invoice" && (
-                <DropdownMenuItem
-                  onClick={() => handleSetInvoiceType("invoice")}
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600"
-                >
-                  <FileCog size={14} />
-                  <span>Set as Regular Invoice</span>
-                </DropdownMenuItem>
-              )}
+              <DropdownMenuItem
+                onClick={() => setIsExportPdfOpen(true)}
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
+              >
+                Export as PDF
+              </DropdownMenuItem>
 
-              {invoiceType !== "tax" && (
-                <DropdownMenuItem
-                  onClick={() => handleSetInvoiceType("tax")}
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600"
-                >
-                  <FileCog size={14} />
-                  <span>Set as Tax Invoice</span>
-                </DropdownMenuItem>
-              )}
+              <DropdownMenuItem
+                onClick={() => setIsPrintOpen(true)}
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
+              >
+                Print options
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator className="my-1 bg-gray-100" />
+
+              <DropdownMenuItem
+                onClick={handleDeleteInvoice}
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 text-sm"
+              >
+                Delete
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button
+          <button
             onClick={() => router.push("/invoices/add")}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
+            className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-1.5 rounded-full transition-colors"
           >
-            Create Another Invoice
-          </Button>
+            Create another invoice
+          </button>
         </div>
       </div>
 
       {/* Body */}
-      <div className="py-6 flex justify-center bg-white">
-        <div className="w-full max-w-2xl">
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="w-full max-w-4xl">
           {/* Invoice meta row */}
-          <div className="flex justify-between items-start mb-8">
-            <div className="flex gap-8">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+            <div className="flex items-center gap-6">
               <div>
-                <p className="text-xs text-gray-500 font-bold uppercase tracking-wide mb-1">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
                   Status
                 </p>
 
                 {displayBillData && displayBillData?.status === "refunded" ? (
-                  <span className="rounded-md font-semibold capitalize text-xl px-1 py-1 bg-orange-400 text-orange-800">
+                  <span
+                    className="text-xs font-semibold px-2.5 py-1 rounded-md border border-orange-300 text-orange-800 relative overflow-hidden capitalize"
+                    style={{
+                      backgroundImage:
+                        "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(251, 146, 60, 0.15) 2px, rgba(251, 146, 60, 0.15) 4px)",
+                      backgroundColor: "rgba(251, 146, 60, 0.25)",
+                    }}
+                  >
                     {displayBillData.status}
                   </span>
                 ) : invoice.paidStatus === "unpaid" ? (
-                  <span className="rounded-md font-semibold capitalize text-xl px-1 py-1 bg-red-400 text-red-700">
+                  <span
+                    className="text-xs font-semibold px-2.5 py-1 rounded-md border border-red-300 text-red-700 relative overflow-hidden capitalize"
+                    style={{
+                      backgroundImage:
+                        "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(252, 165, 165, 0.2) 2px, rgba(252, 165, 165, 0.2) 4px)",
+                      backgroundColor: "rgba(252, 165, 165, 0.3)",
+                    }}
+                  >
                     {invoice.paidStatus}
                   </span>
                 ) : (
-                  <span className="rounded-md font-semibold capitalize text-xl px-1 py-1 bg-green-400 text-green-700">
+                  <span
+                    className="text-xs font-semibold px-2.5 py-1 rounded-md border border-green-300 text-green-700 relative overflow-hidden capitalize"
+                    style={{
+                      backgroundImage:
+                        "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(134, 239, 172, 0.2) 2px, rgba(134, 239, 172, 0.2) 4px)",
+                      backgroundColor: "rgba(134, 239, 172, 0.3)",
+                    }}
+                  >
                     {invoice.paidStatus}
                   </span>
                 )}
               </div>
               <div>
-                <p className="text-xs text-gray-500 font-bold uppercase tracking-wide mb-1">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
                   Customer
                 </p>
                 {isCustomerLoading ? (
-                  <div className="h-5 w-32 bg-gray-200 animate-pulse rounded" />
+                  <div className="h-5 w-28 bg-gray-200 animate-pulse rounded" />
                 ) : (
-                  <>
-                    <span className="text-blue-600 rounded-md font-semibold capitalize text-2xl">
-                      {customerProfile?.name ||
-                        invoice?.customerEmail ||
-                        "Guest"}
-                    </span>
-                    {customerProfile?.loyaltyPoint > 0 && (
-                      <p className="text-[10px] text-orange-500 font-medium flex items-center gap-1">
-                        ★ {customerProfile.loyaltyPoint.toFixed(2)} Points
-                      </p>
-                    )}
-                  </>
+                  <div>
+                    <div className="flex items-end justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-base font-bold text-blue-600">
+                          {customerProfile?.name ||
+                            invoice?.customerEmail ||
+                            "Guest"}
+                        </span>
+                        {/* {customerProfile && (
+                          <div className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center">
+                            <span className="text-[9px] text-blue-600 font-bold">
+                              i
+                            </span>
+                          </div>
+                        )} */}
+                      </div>
+                      {customerProfile?.loyaltyPoint > 0 && (
+                        <p className="text-[10px] text-amber-500 font-medium whitespace-nowrap mb-0.5">
+                          ★ {customerProfile.loyaltyPoint.toFixed(2)} Points
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
-            <div className="flex gap-8 text-right">
+            <div className="flex flex-row justify-content gap-6">
               <div>
-                <p className="text-xs text-gray-500 font-bold uppercase tracking-wide mb-1">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
                   Amount due
                 </p>
-                <p className="text-2xl font-semibold text-gray-800">
+                <p className="text-xl font-bold text-gray-800">
                   {displayBillData && displayBillData.status === "refunded" ? (
-                    <span className="text-orange-600 font-bold">
+                    <span className="text-orange-600 font-semibold">
                       {currency.symbol} 0.00
                     </span>
                   ) : invoice.paidStatus === "paid" ? (
-                    <span className="text-green-600 font-bold">
+                    <span className="text-green-600 font-semibold">
                       {currency.symbol} 0.00
                     </span>
                   ) : (
-                    <span className="text-600 font-bold">
+                    <span className="text-600 font-semibold">
                       {formatCurrencySymbol(
                         invoice.grandTotal.toFixed(2),
                         currency.symbol,
@@ -343,119 +415,189 @@ export default function InvoiceDetailPage() {
                   )}
                 </p>
               </div>
+              <div>
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
+                  Due
+                </p>
+                <p className="text-xl font-semibold text-gray-800">
+                  0 days ago
+                </p>
+              </div>
             </div>
           </div>
 
           {/* Steps Section */}
-          <div className="flex flex-col gap-3 mb-4">
+          <div className="space-y-2">
             {/* Step 1: Created */}
-            {invoice.paidStatus === "unpaid" && (
-              <div className="bg-white border border-gray-200 rounded-2xl p-5 flex items-start gap-4 shadow-md hover:shadow-lg transition duration-300">
-                <div className="w-10 h-10 rounded-full border-2 border-blue-500 flex items-center justify-center text-blue-600 shrink-0">
-                  <FileText size={18} />
+            <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-0">
+              <div className="flex items-center gap-4">
+                <div className="w-9 h-9 rounded-full border-2 border-blue-500 flex items-center justify-center text-blue-600 shrink-0">
+                  <FileText size={16} />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-800 text-lg">
-                    Created
-                  </h3>
-                  <p className="text-sm text-gray-500 mt-0.5">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900">Create</p>
+                  <p className="text-xs text-gray-500 mt-0.5">
                     <span className="font-medium text-gray-700">Created:</span>{" "}
-                    {new Date(invoice.createdAt).toLocaleString()}
+                    on{" "}
+                    {new Date(invoice.createdAt).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })}{" "}
+                    at{" "}
+                    {new Date(invoice.createdAt).toLocaleTimeString("en-US", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    })}{" "}
+                    GMT+5:45
                   </p>
                 </div>
-                <Button
-                  onClick={handleEditInvoice}
-                  className="text-sm border border-blue-600 rounded-full px-4 py-1.5 text-blue-600 bg-white hover:bg-blue-100 transition-colors"
-                >
-                  Edit invoice
-                </Button>
-              </div>
-            )}
-
-            <div className="w-px h-2 rounded-2xl bg-gray-200 ml-9" />
-
-            {/* Step 2: Send & Reminders */}
-            <div
-              className={`bg-white border rounded-2xl p-5 flex flex-col gap-3 shadow-md transition duration-300 ${
-                invoice.sentAt
-                  ? "border-blue-100 bg-blue-50/20"
-                  : "border-gray-200"
-              }`}
-            >
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full border-2 flex items-center justify-center shrink-0 border-blue-500 text-blue-600">
-                  {invoice.sentAt ? <Send size={18} /> : <Mail size={18} />}
-                </div>
-
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-800 text-lg">
-                    Send Invoice
-                  </h3>
-
-                  {invoice.sentAt ? (
-                    <div className="flex flex-col">
-                      <p className="text-sm text-gray-600 mt-0.5">
-                        <span className="font-medium text-gray-900">
-                          Sent to:
-                        </span>{" "}
-                        {invoice.customerEmail || "Customer"}
-                      </p>
-                      <p className="text-xs text-blue-600 font-medium mt-1">
-                        Last sent:{" "}
-                        {new Date(invoice.sentAt).toLocaleString([], {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                        })}
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500 mt-0.5">
-                      Not sent to the customer yet.
-                    </p>
-                  )}
-                </div>
-
-                <Button
-                  onClick={() => setIsSendInvoiceModalOpen(true)}
-                  variant={invoice.sentAt ? "outline" : "default"}
-                  className={`rounded-full px-6 ${
-                    !invoice.sentAt
-                      ? "bg-blue-600 hover:bg-blue-700 text-white"
-                      : "border-blue-200 text-blue-600 hover:bg-blue-50"
-                  }`}
-                >
-                  {invoice.sentAt ? "Send again" : "Send now"}
-                </Button>
-              </div>
-
-              {/* Reminder Alert Box */}
-              <div className="flex items-center justify-between bg-white border border-blue-100 rounded-xl px-4 py-3 ml-14 shadow-sm">
-                <div className="flex items-start gap-3">
-                  <Bell size={16} className="text-blue-600 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm text-gray-700 font-medium">
-                      Send Reminder
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Send an invoice reminder to the customer.
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => handleResendInvoice()}
-                  className="text-xs bg-blue-50 text-blue-700 font-bold px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors"
-                >
-                  Send Reminder
-                </button>
+                {!isPaid && (
+                  <button
+                    onClick={handleEditInvoice}
+                    className="text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-4 py-1.5 transition-colors shrink-0"
+                  >
+                    Edit invoice
+                  </button>
+                )}
               </div>
             </div>
 
-            <div className="w-px h-2 rounded-2xl bg-gray-200 ml-9" />
+            {/* Connector */}
+            <div className="w-[2px] h-4 bg-gray-600 mb-0 ml-[26px]" />
+
+            {/* Step 2: Send & Reminders */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-0">
+              <div className="flex items-start gap-4">
+                <div className="w-9 h-9 rounded-full border-2 border-blue-500 flex items-center justify-center text-blue-600 shrink-0">
+                  {invoice.sentAt ? <Send size={16} /> : <Mail size={16} />}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900">Send</p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    <span className="font-medium text-gray-700">
+                      Last sent:
+                    </span>{" "}
+                    {invoice.sentAt
+                      ? new Date(invoice.sentAt).toLocaleString([], {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })
+                      : "Never"}
+                    {/* {invoice.sentAt ? (
+                      <div className="flex flex-col">
+                        <p className="text-sm text-gray-600 mt-0.5">
+                          <span className="font-medium text-gray-900">
+                            Sent to:
+                          </span>{" "}
+                          {invoice.customerEmail || "Customer"}
+                        </p>
+                        <p className="text-xs text-blue-600 font-medium mt-1">
+                          Last sent:{" "}
+                          {new Date(invoice.sentAt).toLocaleString([], {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          })}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 mt-0.5">
+                        Not sent to the customer yet.
+                      </p>
+                    )} */}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  {/* <button className="text-xs font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-full px-3 py-1.5 transition-colors flex items-center gap-1.5">
+                    <Check size={12} /> Mark as sent
+                  </button> */}
+                  <button
+                    onClick={() => setIsSendInvoiceModalOpen(true)}
+                    className="text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-1.5 transition-colors"
+                  >
+                    {invoice.sentAt ? "Send again" : "Send Invoice"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Reminders section */}
+              <div className="mt-4 ml-13 border border-gray-100 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Bell size={13} className="text-gray-500" />
+                  <p className="text-xs font-semibold text-gray-700">
+                    Schedule automatic reminders
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                      Reminders after due date
+                    </p>
+                    <div className="flex flex-wrap gap-2 opacity-50">
+                      {[
+                        "On due date",
+                        "3 days after",
+                        "7 days after",
+                        "14 days after",
+                      ].map((label) => (
+                        <label
+                          key={label}
+                          className="flex items-center gap-1.5 border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-500 cursor-not-allowed"
+                        >
+                          <input type="checkbox" className="rounded" disabled />
+                          {label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                      Reminders before due date
+                    </p>
+                    <div className="flex flex-wrap gap-2 opacity-50">
+                      {["14 days before", "7 days before", "3 days before"].map(
+                        (label) => (
+                          <label
+                            key={label}
+                            className="flex items-center gap-1.5 border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-500 cursor-not-allowed"
+                          >
+                            <input
+                              type="checkbox"
+                              className="rounded"
+                              disabled
+                            />
+                            {label}
+                          </label>
+                        ),
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Send reminder quick action */}
+                <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+                  <p className="text-xs text-gray-500">
+                    Send an invoice reminder to the customer now
+                  </p>
+                  <button
+                    onClick={() => handleResendInvoice()}
+                    className="text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    Send reminder
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Connector */}
+            <div className="w-[2px] h-4 bg-gray-600 mb-0 ml-[26px]" />
 
             {/* Step 3: Manage payments */}
             <div
-              className={`bg-white border rounded-2xl p-5 flex flex-col gap-4 shadow-md transition duration-300 ${
+              className={`bg-white border rounded-2xl p-5  ${
                 invoice.paidStatus === "paid"
                   ? "border-green-100 bg-green-50/30"
                   : "border-gray-200"
@@ -463,91 +605,112 @@ export default function InvoiceDetailPage() {
             >
               <div className="flex items-start gap-4">
                 <div
-                  className={`w-10 h-10 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                    displayBillData && displayBillData?.status === "refunded"
-                      ? "border-orange-500 text-orange-600 bg-orange-50"
+                  className={`w-9 h-9 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                    displayBillData && isRefunded
+                      ? "border-orange-400 text-orange-500 bg-orange-50"
                       : invoice.paidStatus === "paid"
                         ? "border-green-500 text-green-600 bg-green-50"
                         : "border-blue-500 text-blue-600"
                   }`}
                 >
-                  {displayBillData && displayBillData?.status === "refunded" ? (
-                    <AlertTriangle size={18} />
-                  ) : invoice.paidStatus === "paid" ? (
-                    <Check size={18} />
+                  {displayBillData && isRefunded ? (
+                    <AlertTriangle size={16} />
+                  ) : isPaid ? (
+                    <Check size={16} />
                   ) : (
-                    <CreditCard size={18} />
+                    <CreditCard size={16} />
                   )}
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-800 text-lg">
-                    {displayBillData && displayBillData?.status === "refunded"
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900">
+                    {displayBillData && isRefunded
                       ? "Payment refunded"
-                      : invoice.paidStatus === "paid"
+                      : isPaid
                         ? "Payment completed"
                         : "Manage payments"}
-                  </h3>
-                  {displayBillData && displayBillData?.status === "refunded" ? (
-                    <p className="text-sm text-orange-600 font-medium">
-                      This payment was refunded on{" "}
-                      {displayBillData?.updatedAt &&
-                        new Date(
-                          displayBillData.updatedAt,
-                        ).toLocaleDateString()}
-                    </p>
-                  ) : (
-                    invoice.paidStatus === "paid" && (
-                      <p className="text-sm text-green-600 font-medium">
-                        Paid via {invoice.paymentMethod || "cash"} on{" "}
-                        {new Date(invoice.updatedAt).toLocaleDateString()}
-                      </p>
-                    )
-                  )}
+                  </p>
+
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {displayBillData && isRefunded ? (
+                      <span className="text-orange-600">
+                        Refunded on{" "}
+                        {displayBillData?.updatedAt &&
+                          new Date(
+                            displayBillData.updatedAt,
+                          ).toLocaleDateString()}
+                      </span>
+                    ) : (
+                      isPaid && (
+                        <span className="text-green-600">
+                          Paid via {invoice.paymentMethod || "cash"} on{" "}
+                          {new Date(invoice.updatedAt).toLocaleDateString()}
+                        </span>
+                      )
+                    )}
+                  </p>
                 </div>
-                {invoice.paidStatus !== "paid" && (
-                  <div className="flex items-center gap-2">
-                    <Button
+                {!isPaid && !isRefunded && (
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
                       onClick={handleChargeCard}
-                      className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6"
+                      disabled
+                      className="text-xs font-semibold border border-gray-300 text-gray-500 rounded-full px-3 py-1.5 opacity-50 cursor-not-allowed flex items-center gap-1.5"
                     >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <rect
+                          width="18"
+                          height="11"
+                          x="3"
+                          y="11"
+                          rx="2"
+                          ry="2"
+                        />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
                       Charge a credit card
-                    </Button>
-                    <Button
+                    </button>
+                    <button
                       onClick={() => setIsPaymentModalOpen(true)}
-                      className="text-sm border border-blue-600 rounded-full px-4 py-2 text-blue-600 bg-white hover:bg-blue-100 transition-colors font-medium"
+                      className="text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-1.5 transition-colors"
                     >
                       Record a payment
-                    </Button>
+                    </button>
                   </div>
                 )}
               </div>
 
-              <div className="ml-14 flex items-center justify-between text-sm">
+              <div className="text-xs ml-13 mt-2 flex items-center justify-between">
                 <p className="text-gray-600">
-                  <span className="font-medium">Amount due:</span>{" "}
-                  {displayBillData && displayBillData.status === "refunded" ? (
+                  <span className="font-medium text-gray-700">Amount due:</span>{" "}
+                  {displayBillData && isRefunded ? (
                     <span className="text-orange-600 font-bold">
                       {currency.symbol} 0.00
                     </span>
-                  ) : invoice.paidStatus === "paid" ? (
+                  ) : isPaid ? (
                     <span className="text-green-600 font-bold">
                       {currency.symbol} 0.00
                     </span>
                   ) : (
                     ` ${formatCurrencySymbol(invoice.grandTotal.toFixed(2), currency.symbol, currency.locale)}`
                   )}
-                  {invoice.paidStatus !== "paid" && (
-                    <>
-                      {" — "}
-                      <button
-                        onClick={() => setIsPaymentModalOpen(true)}
-                        className="text-blue-600 hover:underline font-medium"
-                      >
-                        Record a payment
-                      </button>{" "}
-                      manually.
-                    </>
-                  )}
+                  {" — "}
+                  <button
+                    onClick={() => setIsPaymentModalOpen(true)}
+                    className="text-blue-600 font-bold hover:underline font-medium"
+                  >
+                    Record a payment
+                  </button>{" "}
+                  manually.
                 </p>
 
                 <p className="text-gray-600">
@@ -567,7 +730,7 @@ export default function InvoiceDetailPage() {
           </div>
 
           {/* ── Invoice Type Tabs ── */}
-          <div className="mb-6">
+          <div className="mb-6 mt-4">
             <div className="flex border-b border-gray-200 gap-1">
               {(["proforma", "invoice", "tax"] as const).map((tab) => {
                 const label =
@@ -653,6 +816,24 @@ export default function InvoiceDetailPage() {
       <RecordPaymentModal
         open={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
+        invoiceNo={id as string}
+      />
+
+      <ExportPdfModal
+        open={isExportPdfOpen}
+        onClose={() => setIsExportPdfOpen(false)}
+        invoiceNo={id as string}
+      />
+
+      <PrintInvoiceModal
+        open={isPrintOpen}
+        onClose={() => setIsPrintOpen(false)}
+        invoiceNo={id as string}
+      />
+
+      <CustomerPreviewModal
+        open={isCustomerPreviewOpen}
+        onClose={() => setIsCustomerPreviewOpen(false)}
         invoiceNo={id as string}
       />
     </div>
