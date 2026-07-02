@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { RefObject } from "react";
+import { RefObject, useState } from "react";
+import { Monitor, Smartphone } from "lucide-react";
 
 import businessLogo from "@/public/rebuzz.png";
 
@@ -9,6 +10,8 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { InvoiceItemGroup } from "@/lib/types/invoice";
 import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
 import InvoiceBillTable from "./InvoiceBillTable";
+
+// ── Types ─────────────────────────────────────────────────────────────────
 
 interface InvoiceData {
   _id: string;
@@ -39,24 +42,39 @@ interface BusinessProfile {
   panNumber?: number | string | null;
 }
 
+type PreviewMode = "desktop" | "mobile";
+type InvoiceType = "proforma" | "invoice" | "tax";
+
 interface InvoicePreviewProps {
-  type: "proforma" | "invoice" | "tax";
+  type: InvoiceType;
   invoiceRef?: RefObject<HTMLDivElement | null>;
   invoice: InvoiceData;
   customerProfile?: CustomerProfile | null;
   businessProfile?: BusinessProfile | null;
   /** When provided, overrides the invoice data with paid bill data (e.g. cashier name from generatedBy) */
   billData?: Transaction | null;
+  /** Renders the interactive preview chrome with a Desktop/Mobile toggle.
+   *  Off by default so PDF/print/public rendering keep the raw document only. */
+  withControls?: boolean;
 }
 
-const InvoicePreview = ({
+// ── Invoice document (shared by both modes) ────────────────────────────────
+
+function InvoiceContent({
   type,
-  invoiceRef,
   invoice,
   customerProfile,
   businessProfile,
   billData,
-}: InvoicePreviewProps) => {
+  isMobile,
+}: {
+  type: InvoiceType;
+  invoice: InvoiceData;
+  customerProfile?: CustomerProfile | null;
+  businessProfile?: BusinessProfile | null;
+  billData?: Transaction | null;
+  isMobile: boolean;
+}) {
   const { currency } = useCurrency();
 
   const customerName =
@@ -66,7 +84,7 @@ const InvoicePreview = ({
     "Guest";
 
   const formattedDate = new Date(
-    billData?.createdAt ? billData?.createdAt : invoice.createdAt,
+    billData?.createdAt ? billData.createdAt : invoice.createdAt,
   ).toLocaleString(undefined, {
     year: "numeric",
     month: "2-digit",
@@ -85,15 +103,12 @@ const InvoicePreview = ({
     minute: "2-digit",
   });
 
-  // console.log("Invoice Data:", billData?.createdAt);
-
   const calculatedTaxAmount = invoice.items.reduce((groupSum, group) => {
-    const itemTax = group.item.reduce((sum, product) => {
-      return (
-        sum + (product.taxApplied ? product.taxAmount * product.quantity : 0)
-      );
-    }, 0);
-
+    const itemTax = group.item.reduce(
+      (sum, product) =>
+        sum + (product.taxApplied ? product.taxAmount * product.quantity : 0),
+      0,
+    );
     return groupSum + itemTax;
   }, 0);
 
@@ -101,33 +116,182 @@ const InvoicePreview = ({
   const loyaltyRedeemedAmount = billData?.discountByPoints ?? 0;
   const taxAmount = calculatedTaxAmount;
 
-  // ─────────────────────────────────────────────
-  // Invoice Type Config
-  // ─────────────────────────────────────────────
-
   const isProforma = type === "proforma";
   const isTaxInvoice = type === "tax";
-
   const invoiceTitle = isProforma
     ? "Proforma Invoice"
     : isTaxInvoice
       ? "Tax Invoice"
       : "Invoice";
 
+  // ── Mobile layout — centered, compact ───────────────────────────────────
+  if (isMobile) {
+    return (
+      <div className="bg-white w-full min-h-full font-sans text-gray-900 text-sm">
+        <div className="h-1.5 bg-gray-800" />
+
+        {/* Business name hero */}
+        <div className="text-center px-5 pt-6 pb-4 border-b border-gray-100">
+          <p className="text-lg font-bold text-gray-900">
+            {businessProfile?.businessName || "My Business"}
+          </p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            {invoiceTitle} #{invoice.invoice}
+          </p>
+          <p className="text-2xl font-bold text-gray-900 mt-3">
+            {currency.symbol}
+            {Number(invoice.grandTotal).toFixed(2)}
+          </p>
+          <p className="text-xs text-blue-600 mt-1">
+            Issued on{" "}
+            {new Date(invoice.createdAt).toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </p>
+        </div>
+
+        {/* Details */}
+        <div className="px-5 py-4 border-b border-gray-100 space-y-2.5 text-xs">
+          {[
+            ["Invoice number:", String(invoice.invoice)],
+            [
+              "Amount due:",
+              `${currency.symbol}${Number(invoice.grandTotal).toFixed(2)}`,
+            ],
+            [
+              "Payment due:",
+              new Date(invoice.createdAt).toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              }),
+            ],
+            ["Bill to:", customerName],
+          ].map(([label, value]) => (
+            <div
+              key={label}
+              className="flex justify-between items-center gap-3"
+            >
+              <span className="text-gray-500 shrink-0">{label}</span>
+              <span className="font-semibold text-gray-900 text-right truncate">
+                {value}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Items */}
+        <div className="px-5 py-4">
+          <div className="flex justify-between text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-3">
+            <span>Items</span>
+            <span>Amount</span>
+          </div>
+          {invoice.items.map((group, gi) =>
+            group.item.map((product, pi) => (
+              <div
+                key={`${gi}-${pi}`}
+                className="flex justify-between items-start py-2.5 border-b border-gray-50 last:border-0"
+              >
+                <div>
+                  <p className="text-xs font-medium text-gray-900">
+                    {product.productName}
+                  </p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">
+                    {product.quantity} × {currency.symbol}
+                    {product.unitPrice?.toFixed(2)}
+                  </p>
+                </div>
+                <p className="text-xs font-semibold text-gray-900">
+                  {currency.symbol}
+                  {((product.unitPrice ?? 0) * product.quantity).toFixed(2)}
+                </p>
+              </div>
+            )),
+          )}
+
+          {/* Totals */}
+          <div className="mt-3 space-y-1.5 text-xs">
+            <div className="flex justify-between text-gray-500">
+              <span>Subtotal</span>
+              <span>
+                {currency.symbol}
+                {Number(invoice.total).toFixed(2)}
+              </span>
+            </div>
+            {discountAmount > 0 && (
+              <div className="flex justify-between text-gray-500">
+                <span>Discount</span>
+                <span>
+                  − {currency.symbol}
+                  {discountAmount.toFixed(2)}
+                </span>
+              </div>
+            )}
+            {loyaltyRedeemedAmount > 0 && (
+              <div className="flex justify-between text-gray-500">
+                <span>Discount by points</span>
+                <span>
+                  − {currency.symbol}
+                  {loyaltyRedeemedAmount.toFixed(2)}
+                </span>
+              </div>
+            )}
+            {isTaxInvoice && taxAmount > 0 && (
+              <div className="flex justify-between text-gray-500">
+                <span>Tax</span>
+                <span>
+                  + {currency.symbol}
+                  {taxAmount.toFixed(2)}
+                </span>
+              </div>
+            )}
+            <div className="flex justify-between items-center pt-2 mt-1 border-t border-gray-200">
+              <span className="text-xs font-bold text-gray-900">
+                {billData ? "Grand Total" : "Total Payable"}
+              </span>
+              <span className="text-xs font-bold text-gray-900">
+                {currency.symbol}
+                {Number(invoice.grandTotal).toFixed(2)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-5 pb-6 border-t border-gray-100 pt-4 text-[10px] text-gray-500 space-y-1">
+          <div className="flex justify-between">
+            <span>Cashier: {billData?.generatedBy || "N/A"}</span>
+            {billData && (
+              <span>Payment: {billData?.paymentMethod || "N/A"}</span>
+            )}
+          </div>
+          <div className="flex justify-between">
+            <span>Date: {formattedDate}</span>
+            {billData?.status === "refunded" && (
+              <span className="text-red-500 font-medium">Cancelled</span>
+            )}
+          </div>
+          {billData?.status === "refunded" && (
+            <p className="text-red-500 font-medium">
+              Cancelled: {formattedCancelledDate}
+            </p>
+          )}
+          <p className="text-center text-gray-400 pt-3">
+            All rights reserved · Rebuzz POS by Brand Builder Pvt Ltd
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Desktop layout — full A4 document (existing UI) ─────────────────────
   return (
-    <div
-      ref={invoiceRef}
-      className="bg-white w-[794px] min-h-[1123px] mx-auto px-8 py-10 text-black font-sans"
-    >
+    <div className="bg-white w-full min-h-[1123px] px-8 py-10 text-black font-sans">
       {/* ───────────────── Header ───────────────── */}
       <div className="text-center mb-10">
         <h1 className="text-4xl font-bold tracking-tight">{invoiceTitle}</h1>
-
-        {/* {isProforma && (
-          <p className="text-sm text-gray-500 mt-2">
-            This is an estimated invoice and not a final tax invoice.
-          </p>
-        )} */}
       </div>
 
       {/* ───────────────── Business Info ───────────────── */}
@@ -151,7 +315,6 @@ const InvoicePreview = ({
             {businessProfile?.address || "Nepal"}
           </p>
 
-          {/* Business PAN — shown for all invoice types, replaces invoice number */}
           <p className="text-sm mt-1 text-black-600">
             PAN: {businessProfile?.panNumber || "609699393"}
           </p>
@@ -216,54 +379,42 @@ const InvoicePreview = ({
 
       {/* ───────────────── Totals ───────────────── */}
       <div className="space-y-3 text-sm">
-        {/* Subtotal */}
         <div className="flex justify-between">
           <p className="text-gray-600">Subtotal</p>
-
           <p className="font-medium">
             {currency.symbol} {Number(invoice.total).toFixed(2)}
           </p>
         </div>
 
-        {/* Discount
-        {isTaxInvoice && discountAmount > 0 && ( */}
         <div className="flex justify-between">
           <p className="text-gray-600">Discount</p>
-
           <p className="font-medium">
             − {currency.symbol} {discountAmount.toFixed(2) || 0}
           </p>
         </div>
-        {/* )} */}
 
-        {/* Loyalty */}
         {loyaltyRedeemedAmount > 0 && (
           <div className="flex justify-between">
             <p className="text-gray-600">Discount By Points</p>
-
             <p className="font-medium">
               − {currency.symbol} {loyaltyRedeemedAmount.toFixed(2)}
             </p>
           </div>
         )}
 
-        {/* Tax only for Tax Invoice */}
         {isTaxInvoice && taxAmount > 0 && (
           <div className="flex justify-between">
             <p className="text-gray-600">Tax</p>
-
             <p className="font-medium">
               + {currency.symbol} {taxAmount.toFixed(2)}
             </p>
           </div>
         )}
 
-        {/* Total */}
         <div className="flex justify-between pt-2  border-gray-200">
           <p className="font-bold text-base">
             {billData ? "Grand Total" : "Total Payable"}
           </p>
-
           <p className="font-bold text-base">
             {currency.symbol} {Number(invoice.grandTotal).toFixed(2)}
           </p>
@@ -313,45 +464,109 @@ const InvoicePreview = ({
           </div>
         )}
 
-        {/* ───────────────── Copyright ───────────────── */}
         <div className="text-center mt-10 text-xs text-gray-500">
           <p>All rights reserved : Rebuzz POS by</p>
+          <p className="mt-1 font-medium">Brand Builder Pvt Ltd</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-          <p className="mt-1 font-medium">
-            {/* {businessProfile?.businessName || "My Business"} */}
-            Brand Builder Pvt Ltd
-          </p>
+// ── Preview mode toggle ─────────────────────────────────────────────────────
+
+const PREVIEW_MODES: {
+  label: string;
+  value: PreviewMode;
+  icon: typeof Monitor;
+}[] = [
+  { label: "Desktop", value: "desktop", icon: Monitor },
+  { label: "Mobile", value: "mobile", icon: Smartphone },
+];
+
+// ── Main InvoicePreview ─────────────────────────────────────────────────────
+
+export default function InvoicePreview({
+  type,
+  invoiceRef,
+  invoice,
+  customerProfile,
+  businessProfile,
+  billData,
+  withControls = false,
+}: InvoicePreviewProps) {
+  const [previewMode, setPreviewMode] = useState<PreviewMode>("desktop");
+  const isMobile = previewMode === "mobile";
+
+  const content = (
+    <InvoiceContent
+      type={type}
+      invoice={invoice}
+      customerProfile={customerProfile}
+      businessProfile={businessProfile}
+      billData={billData}
+      isMobile={withControls ? isMobile : false}
+    />
+  );
+
+  // Raw document — used for PDF export, screenshots, printing and public pages.
+  if (!withControls) {
+    return (
+      <div ref={invoiceRef} className="bg-white w-[794px] mx-auto">
+        {content}
+      </div>
+    );
+  }
+
+  // Interactive preview with a Desktop / Mobile toggle.
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+      {/* Preview header */}
+      <div className="bg-gray-50 border-b border-gray-200 px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 print:hidden">
+        <div className="flex items-center gap-1 text-[11px] text-gray-400">
+          <span className="font-medium text-gray-500">PREVIEW MODE</span>
+          <span>·</span>
+          <span>
+            You are previewing how your customer will see this invoice.
+          </span>
+        </div>
+
+        {/* Desktop / Mobile toggle */}
+        <div className="flex items-center bg-white border border-gray-200 rounded-xl p-0.5 gap-0.5 shrink-0">
+          {PREVIEW_MODES.map(({ label, value, icon: Icon }) => (
+            <button
+              key={value}
+              onClick={() => setPreviewMode(value)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
+                previewMode === value
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <Icon size={13} />
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* ───────────────── Notes ───────────────── */}
-      {/* {isProforma && (
-        <div className="mt-8 p-4 rounded-lg bg-yellow-50 border border-yellow-200">
-          <p className="text-sm text-yellow-700">
-            This Proforma Invoice is for estimation purposes only and does not
-            serve as a final tax invoice.
-          </p>
+      {/* Preview canvas — animated width transition */}
+      <div
+        className="bg-gray-100/60 py-8 flex justify-center transition-all duration-300 ease-in-out overflow-x-auto"
+        style={{ minHeight: isMobile ? "600px" : "800px" }}
+      >
+        <div
+          ref={invoiceRef}
+          className="overflow-hidden shadow-lg transition-all duration-300 ease-in-out"
+          style={{
+            width: isMobile ? "375px" : "794px",
+            borderRadius: isMobile ? "24px" : "4px",
+            border: isMobile ? "8px solid #1f2937" : "1px solid #e5e7eb",
+          }}
+        >
+          {content}
         </div>
-      )}
-
-      {type === "invoice" && (
-        <div className="mt-8 p-4 rounded-lg bg-blue-50 border border-blue-200">
-          <p className="text-sm text-blue-700">
-            Thank you for your purchase. Please keep this invoice for your
-            records.
-          </p>
-        </div>
-      )}
-
-      {isTaxInvoice && (
-        <div className="mt-8 p-4 rounded-lg bg-green-50 border border-green-200">
-          <p className="text-sm text-green-700">
-            This is an official tax invoice and includes applicable taxes.
-          </p>
-        </div>
-      )} */}
+      </div>
     </div>
   );
-};
-
-export default InvoicePreview;
+}

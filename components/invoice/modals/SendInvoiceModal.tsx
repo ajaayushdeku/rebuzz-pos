@@ -7,11 +7,17 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { FileText, Link as LinkIcon, Mail } from "lucide-react";
 
-import { sendInvoiceScreenshot } from "@/services/sendInvoiceScreenshot";
 import InvoicePreview from "@/components/invoice/InvoicePreview";
 import { useInvoiceDocumentData } from "./useInvoiceTicket";
 
 type InvoiceType = "proforma" | "invoice" | "tax";
+
+/** Maps the UI invoice type to the backend `billType` value. */
+const BILL_TYPE: Record<InvoiceType, "proforma" | "invoice" | "tax_invoice"> = {
+  proforma: "proforma",
+  invoice: "invoice",
+  tax: "tax_invoice",
+};
 
 interface SendInvoiceModalProps {
   open: boolean;
@@ -51,6 +57,36 @@ export default function SendInvoiceModal({
     tax: taxRef,
   } as const;
 
+  // Render an off-screen invoice preview into a multi-page A4 jsPDF instance.
+  const buildPdf = async (
+    ref: React.RefObject<HTMLDivElement | null>,
+  ): Promise<jsPDF | null> => {
+    if (!ref.current) return null;
+    const dataUrl = await toPng(ref.current, {
+      cacheBust: true,
+      pixelRatio: 2,
+      backgroundColor: "#ffffff",
+    });
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pageWidth = 210;
+    const pageHeight = 297;
+    const imgProps = pdf.getImageProperties(dataUrl);
+    const imgWidth = pageWidth;
+    const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+    pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+    return pdf;
+  };
+
   const handleDownloadPDF = async (
     ref: React.RefObject<HTMLDivElement | null>,
     suffix: string,
@@ -58,28 +94,8 @@ export default function SendInvoiceModal({
     if (!ref.current || !invoice) return;
     try {
       setGeneratingFor(suffix);
-      const dataUrl = await toPng(ref.current, {
-        cacheBust: true,
-        pixelRatio: 2,
-        backgroundColor: "#ffffff",
-      });
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pageWidth = 210;
-      const pageHeight = 297;
-      const imgProps = pdf.getImageProperties(dataUrl);
-      const imgWidth = pageWidth;
-      const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
-
-      let heightLeft = imgHeight;
-      let position = 0;
-      pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
+      const pdf = await buildPdf(ref);
+      if (!pdf) return;
       pdf.save(`Invoice-${invoice.invoice}-${suffix}.pdf`);
     } catch (err) {
       console.error("PDF Generation Error:", err);
@@ -104,36 +120,46 @@ export default function SendInvoiceModal({
     );
   };
 
+  // Generate the bill PDF and email it via the backend (throws on failure so
+  // callers can aggregate results, e.g. "Send All 3").
   const handleSendInvoiceByEmail = async (type: InvoiceType) => {
     const ref = refMap[type];
     if (!ref.current || !invoice) {
-      toast.error("Invoice preview not ready");
-      return;
+      throw new Error("Invoice preview not ready");
     }
     const recipientEmail = customerProfile?.email || invoice?.customerEmail;
     if (!recipientEmail) {
-      toast.error("No customer email found");
-      return;
+      throw new Error("No customer email found");
     }
 
     // Wait a tick to ensure the off-screen preview is painted.
     await new Promise((r) => setTimeout(r, 200));
 
-    try {
-      await sendInvoiceScreenshot({
-        element: ref.current,
-        to: recipientEmail,
-        invoiceNumber: String(invoice.invoice),
-        businessName: business?.businessName ?? undefined,
-        subject: `${LABELS[type]} #${invoice.invoice} — ${business?.businessName ?? "Rebuzz POS"}`,
-      });
-      toast.success(`${LABELS[type]} sent to ${recipientEmail}`);
-    } catch (err) {
-      console.error("Email send error:", err);
-      toast.error(
-        err instanceof Error ? err.message : "Failed to send invoice email",
-      );
+    const pdf = await buildPdf(ref);
+    if (!pdf) throw new Error("Failed to generate PDF");
+
+    // data:application/pdf;base64,... — the backend strips the prefix.
+    const pdfBase64 = pdf.output("datauristring");
+    const fileName = `${type === "tax" ? "tax-invoice" : type}-${invoice.invoice}.pdf`;
+
+    const res = await fetch("/api/bills/email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        billType: BILL_TYPE[type],
+        pdfBase64,
+        recipientEmail,
+        recipientName: customerProfile?.name || invoice.ticketName || undefined,
+        fileName,
+      }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.status !== "success") {
+      throw new Error(data.message || "Failed to email bill");
     }
+
+    toast.success(data.message || `${LABELS[type]} sent to ${recipientEmail}`);
   };
 
   if (!open || !mounted) return null;
@@ -254,7 +280,11 @@ export default function SendInvoiceModal({
                   <div className="grid grid-cols-3 gap-3">
                     {(
                       [
-                        { label: "Proforma", type: "proforma", ref: proformaRef },
+                        {
+                          label: "Proforma",
+                          type: "proforma",
+                          ref: proformaRef,
+                        },
                         { label: "Invoice", type: "invoice", ref: regularRef },
                         { label: "Tax Invoice", type: "tax", ref: taxRef },
                       ] as {
@@ -381,8 +411,17 @@ export default function SendInvoiceModal({
                       disabled={isSendingEmail || !recipient}
                       onClick={async () => {
                         setIsSendingEmail(true);
-                        await handleSendInvoiceByEmail(selectedInvoiceType);
-                        setIsSendingEmail(false);
+                        try {
+                          await handleSendInvoiceByEmail(selectedInvoiceType);
+                        } catch (err) {
+                          toast.error(
+                            err instanceof Error
+                              ? err.message
+                              : "Failed to email bill",
+                          );
+                        } finally {
+                          setIsSendingEmail(false);
+                        }
                       }}
                     >
                       {isSendingEmail ? (
@@ -428,8 +467,12 @@ export default function SendInvoiceModal({
                         ] as InvoiceType[]) {
                           try {
                             await handleSendInvoiceByEmail(type);
-                          } catch {
-                            // errors already toasted inside the handler
+                          } catch (err) {
+                            toast.error(
+                              err instanceof Error
+                                ? `${LABELS[type]}: ${err.message}`
+                                : `Failed to email ${LABELS[type]}`,
+                            );
                           }
                         }
                         setIsSendingEmail(false);

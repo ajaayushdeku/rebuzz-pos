@@ -11,7 +11,7 @@ import InvoicePreview from "../invoice/InvoicePreview";
 
 type InvoiceType = "proforma" | "invoice" | "tax";
 
-export default function PublicPreviewPage({ type }: { type: InvoiceType }) {
+const PublicPreviewPage = ({ type }: { type: InvoiceType }) => {
   const { id } = useParams();
 
   const {
@@ -56,6 +56,11 @@ export default function PublicPreviewPage({ type }: { type: InvoiceType }) {
     retry: false,
   });
 
+  const handlePreviewBack = () => {
+    // Scroll to top of the page when back is clicked from preview
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   // console.log("Bill Data:", billData);
 
   if (invLoading || bizLoading || billLoading)
@@ -73,11 +78,14 @@ export default function PublicPreviewPage({ type }: { type: InvoiceType }) {
         <InvoicePreview
           type={type}
           invoice={invoice}
+          withControls
           businessProfile={business}
           customerProfile={customerProfile}
           billData={billData ?? null}
+          onBack={handlePreviewBack}
         />
       </div>
     </div>
   );
-}
+};
+export default PublicPreviewPage;

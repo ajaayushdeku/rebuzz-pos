@@ -13,19 +13,15 @@ import {
   ChevronDown,
   Circle,
   CreditCard,
-  FileCog,
-  FileEdit,
   FileText,
   Mail,
   Send,
-  Trash2,
 } from "lucide-react";
 
 import { useBusiness } from "@/hooks/useBusiness";
 import { getTicketByInvoice } from "@/services/apiTicket.client";
 import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
 
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,7 +38,7 @@ import PrintInvoiceModal from "@/components/invoice/modals/PrintInvoiceModal";
 import CustomerPreviewModal from "@/components/invoice/modals/CustomerPreviewModal";
 import { formatCurrencySymbol } from "@/utils/helper";
 
-export default function InvoiceDetailPage() {
+const InvoiceDetailPage = () => {
   const { id } = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -183,6 +179,11 @@ export default function InvoiceDetailPage() {
 
   const handleSetInvoiceType = (type: "proforma" | "invoice" | "tax") => {
     setInvoiceType(type);
+  };
+
+  const handlePreviewBack = () => {
+    // Scroll to top of the page when back is clicked from preview
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // ── Derived status ────────────────────────────────────────────────────────
@@ -703,14 +704,18 @@ export default function InvoiceDetailPage() {
                   ) : (
                     ` ${formatCurrencySymbol(invoice.grandTotal.toFixed(2), currency.symbol, currency.locale)}`
                   )}
-                  {" — "}
-                  <button
-                    onClick={() => setIsPaymentModalOpen(true)}
-                    className="text-blue-600 font-bold hover:underline font-medium"
-                  >
-                    Record a payment
-                  </button>{" "}
-                  manually.
+                  {!isPaid && !isRefunded && (
+                    <>
+                      {" — "}
+                      <button
+                        onClick={() => setIsPaymentModalOpen(true)}
+                        className="text-blue-600 font-bold hover:underline font-medium"
+                      >
+                        Record a payment
+                      </button>{" "}
+                      manually.
+                    </>
+                  )}
                 </p>
 
                 <p className="text-gray-600">
@@ -771,6 +776,8 @@ export default function InvoiceDetailPage() {
               customerProfile={customerProfile}
               businessProfile={business}
               billData={displayBillData}
+              withControls={true}
+              onBack={handlePreviewBack}
             />
           </div>
 
@@ -787,6 +794,8 @@ export default function InvoiceDetailPage() {
               customerProfile={customerProfile}
               businessProfile={business}
               billData={displayBillData}
+              withControls={true}
+              onBack={handlePreviewBack}
             />
           </div>
 
@@ -801,6 +810,8 @@ export default function InvoiceDetailPage() {
               customerProfile={customerProfile}
               businessProfile={business}
               billData={displayBillData}
+              withControls={true}
+              onBack={handlePreviewBack}
             />
           </div>
         </div>
@@ -838,4 +849,6 @@ export default function InvoiceDetailPage() {
       />
     </div>
   );
-}
+};
+
+export default InvoiceDetailPage;
