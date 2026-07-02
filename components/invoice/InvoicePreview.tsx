@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { RefObject, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Monitor, Smartphone } from "lucide-react";
 
 import businessLogo from "@/public/rebuzz.png";
@@ -495,6 +496,7 @@ export default function InvoicePreview({
   billData,
   withControls = false,
 }: InvoicePreviewProps) {
+  const router = useRouter();
   const [previewMode, setPreviewMode] = useState<PreviewMode>("desktop");
   const isMobile = previewMode === "mobile";
 
@@ -520,34 +522,41 @@ export default function InvoicePreview({
 
   // Interactive preview with a Desktop / Mobile toggle.
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+    <div className=" w-full bg-white border border-gray-200 overflow-hidden shadow-sm">
       {/* Preview header */}
-      <div className="bg-gray-50 border-b border-gray-200 px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 print:hidden">
-        <div className="flex items-center gap-1 text-[11px] text-gray-400">
+      <div className=" relative bg-gray-50 border-b border-gray-200 px-5 py-3 flex items-center justify-between gap-2 print:hidden">
+        <div className="flex flex-col items-left gap-1 text-[11px] text-gray-400">
           <span className="font-medium text-gray-500">PREVIEW MODE</span>
-          <span>·</span>
+
           <span>
             You are previewing how your customer will see this invoice.
           </span>
         </div>
 
         {/* Desktop / Mobile toggle */}
-        <div className="flex items-center bg-white border border-gray-200 rounded-xl p-0.5 gap-0.5 shrink-0">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center bg-white border border-gray-200 rounded-xl p-1 gap-1 shrink-0 ">
           {PREVIEW_MODES.map(({ label, value, icon: Icon }) => (
             <button
               key={value}
               onClick={() => setPreviewMode(value)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
+              className={`flex flex-col items-center justify-center gap-1 min-w-[72px] px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
                 previewMode === value
                   ? "bg-blue-600 text-white shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
               }`}
             >
-              <Icon size={13} />
-              {label}
+              <Icon size={16} />
+              <span>{label}</span>
             </button>
           ))}
         </div>
+
+        <button
+          onClick={() => router.push("/invoices/")}
+          className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+        >
+          Go Back to Rebuzz
+        </button>
       </div>
 
       {/* Preview canvas — animated width transition */}
