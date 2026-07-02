@@ -82,7 +82,6 @@ const PublicPreviewPage = ({ type }: { type: InvoiceType }) => {
           businessProfile={business}
           customerProfile={customerProfile}
           billData={billData ?? null}
-          onBack={handlePreviewBack}
         />
       </div>
     </div>

@@ -181,11 +181,6 @@ const InvoiceDetailPage = () => {
     setInvoiceType(type);
   };
 
-  const handlePreviewBack = () => {
-    // Scroll to top of the page when back is clicked from preview
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   // ── Derived status ────────────────────────────────────────────────────────
   const isRefunded = displayBillData?.status === "refunded";
   const isPaid = invoice.paidStatus === "paid";
@@ -777,7 +772,6 @@ const InvoiceDetailPage = () => {
               businessProfile={business}
               billData={displayBillData}
               withControls={true}
-              onBack={handlePreviewBack}
             />
           </div>
 
@@ -795,7 +789,6 @@ const InvoiceDetailPage = () => {
               businessProfile={business}
               billData={displayBillData}
               withControls={true}
-              onBack={handlePreviewBack}
             />
           </div>
 
@@ -811,7 +804,6 @@ const InvoiceDetailPage = () => {
               businessProfile={business}
               billData={displayBillData}
               withControls={true}
-              onBack={handlePreviewBack}
             />
           </div>
         </div>
