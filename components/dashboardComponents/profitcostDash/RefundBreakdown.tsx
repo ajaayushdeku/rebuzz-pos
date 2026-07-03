@@ -1,0 +1,165 @@
+"use client";
+
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+
+import type {
+  NameType,
+  Payload,
+  ValueType,
+} from "recharts/types/component/DefaultTooltipContent";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrency } from "@/utils/helper";
+import {
+  refundBreakdownMock,
+  totalRefundLoss,
+} from "@/lib/mockData/mock-refundBreakDown";
+
+// ── Types ─────────────────────────────────────────────────────────────────
+
+export interface RefundReason {
+  id: string;
+  reason: string;
+  refunds: number;
+  amount: number;
+  color: string;
+}
+
+// ── Tooltip ───────────────────────────────────────────────────────────────
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Payload<ValueType, NameType>[];
+  total: number;
+}
+
+const CustomTooltip = ({ active, payload, total }: CustomTooltipProps) => {
+  if (!active || !payload?.length) return null;
+  const entry = payload[0].payload as RefundReason;
+  const pct = ((entry.amount / total) * 100).toFixed(1);
+
+  return (
+    <div
+      className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100 min-w-36 "
+      style={{ zIndex: 100 }}
+    >
+      <div className="flex items-center gap-1.5 mb-1">
+        <span
+          className="w-2.5 h-2.5 rounded-full shrink-0"
+          style={{ backgroundColor: entry.color }}
+        />
+        <span className="text-xs font-semibold text-gray-700">
+          {entry.reason}
+        </span>
+      </div>
+      <p className="text-sm font-bold text-gray-900">${entry.amount}</p>
+      <p className="text-xs text-gray-400">{pct}% of total</p>
+    </div>
+  );
+};
+
+// ── Main Component ────────────────────────────────────────────────────────
+
+export default function RefundBreakdown() {
+  const { currency } = useCurrency();
+  const data = refundBreakdownMock;
+  const total = totalRefundLoss;
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full mt-4 relative select-none">
+      {/* Lock overlay */}
+      <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px] rounded-2xl z-10 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <div className="rounded-full bg-black/10 p-3">
+            <svg
+              className="w-8 h-8 text-gray-800"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+              />
+            </svg>
+          </div>
+          <span className="text-[15px] font-semibold text-gray-700 tracking-wide">
+            Feature locked
+          </span>
+        </div>
+      </div>
+
+      {/* Header */}
+      <div className="mb-6">
+        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
+          Refund Breakdown
+        </h2>
+        <p className="text-xs text-gray-400 mt-0.5">
+          Value lost by refund reason
+        </p>
+      </div>
+
+      {/* Donut + Legend */}
+      <div className="flex flex-col xl:flex-row items-center gap-6 md:gap-10">
+        {/* Donut chart */}
+        <div className="relative flex items-center justify-center shrink-0">
+          <ResponsiveContainer width={200} height={200}>
+            <PieChart>
+              <Pie
+                data={data}
+                dataKey="amount"
+                innerRadius={58}
+                outerRadius={84}
+                paddingAngle={2}
+                startAngle={90}
+                endAngle={-270}
+                stroke="white"
+                strokeWidth={3}
+              >
+                {data.map((item) => (
+                  <Cell key={item.id} fill={item.color} />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip total={total} />} />
+            </PieChart>
+          </ResponsiveContainer>
+
+          {/* Center label */}
+          <div
+            className="absolute flex flex-col items-center justify-center pointer-events-none"
+            style={{ zIndex: 1 }}
+          >
+            <span className="text-xs text-gray-400">Total Lost</span>
+            <span className="text-2xl font-bold text-red-500">${total}</span>
+          </div>
+        </div>
+
+        {/* Legend list */}
+        <div className="flex-1 w-full space-y-4">
+          {data.map((item) => (
+            <div key={item.id} className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span
+                  className="w-3 h-3 rounded-full shrink-0"
+                  style={{ backgroundColor: item.color }}
+                />
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-medium text-gray-700">
+                    {item.reason}
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    ({item.refunds})
+                  </span>
+                </div>
+              </div>
+              <span className="text-sm font-bold text-gray-900">
+                ${item.amount}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -15,6 +15,12 @@ import {
 
 import ProfitPerProduct from "../dashboardComponents/profitcostDash/ProfitPerProduct";
 import RefundAnalysis from "../dashboardComponents/profitcostDash/RefundAnalysis";
+import RefundBreakdown from "../dashboardComponents/profitcostDash/RefundBreakdown";
+import WhatIfScenarioPlanner from "../dashboardComponents/profitcostDash/WhatIfScenarioPlanner";
+import PrimeCostTracker from "../dashboardComponents/profitcostDash/PrimeCostTracker";
+import BreakEvenMarginSafety from "../dashboardComponents/profitcostDash/BreakEvenMarginSafety";
+import UnitEconomics from "../dashboardComponents/profitcostDash/UnitEconomics";
+import DayTimeProfitHeatmap from "../dashboardComponents/profitcostDash/DayTimeProfitHeatmap";
 import GrossProfitTrendChart from "../dashboardComponents/profitcostDash/GrossProfitTrendChart";
 import ExpensesByCategoryChart from "../dashboardComponents/profitcostDash/ExpenseByCategoryChart";
 import BudgetTable from "../dashboardComponents/profitcostDash/BudgetTable";
@@ -67,6 +73,30 @@ export function RefundAnalysisWrapper({
   endDate: string;
 }) {
   return <RefundAnalysis startDate={startDate} endDate={endDate} />;
+}
+
+export function RefundBreakdownWrapper() {
+  return <RefundBreakdown />;
+}
+
+export function WhatIfScenarioPlannerWrapper() {
+  return <WhatIfScenarioPlanner />;
+}
+
+export function PrimeCostTrackerWrapper() {
+  return <PrimeCostTracker />;
+}
+
+export function BreakEvenMarginSafetyWrapper() {
+  return <BreakEvenMarginSafety />;
+}
+
+export function UnitEconomicsWrapper() {
+  return <UnitEconomics />;
+}
+
+export function DayTimeProfitHeatmapWrapper() {
+  return <DayTimeProfitHeatmap />;
 }
 
 export async function ExpenseStatsWrapper() {

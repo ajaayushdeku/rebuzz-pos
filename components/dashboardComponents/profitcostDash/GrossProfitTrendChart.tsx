@@ -163,7 +163,7 @@ export default function GrossProfitTrendChart() {
     );
 
   return (
-    <div className="bg-white rounded-2xl px-4 py-3 border min-w-0 border-gray-100 shadow-md">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full mt-4">
       {showSampleBadge && <SampleDataBadge />}
 
       <div className="mb-6">

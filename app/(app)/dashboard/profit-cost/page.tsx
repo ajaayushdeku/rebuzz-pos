@@ -9,9 +9,15 @@ import { resolveRange } from "@/components/dashboardComponents/profitcostDash/pr
 import {
   GrossProfitTrendChartWrapper,
   GrossVsCOGSVsNetProfitWrapper,
+  PrimeCostTrackerWrapper,
   ProfitPerProductWrapper,
   ProfitStatsWrapper,
   RefundAnalysisWrapper,
+  RefundBreakdownWrapper,
+  WhatIfScenarioPlannerWrapper,
+  BreakEvenMarginSafetyWrapper,
+  UnitEconomicsWrapper,
+  DayTimeProfitHeatmapWrapper,
 } from "@/components/componentWrappers/ProfitCostWrapper";
 
 export default async function Page({
@@ -98,6 +104,48 @@ export default async function Page({
               startDate={effectiveStartDate}
               endDate={effectiveEndDate}
             />
+          </Suspense>
+        </ChartErrorBoundary>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-4 ">
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <PrimeCostTrackerWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <DayTimeProfitHeatmapWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-4 ">
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <UnitEconomicsWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <BreakEvenMarginSafetyWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <WhatIfScenarioPlannerWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <RefundBreakdownWrapper />
           </Suspense>
         </ChartErrorBoundary>
       </div>
