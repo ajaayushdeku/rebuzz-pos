@@ -91,7 +91,7 @@ export default function PrintInvoiceModal({
         onClick={onClose}
       >
         <div
-          className="relative w-full max-w-lg rounded-2xl bg-white shadow-2xl overflow-hidden animate-in fade-in-0 slide-in-from-bottom-6 duration-300"
+          className="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden animate-in fade-in-0 slide-in-from-bottom-6 duration-300"
           onClick={(e) => e.stopPropagation()}
         >
           {/* ── Header ── */}

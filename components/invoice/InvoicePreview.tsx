@@ -289,7 +289,7 @@ function InvoiceContent({
 
   // ── Desktop layout — full A4 document (existing UI) ─────────────────────
   return (
-    <div className="bg-white w-full min-h-[1123px] px-8 py-10 text-black font-sans">
+    <div className="bg-white w-full min-h-[1123px] px-8 py-10 text-black border-[4px] border-orange-500 font-sans">
       {/* ───────────────── Header ───────────────── */}
       <div className="text-center mb-10">
         <h1 className="text-4xl font-bold tracking-tight">{invoiceTitle}</h1>

@@ -34,6 +34,7 @@ import {
 import RecordPaymentModal from "@/components/invoice/modals/RecordPaymentModal";
 import ExportPdfModal from "@/components/invoice/modals/ExportPdfModal";
 import PrintInvoiceModal from "@/components/invoice/modals/PrintInvoiceModal";
+import EmailInvoiceModal from "@/components/invoice/modals/EmailInvoiceModal";
 import toast from "react-hot-toast";
 import { parseNepalDateTime } from "../dashboardComponents/staffDash/staffDetail/staffDetailHelpers";
 
@@ -61,6 +62,7 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
   const [paymentTarget, setPaymentTarget] = useState<Invoice | null>(null);
   const [exportTarget, setExportTarget] = useState<Invoice | null>(null);
   const [printTarget, setPrintTarget] = useState<Invoice | null>(null);
+  const [emailTarget, setEmailTarget] = useState<Invoice | null>(null);
   const pageSize = 10;
 
   const filtered = useMemo(() => {
@@ -100,30 +102,6 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
       prev?.key === key && prev.direction === "asc"
         ? { key, direction: "desc" }
         : { key, direction: "asc" },
-    );
-  };
-
-  // ── Resend invoice (send reminder) ────────────────────────────────────────
-  const handleResend = async (invoice: number | string | undefined) => {
-    if (invoice === undefined || invoice === null || invoice === "") return;
-    await toast.promise(
-      (async () => {
-        const res = await fetch(`/api/tickets/${invoice}/send`, {
-          method: "POST",
-        });
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(
-            (data as { error?: string }).error || "Failed to resend invoice",
-          );
-        }
-      })(),
-      {
-        loading: "Resending invoice...",
-        success: `Invoice ORD-${invoice} resent`,
-        error: (err) =>
-          err instanceof Error ? err.message : "Failed to resend invoice",
-      },
     );
   };
 
@@ -345,7 +323,7 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="rounded-lg"
-                              onSelect={() => handleResend(inv.invoice)}
+                              onSelect={() => setEmailTarget(inv)}
                             >
                               {/* <Send className="h-4 w-4" /> */}
                               Resend invoice
@@ -527,6 +505,13 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
         open={!!printTarget}
         onClose={() => setPrintTarget(null)}
         invoiceNo={printTarget?.invoice}
+      />
+
+      {/* Email Invoice Modal (Resend invoice) */}
+      <EmailInvoiceModal
+        open={!!emailTarget}
+        onClose={() => setEmailTarget(null)}
+        invoiceNo={emailTarget?.invoice}
       />
     </>
   );

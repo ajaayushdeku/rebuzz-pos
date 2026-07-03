@@ -15,6 +15,7 @@ import {
   CreditCard,
   FileText,
   Mail,
+  Plus,
   Send,
 } from "lucide-react";
 
@@ -246,8 +247,12 @@ const InvoiceDetailPage = () => {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1.5 border border-gray-200 rounded-full px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-                More actions <ChevronDown size={13} />
+              <button className="flex items-center gap-1.5 border border-gray-200 rounded-full px-2 sm:px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+                <span className="sm:hidden">
+                  <ChevronDown size={15} />
+                </span>
+                <span className="hidden lg:inline">More actions</span>
+                <ChevronDown size={13} className="hidden lg:block" />
               </button>
             </DropdownMenuTrigger>
 
@@ -300,15 +305,18 @@ const InvoiceDetailPage = () => {
 
           <button
             onClick={() => router.push("/invoices/add")}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-1.5 rounded-full transition-colors"
+            className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-2 sm:px-4 py-1.5 rounded-full transition-colors"
           >
-            Create another invoice
+            <span className="lg:hidden">
+              <Plus size={16} />
+            </span>
+            <span className="hidden lg:inline">Create another invoice</span>
           </button>
         </div>
       </div>
 
       {/* Body */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 py-6">
         <div className="w-full max-w-4xl">
           {/* Invoice meta row */}
           <div className="flex flex-wrap items-center justify-between gap-4 mb-8">

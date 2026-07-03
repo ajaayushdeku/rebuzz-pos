@@ -17,7 +17,11 @@ interface CustomerPreviewModalProps {
 
 /** Public preview route segment for each invoice type. */
 const segmentFor = (type: InvoiceType): string =>
-  type === "proforma" ? "proforma" : type === "invoice" ? "invoice" : "tax-invoice";
+  type === "proforma"
+    ? "proforma"
+    : type === "invoice"
+      ? "invoice"
+      : "tax-invoice";
 
 export default function CustomerPreviewModal({
   open,
@@ -55,13 +59,15 @@ export default function CustomerPreviewModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-lg rounded-2xl bg-white shadow-2xl overflow-hidden animate-in fade-in-0 slide-in-from-bottom-6 duration-300"
+        className="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden animate-in fade-in-0 slide-in-from-bottom-6 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Header ── */}
         <div className="flex items-center justify-between border-b border-indigo-100 px-5 py-3.5">
           <div>
-            <h2 className="text-lg font-bold text-gray-800">Customer Preview</h2>
+            <h2 className="text-lg font-bold text-gray-800">
+              Customer Preview
+            </h2>
             <p className="text-xs text-gray-500 mt-0.5">
               Open or copy the public invoice link to share with the customer
             </p>
