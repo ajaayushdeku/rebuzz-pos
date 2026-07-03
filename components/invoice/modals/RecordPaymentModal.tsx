@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useInvoiceTicket } from "./useInvoiceTicket";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 interface RecordPaymentModalProps {
   open: boolean;
@@ -362,14 +363,23 @@ export default function RecordPaymentModal({
                 <div className="flex justify-between text-gray-500">
                   <span>Subtotal</span>
                   <span className="font-medium text-gray-800">
-                    {currency.symbol} {subtotalBeforeTax.toFixed(2)}
+                    {formatCurrencySymbol(
+                      subtotalBeforeTax,
+                      currency.symbol,
+                      currency.locale,
+                    )}
                   </span>
                 </div>
                 {isTaxApplied && (
                   <div className="flex justify-between text-blue-600">
                     <span>Tax</span>
                     <span>
-                      +{currency.symbol} {taxAmount.toFixed(2)}
+                      +
+                      {formatCurrencySymbol(
+                        taxAmount,
+                        currency.symbol,
+                        currency.locale,
+                      )}
                     </span>
                   </div>
                 )}
@@ -377,7 +387,12 @@ export default function RecordPaymentModal({
                   <div className="flex justify-between text-red-500">
                     <span>Discount</span>
                     <span>
-                      −{currency.symbol} {computedDiscountAmount.toFixed(2)}
+                      −
+                      {formatCurrencySymbol(
+                        computedDiscountAmount,
+                        currency.symbol,
+                        currency.locale,
+                      )}
                     </span>
                   </div>
                 )}
@@ -385,14 +400,23 @@ export default function RecordPaymentModal({
                   <div className="flex justify-between text-violet-500">
                     <span>Loyalty redeemed</span>
                     <span>
-                      −{currency.symbol} {redeemPoints.toFixed(2)}
+                      −
+                      {formatCurrencySymbol(
+                        redeemPoints,
+                        currency.symbol,
+                        currency.locale,
+                      )}
                     </span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-gray-800 border-t pt-1.5 mt-1">
                   <span>Total payable</span>
                   <span>
-                    {currency.symbol} {finalPayable.toFixed(2)}
+                    {formatCurrencySymbol(
+                      finalPayable,
+                      currency.symbol,
+                      currency.locale,
+                    )}
                   </span>
                 </div>
               </div>
@@ -460,9 +484,19 @@ export default function RecordPaymentModal({
                   paymentData.discount > 0 &&
                   !discountError && (
                     <p className="text-xs text-gray-400 mt-1">
-                      {paymentData.discount}% of {currency.symbol}{" "}
-                      {subtotalBeforeTax.toFixed(2)} = {currency.symbol}{" "}
-                      {computedDiscountAmount.toFixed(2)} off
+                      {paymentData.discount}% of{" "}
+                      {formatCurrencySymbol(
+                        subtotalBeforeTax,
+                        currency.symbol,
+                        currency.locale,
+                      )}{" "}
+                      ={" "}
+                      {formatCurrencySymbol(
+                        computedDiscountAmount,
+                        currency.symbol,
+                        currency.locale,
+                      )}{" "}
+                      off
                     </p>
                   )}
                 {discountError && (
@@ -561,8 +595,13 @@ export default function RecordPaymentModal({
                         )}
                         {!redeemError && redeemPoints > 0 && (
                           <p className="text-xs text-violet-500 mt-1">
-                            {redeemPoints} pts = {currency.symbol}{" "}
-                            {redeemPoints.toFixed(2)} off
+                            {redeemPoints} pts ={" "}
+                            {formatCurrencySymbol(
+                              redeemPoints,
+                              currency.symbol,
+                              currency.locale,
+                            )}{" "}
+                            off
                           </p>
                         )}
                       </div>
@@ -578,7 +617,11 @@ export default function RecordPaymentModal({
                     Final Amount
                   </p>
                   <p className="text-2xl font-bold text-gray-800">
-                    {currency.symbol} {finalPayable.toFixed(2)}
+                    {formatCurrencySymbol(
+                      finalPayable,
+                      currency.symbol,
+                      currency.locale,
+                    )}
                   </p>
                 </div>
                 <span className="text-[11px] bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full font-medium capitalize">
@@ -623,8 +666,12 @@ export default function RecordPaymentModal({
               </>
             ) : (
               <>
-                Confirm &amp; Pay {currency.symbol}
-                {finalPayable.toFixed(2)}
+                Confirm &amp; Pay{" "}
+                {formatCurrencySymbol(
+                  finalPayable,
+                  currency.symbol,
+                  currency.locale,
+                )}
               </>
             )}
           </button>

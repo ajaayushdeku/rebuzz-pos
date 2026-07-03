@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { toJpeg } from "html-to-image";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { FileText, Link as LinkIcon, Mail } from "lucide-react";
+import { Download, FileText, Link as LinkIcon, Mail } from "lucide-react";
 
 import InvoicePreview from "@/components/invoice/InvoicePreview";
 import { useInvoiceDocumentData } from "./useInvoiceTicket";
@@ -84,7 +84,16 @@ export default function SendInvoiceModal({
 
     let heightLeft = imgHeight;
     let position = 0;
-    pdf.addImage(dataUrl, "JPEG", 0, position, imgWidth, imgHeight, undefined, "FAST");
+    pdf.addImage(
+      dataUrl,
+      "JPEG",
+      0,
+      position,
+      imgWidth,
+      imgHeight,
+      undefined,
+      "FAST",
+    );
     heightLeft -= pageHeight;
     while (heightLeft > 0) {
       position = heightLeft - imgHeight;
@@ -318,7 +327,7 @@ export default function SendInvoiceModal({
                       >
                         <div className="rounded-xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-3 shadow-sm transition-all hover:shadow-md">
                           <div className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center mx-auto mb-2 group-hover:bg-red-100 transition">
-                            <FileText className="text-red-500" size={14} />
+                            <Download className="text-red-500" size={14} />
                           </div>
                           <h4 className="text-xs font-semibold text-gray-800">
                             {generatingFor === item.type

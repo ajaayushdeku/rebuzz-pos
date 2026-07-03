@@ -63,7 +63,7 @@ export default function CustomerPreviewModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Header ── */}
-        <div className="flex items-center justify-between border-b border-indigo-100 px-5 py-3.5">
+        <div className="flex items-center justify-between border-b border-indigo-100 px-6 py-3.5">
           <div>
             <h2 className="text-lg font-bold text-gray-800">
               Customer Preview
@@ -81,7 +81,7 @@ export default function CustomerPreviewModal({
         </div>
 
         {/* ── Content ── */}
-        <div className="px-5 py-4">
+        <div className="px-6 py-4">
           {!invoice ? (
             <div className="flex items-center justify-center py-10 text-sm text-gray-400">
               Loading invoice...
@@ -100,7 +100,7 @@ export default function CustomerPreviewModal({
                   className="rounded-xl border border-indigo-100 bg-gradient-to-b from-white to-indigo-50/50 p-3 shadow-sm transition-all hover:shadow-md"
                 >
                   <div className="h-8 w-8 rounded-lg bg-indigo-50 flex items-center justify-center mx-auto mb-2">
-                    <LinkIcon className="text-indigo-600" size={14} />
+                    <LinkIcon className="text-blue-600" size={14} />
                   </div>
                   <h4 className="text-xs font-semibold text-gray-800 text-center">
                     {item.label}
@@ -109,14 +109,14 @@ export default function CustomerPreviewModal({
                   <div className="mt-2.5 flex flex-col gap-1.5">
                     <button
                       onClick={() => handleOpen(item.type)}
-                      className="flex items-center justify-center gap-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-semibold px-2 py-1.5 transition-colors"
+                      className="flex items-center justify-center gap-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-semibold px-2 py-1.5 transition-colors"
                     >
                       <ExternalLink size={12} />
                       Open
                     </button>
                     <button
                       onClick={() => handleCopy(item.type, item.label)}
-                      className="flex items-center justify-center gap-1 rounded-lg border border-indigo-200 text-indigo-700 hover:bg-indigo-50 text-[11px] font-semibold px-2 py-1.5 transition-colors"
+                      className="flex items-center justify-center gap-1 rounded-lg border border-blue-200 text-blue-700 hover:bg-blue-50 text-[11px] font-semibold px-2 py-1.5 transition-colors"
                     >
                       <Copy size={12} />
                       Copy link

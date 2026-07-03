@@ -248,11 +248,10 @@ const InvoiceDetailPage = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-1.5 border border-gray-200 rounded-full px-2 sm:px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-                <span className="sm:hidden">
+                <span>
                   <ChevronDown size={15} />
                 </span>
                 <span className="hidden lg:inline">More actions</span>
-                <ChevronDown size={13} className="hidden lg:block" />
               </button>
             </DropdownMenuTrigger>
 

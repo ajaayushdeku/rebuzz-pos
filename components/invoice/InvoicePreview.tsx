@@ -1,9 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { RefObject, useState } from "react";
+import { RefObject, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { Monitor, Smartphone } from "lucide-react";
+import jsPDF from "jspdf";
+import toast from "react-hot-toast";
+import { toJpeg } from "html-to-image";
+import { Download, Monitor, Printer, Smartphone } from "lucide-react";
 
 import businessLogo from "@/public/rebuzz.png";
 
@@ -500,6 +504,12 @@ export default function InvoicePreview({
   const [previewMode, setPreviewMode] = useState<PreviewMode>("desktop");
   const isMobile = previewMode === "mobile";
 
+  // Off-screen A4 desktop document of the CURRENT type — used for print/export
+  // so the output is always the proper document regardless of the mobile toggle.
+  const docRef = useRef<HTMLDivElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [printing, setPrinting] = useState(false);
+
   const content = (
     <InvoiceContent
       type={type}
@@ -509,6 +519,137 @@ export default function InvoicePreview({
       billData={billData}
       isMobile={withControls ? isMobile : false}
     />
+  );
+
+  // A4 desktop document reused as the off-screen export source and the print body.
+  const printableDocument = (
+    <InvoiceContent
+      type={type}
+      invoice={invoice}
+      customerProfile={customerProfile}
+      businessProfile={businessProfile}
+      billData={billData}
+      isMobile={false}
+    />
+  );
+
+  // Build a compressed, multi-page A4 PDF from the off-screen document.
+  const handleExportPdf = async () => {
+    if (!docRef.current || isExporting) return;
+    setIsExporting(true);
+    try {
+      const dataUrl = await toJpeg(docRef.current, {
+        cacheBust: true,
+        quality: 0.7,
+        pixelRatio: 1.5,
+        backgroundColor: "#ffffff",
+      });
+      const pdf = new jsPDF({
+        orientation: "p",
+        unit: "mm",
+        format: "a4",
+        compress: true,
+      });
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const imgProps = pdf.getImageProperties(dataUrl);
+      const imgWidth = pageWidth;
+      const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+      pdf.addImage(
+        dataUrl,
+        "JPEG",
+        0,
+        position,
+        imgWidth,
+        imgHeight,
+        undefined,
+        "FAST",
+      );
+      heightLeft -= pageHeight;
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(
+          dataUrl,
+          "JPEG",
+          0,
+          position,
+          imgWidth,
+          imgHeight,
+          undefined,
+          "FAST",
+        );
+        heightLeft -= pageHeight;
+      }
+      pdf.save(`Invoice-${invoice.invoice}-${type}.pdf`);
+    } catch (err) {
+      console.error("PDF export error:", err);
+      toast.error("Failed to export PDF");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handlePrint = () => setPrinting(true);
+
+  // Once the print document is rendered, open the browser print dialog.
+  useEffect(() => {
+    if (!printing) return;
+    const timer = setTimeout(() => window.print(), 300);
+    const done = () => setPrinting(false);
+    window.addEventListener("afterprint", done);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("afterprint", done);
+    };
+  }, [printing]);
+
+  // Action buttons — shown only in the interactive preview (public preview
+  // pages), acting on the current invoice type.
+  const actionButtons = withControls && (
+    <div className="flex items-center justify-center bg-g gap-3 py-4 print:hidden">
+      <button
+        onClick={handlePrint}
+        className="flex items-center gap-2 px-5 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
+      >
+        <Printer size={16} />
+        <span className="hidden lg:inline-block"> Print</span>
+      </button>
+      <button
+        onClick={handleExportPdf}
+        disabled={isExporting}
+        className="flex items-center gap-2 px-5 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        <Download size={16} />
+        <span className="hidden lg:inline-block">
+          {" "}
+          {isExporting ? "Exporting..." : "Export as PDF"}
+        </span>
+      </button>
+    </div>
+  );
+
+  // Off-screen A4 export source + isolated print body (portaled to <body> so the
+  // global print CSS shows only the invoice).
+  const printSupport = withControls && (
+    <>
+      <div aria-hidden className="absolute -left-[99999px] top-0">
+        <div ref={docRef} className="bg-white w-[794px]">
+          {printableDocument}
+        </div>
+      </div>
+      {printing &&
+        createPortal(
+          <div className="invoice-print-root">
+            <div className="bg-white w-[794px] mx-auto">
+              {printableDocument}
+            </div>
+          </div>,
+          document.body,
+        )}
+    </>
   );
 
   // Raw document — used for PDF export, screenshots, printing and public pages.
@@ -523,12 +664,14 @@ export default function InvoicePreview({
   // Interactive preview with a Desktop / Mobile toggle.
   return (
     <div className=" w-full bg-white border border-gray-200 overflow-hidden shadow-sm">
+      {printSupport}
+
       {/* Preview header */}
       <div className=" relative bg-gray-50 border-b border-gray-200 px-5 py-3 flex items-center justify-between gap-2 print:hidden">
         <div className="flex flex-col items-left gap-1 text-[11px] text-gray-400">
           <span className="font-medium text-gray-500">PREVIEW MODE</span>
 
-          <span>
+          <span className="hidden lg:inline-block">
             You are previewing how your customer will see this invoice.
           </span>
         </div>
@@ -546,14 +689,14 @@ export default function InvoicePreview({
               }`}
             >
               <Icon size={16} />
-              <span>{label}</span>
+              <span className="hidden lg:inline-block">{label}</span>
             </button>
           ))}
         </div>
 
         <button
           onClick={() => router.push(`/invoices/${invoice.invoice}`)}
-          className="text-sm font-semibold cursor-pointer text-blue-600 hover:text-blue-700 transition-colors"
+          className="text-sm font-semibold cursor-pointer text-blue-600 hover:text-blue-700 border-[3px] border-blue-200 hover:border-blue-300 rounded-2xl px-3 py-1.5 transition-colors"
         >
           Go Back to Rebuzz
         </button>
@@ -561,9 +704,11 @@ export default function InvoicePreview({
 
       {/* Preview canvas — animated width transition */}
       <div
-        className="bg-gray-100/60 py-8 flex justify-center transition-all duration-300 ease-in-out overflow-x-auto"
+        className="bg-gray-100/60 py-2 flex flex-col items-center justify-center transition-all duration-300 ease-in-out overflow-x-auto"
         style={{ minHeight: isMobile ? "600px" : "800px" }}
       >
+        {" "}
+        {actionButtons}
         <div
           ref={invoiceRef}
           className="overflow-hidden shadow-lg transition-all duration-300 ease-in-out"
