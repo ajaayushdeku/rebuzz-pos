@@ -27,6 +27,7 @@ import BudgetTable from "../dashboardComponents/profitcostDash/BudgetTable";
 import ProfitCostStatBoxGrid from "../dashboardComponents/profitcostDash/ProfitCostStatGrid";
 import GrossVsCOGSVsNetProfit from "../dashboardComponents/profitcostDash/GrossVsCOGSVsNetProfit";
 import ProfitWaterfallBridge from "../dashboardComponents/profitcostDash/ProfitWaterfallBridge";
+import RevenueFlowSankey from "../dashboardComponents/profitcostDash/RevenueFlowSankey";
 import ProfitVarianceBridge from "../dashboardComponents/profitcostDash/ProfitVarianceBridge";
 import MenuEngineeringMatrix from "../dashboardComponents/profitcostDash/MenuEngineeringMatrix";
 import MarginProfitForecastChart from "../dashboardComponents/profitcostDash/MarginProfitForecastChart";
@@ -163,4 +164,8 @@ export function ProfitWaterfallBridgeWrapper() {
 
 export function ProfitVarianceBridgeWrapper() {
   return <ProfitVarianceBridge />;
+}
+
+export function RevenueFlowSankeyWrapper() {
+  return <RevenueFlowSankey />;
 }
