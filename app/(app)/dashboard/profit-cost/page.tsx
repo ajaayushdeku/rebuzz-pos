@@ -18,6 +18,10 @@ import {
   BreakEvenMarginSafetyWrapper,
   UnitEconomicsWrapper,
   DayTimeProfitHeatmapWrapper,
+  ProfitWaterfallBridgeWrapper,
+  ProfitVarianceBridgeWrapper,
+  MarginProfitForecastWrapper,
+  MenuEngineeringMatrixWrapper,
 } from "@/components/componentWrappers/ProfitCostWrapper";
 
 export default async function Page({
@@ -108,32 +112,34 @@ export default async function Page({
         </ChartErrorBoundary>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-4 ">
-        <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
-            <PrimeCostTrackerWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
+      <div className="grid grid-cols-1 md:grid-cols-[2fr_4fr] gap-4 ">
+        <div className="flex flex-col ">
+          <ChartErrorBoundary>
+            <Suspense fallback={<ChartSkeleton />}>
+              <PrimeCostTrackerWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
 
-        <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
-            <DayTimeProfitHeatmapWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
-      </div>
+          <ChartErrorBoundary>
+            <Suspense fallback={<ChartSkeleton />}>
+              <UnitEconomicsWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-4 ">
-        <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
-            <UnitEconomicsWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
+        <div className="flex flex-col ">
+          <ChartErrorBoundary>
+            <Suspense fallback={<ChartSkeleton />}>
+              <BreakEvenMarginSafetyWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
 
-        <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
-            <BreakEvenMarginSafetyWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
+          <ChartErrorBoundary>
+            <Suspense fallback={<ChartSkeleton />}>
+              <DayTimeProfitHeatmapWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
@@ -146,6 +152,34 @@ export default async function Page({
         <ChartErrorBoundary>
           <Suspense fallback={<ChartSkeleton />}>
             <RefundBreakdownWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <ProfitWaterfallBridgeWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <ProfitVarianceBridgeWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <MenuEngineeringMatrixWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <MarginProfitForecastWrapper />
           </Suspense>
         </ChartErrorBoundary>
       </div>

@@ -26,6 +26,10 @@ import ExpensesByCategoryChart from "../dashboardComponents/profitcostDash/Expen
 import BudgetTable from "../dashboardComponents/profitcostDash/BudgetTable";
 import ProfitCostStatBoxGrid from "../dashboardComponents/profitcostDash/ProfitCostStatGrid";
 import GrossVsCOGSVsNetProfit from "../dashboardComponents/profitcostDash/GrossVsCOGSVsNetProfit";
+import ProfitWaterfallBridge from "../dashboardComponents/profitcostDash/ProfitWaterfallBridge";
+import ProfitVarianceBridge from "../dashboardComponents/profitcostDash/ProfitVarianceBridge";
+import MenuEngineeringMatrix from "../dashboardComponents/profitcostDash/MenuEngineeringMatrix";
+import MarginProfitForecastChart from "../dashboardComponents/profitcostDash/MarginProfitForecastChart";
 
 export async function ProfitStatsWrapper({
   startDate,
@@ -143,4 +147,20 @@ export async function ExpenseByCategoryChartWrapper() {
 export async function BudgetTableWrapper() {
   const budgetData = await getBudgetData();
   return <BudgetTable budgetData={budgetData} />;
+}
+
+export function MarginProfitForecastWrapper() {
+  return <MarginProfitForecastChart />;
+}
+
+export function MenuEngineeringMatrixWrapper() {
+  return <MenuEngineeringMatrix />;
+}
+
+export function ProfitWaterfallBridgeWrapper() {
+  return <ProfitWaterfallBridge />;
+}
+
+export function ProfitVarianceBridgeWrapper() {
+  return <ProfitVarianceBridge />;
 }

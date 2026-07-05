@@ -5,6 +5,7 @@ import { ResponsiveContainer, LineChart, Line } from "recharts";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import type { PriceChangeImpactItem } from "@/lib/mockData/mockInsightData";
+import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 
 interface PriceChangeImpactProps {
   data: PriceChangeImpactItem[];
@@ -19,28 +20,8 @@ export default function PriceChangeImpact({ data }: PriceChangeImpactProps) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full h-full relative select-none">
       {/* Lock overlay */}
-      <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px] rounded-2xl z-10 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <div className="rounded-full bg-black/10 p-3">
-            <svg
-              className="w-8 h-8 text-gray-800"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.5}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
-              />
-            </svg>
-          </div>
-          <span className="text-[15px] font-semibold text-gray-700 tracking-wide">
-            Feature locked
-          </span>
-        </div>
-      </div>
+      <LockDimFeactureOverlay />
+
       {/* Header */}
       <div className="mb-4 md:mb-5">
         <h3 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">

@@ -1,5 +1,8 @@
 "use client";
 
+import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { Lock } from "lucide-react";
+
 export interface BreakEvenData {
   revenue: number;
   breakEvenPoint: number;
@@ -34,28 +37,7 @@ export default function BreakEvenMarginSafety() {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full relative select-none mt-4">
       {/* Lock overlay */}
-      <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px] rounded-2xl z-10 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <div className="rounded-full bg-black/10 p-3">
-            <svg
-              className="w-8 h-8 text-gray-800"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.5}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
-              />
-            </svg>
-          </div>
-          <span className="text-[15px] font-semibold text-gray-700 tracking-wide">
-            Feature locked
-          </span>
-        </div>
-      </div>
+      <LockDimFeactureOverlay />
 
       {/* Header */}
       <div className="mb-6">
@@ -116,7 +98,7 @@ export default function BreakEvenMarginSafety() {
       </div>
 
       {/* Break-even label above marker */}
-      <div className="relative mt-1" style={{ marginLeft: `${breakEvenPos}%` }}>
+      <div className="relative mt-6" style={{ marginLeft: `${breakEvenPos}%` }}>
         <div className="absolute -translate-x-1/2 -top-5">
           <span className="text-[10px] font-semibold text-gray-600 bg-white px-1">
             BREAK-EVEN
