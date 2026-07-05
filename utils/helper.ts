@@ -48,6 +48,16 @@ export const formatDate = (dateString: string) => {
   return date.toLocaleDateString();
 };
 
+export function formatCompactNumber(amount: number): string {
+  if (Math.abs(amount) >= 1_000_000) {
+    return `${(amount / 1_000_000).toFixed(amount % 1_000_000 === 0 ? 0 : 1)}M`;
+  }
+  if (Math.abs(amount) >= 1_000) {
+    return `${(amount / 1_000).toFixed(amount % 1_000 === 0 ? 0 : 1)}k`;
+  }
+  return amount.toFixed(0);
+}
+
 export function formatDatetime(dateString: string) {
   const date = new Date(dateString);
 

@@ -12,11 +12,8 @@ import {
 } from "recharts";
 import { mockVarianceData } from "@/lib/mockData/mock-profitcost-advanced";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
-
-function fmtK(v: number) {
-  if (v === 0) return "$0.0k";
-  return `$${(v / 1000).toFixed(0)}.0k`;
-}
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol, formatCompactNumber } from "@/utils/helper";
 
 const BAR_COLORS: Record<string, string> = {
   base: "#94a3b8",
@@ -26,10 +23,13 @@ const BAR_COLORS: Record<string, string> = {
 };
 
 const CustomTooltip = ({ active, payload, label }: any) => {
+  const { currency } = useCurrency();
+
   if (!active || !payload?.length) return null;
   const d = payload[0]?.payload;
   const isPositive = d.type === "positive";
   const isNegative = d.type === "negative";
+
   return (
     <div className="bg-white border border-gray-100 rounded-xl px-3 py-2.5 shadow-lg text-xs">
       <p className="font-semibold text-gray-700 mb-1">{label}</p>
@@ -38,7 +38,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         <span
           className={`font-bold ${isPositive ? "text-green-600" : isNegative ? "text-red-500" : "text-gray-800"}`}
         >
-          {fmtK(d.value)}
+          {formatCurrencySymbol(d.value, currency.symbol, currency.locale)}
         </span>
       </p>
       {isPositive && (
@@ -59,6 +59,7 @@ const LEGEND_ITEMS = [
 ];
 
 export default function ProfitVarianceBridge() {
+  const { currency } = useCurrency();
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full relative select-none mt-4">
       {/* Lock overlay */}
@@ -89,7 +90,9 @@ export default function ProfitVarianceBridge() {
             dy={8}
           />
           <YAxis
-            tickFormatter={fmtK}
+            tickFormatter={(v) =>
+              `${currency.symbol} ${formatCompactNumber(v)}`
+            }
             axisLine={false}
             tickLine={false}
             tick={{ fill: "#9ca3af", fontSize: 12 }}

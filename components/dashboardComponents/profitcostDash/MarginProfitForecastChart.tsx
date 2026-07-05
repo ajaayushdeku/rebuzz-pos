@@ -19,13 +19,10 @@ import {
 } from "@/lib/mockData/mock-profitcost-advanced";
 import type { MarginTrendPoint } from "@/lib/mockData/mock-profitcost-advanced";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCompactNumber } from "@/utils/helper";
 
 // ── Helpers ───────────────────────────────────────────────────────────────
-
-function fmtK(v: number) {
-  if (v === 0) return "$0k";
-  return `$${(v / 1000).toFixed(0)}k`;
-}
 
 function fmtPct(v: number) {
   return `${v}%`;
@@ -56,10 +53,12 @@ const CustomTooltip = ({
   active,
   payload,
   label,
+  currency,
 }: {
   active?: boolean;
   payload?: TooltipEntry[];
   label?: string;
+  currency: { symbol: string };
 }) => {
   if (!active || !payload?.length) return null;
   return (
@@ -77,9 +76,9 @@ const CustomTooltip = ({
                 <span className="text-gray-500 capitalize">{entry.name}</span>
               </div>
               <span className="font-bold text-gray-800">
-                {typeof entry.value === "number" && entry.value > 1000
-                  ? fmtK(entry.value)
-                  : `${entry.value}%`}
+                {entry.name === "Margin %" || entry.name === "forecastMarginMax"
+                  ? `${entry.value}%`
+                  : `${currency.symbol} ${formatCompactNumber(Number(entry.value))}`}
               </span>
             </div>
           ),
@@ -156,6 +155,7 @@ const CustomLegend = () => (
 // ── Main component ────────────────────────────────────────────────────────
 
 export default function MarginProfitForecastChart() {
+  const { currency } = useCurrency();
   const data = buildChartData(mockMarginTrendData);
 
   return (
@@ -192,7 +192,9 @@ export default function MarginProfitForecastChart() {
           <YAxis
             yAxisId="profit"
             orientation="left"
-            tickFormatter={fmtK}
+            tickFormatter={(v) =>
+              `${currency.symbol} ${formatCompactNumber(v)}`
+            }
             axisLine={false}
             tickLine={false}
             tick={{ fill: "#9ca3af", fontSize: 12 }}
@@ -213,7 +215,7 @@ export default function MarginProfitForecastChart() {
             width={38}
           />
 
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip currency={currency} />} />
 
           {/* Target margin dashed reference line */}
           <ReferenceLine

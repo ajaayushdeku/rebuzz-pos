@@ -74,7 +74,7 @@ const Page = async ({
           <Suspense
             fallback={
               <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 my-4">
-                {Array.from({ length: 3 }).map((_, i) => (
+                {Array.from({ length: 4 }).map((_, i) => (
                   <StatSkeleton key={i} />
                 ))}
               </div>

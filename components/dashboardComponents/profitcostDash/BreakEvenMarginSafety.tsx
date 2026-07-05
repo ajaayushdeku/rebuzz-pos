@@ -1,7 +1,8 @@
 "use client";
 
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
-import { Lock } from "lucide-react";
+import { formatCurrencySymbol } from "@/utils/helper";
+import { useCurrency } from "@/providers/CurrencyContext";
 
 export interface BreakEvenData {
   revenue: number;
@@ -22,6 +23,7 @@ function format(n: number) {
 }
 
 export default function BreakEvenMarginSafety() {
+  const { currency } = useCurrency();
   const { revenue, breakEvenPoint, fixedCosts, variableCosts } = breakEvenMock;
 
   const marginOfSafety =
@@ -54,7 +56,11 @@ export default function BreakEvenMarginSafety() {
         <div>
           <p className="text-xs text-gray-500 mb-1">Break-even Point</p>
           <p className="text-2xl font-bold text-gray-900">
-            ${format(breakEvenPoint)}
+            {formatCurrencySymbol(
+              breakEvenPoint,
+              currency.symbol,
+              currency.locale,
+            )}
           </p>
         </div>
 
@@ -92,9 +98,18 @@ export default function BreakEvenMarginSafety() {
 
       {/* Labels */}
       <div className="flex justify-between mt-2 text-xs text-gray-500">
-        <span>$0</span>
-        <span className="text-gray-400">Current: ${format(revenue)}</span>
-        <span>${format(Math.round(maxScale / 1.2))}</span>
+        <span>{formatCurrencySymbol(0, currency.symbol, currency.locale)}</span>
+        <span className="text-gray-400">
+          Current:{" "}
+          {formatCurrencySymbol(revenue, currency.symbol, currency.locale)}
+        </span>
+        <span>
+          {formatCurrencySymbol(
+            Math.round(maxScale / 1.2),
+            currency.symbol,
+            currency.locale,
+          )}
+        </span>
       </div>
 
       {/* Break-even label above marker */}

@@ -8,7 +8,7 @@ import type {
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrency } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 import {
   refundBreakdownMock,
   totalRefundLoss,
@@ -31,9 +31,15 @@ interface CustomTooltipProps {
   active?: boolean;
   payload?: Payload<ValueType, NameType>[];
   total: number;
+  currency: { symbol: string; locale: string };
 }
 
-const CustomTooltip = ({ active, payload, total }: CustomTooltipProps) => {
+const CustomTooltip = ({
+  active,
+  payload,
+  total,
+  currency,
+}: CustomTooltipProps) => {
   if (!active || !payload?.length) return null;
   const entry = payload[0].payload as RefundReason;
   const pct = ((entry.amount / total) * 100).toFixed(1);
@@ -52,7 +58,9 @@ const CustomTooltip = ({ active, payload, total }: CustomTooltipProps) => {
           {entry.reason}
         </span>
       </div>
-      <p className="text-sm font-bold text-gray-900">${entry.amount}</p>
+      <p className="text-sm font-bold text-gray-900">
+        {formatCurrencySymbol(entry.amount, currency.symbol, currency.locale)}
+      </p>
       <p className="text-xs text-gray-400">{pct}% of total</p>
     </div>
   );
@@ -71,7 +79,7 @@ export default function RefundBreakdown() {
       <LockDimFeactureOverlay />
 
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-0">
         <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
           Refund Breakdown
         </h2>
@@ -80,65 +88,68 @@ export default function RefundBreakdown() {
         </p>
       </div>
 
-      {/* Donut + Legend */}
-      <div className="flex flex-col xl:flex-row items-center gap-6 md:gap-10">
-        {/* Donut chart */}
-        <div className="relative flex items-center justify-center shrink-0">
-          <ResponsiveContainer width={200} height={200}>
-            <PieChart>
-              <Pie
-                data={data}
-                dataKey="amount"
-                innerRadius={58}
-                outerRadius={84}
-                paddingAngle={2}
-                startAngle={90}
-                endAngle={-270}
-                stroke="white"
-                strokeWidth={3}
-              >
-                {data.map((item) => (
-                  <Cell key={item.id} fill={item.color} />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip total={total} />} />
-            </PieChart>
-          </ResponsiveContainer>
+      {/* Donut chart */}
+      <div className="relative flex items-center justify-center shrink-0">
+        <ResponsiveContainer width={200} height={200}>
+          <PieChart>
+            <Pie
+              data={data}
+              dataKey="amount"
+              innerRadius={58}
+              outerRadius={84}
+              paddingAngle={2}
+              startAngle={90}
+              endAngle={-270}
+              stroke="white"
+              strokeWidth={3}
+            >
+              {data.map((item) => (
+                <Cell key={item.id} fill={item.color} />
+              ))}
+            </Pie>
+            <Tooltip
+              content={<CustomTooltip total={total} currency={currency} />}
+            />
+          </PieChart>
+        </ResponsiveContainer>
 
-          {/* Center label */}
-          <div
-            className="absolute flex flex-col items-center justify-center pointer-events-none"
-            style={{ zIndex: 1 }}
-          >
-            <span className="text-xs text-gray-400">Total Lost</span>
-            <span className="text-2xl font-bold text-red-500">${total}</span>
-          </div>
+        {/* Center label */}
+        <div
+          className="absolute flex flex-col items-center justify-center pointer-events-none"
+          style={{ zIndex: 1 }}
+        >
+          <span className="text-xs text-gray-400">Total Lost</span>
+          <span className="text-2xl font-bold text-red-500">
+            {formatCurrencySymbol(total, currency.symbol, currency.locale)}
+          </span>
         </div>
+      </div>
 
-        {/* Legend list */}
-        <div className="flex-1 w-full space-y-4">
-          {data.map((item) => (
-            <div key={item.id} className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span
-                  className="w-3 h-3 rounded-full shrink-0"
-                  style={{ backgroundColor: item.color }}
-                />
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-medium text-gray-700">
-                    {item.reason}
-                  </span>
-                  <span className="text-xs text-gray-400">
-                    ({item.refunds})
-                  </span>
-                </div>
+      {/* Legend list */}
+      <div className="w-full space-y-4 mt-6">
+        {data.map((item) => (
+          <div key={item.id} className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span
+                className="w-3 h-3 rounded-full shrink-0"
+                style={{ backgroundColor: item.color }}
+              />
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-medium text-gray-700">
+                  {item.reason}
+                </span>
+                <span className="text-xs text-gray-400">({item.refunds})</span>
               </div>
-              <span className="text-sm font-bold text-gray-900">
-                ${item.amount}
-              </span>
             </div>
-          ))}
-        </div>
+            <span className="text-sm font-bold text-gray-900">
+              {formatCurrencySymbol(
+                item.amount,
+                currency.symbol,
+                currency.locale,
+              )}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );

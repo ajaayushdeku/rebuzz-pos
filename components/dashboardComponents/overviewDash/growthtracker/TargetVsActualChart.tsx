@@ -16,7 +16,7 @@ import SetTargetsModal from "./SetTargetsModal";
 import SampleDataBadge from "@/components/ui/sampledatabadge";
 import { CustomTooltipProps } from "@/lib/types/chart";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrencySymbol } from "@/utils/helper";
+import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 
 export interface TargetActualData {
   month: string;
@@ -268,9 +268,7 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
 
   const isEmpty = chartData.every((d) => d.actual === 0 && d.target === 0);
   const formatYAxis = (value: number): string =>
-    value >= 1000
-      ? `${currency.symbol} ${value / 1000}k`
-      : formatCurrencySymbol(value, currency.symbol, currency.locale);
+    `${currency.symbol} ${formatCompactNumber(value)}`;
   const yTicks = getYAxisTicks(chartData);
   const yMax = yTicks[yTicks.length - 1] * 1.05;
 

@@ -12,10 +12,8 @@ import {
 } from "recharts";
 import { mockWaterfallData } from "@/lib/mockData/mock-profitcost-advanced";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
-
-function fmtK(v: number) {
-  return `$${(v / 1000).toFixed(0)}k`;
-}
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol, formatCompactNumber } from "@/utils/helper";
 
 const BAR_COLORS: Record<string, string> = {
   start: "#64748b",
@@ -24,6 +22,8 @@ const BAR_COLORS: Record<string, string> = {
 };
 
 const CustomTooltip = ({ active, payload, label }: any) => {
+  const { currency } = useCurrency();
+
   if (!active || !payload?.length) return null;
   const d = payload[0]?.payload;
   return (
@@ -31,11 +31,21 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       <p className="font-semibold text-gray-700 mb-1">{label}</p>
       <p className="text-gray-500">
         Running total:{" "}
-        <span className="font-bold text-gray-800">{fmtK(d.value)}</span>
+        <span className="font-bold text-gray-800">
+          {formatCurrencySymbol(d.value, currency.symbol, currency.locale)}
+        </span>
       </p>
       {d.deduction > 0 && (
         <p className="text-red-500">
-          Deduction: <span className="font-bold">−{fmtK(d.deduction)}</span>
+          Deduction:{" "}
+          <span className="font-bold">
+            −
+            {formatCurrencySymbol(
+              d.deduction,
+              currency.symbol,
+              currency.locale,
+            )}
+          </span>
         </p>
       )}
     </div>
@@ -43,6 +53,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function ProfitWaterfallBridge() {
+  const { currency } = useCurrency();
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full relative select-none mt-4">
       {/* Lock overlay */}
@@ -73,7 +84,9 @@ export default function ProfitWaterfallBridge() {
             dy={8}
           />
           <YAxis
-            tickFormatter={fmtK}
+            tickFormatter={(v) =>
+              `${currency.symbol} ${formatCompactNumber(v)}`
+            }
             axisLine={false}
             tickLine={false}
             tick={{ fill: "#9ca3af", fontSize: 12 }}

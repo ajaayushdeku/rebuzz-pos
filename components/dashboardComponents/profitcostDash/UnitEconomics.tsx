@@ -1,7 +1,9 @@
 "use client";
 
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
-import { ShoppingCart, DollarSign, Package, Clock } from "lucide-react";
+import { ShoppingCart, DollarSign, Tag, UserRound } from "lucide-react";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 export interface UnitEconomics {
   avgProfitPerTransaction: number;
@@ -11,91 +13,85 @@ export interface UnitEconomics {
 }
 
 export const unitEconomicsMock: UnitEconomics = {
-  avgProfitPerTransaction: 18.45,
-  avgBasketSize: 42.8,
-  avgCostPerItem: 24.3,
-  profitPerLaborHour: 31.7,
+  avgProfitPerTransaction: 14.5,
+  avgBasketSize: 2.8,
+  avgCostPerItem: 1.85,
+  profitPerLaborHour: 48.5,
 };
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
 export default function UnitEconomics() {
-  const data = unitEconomicsMock;
+  const { currency } = useCurrency();
 
   const metrics = [
     {
-      label: "Avg Profit / Transaction",
-      value: data.avgProfitPerTransaction,
+      label: "Avg Profit /\nTransaction",
+      value: formatCurrencySymbol(
+        unitEconomicsMock.avgProfitPerTransaction,
+        currency.symbol,
+        currency.locale,
+      ),
       icon: DollarSign,
-      color: "text-blue-600",
-      bg: "bg-blue-50",
+      color: "text-blue-500",
     },
     {
       label: "Avg Basket Size",
-      value: data.avgBasketSize,
+      value: `${unitEconomicsMock.avgBasketSize} items`,
       icon: ShoppingCart,
-      color: "text-purple-600",
-      bg: "bg-purple-50",
+      color: "text-violet-500",
     },
     {
       label: "Avg Cost / Item",
-      value: data.avgCostPerItem,
-      icon: Package,
-      color: "text-orange-600",
-      bg: "bg-orange-50",
+      value: formatCurrencySymbol(
+        unitEconomicsMock.avgCostPerItem,
+        currency.symbol,
+        currency.locale,
+      ),
+      icon: Tag,
+      color: "text-orange-500",
     },
     {
       label: "Profit / Labor Hr",
-      value: data.profitPerLaborHour,
-      icon: Clock,
-      color: "text-green-600",
-      bg: "bg-green-50",
+      value: formatCurrencySymbol(
+        unitEconomicsMock.profitPerLaborHour,
+        currency.symbol,
+        currency.locale,
+      ),
+      icon: UserRound,
+      color: "text-emerald-500",
     },
   ];
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full relative select-none mt-4">
-      {/* Lock overlay */}
+    <div className="relative mt-4 w-full rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
       <LockDimFeactureOverlay />
 
-      {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-          Unit Economics
-        </h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Core profitability efficiency metrics
-        </p>
-      </div>
+      <h2 className="mb-8 text-2xl font-semibold text-gray-900">
+        Unit Economics
+      </h2>
 
-      {/* Grid */}
-      <div className="grid grid-cols-2 gap-4">
-        {metrics.map((item, idx) => {
+      <div className="grid grid-cols-2 gap-5">
+        {metrics.map((item, index) => {
           const Icon = item.icon;
 
           return (
             <div
-              key={idx}
-              className="flex items-center justify-between p-4 rounded-xl border border-gray-100"
+              key={index}
+              className="rounded-2xl border border-gray-100 bg-white px-5 py-5 transition-shadow hover:shadow-sm"
             >
-              {/* Left */}
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${item.bg}`}>
-                  <Icon className={`w-5 h-5 ${item.color}`} />
-                </div>
+              <div className="flex items-start gap-2">
+                <Icon
+                  className={`mt-0.5 h-4 w-4 shrink-0 ${item.color}`}
+                  strokeWidth={2}
+                />
 
-                <div>
-                  <p className="text-xs text-gray-500">{item.label}</p>
-                  <p className="text-lg font-bold text-gray-900">
-                    ${formatCurrency(item.value)}
-                  </p>
-                </div>
+                <p className="whitespace-pre-line text-xs font-medium leading-5 text-gray-500">
+                  {item.label}
+                </p>
               </div>
+
+              <p className="mt-5 font-bold tracking-tight text-gray-900">
+                {item.value}
+              </p>
             </div>
           );
         })}

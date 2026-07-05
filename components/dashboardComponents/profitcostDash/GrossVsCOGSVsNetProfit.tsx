@@ -19,7 +19,7 @@ import type {
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
 
-import { formatCurrencySymbol } from "@/utils/helper";
+import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { CurrencyConfig, useCurrency } from "@/providers/CurrencyContext";
 import { useSalesByCategory } from "@/hooks/useSalesByCategory";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -255,9 +255,7 @@ export default function GrossVsCOGSVsNetProfit({
   );
 
   const formatYAxis = (value: number): string =>
-    value >= 1000 || value <= -1000
-      ? `${currency.symbol} ${value / 1000}k`
-      : formatCurrencySymbol(value, currency.symbol, currency.locale);
+    `${currency.symbol} ${formatCompactNumber(value)}`;
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full mt-4">

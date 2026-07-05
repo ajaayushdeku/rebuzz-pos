@@ -9,12 +9,15 @@ import {
 import { useMemo, useState } from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
 export default function WhatIfScenarioPlanner() {
+  const { currency } = useCurrency();
   const [adjustments, setAdjustments] =
     useState<ScenarioAdjustments>(defaultAdjustments);
 
@@ -159,7 +162,11 @@ export default function WhatIfScenarioPlanner() {
               <p className="text-xs text-gray-400 mb-1">Projected Net Profit</p>
               <div className="flex items-baseline gap-2">
                 <p className="text-3xl font-bold">
-                  ${Math.round(projected.profit).toLocaleString()}
+                  {formatCurrencySymbol(
+                    projected.profit,
+                    currency.symbol,
+                    currency.locale,
+                  )}
                 </p>
                 {projected.profit !== baselineProfit && (
                   <span
@@ -174,10 +181,12 @@ export default function WhatIfScenarioPlanner() {
                     ) : (
                       <TrendingDown size={12} />
                     )}
-                    {projected.profit > baselineProfit ? "+" : ""}$
-                    {Math.round(
+                    {projected.profit > baselineProfit ? "+" : ""}
+                    {formatCurrencySymbol(
                       Math.abs(projected.profit - baselineProfit),
-                    ).toLocaleString()}
+                      currency.symbol,
+                      currency.locale,
+                    )}
                   </span>
                 )}
               </div>
@@ -210,10 +219,20 @@ export default function WhatIfScenarioPlanner() {
             <div className="pt-4 border-t border-gray-700">
               <div className="flex justify-between items-center mb-2">
                 <p className="text-[10px] text-gray-500 uppercase tracking-wide">
-                  Baseline: ${Math.round(baselineProfit).toLocaleString()}
+                  Baseline:{" "}
+                  {formatCurrencySymbol(
+                    baselineProfit,
+                    currency.symbol,
+                    currency.locale,
+                  )}
                 </p>
                 <p className="text-[10px] text-gray-500 uppercase tracking-wide">
-                  New: ${Math.round(projected.profit).toLocaleString()}
+                  New:{" "}
+                  {formatCurrencySymbol(
+                    projected.profit,
+                    currency.symbol,
+                    currency.locale,
+                  )}
                 </p>
               </div>
               <div className="relative h-2 bg-gray-700 rounded-full overflow-hidden">

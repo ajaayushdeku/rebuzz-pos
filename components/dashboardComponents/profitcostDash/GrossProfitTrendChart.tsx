@@ -11,7 +11,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol, formatCompactNumber } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { mockGrossProfitTrendData } from "@/lib/mockData/mock-profitcostdata";
 import { CustomTooltipProps } from "@/lib/types/chart";
@@ -130,15 +130,8 @@ export default function GrossProfitTrendChart() {
   const displayData = isEmpty ? mockGrossProfitTrendData : data;
   const showSampleBadge = isEmpty && !isLoading;
 
-  const formatYAxis = (value: number): string => {
-    const abs = Math.abs(value);
-    if (abs >= 1000) {
-      const sign = value < 0 ? "-" : "";
-      return `${sign}${currency.symbol} ${abs / 1000}k`;
-    }
-    // return formatCurrency(value, currency);
-    return formatCurrencySymbol(value, currency.symbol, currency.locale);
-  };
+  const formatYAxis = (value: number): string =>
+    `${currency.symbol} ${formatCompactNumber(value)}`;
 
   const yTicks = getYAxisTicks(displayData);
   const yMax = yTicks[yTicks.length - 1] * 1.05;

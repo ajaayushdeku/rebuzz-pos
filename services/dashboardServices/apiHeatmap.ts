@@ -122,10 +122,13 @@ const hourToLabel = (hour: number): string | null => {
 // 0 = Sun → remap to Mon-first: Sun becomes index 6
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-const dayOfWeekToLabel = (jsDay: number): string => {
-  // JS: 0=Sun,1=Mon...6=Sat → Mon-first array index
-  const monFirst = jsDay === 0 ? 6 : jsDay - 1;
-  return DAY_LABELS[monFirst];
+// Civil (calendar) yyyy-mm-dd for a Date, using local getters.
+// On the (UTC) server this matches the dateStr produced by parseNepalHour.
+const toCivilISO = (d: Date): string => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 };
 
 // Which week of the month (1-indexed, max 4)
@@ -144,7 +147,8 @@ const fetchBills = async (
     `${BASE}/business/report?startDate=${startDate}&endDate=${endDate}&limit=5000`,
     {
       headers: await authHeaders(),
-      next: { revalidate: 300 },
+      // Always fetch fresh so newly-paid bills appear immediately.
+      cache: "no-store",
     },
   );
   if (!res.ok) {
@@ -168,21 +172,25 @@ const getHeatmapData = async (): Promise<HeatmapDataSet> => {
   monday.setDate(today.getDate() - diffToMonday);
   const weekStart = monday.toISOString().split("T")[0];
 
-  // ── Monthly: 1st of current month → today ────────────────────────────
-  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
-    .toISOString()
-    .split("T")[0];
+  // ── Monthly: full Mon-aligned calendar grid for the current month ─────
+  // Week 1 starts on the Monday of the week that contains the 1st, so the
+  // trailing days of the previous month are included (and their sales shown).
+  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const firstJsDay = firstOfMonth.getDay(); // 0=Sun...6=Sat
+  const firstDiffToMonday = firstJsDay === 0 ? 6 : firstJsDay - 1;
 
-  // console.log("Heatmap fetch ranges:", {
-  //   weekStart,
-  //   weekEnd: todayStr,
-  //   monthStart,
-  //   monthEnd: todayStr,
-  // });
+  const gridStart = new Date(firstOfMonth);
+  gridStart.setDate(firstOfMonth.getDate() - firstDiffToMonday);
+  const gridStartStr = toCivilISO(gridStart);
+
+  // Number of Mon-aligned weeks the month spans (typically 5).
+  const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const weekCount = Math.ceil((firstDiffToMonday + lastOfMonth.getDate()) / 7);
 
   const [weekBills, monthBills] = await Promise.all([
     fetchBills(weekStart, todayStr),
-    fetchBills(monthStart, todayStr),
+    // Fetch from the grid's Monday (may be last month) through today.
+    fetchBills(gridStartStr, todayStr),
   ]);
 
   // console.log("Week bills count:", weekBills.length);
@@ -236,50 +244,68 @@ const getHeatmapData = async (): Promise<HeatmapDataSet> => {
     }
   }
 
-  // ── Build current-month heatmap ───────────────────────────────────────
-  const currentMonth: HeatmapDataSet["currentMonth"] = {};
-  const currentWeekNum = Math.min(Math.ceil(today.getDate() / 7), 4);
-
-  for (const week of ["Wk 1", "Wk 2", "Wk 3", "Wk 4"]) {
-    currentMonth[week] = {};
-    for (const day of DAY_LABELS) {
-      currentMonth[week][day] = 0;
-    }
-  }
-
+  // ── Build current-month heatmap (date-aware calendar grid) ────────────
+  // First tally non-refunded bills by their (Nepal) calendar date.
+  const countByDate = new Map<string, number>();
   for (const bill of monthBills) {
     if (bill.isRefunded) continue;
     if (!bill.paidAt) continue;
 
-    const { hour, dayOfWeek, dateStr } = parseNepalHour(bill.paidAt);
+    const { dateStr } = parseNepalHour(bill.paidAt);
+    if (!dateStr) continue;
 
-    if (hour === -1) continue;
+    countByDate.set(dateStr, (countByDate.get(dateStr) ?? 0) + 1);
+  }
 
-    // Reconstruct date from the corrected dateStr for month/week calculation
-    const billDate = new Date(dateStr + "T12:00:00"); // noon avoids DST edge cases
-
-    // ── Guard: must be current month and year ─────────────────────────────
-    if (
-      billDate.getMonth() !== today.getMonth() ||
-      billDate.getFullYear() !== today.getFullYear()
-    )
-      continue;
-
-    const billWeekNum = Math.min(Math.ceil(billDate.getDate() / 7), 4);
-    if (billWeekNum > currentWeekNum) continue;
-
-    const weekLabel = `Wk ${billWeekNum}`;
-    const dayLabel = dayOfWeekToLabel(dayOfWeek);
-
-    if (currentMonth[weekLabel]) {
-      currentMonth[weekLabel][dayLabel] += 1;
+  // Lay out the grid week-by-week starting at the grid's Monday. Each cell
+  // carries its real date so the UI can label it and flag prev-month/future
+  // days. Days after today are marked future (blank in the UI).
+  const currentMonth: HeatmapDataSet["currentMonth"] = {};
+  const cursor = new Date(gridStart);
+  for (let w = 0; w < weekCount; w++) {
+    const weekLabel = `Wk ${w + 1}`;
+    currentMonth[weekLabel] = {};
+    for (const day of DAY_LABELS) {
+      const dateStr = toCivilISO(cursor);
+      const isFuture = dateStr > todayStr;
+      currentMonth[weekLabel][day] = {
+        count: isFuture ? 0 : (countByDate.get(dateStr) ?? 0),
+        date: dateStr,
+        inMonth: cursor.getMonth() === today.getMonth(),
+        isFuture,
+      };
+      cursor.setDate(cursor.getDate() + 1);
     }
   }
+
+  // ── Per-day dates for the current week (for y-axis labels) ────────────
+  const weekDates: Record<string, string> = {};
+  for (let i = 0; i < DAY_LABELS.length; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    weekDates[DAY_LABELS[i]] = toCivilISO(d);
+  }
+
+  const MONTH_FULL = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const monthName = MONTH_FULL[today.getMonth()];
 
   // console.log("Current-week heatmap:", currentWeek);
   // console.log("Current-month heatmap:", currentMonth);
 
-  return { currentWeek, currentMonth };
+  return { currentWeek, currentMonth, weekDates, monthName };
 };
 
 export { getHeatmapData };

@@ -9,14 +9,30 @@ export interface CurrentWeekHeatmapData {
   [day: string]: { [hour: string]: number };
 }
 
-// Current Month: { week -> { day -> count } }
+// A single day cell in the Current Month grid. Carries its real calendar
+// date so the UI can label it and distinguish prev-month / future days.
+export interface MonthCell {
+  count: number;
+  /** ISO yyyy-mm-dd for this cell. */
+  date: string;
+  /** False for the leading days that belong to the previous month. */
+  inMonth: boolean;
+  /** True for days after today (rendered blank). */
+  isFuture: boolean;
+}
+
+// Current Month: { week -> { day -> cell } }
 export interface CurrentMonthHeatmapData {
-  [week: string]: { [day: string]: number };
+  [week: string]: { [day: string]: MonthCell };
 }
 
 export interface HeatmapDataSet {
   currentWeek: CurrentWeekHeatmapData;
   currentMonth: CurrentMonthHeatmapData;
+  /** ISO date (yyyy-mm-dd) for each weekday of the current week. */
+  weekDates?: { [day: string]: string };
+  /** Full name of the current month, e.g. "July". */
+  monthName?: string;
 }
 
 type ViewMode = "currentWeek" | "currentMonth";
@@ -86,6 +102,13 @@ export const COLOR_SCHEMES: Record<string, ColorScheme> = {
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const HOURS = [
+  "12am",
+  "1am",
+  "2am",
+  "3am",
+  "4am",
+  "5am",
+  "6am",
   "7am",
   "8am",
   "9am",
@@ -101,10 +124,32 @@ const HOURS = [
   "7pm",
   "8pm",
   "9pm",
+  "10pm",
+  "11pm",
 ];
-const WEEKS = ["Wk 1", "Wk 2", "Wk 3", "Wk 4"];
 
 // Color helpers
+
+const MONTH_ABBR = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+// "2026-06-29" → "Jun 29" (string-based, timezone-safe).
+const formatCellDate = (iso: string): string => {
+  const [, m, d] = iso.split("-").map(Number);
+  return `${MONTH_ABBR[(m ?? 1) - 1]} ${d}`;
+};
 
 const lerp = (a: number, b: number, t: number) => Math.round(a + (b - a) * t);
 
@@ -216,10 +261,14 @@ const deriveCurrentMonthStats = (
     quietWeek = "",
     quietDay = "";
   const weekTotals: Record<string, number> = {};
-  WEEKS.forEach((week) => {
+  // Weeks are dynamic (typically 5) and cells carry future/prev-month flags.
+  Object.keys(data).forEach((week) => {
     let total = 0;
     DAYS.forEach((day) => {
-      const v = data[week]?.[day] ?? 0;
+      const cell = data[week]?.[day];
+      // Skip empty/future cells so they don't distort peak/quiet stats.
+      if (!cell || cell.isFuture) return;
+      const v = cell.count;
       total += v;
       if (v > peakValue) {
         peakValue = v;
@@ -234,14 +283,17 @@ const deriveCurrentMonthStats = (
     });
     weekTotals[week] = total;
   });
-  const busiest = Object.entries(weekTotals).sort((a, b) => b[1] - a[1])[0];
+  const busiest = Object.entries(weekTotals).sort((a, b) => b[1] - a[1])[0] ?? [
+    "—",
+    0,
+  ];
   return {
     peakWeek,
     peakDay,
-    peakValue,
+    peakValue: peakValue === -Infinity ? 0 : peakValue,
     quietWeek,
     quietDay,
-    quietValue,
+    quietValue: quietValue === Infinity ? 0 : quietValue,
     busiestWeek: busiest[0],
     busiestWeekTotal: busiest[1],
   };
@@ -307,18 +359,28 @@ export default function Heatmap({
   const currentWeekStats = deriveCurrentWeekStats(data.currentWeek);
 
   // --- Current month view ---
-  const currentMonthValues = WEEKS.flatMap((week) =>
-    DAYS.map((day) => data.currentMonth[week]?.[day] ?? 0),
+  // Weeks come straight from the data (typically 5, Mon-aligned calendar).
+  const monthWeeks = Object.keys(data.currentMonth);
+  // Color scale ignores future cells (they're blank) so it isn't skewed to 0.
+  const currentMonthValues = monthWeeks.flatMap((week) =>
+    DAYS.map((day) => data.currentMonth[week]?.[day]).filter(
+      (cell): cell is MonthCell => !!cell && !cell.isFuture,
+    ),
   );
-  const currentMonthMin = Math.min(...currentMonthValues);
-  const currentMonthMax = Math.max(...currentMonthValues);
+  const currentMonthCounts = currentMonthValues.map((c) => c.count);
+  const currentMonthMin = currentMonthCounts.length
+    ? Math.min(...currentMonthCounts)
+    : 0;
+  const currentMonthMax = currentMonthCounts.length
+    ? Math.max(...currentMonthCounts)
+    : 0;
   const currentMonthStats = deriveCurrentMonthStats(data.currentMonth);
 
   const min = view === "currentWeek" ? currentWeekMin : currentMonthMin;
   const max = view === "currentWeek" ? currentWeekMax : currentMonthMax;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm  p-4 md:p-6 w-full">
+    <div className="bg-white w-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-5 gap-3">
         <div>
@@ -375,11 +437,11 @@ export default function Heatmap({
       </div>
 
       {/* Grid */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto scrollbar-hide">
         {view === "currentWeek" ? (
-          <div style={{ minWidth: 360 }}>
+          <div style={{ minWidth: 1000 }}>
             {/* Hour headers */}
-            <div className="flex mb-1 ml-12">
+            <div className="flex mb-1 ml-14">
               {HOURS.map((hour) => (
                 <div
                   key={hour}
@@ -392,46 +454,55 @@ export default function Heatmap({
                 </div>
               ))}
             </div>
-            {/* Day rows */}
-            {DAYS.map((day) => (
-              <div key={day} className="flex items-center mb-1.5">
-                <div className="w-12 shrink-0 text-xs sm:text-sm text-gray-500 font-medium">
-                  {day}
+            {/* Day rows — scrollable on small screens */}
+            <div className="overflow-x-auto scrollbar-hide">
+              {DAYS.map((day) => (
+                <div key={day} className="flex items-center mb-1">
+                  <div className="w-14 shrink-0 pr-1 leading-tight">
+                    <span className="block text-xs sm:text-sm text-gray-500 font-medium">
+                      {day}
+                    </span>
+                    {data.weekDates?.[day] && (
+                      <span className="block text-[10px] text-gray-400">
+                        {formatCellDate(data.weekDates[day])}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-1 gap-0.5 sm:gap-1">
+                    {HOURS.map((hour) => {
+                      const value = data.currentWeek[day]?.[hour] ?? 0;
+                      return (
+                        <div
+                          key={hour}
+                          className="flex-1 rounded-md sm:rounded-sm flex items-center justify-center text-xs font-bold cursor-default select-none transition-transform hover:scale-105 h-8 sm:h-10"
+                          style={{
+                            backgroundColor: getCellColor(
+                              value,
+                              currentWeekMin,
+                              currentWeekMax,
+                              scheme,
+                            ),
+                            color: getCellTextColor(
+                              value,
+                              currentWeekMin,
+                              currentWeekMax,
+                              scheme,
+                            ),
+                          }}
+                          title={`${day} @ ${hour}: ${value} orders`}
+                        >
+                          <span>{value}</span>{" "}
+                          {/* hide numbers on mobile — too small */}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="flex flex-1 gap-0.5 sm:gap-1">
-                  {HOURS.map((hour) => {
-                    const value = data.currentWeek[day]?.[hour] ?? 0;
-                    return (
-                      <div
-                        key={hour}
-                        className="flex-1 rounded-md sm:rounded-lg flex items-center justify-center text-xs font-bold cursor-default select-none transition-transform hover:scale-105 h-6 sm:h-11"
-                        style={{
-                          backgroundColor: getCellColor(
-                            value,
-                            currentWeekMin,
-                            currentWeekMax,
-                            scheme,
-                          ),
-                          color: getCellTextColor(
-                            value,
-                            currentWeekMin,
-                            currentWeekMax,
-                            scheme,
-                          ),
-                        }}
-                        title={`${day} @ ${hour}: ${value} orders`}
-                      >
-                        <span>{value}</span>{" "}
-                        {/* hide numbers on mobile — too small */}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         ) : (
-          <div style={{ minWidth: 320 }}>
+          <div style={{ minWidth: 480 }}>
             {" "}
             {/* Day headers */}
             <div className="flex mb-1 ml-16">
@@ -446,42 +517,80 @@ export default function Heatmap({
                 </div>
               ))}
             </div>
-            {/* Week rows */}
-            {WEEKS.map((week) => (
-              <div key={week} className="flex items-center mb-1.5">
-                <div className="w-16 shrink-0 text-xs sm:text-sm text-gray-500 font-medium">
-                  {week}
+            {/* Week rows — scrollable on small screens */}
+            <div className="overflow-y-auto max-h-[400px] scrollbar-hide">
+              {monthWeeks.map((week) => (
+                <div key={week} className="flex items-center mb-1.5">
+                  <div className="w-16 shrink-0 pr-1 leading-tight">
+                    <span className="block text-xs sm:text-sm text-gray-500 font-medium">
+                      {week}
+                    </span>
+                    {data.monthName && (
+                      <span className="block text-[10px] text-gray-400">
+                        ({data.monthName})
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-1 gap-0.5 sm:gap-1">
+                    {DAYS.map((day) => {
+                      const cell = data.currentMonth[week]?.[day];
+                      if (!cell) return <div key={day} className="flex-1" />;
+
+                      const dateLabel = formatCellDate(cell.date);
+
+                      // Future days: blank placeholder with just the date.
+                      if (cell.isFuture) {
+                        return (
+                          <div
+                            key={day}
+                            className="flex-1 rounded-md sm:rounded-lg flex flex-col items-center justify-center select-none h-12 sm:h-16 bg-gray-50 border border-dashed border-gray-200"
+                          >
+                            <span className="text-[9px] sm:text-[10px] text-gray-300 font-medium">
+                              {dateLabel}
+                            </span>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div
+                          key={day}
+                          className={`flex-1 rounded-md sm:rounded-lg flex flex-col items-center justify-center cursor-default select-none transition-transform hover:scale-105 h-12 sm:h-16 ${
+                            cell.inMonth
+                              ? ""
+                              : "opacity-70 ring-1 ring-inset ring-gray-300"
+                          }`}
+                          style={{
+                            backgroundColor: getCellColor(
+                              cell.count,
+                              currentMonthMin,
+                              currentMonthMax,
+                              scheme,
+                            ),
+                            color: getCellTextColor(
+                              cell.count,
+                              currentMonthMin,
+                              currentMonthMax,
+                              scheme,
+                            ),
+                          }}
+                          title={`${dateLabel} (${day})${
+                            cell.inMonth ? "" : " · prev month"
+                          }: ${cell.count} orders`}
+                        >
+                          <span className="text-[9px] sm:text-[10px] font-medium opacity-80 leading-none">
+                            {dateLabel}
+                          </span>
+                          <span className="text-xs sm:text-sm font-bold leading-tight mt-0.5">
+                            {cell.count}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="flex flex-1 gap-0.5 sm:gap-1">
-                  {DAYS.map((day) => {
-                    const value = data.currentMonth[week]?.[day] ?? 0;
-                    return (
-                      <div
-                        key={day}
-                        className="flex-1 rounded-md sm:rounded-lg flex items-center justify-center text-xs font-bold cursor-default select-none transition-transform hover:scale-105 h-8 sm:h-13"
-                        style={{
-                          backgroundColor: getCellColor(
-                            value,
-                            currentMonthMin,
-                            currentMonthMax,
-                            scheme,
-                          ),
-                          color: getCellTextColor(
-                            value,
-                            currentMonthMin,
-                            currentMonthMax,
-                            scheme,
-                          ),
-                        }}
-                        title={`${week} ${day}: ${value} orders`}
-                      >
-                        {value}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
       </div>

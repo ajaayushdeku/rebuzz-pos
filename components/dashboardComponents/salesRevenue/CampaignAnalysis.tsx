@@ -13,7 +13,7 @@ import {
 } from "recharts";
 
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrencySymbol } from "@/utils/helper";
+import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import type { CampaignAnalysisData } from "@/lib/mockData/mockInsightData";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 
@@ -84,9 +84,7 @@ export default function CampaignAnalysis({ data }: CampaignAnalysisProps) {
   const yMax = yTicks[yTicks.length - 1] * 1.05;
 
   const formatYAxis = (value: number): string =>
-    value >= 1000
-      ? `${currency.symbol}${value / 1000}k`
-      : formatCurrencySymbol(value, currency.symbol, currency.locale);
+    `${currency.symbol} ${formatCompactNumber(value)}`;
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full h-full relative select-none">

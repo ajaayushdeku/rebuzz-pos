@@ -141,7 +141,13 @@ export default async function Page({
         </ChartErrorBoundary>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[2fr_4fr] gap-4 ">
+      <ChartErrorBoundary>
+        <Suspense fallback={<ChartSkeleton />}>
+          <RevenueFlowSankeyWrapper />
+        </Suspense>
+      </ChartErrorBoundary>
+
+      <div className="grid grid-cols-1 md:grid-cols-[3fr_4fr] gap-4 ">
         <div className="flex flex-col ">
           <ChartErrorBoundary>
             <Suspense fallback={<ChartSkeleton />}>
@@ -170,12 +176,6 @@ export default async function Page({
           </ChartErrorBoundary>
         </div>
       </div>
-
-      <ChartErrorBoundary>
-        <Suspense fallback={<ChartSkeleton />}>
-          <RevenueFlowSankeyWrapper />
-        </Suspense>
-      </ChartErrorBoundary>
 
       <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
         <ChartErrorBoundary>
