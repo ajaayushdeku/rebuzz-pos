@@ -94,6 +94,13 @@ function parseNepalHour(paidAt: string): {
 
 // ── Label helpers ─────────────────────────────────────────────────────────
 const HOUR_LABELS = [
+  "12am",
+  "1am",
+  "2am",
+  "3am",
+  "4am",
+  "5am",
+  "6am",
   "7am",
   "8am",
   "9am",
@@ -109,14 +116,16 @@ const HOUR_LABELS = [
   "7pm",
   "8pm",
   "9pm",
+  "10pm",
+  "11pm",
 ];
 
-// 7am = hour 7, 8am = 8, ..., 12pm = 12, 1pm = 13, ..., 9pm = 21
+// Map a 24-hour value directly to its label. HOUR_LABELS is ordered by hour
+// (index 0 = "12am" … index 23 = "11pm"), so the full day is covered —
+// including early-morning (12am–6am) and late-night (10pm–11pm) sales.
 const hourToLabel = (hour: number): string | null => {
-  if (hour === 12) return "12pm";
-  if (hour >= 7 && hour <= 11) return `${hour}am`;
-  if (hour >= 13 && hour <= 21) return `${hour - 12}pm`;
-  return null; // outside tracked range
+  if (hour < 0 || hour > 23) return null;
+  return HOUR_LABELS[hour];
 };
 
 // 0 = Sun → remap to Mon-first: Sun becomes index 6
