@@ -23,10 +23,10 @@ interface CustomerSegmentationChartProps {
 }
 
 const COLOR_PALETTE = [
-  "#2581eb", // Active
-  "#94a3b8", // Inactive
-  "#22c55e", // New
-  "#16f9a2", // New & Active
+  "#10B981", // New
+  "#F59E0B", // Active
+  "#EF4444", // Inactive
+  "#3b96ff", // New & Active
 ];
 
 const CustomTooltip = ({

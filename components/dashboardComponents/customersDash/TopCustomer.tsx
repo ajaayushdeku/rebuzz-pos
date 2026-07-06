@@ -262,8 +262,8 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                     <button
                       onClick={() => setHistoryFor(customer)}
                       disabled={!customer.id}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg bg-blue-500
-                font-semibold text-gray-100 hover:bg-blue-600 hover:text-gray-100 border border-blue-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs
+                  font-semibold text-blue-500 hover:text-blue-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <History size={14} />
                       View History

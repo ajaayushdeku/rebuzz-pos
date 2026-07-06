@@ -11,6 +11,7 @@ import {
   HighestTaxGeneratedWrapper,
   TaxByCategoryWrapper,
   TaxOnRefundedBillsWrapper,
+  VatStatsWrapper,
 } from "@/components/componentWrappers/TaxAnalyticsWrappers";
 
 function getDefaultDateRange(): DateRangeValue {
@@ -42,6 +43,8 @@ export default function TaxAnalyticsPage() {
           </div>
           <DateRangeFilter value={dateRange} onChange={setDateRange} />
         </div>
+
+        <VatStatsWrapper />
 
         {/* Taxable vs Non-Taxable - full width */}
         <TaxableVsNonTaxableWrapper

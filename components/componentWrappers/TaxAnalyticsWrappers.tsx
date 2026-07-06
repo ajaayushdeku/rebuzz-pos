@@ -11,6 +11,8 @@ import TaxStats from "@/components/dashboardComponents/taxAnalytics/TaxStats";
 import HighestTaxGenerated from "@/components/dashboardComponents/taxAnalytics/HighestTaxGenerated";
 import TaxByCategory from "@/components/dashboardComponents/taxAnalytics/TaxByCategory";
 import TaxOnRefundedBills from "@/components/dashboardComponents/taxAnalytics/TaxOnRefundedBills";
+import VatStatCard from "../dashboardComponents/taxAnalytics/VatStatCard";
+import { vatStats } from "../dashboardComponents/taxAnalytics/MiniTrendChart";
 
 interface RefundBillWithTax {
   billNumber: string;
@@ -110,6 +112,16 @@ export function TaxableVsNonTaxableWrapper({
           }
         />
       )}
+    </div>
+  );
+}
+
+export function VatStatsWrapper() {
+  return (
+    <div className="lg:grid lg:grid-cols-4 lg:gap-3 flex gap-3 overflow-x-auto pb-3 px-2 sm:px-0 lg:overflow-visible scrollbar-custom">
+      {vatStats.map((card) => (
+        <VatStatCard key={card.id} stat={card} />
+      ))}
     </div>
   );
 }

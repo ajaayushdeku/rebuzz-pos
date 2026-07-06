@@ -133,13 +133,13 @@ export default async function Page({
 
       <ChartErrorBoundary>
         <Suspense fallback={<TableSkeleton rows={5} />}>
-          <AtRiskCustomerWrapper />
+          <TopCustomersWrapper />
         </Suspense>
       </ChartErrorBoundary>
 
       <ChartErrorBoundary>
         <Suspense fallback={<TableSkeleton rows={5} />}>
-          <TopCustomersWrapper />
+          <AtRiskCustomerWrapper />
         </Suspense>
       </ChartErrorBoundary>
     </div>

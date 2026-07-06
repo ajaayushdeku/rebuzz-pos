@@ -10,6 +10,7 @@ import {
   ChevronRight,
   X,
   History,
+  Send,
 } from "lucide-react";
 import { TriangleAlert } from "lucide-react";
 import CustomerHistoryModal from "@/components/dashboardComponents/customersDash/CustomerHistoryModal";
@@ -56,8 +57,7 @@ export default function AtRiskCustomer({
   const [historyFor, setHistoryFor] = useState<AtRiskCustomer | null>(null);
   const pageSize = 5;
 
-
-console.log("At Risk Customers:", riskCustomers)
+  console.log("At Risk Customers:", riskCustomers);
 
   const filtered = useMemo(() => {
     if (!search) return riskCustomers;
@@ -231,10 +231,11 @@ console.log("At Risk Customers:", riskCustomers)
                         View History
                       </button>
                       <button
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5  text-xs rounded-lg 
-                  font-semibold text-blue-500 hover:bg-blue-600 hover:text-gray-100 border border-blue-500 transition-colors"
+                        disabled
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg 
+                  font-semibold text-gray-400 border border-gray-300 opacity-50 cursor-not-allowed"
                       >
-                        <History size={14} />
+                        <Send size={14} />
                         Send Offer
                       </button>
                     </div>
