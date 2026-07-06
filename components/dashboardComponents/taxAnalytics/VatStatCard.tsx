@@ -20,7 +20,7 @@ export default function VatStatCard({ stat }: VatStatCardProps) {
       className=" relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg
       "
     >
-      <LockDimFeactureOverlay />
+      <LockDimFeactureOverlay component_name="Vat Stat Card" />
 
       {/* Background Glow */}
       <div

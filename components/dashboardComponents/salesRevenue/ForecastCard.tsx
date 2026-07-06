@@ -35,7 +35,7 @@ export default function ForecastCard({ data }: ForecastCardProps) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 h-full relative select-none">
       {/* Lock overlay */}
-      <LockDimFeactureOverlay />
+      <LockDimFeactureOverlay component_name="Forecast Card" />
 
       {/* Header */}
       <div className="flex items-start justify-between mb-5">

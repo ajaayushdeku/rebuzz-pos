@@ -68,7 +68,7 @@ export default function TargetTrackerCard({ data }: TargetTrackerCardProps) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 h-full relative select-none">
       {/* Lock overlay */}
-      <LockDimFeactureOverlay />
+      <LockDimFeactureOverlay component_name="Target Tracker" />
 
       {/* Header */}
       <div className="flex items-center gap-2.5 mb-5">

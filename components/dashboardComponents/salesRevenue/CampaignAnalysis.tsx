@@ -89,7 +89,7 @@ export default function CampaignAnalysis({ data }: CampaignAnalysisProps) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full h-full relative select-none">
       {/* Lock overlay */}
-      <LockDimFeactureOverlay />
+      <LockDimFeactureOverlay component_name="Campaign Analysis" />
 
       {/* Header */}
       <div className="mb-4 md:mb-5">

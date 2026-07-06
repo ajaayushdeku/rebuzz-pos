@@ -91,7 +91,7 @@ export default function MenuEngineeringMatrix() {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full relative select-none mt-4">
       {/* Lock overlay */}
-      <LockDimFeactureOverlay />
+      <LockDimFeactureOverlay component_name="Menu Engineering Matrix" />
 
       {/* Header */}
       <div className="mb-6">

@@ -20,7 +20,7 @@ export default function TimeWiseProductAnalysis({
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full relative select-none">
       {/* Lock overlay */}
-      <LockDimFeactureOverlay />
+      <LockDimFeactureOverlay component_name="Time Wise Product Analysis" />
 
       {/* Header */}
       <div className="mb-4 md:mb-5">

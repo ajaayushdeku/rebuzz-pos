@@ -76,7 +76,7 @@ export default function RefundBreakdown() {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full mt-4 relative select-none">
       {/* Lock overlay */}
-      <LockDimFeactureOverlay />
+      <LockDimFeactureOverlay component_name="Refund Breakdown" />
 
       {/* Header */}
       <div className="mb-0">
