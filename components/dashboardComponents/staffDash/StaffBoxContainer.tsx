@@ -115,7 +115,7 @@ export default function StaffBoxContainer({
         </div>
       ) : (
         /* Responsive: 2-column grid on large screens, horizontal scroll on small/medium */
-        <div className="lg:grid lg:grid-cols-2 lg:gap-3 flex gap-3 overflow-x-auto pb-3 px-2 sm:px-0 lg:overflow-visible scrollbar-custom">
+        <div className="lg:grid lg:grid-cols-4 lg:gap-3 flex gap-3 overflow-x-auto pb-3 px-2 sm:px-0 lg:overflow-visible scrollbar-custom">
           {displayStaff.map((staff, idx) => (
             <div
               key={staff.staffName}

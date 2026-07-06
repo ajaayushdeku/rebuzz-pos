@@ -460,6 +460,7 @@ export async function getAtRiskCustomers(): Promise<AtRiskCustomer[]> {
         rank: index + 1,
         name: user.name || user._id,
         spendLevel: toSpendLevel(user.loyaltyPoint ?? 0),
+        id: user._id,
       }));
 
     return atRisk;
@@ -573,6 +574,7 @@ export async function getTopCustomers(): Promise<TopCustomer[]> {
           loyaltyTier: getLoyaltyStatus(
             loyaltyPoints,
           ) as TopCustomer["loyaltyTier"],
+          id: user._id,
         };
       })
       .sort((a, b) => {

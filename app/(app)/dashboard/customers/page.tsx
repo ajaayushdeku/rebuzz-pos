@@ -131,19 +131,17 @@ export default async function Page({
         </Suspense>
       </ChartErrorBoundary>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ChartErrorBoundary>
-          <Suspense fallback={<TableSkeleton rows={5} />}>
-            <AtRiskCustomerWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
+      <ChartErrorBoundary>
+        <Suspense fallback={<TableSkeleton rows={5} />}>
+          <AtRiskCustomerWrapper />
+        </Suspense>
+      </ChartErrorBoundary>
 
-        <ChartErrorBoundary>
-          <Suspense fallback={<TableSkeleton rows={5} />}>
-            <TopCustomersWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
-      </div>
+      <ChartErrorBoundary>
+        <Suspense fallback={<TableSkeleton rows={5} />}>
+          <TopCustomersWrapper />
+        </Suspense>
+      </ChartErrorBoundary>
     </div>
   );
 }

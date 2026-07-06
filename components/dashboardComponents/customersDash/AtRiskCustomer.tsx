@@ -9,8 +9,10 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  History,
 } from "lucide-react";
 import { TriangleAlert } from "lucide-react";
+import CustomerHistoryModal from "@/components/dashboardComponents/customersDash/CustomerHistoryModal";
 
 type SpendingLevel = "High" | "Medium" | "Low";
 
@@ -18,6 +20,8 @@ export type AtRiskCustomer = {
   rank: number;
   name: string;
   spendLevel: SpendingLevel;
+  /** Customer id (user _id) — used to load order history. */
+  id?: string;
 };
 
 type AtRiskCustomersProps = {
@@ -49,7 +53,11 @@ export default function AtRiskCustomer({
   const [search, setSearch] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [page, setPage] = useState(0);
+  const [historyFor, setHistoryFor] = useState<AtRiskCustomer | null>(null);
   const pageSize = 5;
+
+
+console.log("At Risk Customers:", riskCustomers)
 
   const filtered = useMemo(() => {
     if (!search) return riskCustomers;
@@ -212,12 +220,24 @@ export default function AtRiskCustomer({
                     </span>
                   </td>
                   <td className="py-3 px-4 text-right">
-                    <button
-                      className="p-1  text-xs rounded-lg bg-blue-500
-                    font-semibold text-gray-100 hover:bg-blue-600 hover:text-gray-100 border border-blue-500 transition-colors"
-                    >
-                      Send Offer
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => setHistoryFor(customer)}
+                        disabled={!customer.id}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs
+                  font-semibold text-blue-500 hover:text-blue-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        <History size={14} />
+                        View History
+                      </button>
+                      <button
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5  text-xs rounded-lg 
+                  font-semibold text-blue-500 hover:bg-blue-600 hover:text-gray-100 border border-blue-500 transition-colors"
+                      >
+                        <History size={14} />
+                        Send Offer
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -258,6 +278,13 @@ export default function AtRiskCustomer({
           <ChevronRight size={14} />
         </button>
       </div>
+
+      <CustomerHistoryModal
+        open={!!historyFor}
+        onClose={() => setHistoryFor(null)}
+        customerId={historyFor?.id}
+        customerName={historyFor?.name ?? ""}
+      />
     </div>
   );
 }

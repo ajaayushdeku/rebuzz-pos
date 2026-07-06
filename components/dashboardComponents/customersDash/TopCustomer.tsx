@@ -9,9 +9,13 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  UserPlus,
+  History,
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import CustomerFormModal from "@/components/invoice/CustomerFormModal";
+import CustomerHistoryModal from "@/components/dashboardComponents/customersDash/CustomerHistoryModal";
 
 export type LoyaltyTier = "Gold" | "Silver" | "Bronze" | "Platinum" | "None";
 
@@ -23,6 +27,8 @@ export type TopCustomer = {
   loyaltyTier: LoyaltyTier;
   loyaltyPoints: number;
   numberOfPurchases?: number;
+  /** Customer id (user _id) — used to load order history. */
+  id?: string;
 };
 
 export type TopCustomersProps = {
@@ -60,6 +66,8 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
   const [search, setSearch] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [page, setPage] = useState(0);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [historyFor, setHistoryFor] = useState<TopCustomer | null>(null);
   const pageSize = 5;
 
   const filtered = useMemo(() => {
@@ -106,12 +114,24 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full mt-4 overflow-hidden">
-      <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-        Top Customers & Loyalty Points
-      </h2>
-      <p className="text-xs text-gray-400 mt-0.5">
-        Highest value contributors this month
-      </p>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+        <div>
+          <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
+            Customer Leaderboard
+          </h2>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Highest value contributors this month
+          </p>
+        </div>
+
+        <button
+          onClick={() => setCreateModalOpen(true)}
+          className="inline-flex items-center gap-2 self-start rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700"
+        >
+          <UserPlus className="h-4 w-4" />
+          Add New Customer
+        </button>
+      </div>
 
       {/* Search */}
       <div className="relative mt-4 mb-2 w-full sm:w-64">
@@ -186,13 +206,14 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                   Loyalty Points {SortIcon({ colKey: "loyaltyPoints" })}
                 </span>
               </th>
+              <th className="text-right pb-3 pt-3 px-4 font-medium">Action</th>
             </tr>
           </thead>
           <tbody>
             {paged.length === 0 ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={7}
                   className="text-center py-12 text-sm text-gray-400"
                 >
                   No customers found
@@ -237,6 +258,17 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                   <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
                     {customer.loyaltyPoints}
                   </td>
+                  <td className="py-3 px-4 text-right">
+                    <button
+                      onClick={() => setHistoryFor(customer)}
+                      disabled={!customer.id}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg bg-blue-500
+                font-semibold text-gray-100 hover:bg-blue-600 hover:text-gray-100 border border-blue-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <History size={14} />
+                      View History
+                    </button>
+                  </td>
                 </tr>
               ))
             )}
@@ -276,6 +308,20 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
           <ChevronRight size={14} />
         </button>
       </div>
+
+      {/* Add-customer modal — reused from records/customers */}
+      <CustomerFormModal
+        open={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+      />
+
+      {/* Order-history modal — mirrors records/customers/[id] history section */}
+      <CustomerHistoryModal
+        open={!!historyFor}
+        onClose={() => setHistoryFor(null)}
+        customerId={historyFor?.id}
+        customerName={historyFor?.customer ?? ""}
+      />
     </div>
   );
 }

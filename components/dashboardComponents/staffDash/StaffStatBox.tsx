@@ -46,14 +46,33 @@ function resolveRole(
   return "Basic";
 }
 
+// Parse "2h 30m" or "45m" into total minutes
+// function parseAvgTimeToMinutes(avgTime?: string): number {
+//   if (!avgTime || avgTime === "—") return 0;
+//   let total = 0;
+//   const hrs = avgTime.match(/(\d+)h/);
+//   const mins = avgTime.match(/(\d+)m/);
+//   if (hrs) total += parseInt(hrs[1]) * 60;
+//   if (mins) total += parseInt(mins[1]);
+//   return total;
+// }
+
+// // Revenue per hour = total revenue / total shift hours
+// function calcRevenuePerHour(amount: number, avgTime?: string): string | null {
+//   const minutes = parseAvgTimeToMinutes(avgTime);
+//   if (minutes === 0 || amount === 0) return null;
+//   const hours = minutes / 60;
+//   return (amount / hours).toFixed(0);
+// }
+
 // ── Consistent card styling ───────────────────────────────────────────
 // All cards share the same color for the left border and avatar;
 // only the role badge uses distinct colors per role.
 
 const cardColors = {
-  borderLeft: "border-l-blue-500",
-  avatar: "from-blue-500 to-blue-700",
-  avatarRing: "ring-2 ring-blue-300 ring-offset-2",
+  borderLeft: "border-l-blue-400",
+  avatar: "from-blue-400 to-blue-400",
+  avatarRing: "ring-2 ring-blue-400 ring-offset-2",
 };
 
 // ── Role-based configuration (badge + label + icon only) ───────────────
@@ -95,10 +114,12 @@ export default function StaffStatBox({
   const { currency } = useCurrency();
 
   const colors = cardColors;
+
+  // const revenuePerHour = calcRevenuePerHour(amount, avgTime);
   return (
     <div
       className={`relative rounded-xl bg-white overflow-hidden transition-all duration-300 cursor-pointer group
-        border-l-4 border-l-blue-500 border border-gray-200 shadow-sm hover:shadow-md`}
+        border-t-4 border-t-blue-400 border border-gray-200 shadow-sm hover:shadow-md`}
       onClick={() => router.push(`/records/employee/${staffId}`)}
     >
       <div className="p-4">
@@ -107,8 +128,11 @@ export default function StaffStatBox({
           <div className="flex items-center gap-3">
             {/* Avatar */}
             <div className="relative">
-              <div
+              {/* <div
                 className={`rounded-full w-10 h-10 shrink-0 bg-gradient-to-br ${colors.avatar} flex items-center text-white font-bold text-sm justify-center ${colors.avatarRing}`}
+              > */}
+              <div
+                className={`rounded-full w-10 h-10 shrink-0 bg-gradient-to-br ${colors.avatar} flex items-center text-white font-bold text-sm justify-center `}
               >
                 {staffInitials}
               </div>
@@ -147,63 +171,84 @@ export default function StaffStatBox({
         {roleKey === "Staff" ? (
           /* Staff: only show Orders, but keep 2x2 grid height */
           <div className="mt-3 grid grid-cols-1 gap-1.5">
-            <div className="rounded-md p-1.5 text-center bg-gray-50/60">
+            <div className=" p-1.5 text-center ">
               <ShoppingCart size={12} className="mx-auto mb-1 text-gray-500" />
               <p className="text-xs font-bold text-gray-900 leading-none">
                 {ordersTaken}
               </p>
               <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-0.5 font-medium">
-                Orders (All Time)
+                Orders
               </p>
             </div>
           </div>
         ) : (
-          /* Owner / Basic: full metrics grid */
-          <div className="mt-3 grid grid-cols-4 gap-1.5">
-            {/* Orders */}
-            <div className="rounded-md p-1.5 text-center bg-gray-50/60">
-              <ShoppingCart size={12} className="mx-auto mb-1 text-gray-500" />
-              <p className="text-xs font-bold text-gray-900 leading-none">
-                {ordersTaken}
-              </p>
-              <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-0.5 font-medium">
-                Orders (All Time)
-              </p>
-            </div>
+          <>
+            <div className="mt-3 grid grid-cols-3 gap-1.5">
+              {/* Orders */}
+              <div className="p-1.5 text-center ">
+                <ShoppingCart
+                  size={12}
+                  className="mx-auto mb-1 text-gray-500"
+                />
+                <p className="text-xs font-bold text-gray-900 leading-none">
+                  {ordersTaken}
+                </p>
+                <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-0.5 font-medium">
+                  Orders
+                </p>
+              </div>
 
-            {/* Sales */}
-            <div className="rounded-md p-1.5 text-center bg-gray-50/60">
-              <TrendingUp size={12} className="mx-auto mb-1 text-gray-500" />
-              <p className="text-xs font-bold text-gray-900 leading-none">
-                {salesTaken}
-              </p>
-              <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-0.5 font-medium">
-                Sales
-              </p>
+              {/* Sales */}
+              <div className=" p-1.5 text-center">
+                <TrendingUp size={12} className="mx-auto mb-1 text-gray-500" />
+                <p className="text-xs font-bold text-gray-900 leading-none">
+                  {salesTaken}
+                </p>
+                <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-0.5 font-medium">
+                  Sales
+                </p>
+              </div>
+
+              {/* Avg Time */}
+              <div className="p-1.5 text-center ">
+                <Clock size={12} className="mx-auto mb-1 text-gray-500" />
+                <p className="text-xs font-bold text-gray-900 leading-none">
+                  {avgTime && avgTime !== "—" ? avgTime : "—"}
+                </p>
+                <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-0.5 font-medium">
+                  Avg Time
+                </p>
+              </div>
+
+              {/* <div className="p-1.5 text-center ">
+                <TrendingUp
+                  size={12}
+                  className="mx-auto mb-1 text-emerald-400"
+                />
+                <p className="text-xs font-bold text-gray-900 leading-none">
+                  {revenuePerHour
+                    ? `${formatCurrencySymbol(Number(revenuePerHour), currency.symbol, currency.locale)}`
+                    : "—"}
+                </p>
+                <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-0.5 font-medium">
+                  Revenue per Hour
+                </p>
+              </div> */}
             </div>
 
             {/* Revenue (wider column) */}
-            <div className="rounded-md p-1.5 text-center bg-gray-50/60">
-              <DollarSign size={12} className="mx-auto mb-1 text-gray-500" />
-              <p className="text-xs font-bold text-gray-900 leading-none truncate">
+            <div className="p-1.5 mt-2 flex flex-row  justify-between text-center ">
+              <div className="flex flex-row items-center p-0 w-fit gap-0.5">
+                <DollarSign size={12} className="mx-auto text-gray-500" />
+                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">
+                  Revenue
+                </p>
+              </div>
+              <p className="text-xs font-bold text-green-500 leading-none truncate">
                 {formatCurrencySymbol(amount, currency.symbol, currency.locale)}
               </p>
-              <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-0.5 font-medium">
-                Revenue
-              </p>
             </div>
-
-            {/* Avg Time */}
-            <div className="rounded-md p-1.5 text-center bg-gray-50/60">
-              <Clock size={12} className="mx-auto mb-1 text-gray-500" />
-              <p className="text-xs font-bold text-gray-900 leading-none">
-                {avgTime && avgTime !== "—" ? avgTime : "—"}
-              </p>
-              <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-0.5 font-medium">
-                Avg Time
-              </p>
-            </div>
-          </div>
+          </>
         )}
       </div>
     </div>

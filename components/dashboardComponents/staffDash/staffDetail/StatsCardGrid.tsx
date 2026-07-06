@@ -28,7 +28,7 @@ export default function StatsCardGrid({
   const { currency } = useCurrency();
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+    <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
       {showOnlyOrders ? (
         /* Staff role: only show Orders */
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
