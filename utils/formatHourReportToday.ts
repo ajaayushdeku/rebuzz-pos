@@ -1,5 +1,6 @@
 import { HourlyData } from "@/components/dashboardComponents/overviewDash/HourlySalesChart";
 import { PeakHourlyData } from "@/components/dashboardComponents/salesRevenue/PeakHoursAnalysis";
+import { DayTimeProfitData } from "@/components/dashboardComponents/profitcostDash/DayTimeProfitHeatmap";
 
 export const formatHourlyData = (
   bills: { grandTotal: number; paidAt: string; isRefunded?: boolean }[],
@@ -140,6 +141,71 @@ export const formatPeakHourAverages = (
 export const formatHourLabel = (hour: number): string => {
   const h = hour.toString().padStart(2, "0");
   return `${h}:00`;
+};
+
+// ── Day × Hour profit heatmap ────────────────────────────────────────────────
+
+const HEATMAP_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+// getUTCDay(): 0=Sun … 6=Sat → weekday label.
+const JS_DAY_TO_LABEL = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+/** Weekday label ("Mon" … "Sun") for a YYYY-MM-DD string, or null. */
+const weekdayLabelOf = (dateStr: string): string | null => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(dateStr);
+  if (!m) return null;
+  const dt = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+  return isNaN(dt.getTime()) ? null : JS_DAY_TO_LABEL[dt.getUTCDay()];
+};
+
+/**
+ * Average profit per weekday × hour across the selected range.
+ *
+ * Profit per bill = `grandTotal - costPrice` (the API already provides the
+ * item cost). Refunded bills are ignored. For each weekday/hour bucket the
+ * profit is summed and divided by the number of bills in that bucket; buckets
+ * with no bills are 0. Always returns a complete 7 × 24 grid (168 entries).
+ */
+export const formatDayTimeProfitAverages = (
+  bills: {
+    grandTotal: number;
+    costPrice: number;
+    paidAt: string;
+    isRefunded?: boolean;
+  }[],
+): DayTimeProfitData[] => {
+  // acc[day][hour] = { total, count }
+  const acc: Record<string, Record<number, { total: number; count: number }>> =
+    {};
+  for (const day of HEATMAP_DAYS) {
+    acc[day] = {};
+    for (let h = 0; h <= 23; h++) acc[day][h] = { total: 0, count: 0 };
+  }
+
+  for (const bill of bills) {
+    if (bill.isRefunded) continue;
+    const hour = deriveHourFromPaidAt(bill.paidAt);
+    const date = deriveDateFromPaidAt(bill.paidAt);
+    if (hour === null || date === null) continue;
+    const day = weekdayLabelOf(date);
+    if (!day) continue;
+
+    const profit = (bill.grandTotal ?? 0) - (bill.costPrice ?? 0);
+    acc[day][hour].total += profit;
+    acc[day][hour].count += 1;
+  }
+
+  const result: DayTimeProfitData[] = [];
+  for (const day of HEATMAP_DAYS) {
+    for (let h = 0; h <= 23; h++) {
+      const { total, count } = acc[day][h];
+      result.push({
+        day,
+        hour: h,
+        averageProfit: count > 0 ? Math.round((total / count) * 100) / 100 : 0,
+      });
+    }
+  }
+  return result;
 };
 
 export const HOUR_RANGES = [

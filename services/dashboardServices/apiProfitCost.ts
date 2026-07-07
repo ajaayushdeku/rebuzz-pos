@@ -17,6 +17,8 @@ import { authHeaders } from "../authServices/session";
 import axios from "axios";
 import { RawBill } from "@/lib/types/bill";
 import { RawReportResponse } from "@/lib/types/report";
+import { DayTimeProfitData } from "@/components/dashboardComponents/profitcostDash/DayTimeProfitHeatmap";
+import { formatDayTimeProfitAverages } from "@/utils/formatHourReportToday";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
@@ -237,3 +239,22 @@ export async function getExpenseStats(): Promise<ProfitCostApiResponse> {
 export async function getExpenseByCategoryData(): Promise<ExpenseCategory[]> {
   return mockExpenseByCategoryData;
 }
+
+// ── Day × Time Profit Heatmap ────────────────────────────────────────────────
+// Average profit per weekday × hour over the page's date range. Mirrors the
+// Peak Hours Analysis architecture: fetch the report, then aggregate bills.
+export const getDayTimeProfitData = async (
+  startDate: string,
+  endDate: string,
+): Promise<DayTimeProfitData[]> => {
+  const res = await axios.get(
+    `${BASE}/business/report?startDate=${startDate}&endDate=${endDate}`,
+    { headers: await authHeaders() },
+  );
+
+  const data: RawReportResponse = res.data;
+  const bills: RawBill[] = data?.data?.report?.allBills ?? [];
+
+  // Profit per bill = grandTotal - costPrice (refunded bills are ignored).
+  return formatDayTimeProfitAverages(bills);
+};

@@ -171,7 +171,10 @@ export default async function Page({
 
           <ChartErrorBoundary>
             <Suspense fallback={<ChartSkeleton />}>
-              <DayTimeProfitHeatmapWrapper />
+              <DayTimeProfitHeatmapWrapper
+                startDate={effectiveStartDate}
+                endDate={effectiveEndDate}
+              />
             </Suspense>
           </ChartErrorBoundary>
         </div>

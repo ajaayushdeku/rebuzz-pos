@@ -11,6 +11,7 @@ import {
   getGrossProfitTrendData,
   getProfitPerProduct,
   getProfitStats,
+  getDayTimeProfitData,
 } from "@/services/dashboardServices/apiProfitCost";
 
 import ProfitPerProduct from "../dashboardComponents/profitcostDash/ProfitPerProduct";
@@ -100,8 +101,15 @@ export function UnitEconomicsWrapper() {
   return <UnitEconomics />;
 }
 
-export function DayTimeProfitHeatmapWrapper() {
-  return <DayTimeProfitHeatmap />;
+export async function DayTimeProfitHeatmapWrapper({
+  startDate,
+  endDate,
+}: {
+  startDate: string;
+  endDate: string;
+}) {
+  const data = await getDayTimeProfitData(startDate, endDate);
+  return <DayTimeProfitHeatmap data={data} />;
 }
 
 export async function ExpenseStatsWrapper() {
