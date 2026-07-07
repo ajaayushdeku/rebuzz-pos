@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+
 import {
   Tooltip,
   TooltipContent,
@@ -21,6 +21,7 @@ interface DayTimeProfitHeatmapProps {
 }
 
 const getColor = (profit: number): string => {
+  if (profit < 0) return "bg-red-300";
   if (profit >= 150) return "bg-emerald-600";
   if (profit >= 120) return "bg-emerald-500";
   if (profit >= 90) return "bg-emerald-400";
@@ -30,6 +31,7 @@ const getColor = (profit: number): string => {
 };
 
 const getTextColor = (profit: number): string => {
+  if (profit < 0) return "text-red-900";
   if (profit >= 90) return "text-white";
   return "text-gray-700";
 };
@@ -78,9 +80,6 @@ export default function DayTimeProfitHeatmap({
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full relative select-none mt-4">
-      {/* Lock overlay */}
-      {/* <LockDimFeactureOverlay component_name="Day-Time Profit Heatmap" /> */}
-
       {/* Header */}
       <div className="mb-6">
         <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
@@ -94,7 +93,7 @@ export default function DayTimeProfitHeatmap({
       {/* Heatmap Grid */}
       <div className="relative">
         {/* Scrollable container with hidden scrollbar */}
-        <div className="overflow-x-auto scrollbar-hide w-[800px]">
+        <div className="overflow-x-auto scrollbar-hide">
           {/* Flex layout: fixed day labels + scrollable cells */}
           <div className="flex">
             {/* Fixed day labels column */}
@@ -187,6 +186,11 @@ export default function DayTimeProfitHeatmap({
 
       {/* Legend */}
       <div className="flex items-center justify-end gap-2 mt-4">
+        <span className="text-xs text-gray-500">Loss</span>
+        <div className="flex gap-1">
+          <div className="w-4 h-4 rounded bg-red-300"></div>
+        </div>
+        <span className="text-xs text-gray-500">|</span>
         <span className="text-xs text-gray-500">Low</span>
         <div className="flex gap-1">
           <div className="w-4 h-4 rounded bg-emerald-100"></div>

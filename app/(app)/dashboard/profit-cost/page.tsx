@@ -147,38 +147,38 @@ export default async function Page({
         </Suspense>
       </ChartErrorBoundary>
 
-      <div className="grid grid-cols-1 md:grid-cols-[3fr_4fr] gap-4 ">
-        <div className="flex flex-col ">
-          <ChartErrorBoundary>
-            <Suspense fallback={<ChartSkeleton />}>
-              <PrimeCostTrackerWrapper />
-            </Suspense>
-          </ChartErrorBoundary>
+      <div className="grid grid-cols-1 md:grid-cols-[5fr_3fr] gap-4 ">
+        {/* <div className="flex flex-col "> */}
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <PrimeCostTrackerWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
 
-          <ChartErrorBoundary>
-            <Suspense fallback={<ChartSkeleton />}>
-              <UnitEconomicsWrapper />
-            </Suspense>
-          </ChartErrorBoundary>
-        </div>
-
-        <div className="flex flex-col ">
-          <ChartErrorBoundary>
-            <Suspense fallback={<ChartSkeleton />}>
-              <BreakEvenMarginSafetyWrapper />
-            </Suspense>
-          </ChartErrorBoundary>
-
-          <ChartErrorBoundary>
-            <Suspense fallback={<ChartSkeleton />}>
-              <DayTimeProfitHeatmapWrapper
-                startDate={effectiveStartDate}
-                endDate={effectiveEndDate}
-              />
-            </Suspense>
-          </ChartErrorBoundary>
-        </div>
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <UnitEconomicsWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+        {/* </div> */}
       </div>
+
+      <div className="flex flex-col ">
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <BreakEvenMarginSafetyWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+      </div>
+
+      <ChartErrorBoundary>
+        <Suspense fallback={<ChartSkeleton />}>
+          <DayTimeProfitHeatmapWrapper
+            startDate={effectiveStartDate}
+            endDate={effectiveEndDate}
+          />
+        </Suspense>
+      </ChartErrorBoundary>
 
       <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
         <ChartErrorBoundary>

@@ -114,7 +114,7 @@ export default function BreakEvenMarginSafety() {
 
       {/* Break-even label above marker */}
       <div className="relative mt-6" style={{ marginLeft: `${breakEvenPos}%` }}>
-        <div className="absolute -translate-x-1/2 -top-5">
+        <div className="absolute -translate-x-1/2 -top-5  ">
           <span className="text-[10px] font-semibold text-gray-600 bg-white px-1">
             BREAK-EVEN
           </span>

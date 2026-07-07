@@ -1,6 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Types
 
@@ -472,28 +477,40 @@ export default function Heatmap({
                     {HOURS.map((hour) => {
                       const value = data.currentWeek[day]?.[hour] ?? 0;
                       return (
-                        <div
-                          key={hour}
-                          className="flex-1 rounded-md sm:rounded-sm flex items-center justify-center text-xs font-bold cursor-default select-none transition-transform hover:scale-105 h-8 sm:h-10"
-                          style={{
-                            backgroundColor: getCellColor(
-                              value,
-                              currentWeekMin,
-                              currentWeekMax,
-                              scheme,
-                            ),
-                            color: getCellTextColor(
-                              value,
-                              currentWeekMin,
-                              currentWeekMax,
-                              scheme,
-                            ),
-                          }}
-                          title={`${day} @ ${hour}: ${value} orders`}
-                        >
-                          <span>{value}</span>{" "}
-                          {/* hide numbers on mobile — too small */}
-                        </div>
+                        <Tooltip key={hour}>
+                          <TooltipTrigger asChild>
+                            <div
+                              className="flex-1 rounded-md sm:rounded-sm flex items-center justify-center text-xs font-bold cursor-default select-none transition-transform hover:scale-105 h-8 sm:h-10"
+                              style={{
+                                backgroundColor: getCellColor(
+                                  value,
+                                  currentWeekMin,
+                                  currentWeekMax,
+                                  scheme,
+                                ),
+                                color: getCellTextColor(
+                                  value,
+                                  currentWeekMin,
+                                  currentWeekMax,
+                                  scheme,
+                                ),
+                              }}
+                            >
+                              <span>{value}</span>{" "}
+                              {/* hide numbers on mobile — too small */}
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" sideOffset={4}>
+                            <div className="flex flex-col gap-1">
+                              <span className="font-semibold">
+                                {day} @ {hour}
+                              </span>
+                              <span>
+                                Orders: <strong>{value}</strong>
+                              </span>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
                       );
                     })}
                   </div>
@@ -553,38 +570,54 @@ export default function Heatmap({
                       }
 
                       return (
-                        <div
-                          key={day}
-                          className={`flex-1 rounded-md sm:rounded-lg flex flex-col items-center justify-center cursor-default select-none transition-transform hover:scale-105 h-12 sm:h-16 ${
-                            cell.inMonth
-                              ? ""
-                              : "opacity-70 ring-1 ring-inset ring-gray-300"
-                          }`}
-                          style={{
-                            backgroundColor: getCellColor(
-                              cell.count,
-                              currentMonthMin,
-                              currentMonthMax,
-                              scheme,
-                            ),
-                            color: getCellTextColor(
-                              cell.count,
-                              currentMonthMin,
-                              currentMonthMax,
-                              scheme,
-                            ),
-                          }}
-                          title={`${dateLabel} (${day})${
-                            cell.inMonth ? "" : " · prev month"
-                          }: ${cell.count} orders`}
-                        >
-                          <span className="text-[9px] sm:text-[10px] font-medium opacity-80 leading-none">
-                            {dateLabel}
-                          </span>
-                          <span className="text-xs sm:text-sm font-bold leading-tight mt-0.5">
-                            {cell.count}
-                          </span>
-                        </div>
+                        <Tooltip key={day}>
+                          <TooltipTrigger asChild>
+                            <div
+                              className={`flex-1 rounded-md sm:rounded-lg flex flex-col items-center justify-center cursor-default select-none transition-transform hover:scale-105 h-12 sm:h-16 ${
+                                cell.inMonth
+                                  ? ""
+                                  : "opacity-70 ring-1 ring-inset ring-gray-300"
+                              }`}
+                              style={{
+                                backgroundColor: getCellColor(
+                                  cell.count,
+                                  currentMonthMin,
+                                  currentMonthMax,
+                                  scheme,
+                                ),
+                                color: getCellTextColor(
+                                  cell.count,
+                                  currentMonthMin,
+                                  currentMonthMax,
+                                  scheme,
+                                ),
+                              }}
+                            >
+                              <span className="text-[9px] sm:text-[10px] font-medium opacity-80 leading-none">
+                                {dateLabel}
+                              </span>
+                              <span className="text-xs sm:text-sm font-bold leading-tight mt-0.5">
+                                {cell.count}
+                              </span>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" sideOffset={4}>
+                            <div className="flex flex-col gap-1">
+                              <span className="font-semibold">
+                                {dateLabel} ({day})
+                                {!cell.inMonth && (
+                                  <span className="font-normal text-gray-300">
+                                    {" "}
+                                    · prev month
+                                  </span>
+                                )}
+                              </span>
+                              <span>
+                                Orders: <strong>{cell.count}</strong>
+                              </span>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
                       );
                     })}
                   </div>
