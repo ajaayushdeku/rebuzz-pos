@@ -12,6 +12,9 @@ import {
   TaxByCategoryWrapper,
   TaxOnRefundedBillsWrapper,
   VatStatsWrapper,
+  VATTrendChartWrapper,
+  MonthlyTaxTrendChartWrapper,
+  WhatChangedAndWhyWrapper,
 } from "@/components/componentWrappers/TaxAnalyticsWrappers";
 
 function getDefaultDateRange(): DateRangeValue {
@@ -45,6 +48,15 @@ export default function TaxAnalyticsPage() {
         </div>
 
         <VatStatsWrapper />
+
+        {/* VAT Trend Charts - 2 column grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <VATTrendChartWrapper />
+          <MonthlyTaxTrendChartWrapper />
+        </div>
+
+        {/* What Changed & Why + Taxable vs Exempt - full width */}
+        <WhatChangedAndWhyWrapper />
 
         {/* Taxable vs Non-Taxable - full width */}
         <TaxableVsNonTaxableWrapper

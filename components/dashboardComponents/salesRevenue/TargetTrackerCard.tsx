@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { Target } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Target, Pencil } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import type {
-  TargetTrackerData,
-  TargetPeriod,
-} from "@/lib/mockData/mock-targetperiod-data";
-import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import {
+  getStoredTargets,
+  saveStoredTargets,
+  DEFAULT_TARGETS,
+  type AnalyticsTargets,
+} from "@/lib/indexeddb/analyticsPreferences";
+
+type TargetPeriod = "daily" | "weekly" | "monthly";
 
 const TABS: { label: string; value: TargetPeriod }[] = [
   { label: "Daily", value: "daily" },
@@ -16,10 +19,20 @@ const TABS: { label: string; value: TargetPeriod }[] = [
   { label: "Monthly", value: "monthly" },
 ];
 
-function getStatusBadge(pct: number): {
-  label: string;
-  className: string;
-} {
+const PERIOD_LABEL: Record<TargetPeriod, string> = {
+  daily: "Daily sales goal (today)",
+  weekly: "Weekly sales goal (this week)",
+  monthly: "Monthly sales goal (this month)",
+};
+
+// Which stored target field backs each period tab.
+const TARGET_FIELD: Record<TargetPeriod, keyof AnalyticsTargets> = {
+  daily: "dailyTarget",
+  weekly: "weeklyTarget",
+  monthly: "monthlyTarget",
+};
+
+function getStatusBadge(pct: number): { label: string; className: string } {
   if (pct >= 100)
     return {
       label: "Goal reached",
@@ -48,28 +61,146 @@ function getBarColor(pct: number): string {
   return "bg-red-400";
 }
 
-interface TargetTrackerCardProps {
-  data: TargetTrackerData;
+/** Local YYYY-MM-DD (no UTC shift). */
+function toLocalDateStr(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
-export default function TargetTrackerCard({ data }: TargetTrackerCardProps) {
+// Date ranges for the current calendar period — independent of the dashboard's
+// global date filter.
+//  • Daily   → today → today
+//  • Weekly  → current calendar week (Sunday, the project convention) → today
+//  • Monthly → 1st of the month → today (month-to-date)
+//
+// Weekly and monthly end at today rather than the end of the period: the report
+// API returns no data when endDate is in the future, and revenue can only
+// accrue up to today anyway.
+function computeRanges(): Record<
+  TargetPeriod,
+  { startDate: string; endDate: string }
+> {
+  const now = new Date();
+  const today = toLocalDateStr(now);
+
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - now.getDay()); // Sunday of the current week
+
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  return {
+    daily: { startDate: today, endDate: today },
+    weekly: { startDate: toLocalDateStr(weekStart), endDate: today },
+    monthly: { startDate: toLocalDateStr(monthStart), endDate: today },
+  };
+}
+
+export default function TargetTrackerCard() {
   const { currency } = useCurrency();
   const [activePeriod, setActivePeriod] = useState<TargetPeriod>("weekly");
 
-  const period = data[activePeriod];
-  const pct = Math.min(100, Math.round((period.actual / period.goal) * 100));
-  const remaining = Math.max(0, period.goal - period.actual);
+  // ── Targets (IndexedDB-backed local preferences) ──
+  const [targets, setTargets] = useState<AnalyticsTargets>(DEFAULT_TARGETS);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+
+  // Load saved targets once on mount.
+  useEffect(() => {
+    let cancelled = false;
+    getStoredTargets().then((stored) => {
+      if (!cancelled) setTargets(stored);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // ── Revenue (current calendar period) ──
+  // Ranges are fixed to the current period at mount, so switching tabs never
+  // recomputes them and never pulls in the dashboard's global date filter.
+  const ranges = useMemo(() => computeRanges(), []);
+
+  // Cache revenue per date-range so re-selecting a tab doesn't refetch.
+  const revenueCache = useRef<Record<string, number>>({});
+  const [revenue, setRevenue] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const { startDate, endDate } = ranges[activePeriod];
+    const key = `${startDate}_${endDate}`;
+
+    // Serve from cache when possible — only fetch the selected period.
+    if (revenueCache.current[key] !== undefined) {
+      setRevenue(revenueCache.current[key]);
+      setError(false);
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    setError(false);
+    setRevenue(null);
+
+    fetch(`/api/report?startDate=${startDate}&endDate=${endDate}&limit=25`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Failed: ${res.status}`);
+        return res.json();
+      })
+      .then((json) => {
+        const rev = Number(json?.data?.report?.totalRevenue ?? 0);
+        revenueCache.current[key] = rev;
+        if (!cancelled) setRevenue(rev);
+      })
+      .catch(() => {
+        if (!cancelled) setError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activePeriod, ranges]);
+
+  // ── Derived progress ──
+  const goal = targets[TARGET_FIELD[activePeriod]];
+  const actual = revenue ?? 0;
+
+  const { pct, remaining } = useMemo(() => {
+    const p = goal > 0 ? Math.min(100, Math.round((actual / goal) * 100)) : 0;
+    return { pct: p, remaining: Math.max(0, goal - actual) };
+  }, [goal, actual]);
+
   const badge = getStatusBadge(pct);
   const barColor = getBarColor(pct);
 
   const fmt = (v: number) =>
     formatCurrencySymbol(v, currency.symbol, currency.locale);
 
+  // ── Target editing ──
+  const startEdit = () => {
+    setDraft(String(goal));
+    setEditing(true);
+  };
+
+  const commitEdit = () => {
+    const parsed = Math.max(0, Number(draft) || 0);
+    const next: AnalyticsTargets = {
+      ...targets,
+      [TARGET_FIELD[activePeriod]]: parsed,
+    };
+    setTargets(next);
+    setEditing(false);
+    void saveStoredTargets(next);
+  };
+
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 h-full relative select-none">
-      {/* Lock overlay */}
-      <LockDimFeactureOverlay component_name="Target Tracker" />
-
       {/* Header */}
       <div className="flex items-center gap-2.5 mb-5">
         <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
@@ -90,7 +221,10 @@ export default function TargetTrackerCard({ data }: TargetTrackerCardProps) {
         {TABS.map((tab) => (
           <button
             key={tab.value}
-            onClick={() => setActivePeriod(tab.value)}
+            onClick={() => {
+              setActivePeriod(tab.value);
+              setEditing(false);
+            }}
             className={`flex-1 py-2.5 rounded-lg text-xs font-semibold transition-all ${
               activePeriod === tab.value
                 ? " border-[1.5px] border-gray-800 text-gray-900 shadow-sm"
@@ -105,7 +239,7 @@ export default function TargetTrackerCard({ data }: TargetTrackerCardProps) {
       {/* Goal label + badge */}
       <div className="flex items-center justify-between mb-2">
         <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
-          {period.label}
+          {PERIOD_LABEL[activePeriod]}
         </p>
         <span
           className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${badge.className}`}
@@ -115,15 +249,54 @@ export default function TargetTrackerCard({ data }: TargetTrackerCardProps) {
       </div>
 
       {/* Actual value */}
-      <p className="text-3xl font-bold text-gray-900 tracking-tight mb-4">
-        {fmt(period.actual)}
-      </p>
+      {loading ? (
+        <div className="h-9 w-32 bg-gray-100 rounded-md animate-pulse mb-4" />
+      ) : (
+        <p className="text-3xl font-bold text-gray-900 tracking-tight mb-4">
+          {fmt(actual)}
+        </p>
+      )}
+
+      {error && (
+        <p className="text-[11px] text-red-500 -mt-3 mb-3">
+          Couldn&apos;t load revenue — showing your saved target.
+        </p>
+      )}
 
       {/* Progress bar */}
       <div className="mb-3">
         <div className="flex items-center justify-between text-xs text-gray-500 mb-1.5">
           <span className="font-medium">{pct}% achieved</span>
-          <span>Goal: {fmt(period.goal)}</span>
+
+          {/* Editable goal */}
+          {editing ? (
+            <span className="flex items-center gap-1">
+              Goal:
+              <input
+                type="number"
+                min={0}
+                value={draft}
+                autoFocus
+                onChange={(e) => setDraft(e.target.value)}
+                onBlur={commitEdit}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") commitEdit();
+                  if (e.key === "Escape") setEditing(false);
+                }}
+                className="w-24 border border-gray-200 rounded px-1.5 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={startEdit}
+              title="Click to edit target"
+              className="inline-flex items-center gap-1 hover:text-gray-700 transition-colors"
+            >
+              Goal: {fmt(goal)}
+              <Pencil size={11} className="opacity-50" />
+            </button>
+          )}
         </div>
         <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
           <div
@@ -150,7 +323,7 @@ export default function TargetTrackerCard({ data }: TargetTrackerCardProps) {
           )}
         </span>
         <span className="text-gray-400 font-medium">
-          {fmt(period.actual)} of {fmt(period.goal)}
+          {fmt(actual)} of {fmt(goal)}
         </span>
       </div>
     </div>

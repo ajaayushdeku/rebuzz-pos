@@ -13,10 +13,12 @@ import TaxByCategory from "@/components/dashboardComponents/taxAnalytics/TaxByCa
 import TaxOnRefundedBills from "@/components/dashboardComponents/taxAnalytics/TaxOnRefundedBills";
 import VatStatCard from "../dashboardComponents/taxAnalytics/VatStatCard";
 import { vatStats } from "../dashboardComponents/taxAnalytics/MiniTrendChart";
-import VATTrendChart from "../dashboardComponents/taxAnalytics/VATTrendChart";
-import MonthlyTaxTrendChart from "../dashboardComponents/taxAnalytics/MonthlyTaxTrendChart";
-import WhatChangedAndWhy from "../dashboardComponents/taxAnalytics/WhatChangedAndWhy";
-import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
+import MonthlyTaxTrend from "@/components/dashboardComponents/taxAnalytics/MonthlyTaxTrend";
+import TaxRateDistribution from "@/components/dashboardComponents/taxAnalytics/TaxRateDistribution";
+import TaxSummaryCards from "@/components/dashboardComponents/taxAnalytics/TaxSummaryCards";
+import type { TaxRateData } from "@/components/dashboardComponents/taxAnalytics/TaxRateDistribution";
+import type { MonthlyTaxData } from "@/components/dashboardComponents/taxAnalytics/MonthlyTaxTrend";
+import type { TaxSummaryItem } from "@/components/dashboardComponents/taxAnalytics/TaxSummaryCards";
 
 interface RefundBillWithTax {
   billNumber: string;
@@ -77,6 +79,56 @@ const MOCK_DATA = {
     { category: "Pasta", revenue: 47800, taxAmount: 6214 },
     { category: "Beverages", revenue: 38500, taxAmount: 5005 },
     { category: "Desserts", revenue: 22500, taxAmount: 2925 },
+  ],
+  monthlyTrend: [
+    { month: "Jan", collected: 42500, refunded: 3200, netTax: 39300 },
+    { month: "Feb", collected: 48200, refunded: 2800, netTax: 45400 },
+    { month: "Mar", collected: 51800, refunded: 4100, netTax: 47700 },
+    { month: "Apr", collected: 46300, refunded: 3600, netTax: 42700 },
+    { month: "May", collected: 55600, refunded: 3900, netTax: 51700 },
+    { month: "Jun", collected: 61200, refunded: 4500, netTax: 56700 },
+    { month: "Jul", collected: 58900, refunded: 5100, netTax: 53800 },
+    { month: "Aug", collected: 63400, refunded: 4800, netTax: 58600 },
+    { month: "Sep", collected: 67100, refunded: 5300, netTax: 61800 },
+    { month: "Oct", collected: 72500, refunded: 5600, netTax: 66900 },
+  ],
+  taxRates: [
+    { rate: "VAT 13%", amount: 28500, percentage: 38.5, count: 342 },
+    { rate: "Service Tax 10%", amount: 12400, percentage: 16.8, count: 95 },
+    { rate: "VAT 5%", amount: 9800, percentage: 13.2, count: 187 },
+    { rate: "Combined Tax A", amount: 8750, percentage: 11.8, count: 64 },
+    { rate: "Mixed Rate Bundle", amount: 5200, percentage: 7.0, count: 38 },
+    { rate: "Other Taxes", amount: 9450, percentage: 12.7, count: 112 },
+  ],
+  summaryCards: [
+    {
+      label: "Total Tax Collected",
+      value: 73850,
+      subtitle: "Across all tax rates",
+      icon: "dollar" as const,
+      color: "blue" as const,
+    },
+    {
+      label: "Total Transactions",
+      value: 838,
+      subtitle: "Taxable transactions",
+      icon: "receipt" as const,
+      color: "amber" as const,
+    },
+    {
+      label: "Total Refunded",
+      value: 4520,
+      subtitle: "Tax refunded this period",
+      icon: "refresh" as const,
+      color: "red" as const,
+    },
+    {
+      label: "Effective Rate",
+      value: 9650,
+      subtitle: "Weighted avg tax rate",
+      icon: "trending" as const,
+      color: "emerald" as const,
+    },
   ],
 };
 
@@ -285,14 +337,41 @@ export function TaxOnRefundedBillsWrapper({
   );
 }
 
-export function VATTrendChartWrapper() {
-  return <VATTrendChart />;
+export function MonthlyTaxTrendWrapper() {
+  // TODO: Replace with real API call when endpoint is available
+  const data: MonthlyTaxData[] = MOCK_DATA.monthlyTrend;
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+      <h2 className="text-sm font-semibold text-gray-800 mb-4">
+        Monthly Tax Trend (Mock Data)
+      </h2>
+      <MonthlyTaxTrend data={data} />
+    </div>
+  );
 }
 
-export function MonthlyTaxTrendChartWrapper() {
-  return <MonthlyTaxTrendChart />;
+export function TaxRateDistributionWrapper() {
+  // TODO: Replace with real API call when endpoint is available
+  const data: TaxRateData[] = MOCK_DATA.taxRates;
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+      <h2 className="text-sm font-semibold text-gray-800 mb-4">
+        Tax Rate Distribution (Mock Data)
+      </h2>
+      <TaxRateDistribution data={data} />
+    </div>
+  );
 }
 
-export function WhatChangedAndWhyWrapper() {
-  return <WhatChangedAndWhy />;
+export function TaxSummaryCardsWrapper() {
+  // TODO: Replace with real API call when endpoint is available
+  const data: TaxSummaryItem[] = MOCK_DATA.summaryCards;
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+      <TaxSummaryCards data={data} />
+    </div>
+  );
 }

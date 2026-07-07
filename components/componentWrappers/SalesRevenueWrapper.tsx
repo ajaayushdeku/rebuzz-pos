@@ -11,7 +11,6 @@ import {
 import ForecastCard from "../dashboardComponents/salesRevenue/ForecastCard";
 import { mockForecastData } from "@/lib/mockData/mock-forecast-data";
 import TargetTrackerCard from "../dashboardComponents/salesRevenue/TargetTrackerCard";
-import { mockTargetTrackerData } from "@/lib/mockData/mock-targetperiod-data";
 import CampaignAnalysis from "../dashboardComponents/salesRevenue/CampaignAnalysis";
 import PriceChangeImpact from "../dashboardComponents/salesRevenue/PriceChangeImpact";
 import TimeWiseProductAnalysis from "../dashboardComponents/salesRevenue/TimeWiseProductAnalysis";
@@ -79,7 +78,9 @@ export function ForecastCardWrapper() {
 }
 
 export function TargetTrackerWrapper() {
-  return <TargetTrackerCard data={mockTargetTrackerData} />;
+  // Self-contained: fetches current-period revenue client-side and reads
+  // targets from IndexedDB. Does NOT use the dashboard's global date filter.
+  return <TargetTrackerCard />;
 }
 
 export function CampaignAnalysisWrapper() {
