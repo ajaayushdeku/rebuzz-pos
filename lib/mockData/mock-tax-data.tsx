@@ -61,3 +61,136 @@ export const mockVATComparisonData: VATComparisonData = {
   totalSales: 1500000,
   taxableRate: 13,
 };
+
+// ── TDS on Rent ───────────────────────────────────────────────────────────
+
+export type TDSOnRentData = {
+  monthlyRent: number;
+  tdsRate: number;
+  tdsAmount: number;
+  dueDate: string;
+  status: "pending" | "remitted" | "overdue";
+};
+
+export const mockTDSOnRentData: TDSOnRentData = {
+  monthlyRent: 150000,
+  tdsRate: 10,
+  tdsAmount: 15000,
+  dueDate: "25 Falgun 2082",
+  status: "pending",
+};
+
+// ── Tax on Refunds ────────────────────────────────────────────────────────
+
+export type TaxOnRefundsData = {
+  refundedValue: number;
+  taxReversed: number;
+  transactions: number;
+};
+
+export const mockTaxOnRefundsData: TaxOnRefundsData = {
+  refundedValue: 15000,
+  taxReversed: -1950,
+  transactions: 32,
+};
+
+// ── VAT You Haven't Claimed Back ──────────────────────────────────────────
+
+export type VATUnclaimedData = {
+  stillRecoverable: number;
+  claimed: number;
+  eligible: number;
+  claimedPct: number;
+};
+
+export const mockVATUnclaimedData: VATUnclaimedData = {
+  stillRecoverable: 7800,
+  claimed: 54600,
+  eligible: 62400,
+  claimedPct: 88,
+};
+
+// ── Purchases With No VAT to Claim ────────────────────────────────────────
+
+export type NoVATPurchasesData = {
+  noVATPurchases: number;
+  noVATPct: number;
+  taxablePurchases: number;
+};
+
+export const mockNoVATPurchasesData: NoVATPurchasesData = {
+  noVATPurchases: 120000,
+  noVATPct: 25,
+  taxablePurchases: 360000,
+};
+
+// ── VAT-20 Return Summary ─────────────────────────────────────────────────
+
+export type VAT20SummaryData = {
+  taxableSales: number;
+  exemptSales: number;
+  totalOutputVAT: number;
+  inputVATPaid: number;
+  vatRefundsClaimed: number;
+  totalDeductibleVAT: number;
+  netVATPayable: number;
+  status: "ready" | "draft" | "filed";
+};
+
+export const mockVAT20SummaryData: VAT20SummaryData = {
+  taxableSales: 1200000,
+  exemptSales: 300000,
+  totalOutputVAT: 156000,
+  inputVATPaid: 54600,
+  vatRefundsClaimed: 1950,
+  totalDeductibleVAT: 56550,
+  netVATPayable: 99450,
+  status: "ready",
+};
+
+// ── Filing Calendar ───────────────────────────────────────────────────────
+
+export type FilingStatus = "filed" | "pending" | "overdue";
+
+export type FilingEntry = {
+  id: string;
+  title: string;
+  dueDate: string;
+  estimatedAmount: number;
+  status: FilingStatus;
+};
+
+export type FilingCalendarData = {
+  upcomingCount: number;
+  upcomingMessage: string;
+  entries: FilingEntry[];
+};
+
+export const mockFilingCalendarData: FilingCalendarData = {
+  upcomingCount: 1,
+  upcomingMessage:
+    "Magh 2082 VAT return is due on 25 Falgun 2082. File before the deadline to avoid a late fee of Rs 1,000 or 0.05% per day.",
+  entries: [
+    {
+      id: "1",
+      title: "VAT Return - Poush 2082",
+      dueDate: "25 Magh 2082",
+      estimatedAmount: 98000,
+      status: "filed",
+    },
+    {
+      id: "2",
+      title: "VAT Return - Magh 2082",
+      dueDate: "25 Falgun 2082",
+      estimatedAmount: 99450,
+      status: "pending",
+    },
+    {
+      id: "3",
+      title: "Advance Income Tax - Chaitra Installment",
+      dueDate: "End of Chaitra 2082",
+      estimatedAmount: 40000,
+      status: "pending",
+    },
+  ],
+};

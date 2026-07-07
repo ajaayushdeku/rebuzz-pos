@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { Info } from "lucide-react";
 import { mockMonthlyTaxData } from "@/lib/mockData/mock-tax-data";
+import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 
 function fmtRs(v: number) {
   return `Rs ${(v / 1000).toFixed(0)}k`;
@@ -66,7 +67,9 @@ const CustomLegend = () => (
 
 export default function MonthlyTaxTrendChart() {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
+    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
+      <LockDimFeactureOverlay component_name="Monthly Tax Trend Chart" />
+
       <div>
         <h2 className="text-sm font-bold text-gray-900">Monthly Tax Trend</h2>
         <p className="text-xs text-gray-400 mt-0.5">

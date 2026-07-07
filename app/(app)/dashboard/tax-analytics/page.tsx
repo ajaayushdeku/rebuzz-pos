@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import {
   DateRangeFilter,
   type DateRangeValue,
@@ -15,7 +15,15 @@ import {
   VATTrendChartWrapper,
   MonthlyTaxTrendChartWrapper,
   WhatChangedAndWhyWrapper,
+  TDSOnRentWrapper,
+  TaxOnRefundsWrapper,
+  VATUnclaimedBackWrapper,
+  NoVATPurchasesWrapper,
+  VAT20ReturnSummaryWrapper,
+  FilingCalendarWrapper,
 } from "@/components/componentWrappers/TaxAnalyticsWrappers";
+import ChartErrorBoundary from "@/components/ui/charterrorboundary";
+import ChartSkeleton from "@/components/ui/chartskeleton";
 
 function getDefaultDateRange(): DateRangeValue {
   const today = new Date();
@@ -49,14 +57,18 @@ export default function TaxAnalyticsPage() {
 
         <VatStatsWrapper />
 
+        {/* What Changed & Why + Taxable vs Exempt - full width */}
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <WhatChangedAndWhyWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+
         {/* VAT Trend Charts - 2 column grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <VATTrendChartWrapper />
           <MonthlyTaxTrendChartWrapper />
         </div>
-
-        {/* What Changed & Why + Taxable vs Exempt - full width */}
-        <WhatChangedAndWhyWrapper />
 
         {/* Taxable vs Non-Taxable - full width */}
         <TaxableVsNonTaxableWrapper
@@ -90,6 +102,22 @@ export default function TaxAnalyticsPage() {
           startDate={dateRange.startDate}
           endDate={dateRange.endDate}
         />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+          <VAT20ReturnSummaryWrapper />
+          <FilingCalendarWrapper />
+        </div>
+
+        {/* Supplementary tax cards - 3 column grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+          <TDSOnRentWrapper />
+          <TaxOnRefundsWrapper />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+          <VATUnclaimedBackWrapper />
+          <NoVATPurchasesWrapper />
+        </div>
       </div>
     </div>
   );

@@ -16,6 +16,12 @@ import { vatStats } from "../dashboardComponents/taxAnalytics/MiniTrendChart";
 import VATTrendChart from "../dashboardComponents/taxAnalytics/VATTrendChart";
 import MonthlyTaxTrendChart from "../dashboardComponents/taxAnalytics/MonthlyTaxTrendChart";
 import WhatChangedAndWhy from "../dashboardComponents/taxAnalytics/WhatChangedAndWhy";
+import TDSOnRent from "../dashboardComponents/taxAnalytics/TDSOnRent";
+import TaxOnRefunds from "../dashboardComponents/taxAnalytics/TaxOnRefunds";
+import VATUnclaimedBack from "../dashboardComponents/taxAnalytics/VATUnclaimedBack";
+import NoVATPurchases from "../dashboardComponents/taxAnalytics/NoVATPurchase";
+import VAT20ReturnSummary from "../dashboardComponents/taxAnalytics/VAT20ReturnSummary";
+import FilingCalendar from "../dashboardComponents/taxAnalytics/FilingCalendar";
 import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
 
 interface RefundBillWithTax {
@@ -122,7 +128,8 @@ export function TaxableVsNonTaxableWrapper({
 
 export function VatStatsWrapper() {
   return (
-    <div className="lg:grid lg:grid-cols-4 lg:gap-3 flex gap-3 overflow-x-auto pb-3 px-2 sm:px-0 lg:overflow-visible scrollbar-custom">
+    <div className="relative lg:grid lg:grid-cols-4 lg:gap-3 flex gap-3 overflow-x-auto pb-3 px-2 sm:px-0 lg:overflow-visible scrollbar-custom">
+      <LockDimFeactureOverlay component_name="VAT Stat Cards" />
       {vatStats.map((card) => (
         <VatStatCard key={card.id} stat={card} />
       ))}
@@ -143,7 +150,7 @@ export function TaxStatsWrapper({
   const data = MOCK_DATA.taxStats;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+    <div className="  bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
       <h2 className="text-sm font-semibold text-gray-800 mb-4">
         Tax Stats (Mock Data)
       </h2>
@@ -295,4 +302,28 @@ export function MonthlyTaxTrendChartWrapper() {
 
 export function WhatChangedAndWhyWrapper() {
   return <WhatChangedAndWhy />;
+}
+
+export function TDSOnRentWrapper() {
+  return <TDSOnRent />;
+}
+
+export function TaxOnRefundsWrapper() {
+  return <TaxOnRefunds />;
+}
+
+export function VATUnclaimedBackWrapper() {
+  return <VATUnclaimedBack />;
+}
+
+export function NoVATPurchasesWrapper() {
+  return <NoVATPurchases />;
+}
+
+export function VAT20ReturnSummaryWrapper() {
+  return <VAT20ReturnSummary />;
+}
+
+export function FilingCalendarWrapper() {
+  return <FilingCalendar />;
 }

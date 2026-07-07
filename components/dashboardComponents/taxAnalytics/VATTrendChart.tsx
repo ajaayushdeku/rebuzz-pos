@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { Info } from "lucide-react";
 import { mockVATTrendData } from "@/lib/mockData/mock-tax-data";
+import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 
 function fmtRs(v: number) {
   return `Rs ${(v / 1000).toFixed(0)}k`;
@@ -81,7 +82,9 @@ const CustomLegend = () => (
 
 export default function VATTrendChart() {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
+    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
+      <LockDimFeactureOverlay component_name="VAT Trend Chart" />
+
       <div>
         <h2 className="text-sm font-bold text-gray-900">
           Input vs Output VAT Trend

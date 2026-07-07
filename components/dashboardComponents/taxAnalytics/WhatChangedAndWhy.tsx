@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { mockVATComparisonData } from "@/lib/mockData/mock-tax-data";
+import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 
 const DONUT_COLORS = ["#6366f1", "#e5e7eb"];
 
@@ -40,7 +41,9 @@ export default function WhatChangedAndWhy() {
   return (
     <div className="space-y-4">
       {/* ── What Changed & Why ── */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+      <div className=" relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <LockDimFeactureOverlay component_name="What Changed And Why" />
+
         <div className="flex items-center gap-2 mb-1">
           {increased ? (
             <TrendingUp size={14} className="text-amber-500" />
@@ -119,7 +122,9 @@ export default function WhatChangedAndWhy() {
       </div>
 
       {/* ── Taxable vs Exempt ── */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+      <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <LockDimFeactureOverlay component_name="VAT Breakdown" />
+
         <div className="flex items-center justify-between mb-1">
           <div>
             <h2 className="text-sm font-bold text-gray-900">
