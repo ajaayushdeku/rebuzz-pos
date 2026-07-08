@@ -106,7 +106,7 @@ export default function ProductCard({ item }: { item: InventoryItem }) {
                 <span className="text-2xl font-bold text-gray-900">
                   {item.inStock.toLocaleString()}
                 </span>
-                <span className="text-xs text-gray-400">units</span>
+                <span className="text-xs text-gray-400">units in stock</span>
               </div>
             ) : (
               <span className="text-sm text-gray-400">Stock not tracked</span>

@@ -37,8 +37,8 @@ export default function InventoryPage() {
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
       <div className="w-full mx-auto">
         <InventoryHeader items={inventory} />
-        <InventoryAlerts items={inventory} />
         <InventoryValueSummary />
+        <InventoryAlerts items={inventory} />
         <ProductCardGrid items={inventory} />
 
         <div className="flex flex-col lg:flex-row gap-4 mb-6">

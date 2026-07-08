@@ -1,12 +1,44 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
+import { Search, ArrowUpDown, X } from "lucide-react";
 
 import { InventoryItem } from "@/lib/mockData/mock-inventory-data";
 import ProductCard from "./ProductCard";
 
 const INITIAL_COUNT = 8;
 const LOAD_MORE_COUNT = 8;
+
+type SortKey =
+  | "default"
+  | "stock-desc"
+  | "stock-asc"
+  | "price-desc"
+  | "price-asc"
+  | "cost-desc"
+  | "cost-asc";
+
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: "default", label: "Default" },
+  { value: "stock-desc", label: "Stock: High → Low" },
+  { value: "stock-asc", label: "Stock: Low → High" },
+  { value: "price-desc", label: "Selling Price: High → Low" },
+  { value: "price-asc", label: "Selling Price: Low → High" },
+  { value: "cost-desc", label: "Cost Price: High → Low" },
+  { value: "cost-asc", label: "Cost Price: Low → High" },
+];
+
+const SORT_COMPARATORS: Record<
+  Exclude<SortKey, "default">,
+  (a: InventoryItem, b: InventoryItem) => number
+> = {
+  "stock-desc": (a, b) => b.inStock - a.inStock,
+  "stock-asc": (a, b) => a.inStock - b.inStock,
+  "price-desc": (a, b) => b.price - a.price,
+  "price-asc": (a, b) => a.price - b.price,
+  "cost-desc": (a, b) => b.costPrice - a.costPrice,
+  "cost-asc": (a, b) => a.costPrice - b.costPrice,
+};
 
 /** Skeleton card shown while loading more items */
 function SkeletonCard() {
@@ -23,29 +55,111 @@ function SkeletonCard() {
 const ProductCardGrid = ({ items }: { items: InventoryItem[] }) => {
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
   const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<SortKey>("default");
 
-  const visibleItems = items.slice(0, visibleCount);
+  // Search (by name) then sort. Kept memoized so cards don't re-process on
+  // unrelated re-renders.
+  const processed = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const filtered = q
+      ? items.filter((i) => i.name.toLowerCase().includes(q))
+      : items;
 
-  const hasMore = visibleCount < items.length;
+    if (sortBy === "default") return filtered;
+    return [...filtered].sort(SORT_COMPARATORS[sortBy]);
+  }, [items, search, sortBy]);
+
+  // Reset the "Load More" window whenever the search or sort changes.
+  const filterKey = `${search}|${sortBy}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (prevFilterKey !== filterKey) {
+    setPrevFilterKey(filterKey);
+    setVisibleCount(INITIAL_COUNT);
+  }
+
+  const visibleItems = processed.slice(0, visibleCount);
+
+  const hasMore = visibleCount < processed.length;
   const canHide = visibleCount > INITIAL_COUNT;
 
   const handleLoadMore = useCallback(() => {
     setLoading(true);
     // Simulate brief loading delay for smooth UX
     setTimeout(() => {
-      setVisibleCount((prev) => Math.min(prev + LOAD_MORE_COUNT, items.length));
+      setVisibleCount((prev) =>
+        Math.min(prev + LOAD_MORE_COUNT, processed.length),
+      );
       setLoading(false);
     }, 600);
-  }, [items.length]);
+  }, [processed.length]);
 
   const handleHide = useCallback(() => {
     setVisibleCount(INITIAL_COUNT);
   }, []);
 
-  const skeletonCount = Math.min(LOAD_MORE_COUNT, items.length - visibleCount);
+  const skeletonCount = Math.min(
+    LOAD_MORE_COUNT,
+    processed.length - visibleCount,
+  );
 
   return (
     <div>
+      {/* Toolbar: search + sort */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        {/* Search */}
+        <div className="relative w-full sm:w-72">
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+          />
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full h-9 pl-9 pr-8 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              aria-label="Clear search"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+
+        {/* Sort */}
+        <div className="flex items-center gap-2 shrink-0">
+          <ArrowUpDown size={14} className="text-gray-400" />
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortKey)}
+            className="h-9 text-xs border border-gray-200 rounded-lg px-2.5 bg-white text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+          >
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Empty state */}
+      {processed.length === 0 && (
+        <div className="flex flex-col items-center py-10 text-gray-400 text-sm">
+          <span className="font-medium">No products found</span>
+          {search && (
+            <p className="mt-1 text-xs text-gray-300">
+              Try a different search term.
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Product Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-3">
         {visibleItems.map((item, idx) => (
