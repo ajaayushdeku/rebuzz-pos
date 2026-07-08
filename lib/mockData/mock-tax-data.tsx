@@ -436,3 +436,95 @@ export const mockTaxRateBreakdownData: TaxRateTier[] = [
     barColor: "#e5e7eb",
   },
 ];
+
+// ── Tax Detail / Audit Log ────────────────────────────────────────────────
+
+export type AuditLogStatus = "pending" | "filed" | "overdue";
+
+export type AuditLogEntry = {
+  id: string;
+  period: string;
+  txCode: string;
+  taxableBase: number;
+  rate: number;
+  vatCollected: number;
+  vatPaid: number;
+  remitted: number;
+  stillOwed: number;
+  status: AuditLogStatus;
+};
+
+export const mockAuditLogData: AuditLogEntry[] = [
+  {
+    id: "1",
+    period: "Magh 2082",
+    txCode: "TX-2082-Magh",
+    taxableBase: 1500000,
+    rate: 13,
+    vatCollected: 156000,
+    vatPaid: 54600,
+    remitted: 0,
+    stillOwed: 99450,
+    status: "pending",
+  },
+  {
+    id: "2",
+    period: "Mangsir 2082",
+    txCode: "TX-2082-Mangsir",
+    taxableBase: 1550000,
+    rate: 13,
+    vatCollected: 155000,
+    vatPaid: 53000,
+    remitted: 102000,
+    stillOwed: 0,
+    status: "filed",
+  },
+  {
+    id: "3",
+    period: "Kartik 2082",
+    txCode: "TX-2082-Kartik",
+    taxableBase: 1500000,
+    rate: 13,
+    vatCollected: 150000,
+    vatPaid: 50000,
+    remitted: 100000,
+    stillOwed: 0,
+    status: "filed",
+  },
+  {
+    id: "4",
+    period: "Poush 2082",
+    txCode: "TX-2082-Poush",
+    taxableBase: 1480000,
+    rate: 13,
+    vatCollected: 148000,
+    vatPaid: 50000,
+    remitted: 98000,
+    stillOwed: 0,
+    status: "filed",
+  },
+  {
+    id: "5",
+    period: "Ashoj 2082",
+    txCode: "TX-2082-Ashoj",
+    taxableBase: 1450000,
+    rate: 13,
+    vatCollected: 145000,
+    vatPaid: 50000,
+    remitted: 95000,
+    stillOwed: 0,
+    status: "filed",
+  },
+  {
+    id: "6",
+    period: "Bhadra 2082",
+    txCode: "TX-2082-Bhadra",
+    taxableBase: 1400000,
+    rate: 13,
+    vatCollected: 140000,
+    vatPaid: 50000,
+    remitted: 90000,
+    stillOwed: 0,
+    status: "filed",
+  },
+];

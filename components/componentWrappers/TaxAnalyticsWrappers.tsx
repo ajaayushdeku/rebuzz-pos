@@ -30,6 +30,7 @@ import AdvanceTaxInstallments from "../dashboardComponents/taxAnalytics/AdvanceT
 import TDSReceivable from "../dashboardComponents/taxAnalytics/TDSReceivable";
 import TaxRateBreakdown from "../dashboardComponents/taxAnalytics/TaxRateBreakdown";
 import WhatYouActuallyOwe from "../dashboardComponents/taxAnalytics/WhatYouActuallyOwe";
+import TaxAuditLog from "../dashboardComponents/taxAnalytics/TaxAuditLog";
 
 interface RefundBillWithTax {
   billNumber: string;
@@ -369,4 +370,8 @@ export function AdvanceTaxInstallmentsWrapper() {
 
 export function TDSReceivableWrapper() {
   return <TDSReceivable />;
+}
+
+export function TaxAuditLogWrapper() {
+  return <TaxAuditLog />;
 }

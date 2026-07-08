@@ -26,6 +26,7 @@ import {
   AdvanceTaxInstallmentsWrapper,
   TaxReconciliationWrapper,
   WhatYouActuallyOweWrapper,
+  TaxAuditLogWrapper,
 } from "@/components/componentWrappers/TaxAnalyticsWrappers";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import ChartSkeleton from "@/components/ui/chartskeleton";
@@ -150,6 +151,10 @@ export default function TaxAnalyticsPage() {
             <div className="h-px flex-1 bg-gray-200 ml-3" />
           </h2>
           <TaxReconciliationWrapper />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1">
+          <TaxAuditLogWrapper />
         </div>
       </div>
     </div>
