@@ -77,7 +77,7 @@ export const navigationConfig: NavigationItem[] = [
         icon: HandCoins,
       },
       {
-        label: "Tax Analytics*",
+        label: "Tax Analytics",
         href: "/dashboard/tax-analytics",
         icon: Receipt,
       },

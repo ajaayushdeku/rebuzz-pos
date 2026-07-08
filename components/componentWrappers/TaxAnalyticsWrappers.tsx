@@ -7,6 +7,7 @@ import {
 } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import TaxableVsNonTaxableItems from "@/components/dashboardComponents/taxAnalytics/TaxableVsNonTaxableItems";
 import { useTaxableBreakdown } from "@/hooks/useTaxableBreakdown";
+import { useHighestTaxItems } from "@/hooks/useHighestTaxItems";
 import TaxStats from "@/components/dashboardComponents/taxAnalytics/TaxStats";
 import HighestTaxGenerated from "@/components/dashboardComponents/taxAnalytics/HighestTaxGenerated";
 import TaxByCategory from "@/components/dashboardComponents/taxAnalytics/TaxByCategory";
@@ -75,13 +76,6 @@ const MOCK_DATA = {
       { name: "Mixed Rate Bundle", totalTaxAmount: 5200, transactionCount: 38 },
     ],
   },
-  highestTaxItems: [
-    { name: "Margherita Pizza", totalTaxAmount: 12450, transactionCount: 210 },
-    { name: "Pepperoni Pizza", totalTaxAmount: 10200, transactionCount: 178 },
-    { name: "Caesar Salad", totalTaxAmount: 6800, transactionCount: 145 },
-    { name: "Chicken Wings", totalTaxAmount: 5400, transactionCount: 98 },
-    { name: "Spaghetti Bolognese", totalTaxAmount: 4200, transactionCount: 76 },
-  ],
   categoryTax: [
     { category: "Pizza", revenue: 142000, taxAmount: 18460 },
     { category: "Salads", revenue: 68500, taxAmount: 8905 },
@@ -174,15 +168,30 @@ export function HighestTaxGeneratedWrapper({
   startDate?: string;
   endDate?: string;
 }) {
-  // TODO: Replace with real API call when endpoint is available
-  const data = MOCK_DATA.highestTaxItems;
+  const effectiveStart = startDate || getDefaultDateRange().startDate;
+  const effectiveEnd = endDate || getDefaultDateRange().endDate;
+
+  const { data, isLoading, isError } = useHighestTaxItems(
+    effectiveStart,
+    effectiveEnd,
+  );
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
       <h2 className="text-sm font-semibold text-gray-800 mb-4">
-        Highest Tax Generated (Mock Data)
+        Highest Tax Generated
       </h2>
-      <HighestTaxGenerated data={data} />
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : isError ? (
+        <p className="text-xs text-red-400 text-center py-8">
+          Failed to load tax data
+        </p>
+      ) : (
+        <HighestTaxGenerated data={data ?? []} />
+      )}
     </div>
   );
 }

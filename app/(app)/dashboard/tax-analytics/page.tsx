@@ -46,21 +46,22 @@ export default function TaxAnalyticsPage() {
   );
 
   return (
-    <div className="px-6 py-8 md:px-10">
-      <div className="w-full mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">
-              Tax Analytics (Still in Production)
-            </h1>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Overview of tax collected, refunded, and categorized
-            </p>
-          </div>
-          <DateRangeFilter value={dateRange} onChange={setDateRange} />
-        </div>
+    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+      {/* ── Header ── */}
+      <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+        <div>
+          <h1 className="font-bold text-xl md:text-2xl truncate">
+            Tax Analytics (Still in Production)
+          </h1>
 
+          <p className="text-xs text-gray-400 mt-0.5">
+            Overview of tax collected, refunded, and categorized
+          </p>
+        </div>
+        <DateRangeFilter value={dateRange} onChange={setDateRange} />
+      </div>
+
+      <div className="space-y-6 mt-6">
         <WhatYouActuallyOweWrapper />
         <VatStatsWrapper />
 

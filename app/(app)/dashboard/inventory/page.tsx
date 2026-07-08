@@ -7,6 +7,7 @@ import ProductCardGrid from "@/components/product/ProductCardGrid";
 import StockMovementChart from "@/components/product/StockMovementChart";
 import InventoryMovementAnalysis from "@/components/product/InventoryMovementAnalysis";
 import PredictiveRestockingSuggestions from "@/components/product/PredictiveRestockingSuggestions";
+import InventoryValueSummary from "@/components/product/InventoryValueSummary";
 
 export default function InventoryPage() {
   const { data: inventory, isLoading, error } = useInventoryQuery();
@@ -37,6 +38,7 @@ export default function InventoryPage() {
       <div className="w-full mx-auto">
         <InventoryHeader items={inventory} />
         <InventoryAlerts items={inventory} />
+        <InventoryValueSummary />
         <ProductCardGrid items={inventory} />
 
         <div className="flex flex-col lg:flex-row gap-4 mb-6">

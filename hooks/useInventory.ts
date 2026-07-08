@@ -76,7 +76,50 @@ async function fetchSalesByItemClient(): Promise<MergedSalesItem[]> {
     }));
 }
 
+// ── Product totals (all products of the business) ──────────────────────────
+
+export interface ProductTotals {
+  totalSellingPrice: number;
+  totalCostPrice: number;
+  productCount: number;
+}
+
+// Stock-weighted selling/cost value across EVERY product — unlike the
+// inventory query, this is not filtered by costPrice, so it reflects the whole
+// catalog. Each product's price and cost are multiplied by its stock on hand.
+async function fetchProductTotals(): Promise<ProductTotals> {
+  const res = await fetch("/api/products");
+  if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
+  const json = await res.json();
+  const raw: any[] = json?.data?.products ?? [];
+
+  let totalSellingPrice = 0;
+  let totalCostPrice = 0;
+  for (const p of raw) {
+    const price = typeof p?.price === "number" ? p.price : 0;
+    const costPrice = typeof p?.costPrice === "number" ? p.costPrice : 0;
+    const stock = typeof p?.inStock === "number" ? p.inStock : 0;
+    totalSellingPrice += price * stock;
+    totalCostPrice += costPrice * stock;
+  }
+
+  return {
+    totalSellingPrice: Math.round(totalSellingPrice * 100) / 100,
+    totalCostPrice: Math.round(totalCostPrice * 100) / 100,
+    productCount: raw.length,
+  };
+}
+
 // ── Hooks ─────────────────────────────────────────────────────────────────
+
+export function useProductTotalsQuery() {
+  return useQuery({
+    queryKey: ["product-totals"],
+    queryFn: fetchProductTotals,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
 
 export function useInventoryQuery() {
   return useQuery({

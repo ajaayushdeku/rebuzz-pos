@@ -1,8 +1,9 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { Trophy } from "lucide-react";
+import { Trophy, Receipt, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -25,31 +26,50 @@ interface TaxableItem {
   transactionCount: number;
 }
 
-const CHART_COLORS = ["#F59E0B", "#3B82F6", "#60A5FA", "#93C5FD", "#BFDBFE"];
+interface ChartDatum {
+  name: string;
+  amount: number;
+  count: number;
+  rank: number;
+}
+
+const PAGE_SIZE = 6;
+const CHART_COLORS = ["#3B82F6", "#60A5FA", "#93C5FD", "#BFDBFE"];
+const TOP_COLOR = "#F59E0B";
+
+const colorForRank = (rank: number, idx: number): string =>
+  rank === 0 ? TOP_COLOR : CHART_COLORS[idx % CHART_COLORS.length];
 
 const CustomTooltip = ({
   active,
   payload,
-  label,
 }: {
   active?: boolean;
   payload?: Payload<ValueType, NameType>[];
-  label?: string;
 }) => {
   const { currency } = useCurrency();
   if (!active || !payload?.length) return null;
+
+  const item = payload[0].payload as ChartDatum;
   return (
-    <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100">
-      <p className="text-gray-400 text-xs mb-2 font-medium">{label}</p>
-      <div className="flex items-center justify-between gap-4 text-xs">
-        <span className="text-gray-600">Tax Amount</span>
-        <span className="font-bold text-amber-600">
-          {formatCurrencySymbol(
-            payload[0].value as number,
-            currency.symbol,
-            currency.locale,
-          )}
+    <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100 min-w-44">
+      <div className="flex items-center gap-1.5 mb-2">
+        <span className="text-[10px] font-bold text-gray-300">
+          #{item.rank + 1}
         </span>
+        <p className="text-xs font-semibold text-gray-700 truncate">
+          {item.name}
+        </p>
+      </div>
+      <div className="flex items-center justify-between gap-4 text-xs mb-1">
+        <span className="text-gray-500">Tax generated</span>
+        <span className="font-bold text-amber-600">
+          {formatCurrencySymbol(item.amount, currency.symbol, currency.locale)}
+        </span>
+      </div>
+      <div className="flex items-center justify-between gap-4 text-xs">
+        <span className="text-gray-500">Order Counts</span>
+        <span className="font-semibold text-gray-700">{item.count}</span>
       </div>
     </div>
   );
@@ -57,10 +77,52 @@ const CustomTooltip = ({
 
 const HighestTaxGenerated = ({ data }: { data: TaxableItem[] }) => {
   const { currency } = useCurrency();
-  const sorted = [...data].sort((a, b) => b.totalTaxAmount - a.totalTaxAmount);
-  const top = sorted.slice(0, 5);
+  const [page, setPage] = useState(0);
 
-  if (top.length === 0) {
+  const fmt = (v: number) =>
+    formatCurrencySymbol(v, currency.symbol, currency.locale);
+
+  // Highest tax-generating items first (all items, not just the top 5).
+  const sorted = useMemo(
+    () => [...data].sort((a, b) => b.totalTaxAmount - a.totalTaxAmount),
+    [data],
+  );
+
+  // Reset to the first page whenever the dataset changes (e.g. date filter).
+  // Render-time reset avoids a setState-in-effect cascade; `sorted` is stable
+  // (memoized on `data`) so this only fires when the data actually changes.
+  const [prevSorted, setPrevSorted] = useState(sorted);
+  if (prevSorted !== sorted) {
+    setPrevSorted(sorted);
+    setPage(0);
+  }
+
+  const { totalTax, totalTransactions } = useMemo(
+    () => ({
+      totalTax: sorted.reduce((sum, i) => sum + i.totalTaxAmount, 0),
+      totalTransactions: sorted.reduce((sum, i) => sum + i.transactionCount, 0),
+    }),
+    [sorted],
+  );
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages - 1);
+
+  // Chart data for the current page, carrying the global rank + transactions.
+  const chartData = useMemo<ChartDatum[]>(
+    () =>
+      sorted
+        .slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE)
+        .map((item, idx) => ({
+          name: item.name,
+          amount: item.totalTaxAmount,
+          count: item.transactionCount,
+          rank: safePage * PAGE_SIZE + idx,
+        })),
+    [sorted, safePage],
+  );
+
+  if (sorted.length === 0) {
     return (
       <p className="text-xs text-gray-400 text-center py-8">
         No tax data available
@@ -68,37 +130,42 @@ const HighestTaxGenerated = ({ data }: { data: TaxableItem[] }) => {
     );
   }
 
-  const chartData = top.map((item) => ({
-    name: item.name,
-    amount: item.totalTaxAmount,
-  }));
-
   return (
     <div className="space-y-4">
-      {/* Winner highlight */}
-      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg p-3 border border-amber-200">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-2">
-            <Trophy size={16} className="text-amber-500" />
-            <span className="text-sm font-bold text-gray-800">
-              {top[0].name}
-            </span>
+      {/* Totals card — compact stat bar */}
+      <div className=" px-3.5 py-2.5 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="min-w-0">
+            <p className="text-[10px] uppercase tracking-wide text-gray-400 font-medium">
+              Total tax Generated
+            </p>
+            <p className="text-base font-bold text-gray-800 truncate">
+              {fmt(totalTax)}
+            </p>
           </div>
-          <span className="text-sm font-bold text-amber-600">
-            {formatCurrencySymbol(
-              top[0].totalTaxAmount,
-              currency.symbol,
-              currency.locale,
-            )}
-          </span>
         </div>
-        <p className="text-[10px] text-gray-400 ml-7">
-          {top[0].transactionCount} transactions
-        </p>
+        <div className="h-7 w-px bg-gray-100" />
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="text-right">
+            <p className="text-[10px] uppercase tracking-wide text-gray-400 font-medium">
+              Items
+            </p>
+            <p className="text-sm font-bold text-gray-700">{sorted.length}</p>
+          </div>
+          <div className="hidden sm:block h-7 w-px bg-gray-100" />
+          <div className="hidden sm:block text-right">
+            <p className="text-[10px] uppercase tracking-wide text-gray-400 font-medium">
+              Items Order Count
+            </p>
+            <p className="text-sm font-bold text-gray-700">
+              {totalTransactions}
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Bar chart */}
-      <div className="h-44">
+      {/* Horizontal bar chart (current page) */}
+      <div style={{ height: Math.max(chartData.length * 40, 120) }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={chartData}
@@ -116,7 +183,6 @@ const HighestTaxGenerated = ({ data }: { data: TaxableItem[] }) => {
               axisLine={false}
               tickLine={false}
               tick={{ fill: "#9ca3af", fontSize: 10 }}
-              width={50}
               tickFormatter={(v: number) =>
                 v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v}`
               }
@@ -136,56 +202,47 @@ const HighestTaxGenerated = ({ data }: { data: TaxableItem[] }) => {
               content={<CustomTooltip />}
               cursor={{ fill: "rgba(0,0,0,0.03)" }}
             />
-            <Bar dataKey="amount" name="Tax Amount" radius={[0, 4, 4, 0]}>
-              {chartData.map((_, index) => (
-                <Cell
-                  key={index}
-                  fill={CHART_COLORS[index % CHART_COLORS.length]}
-                />
+            <Bar dataKey="amount" name="Tax generated" radius={[0, 4, 4, 0]}>
+              {chartData.map((d, index) => (
+                <Cell key={index} fill={colorForRank(d.rank, index)} />
               ))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Ranked list */}
-      <div className="space-y-1.5">
-        {top.slice(1).map((item, i) => {
-          const maxAmount = top[0].totalTaxAmount;
-          const barWidth =
-            maxAmount > 0 ? (item.totalTaxAmount / maxAmount) * 100 : 0;
-          return (
-            <div
-              key={item.name}
-              className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <span className="w-5 text-xs font-bold text-gray-300 text-right">
-                {i + 2}
-              </span>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-sm font-medium text-gray-700 truncate">
-                    {item.name}
-                  </span>
-                  <span className="text-xs font-semibold text-gray-800 shrink-0 ml-2">
-                    {formatCurrencySymbol(
-                      item.totalTaxAmount,
-                      currency.symbol,
-                      currency.locale,
-                    )}
-                  </span>
-                </div>
-                <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-blue-400"
-                    style={{ width: `${barWidth}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-1 border-t border-gray-50">
+          <button
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={safePage === 0}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              safePage === 0
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            }`}
+          >
+            <ChevronLeft size={14} />
+            Prev
+          </button>
+          <span className="text-xs text-gray-400 font-medium">
+            Page {safePage + 1} of {totalPages} · {sorted.length} items
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={safePage >= totalPages - 1}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              safePage >= totalPages - 1
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            }`}
+          >
+            Next
+            <ChevronRight size={14} />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
