@@ -21,9 +21,15 @@ import {
   NoVATPurchasesWrapper,
   VAT20ReturnSummaryWrapper,
   FilingCalendarWrapper,
+  TDSReceivableWrapper,
+  IncomeTaxProvisionWrapper,
+  AdvanceTaxInstallmentsWrapper,
+  TaxReconciliationWrapper,
+  WhatYouActuallyOweWrapper,
 } from "@/components/componentWrappers/TaxAnalyticsWrappers";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import ChartSkeleton from "@/components/ui/chartskeleton";
+import TaxRateBreakdown from "@/components/dashboardComponents/taxAnalytics/TaxRateBreakdown";
 
 function getDefaultDateRange(): DateRangeValue {
   const today = new Date();
@@ -55,6 +61,7 @@ export default function TaxAnalyticsPage() {
           <DateRangeFilter value={dateRange} onChange={setDateRange} />
         </div>
 
+        <WhatYouActuallyOweWrapper />
         <VatStatsWrapper />
 
         {/* What Changed & Why + Taxable vs Exempt - full width */}
@@ -82,19 +89,21 @@ export default function TaxAnalyticsPage() {
           endDate={dateRange.endDate}
         />
 
+        {/* Highest Tax Generated */}
+        <HighestTaxGeneratedWrapper
+          startDate={dateRange.startDate}
+          endDate={dateRange.endDate}
+        />
+
         {/* Grid for remaining cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Highest Tax Generated */}
-          <HighestTaxGeneratedWrapper
-            startDate={dateRange.startDate}
-            endDate={dateRange.endDate}
-          />
-
           {/* Tax by Category */}
           <TaxByCategoryWrapper
             startDate={dateRange.startDate}
             endDate={dateRange.endDate}
           />
+
+          <TaxRateBreakdown />
         </div>
 
         {/* Tax on Refunded Bills - full width */}
@@ -117,6 +126,29 @@ export default function TaxAnalyticsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
           <VATUnclaimedBackWrapper />
           <NoVATPurchasesWrapper />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1">
+          <TDSReceivableWrapper />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1">
+          <h2 className="flex flex-row items-center text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">
+            Income Tax <div className="h-px flex-1 bg-gray-200 ml-3" />
+          </h2>
+          <IncomeTaxProvisionWrapper />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1">
+          <AdvanceTaxInstallmentsWrapper />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1">
+          <h2 className="flex flex-row items-center text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">
+            Reconciliation & Audit
+            <div className="h-px flex-1 bg-gray-200 ml-3" />
+          </h2>
+          <TaxReconciliationWrapper />
         </div>
       </div>
     </div>

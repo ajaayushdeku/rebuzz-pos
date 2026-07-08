@@ -23,6 +23,12 @@ import NoVATPurchases from "../dashboardComponents/taxAnalytics/NoVATPurchase";
 import VAT20ReturnSummary from "../dashboardComponents/taxAnalytics/VAT20ReturnSummary";
 import FilingCalendar from "../dashboardComponents/taxAnalytics/FilingCalendar";
 import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
+import TaxReconciliation from "../dashboardComponents/taxAnalytics/TaxReconciliation";
+import IncomeTaxProvision from "../dashboardComponents/taxAnalytics/IncomeTaxProvision";
+import AdvanceTaxInstallments from "../dashboardComponents/taxAnalytics/AdvanceTaxInstallments";
+import TDSReceivable from "../dashboardComponents/taxAnalytics/TDSReceivable";
+import TaxRateBreakdown from "../dashboardComponents/taxAnalytics/TaxRateBreakdown";
+import WhatYouActuallyOwe from "../dashboardComponents/taxAnalytics/WhatYouActuallyOwe";
 
 interface RefundBillWithTax {
   billNumber: string;
@@ -220,18 +226,22 @@ export function TaxByCategoryWrapper({
   }, [startDate, endDate]);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-      <h2 className="text-sm font-semibold text-gray-800 mb-4">
+    <>
+      {/* <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5"> */}
+      {/* <h2 className="text-sm font-semibold text-gray-800 mb-4">
         Tax by Category
-      </h2>
+      </h2> */}
       {loading ? (
         <div className="flex items-center justify-center py-8">
           <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
       ) : (
-        <TaxByCategory data={categoryData} />
+        // <TaxByCategory data={categoryData} />
+
+        <TaxByCategory />
       )}
-    </div>
+      {/* </div> */}
+    </>
   );
 }
 
@@ -292,6 +302,10 @@ export function TaxOnRefundedBillsWrapper({
   );
 }
 
+export function WhatYouActuallyOweWrapper() {
+  return <WhatYouActuallyOwe />;
+}
+
 export function VATTrendChartWrapper() {
   return <VATTrendChart />;
 }
@@ -302,6 +316,10 @@ export function MonthlyTaxTrendChartWrapper() {
 
 export function WhatChangedAndWhyWrapper() {
   return <WhatChangedAndWhy />;
+}
+
+export function TaxRatedBreakdownWrapper() {
+  return <TaxRateBreakdown />;
 }
 
 export function TDSOnRentWrapper() {
@@ -326,4 +344,20 @@ export function VAT20ReturnSummaryWrapper() {
 
 export function FilingCalendarWrapper() {
   return <FilingCalendar />;
+}
+
+export function TaxReconciliationWrapper() {
+  return <TaxReconciliation />;
+}
+
+export function IncomeTaxProvisionWrapper() {
+  return <IncomeTaxProvision />;
+}
+
+export function AdvanceTaxInstallmentsWrapper() {
+  return <AdvanceTaxInstallments />;
+}
+
+export function TDSReceivableWrapper() {
+  return <TDSReceivable />;
 }

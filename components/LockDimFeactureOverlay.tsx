@@ -1,7 +1,11 @@
 import { Lock } from "lucide-react";
 import React from "react";
 
-const LockDimFeactureOverlay = ({component_name}: {component_name: string}) => {
+const LockDimFeactureOverlay = ({
+  component_name,
+}: {
+  component_name: string;
+}) => {
   return (
     <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-black/2 backdrop-blur-[1px]">
       <div className="flex flex-col items-center gap-3 text-center px-6">
@@ -9,9 +13,11 @@ const LockDimFeactureOverlay = ({component_name}: {component_name: string}) => {
           <Lock size={22} />
         </div>
         <div>
-          <p className="text-sm font-semibold text-gray-800">Feature locked</p>
+          <p className="text-sm font-semibold text-gray-800">
+            Feature Available
+          </p>
           <p className="text-xs  mt-0.5">
-            Upgrade your plan to unlock the {component_name}
+            Please wait for the {component_name} to be available
           </p>
         </div>
       </div>

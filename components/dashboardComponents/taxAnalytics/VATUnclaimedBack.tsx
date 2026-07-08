@@ -56,8 +56,8 @@ export default function VATUnclaimedBack() {
         <p className="text-[11px] text-gray-500 leading-relaxed">
           When you buy supplies, the VAT you pay can be claimed back to lower
           your bill — but only if the purchase is logged with a valid PAN bill.
-          This is money you're owed but haven't collected. Find these invoices
-          to recover it.
+          This is money you&lsquo;re owed but haven&lsquo;t collected. Find
+          these invoices to recover it.
         </p>
       </div>
     </div>

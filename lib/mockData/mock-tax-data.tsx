@@ -194,3 +194,245 @@ export const mockFilingCalendarData: FilingCalendarData = {
     },
   ],
 };
+
+// ── Tax Reconciliation ────────────────────────────────────────────────────
+
+export type TaxReconciliationData = {
+  collected: number;
+  vatPaid: number;
+  refunds: number;
+  remitted: number;
+  stillOwed: number;
+  isReconciled: boolean;
+  reconciliationMessage: string;
+};
+
+export const mockTaxReconciliationData: TaxReconciliationData = {
+  collected: 156000,
+  vatPaid: 54600,
+  refunds: 1950,
+  remitted: 0,
+  stillOwed: 99450,
+  isReconciled: true,
+  reconciliationMessage:
+    "Collected tax matches remittances and current liabilities.",
+};
+
+// ── Advance Income Tax Installments ──────────────────────────────────────
+
+export type InstallmentStatus = "paid" | "pending" | "awaiting";
+
+export type AdvanceTaxInstallment = {
+  id: string;
+  period: string;
+  paidSoFarPct: number;
+  dueDate: string;
+  estimatedAmount: number;
+  actualPaid: number | null;
+  status: InstallmentStatus;
+};
+
+export const mockAdvanceTaxInstallments: AdvanceTaxInstallment[] = [
+  {
+    id: "1",
+    period: "Poush End",
+    paidSoFarPct: 40,
+    dueDate: "End of Poush",
+    estimatedAmount: 40000,
+    actualPaid: 40000,
+    status: "paid",
+  },
+  {
+    id: "2",
+    period: "Chaitra End",
+    paidSoFarPct: 70,
+    dueDate: "End of Chaitra",
+    estimatedAmount: 30000,
+    actualPaid: null,
+    status: "pending",
+  },
+  {
+    id: "3",
+    period: "Ashad End",
+    paidSoFarPct: 100,
+    dueDate: "End of Ashad",
+    estimatedAmount: 30000,
+    actualPaid: null,
+    status: "awaiting",
+  },
+];
+
+// ── Income Tax Provision ──────────────────────────────────────────────────
+
+export type IncomeTaxProvisionData = {
+  netProfitPreTax: number;
+  annualTaxRate: number;
+  netProfitAfterTax: number;
+  annualProvision: number;
+  monthlyAccrual: number;
+  note: string;
+};
+
+export const mockIncomeTaxProvisionData: IncomeTaxProvisionData = {
+  netProfitPreTax: 400000,
+  annualTaxRate: 25,
+  netProfitAfterTax: 300000,
+  annualProvision: 100000,
+  monthlyAccrual: 8333,
+  note: "Income tax is calculated annually but provisioned monthly. This means Rs 8,333 is the tax cost of this month's profit — your actual payment is made in advance installments or at year-end filing.",
+};
+
+// ── TDS Receivable ────────────────────────────────────────────────────────
+
+export type TDSReceivableStatus = "claimable" | "claimed";
+
+export type TDSReceivableEntry = {
+  id: string;
+  client: string;
+  period: string;
+  tdsRate: number;
+  amount: number;
+  status: TDSReceivableStatus;
+};
+
+export type TDSReceivableData = {
+  totalDeducted: number;
+  claimed: number;
+  claimable: number;
+  entries: TDSReceivableEntry[];
+};
+
+export const mockTDSReceivableData: TDSReceivableData = {
+  totalDeducted: 28500,
+  claimed: 18000,
+  claimable: 10500,
+  entries: [
+    {
+      id: "1",
+      client: "Client A - Service Fee",
+      period: "Magh 2082",
+      tdsRate: 15,
+      amount: 12000,
+      status: "claimable",
+    },
+    {
+      id: "2",
+      client: "Client B - Consulting",
+      period: "Poush 2082",
+      tdsRate: 15,
+      amount: 9500,
+      status: "claimed",
+    },
+    {
+      id: "3",
+      client: "Client C - Rental Income",
+      period: "Mangsir 2082",
+      tdsRate: 10,
+      amount: 7000,
+      status: "claimable",
+    },
+  ],
+};
+
+// ── What You Actually Owe ─────────────────────────────────────────────────
+
+export type VATOweStat = {
+  label: string;
+  value: number;
+  changePct: number;
+  trend: "up" | "down";
+  trendColor: "green" | "red";
+};
+
+export type WhatYouOweData = {
+  collected: number;
+  inputVAT: number;
+  refund: number;
+  netVATPayable: number;
+  dueDate: string;
+  stats: VATOweStat[];
+};
+
+export const mockWhatYouOweData: WhatYouOweData = {
+  collected: 156000,
+  inputVAT: 54600,
+  refund: 1950,
+  netVATPayable: 99450,
+  dueDate: "25 Falgun 2082",
+  stats: [
+    {
+      label: "Total Sales",
+      value: 1500000,
+      changePct: 12.4,
+      trend: "up",
+      trendColor: "green",
+    },
+    {
+      label: "VAT Collected",
+      value: 156000,
+      changePct: 8.5,
+      trend: "up",
+      trendColor: "red",
+    },
+    {
+      label: "VAT Paid on Purchases",
+      value: 54600,
+      changePct: 2.1,
+      trend: "up",
+      trendColor: "green",
+    },
+    {
+      label: "Net VAT Payable",
+      value: 99450,
+      changePct: 11.2,
+      trend: "up",
+      trendColor: "red",
+    },
+  ],
+};
+
+// ── Tax by Category ───────────────────────────────────────────────────────
+
+export type TaxCategoryEntry = {
+  category: string;
+  taxCollected: number;
+  color: string;
+};
+
+export const mockTaxByCategoryData: TaxCategoryEntry[] = [
+  { category: "Coffee", taxCollected: 80600, color: "#6366f1" },
+  { category: "Food", taxCollected: 40000, color: "#f59e0b" },
+  { category: "Retail", taxCollected: 22000, color: "#ec4899" },
+  { category: "Beverages", taxCollected: 0, color: "#94a3b8" },
+  { category: "Bakery", taxCollected: 39000, color: "#6366f1" },
+];
+
+// ── Tax Rate Breakdown ────────────────────────────────────────────────────
+
+export type TaxRateTier = {
+  id: string;
+  tierLabel: string;
+  taxableBase: number;
+  taxCollected: number;
+  pctOfTotal: number;
+  barColor: string;
+};
+
+export const mockTaxRateBreakdownData: TaxRateTier[] = [
+  {
+    id: "standard",
+    tierLabel: "Standard Rate (13%)",
+    taxableBase: 1200000,
+    taxCollected: 156000,
+    pctOfTotal: 100,
+    barColor: "#6366f1",
+  },
+  {
+    id: "exempt",
+    tierLabel: "Exempt / Zero Rate (0%)",
+    taxableBase: 300000,
+    taxCollected: 0,
+    pctOfTotal: 0,
+    barColor: "#e5e7eb",
+  },
+];
