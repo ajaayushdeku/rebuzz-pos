@@ -35,12 +35,22 @@ async function fetchInventoryClient(): Promise<InventoryItem[]> {
 
 // ── Sales-by-item fetcher ─────────────────────────────────────────────────
 
-async function fetchSalesByItemClient(): Promise<MergedSalesItem[]> {
-  const res = await fetch("/api/report/salesByItem");
+async function fetchSalesByItemClient(
+  startDate?: string,
+  endDate?: string,
+): Promise<MergedSalesItem[]> {
+  const params = new URLSearchParams();
+  if (startDate) params.set("startDate", startDate);
+  if (endDate) params.set("endDate", endDate);
+  const qs = params.toString();
+
+  const res = await fetch(`/api/report/salesByItem${qs ? `?${qs}` : ""}`);
 
   if (!res.ok) throw new Error(`Failed to fetch sales: ${res.status}`);
   const json = await res.json();
   const rawItems: any[] = json?.data ?? [];
+
+  console.log("Sales by items:", rawItems);
 
   if (rawItems.length === 0) return [];
 
@@ -130,10 +140,11 @@ export function useInventoryQuery() {
   });
 }
 
-export function useSalesByItemQuery() {
+export function useSalesByItemQuery(startDate?: string, endDate?: string) {
   return useQuery({
-    queryKey: SALES_KEY,
-    queryFn: fetchSalesByItemClient,
+    // Distinct cache entry per range; no args → all-time (used by the charts).
+    queryKey: [...SALES_KEY, startDate ?? null, endDate ?? null],
+    queryFn: () => fetchSalesByItemClient(startDate, endDate),
     staleTime: 60 * 1000,
     refetchOnWindowFocus: false,
   });

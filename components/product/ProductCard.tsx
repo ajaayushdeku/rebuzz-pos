@@ -65,12 +65,32 @@ const statusConfig = {
   },
 };
 
-export default function ProductCard({ item }: { item: InventoryItem }) {
+export default function ProductCard({
+  item,
+  revenue,
+  netProfit,
+  orderCount,
+}: {
+  item: InventoryItem;
+  /** Date-ranged revenue for this product (undefined = no sales data). */
+  revenue?: number;
+  /** Date-ranged net profit for this product. */
+  netProfit?: number;
+  /** Date-ranged item order count for this product. */
+  orderCount?: number;
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
   const status = getStockStatus(item);
   const barPct = getBarPercent(item);
   const cfg = statusConfig[status];
   const { currency } = useCurrency();
+
+  const fmt = (v: number) =>
+    formatCurrencySymbol(v, currency.symbol, currency.locale);
+  const hasSales =
+    revenue !== undefined ||
+    netProfit !== undefined ||
+    orderCount !== undefined;
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 relative">
@@ -91,6 +111,11 @@ export default function ProductCard({ item }: { item: InventoryItem }) {
             {item.isTaxable && (
               <span className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-medium">
                 TAXABLE
+              </span>
+            )}
+            {!item.isAvailable && (
+              <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded font-medium">
+                Unavailable
               </span>
             )}
             {status === "critical" && (
@@ -140,7 +165,7 @@ export default function ProductCard({ item }: { item: InventoryItem }) {
                 style={{ width: `${barPct}%` }}
               />
             </div>
-            <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center justify-between text-[11px]">
               <p className={`font-medium ${cfg.text}`}>
                 {status === "critical"
                   ? `Below threshold (min ${item.lowStock})`
@@ -149,7 +174,9 @@ export default function ProductCard({ item }: { item: InventoryItem }) {
                     : `Threshold: ${item.lowStock} units`}
               </p>
 
-              <p className={`text-xs font-medium ${cfg.text}`}>Max (1000)</p>
+              <p className={`text-[11px] font-medium ${cfg.text}`}>
+                Max (1000)
+              </p>
 
               {item.orderedCount > 0 && (
                 <div className="flex items-center gap-0.5 text-blue-500">
@@ -157,6 +184,42 @@ export default function ProductCard({ item }: { item: InventoryItem }) {
                   <span>{item.orderedCount} sold</span>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Date-ranged revenue, net profit & order count */}
+        {hasSales && (
+          <div className="mt-3 pt-3 border-t-[1px] border-gray-150 grid grid-cols-3 gap-2">
+            <div className="min-w-0">
+              <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
+                Revenue
+              </p>
+              <p className="text-xs font-semibold text-blue-500 truncate">
+                {fmt(revenue ?? 0)}
+              </p>
+            </div>
+
+            <div className="min-w-0 text-center">
+              <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
+                Orders
+              </p>
+              <p className="text-xs font-semibold text-violet-500 truncate">
+                {(orderCount ?? 0).toLocaleString()}
+              </p>
+            </div>
+
+            <div className="min-w-0 text-right">
+              <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
+                Net Profit
+              </p>
+              <p
+                className={`text-xs font-semibold truncate ${
+                  (netProfit ?? 0) >= 0 ? "text-emerald-600" : "text-red-500"
+                }`}
+              >
+                {fmt(netProfit ?? 0)}
+              </p>
             </div>
           </div>
         )}
@@ -168,7 +231,7 @@ export default function ProductCard({ item }: { item: InventoryItem }) {
           {/* Price details */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-400">Selling Price</span>
+              <span className="text-gray-400 ">Selling Price</span>
               <span className="font-medium text-gray-700">
                 {formatCurrencySymbol(
                   item.price,
@@ -217,7 +280,7 @@ export default function ProductCard({ item }: { item: InventoryItem }) {
           </div>
 
           {/* Badges */}
-          <div className="mt-3 flex items-center justify-end gap-2">
+          {/* <div className="mt-3 flex items-center justify-end gap-2">
             {item.isTaxable && (
               <span className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded font-medium">
                 TAXABLE
@@ -228,7 +291,7 @@ export default function ProductCard({ item }: { item: InventoryItem }) {
                 Unavailable
               </span>
             )}
-          </div>
+          </div> */}
         </div>
       )}
     </div>

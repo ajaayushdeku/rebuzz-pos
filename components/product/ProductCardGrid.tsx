@@ -4,19 +4,29 @@ import { useState, useCallback, useMemo } from "react";
 import { Search, ArrowUpDown, X } from "lucide-react";
 
 import { InventoryItem } from "@/lib/mockData/mock-inventory-data";
+import { useSalesByItemQuery } from "@/hooks/useInventory";
 import ProductCard from "./ProductCard";
 
-const INITIAL_COUNT = 8;
-const LOAD_MORE_COUNT = 8;
+const INITIAL_COUNT = 9;
+const LOAD_MORE_COUNT = 9;
 
-type SortKey =
-  | "default"
+// Item-based sorts (fields on the inventory item itself).
+type ItemSortKey =
   | "stock-desc"
   | "stock-asc"
   | "price-desc"
   | "price-asc"
   | "cost-desc"
   | "cost-asc";
+
+// Sales-based sorts (revenue / net profit for the selected range).
+type SalesSortKey =
+  | "revenue-desc"
+  | "revenue-asc"
+  | "profit-desc"
+  | "profit-asc";
+
+type SortKey = "default" | ItemSortKey | SalesSortKey;
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: "default", label: "Default" },
@@ -26,10 +36,14 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: "price-asc", label: "Selling Price: Low → High" },
   { value: "cost-desc", label: "Cost Price: High → Low" },
   { value: "cost-asc", label: "Cost Price: Low → High" },
+  { value: "revenue-desc", label: "Revenue: High → Low" },
+  { value: "revenue-asc", label: "Revenue: Low → High" },
+  { value: "profit-desc", label: "Net Profit: High → Low" },
+  { value: "profit-asc", label: "Net Profit: Low → High" },
 ];
 
 const SORT_COMPARATORS: Record<
-  Exclude<SortKey, "default">,
+  ItemSortKey,
   (a: InventoryItem, b: InventoryItem) => number
 > = {
   "stock-desc": (a, b) => b.inStock - a.inStock,
@@ -39,6 +53,13 @@ const SORT_COMPARATORS: Record<
   "cost-desc": (a, b) => b.costPrice - a.costPrice,
   "cost-asc": (a, b) => a.costPrice - b.costPrice,
 };
+
+const SALES_SORT_KEYS: SalesSortKey[] = [
+  "revenue-desc",
+  "revenue-asc",
+  "profit-desc",
+  "profit-asc",
+];
 
 /** Skeleton card shown while loading more items */
 function SkeletonCard() {
@@ -52,11 +73,36 @@ function SkeletonCard() {
   );
 }
 
-const ProductCardGrid = ({ items }: { items: InventoryItem[] }) => {
+const ProductCardGrid = ({
+  items,
+  startDate,
+  endDate,
+}: {
+  items: InventoryItem[];
+  startDate: string;
+  endDate: string;
+}) => {
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("default");
+
+  // Per-product revenue, net profit & order count for the selected range.
+  const { data: sales } = useSalesByItemQuery(startDate, endDate);
+  const salesMap = useMemo(() => {
+    const map = new Map<
+      string,
+      { revenue: number; netProfit: number; orderCount: number }
+    >();
+    for (const s of sales ?? []) {
+      map.set(s.name.toLowerCase(), {
+        revenue: s.totalRevenue ?? 0,
+        netProfit: s.netProfit ?? 0,
+        orderCount: s.count ?? 0,
+      });
+    }
+    return map;
+  }, [sales]);
 
   // Search (by name) then sort. Kept memoized so cards don't re-process on
   // unrelated re-renders.
@@ -67,8 +113,21 @@ const ProductCardGrid = ({ items }: { items: InventoryItem[] }) => {
       : items;
 
     if (sortBy === "default") return filtered;
-    return [...filtered].sort(SORT_COMPARATORS[sortBy]);
-  }, [items, search, sortBy]);
+
+    // Sales-based sorts read revenue / net profit from the range data.
+    if ((SALES_SORT_KEYS as string[]).includes(sortBy)) {
+      const metric = (item: InventoryItem) => {
+        const s = salesMap.get(item.name.toLowerCase());
+        return sortBy.startsWith("revenue")
+          ? (s?.revenue ?? 0)
+          : (s?.netProfit ?? 0);
+      };
+      const dir = sortBy.endsWith("-asc") ? 1 : -1;
+      return [...filtered].sort((a, b) => (metric(a) - metric(b)) * dir);
+    }
+
+    return [...filtered].sort(SORT_COMPARATORS[sortBy as ItemSortKey]);
+  }, [items, search, sortBy, salesMap]);
 
   // Reset the "Load More" window whenever the search or sort changes.
   const filterKey = `${search}|${sortBy}`;
@@ -161,19 +220,27 @@ const ProductCardGrid = ({ items }: { items: InventoryItem[] }) => {
       )}
 
       {/* Product Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-3">
-        {visibleItems.map((item, idx) => (
-          <div
-            key={item.id}
-            className="animate-fadeIn"
-            style={{
-              animationDelay: `${(idx % LOAD_MORE_COUNT) * 60}ms`,
-              animationFillMode: "both",
-            }}
-          >
-            <ProductCard item={item} />
-          </div>
-        ))}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-3">
+        {visibleItems.map((item, idx) => {
+          const sale = salesMap.get(item.name.toLowerCase());
+          return (
+            <div
+              key={item.id}
+              className="animate-fadeIn"
+              style={{
+                animationDelay: `${(idx % LOAD_MORE_COUNT) * 60}ms`,
+                animationFillMode: "both",
+              }}
+            >
+              <ProductCard
+                item={item}
+                revenue={sale?.revenue}
+                netProfit={sale?.netProfit}
+                orderCount={sale?.orderCount}
+              />
+            </div>
+          );
+        })}
 
         {/* Loading skeleton cards */}
         {loading &&

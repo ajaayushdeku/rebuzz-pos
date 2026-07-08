@@ -23,7 +23,7 @@ export default function StockMovementChart({
         Stock Movement Chart
       </h3>
       <p className="text-xs text-gray-400 mb-5">
-        Units sold per item – fast vs slow movers
+        Units sold per item – fast vs slow movers (Past 30days)
       </p>
 
       {chartItems.length === 0 ? (
