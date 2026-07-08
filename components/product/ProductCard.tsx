@@ -192,7 +192,7 @@ export default function ProductCard({
         {hasSales && (
           <div className="mt-3 pt-3 border-t-[1px] border-gray-150 grid grid-cols-3 gap-2">
             <div className="min-w-0">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
+              <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
                 Revenue
               </p>
               <p className="text-xs font-semibold text-blue-500 truncate">
@@ -201,16 +201,16 @@ export default function ProductCard({
             </div>
 
             <div className="min-w-0 text-center">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
+              <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
                 Orders
               </p>
-              <p className="text-xs font-semibold text-violet-500 truncate">
+              <p className="text-xs font-semibold text-violet-700 truncate">
                 {(orderCount ?? 0).toLocaleString()}
               </p>
             </div>
 
             <div className="min-w-0 text-right">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
+              <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
                 Net Profit
               </p>
               <p

@@ -7,8 +7,8 @@ import { InventoryItem } from "@/lib/mockData/mock-inventory-data";
 import { useSalesByItemQuery } from "@/hooks/useInventory";
 import ProductCard from "./ProductCard";
 
-const INITIAL_COUNT = 9;
-const LOAD_MORE_COUNT = 9;
+const INITIAL_COUNT = 6;
+const LOAD_MORE_COUNT = 6;
 
 // Item-based sorts (fields on the inventory item itself).
 type ItemSortKey =
