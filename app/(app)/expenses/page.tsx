@@ -11,6 +11,9 @@ import ExpensesByCategory from "@/components/expenses/ExpensesByCategory";
 import BudgetVsActual from "@/components/expenses/BudgetVsActual";
 import MonthlyExpenseTrend from "@/components/expenses/MonthlyExpenseTrend";
 import CashFlowTrend from "@/components/expenses/CashFlowTrend";
+import BudgetVsActualTable from "@/components/expenses/BudgetVsActualTable";
+import WhereMoneyGoes from "@/components/expenses/WhereMoneyGoes";
+import CostHealth from "@/components/expenses/CostHealth";
 
 function TrackerPage() {
   const { isLoading } = useTracker();
@@ -41,24 +44,28 @@ function TrackerPage() {
           <ExpenseIncomeForm />
         </div>
 
-        {/* Gauges + stat cards */}
+        {/* Working Components */}
+        <ExpenseTrackerStats />
+        <PurposeSummaryTables />
+        <RecentTransactions />
+
+        {/* Locked Features */}
         <ExpenseBudgetGauges />
 
-        {/* Donut + budget table — side by side */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
           <ExpensesByCategory />
           <BudgetVsActual />
         </div>
 
-        {/* Monthly stacked trend — full width */}
         <MonthlyExpenseTrend />
 
-        {/* Cash flow trend — full width */}
         <CashFlowTrend />
 
-        <ExpenseTrackerStats />
-        <PurposeSummaryTables />
-        <RecentTransactions />
+        <CostHealth />
+
+        <WhereMoneyGoes />
+
+        <BudgetVsActualTable />
       </div>
     </div>
   );

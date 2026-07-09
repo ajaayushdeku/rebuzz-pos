@@ -92,10 +92,12 @@ export default function ExpenseBudgetGauges() {
   const { gauges, stats } = mockExpenseCashFlowData;
 
   return (
-    <div className=" flex flex-col gap-4">
+    <div className="relative flex flex-col gap-4">
+      <LockDimFeactureOverlay component_name="Expensr Budget Gauges and Stat Cards" />
+
       {/* Gauges card */}
-      <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-        <LockDimFeactureOverlay component_name="Expensr Budget Gauges" />
+      <div className=" bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        {/* <LockDimFeactureOverlay component_name="Expensr Budget Gauges" /> */}
         <h3 className="text-sm font-bold text-gray-900 mb-1">
           Expense Budget Gauges
         </h3>
@@ -116,8 +118,8 @@ export default function ExpenseBudgetGauges() {
       </div>
 
       {/* 5 stat cards */}
-      <div className="relative grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <LockDimFeactureOverlay component_name="Expensr Stat Cards" />
+      <div className=" grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {/* <LockDimFeactureOverlay component_name="Expense Stat Cards" /> */}
         {stats.map((stat) => (
           <div
             key={stat.label}
