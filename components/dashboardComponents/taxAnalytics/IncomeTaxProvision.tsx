@@ -3,13 +3,17 @@
 import { Info, ArrowRight } from "lucide-react";
 import { mockIncomeTaxProvisionData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
-
-function fmtRs(v: number) {
-  return `Rs ${v.toLocaleString()}`;
-}
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 export default function IncomeTaxProvision() {
+  const { currency } = useCurrency();
+
   const d = mockIncomeTaxProvisionData;
+
+  const fmtRs = (v: number) => {
+    return formatCurrencySymbol(v, currency.symbol, currency.locale);
+  };
 
   return (
     <div className="relative bg-gray-900 rounded-2xl p-6 flex flex-col gap-5">
@@ -95,7 +99,11 @@ export default function IncomeTaxProvision() {
             Monthly Accrual
           </p>
           <p className="text-xl font-bold text-amber-400">
-            Rs {d.monthlyAccrual.toLocaleString()}
+            {formatCurrencySymbol(
+              d.monthlyAccrual,
+              currency.symbol,
+              currency.locale,
+            )}
           </p>
           <p className="text-[11px] text-gray-500 mt-1">
             Set aside each month to avoid surprises

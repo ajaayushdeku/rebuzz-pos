@@ -8,12 +8,10 @@ import type {
   AuditLogStatus,
 } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 // ── Helpers ───────────────────────────────────────────────────────────────
-
-function fmtRs(v: number) {
-  return `Rs ${v.toLocaleString()}`;
-}
 
 function exportCSV(data: AuditLogEntry[]) {
   const headers = [
@@ -119,8 +117,13 @@ const COLUMNS: {
 // ── Main component ────────────────────────────────────────────────────────
 
 export default function TaxAuditLog() {
+  const { currency } = useCurrency();
   const [sortKey, setSortKey] = useState<SortKey>("period");
   const [sortDir, setSortDir] = useState<SortDir>(null);
+
+  const fmtRs = (v: number) => {
+    return formatCurrencySymbol(v, currency.symbol, currency.locale);
+  };
 
   const handleSort = (key: SortKey) => {
     if (sortKey !== key) {
@@ -248,7 +251,7 @@ export default function TaxAuditLog() {
                       row.remitted > 0 ? "text-green-600" : "text-green-500"
                     }`}
                   >
-                    {row.remitted > 0 ? fmtRs(row.remitted) : "Rs 0"}
+                    {row.remitted > 0 ? fmtRs(row.remitted) : fmtRs(0)}
                   </span>
                 </td>
 
@@ -259,7 +262,7 @@ export default function TaxAuditLog() {
                       row.stillOwed > 0 ? "text-red-500" : "text-red-400"
                     }`}
                   >
-                    {row.stillOwed > 0 ? fmtRs(row.stillOwed) : "Rs 0"}
+                    {row.stillOwed > 0 ? fmtRs(row.stillOwed) : fmtRs(0)}
                   </span>
                 </td>
 

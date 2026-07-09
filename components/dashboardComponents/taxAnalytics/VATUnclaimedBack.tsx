@@ -3,8 +3,11 @@
 import { CreditCard, Info } from "lucide-react";
 import { mockVATUnclaimedData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 export default function VATUnclaimedBack() {
+  const { currency } = useCurrency();
   const d = mockVATUnclaimedData;
 
   return (
@@ -28,7 +31,11 @@ export default function VATUnclaimedBack() {
       {/* Big number */}
       <div className="text-center py-2">
         <p className="text-4xl font-bold text-green-600">
-          Rs {d.stillRecoverable.toLocaleString()}
+          {formatCurrencySymbol(
+            d.stillRecoverable,
+            currency.symbol,
+            currency.locale,
+          )}
         </p>
         <p className="text-xs text-gray-400 mt-1">still recoverable</p>
       </div>
@@ -36,8 +43,14 @@ export default function VATUnclaimedBack() {
       {/* Progress bar */}
       <div>
         <div className="flex items-center justify-between text-xs text-gray-500 mb-1.5">
-          <span>Claimed: Rs {d.claimed.toLocaleString()}</span>
-          <span>Eligible: Rs {d.eligible.toLocaleString()}</span>
+          <span>
+            Claimed::{" "}
+            {formatCurrencySymbol(d.claimed, currency.symbol, currency.locale)}
+          </span>
+          <span>
+            Eligible:{" "}
+            {formatCurrencySymbol(d.eligible, currency.symbol, currency.locale)}
+          </span>
         </div>
         <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
           <div

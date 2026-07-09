@@ -10,15 +10,19 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { Info } from "lucide-react";
+import { Currency, Info } from "lucide-react";
 import { mockMonthlyTaxData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 
-function fmtRs(v: number) {
-  return `Rs ${(v / 1000).toFixed(0)}k`;
-}
+const FmtRs = (v: number) => {
+  const { currency } = useCurrency();
+  return `${currency.symbol} ${formatCompactNumber(v)}`;
+};
 
 const CustomTooltip = ({ active, payload, label }: any) => {
+  const { currency } = useCurrency();
   if (!active || !payload?.length) return null;
   const total = payload.reduce((s: number, e: any) => s + (e.value ?? 0), 0);
   return (
@@ -34,14 +38,18 @@ const CustomTooltip = ({ active, payload, label }: any) => {
             <span className="text-gray-500">{entry.name}</span>
           </div>
           <span className="font-bold text-gray-800">
-            Rs {entry.value.toLocaleString()}
+            {formatCurrencySymbol(
+              entry.value,
+              currency.symbol,
+              currency.locale,
+            )}
           </span>
         </div>
       ))}
       <div className="border-t border-gray-100 mt-2 pt-1.5 flex justify-between">
         <span className="text-gray-400">Total</span>
         <span className="font-bold text-gray-900">
-          Rs {total.toLocaleString()}
+          {formatCurrencySymbol(total, currency.symbol, currency.locale)}
         </span>
       </div>
     </div>
@@ -92,7 +100,7 @@ export default function MonthlyTaxTrendChart() {
             dy={8}
           />
           <YAxis
-            tickFormatter={fmtRs}
+            tickFormatter={FmtRs}
             axisLine={false}
             tickLine={false}
             tick={{ fill: "#9ca3af", fontSize: 11 }}

@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { mockExpenseCashFlowData } from "@/lib/mockData/mock-expense-data";
 import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
+import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { useCurrency } from "@/providers/CurrencyContext";
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   DollarSign: <DollarSign size={16} />,
@@ -31,6 +33,7 @@ function RadialGauge({
   actual: number;
   budget: number;
 }) {
+  const { currency } = useCurrency();
   const clamped = Math.min(pct, 133); // cap arc at 133% for visual
   const over = pct > 100;
   const r = 40;
@@ -41,7 +44,9 @@ function RadialGauge({
   const textColor = pct > 100 ? "text-red-500" : "text-gray-900";
 
   const fmtK = (v: number) =>
-    v >= 1000 ? `$${(v / 1000).toFixed(1)}k` : `$${v}`;
+    v >= 1000
+      ? `${currency.symbol} ${formatCompactNumber(v)}`
+      : `${currency.symbol} ${v}`;
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -89,11 +94,12 @@ function RadialGauge({
 }
 
 export default function ExpenseBudgetGauges() {
+  const { currency } = useCurrency();
   const { gauges, stats } = mockExpenseCashFlowData;
 
   return (
     <div className="relative flex flex-col gap-4">
-      <LockDimFeactureOverlay component_name="Expensr Budget Gauges and Stat Cards" />
+      {/* <LockDimFeactureOverlay component_name="Expensr Budget Gauges and Stat Cards" /> */}
 
       {/* Gauges card */}
       <div className=" bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
@@ -119,7 +125,8 @@ export default function ExpenseBudgetGauges() {
 
       {/* 5 stat cards */}
       <div className=" grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        {/* <LockDimFeactureOverlay component_name="Expense Stat Cards" /> */}
+        <LockDimFeactureOverlay component_name="Expense Stat Cards" />
+
         {stats.map((stat) => (
           <div
             key={stat.label}
@@ -131,7 +138,15 @@ export default function ExpenseBudgetGauges() {
               </p>
               <span className={`${stat.color}`}>{ICON_MAP[stat.icon]}</span>
             </div>
-            <p className="text-xl font-bold text-gray-900">{stat.value}</p>
+            <p className="text-xl font-bold text-gray-900">
+              {stat.type === "number"
+                ? formatCurrencySymbol(
+                    stat.value ?? 0,
+                    currency.symbol,
+                    currency.locale,
+                  )
+                : stat.percent}
+            </p>
           </div>
         ))}
       </div>

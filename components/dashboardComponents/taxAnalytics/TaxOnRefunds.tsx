@@ -3,8 +3,11 @@
 import { RotateCcw, Tag } from "lucide-react";
 import { mockTaxOnRefundsData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 export default function TaxOnRefunds() {
+  const { currency } = useCurrency();
   const d = mockTaxOnRefundsData;
 
   return (
@@ -31,8 +34,12 @@ export default function TaxOnRefunds() {
               Refunded Value
             </p>
           </div>
-          <p className="text-xl font-bold text-gray-900">
-            Rs {d.refundedValue.toLocaleString()}
+          <p className="text-xl font-bold text-red-900">
+            {formatCurrencySymbol(
+              d.refundedValue,
+              currency.symbol,
+              currency.locale,
+            )}
           </p>
           <p className="text-[11px] text-gray-400 mt-1">
             {d.transactions} transactions
@@ -51,8 +58,8 @@ export default function TaxOnRefunds() {
           </div>
           <p className="text-xl font-bold text-green-700">
             {d.taxReversed < 0
-              ? `-Rs ${Math.abs(d.taxReversed).toLocaleString()}.00`
-              : `Rs ${d.taxReversed.toLocaleString()}`}
+              ? `- ${formatCurrencySymbol(Math.abs(d.taxReversed), currency.symbol, currency.locale)}`
+              : ` ${formatCurrencySymbol(d.taxReversed, currency.symbol, currency.locale)}`}
           </p>
           <p className="text-[11px] text-gray-400 mt-1">
             Deducted from liability

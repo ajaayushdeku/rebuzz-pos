@@ -4,6 +4,8 @@ import { AlertCircle, Calendar, CheckCircle2, Clock } from "lucide-react";
 import { mockFilingCalendarData } from "@/lib/mockData/mock-tax-data";
 import type { FilingStatus } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 const STATUS_CONFIG: Record<
   FilingStatus,
@@ -31,6 +33,7 @@ const STATUS_CONFIG: Record<
 };
 
 export default function FilingCalendar() {
+  const { currency } = useCurrency();
   const d = mockFilingCalendarData;
 
   return (
@@ -84,7 +87,12 @@ export default function FilingCalendar() {
                     <span className="text-[11px]">Due: {entry.dueDate}</span>
                   </div>
                   <span className="text-[11px] text-gray-400">
-                    Est: Rs {entry.estimatedAmount.toLocaleString()}
+                    Est:{" "}
+                    {formatCurrencySymbol(
+                      entry.estimatedAmount,
+                      currency.symbol,
+                      currency.locale,
+                    )}
                   </span>
                 </div>
               </div>

@@ -9,7 +9,9 @@ export type BudgetGauge = {
 
 export type ExpenseStatCard = {
   label: string;
-  value: string;
+  value?: number;
+  percent?: string;
+  type: string;
   icon: string;
   color: string;
 };
@@ -30,31 +32,36 @@ export const mockExpenseCashFlowData: ExpenseCashFlowData = {
   stats: [
     {
       label: "Total Expenses",
-      value: "$44,500",
+      value: 44500,
+      type: "number",
       icon: "DollarSign",
       color: "text-red-500",
     },
     {
       label: "Budgeted",
-      value: "$48,000",
+      value: 48000,
+      type: "number",
       icon: "Clock",
       color: "text-gray-500",
     },
     {
       label: "Budget Variance",
-      value: "$3,500 under",
+      value: 3500,
+      type: "number",
       icon: "TrendingDown",
       color: "text-green-500",
     },
     {
       label: "% of Revenue",
-      value: "35.7%",
+      percent: "35.7%",
+      type: "percent",
       icon: "Percent",
       color: "text-violet-500",
     },
     {
       label: "Purchase Returns",
-      value: "$1,250",
+      value: 1250,
+      type: "number",
       icon: "RefreshCcw",
       color: "text-blue-500",
     },

@@ -3,16 +3,20 @@
 import { mockWhereMoneyGoesData } from "@/lib/mockData/mock-expense-data";
 import { Zap } from "lucide-react";
 import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
-
-function fmtRs(v: number) {
-  return `Rs ${v.toLocaleString("en-IN")}`;
-}
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 export default function WhereMoneyGoes() {
+  const { currency } = useCurrency();
+
   const d = mockWhereMoneyGoesData;
 
   // Max amount for bar scaling
   const maxAmount = Math.max(...d.categories.map((c) => c.amount));
+
+  const fmtRs = (v: number) => {
+    return `${formatCurrencySymbol(v, currency.symbol, currency.locale)}`;
+  };
 
   return (
     <div className="flex flex-col gap-2">

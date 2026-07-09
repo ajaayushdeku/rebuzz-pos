@@ -2,15 +2,12 @@
 
 import { mockBudgetVsActualTableData } from "@/lib/mockData/mock-expense-data";
 import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
-function fmtRs(v: number) {
-  const abs = Math.abs(v);
-  if (abs >= 100000)
-    return `Rs ${(v / 100000).toFixed(0)},${String(v % 100000).padStart(5, "0")}`;
-  return `Rs ${v.toLocaleString("en-IN")}`;
-}
+const VarianceBadge = ({ variance }: { variance: number }) => {
+  const { currency } = useCurrency();
 
-function VarianceBadge({ variance }: { variance: number }) {
   if (variance === 0) {
     return (
       <span className="text-[11px] font-semibold text-gray-500 border border-gray-200 rounded-full px-3 py-1">
@@ -27,14 +24,24 @@ function VarianceBadge({ variance }: { variance: number }) {
           : "bg-green-50 text-green-600 border-green-200"
       }`}
     >
-      {over ? "↑" : "✓"} Rs {Math.abs(variance).toLocaleString("en-IN")}{" "}
+      {over ? "↑" : "✓"}{" "}
+      {formatCurrencySymbol(
+        Math.abs(variance),
+        currency.symbol,
+        currency.locale,
+      )}{" "}
       {over ? "over" : "under"}
     </span>
   );
-}
+};
 
 export default function BudgetVsActualTable() {
+  const { currency } = useCurrency();
   const rows = mockBudgetVsActualTableData;
+
+  const fmtRs = (v: number) => {
+    return `${formatCurrencySymbol(v, currency.symbol, currency.locale)}`;
+  };
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5">

@@ -2,10 +2,13 @@
 
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { mockTaxRateBreakdownData } from "@/lib/mockData/mock-tax-data";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
-function fmtRs(v: number) {
-  return `Rs ${v.toLocaleString()}`;
-}
+const FmtRs = (v: number) => {
+  const { currency } = useCurrency();
+  return `${formatCurrencySymbol(v, currency.symbol, currency.locale)}`;
+};
 
 export default function TaxRateBreakdown() {
   const tiers = mockTaxRateBreakdownData;
@@ -42,7 +45,7 @@ export default function TaxRateBreakdown() {
 
               {/* Taxable base */}
               <span className="text-sm text-indigo-500 font-semibold text-right">
-                {fmtRs(tier.taxableBase)}
+                {FmtRs(tier.taxableBase)}
               </span>
 
               {/* Tax collected */}
@@ -51,7 +54,7 @@ export default function TaxRateBreakdown() {
                   hasRevenue ? "text-green-600" : "text-green-500"
                 }`}
               >
-                {hasRevenue ? fmtRs(tier.taxCollected) : "Rs 0"}
+                {hasRevenue ? FmtRs(tier.taxCollected) : "Rs 0"}
               </span>
 
               {/* % + progress bar */}

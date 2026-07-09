@@ -4,6 +4,8 @@ import { FileText, Info } from "lucide-react";
 import { mockTDSReceivableData } from "@/lib/mockData/mock-tax-data";
 import type { TDSReceivableStatus } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 
 const STATUS_CONFIG: Record<
   TDSReceivableStatus,
@@ -21,12 +23,15 @@ const STATUS_CONFIG: Record<
   },
 };
 
-function fmtK(v: number) {
-  return v >= 1000 ? `Rs ${(v / 1000).toFixed(1)}k` : `Rs ${v}`;
-}
-
 export default function TDSReceivable() {
+  const { currency } = useCurrency();
   const d = mockTDSReceivableData;
+
+  function fmtK(v: number) {
+    return v >= 1000
+      ? `${currency.symbol} ${formatCompactNumber(v)}`
+      : `Rs ${v}`;
+  }
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col gap-5">
@@ -124,7 +129,11 @@ export default function TDSReceivable() {
               {/* Right — amount + badge */}
               <div className="flex items-center gap-3 shrink-0">
                 <p className="text-sm font-bold text-gray-900">
-                  Rs {entry.amount.toLocaleString()}
+                  {formatCurrencySymbol(
+                    entry.amount,
+                    currency.symbol,
+                    currency.locale,
+                  )}
                 </p>
                 <span
                   className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${cfg.badgeStyle}`}

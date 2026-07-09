@@ -12,12 +12,16 @@ import {
 } from "recharts";
 import { mockCashFlowData } from "@/lib/mockData/mock-expense-data";
 import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
-
-function fmtK(v: number) {
-  return `$${(v / 1000).toFixed(0)}k`;
-}
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 
 const CustomTooltip = ({ active, payload, label }: any) => {
+  const { currency } = useCurrency();
+
+  const fmtK = (v: number) => {
+    return `${formatCurrencySymbol(v, currency.symbol, currency.locale)}`;
+  };
+
   if (!active || !payload?.length) return null;
   const inflow = payload.find((p: any) => p.dataKey === "inflow");
   const outflow = payload.find((p: any) => p.dataKey === "outflow");
@@ -77,9 +81,16 @@ const CustomLegend = () => (
 );
 
 export default function CashFlowTrend() {
+  const { currency } = useCurrency();
+
+  const fmtK = (v: number) => {
+    return `${currency.symbol} ${formatCompactNumber(v)}`;
+  };
+
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
       <LockDimFeactureOverlay component_name="Cash Flow Trend" />
+
       <div>
         <h2 className="text-sm font-bold text-gray-900">Cash Flow Trend</h2>
         <p className="text-xs text-gray-400 mt-0.5">

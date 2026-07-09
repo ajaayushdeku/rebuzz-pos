@@ -3,13 +3,16 @@
 import { CheckCircle2 } from "lucide-react";
 import { mockTaxReconciliationData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
-
-function fmtRs(v: number) {
-  return `Rs ${v.toLocaleString()}`;
-}
+import { formatCurrencySymbol } from "@/utils/helper";
+import { useCurrency } from "@/providers/CurrencyContext";
 
 export default function TaxReconciliation() {
+  const { currency } = useCurrency();
   const d = mockTaxReconciliationData;
+
+  const fmtRs = (v: number) => {
+    return formatCurrencySymbol(v, currency.symbol, currency.locale);
+  };
 
   const steps = [
     { label: "Collected", value: fmtRs(d.collected), operator: null },

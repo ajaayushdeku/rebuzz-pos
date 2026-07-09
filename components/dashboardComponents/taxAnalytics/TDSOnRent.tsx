@@ -3,6 +3,8 @@
 import { Building2, Calendar } from "lucide-react";
 import { mockTDSOnRentData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 const STATUS_STYLES = {
   pending: {
@@ -26,6 +28,7 @@ const STATUS_STYLES = {
 };
 
 export default function TDSOnRent() {
+  const { currency } = useCurrency();
   const d = mockTDSOnRentData;
   const statusStyle = STATUS_STYLES[d.status];
 
@@ -58,7 +61,11 @@ export default function TDSOnRent() {
             </p>
           </div>
           <p className="text-sm font-bold text-gray-900">
-            Rs {d.monthlyRent.toLocaleString()}
+            {formatCurrencySymbol(
+              d.monthlyRent,
+              currency.symbol,
+              currency.locale,
+            )}
           </p>
         </div>
 
@@ -75,7 +82,11 @@ export default function TDSOnRent() {
             <p className="text-sm font-medium text-gray-700">TDS to Remit</p>
           </div>
           <p className="text-sm font-bold text-blue-600">
-            Rs {d.tdsAmount.toLocaleString()}
+            {formatCurrencySymbol(
+              d.tdsAmount,
+              currency.symbol,
+              currency.locale,
+            )}
           </p>
         </div>
 

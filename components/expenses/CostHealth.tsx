@@ -5,10 +5,8 @@ import {
   mockCostHealthData,
 } from "@/lib/mockData/mock-expense-data";
 import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
-
-function fmtRs(v: number) {
-  return `Rs ${v.toLocaleString("en-IN")}`;
-}
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 const STATUS_STYLES: Record<
   CostHealthStatus,
@@ -36,7 +34,12 @@ function getBarColor(status: CostHealthStatus): string {
 }
 
 export default function CostHealth() {
+  const { currency } = useCurrency();
   const { cards, overview } = mockCostHealthData;
+
+  const fmtRs = (v: number) => {
+    return `${formatCurrencySymbol(v, currency.symbol, currency.locale)}`;
+  };
 
   return (
     <div className="flex flex-col gap-5">

@@ -3,6 +3,8 @@
 import { FileText, Download, CheckCircle2 } from "lucide-react";
 import { mockVAT20SummaryData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 const STATUS_STYLES = {
   ready: {
@@ -66,10 +68,12 @@ function SectionLabel({ label }: { label: string }) {
 }
 
 export default function VAT20ReturnSummary() {
+  const { currency } = useCurrency();
   const d = mockVAT20SummaryData;
   const status = STATUS_STYLES[d.status];
 
-  const fmt = (v: number) => `Rs ${v.toLocaleString()}`;
+  const fmt = (v: number) =>
+    formatCurrencySymbol(v, currency.symbol, currency.locale);
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col gap-4">

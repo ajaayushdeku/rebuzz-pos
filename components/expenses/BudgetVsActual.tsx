@@ -2,6 +2,8 @@
 
 import { mockBudgetVsActualData } from "@/lib/mockData/mock-expense-data";
 import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 function getPctStyle(pct: number): string {
   if (pct >= 100) return "bg-amber-100 text-amber-700";
@@ -11,6 +13,7 @@ function getPctStyle(pct: number): string {
 }
 
 export default function BudgetVsActual() {
+  const { currency } = useCurrency();
   const rows = mockBudgetVsActualData;
 
   return (
@@ -51,12 +54,20 @@ export default function BudgetVsActual() {
 
             {/* Actual */}
             <span className="text-sm font-bold text-gray-900 text-right">
-              ${row.actual.toLocaleString()}
+              {formatCurrencySymbol(
+                row.actual,
+                currency.symbol,
+                currency.locale,
+              )}
             </span>
 
             {/* Budget */}
             <span className="text-sm text-gray-400 text-right">
-              ${row.budget.toLocaleString()}
+              {formatCurrencySymbol(
+                row.budget,
+                currency.symbol,
+                currency.locale,
+              )}
             </span>
 
             {/* Status: progress bar + % badge */}

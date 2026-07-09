@@ -3,8 +3,11 @@
 import { ShoppingBag, Info } from "lucide-react";
 import { mockNoVATPurchasesData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 export default function NoVATPurchases() {
+  const { currency } = useCurrency();
   const d = mockNoVATPurchasesData;
 
   return (
@@ -33,7 +36,11 @@ export default function NoVATPurchases() {
             No-VAT Purchases
           </p>
           <p className="text-2xl font-bold text-blue-700">
-            Rs {d.noVATPurchases.toLocaleString()}
+            {formatCurrencySymbol(
+              d.noVATPurchases,
+              currency.symbol,
+              currency.locale,
+            )}
           </p>
           <p className="text-[11px] text-gray-400 mt-1">
             {d.noVATPct}% of all buying
@@ -44,7 +51,11 @@ export default function NoVATPurchases() {
             Taxable Purchases
           </p>
           <p className="text-2xl font-bold text-gray-900">
-            Rs {d.taxablePurchases.toLocaleString()}
+            {formatCurrencySymbol(
+              d.taxablePurchases,
+              currency.symbol,
+              currency.locale,
+            )}
           </p>
           <p className="text-[11px] text-gray-400 mt-1">
             VAT claimable on these

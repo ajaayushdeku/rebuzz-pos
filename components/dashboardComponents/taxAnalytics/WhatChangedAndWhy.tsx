@@ -11,6 +11,8 @@ import {
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { mockVATComparisonData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 const DONUT_COLORS = ["#6366f1", "#e5e7eb"];
 
@@ -26,6 +28,7 @@ const CustomDonutTooltip = ({ active, payload }: any) => {
 };
 
 export default function WhatChangedAndWhy() {
+  const { currency } = useCurrency();
   const data = mockVATComparisonData;
   const [showBreakdown, setShowBreakdown] = useState(true);
 
@@ -36,7 +39,7 @@ export default function WhatChangedAndWhy() {
   ];
   const taxablePct = Math.round((data.taxableSales / data.totalSales) * 100);
   const exemptPct = 100 - taxablePct;
-  const totalSalesK = `Rs ${(data.totalSales / 1000).toFixed(0)}k`;
+  const totalSalesK = (data.totalSales / 1000).toFixed(0);
 
   return (
     <div className="space-y-4">
@@ -66,7 +69,11 @@ export default function WhatChangedAndWhy() {
               Last Month
             </p>
             <p className="text-xl font-bold text-gray-500">
-              Rs {data.lastMonth.toLocaleString()}
+              {formatCurrencySymbol(
+                data.lastMonth,
+                currency.symbol,
+                currency.locale,
+              )}
             </p>
           </div>
 
@@ -84,7 +91,12 @@ export default function WhatChangedAndWhy() {
               ) : (
                 <TrendingDown size={12} />
               )}
-              Rs {Math.abs(data.change).toLocaleString()} ({data.changePct}%)
+              {formatCurrencySymbol(
+                Math.abs(data.change),
+                currency.symbol,
+                currency.locale,
+              )}
+              ({data.changePct}%)
             </div>
           </div>
 
@@ -94,7 +106,11 @@ export default function WhatChangedAndWhy() {
               This Month
             </p>
             <p className="text-2xl font-bold text-white leading-none">
-              Rs {data.thisMonth.toLocaleString()}
+              {formatCurrencySymbol(
+                data.thisMonth,
+                currency.symbol,
+                currency.locale,
+              )}
             </p>
           </div>
         </div>
@@ -178,7 +194,13 @@ export default function WhatChangedAndWhy() {
                 <p className="text-[10px] text-gray-400 font-medium">
                   Total Sales
                 </p>
-                <p className="text-xs font-bold text-gray-900">{totalSalesK}</p>
+                <p className="text-xs font-bold text-gray-900">
+                  {formatCurrencySymbol(
+                    Number(totalSalesK),
+                    currency.symbol,
+                    currency.locale,
+                  )}
+                </p>
               </div>
             </div>
 
@@ -212,7 +234,11 @@ export default function WhatChangedAndWhy() {
                         {label}
                       </p>
                       <p className="text-[10px] text-gray-400">
-                        Rs {value.toLocaleString()}
+                        {formatCurrencySymbol(
+                          value,
+                          currency.symbol,
+                          currency.locale,
+                        )}
                       </p>
                     </div>
                   </div>

@@ -1,34 +1,37 @@
 "use client";
 
-import { Calendar, ArrowRight, Info } from "lucide-react";
+import { Calendar, ArrowRight } from "lucide-react";
 import { mockWhatYouOweData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { formatCurrencySymbol } from "@/utils/helper";
+import { useCurrency } from "@/providers/CurrencyContext";
 
 // ── Mini sparkline SVG (static illustrative) ──────────────────────────────
-function Sparkline({ color, up }: { color: "green" | "red"; up: boolean }) {
-  const stroke = color === "green" ? "#22c55e" : "#ef4444";
-  // Simple up or down path
-  const d = up
-    ? "M0,20 C10,18 20,10 30,12 S50,4 60,2"
-    : "M0,4 C10,6 20,14 30,12 S50,18 60,20";
-  return (
-    <svg width="60" height="24" viewBox="0 0 60 24" fill="none">
-      <path
-        d={d}
-        stroke={stroke}
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        fill="none"
-      />
-    </svg>
-  );
-}
+// function Sparkline({ color, up }: { color: "green" | "red"; up: boolean }) {
+//   const stroke = color === "green" ? "#22c55e" : "#ef4444";
+//   // Simple up or down path
+//   const d = up
+//     ? "M0,20 C10,18 20,10 30,12 S50,4 60,2"
+//     : "M0,4 C10,6 20,14 30,12 S50,18 60,20";
+//   return (
+//     <svg width="60" height="24" viewBox="0 0 60 24" fill="none">
+//       <path
+//         d={d}
+//         stroke={stroke}
+//         strokeWidth="2.5"
+//         strokeLinecap="round"
+//         fill="none"
+//       />
+//     </svg>
+//   );
+// }
 
-function fmtRs(v: number) {
-  return `Rs ${v.toLocaleString()}`;
-}
+// function fmtRs(v: number) {
+//   return `Rs ${v.toLocaleString()}`;
+// }
 
 export default function WhatYouActuallyOwe() {
+  const { currency } = useCurrency();
   const d = mockWhatYouOweData;
 
   return (
@@ -71,7 +74,11 @@ export default function WhatYouActuallyOwe() {
               Collected
             </p>
             <p className="text-xl font-bold text-gray-900">
-              {fmtRs(d.collected)}
+              {formatCurrencySymbol(
+                d.collected,
+                currency.symbol,
+                currency.locale,
+              )}
             </p>
           </div>
 
@@ -83,7 +90,11 @@ export default function WhatYouActuallyOwe() {
               Input VAT
             </p>
             <p className="text-xl font-bold text-gray-900">
-              {fmtRs(d.inputVAT)}
+              {formatCurrencySymbol(
+                d.inputVAT,
+                currency.symbol,
+                currency.locale,
+              )}
             </p>
           </div>
 
@@ -94,7 +105,9 @@ export default function WhatYouActuallyOwe() {
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
               Refund
             </p>
-            <p className="text-xl font-bold text-gray-900">{fmtRs(d.refund)}</p>
+            <p className="text-xl font-bold text-gray-900">
+              {formatCurrencySymbol(d.refund, currency.symbol, currency.locale)}
+            </p>
           </div>
 
           {/* Arrow */}
@@ -106,7 +119,11 @@ export default function WhatYouActuallyOwe() {
               Net VAT Payable
             </p>
             <p className="text-2xl font-bold text-white">
-              Rs {d.netVATPayable.toLocaleString()}
+              {formatCurrencySymbol(
+                d.netVATPayable,
+                currency.symbol,
+                currency.locale,
+              )}
             </p>
           </div>
         </div>

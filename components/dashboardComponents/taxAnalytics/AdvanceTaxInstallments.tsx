@@ -4,6 +4,8 @@ import { Calendar, CheckCircle2 } from "lucide-react";
 import { mockAdvanceTaxInstallments } from "@/lib/mockData/mock-tax-data";
 import type { InstallmentStatus } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 const STATUS_CONFIG: Record<
   InstallmentStatus,
@@ -27,6 +29,7 @@ const STATUS_CONFIG: Record<
 };
 
 export default function AdvanceTaxInstallments() {
+  const { currency } = useCurrency();
   const installments = mockAdvanceTaxInstallments;
 
   return (
@@ -89,7 +92,11 @@ export default function AdvanceTaxInstallments() {
                     Est. Amount
                   </p>
                   <p className="text-sm font-bold text-gray-900">
-                    Rs {inst.estimatedAmount.toLocaleString()}
+                    {formatCurrencySymbol(
+                      inst.estimatedAmount,
+                      currency.symbol,
+                      currency.locale,
+                    )}
                   </p>
                 </div>
 
@@ -97,7 +104,11 @@ export default function AdvanceTaxInstallments() {
                   <div className="flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-xl px-3 py-1.5 min-w-[90px] justify-center">
                     <CheckCircle2 size={13} className="text-green-500" />
                     <span className="text-xs font-bold text-green-700">
-                      Rs {inst.actualPaid?.toLocaleString()}
+                      {formatCurrencySymbol(
+                        inst.actualPaid ?? 0,
+                        currency.symbol,
+                        currency.locale,
+                      )}
                     </span>
                   </div>
                 ) : (

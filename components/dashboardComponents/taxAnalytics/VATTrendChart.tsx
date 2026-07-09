@@ -13,12 +13,16 @@ import {
 import { Info } from "lucide-react";
 import { mockVATTrendData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { useCurrency } from "@/providers/CurrencyContext";
 
-function fmtRs(v: number) {
-  return `Rs ${(v / 1000).toFixed(0)}k`;
-}
+const FmtRs = (v: number) => {
+  const { currency } = useCurrency();
+  return `${currency.symbol} ${formatCompactNumber(v)}`;
+};
 
 const CustomTooltip = ({ active, payload, label }: any) => {
+  const { currency } = useCurrency();
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-white border border-gray-100 rounded-xl px-4 py-3 shadow-lg text-xs min-w-44">
@@ -33,7 +37,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
             <span className="text-gray-500">{entry.name}</span>
           </div>
           <span className="font-bold text-gray-800">
-            Rs {entry.value.toLocaleString()}
+            {formatCurrencySymbol(
+              entry.value,
+              currency.symbol,
+              currency.locale,
+            )}
           </span>
         </div>
       ))}
@@ -108,7 +116,7 @@ export default function VATTrendChart() {
             dy={8}
           />
           <YAxis
-            tickFormatter={fmtRs}
+            tickFormatter={FmtRs}
             axisLine={false}
             tickLine={false}
             tick={{ fill: "#9ca3af", fontSize: 11 }}

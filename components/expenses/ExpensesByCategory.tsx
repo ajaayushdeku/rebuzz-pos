@@ -3,19 +3,26 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { mockExpensesByCategoryData } from "@/lib/mockData/mock-expense-data";
 import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 
 const CustomTooltip = ({ active, payload }: any) => {
+  const { currency } = useCurrency();
   if (!active || !payload?.length) return null;
   const d = payload[0]?.payload;
   return (
     <div className="bg-white border border-gray-100 rounded-xl px-3 py-2.5 shadow-lg text-xs">
       <p className="font-semibold text-gray-700">{d.label}</p>
-      <p className="text-gray-500 mt-0.5">${d.value.toLocaleString()}</p>
+      <p className="text-gray-500 mt-0.5">
+        {formatCurrencySymbol(d.value, currency.symbol, currency.locale)}
+      </p>
     </div>
   );
 };
 
 export default function ExpensesByCategory() {
+  const { currency } = useCurrency();
+
   const data = mockExpensesByCategoryData;
   const total = data.reduce((s, d) => s + d.value, 0);
 
@@ -61,7 +68,7 @@ export default function ExpensesByCategory() {
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
             <p className="text-[10px] text-gray-400">Total</p>
             <p className="text-sm font-bold text-gray-900">
-              ${(total / 1000).toFixed(1)}k
+              {currency.symbol} {formatCompactNumber(total / 1000)}
             </p>
           </div>
         </div>

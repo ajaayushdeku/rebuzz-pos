@@ -12,6 +12,8 @@ import {
 } from "recharts";
 import { mockMonthlyExpenseTrendData } from "@/lib/mockData/mock-expense-data";
 import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
+import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { useCurrency } from "@/providers/CurrencyContext";
 
 const CATEGORY_COLORS: Record<string, string> = {
   Labor: "#6366f1",
@@ -25,13 +27,15 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 const CATEGORIES = Object.keys(CATEGORY_COLORS);
 
-function fmtK(v: number) {
-  return `$${(v / 1000).toFixed(0)}k`;
-}
-
 const CustomTooltip = ({ active, payload, label }: any) => {
+  const { currency } = useCurrency();
   if (!active || !payload?.length) return null;
   const total = payload.reduce((s: number, p: any) => s + (p.value || 0), 0);
+
+  const fmtK = (v: number) => {
+    return `${formatCurrencySymbol(v, currency.symbol, currency.locale)}`;
+  };
+
   return (
     <div className="bg-white border border-gray-100 rounded-xl px-4 py-3 shadow-lg text-xs min-w-40">
       <p className="font-semibold text-gray-700 mb-2">{label}</p>
@@ -74,9 +78,16 @@ const CustomLegend = () => (
 );
 
 export default function MonthlyExpenseTrend() {
+  const { currency } = useCurrency();
+
+  const fmtK = (v: number) => {
+    return `${currency.symbol} ${formatCompactNumber(v)}`;
+  };
+
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
       <LockDimFeactureOverlay component_name="Monthly Expense Trend" />
+
       <div>
         <h2 className="text-sm font-bold text-gray-900">
           Monthly Expense Trend by Category
