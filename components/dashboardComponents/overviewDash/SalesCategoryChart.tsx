@@ -79,9 +79,7 @@ const CustomTooltip = ({
           <div className="flex items-center justify-between gap-4">
             {" "}
             <span className="text-xs text-gray-500 items-left">Sales</span>
-            <span className="text-xs font-bold text-gray-600">
-              {formatCurrencySymbol(sales, currency.symbol, currency.locale)}
-            </span>
+            <span className="text-xs font-bold text-gray-600">{sales}</span>
           </div>
         </div>
       </div>
@@ -92,9 +90,18 @@ const CustomTooltip = ({
 
 const SalesCategoryChart = ({ data }: SalesCategoryChartProps) => {
   const { currency } = useCurrency();
-  const totalRevenue = data.reduce((sum, d) => sum + d.totalRevenue, 0);
 
-  const coloredData: CategorySalesDataWithColor[] = data.map((entry, i) => ({
+  // Sort by totalRevenue descending, rename "No Category" → "Uncategorized"
+  const sorted = [...data]
+    .sort((a, b) => b.totalRevenue - a.totalRevenue)
+    .map((entry) => ({
+      ...entry,
+      name: entry.name === "No Category" ? "Uncategorized" : entry.name,
+    }));
+
+  const totalRevenue = sorted.reduce((sum, d) => sum + d.totalRevenue, 0);
+
+  const coloredData: CategorySalesDataWithColor[] = sorted.map((entry, i) => ({
     ...entry,
     color: COLOR_PALETTE[i % COLOR_PALETTE.length],
     percentage:
@@ -157,7 +164,7 @@ const SalesCategoryChart = ({ data }: SalesCategoryChartProps) => {
           ref={scrollRef}
           className="  mt-2
     px-2
-    h-20
+    h-22
     overflow-y-auto
     space-y-3
     scrollbar-hide
@@ -207,7 +214,8 @@ const SalesCategoryChart = ({ data }: SalesCategoryChartProps) => {
         </div>
 
         {showScrollHint && (
-          <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex justify-center bg-gradient-to-t from-white via-white/90 to-transparent pt-6 pb-1">
+          // <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex justify-center bg-gradient-to-t from-white via-white/90 to-transparent pt-8 pb-1">
+          <div className="pointer-events-none absolute bottom-[-15px] left-0 right-0 flex justify-center  pt-8 pb-1">
             <ChevronDown className="h-4 w-4 text-gray-400 animate-bounce" />
           </div>
         )}

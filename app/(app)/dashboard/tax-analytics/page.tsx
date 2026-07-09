@@ -91,22 +91,22 @@ export default function TaxAnalyticsPage() {
           endDate={dateRange.endDate}
         />
 
-        {/* Highest Tax Generated */}
-        <HighestTaxGeneratedWrapper
-          startDate={dateRange.startDate}
-          endDate={dateRange.endDate}
-        />
-
         {/* Grid for remaining cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Highest Tax Generated */}
+          <HighestTaxGeneratedWrapper
+            startDate={dateRange.startDate}
+            endDate={dateRange.endDate}
+          />
+
           {/* Tax by Category */}
           <TaxByCategoryWrapper
             startDate={dateRange.startDate}
             endDate={dateRange.endDate}
           />
-
-          <TaxRateBreakdown />
         </div>
+
+        <TaxRateBreakdown />
 
         {/* Tax on Refunded Bills - full width */}
         <TaxOnRefundedBillsWrapper

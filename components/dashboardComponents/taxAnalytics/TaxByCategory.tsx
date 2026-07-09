@@ -1,129 +1,10 @@
-// "use client";
-
-// import { useCurrency } from "@/providers/CurrencyContext";
-// import { formatCurrencySymbol } from "@/utils/helper";
-// import {
-//   BarChart,
-//   Bar,
-//   XAxis,
-//   YAxis,
-//   CartesianGrid,
-//   Tooltip,
-//   ResponsiveContainer,
-//   Rectangle,
-// } from "recharts";
-// import type { BarShapeProps } from "recharts";
-// import type {
-//   NameType,
-//   Payload,
-//   ValueType,
-// } from "recharts/types/component/DefaultTooltipContent";
-
-// interface CategoryTaxItem {
-//   category: string;
-//   revenue: number;
-//   taxAmount: number;
-// }
-
-// const CustomTooltip = ({
-//   active,
-//   payload,
-//   label,
-// }: {
-//   active?: boolean;
-//   payload?: Payload<ValueType, NameType>[];
-//   label?: string;
-// }) => {
-//   const { currency } = useCurrency();
-//   if (!active || !payload?.length) return null;
-//   const tax = payload.find((p) => p.dataKey === "taxAmount");
-//   const rev = payload.find((p) => p.dataKey === "revenue");
-//   return (
-//     <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100">
-//       <p className="text-gray-400 text-xs mb-2 font-medium">{label}</p>
-//       <div className="flex items-center justify-between gap-4 text-xs">
-//         <span className="text-gray-600">Tax</span>
-//         <span className="font-bold text-blue-600">
-//           {formatCurrencySymbol(
-//             (tax?.value as number) ?? 0,
-//             currency.symbol,
-//             currency.locale,
-//           )}
-//         </span>
-//       </div>
-//       <div className="flex items-center justify-between gap-4 text-xs mt-1">
-//         <span className="text-gray-600">Revenue</span>
-//         <span className="font-bold text-gray-800">
-//           {formatCurrencySymbol(
-//             (rev?.value as number) ?? 0,
-//             currency.symbol,
-//             currency.locale,
-//           )}
-//         </span>
-//       </div>
-//     </div>
-//   );
-// };
-
-// const TaxBar = (props: BarShapeProps) => (
-//   <Rectangle {...props} radius={[4, 4, 0, 0]} fill="#6E93FF" />
-// );
-
-// const TaxByCategory = ({ data }: { data: CategoryTaxItem[] }) => {
-//   const { currency } = useCurrency();
-
-//   if (data.length === 0) {
-//     return (
-//       <p className="text-xs text-gray-400 text-center py-8">
-//         No category tax data available
-//       </p>
-//     );
-//   }
-
-//   return (
-//     <div className="h-56">
-//       <ResponsiveContainer width="100%" height="100%">
-//         <BarChart
-//           data={data}
-//           margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
-//           barCategoryGap="25%"
-//         >
-//           <CartesianGrid vertical={false} stroke="#f3f4f6" />
-//           <XAxis
-//             dataKey="category"
-//             axisLine={false}
-//             tickLine={false}
-//             tick={{ fill: "#9ca3af", fontSize: 11 }}
-//             dy={8}
-//             interval={0}
-//             tickFormatter={(val: string) =>
-//               val.length > 10 ? val.slice(0, 9) + "…" : val
-//             }
-//           />
-//           <YAxis
-//             axisLine={false}
-//             tickLine={false}
-//             tick={{ fill: "#9ca3af", fontSize: 12 }}
-//             width={50}
-//             tickFormatter={(v: number) =>
-//               v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v}`
-//             }
-//           />
-//           <Tooltip
-//             content={<CustomTooltip />}
-//             cursor={{ fill: "rgba(0,0,0,0.03)" }}
-//           />
-//           <Bar dataKey="taxAmount" name="Tax Amount" shape={TaxBar} />
-//         </BarChart>
-//       </ResponsiveContainer>
-//     </div>
-//   );
-// };
-
-// export default TaxByCategory;
-
 "use client";
 
+import { useMemo, useState } from "react";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { CategoryTax } from "@/hooks/useTaxByCategory";
 import {
   BarChart,
   Bar,
@@ -131,85 +12,231 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Cell,
   ResponsiveContainer,
+  Cell,
 } from "recharts";
-import { mockTaxByCategoryData } from "@/lib/mockData/mock-tax-data";
-import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import type {
+  NameType,
+  Payload,
+  ValueType,
+} from "recharts/types/component/DefaultTooltipContent";
 
-function fmtRsK(v: number) {
-  return `Rs ${(v / 1000).toFixed(0)}k`;
+const BRIGHT_COLORS = [
+  "#EF4444", // bright red
+  "#10B981", // emerald
+  "#3B82F6", // blue
+  "#8B5CF6", // violet
+  "#F59E0B", // amber
+  "#EC4899", // pink
+  "#14B8A6", // teal
+  "#F97316", // orange
+  "#6366F1", // indigo
+  "#84CC16", // lime
+];
+
+interface ChartDatum {
+  name: string;
+  amount: number;
+  productCount: number;
+  rank: number;
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const PAGE_SIZE = 5;
+
+const CustomTooltip = ({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: Payload<ValueType, NameType>[];
+}) => {
+  const { currency } = useCurrency();
   if (!active || !payload?.length) return null;
+
+  const item = payload[0].payload as ChartDatum;
   return (
-    <div className="bg-white border border-gray-100 rounded-xl px-3 py-2.5 shadow-lg text-xs">
-      <p className="font-semibold text-gray-700 mb-1">{label}</p>
-      <p className="text-gray-500">
-        Tax collected:{" "}
-        <span className="font-bold text-gray-800">
-          Rs {(payload[0].value as number).toLocaleString()}
+    <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100 min-w-44">
+      <div className="flex items-center gap-1.5 mb-2">
+        <span className="text-[10px] font-bold text-gray-300">
+          #{item.rank + 1}
         </span>
-      </p>
+        <p className="text-xs font-semibold text-gray-700 truncate">
+          {item.name}
+        </p>
+      </div>
+      <div className="flex items-center justify-between gap-4 text-xs mb-1">
+        <span className="text-gray-500">Tax</span>
+        <span className="font-bold text-amber-600">
+          {formatCurrencySymbol(item.amount, currency.symbol, currency.locale)}
+        </span>
+      </div>
+      <div className="flex items-center justify-between gap-4 text-xs">
+        <span className="text-gray-500">Products</span>
+        <span className="font-semibold text-gray-700">{item.productCount}</span>
+      </div>
     </div>
   );
 };
 
-export default function TaxByCategory() {
-  return (
-    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
-      <LockDimFeactureOverlay component_name="Tax By Category" />
+const TaxByCategory = ({ data }: { data: CategoryTax[] }) => {
+  const { currency } = useCurrency();
+  const [page, setPage] = useState(0);
 
-      <div>
-        <h2 className="text-sm font-bold text-gray-900">Tax by Category</h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Tax collected broken down by product category
-        </p>
+  const fmt = (v: number) =>
+    formatCurrencySymbol(v, currency.symbol, currency.locale);
+
+  // Already sorted by totalTax descending from the hook
+  const sorted = useMemo(() => data, [data]);
+
+  // Reset to the first page whenever the dataset changes
+  const [prevSorted, setPrevSorted] = useState(sorted);
+  if (prevSorted !== sorted) {
+    setPrevSorted(sorted);
+    setPage(0);
+  }
+
+  const { totalTax, totalCategories } = useMemo(
+    () => ({
+      totalTax: sorted.reduce((sum, i) => sum + i.totalTax, 0),
+      totalCategories: sorted.length,
+    }),
+    [sorted],
+  );
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages - 1);
+
+  // Chart data for the current page, carrying the global rank + productCount + color
+  const chartData = useMemo<ChartDatum[]>(
+    () =>
+      sorted
+        .slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE)
+        .map((item, idx) => ({
+          name: item.categoryName,
+          amount: item.totalTax,
+          productCount: item.productCount,
+          rank: safePage * PAGE_SIZE + idx,
+        })),
+    [sorted, safePage],
+  );
+
+  if (sorted.length === 0) {
+    return (
+      <p className="text-xs text-gray-400 text-center py-8">
+        No category tax data available
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Totals card — compact stat bar */}
+      <div className="px-3.5 py-2.5 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="min-w-0">
+            <p className="text-[10px] uppercase tracking-wide text-gray-400 font-medium">
+              Total tax by Category
+            </p>
+            <p className="text-base font-bold text-gray-800 truncate">
+              {fmt(totalTax)}
+            </p>
+          </div>
+        </div>
+        <div className="h-7 w-px bg-gray-100" />
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="text-right">
+            <p className="text-[10px] uppercase tracking-wide text-gray-400 font-medium">
+              Categories
+            </p>
+            <p className="text-sm font-bold text-gray-700">{totalCategories}</p>
+          </div>
+        </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={240}>
-        <BarChart
-          data={mockTaxByCategoryData}
-          layout="vertical"
-          margin={{ top: 0, right: 20, left: 10, bottom: 0 }}
-          barCategoryGap="25%"
-        >
-          <CartesianGrid horizontal={false} stroke="#f3f4f6" />
+      {/* Horizontal bar chart (current page) */}
+      <div style={{ height: Math.max(chartData.length * 40, 120) }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={chartData}
+            layout="vertical"
+            margin={{ top: 0, right: 10, left: 0, bottom: 0 }}
+            barCategoryGap="20%"
+          >
+            <CartesianGrid
+              horizontal={false}
+              stroke="#f3f4f6"
+              strokeDasharray="3 3"
+            />
+            <XAxis
+              type="number"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "#9ca3af", fontSize: 10 }}
+              tickFormatter={(v: number) =>
+                v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v}`
+              }
+            />
+            <YAxis
+              dataKey="name"
+              type="category"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "#9ca3af", fontSize: 10 }}
+              width={80}
+              tickFormatter={(val: string) =>
+                val.length > 10 ? val.slice(0, 9) + "…" : val
+              }
+            />
+            <Tooltip
+              content={<CustomTooltip />}
+              cursor={{ fill: "rgba(0,0,0,0.03)" }}
+            />
+            <Bar dataKey="amount" name="Tax" radius={[0, 4, 4, 0]}>
+              {chartData.map((d, index) => (
+                <Cell
+                  key={index}
+                  fill={BRIGHT_COLORS[index % BRIGHT_COLORS.length]}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
 
-          <XAxis
-            type="number"
-            tickFormatter={fmtRsK}
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: "#9ca3af", fontSize: 11 }}
-            ticks={[0, 20000, 40000, 60000, 80000]}
-          />
-
-          <YAxis
-            type="category"
-            dataKey="category"
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: "#9ca3af", fontSize: 12 }}
-            width={68}
-          />
-
-          <Tooltip
-            content={<CustomTooltip />}
-            cursor={{ fill: "rgba(0,0,0,0.03)" }}
-          />
-
-          <Bar dataKey="taxCollected" radius={[0, 5, 5, 0]}>
-            {mockTaxByCategoryData.map((entry, i) => (
-              <Cell
-                key={i}
-                fill={entry.taxCollected === 0 ? "#e5e7eb" : entry.color}
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-1 border-t border-gray-50">
+          <button
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={safePage === 0}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              safePage === 0
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            }`}
+          >
+            <ChevronLeft size={14} />
+            Prev
+          </button>
+          <span className="text-xs text-gray-400 font-medium">
+            Page {safePage + 1} of {totalPages} · {sorted.length} categories
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={safePage >= totalPages - 1}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              safePage >= totalPages - 1
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            }`}
+          >
+            Next
+            <ChevronRight size={14} />
+          </button>
+        </div>
+      )}
     </div>
   );
-}
+};
+
+export default TaxByCategory;

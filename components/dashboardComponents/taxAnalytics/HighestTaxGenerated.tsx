@@ -33,7 +33,7 @@ interface ChartDatum {
   rank: number;
 }
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 5;
 const CHART_COLORS = ["#3B82F6", "#60A5FA", "#93C5FD", "#BFDBFE"];
 const TOP_COLOR = "#F59E0B";
 

@@ -6,6 +6,11 @@ import ExpenseIncomeForm from "@/components/expenses/ExpenseIncomeForm";
 import PurposeSummaryTables from "@/components/expenses/PurposeSummeryTables";
 import RecentTransactions from "@/components/expenses/RecentTransactions";
 import { Loader2 } from "lucide-react";
+import ExpenseBudgetGauges from "@/components/expenses/ExpenseBudgetGauges";
+import ExpensesByCategory from "@/components/expenses/ExpensesByCategory";
+import BudgetVsActual from "@/components/expenses/BudgetVsActual";
+import MonthlyExpenseTrend from "@/components/expenses/MonthlyExpenseTrend";
+import CashFlowTrend from "@/components/expenses/CashFlowTrend";
 
 function TrackerPage() {
   const { isLoading } = useTracker();
@@ -35,6 +40,21 @@ function TrackerPage() {
           </div>
           <ExpenseIncomeForm />
         </div>
+
+        {/* Gauges + stat cards */}
+        <ExpenseBudgetGauges />
+
+        {/* Donut + budget table — side by side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+          <ExpensesByCategory />
+          <BudgetVsActual />
+        </div>
+
+        {/* Monthly stacked trend — full width */}
+        <MonthlyExpenseTrend />
+
+        {/* Cash flow trend — full width */}
+        <CashFlowTrend />
 
         <ExpenseTrackerStats />
         <PurposeSummaryTables />
