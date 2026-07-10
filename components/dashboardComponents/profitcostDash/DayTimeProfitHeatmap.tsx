@@ -116,7 +116,7 @@ export default function DayTimeProfitHeatmap({
               <div
                 className="grid gap-1 mb-1"
                 style={{
-                  gridTemplateColumns: `repeat(${TIME_COLUMNS.length}, minmax(52px, 1fr))`,
+                  gridTemplateColumns: `repeat(${TIME_COLUMNS.length}, minmax(60px, 1fr))`,
                 }}
               >
                 {TIME_COLUMNS.map(({ label }) => (
@@ -135,7 +135,7 @@ export default function DayTimeProfitHeatmap({
                   key={day}
                   className="grid gap-1 mb-1 "
                   style={{
-                    gridTemplateColumns: `repeat(${TIME_COLUMNS.length}, minmax(52px, 1fr))`,
+                    gridTemplateColumns: `repeat(${TIME_COLUMNS.length}, minmax(60px, 1fr))`,
                   }}
                 >
                   {TIME_COLUMNS.map(({ label, hour }) => {
