@@ -583,3 +583,103 @@ export const mockRecurringExpenses: RecurringExpense[] = [
     logo: "💻",
   },
 ];
+
+// ── Hidden Cost Leaks ─────────────────────────────────────────────────────
+
+export type DeliveryPlatform = {
+  name: string;
+  color: string;
+  grossRevenue: number;
+  commission: number;
+  commissionPct: number;
+};
+
+export type WastageItem = {
+  label: string;
+  amount: number;
+};
+
+export type HiddenCostLeaksData = {
+  delivery: {
+    totalCommission: number;
+    blendedCutPct: number;
+    totalReached: number;
+    platforms: DeliveryPlatform[];
+  };
+  wastage: {
+    total: number;
+    foodCostPct: number;
+    targetPct: number;
+    items: WastageItem[];
+  };
+  lpgGas: {
+    total: number;
+    changePct: number;
+    changeDir: "up" | "down";
+  };
+  vatInputCredit: {
+    amount: number;
+    vatRate: number;
+    vatPaidPurchases: number;
+  };
+  serviceCharge: {
+    collected: number;
+    rate: number;
+    staffPct: number;
+    staffAmount: number;
+    mgmtPct: number;
+    mgmtAmount: number;
+  };
+};
+
+export const mockHiddenCostLeaksData: HiddenCostLeaksData = {
+  delivery: {
+    totalCommission: 95000,
+    blendedCutPct: 25,
+    totalReached: 285000,
+    platforms: [
+      {
+        name: "Foodmandu",
+        color: "#f97316",
+        grossRevenue: 220000,
+        commission: 26400,
+        commissionPct: 22,
+      },
+      {
+        name: "Pathao Food",
+        color: "#6366f1",
+        grossRevenue: 160000,
+        commission: 35200,
+        commissionPct: 22,
+      },
+    ],
+  },
+  wastage: {
+    total: 25840,
+    foodCostPct: 7.6,
+    targetPct: 5,
+    items: [
+      { label: "Milk (expired)", amount: 8200 },
+      { label: "Bakery items", amount: 9600 },
+      { label: "Vegetables", amount: 8040 },
+    ],
+  },
+  lpgGas: {
+    total: 18500,
+    changePct: 18.0,
+    changeDir: "up",
+  },
+  vatInputCredit: {
+    amount: 41500,
+    vatRate: 13,
+    vatPaidPurchases: 319231,
+  },
+  serviceCharge: {
+    collected: 98000,
+    rate: 10,
+    staffPct: 68,
+    staffAmount: 66640,
+    mgmtPct: 32,
+    mgmtAmount: 31360,
+  },
+};

@@ -14,6 +14,7 @@ import TargetTrackerCard from "../dashboardComponents/salesRevenue/TargetTracker
 import CampaignAnalysis from "../dashboardComponents/salesRevenue/CampaignAnalysis";
 import PriceChangeImpact from "../dashboardComponents/salesRevenue/PriceChangeImpact";
 import TimeWiseProductAnalysis from "../dashboardComponents/salesRevenue/TimeWiseProductAnalysis";
+import SalesRecommendationsAlerts from "../dashboardComponents/salesRevenue/SalesRecommendationsAlerts";
 import {
   mockCampaignAnalysis,
   mockPriceChangeImpact,
@@ -93,4 +94,8 @@ export function PriceChangeImpactWrapper() {
 
 export function TimeWiseProductAnalysisWrapper() {
   return <TimeWiseProductAnalysis data={mockTimeWiseProductData} />;
+}
+
+export function SalesRecommendationsAlertsWrapper() {
+  return <SalesRecommendationsAlerts />;
 }

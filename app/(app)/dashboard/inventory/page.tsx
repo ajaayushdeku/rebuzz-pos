@@ -16,6 +16,8 @@ import { useState } from "react";
 import ProductStockEditModal from "@/components/product/ProductStockEditModal";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Plus } from "lucide-react";
+import AIMenuSuggestions from "@/components/product/AIMenuSuggestions";
+import FastSlowMovingItems from "@/components/product/FastSlowMovingItems";
 
 /** Default revenue/profit window: last 30 days. */
 function getDefaultDateRange(): DateRangeValue {
@@ -61,7 +63,7 @@ export default function InventoryPage() {
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
-      <div className="w-full mx-auto">
+      <div className="w-full mx-auto flex flex-col gap-6">
         {/* <InventoryHeader items={inventory} /> */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-gray-200">
           <div>
@@ -93,13 +95,11 @@ export default function InventoryPage() {
             </Button>
           </div>
         </div>
-
         <ProductStockEditModal
           open={modalOpen}
           onOpenChange={setModalOpen}
           items={inventory}
         />
-
         <InventoryValueSummary
           startDate={dateRange.startDate}
           endDate={dateRange.endDate}
@@ -110,16 +110,16 @@ export default function InventoryPage() {
           startDate={dateRange.startDate}
           endDate={dateRange.endDate}
         />
-
-        <div className="flex flex-col lg:flex-row gap-4 mb-6">
+        <div className="flex flex-col lg:flex-row gap-4 ">
           <StockMovementChart items={sales ?? []} />
           <InventoryMovementAnalysis items={sales ?? []} />
         </div>
-
         <PredictiveRestockingSuggestions
           inventory={inventory}
           sales={sales ?? []}
         />
+        <FastSlowMovingItems />
+        <AIMenuSuggestions />;
       </div>
     </div>
   );

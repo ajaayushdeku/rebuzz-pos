@@ -23,7 +23,7 @@ const WinningStatBox = ({
     >
       {/* Background ghost icon */}
       <Icon
-        size={72}
+        size={78}
         className="absolute -top-2 -right-2 opacity-[0.12] text-white"
         aria-hidden="true"
       />

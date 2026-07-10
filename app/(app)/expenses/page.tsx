@@ -14,6 +14,7 @@ import CashFlowTrend from "@/components/expenses/CashFlowTrend";
 import BudgetVsActualTable from "@/components/expenses/BudgetVsActualTable";
 import WhereMoneyGoes from "@/components/expenses/WhereMoneyGoes";
 import CostHealth from "@/components/expenses/CostHealth";
+import HiddenCostLeaks from "@/components/expenses/HiddenCostLeaks";
 
 function TrackerPage() {
   const { isLoading } = useTracker();
@@ -66,6 +67,8 @@ function TrackerPage() {
         <WhereMoneyGoes />
 
         <BudgetVsActualTable />
+
+        <HiddenCostLeaks />
       </div>
     </div>
   );

@@ -20,6 +20,7 @@ import {
   CampaignAnalysisWrapper,
   PriceChangeImpactWrapper,
   TimeWiseProductAnalysisWrapper,
+  SalesRecommendationsAlertsWrapper,
 } from "@/components/componentWrappers/SalesRevenueWrapper";
 
 export default async function Page({
@@ -81,6 +82,13 @@ export default async function Page({
         <ChartErrorBoundary>
           <Suspense fallback={<ChartSkeleton />}>
             <SalesTrendChartWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+
+        {/* Recommendations & Alerts */}
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <SalesRecommendationsAlertsWrapper />
           </Suspense>
         </ChartErrorBoundary>
 

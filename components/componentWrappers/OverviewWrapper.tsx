@@ -23,6 +23,9 @@ import { DataPoint } from "@/lib/types/chart";
 import WeeklyRevenueChart from "../dashboardComponents/overviewDash/WeeklyRevenueChart";
 import HourlySalesTrend from "../dashboardComponents/overviewDash/HourlySalesChart";
 import PaymentMethodsChart from "../dashboardComponents/overviewDash/PaymentMethodsChart";
+import AIBusinessStory from "../dashboardComponents/overviewDash/AIBusinessStory";
+import BusinessInsightsAlerts from "../dashboardComponents/overviewDash/BusinessInsightsAlerts";
+import LowStockAlerts from "../dashboardComponents/overviewDash/LowStockAlerts";
 
 /** Format date range as "MMM d – MMM d, yyyy" or "MMM d, yyyy" if same day */
 function formatDateRange(start: string, end: string): string {
@@ -257,7 +260,7 @@ export const OverviewStatsWrapper = async ({
   });
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 my-4">
+    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 mt-4">
       <OverviewStatBoxGrid
         stats={stats}
         periodLabel={periodLabel}
@@ -276,7 +279,7 @@ export const WinningStatsWrapper = async () => {
   }));
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 my-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 ">
       {winningStats.map(({ key, ...stat }) => (
         <div key={key}>
           <WinningStatBox {...stat} />
@@ -310,7 +313,19 @@ export const WeeklyRevenueChartWrapper = async () => {
   return <WeeklyRevenueChart data={data} peakDay={peakDay} />;
 };
 
-export async function HourlySalesTrendWrapper() {
+export const HourlySalesTrendWrapper = async () => {
   const data = await getHourlySalesData();
   return <HourlySalesTrend data={data} />;
-}
+};
+
+export const AIBusinessStoryWrapper = () => {
+  return <AIBusinessStory />;
+};
+
+export const BusinessInsightsAlertsWrapper = () => {
+  return <BusinessInsightsAlerts />;
+};
+
+export const LowStockAlertsWrapper = () => {
+  return <LowStockAlerts />;
+};

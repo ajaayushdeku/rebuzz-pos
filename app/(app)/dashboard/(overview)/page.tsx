@@ -8,7 +8,10 @@ import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import { CalendarDateFilter } from "@/components/dashboardComponents/staffDash/CalendarDateFilter";
 
 import {
+  AIBusinessStoryWrapper,
+  BusinessInsightsAlertsWrapper,
   HourlySalesTrendWrapper,
+  LowStockAlertsWrapper,
   OverviewStatsWrapper,
   RecentTransactionWrapper,
   TopItemsWrapper,
@@ -44,7 +47,7 @@ const Page = async ({
     <>
       <div className="w-full ">
         {/* ACTUAL CONTENTS */}
-        <div>
+        <div className="flex flex-col gap-6">
           {/* Time Range Filter + Stats */}
           {/* <div className="flex items-center justify-between my-4">
             <h2 className="text-base font-semibold text-gray-900">
@@ -55,7 +58,7 @@ const Page = async ({
 
           <Suspense
             fallback={
-              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 my-4">
+              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 ">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <StatSkeleton key={i} />
                 ))}
@@ -73,7 +76,7 @@ const Page = async ({
 
           <Suspense
             fallback={
-              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 my-4">
+              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 ">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <StatSkeleton key={i} />
                 ))}
@@ -111,7 +114,7 @@ const Page = async ({
             </ChartErrorBoundary>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 my-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 ">
             <ChartErrorBoundary>
               <Suspense fallback={<TableSkeleton rows={3} />}>
                 <TopItemsWrapper />
@@ -120,10 +123,30 @@ const Page = async ({
 
             <ChartErrorBoundary>
               <Suspense fallback={<TableSkeleton rows={3} />}>
-                <RecentTransactionWrapper />
+                <LowStockAlertsWrapper />
               </Suspense>
             </ChartErrorBoundary>
           </div>
+
+          <ChartErrorBoundary>
+            <Suspense fallback={<TableSkeleton rows={3} />}>
+              <RecentTransactionWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
+
+          <div className="w-full flex items-center justify-center ">
+            <ChartErrorBoundary>
+              <Suspense fallback={<TableSkeleton rows={3} />}>
+                <AIBusinessStoryWrapper />
+              </Suspense>
+            </ChartErrorBoundary>
+          </div>
+
+          <ChartErrorBoundary>
+            <Suspense fallback={<TableSkeleton rows={3} />}>
+              <BusinessInsightsAlertsWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
         </div>
       </div>
     </>
