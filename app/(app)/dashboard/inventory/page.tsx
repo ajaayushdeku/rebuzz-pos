@@ -65,7 +65,7 @@ export default function InventoryPage() {
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
       <div className="w-full mx-auto flex flex-col gap-6">
         {/* <InventoryHeader items={inventory} /> */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-gray-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap- pb-4 border-b border-gray-200">
           <div>
             <h1 className="font-bold text-xl md:text-2xl truncate">
               Inventory Management
@@ -110,6 +110,8 @@ export default function InventoryPage() {
           startDate={dateRange.startDate}
           endDate={dateRange.endDate}
         />
+        <FastSlowMovingItems />
+        <AIMenuSuggestions />
         <div className="flex flex-col lg:flex-row gap-4 ">
           <StockMovementChart items={sales ?? []} />
           <InventoryMovementAnalysis items={sales ?? []} />
@@ -118,8 +120,6 @@ export default function InventoryPage() {
           inventory={inventory}
           sales={sales ?? []}
         />
-        <FastSlowMovingItems />
-        <AIMenuSuggestions />;
       </div>
     </div>
   );

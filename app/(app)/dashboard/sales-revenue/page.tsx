@@ -44,7 +44,7 @@ export default async function Page({
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
       {/* ── Header ── */}
-      <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+      <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200 mb-4">
         <div>
           <h1 className="font-bold text-xl md:text-2xl truncate">
             Sales & Revenue
@@ -69,7 +69,7 @@ export default async function Page({
       </div>
 
       {/* ── Content ── */}
-      <div className="space-y-6 mt-6">
+      <div className="flex flex-col gap-6">
         <ChartErrorBoundary>
           <Suspense fallback={<ChartSkeleton />}>
             <RevenueVsProfitChartWrapper
@@ -85,14 +85,7 @@ export default async function Page({
           </Suspense>
         </ChartErrorBoundary>
 
-        {/* Recommendations & Alerts */}
-        <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
-            <SalesRecommendationsAlertsWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 my-4">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 gap-4">
           <ChartErrorBoundary>
             <Suspense fallback={<ChartSkeleton />}>
               <ForecastCardWrapper />
@@ -106,7 +99,7 @@ export default async function Page({
           </ChartErrorBoundary>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 gap-4">
           <div className="lg:col-span-1">
             <ChartErrorBoundary>
               <Suspense fallback={<ChartSkeleton />}>
@@ -130,7 +123,7 @@ export default async function Page({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 gap-4">
           <ChartErrorBoundary>
             <Suspense fallback={<TableSkeleton rows={5} />}>
               <TopProductsWrapper startDate={startDate} endDate={endDate} />
@@ -152,7 +145,7 @@ export default async function Page({
           </ChartErrorBoundary>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 gap-4">
           <ChartErrorBoundary>
             <Suspense fallback={<ChartSkeleton />}>
               <CampaignAnalysisWrapper />
@@ -165,6 +158,13 @@ export default async function Page({
             </Suspense>
           </ChartErrorBoundary>
         </div>
+
+        {/* Recommendations & Alerts */}
+        <ChartErrorBoundary>
+          <Suspense fallback={<TableSkeleton />}>
+            <SalesRecommendationsAlertsWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
       </div>
     </div>
   );

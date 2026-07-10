@@ -111,7 +111,7 @@ const PeakDaysAnalysis = ({ data }: PeakDayDataProps) => {
   );
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full mt-4">
+    <div className="bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full">
       {/* HEADER */}
       <div className="mb-4 md:mb-6">
         <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">

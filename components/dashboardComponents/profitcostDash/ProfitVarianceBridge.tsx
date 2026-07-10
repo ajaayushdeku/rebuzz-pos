@@ -61,7 +61,7 @@ const LEGEND_ITEMS = [
 export default function ProfitVarianceBridge() {
   const { currency } = useCurrency();
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full relative select-none mt-4">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full relative select-none">
       {/* Lock overlay */}
       <LockDimFeactureOverlay component_name="Prime Variance Bridge" />
 

@@ -82,7 +82,7 @@ const LockDimFeactureOverlay = ({
         </div>
         <div>
           <p className="text-sm font-bold text-gray-100">Feature Unavailable</p>
-          <p className="text-xs text-gray-100 font-semibold mt-0.5 max-w-[200px]">
+          <p className="text-xs text-gray-100 font-semibold mt-0.5 max-w-[300px]">
             Please wait for the {component_name} to be available
           </p>
         </div>

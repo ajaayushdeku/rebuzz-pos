@@ -46,7 +46,7 @@ export default function StaffBoxContainer({
   const displayStaff = filteredList;
 
   return (
-    <div className="my-4 -mx-2 sm:mx-0">
+    <div className="mt-4 -mx-2 sm:mx-0">
       {/* Custom thin scrollbar styles */}
       <style jsx global>{`
         .scrollbar-custom {
@@ -115,7 +115,7 @@ export default function StaffBoxContainer({
         </div>
       ) : (
         /* Responsive: 2-column grid on large screens, horizontal scroll on small/medium */
-        <div className="lg:grid lg:grid-cols-4 lg:gap-3 flex gap-3 overflow-x-auto pb-3 px-2 sm:px-0 lg:overflow-visible scrollbar-custom">
+        <div className="lg:grid lg:grid-cols-3 lg:gap-3 flex gap-3 overflow-x-auto px-2 sm:px-0 lg:overflow-visible scrollbar-custom">
           {displayStaff.map((staff, idx) => (
             <div
               key={staff.staffName}

@@ -24,7 +24,7 @@ export default function ShiftAnalysisReport({
 }: ShiftAnalysisReportProps) {
   const { currency } = useCurrency();
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition duration-300 p-4 md:p-6 w-full mt-6">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition duration-300 p-4 md:p-6 w-full">
       {/* Header */}
       <div className="mb-4">
         <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">

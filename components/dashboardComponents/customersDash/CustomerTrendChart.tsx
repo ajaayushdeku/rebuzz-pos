@@ -151,7 +151,7 @@ export default function CustomerTrendChart({ data }: CustomerTrendProps) {
   );
   const { ticks: yTicks, max: yMax } = getYAxisConfig(maxStackHeight);
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full mt-4">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full">
       {isEmpty && <SampleDataBadge />}
       {/* Header */}
       <div className="mb-4 md:mb-6">

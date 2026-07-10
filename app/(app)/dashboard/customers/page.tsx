@@ -13,6 +13,7 @@ import {
   CustomerTrendChartWrapper,
   LoyaltyTierChartWrapper,
   TopCustomersWrapper,
+  ReferralTrackingWrapper,
 } from "@/components/componentWrappers/CustomersWrapper";
 
 function getPresetRange(range: string): { startDate: string; endDate: string } {
@@ -91,57 +92,65 @@ export default async function Page({
         </div>
       </div>
 
-      <Suspense
-        fallback={
-          <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <StatSkeleton key={i} />
-            ))}
+      <div className="flex flex-col gap-6">
+        <Suspense
+          fallback={
+            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <StatSkeleton key={i} />
+              ))}
+            </div>
+          }
+        >
+          <CustomerStatsWrapper
+            startDate={effectiveStartDate}
+            endDate={effectiveEndDate}
+            range={range || undefined}
+          />
+        </Suspense>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-2">
+            <ChartErrorBoundary>
+              <Suspense fallback={<ChartSkeleton />}>
+                <LoyaltyTierChartWrapper />
+              </Suspense>
+            </ChartErrorBoundary>
           </div>
-        }
-      >
-        <CustomerStatsWrapper
-          startDate={effectiveStartDate}
-          endDate={effectiveEndDate}
-          range={range || undefined}
-        />
-      </Suspense>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="md:col-span-2">
-          <ChartErrorBoundary>
-            <Suspense fallback={<ChartSkeleton />}>
-              <LoyaltyTierChartWrapper />
-            </Suspense>
-          </ChartErrorBoundary>
+          <div className="md:col-span-1">
+            <ChartErrorBoundary>
+              <Suspense fallback={<PieChartSkeleton />}>
+                <CustomerSegmentationChartWrapper />
+              </Suspense>
+            </ChartErrorBoundary>
+          </div>
         </div>
 
-        <div className="md:col-span-1">
-          <ChartErrorBoundary>
-            <Suspense fallback={<PieChartSkeleton />}>
-              <CustomerSegmentationChartWrapper />
-            </Suspense>
-          </ChartErrorBoundary>
-        </div>
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <CustomerTrendChartWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+
+        <ChartErrorBoundary>
+          <Suspense fallback={<TableSkeleton rows={5} />}>
+            <TopCustomersWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+
+        <ChartErrorBoundary>
+          <Suspense fallback={<TableSkeleton rows={5} />}>
+            <AtRiskCustomerWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+
+        <ChartErrorBoundary>
+          <Suspense fallback={<TableSkeleton rows={5} />}>
+            <ReferralTrackingWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
       </div>
-
-      <ChartErrorBoundary>
-        <Suspense fallback={<ChartSkeleton />}>
-          <CustomerTrendChartWrapper />
-        </Suspense>
-      </ChartErrorBoundary>
-
-      <ChartErrorBoundary>
-        <Suspense fallback={<TableSkeleton rows={5} />}>
-          <TopCustomersWrapper />
-        </Suspense>
-      </ChartErrorBoundary>
-
-      <ChartErrorBoundary>
-        <Suspense fallback={<TableSkeleton rows={5} />}>
-          <AtRiskCustomerWrapper />
-        </Suspense>
-      </ChartErrorBoundary>
     </div>
   );
 }

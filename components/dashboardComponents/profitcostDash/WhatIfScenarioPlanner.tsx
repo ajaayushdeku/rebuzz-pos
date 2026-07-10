@@ -66,7 +66,7 @@ export default function WhatIfScenarioPlanner() {
     projected.margin - (baselineProfit / baseScenario.revenue) * 100;
 
   return (
-    <div className="bg-slate-50 rounded-2xl border border-gray-200 shadow-sm p-4 md:p-6 w-full relative select-none mt-4">
+    <div className="bg-slate-50 rounded-2xl border border-gray-200 shadow-sm p-4 md:p-6 w-full relative select-none">
       {/* Lock overlay */}
       <LockDimFeactureOverlay component_name="What If Scenario Planning" />
 

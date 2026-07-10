@@ -13,8 +13,9 @@ import LoyaltyTierChart from "../dashboardComponents/customersDash/LoyaltyTierCh
 import CustomerTrendChart from "../dashboardComponents/customersDash/CustomerTrendChart";
 import TopCustomer from "../dashboardComponents/customersDash/TopCustomer";
 import AtRiskCustomer from "../dashboardComponents/customersDash/AtRiskCustomer";
+import ReferralTracking from "../dashboardComponents/customersDash/ReferralTrecking";
 
-function getActiveLabel(range?: string, startDate?: string): string {
+const getActiveLabel = (range?: string, startDate?: string): string => {
   if (!range && !startDate) return "Active This Month";
   switch (range) {
     case "24h":
@@ -28,9 +29,9 @@ function getActiveLabel(range?: string, startDate?: string): string {
     default:
       return startDate ? "Active (Filtered)" : "Active This Month";
   }
-}
+};
 
-export async function CustomerStatsWrapper({
+export const CustomerStatsWrapper = async ({
   startDate,
   endDate,
   range,
@@ -38,7 +39,7 @@ export async function CustomerStatsWrapper({
   startDate?: string;
   endDate?: string;
   range?: string;
-}) {
+}) => {
   const customerStat = await getCustomerStats(startDate, endDate);
   const activeLabel = getActiveLabel(range, startDate);
   const stats = CUSTOMER_STAT_CONFIG.map((config) => ({
@@ -47,35 +48,39 @@ export async function CustomerStatsWrapper({
     ...customerStat[config.key],
   }));
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 my-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 mt-4">
       {stats.map(({ key, ...stat }) => (
         <CustomerStatBox key={key} {...stat} />
       ))}
     </div>
   );
-}
+};
 
-export async function CustomerSegmentationChartWrapper() {
+export const CustomerSegmentationChartWrapper = async () => {
   const data = await getCustomerSegmentation();
   return <CustomerSegmentationChart data={data} />;
-}
+};
 
-export async function LoyaltyTierChartWrapper() {
+export const LoyaltyTierChartWrapper = async () => {
   const data = await getLoyaltyTierData();
   return <LoyaltyTierChart data={data} />;
-}
+};
 
-export async function CustomerTrendChartWrapper() {
+export const CustomerTrendChartWrapper = async () => {
   const data = await getCustomerTrendData();
   return <CustomerTrendChart data={data} />;
-}
+};
 
-export async function TopCustomersWrapper() {
+export const TopCustomersWrapper = async () => {
   const data = await getTopCustomers();
   return <TopCustomer topCustomers={data} />;
-}
+};
 
-export async function AtRiskCustomerWrapper() {
+export const AtRiskCustomerWrapper = async () => {
   const data = await getAtRiskCustomers();
   return <AtRiskCustomer riskCustomers={data} />;
-}
+};
+
+export const ReferralTrackingWrapper = () => {
+  return <ReferralTracking />;
+};

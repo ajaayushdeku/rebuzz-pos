@@ -15,6 +15,7 @@ import {
   StaffRevenueWrapper,
   StaffStatWrapper,
   LatestShiftsWrapper,
+  StaffingRecommendationsWrapper,
 } from "@/components/componentWrappers/StaffWrapper";
 
 const Page = async ({
@@ -66,47 +67,18 @@ const Page = async ({
         </div>
       </div>
 
-      <ChartErrorBoundary>
-        <Suspense
-          fallback={
-            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <StatSkeleton key={i} />
-              ))}
-            </div>
-          }
-        >
-          <StaffStatWrapper
-            range={range}
-            startDate={hasCustomDates ? startDate : undefined}
-            endDate={hasCustomDates ? endDate : undefined}
-          />
-        </Suspense>
-      </ChartErrorBoundary>
-
-      <ChartErrorBoundary>
-        <Suspense fallback={<ChartSkeleton />}>
-          <StaffSalesChartWrapper
-            range={range}
-            startDate={hasCustomDates ? startDate : undefined}
-            endDate={hasCustomDates ? endDate : undefined}
-          />
-        </Suspense>
-      </ChartErrorBoundary>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* <ChartErrorBoundary>
-          <Suspense fallback={<TableSkeleton rows={3} />}>
-            <ShiftAnalysisWrapper
-              range={range}
-              startDate={hasCustomDates ? startDate : undefined}
-              endDate={hasCustomDates ? endDate : undefined}
-            />
-          </Suspense>
-        </ChartErrorBoundary> */}
+      <div className="flex flex-col gap-6">
         <ChartErrorBoundary>
-          <Suspense fallback={<TableSkeleton rows={3} />}>
-            <LatestShiftsWrapper
+          <Suspense
+            fallback={
+              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <StatSkeleton key={i} />
+                ))}
+              </div>
+            }
+          >
+            <StaffStatWrapper
               range={range}
               startDate={hasCustomDates ? startDate : undefined}
               endDate={hasCustomDates ? endDate : undefined}
@@ -116,11 +88,48 @@ const Page = async ({
 
         <ChartErrorBoundary>
           <Suspense fallback={<ChartSkeleton />}>
-            <StaffRevenueWrapper
+            <StaffSalesChartWrapper
               range={range}
               startDate={hasCustomDates ? startDate : undefined}
               endDate={hasCustomDates ? endDate : undefined}
             />
+          </Suspense>
+        </ChartErrorBoundary>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* <ChartErrorBoundary>
+          <Suspense fallback={<TableSkeleton rows={3} />}>
+            <ShiftAnalysisWrapper
+              range={range}
+              startDate={hasCustomDates ? startDate : undefined}
+              endDate={hasCustomDates ? endDate : undefined}
+            />
+          </Suspense>
+        </ChartErrorBoundary> */}
+          <ChartErrorBoundary>
+            <Suspense fallback={<TableSkeleton rows={3} />}>
+              <LatestShiftsWrapper
+                range={range}
+                startDate={hasCustomDates ? startDate : undefined}
+                endDate={hasCustomDates ? endDate : undefined}
+              />
+            </Suspense>
+          </ChartErrorBoundary>
+
+          <ChartErrorBoundary>
+            <Suspense fallback={<ChartSkeleton />}>
+              <StaffRevenueWrapper
+                range={range}
+                startDate={hasCustomDates ? startDate : undefined}
+                endDate={hasCustomDates ? endDate : undefined}
+              />
+            </Suspense>
+          </ChartErrorBoundary>
+        </div>
+
+        <ChartErrorBoundary>
+          <Suspense fallback={<TableSkeleton />}>
+            <StaffingRecommendationsWrapper />
           </Suspense>
         </ChartErrorBoundary>
       </div>

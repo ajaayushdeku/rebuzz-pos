@@ -258,7 +258,7 @@ export default function GrossVsCOGSVsNetProfit({
     `${currency.symbol} ${formatCompactNumber(value)}`;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full mt-4">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full">
       {/* Header */}
       <div className="mb-6">
         <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">

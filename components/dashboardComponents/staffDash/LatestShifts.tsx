@@ -172,7 +172,7 @@ export default function LatestShifts({
   }, []);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition duration-300 p-4 md:p-6 w-full mt-6">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition duration-300 p-4 md:p-6 w-full">
       <div className="mb-6 flex items-center justify-between gap-3">
         <div className="mb-0">
           <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">

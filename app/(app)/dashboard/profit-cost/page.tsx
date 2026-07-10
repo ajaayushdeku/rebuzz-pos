@@ -63,146 +63,147 @@ export default async function Page({
         </div>
       </div>
 
-      <Suspense
-        fallback={
-          <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <StatSkeleton key={i} />
-            ))}
-          </div>
-        }
-      >
-        <ProfitStatsWrapper
-          startDate={effectiveStartDate}
-          endDate={effectiveEndDate}
-        />
-      </Suspense>
-
-      <ChartErrorBoundary>
-        <Suspense fallback={<ChartSkeleton />}>
-          <GrossProfitTrendChartWrapper />
-        </Suspense>
-      </ChartErrorBoundary>
-
-      <ChartErrorBoundary>
-        <Suspense fallback={<ChartSkeleton />}>
-          <GrossVsCOGSVsNetProfitWrapper
+      <div className="flex flex-col gap-6">
+        <Suspense
+          fallback={
+            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <StatSkeleton key={i} />
+              ))}
+            </div>
+          }
+        >
+          <ProfitStatsWrapper
             startDate={effectiveStartDate}
             endDate={effectiveEndDate}
           />
         </Suspense>
-      </ChartErrorBoundary>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ChartErrorBoundary>
-          <Suspense fallback={<TableSkeleton rows={4} />}>
-            <ProfitPerProductWrapper
+          <Suspense fallback={<ChartSkeleton />}>
+            <GrossProfitTrendChartWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <GrossVsCOGSVsNetProfitWrapper
               startDate={effectiveStartDate}
               endDate={effectiveEndDate}
             />
           </Suspense>
         </ChartErrorBoundary>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ChartErrorBoundary>
+            <Suspense fallback={<TableSkeleton rows={4} />}>
+              <ProfitPerProductWrapper
+                startDate={effectiveStartDate}
+                endDate={effectiveEndDate}
+              />
+            </Suspense>
+          </ChartErrorBoundary>
+
+          <ChartErrorBoundary>
+            <Suspense fallback={<TableSkeleton rows={4} />}>
+              <RefundAnalysisWrapper
+                startDate={effectiveStartDate}
+                endDate={effectiveEndDate}
+              />
+            </Suspense>
+          </ChartErrorBoundary>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ChartErrorBoundary>
+            <Suspense fallback={<ChartSkeleton />}>
+              <ProfitWaterfallBridgeWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
+
+          <ChartErrorBoundary>
+            <Suspense fallback={<ChartSkeleton />}>
+              <ProfitVarianceBridgeWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ChartErrorBoundary>
+            <Suspense fallback={<ChartSkeleton />}>
+              <MenuEngineeringMatrixWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
+
+          <ChartErrorBoundary>
+            <Suspense fallback={<ChartSkeleton />}>
+              <MarginProfitForecastWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
+        </div>
+
         <ChartErrorBoundary>
-          <Suspense fallback={<TableSkeleton rows={4} />}>
-            <RefundAnalysisWrapper
+          <Suspense fallback={<ChartSkeleton />}>
+            <RevenueFlowSankeyWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+
+        <div className="grid grid-cols-1 md:grid-cols-[5fr_3fr] gap-4 ">
+          {/* <div className="flex flex-col "> */}
+          <ChartErrorBoundary>
+            <Suspense fallback={<ChartSkeleton />}>
+              <PrimeCostTrackerWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
+
+          <ChartErrorBoundary>
+            <Suspense fallback={<ChartSkeleton />}>
+              <UnitEconomicsWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
+          {/* </div> */}
+        </div>
+
+        <div className="flex flex-col ">
+          <ChartErrorBoundary>
+            <Suspense fallback={<ChartSkeleton />}>
+              <BreakEvenMarginSafetyWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
+        </div>
+
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <DayTimeProfitHeatmapWrapper
               startDate={effectiveStartDate}
               endDate={effectiveEndDate}
             />
           </Suspense>
         </ChartErrorBoundary>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
-            <ProfitWaterfallBridgeWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
+        <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
+          <ChartErrorBoundary>
+            <Suspense fallback={<ChartSkeleton />}>
+              <WhatIfScenarioPlannerWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
 
-        <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
-            <ProfitVarianceBridgeWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
-      </div>
+          <ChartErrorBoundary>
+            <Suspense fallback={<ChartSkeleton />}>
+              <RefundBreakdownWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
-            <MenuEngineeringMatrixWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
-
-        <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
-            <MarginProfitForecastWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
-      </div>
-
-      <ChartErrorBoundary>
-        <Suspense fallback={<ChartSkeleton />}>
-          <RevenueFlowSankeyWrapper />
-        </Suspense>
-      </ChartErrorBoundary>
-
-      <div className="grid grid-cols-1 md:grid-cols-[5fr_3fr] gap-4 ">
-        {/* <div className="flex flex-col "> */}
-        <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
-            <PrimeCostTrackerWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
-
-        <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
-            <UnitEconomicsWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
-        {/* </div> */}
-      </div>
-
-      <div className="flex flex-col ">
-        <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
-            <BreakEvenMarginSafetyWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
-      </div>
-
-      <ChartErrorBoundary>
-        <Suspense fallback={<ChartSkeleton />}>
-          <DayTimeProfitHeatmapWrapper
-            startDate={effectiveStartDate}
-            endDate={effectiveEndDate}
-          />
-        </Suspense>
-      </ChartErrorBoundary>
-
-      <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
-        <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
-            <WhatIfScenarioPlannerWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
-
-        <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
-            <RefundBreakdownWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
-      </div>
-
-      {/* ── Expenses Section ── */}
-      {/* <div className="border-b border-gray-200 pb-4">
+        {/* ── Expenses Section ── */}
+        {/* <div className="border-b border-gray-200 pb-4">
         <h2 className="text-lg font-bold text-gray-900">Expenses breakdown</h2>
         <p className="text-xs text-gray-400 mt-0.5">
           Expenses and budget analysis.
         </p>
       </div> */}
 
-      {/* <Suspense
+        {/* <Suspense
         fallback={
           <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -214,7 +215,7 @@ export default async function Page({
         <ExpenseStatsWrapper />
       </Suspense> */}
 
-      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ChartErrorBoundary>
           <Suspense fallback={<PieChartSkeleton />}>
             <ExpenseByCategoryChartWrapper />
@@ -227,6 +228,7 @@ export default async function Page({
           </Suspense>
         </ChartErrorBoundary>
       </div> */}
+      </div>
     </div>
   );
 }

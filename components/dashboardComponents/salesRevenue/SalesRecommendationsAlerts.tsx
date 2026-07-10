@@ -28,84 +28,77 @@ const STYLES = {
     bg: "bg-amber-50",
     border: "border-amber-200",
     iconBg: "bg-amber-100",
-    icon: <AlertTriangle className="w-5 h-5 text-amber-500" />,
+    icon: <AlertTriangle size={15} className="text-amber-500" />,
   },
   info: {
     bg: "bg-blue-50",
     border: "border-blue-200",
     iconBg: "bg-blue-100",
-    icon: <Info className="w-5 h-5 text-blue-500" />,
+    icon: <Info size={15} className="text-blue-500" />,
   },
   success: {
     bg: "bg-emerald-50",
     border: "border-emerald-200",
     iconBg: "bg-emerald-100",
-    icon: <CheckCircle2 className="w-5 h-5 text-emerald-500" />,
+    icon: <CheckCircle2 size={15} className="text-emerald-500" />,
   },
 };
 
 export default function SalesRecommendationsAlerts() {
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
       <LockDimFeactureOverlay component_name="Recommendations & Alerts" />
 
-      <div className="p-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-            Recommendations & Alerts
-          </h2>
-
-          <p className="mt-2 text-base text-slate-500">
-            Auto-generated insights from sales performance analysis
-          </p>
+      {/* Header */}
+      <div className="flex items-start justify-between mb-5">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+            <CheckCircle2 size={15} className="text-indigo-600" />
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold text-gray-900">
+              Recommendations & Alerts
+            </h2>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Auto-generated insights from sales performance analysis
+            </p>
+          </div>
         </div>
+      </div>
 
-        {/* Recommendation List */}
-        <div className="space-y-4">
-          {RECOMMENDATIONS.map((recommendation, index) => {
-            const style = STYLES[recommendation.type];
+      {/* Recommendation List */}
+      <div className="space-y-2.5">
+        {RECOMMENDATIONS.map((recommendation, index) => {
+          const style = STYLES[recommendation.type];
 
-            return (
+          return (
+            <div
+              key={index}
+              className={`flex items-start gap-3 rounded-xl border px-3.5 py-3 transition-all duration-200 ${style.bg} ${style.border}`}
+            >
+              {/* Icon */}
               <div
-                key={index}
-                className={`
-                  flex items-center gap-4
-                  rounded-2xl
-                  border
-                  px-6
-                  py-5
-                  transition-all
-                  duration-200
-                  hover:shadow-sm
-                  ${style.bg}
-                  ${style.border}
-                `}
+                className={`flex w-7 h-7 shrink-0 items-center justify-center rounded-full ${style.iconBg}`}
               >
-                {/* Icon */}
-                <div
-                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${style.iconBg}`}
-                >
-                  {style.icon}
-                </div>
-
-                {/* Text */}
-                <p className="text-lg leading-8 text-slate-700">
-                  {recommendation.text}
-                </p>
+                {style.icon}
               </div>
-            );
-          })}
-        </div>
 
-        {/* Footer */}
-        <div className="mt-6 border-t border-slate-100 pt-5">
-          <p className="text-sm text-slate-400">
-            Recommendations are generated automatically using sales trends,
-            product profitability, customer purchasing behavior, and inventory
-            performance.
-          </p>
-        </div>
+              {/* Text */}
+              <p className="text-xs text-gray-700 leading-relaxed">
+                {recommendation.text}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Footer */}
+      <div className="mt-4 border-t border-gray-100 pt-4">
+        <p className="text-[11px] text-gray-400">
+          Recommendations are generated automatically using sales trends,
+          product profitability, customer purchasing behavior, and inventory
+          performance.
+        </p>
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import {
   getShiftAnalysisData,
   fetchAllShifts,
 } from "@/services/dashboardServices/apiStaff";
+import StaffingRecommendations from "../dashboardComponents/staffDash/StaffingRecommendations";
 
 // const RANGE_OPTIONS: { label: string; value: string }[] = [
 //   { label: "Today", value: "today" },
@@ -19,7 +20,7 @@ import {
 //   { label: "Year", value: "year" },
 // ];
 
-export async function StaffStatWrapper({
+export const StaffStatWrapper = async ({
   range = "month",
   startDate,
   endDate,
@@ -27,11 +28,11 @@ export async function StaffStatWrapper({
   range?: string;
   startDate?: string;
   endDate?: string;
-}) {
+}) => {
   const staffList = await getStaffData(range, startDate, endDate);
 
   return <StaffBoxContainer staffList={staffList} />;
-}
+};
 
 // export async function StaffOrdersChartWrapper({
 //   range = "month",
@@ -42,7 +43,7 @@ export async function StaffStatWrapper({
 //   return <StaffOrdersChart data={data} />;
 // }
 
-export async function StaffSalesChartWrapper({
+export const StaffSalesChartWrapper = async ({
   range = "month",
   startDate,
   endDate,
@@ -50,16 +51,16 @@ export async function StaffSalesChartWrapper({
   range?: string;
   startDate?: string;
   endDate?: string;
-}) {
+}) => {
   const data = await getStaffSalesPerHour(range, startDate, endDate);
   const limitedData = data.map((hourSlot) => ({
     ...hourSlot,
     staff: hourSlot.staff.slice(0, 8),
   }));
   return <StaffSalesChart data={limitedData} />;
-}
+};
 
-export async function StaffRevenueWrapper({
+export const StaffRevenueWrapper = async ({
   range = "month",
   startDate,
   endDate,
@@ -67,12 +68,12 @@ export async function StaffRevenueWrapper({
   range?: string;
   startDate?: string;
   endDate?: string;
-}) {
+}) => {
   const data = await getStaffRevenue(range, startDate, endDate);
   return <RevenueStaffChart data={data} />;
-}
+};
 
-export async function ShiftAnalysisWrapper({
+export const ShiftAnalysisWrapper = async ({
   range = "month",
   startDate,
   endDate,
@@ -80,12 +81,12 @@ export async function ShiftAnalysisWrapper({
   range?: string;
   startDate?: string;
   endDate?: string;
-}) {
+}) => {
   const shifts = await getShiftAnalysisData(range, startDate, endDate);
   return <ShiftAnalysisReport shifts={shifts} />;
-}
+};
 
-export async function LatestShiftsWrapper({
+export const LatestShiftsWrapper = async ({
   range = "month",
   startDate,
   endDate,
@@ -93,7 +94,7 @@ export async function LatestShiftsWrapper({
   range?: string;
   startDate?: string;
   endDate?: string;
-}) {
+}) => {
   const shifts = await fetchAllShifts(range, startDate, endDate);
   return (
     <LatestShifts
@@ -103,4 +104,8 @@ export async function LatestShiftsWrapper({
       endDate={endDate}
     />
   );
-}
+};
+
+export const StaffingRecommendationsWrapper = () => {
+  return <StaffingRecommendations />;
+};

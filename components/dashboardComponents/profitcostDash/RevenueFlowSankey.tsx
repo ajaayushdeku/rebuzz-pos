@@ -24,7 +24,7 @@ export default function RevenueFlowSankey() {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full relative select-none mt-4">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full relative select-none">
       {/* Lock overlay */}
       <LockDimFeactureOverlay component_name="Revenue Flow Sankey" />
 
