@@ -12,15 +12,23 @@ import toast from "react-hot-toast";
  */
 export type DiscountType = "percentage" | "fixed" | "bogo";
 
-export type OfferSegment = "all" | "at-risk" | "top-spenders" | "first-time";
+/** Audience segment id (UI only). Widened to string for the richer card grid. */
+export type OfferSegment = string;
+
+export type PromoMode = "auto" | "custom";
+export type UsesPerCustomer = "unlimited" | "once" | "limit";
+export type ItemScope = "all" | "category" | "specific";
+export type FestivalTab = "all" | "nepali" | "hindu" | "intl";
+export type ActiveHours = "all-day" | "happy" | "lunch" | "evening";
 
 export interface OfferFormState {
+  // ── Fields sent to the API (see OfferFormData) ──
   cardName: string;
   discountType: DiscountType;
   discount: number;
-  hasKey: string;
+  hasKey: string; // promo code
   keykey: string;
-  hasValueFor: string;
+  hasValueFor: string; // specific-customer search
   segment: OfferSegment;
   startDate: string;
   endDate: string;
@@ -29,6 +37,20 @@ export interface OfferFormState {
   note: string;
   enabled: boolean;
   productId: string;
+
+  // ── UI-only state (presentational, NOT sent to the API) ──
+  template: string;
+  discountKind: string;
+  promoMode: PromoMode;
+  usesPerCustomer: UsesPerCustomer;
+  usesLimit: number;
+  itemScope: ItemScope;
+  category: string;
+  sendTriggers: string[];
+  festival: string;
+  festivalTab: FestivalTab;
+  activeHours: ActiveHours;
+  channels: string[];
 }
 
 const INITIAL_STATE: OfferFormState = {
@@ -38,13 +60,27 @@ const INITIAL_STATE: OfferFormState = {
   hasKey: "",
   keykey: "",
   hasValueFor: "",
-  segment: "all",
+  segment: "",
   startDate: "",
   endDate: "",
   repeatingDays: [],
   note: "",
   enabled: true,
   productId: "",
+
+  // UI-only
+  template: "",
+  discountKind: "",
+  promoMode: "auto",
+  usesPerCustomer: "unlimited",
+  usesLimit: 1,
+  itemScope: "all",
+  category: "",
+  sendTriggers: [],
+  festival: "",
+  festivalTab: "all",
+  activeHours: "all-day",
+  channels: [],
 };
 
 // ── API mapping helpers ─────────────────────────────────────────────────────
@@ -86,6 +122,8 @@ interface OfferFormContextValue {
     key: K,
     value: OfferFormState[K],
   ) => void;
+  /** Merge several fields at once (e.g. applying a ready-made preset). */
+  patchForm: (partial: Partial<OfferFormState>) => void;
   resetForm: () => void;
   isSaving: boolean;
   handleSave: () => Promise<void>;
@@ -111,6 +149,10 @@ export function OfferFormProvider({ children }: { children: React.ReactNode }) {
     },
     [],
   );
+
+  const patchForm = useCallback((partial: Partial<OfferFormState>) => {
+    setForm((prev) => ({ ...prev, ...partial }));
+  }, []);
 
   const resetForm = useCallback(() => {
     setForm(INITIAL_STATE);
@@ -161,7 +203,7 @@ export function OfferFormProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <OfferFormContext.Provider
-      value={{ form, updateField, resetForm, isSaving, handleSave }}
+      value={{ form, updateField, patchForm, resetForm, isSaving, handleSave }}
     >
       {children}
     </OfferFormContext.Provider>

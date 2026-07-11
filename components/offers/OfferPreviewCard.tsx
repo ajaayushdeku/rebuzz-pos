@@ -1,77 +1,87 @@
 "use client";
 
+import { Eye, Tag } from "lucide-react";
 import { useOfferForm } from "@/providers/OfferFormContext";
+import { AUDIENCE_SEGMENTS } from "./OfferAudience";
 
 export default function OfferPreviewCard() {
   const { form } = useOfferForm();
 
   const discountLabel = () => {
-    if (!form.discount || form.discount <= 0) return "";
-    switch (form.discountType) {
-      case "percentage":
-        return `${form.discount}% OFF`;
-      case "fixed":
-        return `$${form.discount} OFF`;
-      case "bogo":
-        return "Buy One Get One";
-      default:
-        return "";
-    }
+    if (form.discountType === "bogo" || form.discountKind === "bogo")
+      return "B1G1";
+    if (!form.discount || form.discount <= 0) return "—";
+    return form.discountType === "percentage"
+      ? `${form.discount}%`
+      : `Rs ${form.discount}`;
   };
 
-  const campaignName = form.cardName || "Untitled Offer";
-  const discountText = discountLabel();
-  const showSchedule = form.startDate || form.endDate;
+  const reach = AUDIENCE_SEGMENTS.find((s) => s.id === form.segment)?.count;
+  const channelCount = form.channels.length;
+
+  const stats = [
+    { label: "Discount", value: discountLabel() },
+    { label: "Reach", value: reach ? reach.toLocaleString() : "—" },
+    { label: "Channels", value: channelCount > 0 ? String(channelCount) : "—" },
+  ];
 
   return (
-    <div className="bg-[#2563eb] rounded-3xl p-5 shadow-xl sticky top-6">
-      <div className="mb-5">
-        <h3 className="text-white text-xl font-bold">Offer Preview</h3>
-        <p className="text-blue-100 text-sm mt-1">
-          This is how it looks for customers
-        </p>
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
+      <div className="flex items-center gap-1.5 text-gray-400 mb-3">
+        <Eye size={13} />
+        <span className="text-[11px] font-semibold uppercase tracking-wide">
+          Customer Preview
+        </span>
       </div>
 
-      {/* Card */}
-      <div className="bg-white rounded-3xl p-5">
-        <div className="flex items-center gap-2 mb-5">
-          <span className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-medium">
-            Exclusive
-          </span>
-          <span className="text-[10px] text-gray-400 font-semibold tracking-wide">
-            REBUZZ REWARDS
-          </span>
+      {/* Gradient offer card */}
+      <div className="rounded-2xl overflow-hidden border border-gray-100">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-6 text-center text-white relative">
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 flex gap-1">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <span key={i} className="w-1 h-1 rounded-full bg-white/40" />
+            ))}
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center mx-auto mb-3">
+            <Tag size={18} />
+          </div>
+          <h3 className="text-lg font-bold leading-tight">
+            {form.cardName || "Your Offer Name"}
+          </h3>
         </div>
 
-        <h2 className="text-4xl font-bold text-gray-900 leading-tight">
-          {campaignName || "Untitled Offer"}
-        </h2>
+        <div className="px-5 py-4">
+          <p className="text-[10px] text-gray-400 font-semibold tracking-wide text-center mb-2">
+            USE PROMO CODE
+          </p>
+          <div className="border-2 border-dashed border-gray-200 rounded-xl py-2.5 text-center">
+            <span className="font-bold tracking-[4px] text-gray-700">
+              {form.hasKey || "REBUZZ"}
+            </span>
+          </div>
 
-        <p className="text-gray-500 mt-4 text-lg leading-relaxed">
-          {discountText
-            ? `Enjoy ${discountText} on your next visit!`
-            : "Set a discount value to preview"}
-        </p>
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-2 mt-4 mb-4">
+            {stats.map((s) => (
+              <div key={s.label} className="text-center">
+                <p className="text-[9px] uppercase tracking-wide text-gray-400 font-semibold">
+                  {s.label}
+                </p>
+                <p className="text-sm font-bold text-gray-800 mt-0.5">
+                  {s.value}
+                </p>
+              </div>
+            ))}
+          </div>
 
-        {/* Coupon */}
-        <div className="mt-6 border-2 border-dashed border-gray-300 rounded-2xl h-16 flex items-center justify-center">
-          <p className="font-bold tracking-[4px] text-gray-400">
-            CODE: {form.hasKey || "REBUZZ24"}
+          <div className="w-full h-11 rounded-xl bg-gray-900 text-white text-sm font-semibold flex items-center justify-center">
+            Claim Offer
+          </div>
+          <p className="text-[10px] text-gray-400 text-center mt-2">
+            preview only — not a button
           </p>
         </div>
-
-        <button className="w-full h-14 bg-[#0f172a] text-white rounded-2xl font-semibold mt-6 hover:opacity-90 transition">
-          Claim Offer Now
-        </button>
       </div>
-
-      {/* Schedule info */}
-      {showSchedule && (
-        <div className="mt-4 text-center text-blue-100 text-xs">
-          {form.startDate && <span>From {form.startDate} </span>}
-          {form.endDate && <span>until {form.endDate}</span>}
-        </div>
-      )}
     </div>
   );
 }

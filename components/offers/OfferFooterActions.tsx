@@ -1,29 +1,27 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
 import { useOfferForm } from "@/providers/OfferFormContext";
 
 export default function OfferFooterActions() {
-  const { resetForm, handleSave, isSaving } = useOfferForm();
+  const { handleSave, isSaving } = useOfferForm();
 
   return (
-    <div className="flex items-center justify-end gap-4 pt-6">
-      <button
-        type="button"
-        onClick={resetForm}
-        className="h-12 px-5 rounded-xl border border-gray-200 bg-white text-gray-600 flex items-center gap-2 hover:bg-gray-50 transition"
-      >
-        <Trash2 size={16} />
-        Discard
-      </button>
-
+    <div className="space-y-2">
       <button
         type="button"
         onClick={handleSave}
         disabled={isSaving}
-        className="h-12 px-6 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition disabled:opacity-50"
+        className="w-full h-12 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition disabled:opacity-50"
       >
-        {isSaving ? "Saving..." : "Save & Exit"}
+        {isSaving ? "Publishing..." : "Publish offer"}
+      </button>
+      <button
+        type="button"
+        onClick={() => toast.success("Saved as draft")}
+        className="w-full h-10 rounded-xl text-sm font-medium text-gray-500 hover:text-gray-700 transition"
+      >
+        Save as draft
       </button>
     </div>
   );
