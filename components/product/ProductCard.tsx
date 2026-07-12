@@ -139,11 +139,13 @@ export default function ProductCard({
               {item.name}
             </h3>
             <div className="flex items-center gap-1.5 shrink-0 ml-2">
-              <span
-                className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cfg.badge}`}
-              >
-                {cfg.label}
-              </span>
+              {item.usesStocks && (
+                <span
+                  className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cfg.badge}`}
+                >
+                  {cfg.label}
+                </span>
+              )}
               {item.isTaxable && (
                 <span className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-medium">
                   TAXABLE
