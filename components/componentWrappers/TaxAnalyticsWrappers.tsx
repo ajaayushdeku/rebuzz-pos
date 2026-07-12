@@ -9,7 +9,6 @@ import TaxableVsNonTaxableItems from "@/components/dashboardComponents/taxAnalyt
 import { useTaxableBreakdown } from "@/hooks/useTaxableBreakdown";
 import { useHighestTaxItems } from "@/hooks/useHighestTaxItems";
 import { useTaxByCategory } from "@/hooks/useTaxByCategory";
-import TaxStats from "@/components/dashboardComponents/taxAnalytics/TaxStats";
 import HighestTaxGenerated from "@/components/dashboardComponents/taxAnalytics/HighestTaxGenerated";
 import TaxByCategory from "@/components/dashboardComponents/taxAnalytics/TaxByCategory";
 import TaxOnRefundedBills from "@/components/dashboardComponents/taxAnalytics/TaxOnRefundedBills";
@@ -49,44 +48,6 @@ function getDefaultDateRange(): DateRangeValue {
     .split("T")[0];
   return { startDate: start, endDate: end };
 }
-
-// Mock data for components that don't have API endpoints yet
-const MOCK_DATA = {
-  taxableBreakdown: {
-    taxableRevenue: 425000,
-    taxableTaxAmount: 55250,
-    nonTaxableRevenue: 125000,
-  },
-  taxStats: {
-    regularTaxes: [
-      {
-        name: "VAT 13%",
-        rate: 13,
-        totalTaxAmount: 28500,
-        transactionCount: 342,
-      },
-      { name: "VAT 5%", rate: 5, totalTaxAmount: 9800, transactionCount: 187 },
-      {
-        name: "Service Tax 10%",
-        rate: 10,
-        totalTaxAmount: 12400,
-        transactionCount: 95,
-      },
-    ],
-    groupTaxes: [
-      { name: "Combined Tax A", totalTaxAmount: 8750, transactionCount: 64 },
-      { name: "Mixed Rate Bundle", totalTaxAmount: 5200, transactionCount: 38 },
-    ],
-  },
-  categoryTax: [
-    { category: "Pizza", revenue: 142000, taxAmount: 18460 },
-    { category: "Salads", revenue: 68500, taxAmount: 8905 },
-    { category: "Appetizers", revenue: 52000, taxAmount: 6760 },
-    { category: "Pasta", revenue: 47800, taxAmount: 6214 },
-    { category: "Beverages", revenue: 38500, taxAmount: 5005 },
-    { category: "Desserts", revenue: 22500, taxAmount: 2925 },
-  ],
-};
 
 export function TaxableVsNonTaxableWrapper({
   range = "month",
@@ -135,28 +96,6 @@ export function VatStatsWrapper() {
       {vatStats.map((card) => (
         <VatStatCard key={card.id} stat={card} />
       ))}
-    </div>
-  );
-}
-
-export function TaxStatsWrapper({
-  range = "month",
-  startDate,
-  endDate,
-}: {
-  range?: string;
-  startDate?: string;
-  endDate?: string;
-}) {
-  // TODO: Replace with real API call when endpoint is available
-  const data = MOCK_DATA.taxStats;
-
-  return (
-    <div className="  bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-      <h2 className="text-sm font-semibold text-gray-800 mb-4">
-        Tax Stats (Mock Data)
-      </h2>
-      <TaxStats data={data} />
     </div>
   );
 }
@@ -272,9 +211,12 @@ export function TaxOnRefundedBillsWrapper({
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-      <h2 className="text-sm font-semibold text-gray-800 mb-4">
-        Tax on Refunded Bills
-      </h2>
+      <div>
+        <h2 className="text-sm font-bold text-gray-900">Tax on Refunds</h2>
+        <p className="text-xs text-gray-400 mt-0.5">
+          Tax reversed for returned items
+        </p>
+      </div>
       {loading ? (
         <div className="flex items-center justify-center py-8">
           <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>

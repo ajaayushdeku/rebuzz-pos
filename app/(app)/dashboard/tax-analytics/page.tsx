@@ -7,7 +7,6 @@ import {
 } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import {
   TaxableVsNonTaxableWrapper,
-  TaxStatsWrapper,
   HighestTaxGeneratedWrapper,
   TaxByCategoryWrapper,
   TaxOnRefundedBillsWrapper,
@@ -27,6 +26,7 @@ import {
   TaxReconciliationWrapper,
   WhatYouActuallyOweWrapper,
   TaxAuditLogWrapper,
+  TaxRatedBreakdownWrapper,
 } from "@/components/componentWrappers/TaxAnalyticsWrappers";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import ChartSkeleton from "@/components/ui/chartskeleton";
@@ -63,33 +63,14 @@ export default function TaxAnalyticsPage() {
       </div>
 
       <div className="space-y-6 mt-6">
-        <WhatYouActuallyOweWrapper />
-        <VatStatsWrapper />
-
-        {/* What Changed & Why + Taxable vs Exempt - full width */}
-        <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
-            <WhatChangedAndWhyWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
-
-        {/* VAT Trend Charts - 2 column grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <VATTrendChartWrapper />
-          <MonthlyTaxTrendChartWrapper />
-        </div>
-
         {/* Taxable vs Non-Taxable - full width */}
         <TaxableVsNonTaxableWrapper
           startDate={dateRange.startDate}
           endDate={dateRange.endDate}
         />
 
-        {/* Tax Stats - full width */}
-        <TaxStatsWrapper
-          startDate={dateRange.startDate}
-          endDate={dateRange.endDate}
-        />
+        {/* Tax Breakdown (by applied rate) - full width */}
+        <TaxRatedBreakdownWrapper />
 
         {/* Grid for remaining cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -106,13 +87,27 @@ export default function TaxAnalyticsPage() {
           />
         </div>
 
-        <TaxRateBreakdown />
-
         {/* Tax on Refunded Bills - full width */}
         <TaxOnRefundedBillsWrapper
           startDate={dateRange.startDate}
           endDate={dateRange.endDate}
         />
+
+        <WhatYouActuallyOweWrapper />
+        <VatStatsWrapper />
+
+        {/* What Changed & Why + Taxable vs Exempt - full width */}
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <WhatChangedAndWhyWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+
+        {/* VAT Trend Charts - 2 column grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <VATTrendChartWrapper />
+          <MonthlyTaxTrendChartWrapper />
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
           <VAT20ReturnSummaryWrapper />

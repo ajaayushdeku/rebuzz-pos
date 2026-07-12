@@ -14,11 +14,20 @@ interface RawTax {
   name?: string;
 }
 
+interface RawGroupedTax {
+  name?: string;
+  rate?: number;
+  isEnabled?: boolean;
+  taxes?: RawTax[];
+}
+
 interface RawDetailBill {
   paidAt?: string;
   isRefunded?: boolean;
   taxamt?: number;
-  tax?: { taxes?: RawTax[] };
+  totalAmount?: number;
+  grandTotal?: number;
+  tax?: { taxes?: RawTax[]; groupedTaxes?: RawGroupedTax[] };
 }
 
 // ── Public shape ────────────────────────────────────────────────────────────
@@ -29,6 +38,15 @@ export interface TaxSeries {
   rate: number;
   /** e.g. "Water 15%". */
   label: string;
+  /** True when this comes from the bill's `groupedTaxes`. */
+  group: boolean;
+}
+
+export interface TaxTotal extends TaxSeries {
+  /** Tax collected across the window. */
+  collected: number;
+  /** Taxable base (pre-tax amount) across the window. */
+  base: number;
 }
 
 export interface MonthlyTaxRow {
@@ -41,6 +59,7 @@ export interface MonthlyTaxRow {
 export interface MonthlyTaxTrend {
   rows: MonthlyTaxRow[];
   series: TaxSeries[];
+  totals: TaxTotal[];
 }
 
 // Cap the number of detail requests to keep the page responsive.
@@ -54,6 +73,41 @@ function parseDate(raw?: string): Date | null {
   if (!raw) return null;
   const d = new Date(raw.includes("T") ? raw : raw.replace(" ", "T"));
   return isNaN(d.getTime()) ? null : d;
+}
+
+/** Resolve a bill's applied tax → { name, rate, group } from taxes/groupedTaxes. */
+function resolveTax(tax?: RawDetailBill["tax"]): {
+  name: string;
+  rate: number;
+  group: boolean;
+} {
+  const regular = (tax?.taxes ?? []).filter((t) => t.isEnabled !== false);
+  if (regular.length) {
+    const rate = regular.reduce((sum, t) => sum + (Number(t.rate) || 0), 0);
+    const name =
+      regular
+        .map((t) => t.name)
+        .filter((n): n is string => !!n)
+        .join(", ") || "Unknown Tax";
+    return { name, rate, group: false };
+  }
+
+  const grouped = (tax?.groupedTaxes ?? []).filter((g) => g.isEnabled !== false);
+  if (grouped.length) {
+    const rate = grouped.reduce((sum, g) => {
+      const own = Number(g.rate) || 0;
+      const sub = (g.taxes ?? []).reduce((s, t) => s + (Number(t.rate) || 0), 0);
+      return sum + (own || sub);
+    }, 0);
+    const name =
+      grouped
+        .map((g) => g.name)
+        .filter((n): n is string => !!n)
+        .join(", ") || "Grouped Tax";
+    return { name, rate, group: true };
+  }
+
+  return { name: "Unknown Tax", rate: 0, group: false };
 }
 
 async function fetchMonthlyTaxTrend(): Promise<MonthlyTaxTrend> {
@@ -85,7 +139,7 @@ async function fetchMonthlyTaxTrend(): Promise<MonthlyTaxTrend> {
     .map((b) => b.invoiceNo as number)
     .slice(0, MAX_DETAILS);
 
-  // 2) Fetch each bill's detail (for the applied tax name/rate + amount).
+  // 2) Fetch each bill's detail (applied tax name/rate + amount + base).
   const details = await Promise.all(
     invoiceNos.map(async (invoiceNo) => {
       try {
@@ -101,12 +155,11 @@ async function fetchMonthlyTaxTrend(): Promise<MonthlyTaxTrend> {
     }),
   );
 
-  // 3) Aggregate the bill-level tax amount per (month, tax series).
+  // 3) Aggregate per (month, tax series).
   const validKeys = new Set(slots.map((s) => s.key));
-  // series signature → { key, name, rate, label }
   const seriesBySig = new Map<string, TaxSeries>();
-  // buckets[monthKey][seriesKey] = amount
   const buckets: Record<string, Record<string, number>> = {};
+  const totalsByKey: Record<string, { collected: number; base: number }> = {};
 
   for (const bill of details) {
     if (!bill || bill.isRefunded) continue;
@@ -119,48 +172,60 @@ async function fetchMonthlyTaxTrend(): Promise<MonthlyTaxTrend> {
     const mKey = monthKey(date);
     if (!validKeys.has(mKey)) continue;
 
-    // Applied tax from the bill's outer `tax` object.
-    const taxes = (bill.tax?.taxes ?? []).filter((t) => t.isEnabled !== false);
-    const rate = taxes.reduce((sum, t) => sum + (Number(t.rate) || 0), 0);
-    const name =
-      taxes
-        .map((t) => t.name)
-        .filter((n): n is string => !!n)
-        .join(", ") || "Unknown Tax";
+    // Actual taxable base: totalAmount, else grandTotal − tax.
+    const base =
+      Number(bill.totalAmount) ||
+      Math.max(0, (Number(bill.grandTotal) || 0) - amount);
 
-    const sig = `${name}__${rate}`;
-    let series = seriesBySig.get(sig);
-    if (!series) {
-      series = {
+    const { name, rate, group } = resolveTax(bill.tax);
+    const sig = `${group ? "g" : "r"}__${name}__${rate}`;
+    let s = seriesBySig.get(sig);
+    if (!s) {
+      s = {
         key: `s${seriesBySig.size}`,
         name,
         rate,
         label: rate > 0 ? `${name} ${rate}%` : name,
+        group,
       };
-      seriesBySig.set(sig, series);
+      seriesBySig.set(sig, s);
+      totalsByKey[s.key] = { collected: 0, base: 0 };
     }
 
     if (!buckets[mKey]) buckets[mKey] = {};
-    buckets[mKey][series.key] = (buckets[mKey][series.key] ?? 0) + amount;
+    buckets[mKey][s.key] = (buckets[mKey][s.key] ?? 0) + amount;
+    totalsByKey[s.key].collected += amount;
+    totalsByKey[s.key].base += base;
   }
 
   const series = Array.from(seriesBySig.values()).sort(
     (a, b) => a.rate - b.rate,
   );
 
+  const round = (v: number) => Math.round(v * 100) / 100;
+
   const rows: MonthlyTaxRow[] = slots.map((slot) => {
     const perSeries = buckets[slot.key] ?? {};
     const row: MonthlyTaxRow = { month: slot.label, total: 0 };
     for (const s of series) {
-      const amt = Math.round((perSeries[s.key] ?? 0) * 100) / 100;
+      const amt = round(perSeries[s.key] ?? 0);
       row[s.key] = amt;
       row.total += amt;
     }
-    row.total = Math.round(row.total * 100) / 100;
+    row.total = round(row.total);
     return row;
   });
 
-  return { rows, series };
+  const totals: TaxTotal[] = series
+    .map((s) => ({
+      ...s,
+      collected: round(totalsByKey[s.key]?.collected ?? 0),
+      base: round(totalsByKey[s.key]?.base ?? 0),
+    }))
+    .filter((t) => t.collected > 0)
+    .sort((a, b) => b.collected - a.collected);
+
+  return { rows, series, totals };
 }
 
 export function useMonthlyTaxTrend() {
