@@ -6,7 +6,13 @@ import {
 } from "@/lib/mockData/mock-inventory-data";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { AlertCircle, TrendingUp, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  AlertCircle,
+  TrendingUp,
+  ChevronDown,
+  ChevronUp,
+  Image as ImageIcon,
+} from "lucide-react";
 
 // const statusConfig = {
 //   critical: {
@@ -97,7 +103,21 @@ export default function ProductCard({
       {/* Collapsed View - Minimal */}
       <div className="p-4">
         <div className="flex items-start justify-between mb-2">
-          <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2.5 flex-1 min-w-0">
+            {/* Product thumbnail */}
+            <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
+              {item.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <ImageIcon size={16} className="text-gray-300" />
+              )}
+            </div>
             <h3 className="text-sm font-semibold text-gray-800 truncate">
               {item.name}
             </h3>

@@ -42,6 +42,8 @@ export type InventoryItem = {
   orderedCount: number;
   costPrice: number;
   price: number;
+  /** Product image URL (from the products API), if any. */
+  image?: string;
 };
 
 // ── Status Logic ─────────────────────────────────────────────

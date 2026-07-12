@@ -30,6 +30,10 @@ async function fetchInventoryClient(): Promise<InventoryItem[]> {
           orderedCount: typeof p.orderedCount === "number" ? p.orderedCount : 0,
           costPrice: p.costPrice,
           price: typeof p.price === "number" ? p.price : 0,
+          image:
+            typeof p.image === "string" && p.image
+              ? p.image
+              : (p.images?.[0] ?? undefined),
         }),
       )
   );
