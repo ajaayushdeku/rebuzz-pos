@@ -16,8 +16,10 @@ export type InventoryItem = {
   orderedCount: number;
   costPrice: number;
   price: number;
-  /** Product image URL (from the products API), if any. */
+  /** Primary product image URL (from the products API), if any. */
   image?: string;
+  /** Additional gallery image URLs (the `images` field). */
+  images?: string[];
 };
 
 export type SalesItem = {
@@ -73,6 +75,9 @@ export async function fetchInventoryProducts(): Promise<InventoryItem[]> {
           typeof p.image === "string" && p.image
             ? p.image
             : (p.images?.[0] ?? undefined),
+        images: Array.isArray(p.images)
+          ? p.images.filter((s: unknown): s is string => typeof s === "string")
+          : undefined,
       }),
     );
 }

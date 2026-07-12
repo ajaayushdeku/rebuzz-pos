@@ -34,6 +34,11 @@ async function fetchInventoryClient(): Promise<InventoryItem[]> {
             typeof p.image === "string" && p.image
               ? p.image
               : (p.images?.[0] ?? undefined),
+          images: Array.isArray(p.images)
+            ? p.images.filter(
+                (s: unknown): s is string => typeof s === "string",
+              )
+            : undefined,
         }),
       )
   );
