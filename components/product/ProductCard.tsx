@@ -96,7 +96,7 @@ export default function ProductCard({
     setLightboxIndex((i) => (i === null ? 0 : (i + 1) % gallery.length));
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 relative overflow-hidden">
+    <div className="bg-white rounded-xl border  hover:shadow-md transition-all duration-200 relative overflow-hidden">
       {/* ── Top row: image + header/stock/progress ── */}
       <div className="flex">
         <button
@@ -162,7 +162,7 @@ export default function ProductCard({
             </div>
           </div>
 
-          <div className="flex items-baseline justify-between">
+          <div className="flex items-baseline justify-between mt-6">
             <div>
               {item.usesStocks ? (
                 <div className="flex items-baseline gap-1">
@@ -196,7 +196,7 @@ export default function ProductCard({
 
           {/* Progress bar */}
           {item.usesStocks && (
-            <div className="mt-3 space-y-1.5">
+            <div className="mt-2 space-y-1.5">
               <div className="w-full bg-gray-100 rounded-full h-1.5">
                 <div
                   className={`h-1.5 rounded-full transition-all duration-500 ${cfg.bar}`}
@@ -230,7 +230,7 @@ export default function ProductCard({
 
       {/* ── Full-width revenue, net profit & order count ── */}
       {hasSales && (
-        <div className="px-4 pb-4">
+        <div className="px-4 pb-3">
           <div className="pt-3 border-t-[1px] border-gray-150 grid grid-cols-3 gap-2">
             <div className="min-w-0">
               <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">

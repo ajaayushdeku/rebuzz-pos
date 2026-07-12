@@ -95,9 +95,31 @@ const ItemRow = ({
           </p>
         </div>
         {item.changeDir === "up" ? (
-          <span className={`text-base ${arrowColor}`}>↗</span>
+          <svg
+            className={`w-4 h-4 ${arrowColor}`}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 20V4" />
+            <path d="M5 11l7-7 7 7" />
+          </svg>
         ) : (
-          <span className={`text-base ${arrowColor}`}>↘</span>
+          <svg
+            className={`w-4 h-4 ${arrowColor}`}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 4v16" />
+            <path d="M19 13l-7 7-7-7" />
+          </svg>
         )}
       </div>
     </div>
