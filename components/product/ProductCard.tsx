@@ -82,9 +82,7 @@ export default function ProductCard({
 
   // Primary image + `images` gallery, de-duplicated.
   const gallery = Array.from(
-    new Set(
-      [item.image, ...(item.images ?? [])].filter(Boolean) as string[],
-    ),
+    new Set([item.image, ...(item.images ?? [])].filter(Boolean) as string[]),
   );
   const primary = gallery[0];
 
@@ -98,45 +96,44 @@ export default function ProductCard({
     setLightboxIndex((i) => (i === null ? 0 : (i + 1) % gallery.length));
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 relative flex overflow-hidden">
-      {/* ── Left: image column (~30%, full height) ── */}
-      <button
-        type="button"
-        onClick={() => gallery.length && openLightbox(0)}
-        disabled={!gallery.length}
-        aria-label="View product image"
-        className="relative w-[30%] shrink-0 min-h-[8rem] bg-gray-100 group focus:outline-none"
-      >
-        {primary ? (
-          <>
-            <img
-              src={primary}
-              alt={item.name}
-              loading="lazy"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            <span className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center">
-              <Expand
-                size={18}
-                className="text-white opacity-0 group-hover:opacity-100 transition-opacity"
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 relative overflow-hidden">
+      {/* ── Top row: image + header/stock/progress ── */}
+      <div className="flex">
+        <button
+          type="button"
+          onClick={() => gallery.length && openLightbox(0)}
+          disabled={!gallery.length}
+          aria-label="View product image"
+          className="relative w-[35%] shrink-0 bg-gray-100 group focus:outline-none self-stretch"
+        >
+          {primary ? (
+            <>
+              <img
+                src={primary}
+                alt={item.name}
+                loading="lazy"
+                className="absolute inset-0 w-full h-full object-cover"
               />
-            </span>
-            {gallery.length > 1 && (
-              <span className="absolute bottom-1.5 right-1.5 text-[10px] font-medium bg-black/60 text-white px-1.5 py-0.5 rounded-full">
-                {gallery.length}
+              <span className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center">
+                <Expand
+                  size={18}
+                  className="text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                />
               </span>
-            )}
-          </>
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <ImageIcon size={24} className="text-gray-300" />
-          </div>
-        )}
-      </button>
+              {gallery.length > 1 && (
+                <span className="absolute bottom-1.5 right-1.5 text-[10px] font-medium bg-black/60 text-white px-1.5 py-0.5 rounded-full">
+                  {gallery.length}
+                </span>
+              )}
+            </>
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <ImageIcon size={24} className="text-gray-300" />
+            </div>
+          )}
+        </button>
 
-      {/* ── Right: content ── */}
-      <div className="flex-1 min-w-0">
-        <div className="p-4">
+        <div className="flex-1 min-w-0 p-4">
           <div className="flex items-start justify-between mb-2">
             <h3 className="text-sm font-semibold text-gray-800 truncate flex-1 min-w-0">
               {item.name}
@@ -195,7 +192,7 @@ export default function ProductCard({
             </button>
           </div>
 
-          {/* Progress bar in collapsed view */}
+          {/* Progress bar */}
           {item.usesStocks && (
             <div className="mt-3 space-y-1.5">
               <div className="w-full bg-gray-100 rounded-full h-1.5">
@@ -226,125 +223,127 @@ export default function ProductCard({
               </div>
             </div>
           )}
+        </div>
+      </div>
 
-          {/* Date-ranged revenue, net profit & order count */}
-          {hasSales && (
-            <div className="mt-3 pt-3 border-t-[1px] border-gray-150 grid grid-cols-3 gap-2">
-              <div className="min-w-0">
-                <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
-                  Revenue
-                </p>
-                <p className="text-xs font-semibold text-blue-500 truncate">
-                  {fmt(revenue ?? 0)}
-                </p>
-              </div>
+      {/* ── Full-width revenue, net profit & order count ── */}
+      {hasSales && (
+        <div className="px-4 pb-4">
+          <div className="pt-3 border-t-[1px] border-gray-150 grid grid-cols-3 gap-2">
+            <div className="min-w-0">
+              <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
+                Revenue
+              </p>
+              <p className="text-xs font-semibold text-blue-500 truncate">
+                {fmt(revenue ?? 0)}
+              </p>
+            </div>
 
-              <div className="min-w-0 text-center">
-                <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
-                  Orders
-                </p>
-                <p className="text-xs font-semibold text-violet-700 truncate">
-                  {(orderCount ?? 0).toLocaleString()}
-                </p>
-              </div>
+            <div className="min-w-0 text-center">
+              <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
+                Orders
+              </p>
+              <p className="text-xs font-semibold text-violet-700 truncate">
+                {(orderCount ?? 0).toLocaleString()}
+              </p>
+            </div>
 
-              <div className="min-w-0 text-right">
-                <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
-                  Net Profit
-                </p>
-                <p
-                  className={`text-xs font-semibold truncate ${
-                    (netProfit ?? 0) >= 0 ? "text-emerald-600" : "text-red-500"
-                  }`}
-                >
-                  {fmt(netProfit ?? 0)}
-                </p>
+            <div className="min-w-0 text-right">
+              <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
+                Net Profit
+              </p>
+              <p
+                className={`text-xs font-semibold truncate ${
+                  (netProfit ?? 0) >= 0 ? "text-emerald-600" : "text-red-500"
+                }`}
+              >
+                {fmt(netProfit ?? 0)}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Expanded View */}
+      {isExpanded && (
+        <div className="border-t border-gray-100 p-4">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-400 ">Selling Price</span>
+              <span className="font-medium text-gray-700">
+                {formatCurrencySymbol(
+                  item.price,
+                  currency.symbol,
+                  currency.locale,
+                )}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-400">Cost Price</span>
+              <span className="font-medium text-gray-700">
+                {formatCurrencySymbol(
+                  item.costPrice,
+                  currency.symbol,
+                  currency.locale,
+                )}
+              </span>
+            </div>
+
+            {item.usesStocks && (
+              <>
+                <div className="flex items-center justify-between text-xs pt-2 border-t border-gray-50">
+                  <span className="text-gray-400">Total Selling Value</span>
+                  <span className="font-semibold text-gray-700">
+                    {formatCurrencySymbol(
+                      item.price * item.inStock,
+                      currency.symbol,
+                      currency.locale,
+                    )}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-gray-400">Total Cost Value</span>
+                  <span className="font-semibold text-gray-700">
+                    {formatCurrencySymbol(
+                      item.costPrice * item.inStock,
+                      currency.symbol,
+                      currency.locale,
+                    )}
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Images gallery section */}
+          {gallery.length > 0 && (
+            <div className="mt-4 pt-3 border-t border-gray-50">
+              <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium mb-2">
+                Images
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {gallery.map((src, i) => (
+                  <button
+                    key={src}
+                    type="button"
+                    onClick={() => openLightbox(i)}
+                    className="w-12 h-12 rounded-lg overflow-hidden border border-gray-200 hover:border-blue-400 transition-colors"
+                  >
+                    <img
+                      src={src}
+                      alt={`${item.name} ${i + 1}`}
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
               </div>
             </div>
           )}
         </div>
-
-        {/* Expanded View */}
-        {isExpanded && (
-          <div className="border-t border-gray-100 p-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-400 ">Selling Price</span>
-                <span className="font-medium text-gray-700">
-                  {formatCurrencySymbol(
-                    item.price,
-                    currency.symbol,
-                    currency.locale,
-                  )}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-400">Cost Price</span>
-                <span className="font-medium text-gray-700">
-                  {formatCurrencySymbol(
-                    item.costPrice,
-                    currency.symbol,
-                    currency.locale,
-                  )}
-                </span>
-              </div>
-
-              {item.usesStocks && (
-                <>
-                  <div className="flex items-center justify-between text-xs pt-2 border-t border-gray-50">
-                    <span className="text-gray-400">Total Selling Value</span>
-                    <span className="font-semibold text-gray-700">
-                      {formatCurrencySymbol(
-                        item.price * item.inStock,
-                        currency.symbol,
-                        currency.locale,
-                      )}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-400">Total Cost Value</span>
-                    <span className="font-semibold text-gray-700">
-                      {formatCurrencySymbol(
-                        item.costPrice * item.inStock,
-                        currency.symbol,
-                        currency.locale,
-                      )}
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Images gallery section */}
-            {gallery.length > 0 && (
-              <div className="mt-4 pt-3 border-t border-gray-50">
-                <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium mb-2">
-                  Images
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {gallery.map((src, i) => (
-                    <button
-                      key={src}
-                      type="button"
-                      onClick={() => openLightbox(i)}
-                      className="w-12 h-12 rounded-lg overflow-hidden border border-gray-200 hover:border-blue-400 transition-colors"
-                    >
-                      <img
-                        src={src}
-                        alt={`${item.name} ${i + 1}`}
-                        loading="lazy"
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      )}
 
       {/* ── Lightbox ── */}
       {lightboxIndex !== null &&
@@ -422,7 +421,8 @@ export default function ProductCard({
 
               <p className="text-center text-white/70 text-xs mt-2 truncate">
                 {item.name}
-                {gallery.length > 1 && ` · ${lightboxIndex + 1}/${gallery.length}`}
+                {gallery.length > 1 &&
+                  ` · ${lightboxIndex + 1}/${gallery.length}`}
               </p>
             </div>
           </div>,

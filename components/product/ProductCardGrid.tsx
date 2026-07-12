@@ -220,7 +220,7 @@ const ProductCardGrid = ({
       )}
 
       {/* Product Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-3">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-3">
         {visibleItems.map((item, idx) => {
           const sale = salesMap.get(item.name.toLowerCase());
           return (
