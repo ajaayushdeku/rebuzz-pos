@@ -10,6 +10,7 @@ import {
 } from "@/lib/mockData/mock-inventory-data";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
+import businessLogo from "@/public/rebuzz.png";
 import {
   AlertCircle,
   TrendingUp,
@@ -17,7 +18,6 @@ import {
   ChevronUp,
   ChevronLeft,
   ChevronRight,
-  Image as ImageIcon,
   Expand,
   X,
 } from "lucide-react";
@@ -96,7 +96,7 @@ export default function ProductCard({
     setLightboxIndex((i) => (i === null ? 0 : (i + 1) % gallery.length));
 
   return (
-    <div className="bg-white rounded-xl border  hover:shadow-md transition-all duration-200 relative overflow-hidden">
+    <div className="bg-white rounded-xl border border-gray-200 shadow-xs  hover:shadow-md transition-all duration-200 relative overflow-hidden">
       {/* ── Top row: image + header/stock/progress ── */}
       <div className="flex">
         <button
@@ -128,7 +128,11 @@ export default function ProductCard({
             </>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
-              <ImageIcon size={24} className="text-gray-300" />
+              <img
+                src={businessLogo.src}
+                alt="Business Logo"
+                className="w-20 h-15 object-contain opacity-90"
+              />
             </div>
           )}
         </button>

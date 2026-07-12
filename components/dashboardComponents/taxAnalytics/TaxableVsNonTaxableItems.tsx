@@ -129,13 +129,13 @@ const TaxableVsNonTaxableItems = ({ data }: { data: TaxableBreakdown }) => {
       </div>
 
       {/* Revenue Breakdown */}
-      <div className="bg-white ">
-        <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-3">
+      <div className="bg-white mt-6">
+        <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
           Revenue Breakdown
         </h4>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Taxable Items */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3">
+          <div className="bg-white p-3">
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
@@ -193,8 +193,10 @@ const TaxableVsNonTaxableItems = ({ data }: { data: TaxableBreakdown }) => {
             )}
           </div>
 
+          <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 -translate-x-px w-px bg-gray-200" />
+
           {/* Non-Taxable Items */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3">
+          <div className="bg-white  p-3">
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-gray-400" />
