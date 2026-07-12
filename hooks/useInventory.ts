@@ -13,24 +13,26 @@ async function fetchInventoryClient(): Promise<InventoryItem[]> {
   const json = await res.json();
   const raw = json?.data?.products ?? [];
 
-  return raw
-    .filter((p: any) => p && typeof p.costPrice === "number" && p.costPrice > 0)
-    .map(
-      (p: any): InventoryItem => ({
-        id: p._id,
-        name: p.name ?? "Unnamed Product",
-        unit: p.soldBy ?? "each",
-        inStock: typeof p.inStock === "number" ? p.inStock : 0,
-        lowStock: typeof p.lowStock === "number" ? p.lowStock : 0,
-        usesStocks: Boolean(p.usesStocks),
-        isTaxable: Boolean(p.isTaxable),
-        isAvailable:
-          p.isAvailable !== undefined ? Boolean(p.isAvailable) : true,
-        orderedCount: typeof p.orderedCount === "number" ? p.orderedCount : 0,
-        costPrice: p.costPrice,
-        price: typeof p.price === "number" ? p.price : 0,
-      }),
-    );
+  return (
+    raw
+      // .filter((p: any) => p && typeof p.costPrice === "number" && p.costPrice > 0)
+      .map(
+        (p: any): InventoryItem => ({
+          id: p._id,
+          name: p.name ?? "Unnamed Product",
+          unit: p.soldBy ?? "each",
+          inStock: typeof p.inStock === "number" ? p.inStock : 0,
+          lowStock: typeof p.lowStock === "number" ? p.lowStock : 0,
+          usesStocks: Boolean(p.usesStocks),
+          isTaxable: Boolean(p.isTaxable),
+          isAvailable:
+            p.isAvailable !== undefined ? Boolean(p.isAvailable) : true,
+          orderedCount: typeof p.orderedCount === "number" ? p.orderedCount : 0,
+          costPrice: p.costPrice,
+          price: typeof p.price === "number" ? p.price : 0,
+        }),
+      )
+  );
 }
 
 // ── Sales-by-item fetcher ─────────────────────────────────────────────────
