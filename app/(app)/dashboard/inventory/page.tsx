@@ -110,7 +110,7 @@ export default function InventoryPage() {
           startDate={dateRange.startDate}
           endDate={dateRange.endDate}
         />
-        <FastSlowMovingItems />
+        <FastSlowMovingItems items={sales ?? []} />
         <AIMenuSuggestions />
         <div className="flex flex-col lg:flex-row gap-4 ">
           <StockMovementChart items={sales ?? []} />

@@ -1,7 +1,7 @@
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { MergedSalesItem } from "@/services/apiInventory";
 
-function classifyItems(items: MergedSalesItem[]) {
+const classifyItems = (items: MergedSalesItem[]) => {
   if (items.length === 0) return { fast: [], normal: [], slow: [] };
 
   const max = items[0].count; // already sorted desc
@@ -17,9 +17,9 @@ function classifyItems(items: MergedSalesItem[]) {
   });
 
   return { fast, normal, slow };
-}
+};
 
-function getTrend(items: MergedSalesItem[], keys: string[]): number {
+const getTrend = (items: MergedSalesItem[], keys: string[]): number => {
   const subset = items.filter((i) => keys.includes(i.name));
   const totalRevenue = subset.reduce((s, i) => s + i.totalRevenue, 0);
   const totalCost = subset.reduce(
@@ -28,13 +28,9 @@ function getTrend(items: MergedSalesItem[], keys: string[]): number {
   );
   if (totalCost === 0) return 0;
   return Math.round(((totalRevenue - totalCost) / totalCost) * 100);
-}
+};
 
-export default function InventoryMovementAnalysis({
-  items,
-}: {
-  items: MergedSalesItem[];
-}) {
+const InventoryMovementAnalysis = ({ items }: { items: MergedSalesItem[] }) => {
   const { fast, normal, slow } = classifyItems(items);
   const fastTrend = getTrend(items, fast);
   const slowTrend = getTrend(items, slow);
@@ -116,4 +112,6 @@ export default function InventoryMovementAnalysis({
       )}
     </div>
   );
-}
+};
+
+export default InventoryMovementAnalysis;

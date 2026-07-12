@@ -1,7 +1,8 @@
 "use client";
 
-import { Flame, TrendingDown } from "lucide-react";
-import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
+import { useState } from "react";
+import { Flame, TrendingDown, ChevronDown, ChevronUp } from "lucide-react";
+import { MergedSalesItem } from "@/services/apiInventory";
 
 type MovingItem = {
   name: string;
@@ -11,47 +12,62 @@ type MovingItem = {
   changeDir: "up" | "down";
 };
 
-const FAST_ITEMS: MovingItem[] = [
-  {
-    name: "Almond Croissant",
-    category: "Bakery",
-    sold: 48,
-    changePct: 22,
-    changeDir: "up",
-  },
-  {
-    name: "Blueberry Muffin",
-    category: "Bakery",
-    sold: 36,
-    changePct: 14,
-    changeDir: "up",
-  },
-];
+const INITIAL_SHOW = 3;
 
-const SLOW_ITEMS: MovingItem[] = [
-  {
-    name: "Gluten-Free Brownie",
-    category: "Bakery",
-    sold: 8,
-    changePct: 8,
-    changeDir: "down",
-  },
-  {
-    name: "Herbal Tea Scone",
-    category: "Bakery",
-    sold: 5,
-    changePct: 12,
-    changeDir: "down",
-  },
-];
+/** Per-item profit margin over cost (%), used as the change indicator. */
+const marginPct = (item: MergedSalesItem): number => {
+  const cost = item.totalRevenue - item.netProfit;
+  if (cost <= 0) return 0;
+  return Math.round((item.netProfit / cost) * 100);
+};
 
-function ItemRow({ item, type }: { item: MovingItem; type: "fast" | "slow" }) {
+// Same classification approach as InventoryMovementAnalysis: rank by units sold
+// relative to the top seller (items arrive already sorted desc by count).
+const classify = (
+  items: MergedSalesItem[],
+): {
+  fast: MovingItem[];
+  slow: MovingItem[];
+} => {
+  if (items.length === 0) return { fast: [], slow: [] };
+
+  const max = items[0].count || 1;
+  const fast: MovingItem[] = [];
+  const slow: MovingItem[] = [];
+
+  for (const item of items) {
+    const ratio = item.count / max;
+    const row: MovingItem = {
+      name: item.name,
+      category: item.category,
+      sold: item.count,
+      changePct: Math.abs(marginPct(item)),
+      changeDir: "up",
+    };
+    if (ratio >= 0.6) {
+      fast.push(row);
+    } else if (ratio < 0.25) {
+      slow.push({ ...row, changeDir: "down" });
+    }
+  }
+
+  return {
+    fast: fast,
+    slow: slow.reverse(),
+  };
+};
+
+const ItemRow = ({
+  item,
+  type,
+}: {
+  item: MovingItem;
+  type: "fast" | "slow";
+}) => {
   const isFast = type === "fast";
   const barColor = isFast ? "bg-green-500" : "bg-amber-400";
   const pctColor = isFast ? "text-green-500" : "text-red-500";
   const arrowColor = isFast ? "text-green-400" : "text-amber-500";
-  //   const ArrowUp = () => <span className={`text-base ${arrowColor}`}>↗</span>;
-  //   const ArrowDown = () => <span className={`text-base ${arrowColor}`}>↘</span>;
 
   return (
     <div
@@ -61,22 +77,24 @@ function ItemRow({ item, type }: { item: MovingItem; type: "fast" | "slow" }) {
           : "border-amber-100 bg-amber-50/30"
       }`}
     >
-      <div className="flex items-center gap-2.5">
-        <div className={`w-1 h-9 rounded-full ${barColor}`} />
-        <div>
-          <p className="text-sm font-semibold text-gray-900">{item.name}</p>
-          <p className="text-[11px] text-gray-400">{item.category}</p>
+      <div className="flex items-center gap-2.5 min-w-0">
+        <div className={`w-1 h-9 rounded-full shrink-0 ${barColor}`} />
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-gray-900 truncate">
+            {item.name}
+          </p>
+          <p className="text-[11px] text-gray-400 truncate">{item.category}</p>
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 shrink-0">
         <div className="text-right">
           <p className="text-sm font-bold text-gray-900">{item.sold} sold</p>
           <p className={`text-[11px] font-semibold ${pctColor}`}>
-            {isFast ? "+" : "-"}
+            {item.changeDir === "up" ? "+" : "-"}
             {item.changePct}%
           </p>
         </div>
-        {isFast ? (
+        {item.changeDir === "up" ? (
           <span className={`text-base ${arrowColor}`}>↗</span>
         ) : (
           <span className={`text-base ${arrowColor}`}>↘</span>
@@ -84,7 +102,7 @@ function ItemRow({ item, type }: { item: MovingItem; type: "fast" | "slow" }) {
       </div>
     </div>
   );
-}
+};
 
 const Panel = ({
   type,
@@ -94,6 +112,11 @@ const Panel = ({
   items: MovingItem[];
 }) => {
   const isFast = type === "fast";
+  const totalPages = Math.ceil(items.length / INITIAL_SHOW);
+  const [page, setPage] = useState(0);
+  const start = page * INITIAL_SHOW;
+  const displayedItems = items.slice(start, start + INITIAL_SHOW);
+
   return (
     <div
       className={`bg-white rounded-2xl border p-5 flex flex-col gap-4 ${
@@ -120,20 +143,50 @@ const Panel = ({
         </p>
       </div>
       <div className="space-y-2">
-        {items.map((item) => (
-          <ItemRow key={item.name} item={item} type={type} />
-        ))}
+        {items.length === 0 ? (
+          <p className="text-xs text-gray-400 text-center py-6">
+            No {isFast ? "fast" : "slow"} moving items
+          </p>
+        ) : (
+          displayedItems.map((item) => (
+            <ItemRow key={item.name} item={item} type={type} />
+          ))
+        )}
       </div>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-1">
+          <button
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+            className="flex items-center gap-1 text-xs font-semibold text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <ChevronUp size={14} className="rotate-[-90deg]" /> Prev
+          </button>
+          <span className="text-xs text-gray-400">
+            {page + 1} / {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={page === totalPages - 1}
+            className="flex items-center gap-1 text-xs font-semibold text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            Next <ChevronDown size={14} className="rotate-[-90deg]" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
 
-export default function FastSlowMovingItems() {
+const FastSlowMovingItems = ({ items }: { items: MergedSalesItem[] }) => {
+  const { fast, slow } = classify(items);
+
   return (
     <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4">
-      <LockDimFeactureOverlay component_name="Fast and Slow Moving Items" />
-      <Panel type="fast" items={FAST_ITEMS} />
-      <Panel type="slow" items={SLOW_ITEMS} />
+      <Panel type="fast" items={fast} />
+      <Panel type="slow" items={slow} />
     </div>
   );
-}
+};
+
+export default FastSlowMovingItems;

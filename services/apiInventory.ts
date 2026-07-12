@@ -51,7 +51,8 @@ export async function fetchInventoryProducts(): Promise<InventoryItem[]> {
   const raw = json?.data?.products ?? [];
 
   return raw
-    .filter((p: any) => p && typeof p.costPrice === "number" && p.costPrice > 0)
+    // Temporarily disabled for testing — include all products regardless of costPrice.
+    // .filter((p: any) => p && typeof p.costPrice === "number" && p.costPrice > 0)
     .map(
       (p: any): InventoryItem => ({
         id: p._id,
