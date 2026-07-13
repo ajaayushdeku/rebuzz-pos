@@ -52,7 +52,7 @@ export default function TaxAnalyticsPage() {
       <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
         <div>
           <h1 className="font-bold text-xl md:text-2xl truncate">
-            Tax Analytics (Still in Production)
+            Tax Analytics
           </h1>
 
           <p className="text-xs text-gray-400 mt-0.5">

@@ -21,7 +21,7 @@ const LEVEL_STYLES: Record<Level, { badge: string; label: string }> = {
 };
 
 const LEVEL_ORDER: Record<Level, number> = { out: 0, critical: 1, warning: 2 };
-const MAX_VISIBLE = 6;
+const MAX_VISIBLE = 3;
 
 export default function LowStockAlerts() {
   const { data: products = [], isLoading, isError } = useInventoryQuery();
@@ -67,7 +67,9 @@ export default function LowStockAlerts() {
                 </span>
               )}
             </h2>
-            <p className="text-xs text-gray-400 mt-0.5">Items running out soon</p>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Items running out soon
+            </p>
           </div>
         </div>
         <Link

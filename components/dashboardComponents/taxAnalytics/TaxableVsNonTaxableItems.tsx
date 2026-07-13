@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { DollarSign, Receipt, TrendingUp } from "lucide-react";
+import { DollarSign, Receipt, RefreshCcw, TrendingUp } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import type {
+  NameType,
+  Payload,
+  ValueType,
+} from "recharts/types/component/DefaultTooltipContent";
 
 interface TaxableBreakdown {
   taxableRevenue: number;
@@ -14,12 +20,55 @@ interface TaxableBreakdown {
 }
 
 const ITEMS_PER_PAGE = 5;
+const TAXABLE_COLOR = "#0ba2c0";
+const NON_TAXABLE_COLOR = "#ea1f5c";
 
-const TaxableVsNonTaxableItems = ({ data }: { data: TaxableBreakdown }) => {
+const PieTooltip = ({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: Payload<ValueType, NameType>[];
+}) => {
   const { currency } = useCurrency();
+  if (!active || !payload?.length) return null;
+  const p = payload[0];
+  return (
+    <div className="bg-white rounded-xl px-3 py-2 shadow-lg border border-gray-100 text-xs">
+      <span className="text-gray-600">{p.name}: </span>
+      <span className="font-bold text-gray-800">
+        {formatCurrencySymbol(
+          Number(p.value) || 0,
+          currency.symbol,
+          currency.locale,
+        )}
+      </span>
+    </div>
+  );
+};
+
+const TaxableVsNonTaxableItems = ({
+  data,
+  isLoading,
+  isError,
+}: {
+  data: TaxableBreakdown;
+  isLoading: boolean;
+  isError: boolean;
+}) => {
+  const { currency } = useCurrency();
+  const fmt = (v: number) =>
+    formatCurrencySymbol(v, currency.symbol, currency.locale);
+
   const totalRevenue = data.taxableRevenue + data.nonTaxableRevenue;
   const taxablePct =
     totalRevenue > 0 ? (data.taxableRevenue / totalRevenue) * 100 : 0;
+  const nonTaxablePct =
+    totalRevenue > 0 ? (data.nonTaxableRevenue / totalRevenue) * 100 : 0;
+  const effectiveRate =
+    data.taxableRevenue > 0
+      ? (data.taxableTaxAmount / data.taxableRevenue) * 100
+      : 0;
 
   const [showTaxableAll, setShowTaxableAll] = useState(false);
   const [showNonTaxableAll, setShowNonTaxableAll] = useState(false);
@@ -31,230 +80,255 @@ const TaxableVsNonTaxableItems = ({ data }: { data: TaxableBreakdown }) => {
   const taxableItems = showTaxableAll
     ? data.taxableItems
     : (data.taxableItems?.slice(0, ITEMS_PER_PAGE) ?? []);
-
   const nonTaxableItems = showNonTaxableAll
     ? data.nonTaxableItems
     : (data.nonTaxableItems?.slice(0, ITEMS_PER_PAGE) ?? []);
 
+  const pieData = [
+    { name: "Taxable", value: data.taxableRevenue, color: TAXABLE_COLOR },
+    {
+      name: "Non-Taxable",
+      value: data.nonTaxableRevenue,
+      color: NON_TAXABLE_COLOR,
+    },
+  ].filter((d) => d.value > 0);
+
+  const stats = [
+    {
+      label: "Taxable Revenue",
+      value: fmt(data.taxableRevenue),
+      sub: `${taxablePct.toFixed(1)}% of revenue`,
+      icon: <DollarSign size={15} className="text-blue-600" />,
+      iconBg: "bg-blue-50",
+    },
+    {
+      label: "Non-Taxable Revenue",
+      value: fmt(data.nonTaxableRevenue),
+      sub: `${nonTaxablePct.toFixed(1)}% of revenue`,
+      icon: <Receipt size={15} className="text-gray-500" />,
+      iconBg: "bg-gray-100",
+    },
+    {
+      label: "Tax Collected",
+      value: fmt(data.taxableTaxAmount),
+      sub: `Effective rate ${effectiveRate.toFixed(1)}%`,
+      icon: <TrendingUp size={15} className="text-emerald-600" />,
+      iconBg: "bg-emerald-50",
+    },
+  ];
+
   return (
-    <div className="space-y-4">
-      {/* Summary cards row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-              <DollarSign size={16} className="text-blue-600" />
-            </div>
-            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-              Taxable Revenue
-            </span>
-          </div>
-          <p className="text-lg font-bold text-gray-900">
-            {formatCurrencySymbol(
-              data.taxableRevenue,
-              currency.symbol,
-              currency.locale,
-            )}
-          </p>
-          <div className="mt-2 w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full bg-blue-500"
-              style={{ width: `${taxablePct}%` }}
-            />
-          </div>
-          <p className="text-[10px] text-gray-400 mt-1">
-            {taxablePct.toFixed(1)}% of total revenue
-          </p>
-        </div>
-
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center">
-              <Receipt size={16} className="text-gray-500" />
-            </div>
-            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-              Non-Taxable Revenue
-            </span>
-          </div>
-          <p className="text-lg font-bold text-gray-900">
-            {formatCurrencySymbol(
-              data.nonTaxableRevenue,
-              currency.symbol,
-              currency.locale,
-            )}
-          </p>
-          <div className="mt-2 w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full bg-gray-400"
-              style={{ width: `${100 - taxablePct}%` }}
-            />
-          </div>
-          <p className="text-[10px] text-gray-400 mt-1">
-            {(100 - taxablePct).toFixed(1)}% of total revenue
-          </p>
-        </div>
-
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-              <TrendingUp size={16} className="text-emerald-600" />
-            </div>
-            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-              Tax Collected
-            </span>
-          </div>
-          <p className="text-lg font-bold text-gray-900">
-            {formatCurrencySymbol(
-              data.taxableTaxAmount,
-              currency.symbol,
-              currency.locale,
-            )}
-          </p>
-          <div className="mt-2 w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full bg-emerald-500"
-              style={{
-                width: `${data.taxableRevenue > 0 ? (data.taxableTaxAmount / data.taxableRevenue) * 100 : 0}%`,
-              }}
-            />
-          </div>
-          <p className="text-[10px] text-gray-400 mt-1">
-            Effective tax rate:{" "}
-            {data.taxableRevenue > 0
-              ? ((data.taxableTaxAmount / data.taxableRevenue) * 100).toFixed(1)
-              : "0"}
-            %
-          </p>
-        </div>
+    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6">
+      <div>
+        <h2 className="text-sm font-bold text-gray-900">
+          Taxable &amp; Non-Taxable Items
+        </h2>
+        <p className="text-xs text-gray-400 mt-0.5">
+          Revenue generated by taxable vs non-taxable items
+        </p>
       </div>
 
-      {/* Revenue Breakdown */}
-      <div className="bg-white mt-6">
-        <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-          Revenue Breakdown
-        </h4>
-        <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Taxable Items */}
-          <div className="bg-white p-3">
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                <span className="text-xs font-semibold text-gray-700">
-                  Taxable Items
-                </span>
-              </div>
-              <span className="text-xs font-semibold text-blue-600">
-                {formatCurrencySymbol(
-                  data.taxableRevenue,
-                  currency.symbol,
-                  currency.locale,
-                )}
-              </span>
-            </div>
-            <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full bg-blue-500"
-                style={{ width: `${taxablePct}%` }}
-              />
-            </div>
-
-            {taxableItems.length > 0 ? (
-              <div className="mt-2 space-y-1">
-                {taxableItems.map((item) => (
-                  <div
-                    key={item.name}
-                    className="flex items-center justify-between text-xs py-1 px-2 rounded hover:bg-blue-50/50 transition-colors"
-                  >
-                    <span className="text-gray-700 truncate">{item.name}</span>
-                    <span className="font-medium text-blue-600 shrink-0 ml-2">
-                      {formatCurrencySymbol(
-                        item.revenue,
-                        currency.symbol,
-                        currency.locale,
-                      )}
-                    </span>
-                  </div>
-                ))}
-                {taxableHasMore && (
-                  <button
-                    onClick={() => setShowTaxableAll(!showTaxableAll)}
-                    className="mt-2 w-full text-xs font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-50 py-1.5 rounded-md transition-colors"
-                  >
-                    {showTaxableAll
-                      ? "Hide"
-                      : `Load More (${data.taxableItems.length - ITEMS_PER_PAGE} more)`}
-                  </button>
-                )}
-              </div>
-            ) : (
-              <p className="text-xs text-gray-400 text-center py-4">
-                No taxable items
-              </p>
-            )}
-          </div>
-
-          <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 -translate-x-px w-px bg-gray-200" />
-
-          {/* Non-Taxable Items */}
-          <div className="bg-white  p-3">
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-gray-400" />
-                <span className="text-xs font-semibold text-gray-700">
-                  Non-Taxable Items
-                </span>
-              </div>
-              <span className="text-xs font-semibold text-gray-500">
-                {formatCurrencySymbol(
-                  data.nonTaxableRevenue,
-                  currency.symbol,
-                  currency.locale,
-                )}
-              </span>
-            </div>
-            <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full bg-gray-400"
-                style={{ width: `${100 - taxablePct}%` }}
-              />
-            </div>
-
-            {nonTaxableItems.length > 0 ? (
-              <div className="mt-2 space-y-1">
-                {nonTaxableItems.map((item) => (
-                  <div
-                    key={item.name}
-                    className="flex items-center justify-between text-xs py-1 px-2 rounded hover:bg-gray-100 transition-colors"
-                  >
-                    <span className="text-gray-700 truncate">{item.name}</span>
-                    <span className="font-medium text-gray-500 shrink-0 ml-2">
-                      {formatCurrencySymbol(
-                        item.revenue,
-                        currency.symbol,
-                        currency.locale,
-                      )}
-                    </span>
-                  </div>
-                ))}
-                {nonTaxableHasMore && (
-                  <button
-                    onClick={() => setShowNonTaxableAll(!showNonTaxableAll)}
-                    className="mt-2 w-full text-xs font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-50 py-1.5 rounded-md transition-colors"
-                  >
-                    {showNonTaxableAll
-                      ? "Hide"
-                      : `Load More (${data.nonTaxableItems.length - ITEMS_PER_PAGE} more)`}
-                  </button>
-                )}
-              </div>
-            ) : (
-              <p className="text-xs text-gray-400 text-center py-4">
-                No non-taxable items
-              </p>
-            )}
-          </div>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
         </div>
-      </div>
+      ) : isError ? (
+        <p className="text-sm text-red-400 text-center py-16">
+          Failed to load taxable & non-taxable items
+        </p>
+      ) : totalRevenue === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
+            <RefreshCcw size={24} className="text-gray-300" />
+          </div>
+          <p className="text-sm font-medium text-gray-500">No revenue data</p>
+          <p className="text-xs text-gray-400 mt-1">
+            Taxable & Non-Taxable Items will appear here
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* Chart + stats */}
+          <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6 items-center">
+            {/* Donut */}
+            <div className="relative h-44">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={48}
+                    outerRadius={70}
+                    paddingAngle={3}
+                    dataKey="value"
+                    nameKey="name"
+                  >
+                    {pieData.map((d, i) => (
+                      <Cell key={i} fill={d.color} stroke="none" />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<PieTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">
+                  Taxable
+                </span>
+                <span className="text-base font-bold text-gray-900">
+                  {taxablePct.toFixed(0)}%
+                </span>
+              </div>
+            </div>
+
+            {/* Stat tiles */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {stats.map((s) => (
+                <div
+                  key={s.label}
+                  className="rounded-xl border border-gray-100 p-3.5"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <div
+                      className={`w-7 h-7 rounded-lg ${s.iconBg} flex items-center justify-center`}
+                    >
+                      {s.icon}
+                    </div>
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                      {s.label}
+                    </span>
+                  </div>
+                  <p className="text-lg font-bold text-gray-900 truncate">
+                    {s.value}
+                  </p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">{s.sub}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Item lists */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {/* Taxable */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ backgroundColor: TAXABLE_COLOR }}
+                  />
+                  <span className="text-xs font-semibold text-gray-700">
+                    Taxable Items
+                  </span>
+                  <span className="text-[10px] text-gray-400 font-medium">
+                    ({data.taxableItems?.length ?? 0})
+                  </span>
+                </div>
+                <span
+                  className="text-xs font-semibold"
+                  style={{ color: TAXABLE_COLOR }}
+                >
+                  {fmt(data.taxableRevenue)}
+                </span>
+              </div>
+
+              {taxableItems.length > 0 ? (
+                <div className="rounded-xl border border-gray-100 divide-y divide-gray-50">
+                  {taxableItems.map((item) => (
+                    <div
+                      key={item.name}
+                      className="flex items-center justify-between text-xs py-2 px-3 hover:bg-blue-50/40 transition-colors"
+                    >
+                      <span className="text-gray-700 truncate">
+                        {item.name}
+                      </span>
+                      <span
+                        className="font-semibold shrink-0 ml-2"
+                        style={{ color: TAXABLE_COLOR }}
+                      >
+                        {fmt(item.revenue)}
+                      </span>
+                    </div>
+                  ))}
+                  {taxableHasMore && (
+                    <button
+                      onClick={() => setShowTaxableAll(!showTaxableAll)}
+                      className="w-full text-xs font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-50 py-2 transition-colors"
+                    >
+                      {showTaxableAll
+                        ? "Show less"
+                        : `Show ${data.taxableItems.length - ITEMS_PER_PAGE} more`}
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400 text-center py-6 rounded-xl border border-gray-100">
+                  No taxable items
+                </p>
+              )}
+            </div>
+
+            {/* Non-Taxable */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ backgroundColor: NON_TAXABLE_COLOR }}
+                  />
+                  <span className="text-xs font-semibold text-gray-700">
+                    Non-Taxable Items
+                  </span>
+                  <span className="text-[10px] text-gray-400 font-medium">
+                    ({data.nonTaxableItems?.length ?? 0})
+                  </span>
+                </div>
+                <span
+                  className="text-xs font-semibold"
+                  style={{ color: NON_TAXABLE_COLOR }}
+                >
+                  {fmt(data.nonTaxableRevenue)}
+                </span>
+              </div>
+
+              {nonTaxableItems.length > 0 ? (
+                <div className="rounded-xl border border-gray-100 divide-y divide-gray-50">
+                  {nonTaxableItems.map((item) => (
+                    <div
+                      key={item.name}
+                      className="flex items-center justify-between text-xs py-2 px-3 hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="text-gray-700 truncate">
+                        {item.name}
+                      </span>
+                      <span
+                        className="font-semibold shrink-0 ml-2"
+                        style={{ color: NON_TAXABLE_COLOR }}
+                      >
+                        {fmt(item.revenue)}
+                      </span>
+                    </div>
+                  ))}
+                  {nonTaxableHasMore && (
+                    <button
+                      onClick={() => setShowNonTaxableAll(!showNonTaxableAll)}
+                      className="w-full text-xs font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-50 py-2 transition-colors"
+                    >
+                      {showNonTaxableAll
+                        ? "Show less"
+                        : `Show ${data.nonTaxableItems.length - ITEMS_PER_PAGE} more`}
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400 text-center py-6 rounded-xl border border-gray-100">
+                  No non-taxable items
+                </p>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
