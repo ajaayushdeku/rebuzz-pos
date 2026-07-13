@@ -8,8 +8,8 @@ import {
   ChevronDown,
   ChevronUp,
   ArrowUpDown,
+  Wallet,
   // Eye,
-  // Wallet,
   // Pencil,
   // Copy,
   // Send,
@@ -37,6 +37,7 @@ import PrintInvoiceModal from "@/components/invoice/modals/PrintInvoiceModal";
 import EmailInvoiceModal from "@/components/invoice/modals/EmailInvoiceModal";
 import toast from "react-hot-toast";
 import { parseNepalDateTime } from "../dashboardComponents/staffDash/staffDetail/staffDetailHelpers";
+import { moveInvoiceToCredit } from "@/services/apiCredit.client";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -63,7 +64,30 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
   const [exportTarget, setExportTarget] = useState<Invoice | null>(null);
   const [printTarget, setPrintTarget] = useState<Invoice | null>(null);
   const [emailTarget, setEmailTarget] = useState<Invoice | null>(null);
+  const [moveTarget, setMoveTarget] = useState<Invoice | null>(null);
+  const [moving, setMoving] = useState(false);
   const pageSize = 10;
+
+  const handleMoveToCredit = async () => {
+    const invoiceNo = moveTarget?.invoice;
+    if (invoiceNo == null) return;
+    setMoving(true);
+    try {
+      await moveInvoiceToCredit(invoiceNo);
+      toast.success(`Invoice ORD-${invoiceNo} moved to credit`);
+      setMoveTarget(null);
+      // Refresh the invoice list (it should drop the moved invoice) + credits.
+      queryClient.invalidateQueries({ queryKey: ["invoice"] });
+      queryClient.invalidateQueries({ queryKey: ["archived-invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["credits"] });
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to move to credit",
+      );
+    } finally {
+      setMoving(false);
+    }
+  };
 
   const filtered = useMemo(() => {
     return invoices.filter((inv) => {
@@ -349,6 +373,13 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                             <DropdownMenuSeparator />
 
                             <DropdownMenuItem
+                              className="rounded-lg"
+                              onSelect={() => setMoveTarget(inv)}
+                            >
+                              Move to credit
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
                               className="rounded-lg text-red-600 focus:bg-red-50 focus:text-red-600"
                               onSelect={() => setDeleteTarget(inv)}
                             >
@@ -513,6 +544,59 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
         onClose={() => setEmailTarget(null)}
         invoiceNo={emailTarget?.invoice}
       />
+
+      {/* Move to Credit Confirmation Modal */}
+      {moveTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => !moving && setMoveTarget(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 text-center">
+              <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-4">
+                <Wallet className="h-6 w-6 text-amber-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Move to Credit?
+              </h3>
+              <p className="text-sm text-gray-500 mt-2">
+                Invoice{" "}
+                <span className="font-medium text-gray-700">
+                  ORD-{moveTarget.invoice}
+                </span>{" "}
+                will be moved to the credit section and removed from this list.
+              </p>
+            </div>
+            <div className="px-6 pb-6 flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setMoveTarget(null)}
+                disabled={moving}
+                className="flex-1 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleMoveToCredit}
+                disabled={moving}
+                className="flex-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white"
+              >
+                {moving ? (
+                  <span className="flex items-center gap-1.5">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Moving...
+                  </span>
+                ) : (
+                  "Move to Credit"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

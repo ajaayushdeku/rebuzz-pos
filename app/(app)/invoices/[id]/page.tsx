@@ -17,10 +17,13 @@ import {
   Mail,
   Plus,
   Send,
+  Wallet,
+  Loader2,
 } from "lucide-react";
 
 import { useBusiness } from "@/hooks/useBusiness";
 import { getTicketByInvoice } from "@/services/apiTicket.client";
+import { moveInvoiceToCredit } from "@/services/apiCredit.client";
 import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
 
 import {
@@ -55,6 +58,8 @@ const InvoiceDetailPage = () => {
   const [isExportPdfOpen, setIsExportPdfOpen] = useState(false);
   const [isPrintOpen, setIsPrintOpen] = useState(false);
   const [isCustomerPreviewOpen, setIsCustomerPreviewOpen] = useState(false);
+  const [isMoveToCreditOpen, setIsMoveToCreditOpen] = useState(false);
+  const [movingToCredit, setMovingToCredit] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["ticket", id],
@@ -159,6 +164,30 @@ const InvoiceDetailPage = () => {
     router.push(`/invoices/`);
   };
 
+  const handleMoveToCredit = async () => {
+    const invoiceNo = invoice?.invoice;
+    if (invoiceNo == null) {
+      toast.error("Invoice ID is missing");
+      return;
+    }
+    setMovingToCredit(true);
+    try {
+      await moveInvoiceToCredit(invoiceNo);
+      toast.success(`Invoice ORD-${invoiceNo} moved to credit`);
+      setIsMoveToCreditOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["invoice"] });
+      queryClient.invalidateQueries({ queryKey: ["archived-invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["credits"] });
+      router.push("/records/credits");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to move to credit",
+      );
+    } finally {
+      setMovingToCredit(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -185,6 +214,7 @@ const InvoiceDetailPage = () => {
   // ── Derived status ────────────────────────────────────────────────────────
   const isRefunded = displayBillData?.status === "refunded";
   const isPaid = invoice.paidStatus === "paid";
+  const isCredited = invoice.paidStatus === "credited";
 
   const isOverdue = !isPaid && !isRefunded;
 
@@ -245,6 +275,7 @@ const InvoiceDetailPage = () => {
             </span>
           </div>
 
+          {!isCredited && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-1.5 border border-gray-200 rounded-full px-2 sm:px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
@@ -294,6 +325,13 @@ const InvoiceDetailPage = () => {
               <DropdownMenuSeparator className="my-1 bg-gray-100" />
 
               <DropdownMenuItem
+                onClick={() => setIsMoveToCreditOpen(true)}
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-amber-50 focus:text-amber-600 text-sm"
+              >
+                Move to credit
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
                 onClick={handleDeleteInvoice}
                 className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 text-sm"
               >
@@ -301,6 +339,7 @@ const InvoiceDetailPage = () => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          )}
 
           <button
             onClick={() => router.push("/invoices/add")}
@@ -846,6 +885,59 @@ const InvoiceDetailPage = () => {
         onClose={() => setIsCustomerPreviewOpen(false)}
         invoiceNo={id as string}
       />
+
+      {/* Move to Credit Confirmation Modal */}
+      {isMoveToCreditOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => !movingToCredit && setIsMoveToCreditOpen(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 text-center">
+              <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-4">
+                <Wallet className="h-6 w-6 text-amber-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Move to Credit?
+              </h3>
+              <p className="text-sm text-gray-500 mt-2">
+                Invoice{" "}
+                <span className="font-medium text-gray-700">
+                  ORD-{invoice?.invoice}
+                </span>{" "}
+                will be moved to the credit section and removed from the invoice
+                list.
+              </p>
+            </div>
+            <div className="px-6 pb-6 flex gap-3">
+              <button
+                onClick={() => setIsMoveToCreditOpen(false)}
+                disabled={movingToCredit}
+                className="flex-1 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleMoveToCredit}
+                disabled={movingToCredit}
+                className="flex-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white py-2 text-sm font-semibold transition-colors disabled:opacity-50"
+              >
+                {movingToCredit ? (
+                  <span className="flex items-center justify-center gap-1.5">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Moving...
+                  </span>
+                ) : (
+                  "Move to Credit"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -18,6 +18,8 @@ import {
 } from "@/lib/mockData/mock-profitcost-advanced";
 import type { MenuCategory } from "@/lib/mockData/mock-profitcost-advanced";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 
 const CATEGORY_COLORS: Record<MenuCategory, string> = {
   Coffee: "#3b82f6",
@@ -49,6 +51,7 @@ const CustomTooltip = ({
   active?: boolean;
   payload?: TooltipPayloadItem[];
 }) => {
+  const { currency } = useCurrency();
   if (!active || !payload?.length) return null;
   const d = payload[0]?.payload;
   return (
@@ -63,7 +66,11 @@ const CustomTooltip = ({
         <p>
           <span className="text-gray-400">Margin:</span>{" "}
           <span className="font-semibold">
-            ${d.contributionMargin.toFixed(2)}
+            {formatCurrencySymbol(
+              d.contributionMargin,
+              currency.symbol,
+              currency.locale,
+            )}
           </span>
         </p>
       </div>
@@ -86,6 +93,7 @@ const CustomLegend = () => (
 );
 
 export default function MenuEngineeringMatrix() {
+  const { currency } = useCurrency();
   const categories = Object.keys(CATEGORY_COLORS) as MenuCategory[];
 
   return (
@@ -144,7 +152,9 @@ export default function MenuEngineeringMatrix() {
               name="Margin ($)"
               domain={[0, 9]}
               ticks={[0, 2, 4, 6, 8]}
-              tickFormatter={(v) => `$${v}`}
+              tickFormatter={(v) =>
+                `${currency.symbol} ${formatCompactNumber(v)}`
+              }
               axisLine={false}
               tickLine={false}
               tick={{ fill: "#9ca3af", fontSize: 11 }}

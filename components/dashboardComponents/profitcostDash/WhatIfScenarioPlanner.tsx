@@ -12,9 +12,9 @@ import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 
-function clamp(value: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, value));
-}
+// function clamp(value: number, min: number, max: number) {
+//   return Math.min(max, Math.max(min, value));
+// }
 
 export default function WhatIfScenarioPlanner() {
   const { currency } = useCurrency();

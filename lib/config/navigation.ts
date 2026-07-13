@@ -95,7 +95,12 @@ export const navigationConfig: NavigationItem[] = [
       {
         label: "Order History",
         href: "/records/order-history",
-        icon: ClipboardList,
+        icon: ShoppingCart,
+      },
+      {
+        label: "Credits",
+        href: "/records/credits",
+        icon: CreditCard,
       },
       { label: "Customers", href: "/records/customers", icon: Users },
       { label: "Products", href: "/records/products", icon: Package },
