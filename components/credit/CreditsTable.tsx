@@ -12,20 +12,18 @@ import {
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { parseNepalDateTime } from "@/components/dashboardComponents/staffDash/staffDetail/staffDetailHelpers";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import CreditPaymentModal from "@/components/credit/CreditPaymentModal";
 import type { Credit } from "@/services/apiCredit.client";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
-
-/** Date part of "2026-07-13 14:53:38.595" → "2026-07-13". */
-const dateOnly = (raw: string) =>
-  raw ? (raw.includes(" ") ? raw.split(" ")[0] : raw.split("T")[0]) : "—";
 
 export default function CreditsTable({ credits }: { credits: Credit[] }) {
   const { currency } = useCurrency();
@@ -174,6 +172,14 @@ export default function CreditsTable({ credits }: { credits: Credit[] }) {
               </th>
               <th
                 className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                onClick={() => toggleSort("grandTotal")}
+              >
+                <span className="flex items-center gap-1">
+                  Total Credit {SortIcon({ colKey: "grandTotal" })}
+                </span>
+              </th>
+              <th
+                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                 onClick={() => toggleSort("dueAmount")}
               >
                 <span className="flex items-center gap-1">
@@ -187,7 +193,7 @@ export default function CreditsTable({ credits }: { credits: Credit[] }) {
             {paged.length === 0 ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={7}
                   className="text-center py-12 text-sm text-gray-400"
                 >
                   No credits found
@@ -216,65 +222,125 @@ export default function CreditsTable({ credits }: { credits: Credit[] }) {
                     </td>
 
                     {/* Date */}
-                    <td className="py-3.5 px-4 text-gray-700">
-                      {dateOnly(c.creationDate)}
+                    <td className="py-3.5 px-4">
+                      {(() => {
+                        const d = parseNepalDateTime(c.creationDate);
+                        return d ? (
+                          <div>
+                            <span className="font-medium text-gray-800 text-xs block">
+                              {d.toLocaleTimeString("en-US", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: false,
+                              })}
+                            </span>
+                            <span className="text-[11px] text-gray-400">
+                              {d.toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        );
+                      })()}
                     </td>
 
                     {/* Customer */}
-                    <td className="py-3.5 px-4 text-gray-800">
+                    <td className="py-3.5 px-4 text-xs text-gray-800">
                       {c.user?.name ?? "—"}
                     </td>
 
                     {/* Unpaid by customer */}
-                    <td className="py-3.5 px-4 text-gray-500">
+                    <td className="py-3.5 px-4 text-xs text-gray-500">
                       {ubc && ubc.total > 1
                         ? `${ubc.ordinal} of ${ubc.total}`
                         : ""}
                     </td>
 
+                    {/* Total Credit */}
+                    <td className="py-3.5 px-4 text-xs font-semibold text-gray-800">
+                      {fmt(c.grandTotal ?? 0)}
+                    </td>
+
                     {/* Amount due */}
-                    <td className="py-3.5 px-4 font-semibold text-gray-900">
+                    <td className="py-3.5 px-4 text-xs font-semibold text-red-900">
                       {fmt(c.dueAmount ?? 0)}
                     </td>
 
                     {/* Actions */}
                     <td className="py-3.5 px-4">
                       <div className="flex items-center justify-end gap-2">
-                        {cleared ? (
+                        {/* {cleared ? (
                           <span className="text-xs text-gray-400 font-medium">
                             Settled
                           </span>
                         ) : (
-                          <>
+                          <button
+                            onClick={() => setPaymentTarget(c)}
+                            className="text-blue-600 font-semibold hover:text-blue-700 transition-colors"
+                          >
+                            Record payment
+                          </button>
+                        )} */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
                             <button
-                              onClick={() => setPaymentTarget(c)}
-                              className="text-blue-600 font-semibold hover:text-blue-700 transition-colors"
+                              onClick={(e) => e.stopPropagation()}
+                              title="Actions"
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                             >
-                              Record payment
+                              <ChevronDown className="h-4 w-4" />
                             </button>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <button
-                                  title="Actions"
-                                  className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-blue-200 text-blue-500 hover:bg-blue-50 transition-colors"
-                                >
-                                  <ChevronDown className="h-4 w-4" />
-                                </button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent
-                                align="end"
-                                className="w-44 rounded-xl p-1.5"
-                              >
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            align="end"
+                            className="w-44 rounded-xl p-1.5"
+                          >
+                            {/* View */}
+                            <DropdownMenuItem className="rounded-lg">
+                              View
+                            </DropdownMenuItem>
+
+                            {!cleared && (
+                              <>
+                                <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                   className="rounded-lg"
                                   onSelect={() => setPaymentTarget(c)}
                                 >
                                   Record payment
                                 </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </>
-                        )}
+                              </>
+                            )}
+
+                            {/* Resend invoice */}
+                            <DropdownMenuItem className="rounded-lg">
+                              Resend invoice
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+
+                            {/* Export as PDF */}
+                            <DropdownMenuItem className="rounded-lg">
+                              Export as PDF
+                            </DropdownMenuItem>
+
+                            {/* Print */}
+                            <DropdownMenuItem className="rounded-lg">
+                              Print
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+
+                            {/* Delete */}
+                            <DropdownMenuItem className="rounded-lg text-red-600 focus:text-red-600 focus:bg-red-50">
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </td>
                   </tr>

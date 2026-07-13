@@ -93,14 +93,14 @@ export const navigationConfig: NavigationItem[] = [
     items: [
       { label: "Invoices", href: "/records/invoices", icon: FileText },
       {
-        label: "Order History",
-        href: "/records/order-history",
-        icon: ShoppingCart,
-      },
-      {
         label: "Credits",
         href: "/records/credits",
         icon: CreditCard,
+      },
+      {
+        label: "Order History",
+        href: "/records/order-history",
+        icon: ShoppingCart,
       },
       { label: "Customers", href: "/records/customers", icon: Users },
       { label: "Products", href: "/records/products", icon: Package },
