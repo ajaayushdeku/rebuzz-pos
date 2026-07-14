@@ -13,6 +13,20 @@ export interface Credit {
   createdAt: string;
   updatedAt: string;
   dueAmount: number;
+  invoiceNo: number;
+}
+
+export interface CreditPayment {
+  _id: string;
+  credit: string;
+  paymentMethod: string;
+  dueAmount: number;
+  paymentDate: string;
+  paymentAmount: number;
+  isGrouped: boolean;
+  groupedFrom: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 /** Fetch every credit. */
@@ -20,10 +34,111 @@ export async function fetchCreditsClient(): Promise<Credit[]> {
   const res = await fetch("/api/credit/getall", { cache: "no-store" });
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
-    throw new Error((data as { message?: string }).message || "Failed to fetch credits");
+    throw new Error(
+      (data as { message?: string }).message || "Failed to fetch credits",
+    );
   }
   const json = await res.json();
   return json?.data?.credits ?? [];
+}
+
+/** Raw credit shape as returned by the by-status endpoint (user is an id). */
+interface RawStatusCredit extends Omit<Credit, "user"> {
+  user: { _id: string; name: string } | string | null;
+}
+
+/**
+ * Normalise a by-status credit so `user` is always an object|null, resolving
+ * the customer name from the supplied id→name map when the API only returned
+ * the user id.
+ */
+function normaliseCredit(
+  raw: RawStatusCredit,
+  nameById: Map<string, string>,
+): Credit {
+  let user: Credit["user"];
+  if (typeof raw.user === "string") {
+    user = { _id: raw.user, name: nameById.get(raw.user) ?? "" };
+  } else {
+    user = raw.user ?? null;
+  }
+  return { ...raw, user };
+}
+
+/** Build an id→name map from the customers list (for user enrichment). */
+async function fetchCustomerNameMap(): Promise<Map<string, string>> {
+  try {
+    const res = await fetch("/api/customers", { cache: "no-store" });
+    if (!res.ok) return new Map();
+    const json = await res.json();
+    const users: Array<{ _id: string; name: string }> =
+      json?.data?.users ?? [];
+    return new Map(users.map((u) => [u._id, u.name]));
+  } catch {
+    return new Map();
+  }
+}
+
+/**
+ * Fetch credits filtered by status.
+ *
+ * The by-status endpoint returns `user` as a bare id, so we enrich each row
+ * with the customer's name from the customers API.
+ * @param status one of "ongoing" | "completed" | "archived".
+ */
+export async function fetchCreditsByStatus(status: string): Promise<Credit[]> {
+  const res = await fetch(`/api/credit/status/${status}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(
+      (data as { message?: string }).message ||
+        "Failed to fetch credits by status",
+    );
+  }
+  const json = await res.json();
+  const credits: RawStatusCredit[] = json?.data?.credits ?? [];
+
+  // Only pay the cost of the customers lookup when some user is unresolved.
+  const needsLookup = credits.some((c) => typeof c.user === "string");
+  const nameById = needsLookup ? await fetchCustomerNameMap() : new Map();
+
+  return credits.map((c) => normaliseCredit(c, nameById));
+}
+
+/** Archive (soft-delete) a credit. */
+export async function archiveCredit(creditId: string): Promise<void> {
+  const res = await fetch(`/api/credit/${creditId}/archive`, {
+    method: "DELETE",
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(
+      (data as { data?: { message?: string }; message?: string })?.data
+        ?.message ||
+        (data as { message?: string }).message ||
+        "Failed to archive credit",
+    );
+  }
+}
+
+/** Fetch the payment history for a single credit. */
+export async function fetchCreditPaymentHistory(
+  creditId: string,
+): Promise<CreditPayment[]> {
+  const res = await fetch(`/api/credit/${creditId}/payment-history`, {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(
+      (data as { message?: string }).message ||
+        "Failed to fetch payment history",
+    );
+  }
+  const json = await res.json();
+  return json?.data?.creditPayment ?? [];
 }
 
 /** Local timestamp "YYYY-MM-DD HH:mm:ss.SSS" — the format the credit API expects. */
@@ -184,8 +299,13 @@ export async function moveInvoiceToCredit(
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
     throw new Error(
-      (data as { data?: { message?: string }; message?: string; error?: string })
-        ?.data?.message ||
+      (
+        data as {
+          data?: { message?: string };
+          message?: string;
+          error?: string;
+        }
+      )?.data?.message ||
         (data as { message?: string }).message ||
         (data as { error?: string }).error ||
         "Failed to move invoice to credit",

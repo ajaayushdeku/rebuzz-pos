@@ -8,7 +8,10 @@ import { Spinner } from "@/components/ui/spinner";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import CreditsTable from "@/components/credit/CreditsTable";
-import { fetchCreditsClient } from "@/services/apiCredit.client";
+import {
+  fetchCreditsClient,
+  fetchCreditsByStatus,
+} from "@/services/apiCredit.client";
 
 export default function Page() {
   const { currency } = useCurrency();
@@ -22,6 +25,16 @@ export default function Page() {
   } = useQuery({
     queryKey: ["credits"],
     queryFn: fetchCreditsClient,
+  });
+
+  const { data: completedCredits = [] } = useQuery({
+    queryKey: ["credits", "completed"],
+    queryFn: () => fetchCreditsByStatus("completed"),
+  });
+
+  const { data: archivedCredits = [] } = useQuery({
+    queryKey: ["credits", "archived"],
+    queryFn: () => fetchCreditsByStatus("archived"),
   });
 
   const stats = useMemo(() => {
@@ -135,6 +148,38 @@ export default function Page() {
         </div>
 
         <CreditsTable credits={credits} />
+
+        {/* Divider */}
+        <hr className="border-t border-gray-200" />
+
+        {/* Completed credits — Actions limited to Delete/archive */}
+        <div className="pt-4">
+          <h2 className="font-semibold text-lg text-gray-800 mb-3">
+            Completed Credits
+          </h2>
+          <CreditsTable
+            credits={completedCredits}
+            actionsMode="delete-only"
+            creditStatus="completed"
+            showStatusFilter={false}
+          />
+        </div>
+
+        {/* Divider */}
+        <hr className="border-t border-gray-200" />
+
+        {/* Archived credits — no Actions column */}
+        <div className="pt-4">
+          <h2 className="font-semibold text-lg text-gray-800 mb-3">
+            Archived Credits
+          </h2>
+          <CreditsTable
+            credits={archivedCredits}
+            actionsMode="none"
+            creditStatus="archived"
+            showStatusFilter={false}
+          />
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, Fragment } from "react";
+import { createPortal } from "react-dom";
+import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Search,
@@ -9,6 +11,8 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
+  Loader2,
+  Trash2,
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -21,11 +25,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import CreditPaymentModal from "@/components/credit/CreditPaymentModal";
-import type { Credit } from "@/services/apiCredit.client";
+import CreditPaymentHistory from "@/components/credit/CreditPaymentHistory";
+import { archiveCredit, type Credit } from "@/services/apiCredit.client";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
-export default function CreditsTable({ credits }: { credits: Credit[] }) {
+export default function CreditsTable({
+  credits,
+  actionsMode = "full",
+  creditStatus,
+  showStatusFilter = true,
+}: {
+  credits: Credit[];
+  /** full = every action, delete-only = only Delete, none = no Actions column */
+  actionsMode?: "full" | "delete-only" | "none";
+  creditStatus?: "completed" | "archived";
+  showStatusFilter?: boolean;
+}) {
+  const colCount = actionsMode === "none" ? 7 : 8;
   const { currency } = useCurrency();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
@@ -33,7 +50,27 @@ export default function CreditsTable({ credits }: { credits: Credit[] }) {
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [page, setPage] = useState(0);
   const [paymentTarget, setPaymentTarget] = useState<Credit | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<Credit | null>(null);
+  const [archiving, setArchiving] = useState(false);
   const pageSize = 10;
+
+  const handleArchive = async () => {
+    if (!archiveTarget) return;
+    setArchiving(true);
+    try {
+      await archiveCredit(archiveTarget._id);
+      toast.success("Credit deleted");
+      queryClient.invalidateQueries({ queryKey: ["credits"] });
+      setArchiveTarget(null);
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to delete credit",
+      );
+    } finally {
+      setArchiving(false);
+    }
+  };
 
   const fmt = (v: number) =>
     formatCurrencySymbol(v, currency.symbol, currency.locale);
@@ -135,25 +172,27 @@ export default function CreditsTable({ credits }: { credits: Credit[] }) {
             className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
           />
         </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value);
-            setPage(0);
-          }}
-          className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-600 capitalize"
-        >
-          <option value="all">All Status</option>
-          {statusOptions.map((s) => (
-            <option key={s} value={s} className="capitalize">
-              {s}
-            </option>
-          ))}
-        </select>
+        {showStatusFilter && (
+          <select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(0);
+            }}
+            className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-600 capitalize"
+          >
+            <option value="all">All Status</option>
+            {statusOptions.map((s) => (
+              <option key={s} value={s} className="capitalize">
+                {s}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       {/* Table */}
-      <div className="bg-white overflow-x-auto">
+      <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <table className="w-full text-sm min-w-[900px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
@@ -166,10 +205,13 @@ export default function CreditsTable({ credits }: { credits: Credit[] }) {
                   Date {SortIcon({ colKey: "creationDate" })}
                 </span>
               </th>
+              <th className="text-left pb-3 pt-3 px-4 font-medium">Number</th>
               <th className="text-left pb-3 pt-3 px-4 font-medium">Customer</th>
-              <th className="text-left pb-3 pt-3 px-4 font-medium">
-                Unpaid by customer
-              </th>
+              {creditStatus !== "completed" && creditStatus !== "archived" && (
+                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                  Unpaid by Customer
+                </th>
+              )}
               <th
                 className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                 onClick={() => toggleSort("grandTotal")}
@@ -186,14 +228,18 @@ export default function CreditsTable({ credits }: { credits: Credit[] }) {
                   Amount due {SortIcon({ colKey: "dueAmount" })}
                 </span>
               </th>
-              <th className="text-right pb-3 pt-3 px-4 font-medium">Actions</th>
+              {actionsMode !== "none" && (
+                <th className="text-right pb-3 pt-3 px-4 font-medium">
+                  Actions
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
             {paged.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={colCount}
                   className="text-center py-12 text-sm text-gray-400"
                 >
                   No credits found
@@ -203,147 +249,201 @@ export default function CreditsTable({ credits }: { credits: Credit[] }) {
               paged.map((c) => {
                 const cleared = (c.dueAmount ?? 0) <= 0;
                 const ubc = unpaidByCustomer.get(c._id);
+                const isExpanded = expandedId === c._id;
                 return (
-                  <tr
-                    key={c._id}
-                    className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
-                  >
-                    {/* Status */}
-                    <td className="py-3.5 px-4">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold border capitalize ${
-                          cleared
-                            ? "bg-green-50 text-green-700 border-green-200"
-                            : "bg-red-50 text-red-600 border-red-200"
-                        }`}
-                      >
-                        {cleared ? "Paid" : (c.status ?? "Ongoing")}
-                      </span>
-                    </td>
+                  <Fragment key={c._id}>
+                    <tr className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
+                      {/* Status */}
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-semibold border capitalize relative overflow-hidden ${
+                            c.status === "archived"
+                              ? "text-gray-600 border-gray-300"
+                              : cleared
+                                ? "text-green-700 border-green-200"
+                                : "text-red-700 border-red-200"
+                          }`}
+                          style={
+                            c.status === "archived"
+                              ? {
+                                  backgroundImage:
+                                    "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(156, 163, 175, 0.2) 2px, rgba(156, 163, 175, 0.2) 4px)",
+                                  backgroundColor: "rgba(156, 163, 175, 0.3)",
+                                }
+                              : cleared
+                                ? {
+                                    backgroundImage:
+                                      "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(134, 239, 172, 0.2) 2px, rgba(134, 239, 172, 0.2) 4px)",
+                                    backgroundColor: "rgba(134, 239, 172, 0.3)",
+                                  }
+                                : {
+                                    backgroundImage:
+                                      "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(252, 165, 165, 0.2) 2px, rgba(252, 165, 165, 0.2) 4px)",
+                                    backgroundColor: "rgba(252, 165, 165, 0.3)",
+                                  }
+                          }
+                        >
+                          {cleared && c.status === "completed"
+                            ? "Paid"
+                            : c.status === "archived"
+                              ? "Archived"
+                              : c.status === "ongoing" && "Ongoing"}
+                        </span>
+                      </td>
 
-                    {/* Date */}
-                    <td className="py-3.5 px-4">
-                      {(() => {
-                        const d = parseNepalDateTime(c.creationDate);
-                        return d ? (
-                          <div>
-                            <span className="font-medium text-gray-800 text-xs block">
-                              {d.toLocaleTimeString("en-US", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: false,
-                              })}
-                            </span>
-                            <span className="text-[11px] text-gray-400">
-                              {d.toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">—</span>
-                        );
-                      })()}
-                    </td>
+                      {/* Date */}
+                      <td className="py-3.5 px-4">
+                        {(() => {
+                          const d = parseNepalDateTime(c.creationDate);
+                          return d ? (
+                            <div>
+                              <span className="font-medium text-gray-800 text-xs block">
+                                {d.toLocaleTimeString("en-US", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: false,
+                                })}
+                              </span>
+                              <span className="text-[11px] text-gray-400">
+                                {d.toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">—</span>
+                          );
+                        })()}
+                      </td>
 
-                    {/* Customer */}
-                    <td className="py-3.5 px-4 text-xs text-gray-800">
-                      {c.user?.name ?? "—"}
-                    </td>
+                      {/* Invoice Number */}
+                      <td className="py-3.5 px-4 text-xs text-gray-800">
+                        {c.invoiceNo ?? "—"}
+                      </td>
 
-                    {/* Unpaid by customer */}
-                    <td className="py-3.5 px-4 text-xs text-gray-500">
-                      {ubc && ubc.total > 1
-                        ? `${ubc.ordinal} of ${ubc.total}`
-                        : ""}
-                    </td>
+                      {/* Customer */}
+                      <td className="py-3.5 px-4 text-xs text-gray-800">
+                        {c.user?.name ?? "—"}
+                      </td>
 
-                    {/* Total Credit */}
-                    <td className="py-3.5 px-4 text-xs font-semibold text-gray-800">
-                      {fmt(c.grandTotal ?? 0)}
-                    </td>
+                      {/* Unpaid by customer (hidden for completed/archived) */}
+                      {creditStatus !== "archived" &&
+                        creditStatus !== "completed" && (
+                          <td className="py-3.5 px-4 text-xs text-gray-500">
+                            {!cleared &&
+                            !(c.status === "archived") &&
+                            ubc &&
+                            ubc.total > 1
+                              ? `${ubc.ordinal} of ${ubc.total}`
+                              : ""}
+                          </td>
+                        )}
+                      {/* Total Credit */}
+                      <td className="py-3.5 px-4 text-xs font-semibold text-gray-800">
+                        {fmt(c.grandTotal ?? 0)}
+                      </td>
 
-                    {/* Amount due */}
-                    <td className="py-3.5 px-4 text-xs font-semibold text-red-900">
-                      {fmt(c.dueAmount ?? 0)}
-                    </td>
+                      {/* Amount due */}
+                      <td className="py-3.5 px-4 text-xs font-semibold text-red-900">
+                        {fmt(c.dueAmount ?? 0)}
+                      </td>
 
-                    {/* Actions */}
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center justify-end gap-2">
-                        {/* {cleared ? (
-                          <span className="text-xs text-gray-400 font-medium">
-                            Settled
-                          </span>
-                        ) : (
-                          <button
-                            onClick={() => setPaymentTarget(c)}
-                            className="text-blue-600 font-semibold hover:text-blue-700 transition-colors"
-                          >
-                            Record payment
-                          </button>
-                        )} */}
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button
-                              onClick={(e) => e.stopPropagation()}
-                              title="Actions"
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                            >
-                              <ChevronDown className="h-4 w-4" />
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent
-                            align="end"
-                            className="w-44 rounded-xl p-1.5"
-                          >
-                            {/* View */}
-                            <DropdownMenuItem className="rounded-lg">
-                              View
-                            </DropdownMenuItem>
-
-                            {!cleared && (
-                              <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  className="rounded-lg"
-                                  onSelect={() => setPaymentTarget(c)}
+                      {/* Actions */}
+                      {actionsMode !== "none" && (
+                        <td className="py-3.5 px-4">
+                          <div className="flex items-center justify-end gap-2">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button
+                                  onClick={(e) => e.stopPropagation()}
+                                  title="Actions"
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                                 >
-                                  Record payment
+                                  <ChevronDown className="h-4 w-4" />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent
+                                align="end"
+                                className="w-44 rounded-xl p-1.5"
+                              >
+                                {actionsMode === "full" && (
+                                  <>
+                                    {/* View */}
+                                    <DropdownMenuItem className="rounded-lg">
+                                      View
+                                    </DropdownMenuItem>
+
+                                    {/* View payment history */}
+                                    <DropdownMenuItem
+                                      className="rounded-lg"
+                                      onSelect={() =>
+                                        setExpandedId((prev) =>
+                                          prev === c._id ? null : c._id,
+                                        )
+                                      }
+                                    >
+                                      {isExpanded
+                                        ? "Hide payment history"
+                                        : "View payment history"}
+                                    </DropdownMenuItem>
+
+                                    {!cleared && (
+                                      <>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                          className="rounded-lg"
+                                          onSelect={() => setPaymentTarget(c)}
+                                        >
+                                          Record payment
+                                        </DropdownMenuItem>
+                                      </>
+                                    )}
+
+                                    {/* Resend invoice */}
+                                    <DropdownMenuItem className="rounded-lg">
+                                      Resend invoice
+                                    </DropdownMenuItem>
+
+                                    <DropdownMenuSeparator />
+
+                                    {/* Export as PDF */}
+                                    <DropdownMenuItem className="rounded-lg">
+                                      Export as PDF
+                                    </DropdownMenuItem>
+
+                                    {/* Print */}
+                                    <DropdownMenuItem className="rounded-lg">
+                                      Print
+                                    </DropdownMenuItem>
+
+                                    <DropdownMenuSeparator />
+                                  </>
+                                )}
+
+                                {/* Delete */}
+                                <DropdownMenuItem
+                                  className="rounded-lg text-red-600 focus:text-red-600 focus:bg-red-50"
+                                  onSelect={() => setArchiveTarget(c)}
+                                >
+                                  Delete
                                 </DropdownMenuItem>
-                              </>
-                            )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
 
-                            {/* Resend invoice */}
-                            <DropdownMenuItem className="rounded-lg">
-                              Resend invoice
-                            </DropdownMenuItem>
-
-                            <DropdownMenuSeparator />
-
-                            {/* Export as PDF */}
-                            <DropdownMenuItem className="rounded-lg">
-                              Export as PDF
-                            </DropdownMenuItem>
-
-                            {/* Print */}
-                            <DropdownMenuItem className="rounded-lg">
-                              Print
-                            </DropdownMenuItem>
-
-                            <DropdownMenuSeparator />
-
-                            {/* Delete */}
-                            <DropdownMenuItem className="rounded-lg text-red-600 focus:text-red-600 focus:bg-red-50">
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </td>
-                  </tr>
+                    {isExpanded && (
+                      <tr className="bg-gray-50/60">
+                        <td colSpan={colCount} className="px-4 pb-3">
+                          <CreditPaymentHistory creditId={c._id} />
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 );
               })
             )}
@@ -393,6 +493,65 @@ export default function CreditsTable({ credits }: { credits: Credit[] }) {
           queryClient.invalidateQueries({ queryKey: ["credits"] })
         }
       />
+
+      {/* Delete (archive) confirmation */}
+      {archiveTarget &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+            onClick={() => !archiving && setArchiveTarget(null)}
+          >
+            <div
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-2.5 border-b border-gray-100 px-5 py-3.5">
+                <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
+                  <Trash2 size={16} className="text-red-600" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-gray-900">
+                    Delete credit
+                  </h2>
+                  <p className="text-[11px] text-gray-400">
+                    {archiveTarget.user?.name || "This credit"} · will be
+                    archived
+                  </p>
+                </div>
+              </div>
+
+              <div className="px-5 py-4 text-sm text-gray-600">
+                Are you sure you want to delete this credit? This moves it to
+                the archived list.
+              </div>
+
+              <div className="px-5 pb-5 flex gap-3">
+                <button
+                  onClick={() => setArchiveTarget(null)}
+                  disabled={archiving}
+                  className="flex-1 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleArchive}
+                  disabled={archiving}
+                  className="flex-1 rounded-lg bg-red-600 hover:bg-red-700 text-white py-2 text-sm font-semibold transition-colors disabled:opacity-50"
+                >
+                  {archiving ? (
+                    <span className="flex items-center justify-center gap-1.5">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Deleting...
+                    </span>
+                  ) : (
+                    "Delete"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </>
   );
 }
