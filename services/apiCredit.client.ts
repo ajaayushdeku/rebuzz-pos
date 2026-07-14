@@ -29,6 +29,29 @@ export interface CreditPayment {
   updatedAt: string;
 }
 
+export interface CreditItem {
+  _id: string;
+  product: string;
+  productName: string;
+  unitPrice: number;
+  preTaxPrice: number;
+  taxApplied: boolean;
+  taxAmount: number;
+  costPrice: number;
+  quantity: number;
+  discount: number;
+  isTaxable: boolean;
+  note: string | null;
+  addons: unknown[];
+  discounts: unknown[];
+}
+
+export interface CreditDetail {
+  credit: Credit;
+  items: CreditItem[];
+  paymentHistory: CreditPayment[];
+}
+
 /** Fetch every credit. */
 export async function fetchCreditsClient(): Promise<Credit[]> {
   const res = await fetch("/api/credit/getall", { cache: "no-store" });
@@ -40,6 +63,28 @@ export async function fetchCreditsClient(): Promise<Credit[]> {
   }
   const json = await res.json();
   return json?.data?.credits ?? [];
+}
+
+/** Fetch a single credit's full detail (credit + items + payment history). */
+export async function fetchCreditDetail(
+  creditId: string,
+): Promise<CreditDetail> {
+  const res = await fetch(`/api/credit/${creditId}/getcredit`, {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(
+      (data as { message?: string }).message || "Failed to fetch credit detail",
+    );
+  }
+  const json = await res.json();
+  const d = json?.data ?? {};
+  return {
+    credit: d.credit,
+    items: d.items ?? [],
+    paymentHistory: d.paymentHistory ?? [],
+  };
 }
 
 /** Raw credit shape as returned by the by-status endpoint (user is an id). */

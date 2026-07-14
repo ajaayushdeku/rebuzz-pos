@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
-import { Loader2, HandCoins } from "lucide-react";
+import { Loader2, HandCoins, X } from "lucide-react";
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -51,10 +51,25 @@ export default function CreditPaymentModal({
   if (!open || !mounted || !credit) return null;
 
   const due = credit.dueAmount ?? 0;
+  const value = Number(amount);
+  const isValidValue = Number.isFinite(value) && value > 0;
+  const remaining = due - (Number.isFinite(value) ? value : 0);
+
+  // Info message under the amount, mirroring the invoice payment dialog.
+  let infoMessage = "";
+  let infoClass = "text-gray-400";
+  if (isValidValue) {
+    if (value >= due) {
+      infoMessage = "Invoice will be fully paid";
+      infoClass = "text-green-600";
+    } else {
+      infoMessage = `${fmt(remaining)} will remain due after this payment`;
+      infoClass = "text-amber-600";
+    }
+  }
 
   const handleSubmit = async () => {
-    const value = Number(amount);
-    if (!value || value <= 0) {
+    if (!isValidValue) {
       toast.error("Enter a valid payment amount");
       return;
     }
@@ -98,45 +113,74 @@ export default function CreditPaymentModal({
       onClick={() => !saving && onClose()}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center gap-2.5 border-b border-gray-100 px-5 py-3.5">
-          <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-            <HandCoins size={16} className="text-emerald-600" />
+        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+              <HandCoins size={16} className="text-emerald-600" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-gray-900">
+                Record a payment for this invoice
+              </h2>
+              <p className="text-[11px] text-gray-400">
+                {credit.user?.name || "Customer"} · Due {fmt(due)}
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-sm font-bold text-gray-900">Record Payment</h2>
-            <p className="text-[11px] text-gray-400">
-              {credit.user?.name ?? "Customer"} · Due {fmt(due)}
-            </p>
-          </div>
+          <button
+            onClick={() => !saving && onClose()}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X size={20} />
+          </button>
         </div>
 
         {/* Body */}
-        <div className="px-5 py-4 space-y-4">
-          <div>
-            <label className="text-xs font-medium text-gray-500 block mb-1.5">
-              Payment amount
+        <div className="px-6 py-6 space-y-5">
+          {/* Amount */}
+          <div className="flex items-start gap-4">
+            <label className="w-24 shrink-0 text-right text-sm font-semibold text-gray-700 pt-2.5">
+              Amount
             </label>
-            <input
-              type="number"
-              min={0}
-              max={due}
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="w-full h-10 rounded-lg border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-            />
+            <div className="flex-1">
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                  {currency.symbol}
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  max={due}
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className={`w-full h-11 rounded-lg border pl-9 pr-3 text-sm outline-none transition ${
+                    infoClass === "text-green-600"
+                      ? "border-green-400 focus:ring-2 focus:ring-green-500/20"
+                      : "border-gray-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  }`}
+                />
+              </div>
+              {infoMessage && (
+                <p className={`text-xs mt-1.5 font-medium ${infoClass}`}>
+                  {infoMessage}
+                </p>
+              )}
+            </div>
           </div>
-          <div>
-            <label className="text-xs font-medium text-gray-500 block mb-1.5">
-              Payment method
+
+          {/* Method */}
+          <div className="flex items-center gap-4">
+            <label className="w-24 shrink-0 text-right text-sm font-semibold text-gray-700">
+              Method
             </label>
             <select
               value={method}
               onChange={(e) => setMethod(e.target.value)}
-              className="w-full h-10 rounded-lg border border-gray-200 px-3 text-sm bg-white text-gray-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 capitalize"
+              className="flex-1 h-11 rounded-lg border border-gray-200 px-3 text-sm bg-white text-gray-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 capitalize"
             >
               {PAYMENT_METHODS.map((m) => (
                 <option key={m} value={m} className="capitalize">
@@ -148,18 +192,18 @@ export default function CreditPaymentModal({
         </div>
 
         {/* Footer */}
-        <div className="px-5 pb-5 flex gap-3">
+        <div className="border-t border-gray-100 px-6 py-4 flex justify-end gap-3">
           <button
             onClick={onClose}
             disabled={saving}
-            className="flex-1 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+            className="rounded-full border border-gray-300 text-blue-600 hover:bg-gray-50 px-6 py-2 text-sm font-semibold transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            disabled={saving}
-            className="flex-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white py-2 text-sm font-semibold transition-colors disabled:opacity-50"
+            disabled={saving || !isValidValue}
+            className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 text-sm font-semibold transition-colors disabled:opacity-50"
           >
             {saving ? (
               <span className="flex items-center justify-center gap-1.5">
@@ -167,7 +211,7 @@ export default function CreditPaymentModal({
                 Saving...
               </span>
             ) : (
-              "Record Payment"
+              "Submit"
             )}
           </button>
         </div>

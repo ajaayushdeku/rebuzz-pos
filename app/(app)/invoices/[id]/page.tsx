@@ -23,7 +23,11 @@ import {
 
 import { useBusiness } from "@/hooks/useBusiness";
 import { getTicketByInvoice } from "@/services/apiTicket.client";
-import { moveInvoiceToCredit } from "@/services/apiCredit.client";
+import {
+  moveInvoiceToCredit,
+  fetchCreditsClient,
+  fetchCreditDetail,
+} from "@/services/apiCredit.client";
 import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
 
 import {
@@ -40,6 +44,7 @@ import SendInvoiceModal from "@/components/invoice/modals/SendInvoiceModal";
 import ExportPdfModal from "@/components/invoice/modals/ExportPdfModal";
 import PrintInvoiceModal from "@/components/invoice/modals/PrintInvoiceModal";
 import CustomerPreviewModal from "@/components/invoice/modals/CustomerPreviewModal";
+import CreditPaymentModal from "@/components/credit/CreditPaymentModal";
 import { formatCurrencySymbol } from "@/utils/helper";
 
 const InvoiceDetailPage = () => {
@@ -60,6 +65,7 @@ const InvoiceDetailPage = () => {
   const [isCustomerPreviewOpen, setIsCustomerPreviewOpen] = useState(false);
   const [isMoveToCreditOpen, setIsMoveToCreditOpen] = useState(false);
   const [movingToCredit, setMovingToCredit] = useState(false);
+  const [isCreditPaymentOpen, setIsCreditPaymentOpen] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["ticket", id],
@@ -94,6 +100,21 @@ const InvoiceDetailPage = () => {
     retry: false,
   });
   const displayBillData = billDataQuery ?? null;
+
+  // For credited invoices, resolve the matching credit and load its full
+  // detail (items + payment history + remaining due). This drives the amount
+  // due / payment sections and the Record Payment modal.
+  const { data: creditDetail = null } = useQuery({
+    queryKey: ["credit-detail-for-invoice", invoice?.invoice],
+    queryFn: async () => {
+      const credits = await fetchCreditsClient();
+      const match = credits.find((c) => c.invoiceNo === invoice?.invoice);
+      if (!match) return null;
+      return fetchCreditDetail(match._id);
+    },
+    enabled: invoice?.paidStatus === "credited" && invoice?.invoice != null,
+  });
+  const creditForInvoice = creditDetail?.credit ?? null;
 
   // ── Send Reminder (resend) — reused by the invoice list too ──────────────
   const handleResendInvoice = async (invoiceTypeToSend?: string) => {
@@ -218,6 +239,32 @@ const InvoiceDetailPage = () => {
 
   const isOverdue = !isPaid && !isRefunded;
 
+  // ── Credit figures (when the invoice is credited) ──────────────────────────
+  const creditDue = Number(creditDetail?.credit?.dueAmount ?? 0);
+  const creditPaid = (creditDetail?.paymentHistory ?? []).reduce(
+    (sum, p) => sum + (p.paymentAmount ?? 0),
+    0,
+  );
+  // Amount due to display in the meta/payment sections.
+  const amountDueDisplay = isCredited
+    ? creditDue
+    : Number(invoice.grandTotal ?? 0);
+
+  // Credit payments, newest first, for the "Payments received" list.
+  const creditPayments = [...(creditDetail?.paymentHistory ?? [])].sort(
+    (a, b) => b.paymentDate.localeCompare(a.paymentDate),
+  );
+  const formatPaymentDate = (raw: string) => {
+    const d = new Date(raw.replace(" ", "T"));
+    return isNaN(d.getTime())
+      ? raw
+      : d.toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        });
+  };
+
   const statusLabel = isRefunded ? "Refunded" : isPaid ? "Paid" : "Unpaid";
   const statusColor = isRefunded
     ? "bg-orange-100 text-orange-700 border-orange-200"
@@ -241,7 +288,12 @@ const InvoiceDetailPage = () => {
               {invoice.ticketName || "Invoice"} #{invoice?.invoice}
             </h1>
             <p className="text-xs text-gray-400 mt-0.5">
-              {invoice.paidStatus === "paid" ? "Paid" : "Unpaid"} · Created{" "}
+              {invoice.paidStatus === "paid"
+                ? "Paid"
+                : isCredited
+                  ? "Credited"
+                  : "Unpaid"}{" "}
+              · Created{" "}
               {new Date(invoice.createdAt).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
@@ -275,7 +327,6 @@ const InvoiceDetailPage = () => {
             </span>
           </div>
 
-          {!isCredited && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-1.5 border border-gray-200 rounded-full px-2 sm:px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
@@ -290,7 +341,7 @@ const InvoiceDetailPage = () => {
               align="end"
               className="w-45 rounded-xl p-1 shadow-lg border-gray-200"
             >
-              {!isPaid && (
+              {!isPaid && !isCredited && (
                 <DropdownMenuItem
                   onClick={handleEditInvoice}
                   className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
@@ -299,47 +350,50 @@ const InvoiceDetailPage = () => {
                 </DropdownMenuItem>
               )}
 
-              <DropdownMenuItem
-                onClick={() => setIsCustomerPreviewOpen(true)}
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
-              >
-                Preview as Customer
-              </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setIsCustomerPreviewOpen(true)}
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
+                >
+                  Preview as Customer
+                </DropdownMenuItem>
 
-              <DropdownMenuSeparator className="my-1 bg-gray-100" />
+                <DropdownMenuSeparator className="my-1 bg-gray-100" />
 
-              <DropdownMenuItem
-                onClick={() => setIsExportPdfOpen(true)}
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
-              >
-                Export as PDF
-              </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setIsExportPdfOpen(true)}
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
+                >
+                  Export as PDF
+                </DropdownMenuItem>
 
-              <DropdownMenuItem
-                onClick={() => setIsPrintOpen(true)}
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
-              >
-                Print options
-              </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setIsPrintOpen(true)}
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
+                >
+                  Print options
+                </DropdownMenuItem>
 
-              <DropdownMenuSeparator className="my-1 bg-gray-100" />
+                {!isCredited && (
+                  <>
+                    <DropdownMenuSeparator className="my-1 bg-gray-100" />
 
-              <DropdownMenuItem
-                onClick={() => setIsMoveToCreditOpen(true)}
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-amber-50 focus:text-amber-600 text-sm"
-              >
-                Move to credit
-              </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setIsMoveToCreditOpen(true)}
+                      className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-amber-50 focus:text-amber-600 text-sm"
+                    >
+                      Move to credit
+                    </DropdownMenuItem>
+                  </>
+                )}
 
-              <DropdownMenuItem
-                onClick={handleDeleteInvoice}
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 text-sm"
-              >
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          )}
+                <DropdownMenuItem
+                  onClick={handleDeleteInvoice}
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 text-sm"
+                >
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
           <button
             onClick={() => router.push("/invoices/add")}
@@ -374,6 +428,17 @@ const InvoiceDetailPage = () => {
                     }}
                   >
                     {displayBillData.status}
+                  </span>
+                ) : invoice.paidStatus === "credited" ? (
+                  <span
+                    className="text-xs font-semibold px-2.5 py-1 rounded-md border border-violet-300 text-violet-700 relative overflow-hidden capitalize"
+                    style={{
+                      backgroundImage:
+                        "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(167, 139, 250, 0.2) 2px, rgba(167, 139, 250, 0.2) 4px)",
+                      backgroundColor: "rgba(167, 139, 250, 0.25)",
+                    }}
+                  >
+                    Credited
                   </span>
                 ) : invoice.paidStatus === "unpaid" ? (
                   <span
@@ -449,7 +514,7 @@ const InvoiceDetailPage = () => {
                   ) : (
                     <span className="text-600 font-semibold">
                       {formatCurrencySymbol(
-                        invoice.grandTotal.toFixed(2),
+                        amountDueDisplay,
                         currency.symbol,
                         currency.locale,
                       )}
@@ -681,14 +746,34 @@ const InvoiceDetailPage = () => {
                             displayBillData.updatedAt,
                           ).toLocaleDateString()}
                       </span>
-                    ) : (
-                      isPaid && (
-                        <span className="text-green-600">
-                          Paid via {invoice.paymentMethod || "cash"} on{" "}
-                          {new Date(invoice.updatedAt).toLocaleDateString()}
-                        </span>
-                      )
-                    )}
+                    ) : isPaid ? (
+                      <span className="text-green-600">
+                        Paid via {invoice.paymentMethod || "cash"} on{" "}
+                        {new Date(invoice.updatedAt).toLocaleDateString()}
+                      </span>
+                    ) : isCredited ? (
+                      <span className="flex flex-row gap-1 ">
+                        <p className="text-violet-600 font-bold">
+                          {" "}
+                          {creditPaid > 0
+                            ? `${formatCurrencySymbol(
+                                creditPaid,
+                                currency.symbol,
+                                currency.locale,
+                              )}  `
+                            : ""}
+                        </p>
+                        <p> {creditPaid > 0 ? "paid so far ·" : ""}</p>
+                        <p className="text-violet-600 font-bold">
+                          {formatCurrencySymbol(
+                            creditDue,
+                            currency.symbol,
+                            currency.locale,
+                          )}
+                        </p>{" "}
+                        remaining on credit
+                      </span>
+                    ) : null}
                   </p>
                 </div>
                 {!isPaid && !isRefunded && (
@@ -722,7 +807,11 @@ const InvoiceDetailPage = () => {
                       Charge a credit card
                     </button>
                     <button
-                      onClick={() => setIsPaymentModalOpen(true)}
+                      onClick={() =>
+                        isCredited
+                          ? setIsCreditPaymentOpen(true)
+                          : setIsPaymentModalOpen(true)
+                      }
                       className="text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-1.5 transition-colors"
                     >
                       Record a payment
@@ -743,13 +832,24 @@ const InvoiceDetailPage = () => {
                       {currency.symbol} 0.00
                     </span>
                   ) : (
-                    ` ${formatCurrencySymbol(invoice.grandTotal.toFixed(2), currency.symbol, currency.locale)}`
+                    <span className="font-semibold">
+                      {" "}
+                      {formatCurrencySymbol(
+                        amountDueDisplay,
+                        currency.symbol,
+                        currency.locale,
+                      )}
+                    </span>
                   )}
                   {!isPaid && !isRefunded && (
                     <>
                       {" — "}
                       <button
-                        onClick={() => setIsPaymentModalOpen(true)}
+                        onClick={() =>
+                          isCredited
+                            ? setIsCreditPaymentOpen(true)
+                            : setIsPaymentModalOpen(true)
+                        }
                         className="text-blue-600 font-bold hover:underline font-medium"
                       >
                         Record a payment
@@ -767,11 +867,62 @@ const InvoiceDetailPage = () => {
                     <span className="text-green-700 font-bold">
                       This invoice has been fully paid
                     </span>
+                  ) : isCredited ? (
+                    <span className="text-violet-700 font-bold">
+                      This invoice is on credit
+                    </span>
                   ) : (
                     "Your invoice is awaiting payment"
                   )}
                 </p>
               </div>
+
+              {/* Payments received — from the credit's payment history */}
+              {isCredited && creditPayments.length > 0 && (
+                <div className="ml-13 mt-5 border-t border-gray-100 pt-4">
+                  <p className="text-sm font-semibold text-gray-800 mb-3">
+                    Payments received:
+                  </p>
+                  <div className="space-y-3">
+                    {creditPayments.map((p) => (
+                      <div key={p._id} className="text-xs">
+                        <p className="text-gray-700">
+                          {formatPaymentDate(p.paymentDate)} - A payment for{" "}
+                          <span className="font-bold">
+                            {formatCurrencySymbol(
+                              p.paymentAmount ?? 0,
+                              currency.symbol,
+                              currency.locale,
+                            )}
+                          </span>{" "}
+                          was made using a {p.paymentMethod || "cash"}.
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-1 text-blue-600 font-semibold">
+                          <button className="hover:underline">
+                            Send a receipt
+                          </button>
+                          <span className="text-gray-300">·</span>
+                          <button
+                            className="opacity-40 cursor-not-allowed pointer-events-none"
+                            disabled
+                          >
+                            Edit payment
+                          </button>
+
+                          <span className="text-gray-300">·</span>
+
+                          <button
+                            className="opacity-40 cursor-not-allowed pointer-events-none"
+                            disabled
+                          >
+                            Remove payment
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -817,6 +968,7 @@ const InvoiceDetailPage = () => {
               customerProfile={customerProfile}
               businessProfile={business}
               billData={displayBillData}
+              payments={isCredited ? creditDetail?.paymentHistory : undefined}
               // withControls={true}
             />
           </div>
@@ -834,6 +986,7 @@ const InvoiceDetailPage = () => {
               customerProfile={customerProfile}
               businessProfile={business}
               billData={displayBillData}
+              payments={isCredited ? creditDetail?.paymentHistory : undefined}
               // withControls={true}
             />
           </div>
@@ -849,6 +1002,7 @@ const InvoiceDetailPage = () => {
               customerProfile={customerProfile}
               businessProfile={business}
               billData={displayBillData}
+              payments={isCredited ? creditDetail?.paymentHistory : undefined}
               // withControls={true}
             />
           </div>
@@ -866,6 +1020,21 @@ const InvoiceDetailPage = () => {
         open={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
         invoiceNo={id as string}
+      />
+
+      {/* Credit payment — used when the invoice is credited */}
+      <CreditPaymentModal
+        open={isCreditPaymentOpen}
+        onClose={() => setIsCreditPaymentOpen(false)}
+        credit={creditForInvoice}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ["ticket", id] });
+          queryClient.invalidateQueries({ queryKey: ["credits"] });
+          queryClient.invalidateQueries({
+            queryKey: ["credit-detail-for-invoice", invoice?.invoice],
+          });
+          router.refresh();
+        }}
       />
 
       <ExportPdfModal

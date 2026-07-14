@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { useBusiness } from "@/hooks/useBusiness";
 import { getTicketByInvoice } from "@/services/apiTicket.client";
 import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
+import { useInvoiceCreditPayments } from "../invoice/modals/useInvoiceTicket";
 import InvoicePreview from "../invoice/InvoicePreview";
 
 type InvoiceType = "proforma" | "invoice" | "tax";
@@ -56,6 +57,8 @@ const PublicPreviewPage = ({ type }: { type: InvoiceType }) => {
     retry: false,
   });
 
+  const payments = useInvoiceCreditPayments(invoice, !!invoice);
+
   const handlePreviewBack = () => {
     // Scroll to top of the page when back is clicked from preview
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -81,6 +84,7 @@ const PublicPreviewPage = ({ type }: { type: InvoiceType }) => {
         businessProfile={business}
         customerProfile={customerProfile}
         billData={billData ?? null}
+        payments={payments}
       />
     </div>
   );

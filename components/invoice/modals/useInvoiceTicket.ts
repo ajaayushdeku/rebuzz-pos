@@ -6,6 +6,11 @@ import { getTicketByInvoice } from "@/services/apiTicket.client";
 import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
 import { useBusiness } from "@/hooks/useBusiness";
 import { InvoiceItemGroup } from "@/lib/types/invoice";
+import {
+  fetchCreditsClient,
+  fetchCreditDetail,
+  type CreditPayment,
+} from "@/services/apiCredit.client";
 
 /** Loosely-typed ticket/invoice shape returned by `getTicketByInvoice`. */
 export interface TicketInvoice {
@@ -74,6 +79,30 @@ export function useInvoiceTicket(
   return { invoice, customerProfile: customerProfile ?? null, isLoading };
 }
 
+/**
+ * For a credited invoice, resolve its credit and return the payment history.
+ * Uses the same query key as the invoice detail page so the data is shared.
+ */
+export function useInvoiceCreditPayments(
+  invoice: { invoice?: number; paidStatus?: string } | undefined,
+  enabled: boolean,
+): CreditPayment[] | null {
+  const { data: creditDetail } = useQuery({
+    queryKey: ["credit-detail-for-invoice", invoice?.invoice],
+    queryFn: async () => {
+      const credits = await fetchCreditsClient();
+      const match = credits.find((c) => c.invoiceNo === invoice?.invoice);
+      if (!match) return null;
+      return fetchCreditDetail(match._id);
+    },
+    enabled:
+      enabled &&
+      invoice?.paidStatus === "credited" &&
+      invoice?.invoice != null,
+  });
+  return creditDetail?.paymentHistory ?? null;
+}
+
 /** Extends {@link useInvoiceTicket} with business profile and paid-bill data,
  *  used by the Send Invoice and Print modals. */
 export function useInvoiceDocumentData(
@@ -93,11 +122,14 @@ export function useInvoiceDocumentData(
     retry: false,
   });
 
+  const payments = useInvoiceCreditPayments(invoice, enabled);
+
   return {
     invoice,
     customerProfile,
     business,
     billData: billData ?? null,
+    payments,
     isLoading,
   };
 }

@@ -14,6 +14,7 @@ import businessLogo from "@/public/rebuzz.png";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { InvoiceItemGroup } from "@/lib/types/invoice";
 import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
+import type { CreditPayment } from "@/services/apiCredit.client";
 import InvoiceBillTable from "./InvoiceBillTable";
 
 // ── Types ─────────────────────────────────────────────────────────────────
@@ -58,6 +59,9 @@ interface InvoicePreviewProps {
   businessProfile?: BusinessProfile | null;
   /** When provided, overrides the invoice data with paid bill data (e.g. cashier name from generatedBy) */
   billData?: Transaction | null;
+  /** Credit payment history — when provided (credited invoices), a
+   *  "Payments received" section is rendered after the totals. */
+  payments?: CreditPayment[] | null;
   /** Renders the interactive preview chrome with a Desktop/Mobile toggle.
    *  Off by default so PDF/print/public rendering keep the raw document only. */
   withControls?: boolean;
@@ -71,6 +75,7 @@ function InvoiceContent({
   customerProfile,
   businessProfile,
   billData,
+  payments,
   isMobile,
 }: {
   type: InvoiceType;
@@ -78,9 +83,30 @@ function InvoiceContent({
   customerProfile?: CustomerProfile | null;
   businessProfile?: BusinessProfile | null;
   billData?: Transaction | null;
+  payments?: CreditPayment[] | null;
   isMobile: boolean;
 }) {
   const { currency } = useCurrency();
+
+  // ── Payment history (credited invoices) ─────────────────────────────────
+  const paymentList = [...(payments ?? [])].sort((a, b) =>
+    a.paymentDate.localeCompare(b.paymentDate),
+  );
+  const totalPaid = paymentList.reduce(
+    (sum, p) => sum + (p.paymentAmount ?? 0),
+    0,
+  );
+  const amountDue = Math.max(0, Number(invoice.grandTotal ?? 0) - totalPaid);
+  const formatPaymentDate = (raw: string) => {
+    const d = new Date(raw.replace(" ", "T"));
+    return isNaN(d.getTime())
+      ? raw
+      : d.toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        });
+  };
 
   const customerName =
     customerProfile?.name ||
@@ -262,6 +288,35 @@ function InvoiceContent({
               </span>
             </div>
           </div>
+
+          {/* Payments received (credited) */}
+          {paymentList.length > 0 && (
+            <div className="mt-4 space-y-1.5 text-xs">
+              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
+                Payments received
+              </p>
+              {paymentList.map((p) => (
+                <div key={p._id} className="flex justify-between text-gray-500">
+                  <span>
+                    {formatPaymentDate(p.paymentDate)} · {p.paymentMethod || "cash"}
+                  </span>
+                  <span className="font-medium text-gray-700">
+                    {currency.symbol}
+                    {(p.paymentAmount ?? 0).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+              <div className="flex justify-between items-center pt-2 mt-1 border-t border-gray-200">
+                <span className="text-xs font-bold text-gray-900">
+                  Amount Due ({currency.code || "NPR"})
+                </span>
+                <span className="text-xs font-bold text-gray-900">
+                  {currency.symbol}
+                  {amountDue.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -426,6 +481,33 @@ function InvoiceContent({
         </div>
       </div>
 
+      {/* ───────────────── Payments received (credited) ───────────────── */}
+      {paymentList.length > 0 && (
+        <div className="mt-5 text-sm">
+          <div className="space-y-1.5">
+            {paymentList.map((p) => (
+              <div key={p._id} className="flex justify-between text-gray-700">
+                <span>
+                  Payment on {formatPaymentDate(p.paymentDate)} using a{" "}
+                  {p.paymentMethod || "cash"} payment:
+                </span>
+                <span className="font-medium">
+                  {currency.symbol} {(p.paymentAmount ?? 0).toFixed(2)}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-between pt-3 mt-3 border-t border-gray-300">
+            <p className="font-bold text-base">
+              Amount Due ({currency.code || "NPR"}):
+            </p>
+            <p className="font-bold text-base">
+              {currency.symbol} {amountDue.toFixed(2)}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* ───────────────── Footer ───────────────── */}
       <div className="border-b border-gray-300 my-6" />
 
@@ -498,6 +580,7 @@ export default function InvoicePreview({
   customerProfile,
   businessProfile,
   billData,
+  payments,
   withControls = false,
 }: InvoicePreviewProps) {
   const router = useRouter();
@@ -517,6 +600,7 @@ export default function InvoicePreview({
       customerProfile={customerProfile}
       businessProfile={businessProfile}
       billData={billData}
+      payments={payments}
       isMobile={withControls ? isMobile : false}
     />
   );
@@ -529,6 +613,7 @@ export default function InvoicePreview({
       customerProfile={customerProfile}
       businessProfile={businessProfile}
       billData={billData}
+      payments={payments}
       isMobile={false}
     />
   );

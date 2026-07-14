@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, Fragment } from "react";
+import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -45,6 +46,7 @@ export default function CreditsTable({
   const colCount = actionsMode === "none" ? 7 : 8;
   const { currency } = useCurrency();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
@@ -371,7 +373,13 @@ export default function CreditsTable({
                                 {actionsMode === "full" && (
                                   <>
                                     {/* View */}
-                                    <DropdownMenuItem className="rounded-lg">
+                                    <DropdownMenuItem
+                                      className="rounded-lg"
+                                      disabled={c.invoiceNo == null}
+                                      onSelect={() =>
+                                        router.push(`/invoices/${c.invoiceNo}`)
+                                      }
+                                    >
                                       View
                                     </DropdownMenuItem>
 

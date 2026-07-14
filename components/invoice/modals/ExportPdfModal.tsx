@@ -2,7 +2,7 @@
 
 import jsPDF from "jspdf";
 import toast from "react-hot-toast";
-import { toPng } from "html-to-image";
+import { toJpeg } from "html-to-image";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Download, FileText } from "lucide-react";
@@ -23,7 +23,7 @@ export default function ExportPdfModal({
   onClose,
   invoiceNo,
 }: ExportPdfModalProps) {
-  const { invoice, customerProfile, business, billData } =
+  const { invoice, customerProfile, business, billData, payments } =
     useInvoiceDocumentData(invoiceNo, open);
 
   const proformaRef = useRef<HTMLDivElement | null>(null);
@@ -48,12 +48,22 @@ export default function ExportPdfModal({
     if (!ref.current || !invoice) return;
     try {
       setGeneratingFor(suffix);
-      const dataUrl = await toPng(ref.current, {
+      // JPEG at a moderate pixel ratio keeps the canvas within browser limits.
+      // Credited invoices add a long payment-history section, making the
+      // document tall — a lossless 2x PNG can exceed the canvas/memory cap and
+      // produce a blank export, so we mirror the public preview's approach.
+      const dataUrl = await toJpeg(ref.current, {
         cacheBust: true,
-        pixelRatio: 2,
+        quality: 0.7,
+        pixelRatio: 1.5,
         backgroundColor: "#ffffff",
       });
-      const pdf = new jsPDF("p", "mm", "a4");
+      const pdf = new jsPDF({
+        orientation: "p",
+        unit: "mm",
+        format: "a4",
+        compress: true,
+      });
       const pageWidth = 210;
       const pageHeight = 297;
       const imgProps = pdf.getImageProperties(dataUrl);
@@ -62,12 +72,12 @@ export default function ExportPdfModal({
 
       let heightLeft = imgHeight;
       let position = 0;
-      pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
+      pdf.addImage(dataUrl, "JPEG", 0, position, imgWidth, imgHeight, undefined, "FAST");
       heightLeft -= pageHeight;
       while (heightLeft > 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
-        pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
+        pdf.addImage(dataUrl, "JPEG", 0, position, imgWidth, imgHeight, undefined, "FAST");
         heightLeft -= pageHeight;
       }
       pdf.save(`Invoice-${invoice.invoice}-${suffix}.pdf`);
@@ -95,6 +105,7 @@ export default function ExportPdfModal({
               customerProfile={customerProfile}
               businessProfile={business}
               billData={billData}
+              payments={payments}
             />
           ))}
         </div>
