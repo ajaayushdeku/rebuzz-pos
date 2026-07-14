@@ -41,6 +41,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import InvoicePreview from "@/components/invoice/InvoicePreview";
 import RecordPaymentModal from "@/components/invoice/modals/RecordPaymentModal";
 import SendInvoiceModal from "@/components/invoice/modals/SendInvoiceModal";
+import EmailInvoiceModal from "@/components/invoice/modals/EmailInvoiceModal";
 import ExportPdfModal from "@/components/invoice/modals/ExportPdfModal";
 import PrintInvoiceModal from "@/components/invoice/modals/PrintInvoiceModal";
 import CustomerPreviewModal from "@/components/invoice/modals/CustomerPreviewModal";
@@ -66,6 +67,7 @@ const InvoiceDetailPage = () => {
   const [isMoveToCreditOpen, setIsMoveToCreditOpen] = useState(false);
   const [movingToCredit, setMovingToCredit] = useState(false);
   const [isCreditPaymentOpen, setIsCreditPaymentOpen] = useState(false);
+  const [isEmailInvoiceOpen, setIsEmailInvoiceOpen] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["ticket", id],
@@ -898,7 +900,10 @@ const InvoiceDetailPage = () => {
                           was made using a {p.paymentMethod || "cash"}.
                         </p>
                         <div className="flex items-center gap-1.5 mt-1 text-blue-600 font-semibold">
-                          <button className="hover:underline">
+                          <button
+                            onClick={() => setIsEmailInvoiceOpen(true)}
+                            className="hover:underline"
+                          >
                             Send a receipt
                           </button>
                           <span className="text-gray-300">·</span>
@@ -1013,6 +1018,13 @@ const InvoiceDetailPage = () => {
       <SendInvoiceModal
         open={isSendInvoiceModalOpen}
         onClose={() => setIsSendInvoiceModalOpen(false)}
+        invoiceNo={id as string}
+      />
+
+      {/* Email receipt — opened from a payment's "Send a receipt" */}
+      <EmailInvoiceModal
+        open={isEmailInvoiceOpen}
+        onClose={() => setIsEmailInvoiceOpen(false)}
         invoiceNo={id as string}
       />
 
