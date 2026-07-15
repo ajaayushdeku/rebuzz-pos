@@ -24,31 +24,39 @@ import {
 
 const statusConfig = {
   healthy: {
-    bar: "bg-blue-500",
-    badge: "bg-green-100 text-green-700",
+    bar: "bg-emerald-500",
+    badge: "bg-emerald-100 text-emerald-700",
     label: "In Stock",
-    text: "text-green-600",
+    icon: "✅",
+    text: "text-emerald-600",
+    fill: "rgba(16,185,129,0.10)",
   },
 
   warning: {
     bar: "bg-amber-400",
     badge: "bg-amber-100 text-amber-700",
-    label: "Low",
+    label: "Low Stock",
+    icon: "⚠️",
     text: "text-amber-500",
+    fill: "rgba(245,158,11,0.14)",
   },
 
   critical: {
     bar: "bg-red-500",
     badge: "bg-red-100 text-red-600",
     label: "Critical",
+    icon: "🔴",
     text: "text-red-500",
+    fill: "rgba(239,68,68,0.12)",
   },
 
   out: {
     bar: "bg-red-700",
     badge: "bg-red-200 text-red-800",
     label: "Out of Stock",
+    icon: "🚫",
     text: "text-red-700",
+    fill: "rgba(185,28,28,0.15)",
   },
 };
 
@@ -96,15 +104,15 @@ export default function ProductCard({
     setLightboxIndex((i) => (i === null ? 0 : (i + 1) % gallery.length));
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-xs  hover:shadow-md transition-all duration-200 relative overflow-hidden">
-      {/* ── Top row: image + header/stock/progress ── */}
-      <div className="flex">
+    <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs hover:shadow-md hover:border-gray-300 transition-all duration-200 flex flex-col">
+      <div className="flex flex-col flex-1">
+        {/* ── Image (top) ── */}
         <button
           type="button"
           onClick={() => gallery.length && openLightbox(0)}
           disabled={!gallery.length}
           aria-label="View product image"
-          className="relative w-[35%] shrink-0 bg-gray-100 group focus:outline-none self-stretch"
+          className="relative h-40 w-full shrink-0 bg-gray-100 group focus:outline-none"
         >
           {primary ? (
             <>
@@ -121,13 +129,13 @@ export default function ProductCard({
                 />
               </span>
               {gallery.length > 1 && (
-                <span className="absolute bottom-1.5 right-1.5 text-[10px] font-medium bg-black/60 text-white px-1.5 py-0.5 rounded-full">
+                <span className="absolute bottom-2 right-2 text-[10px] font-medium bg-black/60 text-white px-1.5 py-0.5 rounded-full">
                   {gallery.length}
                 </span>
               )}
             </>
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
               <img
                 src={businessLogo.src}
                 alt="Business Logo"
@@ -135,221 +143,233 @@ export default function ProductCard({
               />
             </div>
           )}
+
+          {/* Status badge overlay */}
+          {item.usesStocks && (
+            <span
+              className={`absolute top-2 left-2 text-[10px] font-semibold px-2 py-0.5 rounded-full shadow-sm ${cfg.badge}`}
+            >
+              {cfg.icon} {cfg.label}
+            </span>
+          )}
         </button>
 
-        <div className="flex-1 min-w-0 p-4">
-          <div className="flex items-start justify-between mb-2">
-            <h3 className="text-sm font-semibold text-gray-800 truncate flex-1 min-w-0">
+        {/* ── Body ── */}
+        <div className="p-4 flex flex-col  flex-1">
+          {/* Name + taxable pill */}
+          <div className="flex  justify-between gap-2 mb-2">
+            <h3 className="text-sm font-semibold text-gray-800 leading-snug line-clamp-2  flex-1 min-w-0">
               {item.name}
             </h3>
-            <div className="flex items-center gap-1.5 shrink-0 ml-2">
-              {item.usesStocks && (
-                <span
-                  className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cfg.badge}`}
-                >
-                  {cfg.label}
-                </span>
-              )}
+
+            <span className="flex flex-row">
               {item.isTaxable && (
-                <span className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-medium">
-                  TAXABLE
+                <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-semibold shrink-0">
+                  Taxable
                 </span>
               )}
+
+              {/* Meta badges */}
               {!item.isAvailable && (
-                <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded font-medium">
-                  Unavailable
-                </span>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-semibold">
+                    Unavailable
+                  </span>
+                </div>
               )}
-              {status === "critical" && (
-                <AlertCircle size={13} className="text-red-400" />
-              )}
-            </div>
+            </span>
           </div>
 
-          <div className="flex items-baseline justify-between mt-6">
-            <div>
-              {item.usesStocks ? (
-                <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold text-gray-900">
+          {/* Stock — same reserved height whether or not stock is tracked */}
+          <div className="min-h-[14px] flex flex-col justify-end">
+            {item.usesStocks ? (
+              <>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-bold text-gray-900 tabular-nums">
                     {item.inStock.toLocaleString()}
                   </span>
-                  <span className="text-xs text-gray-400">units in stock</span>
-                </div>
-              ) : (
-                <span className="text-sm text-gray-400">Stock not tracked</span>
-              )}
-            </div>
-
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors"
-            >
-              {isExpanded ? (
-                <>
-                  <span>Less</span>
-                  <ChevronUp size={14} />
-                </>
-              ) : (
-                <>
-                  <span>More</span>
-                  <ChevronDown size={14} />
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Progress bar */}
-          {item.usesStocks && (
-            <div className="mt-2 space-y-1.5">
-              <div className="w-full bg-gray-100 rounded-full h-1.5">
-                <div
-                  className={`h-1.5 rounded-full transition-all duration-500 ${cfg.bar}`}
-                  style={{ width: `${barPct}%` }}
-                />
-              </div>
-              <div className="flex items-center justify-between text-[11px]">
-                <p className={`font-medium ${cfg.text}`}>
-                  {status === "critical"
-                    ? `Below threshold (min ${item.lowStock})`
-                    : status === "warning"
-                      ? `Near threshold (min ${item.lowStock})`
-                      : `Threshold: ${item.lowStock} units`}
-                </p>
-
-                <p className={`text-[11px] font-medium ${cfg.text}`}>
-                  Max (1000)
-                </p>
-
-                {item.orderedCount > 0 && (
-                  <div className="flex items-center gap-0.5 text-blue-500">
-                    <TrendingUp size={11} />
-                    <span>{item.orderedCount} sold</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── Full-width revenue, net profit & order count ── */}
-      {hasSales && (
-        <div className="px-4 pb-3">
-          <div className="pt-3 border-t-[1px] border-gray-150 grid grid-cols-3 gap-2">
-            <div className="min-w-0">
-              <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
-                Revenue
-              </p>
-              <p className="text-xs font-semibold text-blue-500 truncate">
-                {fmt(revenue ?? 0)}
-              </p>
-            </div>
-
-            <div className="min-w-0 text-center">
-              <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
-                Orders
-              </p>
-              <p className="text-xs font-semibold text-violet-700 truncate">
-                {(orderCount ?? 0).toLocaleString()}
-              </p>
-            </div>
-
-            <div className="min-w-0 text-right">
-              <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
-                Net Profit
-              </p>
-              <p
-                className={`text-xs font-semibold truncate ${
-                  (netProfit ?? 0) >= 0 ? "text-emerald-600" : "text-red-500"
-                }`}
-              >
-                {fmt(netProfit ?? 0)}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Expanded View */}
-      {isExpanded && (
-        <div className="border-t border-gray-100 p-4">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-400 ">Selling Price</span>
-              <span className="font-medium text-gray-700">
-                {formatCurrencySymbol(
-                  item.price,
-                  currency.symbol,
-                  currency.locale,
-                )}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-400">Cost Price</span>
-              <span className="font-medium text-gray-700">
-                {formatCurrencySymbol(
-                  item.costPrice,
-                  currency.symbol,
-                  currency.locale,
-                )}
-              </span>
-            </div>
-
-            {item.usesStocks && (
-              <>
-                <div className="flex items-center justify-between text-xs pt-2 border-t border-gray-50">
-                  <span className="text-gray-400">Total Selling Value</span>
-                  <span className="font-semibold text-gray-700">
-                    {formatCurrencySymbol(
-                      item.price * item.inStock,
-                      currency.symbol,
-                      currency.locale,
-                    )}
+                  <span className="text-[11px] text-gray-500">
+                    units in stock
                   </span>
+                  {status === "critical" && (
+                    <AlertCircle size={13} className="text-red-400 ml-auto" />
+                  )}
                 </div>
 
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-400">Total Cost Value</span>
-                  <span className="font-semibold text-gray-700">
-                    {formatCurrencySymbol(
-                      item.costPrice * item.inStock,
-                      currency.symbol,
-                      currency.locale,
-                    )}
+                <div className="mt-2 w-full h-4 rounded-full bg-gray-200/70 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-700 ease-out ${cfg.bar}`}
+                    style={{ width: `${barPct}%` }}
+                  />
+                </div>
+
+                <div className="mt-1.5 flex items-center justify-between text-[10px]">
+                  <span className={`font-medium ${cfg.text}`}>
+                    {status === "critical"
+                      ? `Below threshold · min ${item.lowStock}`
+                      : status === "warning"
+                        ? `Near threshold  · min ${item.lowStock}`
+                        : `Threshold ${item.lowStock} · max 1,000`}
                   </span>
+                  {item.orderedCount > 0 && (
+                    <span className="flex items-center gap-0.5 text-blue-500 font-medium shrink-0">
+                      <TrendingUp size={10} />
+                      {item.orderedCount} sold
+                    </span>
+                  )}
                 </div>
               </>
+            ) : (
+              <span className="text-xs text-gray-400">Stock not tracked</span>
             )}
           </div>
 
-          {/* Images gallery section */}
-          {gallery.length > 0 && (
-            <div className="mt-4 pt-3 border-t border-gray-50">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium mb-2">
-                Images
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {gallery.map((src, i) => (
-                  <button
-                    key={src}
-                    type="button"
-                    onClick={() => openLightbox(i)}
-                    className="w-12 h-12 rounded-lg overflow-hidden border border-gray-200 hover:border-blue-400 transition-colors"
-                  >
-                    <img
-                      src={src}
-                      alt={`${item.name} ${i + 1}`}
-                      loading="lazy"
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                ))}
+          {/* Sales row */}
+          {hasSales && (
+            <div className="pt-3 border-t border-gray-100 grid grid-cols-3 gap-2 mb-3">
+              <div className="min-w-0">
+                <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
+                  Revenue
+                </p>
+                <p className="text-xs font-semibold text-blue-500 truncate">
+                  {fmt(revenue ?? 0)}
+                </p>
+              </div>
+
+              <div className="min-w-0 text-center">
+                <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
+                  Orders
+                </p>
+                <p className="text-xs font-semibold text-violet-700 truncate">
+                  {(orderCount ?? 0).toLocaleString()}
+                </p>
+              </div>
+
+              <div className="min-w-0 text-right">
+                <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
+                  Net Profit
+                </p>
+                <p
+                  className={`text-xs font-semibold truncate ${
+                    (netProfit ?? 0) >= 0 ? "text-emerald-600" : "text-red-500"
+                  }`}
+                >
+                  {fmt(netProfit ?? 0)}
+                </p>
               </div>
             </div>
           )}
+
+          {/* Expanded View */}
+          {isExpanded && (
+            <div className="pt-3 border-t border-gray-100">
+              <div className="grid grid-cols-2 justigy-between gap-3.5">
+                <>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
+                      Selling Price
+                    </p>
+                    <p className="text-xs font-semibold text-gray-700 truncate">
+                      {formatCurrencySymbol(
+                        item.price,
+                        currency.symbol,
+                        currency.locale,
+                      )}
+                    </p>
+                  </div>
+
+                  <div className="min-w-0 flex flex-col text-right">
+                    <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
+                      Cost Price
+                    </p>
+                    <p className="text-xs font-semibold text-gray-700 truncate">
+                      {formatCurrencySymbol(
+                        item.costPrice,
+                        currency.symbol,
+                        currency.locale,
+                      )}
+                    </p>
+                  </div>
+                </>
+
+                {item.usesStocks && (
+                  <>
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
+                        Total Selling Value
+                      </p>
+                      <p className="text-xs font-semibold text-gray-700 truncate">
+                        {formatCurrencySymbol(
+                          item.price * item.inStock,
+                          currency.symbol,
+                          currency.locale,
+                        )}
+                      </p>
+                    </div>
+
+                    <div className="min-w-0  flex flex-col text-right">
+                      <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
+                        Total Cost Value
+                      </p>
+                      <p className="text-xs font-semibold text-gray-700 truncate">
+                        {formatCurrencySymbol(
+                          item.costPrice * item.inStock,
+                          currency.symbol,
+                          currency.locale,
+                        )}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Images gallery section */}
+              {gallery.length > 0 && (
+                <div className="mt-2 pt-3 border-t border-gray-50">
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium mb-2">
+                    Images
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {gallery.map((src, i) => (
+                      <button
+                        key={src}
+                        type="button"
+                        onClick={() => openLightbox(i)}
+                        className="w-12 h-12 rounded-lg overflow-hidden border border-gray-200 hover:border-blue-400 transition-colors"
+                      >
+                        <img
+                          src={src}
+                          alt={`${item.name} ${i + 1}`}
+                          loading="lazy"
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Expand toggle — stays at the bottom of the card */}
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="mt-auto pt-1 flex items-center justify-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            {isExpanded ? (
+              <>
+                <span>Show less</span>
+                <ChevronUp size={13} />
+              </>
+            ) : (
+              <>
+                <span>Show more</span>
+                <ChevronDown size={13} />
+              </>
+            )}
+          </button>
         </div>
-      )}
+      </div>
 
       {/* ── Lightbox ── */}
       {lightboxIndex !== null &&
