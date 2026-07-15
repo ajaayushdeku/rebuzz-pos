@@ -94,7 +94,7 @@ export default function CreditsTable({
     c: Credit,
     run: (invoiceNo: number) => void,
   ) => {
-    let invoiceNo = c.invoiceNo ?? null;
+    let invoiceNo: number | null = c.invoiceNo ?? null;
     if (invoiceNo == null) {
       try {
         const detail = await fetchCreditDetail(c._id);
