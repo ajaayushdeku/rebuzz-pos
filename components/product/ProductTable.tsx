@@ -123,8 +123,9 @@ export default function ProductTable({ products }: { products: Product[] }) {
       </div>
 
       {/* ── Table ────────────────────────────────────────── */}
+      <style>{`.scrollbar-hide {-ms-overflow-style: none; scrollbar-width: none;} .scrollbar-hide::-webkit-scrollbar {display: none;}`}</style>
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
-      <div className="bg-white  overflow-x-auto">
+      <div className="bg-white overflow-x-auto scrollbar-hide">
         <table className="w-full text-sm min-w-[900px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">

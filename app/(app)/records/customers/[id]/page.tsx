@@ -91,6 +91,11 @@ function parseNepalDate(rawDate: string): Date | null {
   return isNaN(date.getTime()) ? null : date;
 }
 
+const ORDER_STATUS_STYLE: Record<string, string> = {
+  completed: "bg-green-50 text-green-700 border-green-200",
+  refunded: "bg-gray-100 text-gray-500 border-gray-200",
+};
+
 // ── Edit Customer Info Modal ─────────────────────────────────────────────────
 
 type EditForm = {
@@ -366,6 +371,18 @@ function LoyaltyPointModal({
     </Dialog>
   );
 }
+
+// ── Global scrollbar-hide styles ─────────────────────────────────────────────
+
+const scrollbarHideStyles = `
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+`;
 
 // ── Main Page ────────────────────────────────────────────────────────────────
 
@@ -734,7 +751,7 @@ export default function CustomerDetailPage() {
         </div>
 
         {/* ── Order History ── */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mt-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center">
@@ -763,7 +780,8 @@ export default function CustomerDetailPage() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <style>{scrollbarHideStyles}</style>
+              <div className="overflow-x-auto scrollbar-hide">
                 <table className="w-full text-sm min-w-[850px]">
                   <thead>
                     <tr className="text-xs text-gray-400 border-b border-gray-100">
@@ -799,11 +817,12 @@ export default function CustomerDetailPage() {
                       const date = rawDate ? parseNepalDate(rawDate) : null;
 
                       const isRefunded = !!purchase.isRefunded;
-                      const status: "completed" | "refunded" = isRefunded
+                      const statusKey: "completed" | "refunded" = isRefunded
                         ? "refunded"
                         : "completed";
-                      const s =
-                        statusStyles[status] ?? statusStyles["completed"];
+                      const orderStatusStyle =
+                        ORDER_STATUS_STYLE[statusKey] ??
+                        "bg-gray-50 text-gray-600 border-gray-200";
 
                       const paymentMethod = (purchase.paymentMethod ??
                         "Cash") as "Card" | "Cash" | "QR" | "Loyalty";
@@ -860,20 +879,20 @@ export default function CustomerDetailPage() {
                         {transaction.date}
                       </span>
                     </td> */}
-                          <td className="py-3 px-4 text-gray-600">
+                          <td className="py-3 px-4 text-xs text-gray-600">
                             {purchase.ticketName || "—"}
                           </td>
-                          <td className="py-3 px-4 text-gray-600">
+                          <td className="py-3 px-4 text-xs text-gray-600">
                             {customer.name || "—"}
                           </td>
                           <td className="py-3 px-3 text-center">
                             <span
-                              className={`${p.badge} ${p.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
+                              className={`${p.badge} ${p.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block capitalize`}
                             >
                               {paymentMethod}
                             </span>
                           </td>
-                          <td className="py-3 px-3 text-right font-semibold text-gray-900">
+                          <td className="py-3 px-3 text-xs text-right font-semibold text-gray-900">
                             {formatCurrencySymbol(
                               purchase.grandTotal ?? 0,
                               currency.symbol,
@@ -882,9 +901,9 @@ export default function CustomerDetailPage() {
                           </td>
                           <td className="py-3 px-3 text-center">
                             <span
-                              className={`${s.badge} ${s.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
+                              className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border capitalize inline-block ${orderStatusStyle}`}
                             >
-                              {status}
+                              {statusKey}
                             </span>
                           </td>
                         </tr>

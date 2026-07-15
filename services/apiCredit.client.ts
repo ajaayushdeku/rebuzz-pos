@@ -65,6 +65,48 @@ export async function fetchCreditsClient(): Promise<Credit[]> {
   return json?.data?.credits ?? [];
 }
 
+/** A credit as returned by the per-customer credits endpoint. */
+export interface CustomerCredit {
+  _id: string;
+  invoiceNo?: number;
+  total: number;
+  grandTotal: number;
+  discount: number;
+  taxamt: number;
+  status: string;
+  creationDate: string;
+  createdAt: string;
+  updatedAt: string;
+  dueAmount: number;
+  latestPayment?: CreditPayment | null;
+}
+
+export interface CustomerCreditsResponse {
+  credits: CustomerCredit[];
+  totalDueAmount: number;
+}
+
+/** Fetch all credits for a customer (by their user id). */
+export async function fetchCustomerCredits(
+  userId: string,
+): Promise<CustomerCreditsResponse> {
+  const res = await fetch(`/api/credit/${userId}/credits`, {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(
+      (data as { message?: string }).message ||
+        "Failed to fetch customer credits",
+    );
+  }
+  const json = await res.json();
+  return {
+    credits: json?.credits ?? json?.data?.credits ?? [],
+    totalDueAmount: json?.totalDueAmount ?? json?.data?.totalDueAmount ?? 0,
+  };
+}
+
 /** Fetch a single credit's full detail (credit + items + payment history). */
 export async function fetchCreditDetail(
   creditId: string,

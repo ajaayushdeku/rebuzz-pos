@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Upload, ImageIcon, X } from "lucide-react";
 import { Product } from "@/lib/types/product";
 import { useCreateProduct, useUpdateProduct } from "@/hooks/useProducts";
 import { useCategories, useCreateCategory } from "@/hooks/useCategories";
@@ -128,6 +129,31 @@ export default function ProductFormModal({
   const [newCategoryColor, setNewCategoryColor] = useState("#60a5fa");
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
 
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const clearImage = () => {
+    setImageFile(null);
+    setImagePreview(product?.image ?? null);
+    if (imageInputRef.current) imageInputRef.current.value = "";
+  };
+
   // Populate form when editing
   useEffect(() => {
     if (product && open) {
@@ -143,9 +169,13 @@ export default function ProductFormModal({
         categoryId: product.categories ?? "",
       });
       setErrors({});
+      setImageFile(null);
+      setImagePreview(product.image ?? null);
     } else if (!product && open) {
       setForm({ ...INITIAL_FORM, name: initialName ?? "" });
       setErrors({});
+      setImageFile(null);
+      setImagePreview(null);
     }
   }, [product, open]);
 
@@ -163,6 +193,9 @@ export default function ProductFormModal({
     setShowNewCategory(false);
     setNewCategoryName("");
     setNewCategoryColor("#60a5fa");
+    setImageFile(null);
+    setImagePreview(null);
+    if (imageInputRef.current) imageInputRef.current.value = "";
   };
 
   // ── Validation ──
@@ -214,6 +247,7 @@ export default function ProductFormModal({
             lowStock: form.lowStock,
             soldBy: "each",
             categories: categoryId,
+            image: imageFile,
           },
         },
         {
@@ -237,6 +271,7 @@ export default function ProductFormModal({
         usesStocks: form.usesStocks,
         soldBy: "each",
         categories: categoryId,
+        image: imageFile,
       };
       if (form.usesStocks) {
         payload.inStock = form.inStock;
@@ -277,6 +312,56 @@ export default function ProductFormModal({
         </DialogHeader>
 
         <div className="space-y-5 py-2">
+          {/* ── Product image ── */}
+          <Section title="Product Image">
+            <div className="flex items-center gap-4">
+              <div className="w-20 h-20 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center shrink-0">
+                {imagePreview ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={imagePreview}
+                    alt="Product"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <ImageIcon size={22} className="text-gray-300" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => imageInputRef.current?.click()}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition"
+                  >
+                    <Upload size={13} />
+                    {imagePreview ? "Change image" : "Upload image"}
+                  </button>
+                  {imageFile && (
+                    <button
+                      type="button"
+                      onClick={clearImage}
+                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 transition"
+                    >
+                      <X size={13} />
+                      Remove
+                    </button>
+                  )}
+                </div>
+                <p className="text-[11px] text-gray-400 mt-1.5">
+                  PNG or JPG, up to 5MB.
+                </p>
+              </div>
+            </div>
+          </Section>
+
           {/* ── Product info ── */}
           <Section title="Product Info">
             <div className="space-y-3">

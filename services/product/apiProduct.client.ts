@@ -13,17 +13,44 @@ export async function fetchProductsListClient(): Promise<Product[]> {
   return rawProducts.map(mapRawProductToProduct);
 }
 
-export async function createProduct(productData: any): Promise<Product> {
+export async function createProduct(
+  productData: Record<string, unknown> & { image?: File | null },
+): Promise<Product> {
+  const formData = new FormData();
+  const append = (key: string, value: unknown) => {
+    if (value !== undefined && value !== null) {
+      formData.append(key, String(value));
+    }
+  };
+
+  append("name", productData.name);
+  append("price", productData.price);
+  append("costPrice", productData.costPrice);
+  append("description", productData.description ?? "");
+  append("isTaxable", productData.isTaxable);
+  append("usesStocks", productData.usesStocks);
+  append("soldBy", productData.soldBy);
+  append("showInOrdering", productData.showInOrdering);
+  append("isAiImageEnabled", productData.isAiImageEnabled);
+  append("isUnsplashImageEnabled", productData.isUnsplashImageEnabled);
+  append("discountType", productData.discountType);
+  append("categories", productData.categories);
+  if (productData.usesStocks) {
+    append("inStock", productData.inStock);
+    append("lowStock", productData.lowStock);
+  }
+  if (productData.image instanceof File) {
+    formData.append("image", productData.image);
+  }
+
   const res = await fetch("/api/products", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(productData),
+    body: formData,
   });
 
   if (!res.ok) throw new Error("Failed to create product");
 
   const result = await res.json();
-  // console.log("Raw create product response:", result.data.products);
   return mapRawProductToProduct(result.data.products);
 }
 
@@ -41,6 +68,7 @@ export async function updateProduct(
     lowStock: number;
     soldBy: string;
     inStock: number;
+    image: File | null;
   }>,
 ): Promise<Product> {
   const formData = new FormData();
@@ -64,6 +92,7 @@ export async function updateProduct(
     formData.append("inStock", String(fields.inStock));
   if (fields.lowStock !== undefined)
     formData.append("lowStock", String(fields.lowStock));
+  if (fields.image instanceof File) formData.append("image", fields.image);
 
   const res = await fetch(`/api/products/${productId}`, {
     method: "PUT",
