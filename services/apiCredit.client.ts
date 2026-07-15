@@ -152,6 +152,27 @@ export async function fetchCreditsByStatus(status: string): Promise<Credit[]> {
   return credits.map((c) => normaliseCredit(c, nameById));
 }
 
+/** Email a due-reminder for a credit. */
+export async function sendCreditReminder(
+  creditId: string,
+  payload: { currencyType: string; message: string },
+): Promise<void> {
+  const res = await fetch(`/api/credit/${creditId}/send-reminder`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data?.status === "error") {
+    throw new Error(
+      (data as { data?: { message?: string }; message?: string })?.data
+        ?.message ||
+        (data as { message?: string }).message ||
+        "Failed to send reminder",
+    );
+  }
+}
+
 /** Archive (soft-delete) a credit. */
 export async function archiveCredit(creditId: string): Promise<void> {
   const res = await fetch(`/api/credit/${creditId}/archive`, {

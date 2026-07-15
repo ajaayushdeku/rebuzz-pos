@@ -6,9 +6,13 @@ import { getTicketByInvoice } from "@/services/apiTicket.client";
 import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
 import { useBusiness } from "@/hooks/useBusiness";
 import { InvoiceItemGroup } from "@/lib/types/invoice";
+import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
 import {
   fetchCreditsClient,
+  fetchCreditsByStatus,
   fetchCreditDetail,
+  type Credit,
+  type CreditDetail,
   type CreditPayment,
 } from "@/services/apiCredit.client";
 
@@ -80,31 +84,64 @@ export function useInvoiceTicket(
 }
 
 /**
- * For a credited invoice, resolve its credit and return the payment history.
- * Uses the same query key as the invoice detail page so the data is shared.
+ * Detect whether an invoice was ever a credit invoice — regardless of its
+ * current paidStatus or where the user navigated from — and load that credit's
+ * full detail (items + payment history).
+ *
+ * It matches the invoice number against both the current credits (`getall`)
+ * and the completed-credit records, so a credit that has since been fully paid
+ * is still recognised. Query keys are shared with the credits page so the
+ * lists are reused from cache.
  */
-export function useInvoiceCreditPayments(
-  invoice: { invoice?: number; paidStatus?: string } | undefined,
+export function useInvoiceCredit(
+  invoice: { invoice?: number } | undefined,
   enabled: boolean,
-): CreditPayment[] | null {
-  const { data: creditDetail } = useQuery({
-    queryKey: ["credit-detail-for-invoice", invoice?.invoice],
-    queryFn: async () => {
-      const credits = await fetchCreditsClient();
-      const match = credits.find((c) => c.invoiceNo === invoice?.invoice);
-      if (!match) return null;
-      return fetchCreditDetail(match._id);
-    },
-    enabled:
-      enabled &&
-      invoice?.paidStatus === "credited" &&
-      invoice?.invoice != null,
+): { credit: Credit | null; detail: CreditDetail | null } {
+  const invoiceNo = invoice?.invoice;
+
+  const { data: currentCredits } = useQuery({
+    queryKey: ["credits"],
+    queryFn: fetchCreditsClient,
+    enabled: enabled && invoiceNo != null,
+    staleTime: 5 * 60 * 1000,
   });
-  return creditDetail?.paymentHistory ?? null;
+  const { data: completedCredits } = useQuery({
+    queryKey: ["credits", "completed"],
+    queryFn: () => fetchCreditsByStatus("completed"),
+    enabled: enabled && invoiceNo != null,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const credit =
+    invoiceNo != null
+      ? ((currentCredits ?? []).find((c) => c.invoiceNo === invoiceNo) ??
+        (completedCredits ?? []).find((c) => c.invoiceNo === invoiceNo) ??
+        null)
+      : null;
+
+  const { data: detail = null } = useQuery({
+    queryKey: ["credit-detail-by-id", credit?._id],
+    queryFn: () => fetchCreditDetail(credit!._id),
+    enabled: enabled && !!credit?._id,
+  });
+
+  return { credit, detail };
 }
 
-/** Extends {@link useInvoiceTicket} with business profile and paid-bill data,
- *  used by the Send Invoice and Print modals. */
+/**
+ * Payment history for an invoice that was ever a credit invoice (ongoing or
+ * completed). Returns null for invoices that were never credits.
+ */
+export function useInvoiceCreditPayments(
+  invoice: { invoice?: number } | undefined,
+  enabled: boolean,
+): CreditPayment[] | null {
+  const { detail } = useInvoiceCredit(invoice, enabled);
+  return detail?.paymentHistory ?? null;
+}
+
+/** Extends {@link useInvoiceTicket} with business profile, paid-bill data and,
+ *  when the invoice was ever a credit invoice, its payment history. */
 export function useInvoiceDocumentData(
   invoiceNo: string | number | undefined,
   enabled: boolean,
@@ -115,20 +152,54 @@ export function useInvoiceDocumentData(
   );
   const { data: business } = useBusiness();
 
-  const { data: billData } = useQuery({
+  const { data: realBillData } = useQuery({
     queryKey: ["bill-detail", invoice?.invoice],
     queryFn: () => getTransactionDetail(invoice!.invoice),
     enabled: enabled && !!invoice?.invoice,
     retry: false,
   });
 
-  const payments = useInvoiceCreditPayments(invoice, enabled);
+  const { credit, detail } = useInvoiceCredit(invoice, enabled);
+  const payments = detail?.paymentHistory ?? null;
+
+  // A completed credit may have no POS transaction. When it doesn't, synthesise
+  // a bill from the credit detail so the preview still renders the full "bill"
+  // layout (grand total, payment mode, loyalty points). Ongoing credits keep
+  // the plain preview.
+  const isCompletedCredit =
+    !!credit && ((credit.dueAmount ?? 0) <= 0 || credit.status === "completed");
+
+  let billData: Transaction | null = realBillData ?? null;
+  if (isCompletedCredit && detail && !billData) {
+    const c = detail.credit;
+    const history = [...(detail.paymentHistory ?? [])].sort((a, b) =>
+      a.paymentDate.localeCompare(b.paymentDate),
+    );
+    const lastPayment = history[history.length - 1];
+    billData = {
+      id: c._id,
+      date: c.creationDate,
+      timestamp: c.creationDate,
+      invoiceName: "",
+      amount: String(c.grandTotal ?? 0),
+      paymentMethod: (lastPayment?.paymentMethod ?? "cash") as never,
+      items: [],
+      status: "success" as never,
+      discount: c.discount ?? 0,
+      taxAmount: c.taxamt ?? 0,
+      invoiceNo: c.invoiceNo,
+      currentPoint: customerProfile?.loyaltyPoint ?? 0,
+      totalPoints: customerProfile?.loyaltyPoint ?? 0,
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
+    } as unknown as Transaction;
+  }
 
   return {
     invoice,
     customerProfile,
     business,
-    billData: billData ?? null,
+    billData,
     payments,
     isLoading,
   };

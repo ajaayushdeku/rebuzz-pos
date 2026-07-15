@@ -27,7 +27,8 @@ export default function CreditPaymentModal({
   open: boolean;
   onClose: () => void;
   credit: Credit | null;
-  onSuccess?: () => void;
+  /** `fullyPaid` is true when this payment cleared the remaining due. */
+  onSuccess?: (fullyPaid: boolean) => void;
 }) {
   const { currency } = useCurrency();
   const fmt = (v: number) =>
@@ -96,7 +97,7 @@ export default function CreditPaymentModal({
         );
       }
       toast.success("Payment recorded");
-      onSuccess?.();
+      onSuccess?.(value >= due);
       onClose();
     } catch (err) {
       toast.error(

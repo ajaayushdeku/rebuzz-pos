@@ -152,14 +152,14 @@ export default function Page() {
         {/* Divider */}
         <hr className="border-t border-gray-200" />
 
-        {/* Completed credits — Actions limited to Delete/archive */}
+        {/* Completed credits — all actions except Record payment (they're paid) */}
         <div className="pt-4">
           <h2 className="font-semibold text-lg text-gray-800 mb-3">
             Completed Credits
           </h2>
           <CreditsTable
             credits={completedCredits}
-            actionsMode="delete-only"
+            actionsMode="full"
             creditStatus="completed"
             showStatusFilter={false}
           />

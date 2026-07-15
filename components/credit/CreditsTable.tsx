@@ -27,7 +27,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import CreditPaymentModal from "@/components/credit/CreditPaymentModal";
 import CreditPaymentHistory from "@/components/credit/CreditPaymentHistory";
-import { archiveCredit, type Credit } from "@/services/apiCredit.client";
+import EmailInvoiceModal from "@/components/invoice/modals/EmailInvoiceModal";
+import ExportPdfModal from "@/components/invoice/modals/ExportPdfModal";
+import PrintInvoiceModal from "@/components/invoice/modals/PrintInvoiceModal";
+import {
+  archiveCredit,
+  fetchCreditDetail,
+  type Credit,
+} from "@/services/apiCredit.client";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -55,6 +62,10 @@ export default function CreditsTable({
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<Credit | null>(null);
   const [archiving, setArchiving] = useState(false);
+  type DocTarget = { invoiceNo: number; creditId: string };
+  const [emailTarget, setEmailTarget] = useState<DocTarget | null>(null);
+  const [exportTarget, setExportTarget] = useState<DocTarget | null>(null);
+  const [printTarget, setPrintTarget] = useState<DocTarget | null>(null);
   const pageSize = 10;
 
   const handleArchive = async () => {
@@ -76,6 +87,28 @@ export default function CreditsTable({
 
   const fmt = (v: number) =>
     formatCurrencySymbol(v, currency.symbol, currency.locale);
+
+  // The by-status (completed/archived) list may omit invoiceNo, so resolve it
+  // from the credit detail on demand before opening an invoice-scoped action.
+  const withInvoiceNo = async (
+    c: Credit,
+    run: (invoiceNo: number) => void,
+  ) => {
+    let invoiceNo = c.invoiceNo ?? null;
+    if (invoiceNo == null) {
+      try {
+        const detail = await fetchCreditDetail(c._id);
+        invoiceNo = detail.credit?.invoiceNo ?? null;
+      } catch {
+        invoiceNo = null;
+      }
+    }
+    if (invoiceNo == null) {
+      toast.error("Invoice number not found for this credit");
+      return;
+    }
+    run(invoiceNo);
+  };
 
   const statusOptions = useMemo(
     () =>
@@ -375,9 +408,10 @@ export default function CreditsTable({
                                     {/* View */}
                                     <DropdownMenuItem
                                       className="rounded-lg"
-                                      disabled={c.invoiceNo == null}
                                       onSelect={() =>
-                                        router.push(`/invoices/${c.invoiceNo}`)
+                                        withInvoiceNo(c, (inv) =>
+                                          router.push(`/invoices/${inv}`),
+                                        )
                                       }
                                     >
                                       View
@@ -410,19 +444,49 @@ export default function CreditsTable({
                                     )}
 
                                     {/* Resend invoice */}
-                                    <DropdownMenuItem className="rounded-lg">
+                                    <DropdownMenuItem
+                                      className="rounded-lg"
+                                      onSelect={() =>
+                                        withInvoiceNo(c, (inv) =>
+                                          setEmailTarget({
+                                            invoiceNo: inv,
+                                            creditId: c._id,
+                                          }),
+                                        )
+                                      }
+                                    >
                                       Resend invoice
                                     </DropdownMenuItem>
 
                                     <DropdownMenuSeparator />
 
                                     {/* Export as PDF */}
-                                    <DropdownMenuItem className="rounded-lg">
+                                    <DropdownMenuItem
+                                      className="rounded-lg"
+                                      onSelect={() =>
+                                        withInvoiceNo(c, (inv) =>
+                                          setExportTarget({
+                                            invoiceNo: inv,
+                                            creditId: c._id,
+                                          }),
+                                        )
+                                      }
+                                    >
                                       Export as PDF
                                     </DropdownMenuItem>
 
                                     {/* Print */}
-                                    <DropdownMenuItem className="rounded-lg">
+                                    <DropdownMenuItem
+                                      className="rounded-lg"
+                                      onSelect={() =>
+                                        withInvoiceNo(c, (inv) =>
+                                          setPrintTarget({
+                                            invoiceNo: inv,
+                                            creditId: c._id,
+                                          }),
+                                        )
+                                      }
+                                    >
                                       Print
                                     </DropdownMenuItem>
 
@@ -500,6 +564,25 @@ export default function CreditsTable({
         onSuccess={() =>
           queryClient.invalidateQueries({ queryKey: ["credits"] })
         }
+      />
+
+      {/* Resend invoice (email) / Export PDF / Print — reuse invoice modals.
+          The modals detect the credit by invoice number, so the payment history
+          and bill layout are consistent regardless of entry point. */}
+      <EmailInvoiceModal
+        open={emailTarget != null}
+        onClose={() => setEmailTarget(null)}
+        invoiceNo={emailTarget?.invoiceNo}
+      />
+      <ExportPdfModal
+        open={exportTarget != null}
+        onClose={() => setExportTarget(null)}
+        invoiceNo={exportTarget?.invoiceNo}
+      />
+      <PrintInvoiceModal
+        open={printTarget != null}
+        onClose={() => setPrintTarget(null)}
+        invoiceNo={printTarget?.invoiceNo}
       />
 
       {/* Delete (archive) confirmation */}

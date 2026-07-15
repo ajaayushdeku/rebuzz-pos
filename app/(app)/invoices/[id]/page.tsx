@@ -25,9 +25,9 @@ import { useBusiness } from "@/hooks/useBusiness";
 import { getTicketByInvoice } from "@/services/apiTicket.client";
 import {
   moveInvoiceToCredit,
-  fetchCreditsClient,
-  fetchCreditDetail,
+  sendCreditReminder,
 } from "@/services/apiCredit.client";
+import { useInvoiceCredit } from "@/components/invoice/modals/useInvoiceTicket";
 import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
 
 import {
@@ -68,6 +68,9 @@ const InvoiceDetailPage = () => {
   const [movingToCredit, setMovingToCredit] = useState(false);
   const [isCreditPaymentOpen, setIsCreditPaymentOpen] = useState(false);
   const [isEmailInvoiceOpen, setIsEmailInvoiceOpen] = useState(false);
+  const [isReminderOpen, setIsReminderOpen] = useState(false);
+  const [reminderMessage, setReminderMessage] = useState("");
+  const [sendingReminder, setSendingReminder] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["ticket", id],
@@ -103,19 +106,14 @@ const InvoiceDetailPage = () => {
   });
   const displayBillData = billDataQuery ?? null;
 
-  // For credited invoices, resolve the matching credit and load its full
-  // detail (items + payment history + remaining due). This drives the amount
-  // due / payment sections and the Record Payment modal.
-  const { data: creditDetail = null } = useQuery({
-    queryKey: ["credit-detail-for-invoice", invoice?.invoice],
-    queryFn: async () => {
-      const credits = await fetchCreditsClient();
-      const match = credits.find((c) => c.invoiceNo === invoice?.invoice);
-      if (!match) return null;
-      return fetchCreditDetail(match._id);
-    },
-    enabled: invoice?.paidStatus === "credited" && invoice?.invoice != null,
-  });
+  // Detect whether this invoice was ever a credit invoice (ongoing OR since
+  // fully paid) and load its full detail — independent of paidStatus or entry
+  // point. Drives the amount due / payment sections, the payment history and
+  // the Record Payment modal.
+  const { detail: creditDetail } = useInvoiceCredit(
+    invoice,
+    invoice?.invoice != null,
+  );
   const creditForInvoice = creditDetail?.credit ?? null;
 
   // ── Send Reminder (resend) — reused by the invoice list too ──────────────
@@ -149,6 +147,47 @@ const InvoiceDetailPage = () => {
       },
       error: (err) => `${err.message}`,
     });
+  };
+
+  // "Send reminder" — credited invoices open a modal to compose the message,
+  // otherwise fall back to the normal invoice resend (fires immediately).
+  const handleSendReminder = () => {
+    if (invoice?.paidStatus === "credited") {
+      if (!creditForInvoice?._id) {
+        toast.error("Credit not found for this invoice");
+        return;
+      }
+      const due = creditForInvoice.dueAmount ?? 0;
+      setReminderMessage(
+        `Reminder: ${formatCurrencySymbol(due, currency.symbol, currency.locale)} Due Amount`,
+      );
+      setIsReminderOpen(true);
+      return;
+    }
+    handleResendInvoice();
+  };
+
+  const handleSubmitReminder = async () => {
+    if (!creditForInvoice?._id) return;
+    if (!reminderMessage.trim()) {
+      toast.error("Enter a reminder message");
+      return;
+    }
+    setSendingReminder(true);
+    try {
+      await sendCreditReminder(creditForInvoice._id, {
+        currencyType: currency.symbol,
+        message: reminderMessage.trim(),
+      });
+      toast.success("Reminder sent successfully!");
+      setIsReminderOpen(false);
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to send reminder",
+      );
+    } finally {
+      setSendingReminder(false);
+    }
   };
 
   const handleChargeCard = () => {
@@ -352,50 +391,50 @@ const InvoiceDetailPage = () => {
                 </DropdownMenuItem>
               )}
 
-                <DropdownMenuItem
-                  onClick={() => setIsCustomerPreviewOpen(true)}
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
-                >
-                  Preview as Customer
-                </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setIsCustomerPreviewOpen(true)}
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
+              >
+                Preview as Customer
+              </DropdownMenuItem>
 
-                <DropdownMenuSeparator className="my-1 bg-gray-100" />
+              <DropdownMenuSeparator className="my-1 bg-gray-100" />
 
-                <DropdownMenuItem
-                  onClick={() => setIsExportPdfOpen(true)}
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
-                >
-                  Export as PDF
-                </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setIsExportPdfOpen(true)}
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
+              >
+                Export as PDF
+              </DropdownMenuItem>
 
-                <DropdownMenuItem
-                  onClick={() => setIsPrintOpen(true)}
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
-                >
-                  Print options
-                </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setIsPrintOpen(true)}
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
+              >
+                Print options
+              </DropdownMenuItem>
 
-                {!isCredited && (
-                  <>
-                    <DropdownMenuSeparator className="my-1 bg-gray-100" />
+              {!isCredited && (
+                <>
+                  <DropdownMenuSeparator className="my-1 bg-gray-100" />
 
-                    <DropdownMenuItem
-                      onClick={() => setIsMoveToCreditOpen(true)}
-                      className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-amber-50 focus:text-amber-600 text-sm"
-                    >
-                      Move to credit
-                    </DropdownMenuItem>
-                  </>
-                )}
+                  <DropdownMenuItem
+                    onClick={() => setIsMoveToCreditOpen(true)}
+                    className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-amber-50 focus:text-amber-600 text-sm"
+                  >
+                    Move to credit
+                  </DropdownMenuItem>
+                </>
+              )}
 
-                <DropdownMenuItem
-                  onClick={handleDeleteInvoice}
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 text-sm"
-                >
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              <DropdownMenuItem
+                onClick={handleDeleteInvoice}
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 text-sm"
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <button
             onClick={() => router.push("/invoices/add")}
@@ -692,7 +731,7 @@ const InvoiceDetailPage = () => {
                     Send an invoice reminder to the customer now
                   </p>
                   <button
-                    onClick={() => handleResendInvoice()}
+                    onClick={handleSendReminder}
                     className="text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
                   >
                     Send reminder
@@ -880,7 +919,7 @@ const InvoiceDetailPage = () => {
               </div>
 
               {/* Payments received — from the credit's payment history */}
-              {isCredited && creditPayments.length > 0 && (
+              {creditPayments.length > 0 && (
                 <div className="ml-13 mt-5 border-t border-gray-100 pt-4">
                   <p className="text-sm font-semibold text-gray-800 mb-3">
                     Payments received:
@@ -973,7 +1012,7 @@ const InvoiceDetailPage = () => {
               customerProfile={customerProfile}
               businessProfile={business}
               billData={displayBillData}
-              payments={isCredited ? creditDetail?.paymentHistory : undefined}
+              payments={creditDetail?.paymentHistory}
               // withControls={true}
             />
           </div>
@@ -991,7 +1030,7 @@ const InvoiceDetailPage = () => {
               customerProfile={customerProfile}
               businessProfile={business}
               billData={displayBillData}
-              payments={isCredited ? creditDetail?.paymentHistory : undefined}
+              payments={creditDetail?.paymentHistory}
               // withControls={true}
             />
           </div>
@@ -1007,7 +1046,7 @@ const InvoiceDetailPage = () => {
               customerProfile={customerProfile}
               businessProfile={business}
               billData={displayBillData}
-              payments={isCredited ? creditDetail?.paymentHistory : undefined}
+              payments={creditDetail?.paymentHistory}
               // withControls={true}
             />
           </div>
@@ -1028,6 +1067,75 @@ const InvoiceDetailPage = () => {
         invoiceNo={id as string}
       />
 
+      {/* Credit reminder — compose the message before sending */}
+      {isReminderOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => !sendingReminder && setIsReminderOpen(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-2.5 border-b border-gray-100 px-5 py-3.5">
+              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                <Bell size={16} className="text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold text-gray-900">
+                  Send reminder
+                </h2>
+                <p className="text-[11px] text-gray-400">
+                  {creditForInvoice?.user?.name || "Customer"} · Due{" "}
+                  {formatCurrencySymbol(
+                    creditForInvoice?.dueAmount ?? 0,
+                    currency.symbol,
+                    currency.locale,
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div className="px-5 py-4">
+              <label className="text-xs font-medium text-gray-500 block mb-1.5">
+                Reminder message
+              </label>
+              <textarea
+                rows={3}
+                value={reminderMessage}
+                onChange={(e) => setReminderMessage(e.target.value)}
+                placeholder="Write a reminder message..."
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none"
+              />
+            </div>
+
+            <div className="px-5 pb-5 flex gap-3">
+              <button
+                onClick={() => setIsReminderOpen(false)}
+                disabled={sendingReminder}
+                className="flex-1 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitReminder}
+                disabled={sendingReminder || !reminderMessage.trim()}
+                className="flex-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white py-2 text-sm font-semibold transition-colors disabled:opacity-50"
+              >
+                {sendingReminder ? (
+                  <span className="flex items-center justify-center gap-1.5">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Sending...
+                  </span>
+                ) : (
+                  "Send reminder"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <RecordPaymentModal
         open={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
@@ -1039,11 +1147,18 @@ const InvoiceDetailPage = () => {
         open={isCreditPaymentOpen}
         onClose={() => setIsCreditPaymentOpen(false)}
         credit={creditForInvoice}
-        onSuccess={() => {
+        onSuccess={(fullyPaid) => {
+          // A completed credit changes the ticket/bill server-side — reload so
+          // the preview reflects the fully-paid document.
+          if (fullyPaid) {
+            window.location.reload();
+            return;
+          }
           queryClient.invalidateQueries({ queryKey: ["ticket", id] });
           queryClient.invalidateQueries({ queryKey: ["credits"] });
+          queryClient.invalidateQueries({ queryKey: ["credits", "completed"] });
           queryClient.invalidateQueries({
-            queryKey: ["credit-detail-for-invoice", invoice?.invoice],
+            queryKey: ["credit-detail-by-id", creditForInvoice?._id],
           });
           router.refresh();
         }}
