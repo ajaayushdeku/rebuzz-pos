@@ -13,11 +13,7 @@ import {
 import type { BarShapeProps } from "recharts";
 
 import { useCurrency } from "@/providers/CurrencyContext";
-import {
-  formatCompactNumber,
-  formatCurrency,
-  formatCurrencySymbol,
-} from "@/utils/helper";
+import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import type { CustomTooltipProps } from "@/lib/types/chart";
 import type { CompareSalesPoint } from "@/services/dashboardServices/apiSalesCompare";
 import { useSalesTrends } from "@/hooks/useSalesTrends";
@@ -104,17 +100,16 @@ export default function SalesTrendChart() {
   const yMax = yTicks[yTicks.length - 1] * 1.08;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-            Sales Trends
-          </h2>
+          <h2 className="text-sm font-bold text-gray-900">Sales Trends</h2>
           <p className="text-xs text-gray-400 mt-0.5">
             Revenue over time – switch between daily, weekly, and monthly views
           </p>
         </div>
+
         {/* View switcher */}
         <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 self-start">
           {VIEW_OPTIONS.map(({ label, value }) => (

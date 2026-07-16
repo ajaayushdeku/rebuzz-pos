@@ -1,11 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, useMemo } from "react";
 import toast from "react-hot-toast";
 import {
   Plus,
-  X,
-  Check,
   Loader2,
   UserCog,
   Search,
@@ -22,16 +20,9 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import StaffFormModal from "@/components/settingsComponents/staffs/StaffFormModal";
 
-// ── Types ───────────────────────────────────────────────────────────────────
+// â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface StaffFormData {
   name: string;
   email: string;
@@ -57,13 +48,10 @@ const emptyForm: StaffFormData = {
   role: "staff",
 };
 
-// ── Input styling ───────────────────────────────────────────────────────────
-const inputClass =
-  "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
-
+// â”€â”€ Input styling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
-// ── Role badge ──────────────────────────────────────────────────────────────
+// â”€â”€ Role badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function RoleBadge({ role }: { role: string }) {
   const isStaff = role === "staff";
   return (
@@ -84,7 +72,7 @@ function RoleBadge({ role }: { role: string }) {
   );
 }
 
-// ── Status badge ────────────────────────────────────────────────────────────
+// â”€â”€ Status badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function StatusBadge({ deactivated }: { deactivated?: boolean }) {
   return (
     <span
@@ -105,7 +93,7 @@ function StatusBadge({ deactivated }: { deactivated?: boolean }) {
 }
 
 export default function StaffManagementPage() {
-  // ── State ─────────────────────────────────────────────────────────────────
+  // â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -125,7 +113,7 @@ export default function StaffManagementPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  // ── Fetch staff ───────────────────────────────────────────────────────────
+  // â”€â”€ Fetch staff â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const fetchStaff = () => {
     setLoading(true);
     fetch("/api/staff")
@@ -149,7 +137,7 @@ export default function StaffManagementPage() {
     })();
   }, []);
 
-  // ── Open modal for add/edit ───────────────────────────────────────────────
+  // â”€â”€ Open modal for add/edit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const openAdd = () => {
     setEditStaff(null);
     setForm(emptyForm);
@@ -169,7 +157,7 @@ export default function StaffManagementPage() {
     setModalOpen(true);
   };
 
-  // ── Validation ────────────────────────────────────────────────────────────
+  // â”€â”€ Validation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const validate = (): boolean => {
     const e: Partial<Record<keyof StaffFormData, string>> = {};
     if (!form.name.trim()) e.name = "Name is required";
@@ -182,7 +170,7 @@ export default function StaffManagementPage() {
     return Object.keys(e).length === 0;
   };
 
-  // ── Save (create or update) ───────────────────────────────────────────────
+  // â”€â”€ Save (create or update) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleSave = async () => {
     if (!validate()) return;
 
@@ -228,7 +216,7 @@ export default function StaffManagementPage() {
     }
   };
 
-  // ── Delete ────────────────────────────────────────────────────────────────
+  // â”€â”€ Delete â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleDelete = async (userId: string) => {
     setDeleting(true);
     try {
@@ -251,14 +239,14 @@ export default function StaffManagementPage() {
     }
   };
 
-  // ── Set form field ────────────────────────────────────────────────────────
+  // â”€â”€ Set form field â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const set = (key: keyof StaffFormData, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     if (formErrors[key])
       setFormErrors((prev) => ({ ...prev, [key]: undefined }));
   };
 
-  // ── Filter, sort, paginate ────────────────────────────────────────────────
+  // â”€â”€ Filter, sort, paginate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const filtered = useMemo(() => {
     let result = staff;
     const q = search.toLowerCase();
@@ -315,7 +303,7 @@ export default function StaffManagementPage() {
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
       <div className="max-w-7xl mx-auto">
-        {/* ── Header ─────────────────────────────────────── */}
+        {/* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2 pb-4 border-b border-gray-200">
           <div>
             <h1 className="font-bold text-xl md:text-2xl truncate">
@@ -335,7 +323,7 @@ export default function StaffManagementPage() {
           </Button>
         </div>
 
-        {/* ── Search + Filter ── */}
+        {/* â”€â”€ Search + Filter â”€â”€ */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
           <div className="relative flex-1">
             <Search
@@ -366,7 +354,7 @@ export default function StaffManagementPage() {
           </select>
         </div>
 
-        {/* ── Staff Table ── */}
+        {/* â”€â”€ Staff Table â”€â”€ */}
         {loading ? (
           <div className="flex items-center justify-center py-24">
             <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
@@ -382,7 +370,7 @@ export default function StaffManagementPage() {
         ) : (
           <>
             {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
-            <div className="bg-white  overflow-x-auto">
+            <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               <table className="w-full text-sm min-w-[1000px]">
                 <thead>
                   <tr className="text-xs text-gray-400 border-b border-gray-100">
@@ -435,19 +423,19 @@ export default function StaffManagementPage() {
                         </td>
                         <td className="py-3 px-4">
                           <span className="font-medium text-gray-900">
-                            {staffMember.name || "—"}
+                            {staffMember.name || "â€”"}
                           </span>
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-1.5 text-sm text-gray-600">
                             <Mail className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                            {staffMember.email || "—"}
+                            {staffMember.email || "â€”"}
                           </div>
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-1.5 text-sm text-gray-600">
                             <Phone className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                            {staffMember.phone || "—"}
+                            {staffMember.phone || "â€”"}
                           </div>
                         </td>
                         <td className="py-3 px-4 text-center">
@@ -502,7 +490,7 @@ export default function StaffManagementPage() {
               </button>
 
               <span className="text-xs text-gray-400 font-medium">
-                Page {page + 1} of {totalPages} · {sorted.length} staff members
+                Page {page + 1} of {totalPages} Â· {sorted.length} staff members
               </span>
 
               <button
@@ -521,161 +509,19 @@ export default function StaffManagementPage() {
           </>
         )}
 
-        {/* ── Add/Edit Modal ──────────────────────────────── */}
-        {modalOpen && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40  p-4"
-            onClick={() => setModalOpen(false)}
-          >
-            <div
-              className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Modal header */}
-              <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    {editStaff ? "Edit Staff" : "Add New Staff"}
-                  </h2>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {editStaff
-                      ? "Update staff member information"
-                      : "Create a new staff account"}
-                  </p>
-                </div>
-                <button
-                  onClick={() => setModalOpen(false)}
-                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors cursor-pointer"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
+        {/* â”€â”€ Add/Edit Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        <StaffFormModal
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+          isEdit={!!editStaff}
+          form={form}
+          errors={formErrors}
+          onChange={set}
+          onSave={handleSave}
+          saving={saving}
+        />
 
-              {/* Modal body */}
-              <div className="p-6 space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5 tracking-wide">
-                    Staff Name
-                  </label>
-                  <Input
-                    type="text"
-                    value={form.name}
-                    onChange={(e) => set("name", e.target.value)}
-                    className={`${inputClass} ${formErrors.name ? "border-red-300 focus:ring-red-400" : ""}`}
-                    placeholder="e.g. John Doe"
-                  />
-                  {formErrors.name && (
-                    <p className="text-xs text-red-500 mt-1">
-                      {formErrors.name}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5 tracking-wide">
-                    Email
-                  </label>
-                  <Input
-                    type="email"
-                    value={form.email}
-                    onChange={(e) => set("email", e.target.value)}
-                    className={`${inputClass} ${formErrors.email ? "border-red-300 focus:ring-red-400" : ""}`}
-                    placeholder="e.g. john@example.com"
-                  />
-                  {formErrors.email && (
-                    <p className="text-xs text-red-500 mt-1">
-                      {formErrors.email}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5 tracking-wide">
-                    Phone Number
-                  </label>
-                  <Input
-                    type="text"
-                    value={form.phone}
-                    onChange={(e) => set("phone", e.target.value)}
-                    className={`${inputClass} ${formErrors.phone ? "border-red-300 focus:ring-red-400" : ""}`}
-                    placeholder="e.g. +977-9841234567"
-                  />
-                  {formErrors.phone && (
-                    <p className="text-xs text-red-500 mt-1">
-                      {formErrors.phone}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5 tracking-wide">
-                    Staff Role
-                  </label>
-                  <Select
-                    value={form.role}
-                    onValueChange={(val) => set("role", val)}
-                  >
-                    <SelectTrigger
-                      className={`h-11 rounded-xl border-gray-200 bg-white ${formErrors.role ? "border-red-300" : ""}`}
-                    >
-                      <SelectValue placeholder="Select role" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border-gray-200 shadow-xl">
-                      <SelectItem
-                        value="basic"
-                        className="py-2.5 cursor-pointer"
-                      >
-                        Basic
-                      </SelectItem>
-                      <SelectItem
-                        value="staff"
-                        className="py-2.5 cursor-pointer"
-                      >
-                        Staff
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {formErrors.role && (
-                    <p className="text-xs text-red-500 mt-1">
-                      {formErrors.role}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Modal footer */}
-              <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-end gap-3">
-                <Button
-                  onClick={() => setModalOpen(false)}
-                  variant="outline"
-                  className="rounded-lg flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-100"
-                >
-                  <X className="h-4 w-4" />
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
-                >
-                  {saving ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Check className="h-4 w-4" />
-                      {editStaff ? "Update Staff" : "Add Staff"}
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── Delete Confirmation ─────────────────────────── */}
+        {/* â”€â”€ Delete Confirmation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {deleteConfirm && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/40  p-4"

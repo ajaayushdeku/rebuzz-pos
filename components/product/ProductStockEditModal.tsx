@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 import { Search, Minus, Plus, Loader2, SaveAll } from "lucide-react";
+import SettingsModalShell, {
+  modalCancelBtn,
+  modalPrimaryBtn,
+  modalInputClass,
+} from "@/components/settingsComponents/SettingsModalShell";
 
 import { InventoryItem } from "@/lib/mockData/mock-inventory-data";
 import {
@@ -239,18 +238,42 @@ export default function ProductStockEditModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            Product Stock Editor
-          </DialogTitle>
-        </DialogHeader>
-
-        {/* Search + Bulk save row */}
-        <div className="mt-2 flex items-center gap-2">
-          <div className="relative flex-1">
+    <SettingsModalShell
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Product Stock Editor"
+      description="Adjust stock levels and low-stock thresholds"
+      widthClass="sm:max-w-xl"
+      footer={
+        <>
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            disabled={bulkSaving}
+            className={modalCancelBtn}
+          >
+            Close
+          </button>
+          <button
+            type="button"
+            onClick={handleBulkSave}
+            disabled={bulkSaving || changedCount === 0}
+            className={modalPrimaryBtn}
+          >
+            {bulkSaving ? (
+              <Loader2 size={13} className="animate-spin" />
+            ) : (
+              <SaveAll size={13} />
+            )}
+            Save All ({changedCount})
+          </button>
+        </>
+      }
+    >
+      <div>
+        {/* Search */}
+        <div className="sticky top-0 z-10 bg-white ">
+          <div className="relative">
             <Search
               size={16}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -260,36 +283,21 @@ export default function ProductStockEditModal({
               placeholder="Search products..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`${modalInputClass} pl-9`}
             />
           </div>
 
-          {changedCount > 0 && (
-            <button
-              onClick={handleBulkSave}
-              disabled={bulkSaving}
-              className="flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-50 shrink-0"
-            >
-              {bulkSaving ? (
-                <Loader2 size={13} className="animate-spin" />
-              ) : (
-                <SaveAll size={13} />
-              )}
-              Save All ({changedCount})
-            </button>
-          )}
-        </div>
-
-        {/* Table header */}
-        <div className="mt-3 grid grid-cols-[1fr_120px_80px_80px] items-center gap-3 px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200">
-          <span>Product</span>
-          <span className="text-left">In Stock</span>
-          <span className="text-left">Low Stock</span>
-          <span className="text-center">Actions</span>
+          {/* Table header */}
+          <div className="mt-3 grid grid-cols-[1fr_120px_80px_80px] items-center gap-3 px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200">
+            <span>Product</span>
+            <span className="text-left">In Stock</span>
+            <span className="text-left">Low Stock</span>
+            <span className="text-center">Actions</span>
+          </div>
         </div>
 
         {/* List */}
-        <div className="overflow-y-auto flex-1 divide-y divide-gray-100">
+        <div className="divide-y divide-gray-100">
           {filteredItems.map((item) => {
             const edit = edits[item.id];
 
@@ -376,7 +384,7 @@ export default function ProductStockEditModal({
             );
           })}
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </SettingsModalShell>
   );
 }

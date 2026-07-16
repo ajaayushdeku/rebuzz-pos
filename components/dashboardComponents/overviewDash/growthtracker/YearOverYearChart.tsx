@@ -170,12 +170,12 @@ export default function YearOverYearChart({ data }: YearOverYearProps) {
   const yMax = yTicks[yTicks.length - 1] * 1.05;
 
   return (
-    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm mt-2 md:mt-4 p-6 w-full">
+    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm  p-5 w-full">
       {isEmpty && <SampleDataBadge />}
 
       {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
+      <div className="mb-2">
+        <h2 className="text-sm font-bold text-gray-900">
           Year-over-Year Revenue
         </h2>
 

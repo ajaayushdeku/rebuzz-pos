@@ -129,11 +129,9 @@ export default function GrowthByCategory() {
   };
 
   return (
-    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm mt-2 md:mt-4 p-6 w-full">
-      <div className="mb-4 md:mb-5">
-        <h3 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-          Growth by Category
-        </h3>
+    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6">
+      <div>
+        <h2 className="text-sm font-bold text-gray-900">Growth by Category</h2>
         <p className="text-xs text-gray-400 mt-0.5">
           Month-over-month revenue growth per product category
         </p>

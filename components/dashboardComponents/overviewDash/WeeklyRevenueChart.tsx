@@ -74,15 +74,14 @@ const WeeklyRevenueChart = ({ data, peakDay }: WeeklyRevenueChartProps) => {
     `${currency.symbol} ${formatCompactNumber(value)}`;
 
   return (
-    <div className="w-full bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6">
-      <div className="mb-4 md:mb-6">
-        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-          Daily Sales Trend
-        </h2>
+    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6">
+      <div>
+        <h2 className="text-sm font-bold text-gray-900">Daily Sales Trend</h2>
         <p className="text-xs text-gray-400 mt-0.5">
           Revenue performance – current week
         </p>
       </div>
+
       <div className="h-56 md:h-72">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart

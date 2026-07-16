@@ -18,15 +18,15 @@ export default function TimeWiseProductAnalysis({
     formatCurrencySymbol(v, currency.symbol, currency.locale);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full relative select-none">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full relative select-none">
       {/* Lock overlay */}
       <LockDimFeactureOverlay component_name="Time Wise Product Analysis" />
 
       {/* Header */}
       <div className="mb-4 md:mb-5">
-        <h3 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
+        <h2 className="text-sm font-bold text-gray-900">
           Time-Wise Product Analysis
-        </h3>
+        </h2>
         <p className="text-xs text-gray-400 mt-0.5">
           Top performing products specific to times of day
         </p>

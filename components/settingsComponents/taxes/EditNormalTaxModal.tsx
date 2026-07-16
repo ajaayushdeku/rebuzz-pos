@@ -1,15 +1,12 @@
+"use client";
+
 import { Loader2, Percent } from "lucide-react";
 import { Tax } from "@/services/apiTaxes.client";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import SettingsModalShell, {
+  modalCancelBtn,
+  modalPrimaryBtn,
+  modalInputClass as inputClass,
+} from "@/components/settingsComponents/SettingsModalShell";
 
 const EditNormalTaxModal = ({
   open,
@@ -29,75 +26,91 @@ const EditNormalTaxModal = ({
   isPending: boolean;
 }) => {
   return (
-    <Dialog
+    <SettingsModalShell
       open={open}
-      onOpenChange={(o) => {
-        if (!o) onOpenChange(false);
-      }}
-    >
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="text-base font-semibold">
-            Edit Tax
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-3 py-1">
-          <div>
-            <Label className="text-xs text-gray-500 mb-1.5 block">
-              Tax Name
-            </Label>
-            <Input
-              value={form.name}
-              onChange={(e) => onFormChange({ ...form, name: e.target.value })}
-              placeholder="e.g. VAT"
-            />
-          </div>
-          <div>
-            <Label className="text-xs text-gray-500 mb-1.5 block">
-              Rate (%)
-            </Label>
-            <div className="relative">
-              <Input
-                type="number"
-                min={0}
-                max={100}
-                className="pl-7"
-                value={form.rate}
-                onChange={(e) =>
-                  onFormChange({ ...form, rate: Number(e.target.value) })
-                }
-              />
-              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground">
-                <Percent className="h-3.5 w-3.5" />
-              </span>
-            </div>
-          </div>
-        </div>
-        <DialogFooter className="gap-2">
-          <Button
-            variant="outline"
+      onOpenChange={(o) => !o && onOpenChange(false)}
+      title={tax ? "Edit Tax" : "Create New Tax"}
+      description="Name the tax and set the rate applied to taxable items"
+      footer={
+        <>
+          <button
+            type="button"
             onClick={() => onOpenChange(false)}
-            className="text-sm rounded-lg"
+            disabled={isPending}
+            className={modalCancelBtn}
           >
             Cancel
-          </Button>
-          <Button
+          </button>
+          <button
+            type="button"
             onClick={onSave}
             disabled={isPending || !form.name.trim() || form.rate <= 0}
-            className="bg-blue-600 hover:bg-blue-700 text-sm rounded-lg"
+            className={modalPrimaryBtn}
           >
             {isPending ? (
               <>
-                <Loader2 size={13} className="animate-spin mr-1.5" />
+                <Loader2 size={13} className="animate-spin" />
                 Saving...
               </>
             ) : (
-              "Save"
+              "Save Tax"
             )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </button>
+        </>
+      }
+    >
+      <div className="space-y-5">
+        {/* ── Details ── */}
+        <div>
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold text-gray-800">Details</h3>
+            <p className="text-xs text-gray-500">
+              How this tax appears on invoices
+            </p>
+          </div>
+
+          <label className="text-xs font-medium text-gray-500 block mb-1.5">
+            Tax Name
+          </label>
+          <input
+            value={form.name}
+            onChange={(e) => onFormChange({ ...form, name: e.target.value })}
+            placeholder="e.g. VAT"
+            className={inputClass}
+          />
+        </div>
+
+        {/* ── Rate ── */}
+        <div>
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold text-gray-800">Rate</h3>
+            <p className="text-xs text-gray-500">
+              Percentage added to the taxable amount
+            </p>
+          </div>
+
+          <label className="text-xs font-medium text-gray-500 block mb-1.5">
+            Rate (%)
+          </label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <Percent className="h-3.5 w-3.5" />
+            </span>
+            <input
+              type="number"
+              min={0}
+              max={100}
+              value={form.rate}
+              onChange={(e) =>
+                onFormChange({ ...form, rate: Number(e.target.value) })
+              }
+              className={`${inputClass} pl-8`}
+              placeholder="0"
+            />
+          </div>
+        </div>
+      </div>
+    </SettingsModalShell>
   );
 };
 

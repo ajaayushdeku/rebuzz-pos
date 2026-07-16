@@ -172,12 +172,10 @@ export default function LatestShifts({
   }, []);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition duration-300 p-4 md:p-6 w-full">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition duration-300 p-5 w-full">
       <div className="mb-6 flex items-center justify-between gap-3">
         <div className="mb-0">
-          <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-            Latest Shifts
-          </h2>
+          <h2 className="text-sm font-bold text-gray-900">Latest Shifts</h2>
           <p className="text-xs text-gray-400 mt-0.5">
             {/* {filteredShifts.length}{" "}
             {filteredShifts.length === 1 ? "shift" : "shifts"} recorded */}

@@ -53,7 +53,7 @@ export default function ReferralTracking() {
             <Share2 size={15} className="text-violet-600" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-gray-900">
+            <h2 className="text-sm font-bold text-gray-900">
               Referral Tracking
             </h2>
             <p className="text-xs text-gray-400 mt-0.5">

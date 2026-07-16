@@ -27,12 +27,10 @@ export default function PaymentMethodsChartWrapper() {
   );
 
   return (
-    <div className="w-full bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-4  md:p-6">
+    <div className="w-full bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5 ">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-            Payment Methods
-          </h2>
+          <h2 className="text-sm font-bold text-gray-900">Payment Methods</h2>
           <p className="text-xs text-gray-400 mt-0.5">
             Revenue split by payment type
           </p>

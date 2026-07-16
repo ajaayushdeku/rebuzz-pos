@@ -64,13 +64,11 @@ const TopItems = ({ topProducts }: TopProductProps) => {
   const hasData = topProducts && topProducts.length > 0;
 
   return (
-    <div className="flex-1 bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6">
+    <div className="flex-1 bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-            Top 3 Items Today
-          </h2>
+          <h2 className="text-sm font-bold text-gray-900">Top 3 Items Today</h2>
           <p className="text-xs text-gray-400 mt-0.5">
             Best performers in today&lsquo;s session
           </p>

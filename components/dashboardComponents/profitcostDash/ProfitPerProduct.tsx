@@ -97,11 +97,9 @@ export default function ProfitPerProduct({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full overflow-hidden">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full overflow-hidden">
       <div className="min-w-0 mb-4">
-        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-          Profit per Product
-        </h2>
+        <h2 className="text-sm font-bold text-gray-900">Profit per Product</h2>
         <p className="text-xs text-gray-400 mt-0.5">
           Revenue, cost and margins for top selling products.
         </p>

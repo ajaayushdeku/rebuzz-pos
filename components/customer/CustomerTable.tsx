@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -15,13 +15,8 @@ import {
 } from "lucide-react";
 import { Customer } from "./customer-columns";
 import CustomerDetailModal from "./CustomerDetailModal";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import EditCustomerModal from "./EditCustomerModal";
+import LoyaltyPointModal from "./LoyaltyPointModal";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -46,261 +41,6 @@ function TierBadge({ tier }: { tier: string }) {
 }
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
-
-const inputClass =
-  "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
-
-type EditForm = {
-  name: string;
-  email: string;
-  phone: string;
-  countryCode: string;
-  note: string;
-  customerPan: string;
-};
-
-const EditCustomerModal = ({
-  customer,
-  open,
-  onClose,
-}: {
-  customer: Customer | null;
-  open: boolean;
-  onClose: () => void;
-}) => {
-  const queryClient = useQueryClient();
-  const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState<EditForm>({
-    name: customer?.name ?? "",
-    email: customer?.email ?? "",
-    phone: customer?.phone ?? "",
-    countryCode: "NP +977",
-    note: customer?.note ?? "",
-    customerPan: customer?.customerPan ?? "",
-  });
-
-  const handleOpenChange = (nextOpen: boolean) => {
-    if (!nextOpen) onClose();
-  };
-
-  const handleSave = async () => {
-    if (!customer?.id) return;
-    if (!form.name.trim()) {
-      toast.error("Name is required");
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const res = await fetch(`/api/customers/${customer.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          phone: form.phone,
-          countryCode: form.countryCode,
-          note: form.note,
-          customerPan: form.customerPan,
-        }),
-      });
-      if (!res.ok) throw new Error("Failed");
-      toast.success("Customer updated");
-      queryClient.invalidateQueries({ queryKey: ["customers-list"] });
-      onClose();
-    } catch {
-      toast.error("Failed to update customer");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const fields: {
-    key: keyof EditForm;
-    label: string;
-    type?: string;
-    disabled?: boolean;
-  }[] = [
-    { key: "name", label: "Full Name" },
-    { key: "email", label: "Email", type: "email" },
-    { key: "phone", label: "Phone", type: "tel" },
-    { key: "countryCode", label: "Country Code" },
-    { key: "customerPan", label: "Tax ID / PAN Number", disabled: true },
-    { key: "note", label: "Note" },
-  ];
-
-  return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="text-base font-semibold text-gray-900">
-            Edit Customer
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-3 py-1">
-          {fields.map(({ key, label, type, disabled }) => (
-            <div key={key}>
-              <label className="text-xs font-medium text-gray-500 block mb-1.5">
-                {label}
-              </label>
-              <input
-                type={type ?? "text"}
-                value={form[key]}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, [key]: e.target.value }))
-                }
-                placeholder={label}
-                disabled={disabled}
-                className={`${inputClass} ${disabled ? "bg-gray-50 text-gray-500 cursor-not-allowed" : ""}`}
-              />
-            </div>
-          ))}
-        </div>
-
-        <DialogFooter className="gap-2">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            disabled={saving}
-            className="text-sm rounded-lg"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={saving}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg"
-          >
-            {saving ? (
-              <span className="flex items-center gap-1.5">
-                <Loader2 size={13} className="animate-spin" />
-                Saving...
-              </span>
-            ) : (
-              "Save Changes"
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-const LoyaltyPointModal = ({
-  customer,
-  open,
-  onClose,
-}: {
-  customer: Customer | null;
-  open: boolean;
-  onClose: () => void;
-}) => {
-  const queryClient = useQueryClient();
-  const [points, setPoints] = useState(String(customer?.loyaltyPoint ?? 0));
-  const [saving, setSaving] = useState(false);
-
-  const handleOpenChange = (nextOpen: boolean) => {
-    if (nextOpen && customer) {
-      setPoints(String(customer.loyaltyPoint ?? 0));
-    }
-    if (!nextOpen) onClose();
-  };
-
-  const handleSave = async () => {
-    if (!customer?.id) return;
-    const value = parseFloat(points);
-    if (isNaN(value) || value < 0) {
-      toast.error("Enter a valid point value");
-      return;
-    }
-    setSaving(true);
-    try {
-      const res = await fetch(`/api/customers/${customer.id}/loyalty-point`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ loyaltyPoint: value }),
-      });
-      if (!res.ok) throw new Error("Failed");
-      toast.success("Loyalty points updated");
-      queryClient.invalidateQueries({ queryKey: ["customers-list"] });
-      onClose();
-    } catch {
-      toast.error("Failed to update loyalty points");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-xs">
-        <DialogHeader>
-          <DialogTitle className="text-base font-semibold text-gray-900">
-            Update Loyalty Points
-          </DialogTitle>
-        </DialogHeader>
-
-        {customer && (
-          <p className="text-xs text-gray-400 -mt-2">
-            Customer:{" "}
-            <span className="font-medium text-gray-700">{customer.name}</span>
-          </p>
-        )}
-
-        <div className="py-1">
-          <label className="text-xs font-medium text-gray-500 block mb-1.5">
-            Loyalty Points
-          </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
-              ★
-            </span>
-            <input
-              type="number"
-              min={0}
-              value={points}
-              onChange={(e) => setPoints(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSave()}
-              className="w-full pl-7 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-              placeholder="0"
-            />
-          </div>
-          {customer && (
-            <p className="text-xs text-gray-400 mt-1.5">
-              Current: {customer.loyaltyPoint ?? 0} pts
-            </p>
-          )}
-        </div>
-
-        <DialogFooter className="gap-2">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            disabled={saving}
-            className="text-sm rounded-lg"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={saving}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg"
-          >
-            {saving ? (
-              <span className="flex items-center gap-1.5">
-                <Loader2 size={13} className="animate-spin" />
-                Saving...
-              </span>
-            ) : (
-              "Update Points"
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
 
 export default function CustomerTable({
   customers,
@@ -424,9 +164,9 @@ export default function CustomerTable({
         />
       </div>
 
-      {/* Table — horizontally scrollable on mobile */}
+      {/* Table â€” horizontally scrollable on mobile */}
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
-      <div className="bg-white overflow-x-auto">
+      <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <table className="w-full text-sm min-w-[800px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
@@ -515,7 +255,7 @@ export default function CustomerTable({
                   </td>
 
                   <td className="py-3 px-4 text-xs text-center text-gray-600">
-                    {customer.numberOfPurchases ?? "—"}
+                    {customer.numberOfPurchases ?? "â€”"}
                   </td>
 
                   <td className="py-3 px-4 text-xs text-center font-semibold">
@@ -525,7 +265,7 @@ export default function CustomerTable({
                           currency.symbol,
                           currency.locale,
                         )
-                      : "—"}
+                      : "â€”"}
                   </td>
                   <td className="py-3 px-4">
                     <div
@@ -571,7 +311,7 @@ export default function CustomerTable({
         </button>
 
         <span className="text-xs text-gray-400 font-medium">
-          Page {page + 1} of {totalPages} · {sorted.length} customers
+          Page {page + 1} of {totalPages} Â· {sorted.length} customers
         </span>
 
         <button
@@ -617,7 +357,7 @@ export default function CustomerTable({
         }}
       />
 
-      {/* ── Delete Confirmation ─────────────────────────── */}
+      {/* â”€â”€ Delete Confirmation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {deleteConfirm && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"

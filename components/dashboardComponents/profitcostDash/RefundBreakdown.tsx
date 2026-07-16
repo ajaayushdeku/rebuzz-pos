@@ -74,15 +74,13 @@ export default function RefundBreakdown() {
   const total = totalRefundLoss;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full relative select-none">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full relative select-none">
       {/* Lock overlay */}
       <LockDimFeactureOverlay component_name="Refund Breakdown" />
 
       {/* Header */}
       <div className="mb-0">
-        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-          Refund Breakdown
-        </h2>
+        <h2 className="text-sm font-bold text-gray-900">Refund Breakdown</h2>
         <p className="text-xs text-gray-400 mt-0.5">
           Value lost by refund reason
         </p>

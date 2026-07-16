@@ -92,12 +92,14 @@ export default function PredictiveRestockingSuggestions({
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-      <h3 className="text-sm font-semibold text-gray-900 mb-0.5">
-        Predictive Restocking Suggestions
-      </h3>
-      <p className="text-xs text-gray-400 mb-5">
-        Restock recommendations based on current stock levels & sales velocity
-      </p>
+      <div className="mb-6">
+        <h2 className="text-sm font-bold text-gray-900">
+          Predictive Restocking Suggestions
+        </h2>
+        <p className="text-xs text-gray-400 mb-5">
+          Restock recommendations based on current stock levels & sales velocity
+        </p>
+      </div>
 
       {suggestions.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">

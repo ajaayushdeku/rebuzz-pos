@@ -81,11 +81,11 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
   const yTicks = [0, step, step * 2, step * 3, step * 4];
   const yMax = yTicks[yTicks.length - 1] * 1.05;
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition duration-300 p-4 md:p-6 w-full ">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition duration-300 p-5 w-full ">
       {isEmpty && <SampleDataBadge />}
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
+        <h2 className="text-sm font-bold text-gray-900">
           Revenue per Employee
         </h2>
         <p className="text-xs text-gray-400 mt-0.5">

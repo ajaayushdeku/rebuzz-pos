@@ -668,13 +668,13 @@ export default function PerformanceRadar({
 
   if (error) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 mb-6">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 ">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center">
             <Radar size={16} className="text-violet-500" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-gray-900">
+            <h2 className="text-sm font-bold text-gray-900">
               Performance Radar
             </h2>
             <p className="text-[11px] text-gray-400 mt-px">
@@ -763,14 +763,14 @@ export default function PerformanceRadar({
 
   if (chartData.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 mb-6">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center">
             <Radar size={16} className="text-violet-500" />
           </div>
 
           <div>
-            <h2 className="text-sm font-semibold text-gray-900">
+            <h2 className="text-sm font-bold text-gray-900">
               Performance Radar
             </h2>
 
@@ -802,7 +802,7 @@ export default function PerformanceRadar({
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 mb-6">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
       {/* Header */}
       <div className="flex items-center justify-between ">
         <div className="flex items-center gap-3">
@@ -811,7 +811,7 @@ export default function PerformanceRadar({
           </div>
 
           <div>
-            <h2 className="text-sm font-semibold text-gray-900">
+            <h2 className="text-sm font-bold text-gray-900">
               Performance Radar
             </h2>
 

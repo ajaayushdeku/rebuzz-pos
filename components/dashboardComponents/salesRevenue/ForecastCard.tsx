@@ -44,7 +44,7 @@ export default function ForecastCard({ data }: ForecastCardProps) {
             <TrendingUp size={15} className="text-indigo-600" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-gray-900">
+            <h2 className="text-sm font-bold text-gray-900">
               What&lsquo;s coming forecast
             </h2>
             <p className="text-xs text-gray-400 mt-0.5">

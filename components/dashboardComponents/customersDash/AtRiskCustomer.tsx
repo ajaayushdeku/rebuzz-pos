@@ -102,12 +102,10 @@ export default function AtRiskCustomer({
     );
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full overflow-hidden">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full overflow-hidden">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-            At-Risk Customers
-          </h2>
+          <h2 className="text-sm font-bold text-gray-900">At-Risk Customers</h2>
           <p className="text-xs text-gray-400 mt-0.5">
             Inactive customers for over two weeks or with no purchases yet,
             requiring re-engagement

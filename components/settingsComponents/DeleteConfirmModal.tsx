@@ -1,12 +1,10 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+"use client";
+
 import { Loader2, AlertTriangle } from "lucide-react";
+import SettingsModalShell, {
+  modalCancelBtn,
+  modalDangerBtn,
+} from "@/components/settingsComponents/SettingsModalShell";
 
 const DeleteConfirmModal = ({
   open,
@@ -24,41 +22,47 @@ const DeleteConfirmModal = ({
   isPending?: boolean;
 }) => {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="text-base font-semibold flex items-center gap-2">
-            <AlertTriangle size={18} className="text-red-500" />
-            {title}
-          </DialogTitle>
-        </DialogHeader>
-        <p className="text-sm text-gray-500 py-2">{message}</p>
-        <DialogFooter className="gap-2">
-          <Button
-            variant="outline"
+    <SettingsModalShell
+      open={open}
+      onOpenChange={onOpenChange}
+      title={title}
+      description="This action cannot be undone"
+      widthClass="sm:max-w-sm"
+      footer={
+        <>
+          <button
+            type="button"
             onClick={() => onOpenChange(false)}
-            className="text-sm rounded-lg"
             disabled={isPending}
+            className={modalCancelBtn}
           >
             Cancel
-          </Button>
-          <Button
+          </button>
+          <button
+            type="button"
             onClick={onConfirm}
             disabled={isPending}
-            className="bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg"
+            className={modalDangerBtn}
           >
             {isPending ? (
               <>
-                <Loader2 size={13} className="animate-spin mr-1.5" />
+                <Loader2 size={13} className="animate-spin" />
                 Deleting...
               </>
             ) : (
               "Delete"
             )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </button>
+        </>
+      }
+    >
+      <div className="flex items-start gap-3 rounded-xl border border-red-100 bg-red-50/60 px-4 py-3.5">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100">
+          <AlertTriangle size={16} className="text-red-600" />
+        </div>
+        <p className="text-sm text-gray-600 leading-relaxed">{message}</p>
+      </div>
+    </SettingsModalShell>
   );
 };
 

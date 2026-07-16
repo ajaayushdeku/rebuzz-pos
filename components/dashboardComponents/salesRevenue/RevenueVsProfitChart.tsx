@@ -178,15 +178,16 @@ export default function RevenueVsProfitChart({
   );
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
+        <h2 className="text-sm font-bold text-gray-900">
           Revenue vs Profit by Product
         </h2>
         <p className="text-xs text-gray-400 mt-0.5">
           Comparing top-line revenue against net profit per product
         </p>
+
         {isError && (
           <p className="text-xs text-amber-400 mt-1">
             Could not refresh — showing last known data.

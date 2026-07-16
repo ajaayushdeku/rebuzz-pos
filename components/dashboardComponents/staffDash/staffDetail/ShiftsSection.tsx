@@ -152,16 +152,14 @@ export default function ShiftsSection({
 
   return (
     <>
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 mb-6">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
               <Clock size={15} className="text-orange-500" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-gray-900">
-                Staff Shifts
-              </h2>
+              <h2 className="text-sm font-bold text-gray-900">Staff Shifts</h2>
               <p className="text-[11px] text-gray-400 mt-px">
                 {shiftList.length} {shiftList.length === 1 ? "shift" : "shifts"}{" "}
                 recorded

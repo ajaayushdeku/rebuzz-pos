@@ -65,9 +65,7 @@ export default function UnitEconomics() {
     <div className="relative  w-full rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
       <LockDimFeactureOverlay component_name="Unit Economics" />
 
-      <h2 className="mb-8 text-2xl font-semibold text-gray-900">
-        Unit Economics
-      </h2>
+      <h2 className="text-sm font-bold text-gray-900">Unit Economics</h2>
 
       <div className="grid grid-cols-2 gap-5">
         {metrics.map((item, index) => {

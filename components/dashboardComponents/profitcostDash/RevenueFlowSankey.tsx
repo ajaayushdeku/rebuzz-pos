@@ -24,13 +24,13 @@ export default function RevenueFlowSankey() {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full relative select-none">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full relative select-none">
       {/* Lock overlay */}
       <LockDimFeactureOverlay component_name="Revenue Flow Sankey" />
 
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
+        <h2 className="text-sm font-bold text-gray-900">
           Revenue Flow (Sankey Diagram)
         </h2>
 

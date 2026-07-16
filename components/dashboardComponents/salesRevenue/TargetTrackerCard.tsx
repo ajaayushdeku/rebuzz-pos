@@ -207,9 +207,7 @@ export default function TargetTrackerCard() {
           <Target size={15} className="text-blue-600" />
         </div>
         <div>
-          <h2 className="text-sm font-semibold text-gray-900">
-            Target tracker
-          </h2>
+          <h2 className="text-sm font-bold text-gray-900">Target tracker</h2>
           <p className="text-xs text-gray-400 mt-0.5">
             Monitor daily, weekly, and monthly sales progress against goals
           </p>

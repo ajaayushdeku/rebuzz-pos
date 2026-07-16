@@ -70,12 +70,14 @@ const InventoryMovementAnalysis = ({ items }: { items: MergedSalesItem[] }) => {
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex-1">
-      <h3 className="text-sm font-semibold text-gray-900 mb-0.5">
-        Inventory Movement Analysis
-      </h3>
-      <p className="text-xs text-gray-400 mb-5">
-        Fast-moving vs slow-moving categorization
-      </p>
+      <div className="mb-6">
+        <h2 className="text-sm font-bold text-gray-900">
+          Inventory Movement Analysis
+        </h2>
+        <p className="text-xs text-gray-400 mb-5">
+          Fast-moving vs slow-moving categorization
+        </p>
+      </div>
 
       {items.length === 0 ? (
         <div className="flex items-center justify-center py-10 text-gray-400 text-sm">

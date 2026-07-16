@@ -3,17 +3,11 @@
 import { Loader2 } from "lucide-react";
 import type { Category } from "@/lib/types/category";
 import { normalizeColor } from "@/services/category.client";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-
-const inputClass =
-  "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+import SettingsModalShell, {
+  modalCancelBtn,
+  modalPrimaryBtn,
+  modalInputClass as inputClass,
+} from "@/components/settingsComponents/SettingsModalShell";
 
 const PRESET_COLORS = [
   "#F47003",
@@ -54,34 +48,74 @@ const EditCategoryModal = ({
   isPending,
 }: EditCategoryModalProps) => {
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onOpenChange(false)}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="text-blue-600">
-            {editTarget ? "Edit Category" : "Create New Category"}
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 py-1">
-          {/* Name */}
-          <div>
-            <label className="text-xs font-medium text-gray-500 block mb-1.5">
-              Category Name
-            </label>
-            <input
-              value={form.name}
-              onChange={(e) => onFormChange({ ...form, name: e.target.value })}
-              placeholder="e.g. Beverages"
-              className={inputClass}
-            />
+    <SettingsModalShell
+      open={open}
+      onOpenChange={(o) => !o && onOpenChange(false)}
+      title={editTarget ? "Edit Category" : "Create New Category"}
+      description="Name your category and pick a colour to identify it"
+      footer={
+        <>
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            disabled={isPending}
+            className={modalCancelBtn}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={isPending || !form.name.trim() || !form.color.trim()}
+            className={modalPrimaryBtn}
+          >
+            {isPending ? (
+              <>
+                <Loader2 size={13} className="animate-spin" />
+                Saving...
+              </>
+            ) : editTarget ? (
+              "Update Category"
+            ) : (
+              "Create Category"
+            )}
+          </button>
+        </>
+      }
+    >
+      <div className="space-y-5">
+        {/* ── Details ── */}
+        <div>
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold text-gray-800">Details</h3>
+            <p className="text-xs text-gray-500">
+              How this category appears across the app
+            </p>
           </div>
 
-          {/* Color */}
-          <div>
-            <label className="text-xs font-medium text-gray-500 block mb-1.5">
-              Color
-            </label>
-            {/* Color swatches */}
-            <div className="flex flex-wrap gap-2 mb-3">
+          <label className="text-xs font-medium text-gray-500 block mb-1.5">
+            Category Name
+          </label>
+          <input
+            value={form.name}
+            onChange={(e) => onFormChange({ ...form, name: e.target.value })}
+            placeholder="e.g. Beverages"
+            className={inputClass}
+          />
+        </div>
+
+        {/* ── Colour ── */}
+        <div>
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold text-gray-800">Colour</h3>
+            <p className="text-xs text-gray-500">
+              Pick a preset or enter a custom hex value
+            </p>
+          </div>
+
+          {/* Presets */}
+          <div className="rounded-xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-3">
+            <div className="flex flex-wrap gap-2">
               {PRESET_COLORS.map((color) => (
                 <button
                   key={color}
@@ -97,13 +131,14 @@ const EditCategoryModal = ({
                 />
               ))}
             </div>
+          </div>
 
-            {/* Drag color picker */}
-            <div className="mb-3 flex items-center gap-3">
-              <label className="text-xs font-medium text-gray-500 block min-w-[80px]">
-                Custom Color:
+          {/* Custom colour + hex */}
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-gray-500 block mb-1.5">
+                Custom
               </label>
-
               <input
                 type="color"
                 value={
@@ -112,72 +147,54 @@ const EditCategoryModal = ({
                 onChange={(e) =>
                   onFormChange({ ...form, color: e.target.value })
                 }
-                className="h-10 flex-1 cursor-pointer p-1"
+                className="h-10 w-full cursor-pointer rounded-lg border border-gray-200 p-1"
               />
             </div>
-
-            {/* Hex input */}
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
-                #
-              </span>
-              <input
-                value={form.color.replace(/^#/, "")}
-                onChange={(e) => {
-                  const raw = e.target.value.replace(/[^0-9a-fA-F]/g, "");
-                  onFormChange({ ...form, color: `#${raw.toUpperCase()}` });
-                }}
-                placeholder="F47003"
-                maxLength={6}
-                className={`${inputClass} pl-7 font-mono uppercase`}
-              />
+            <div>
+              <label className="text-xs font-medium text-gray-500 block mb-1.5">
+                Hex
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                  #
+                </span>
+                <input
+                  value={form.color.replace(/^#/, "")}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/[^0-9a-fA-F]/g, "");
+                    onFormChange({ ...form, color: `#${raw.toUpperCase()}` });
+                  }}
+                  placeholder="F47003"
+                  maxLength={6}
+                  className={`${inputClass} pl-7 font-mono uppercase`}
+                />
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Preview */}
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+        {/* ── Preview ── */}
+        <div>
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold text-gray-800">Preview</h3>
+          </div>
+          <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-3 shadow-sm">
             <span
-              className="w-8 h-8 rounded-lg border border-gray-200"
+              className="w-9 h-9 rounded-lg border border-gray-200 shrink-0"
               style={{ backgroundColor: normalizeColor(form.color) }}
             />
-            <div className="text-sm">
-              <p className="font-medium text-gray-800">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-gray-800 truncate">
                 {form.name || "Category Name"}
               </p>
-              <p className="text-xs text-gray-400 font-mono">
+              <p className="text-[11px] text-gray-400 font-mono">
                 {normalizeColor(form.color)}
               </p>
             </div>
           </div>
         </div>
-        <DialogFooter className="gap-2">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="text-sm rounded-lg"
-          >
-            Cancel
-          </Button>
-
-          <Button
-            onClick={onSave}
-            disabled={isPending || !form.name.trim() || !form.color.trim()}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg"
-          >
-            {isPending ? (
-              <>
-                <Loader2 size={13} className="animate-spin mr-1.5" />
-                Saving...
-              </>
-            ) : editTarget ? (
-              "Update"
-            ) : (
-              "Create"
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </SettingsModalShell>
   );
 };
 

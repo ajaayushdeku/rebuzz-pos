@@ -311,8 +311,8 @@ export default function StaffDetailPage() {
         />
 
         {employeeRole !== "staff" && (
-          <>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-2">
+          <div className="flex flex-col gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 ">
               <div className="lg:col-span-1">
                 <WeeklySalesChart employeeId={employeeId} />
               </div>
@@ -342,10 +342,12 @@ export default function StaffDetailPage() {
             />
 
             <BillsSection employeeId={employeeId} dateRange={dateRange} />
-          </>
+          </div>
         )}
 
-        <InvoiceListSection employeeId={employeeId} dateRange={dateRange} />
+        <div className="mt-6">
+          <InvoiceListSection employeeId={employeeId} dateRange={dateRange} />
+        </div>
       </div>
     </div>
   );

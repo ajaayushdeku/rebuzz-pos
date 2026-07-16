@@ -124,13 +124,13 @@ export default function BillsSection({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 ">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center">
             <Receipt size={16} className="text-purple-500" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-gray-900">
+            <h2 className="text-sm font-bold text-gray-900">
               Transactions / Bills
             </h2>
             <p className="text-[11px] text-gray-400 mt-px">
@@ -147,13 +147,13 @@ export default function BillsSection({
 
   if (error) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 ">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center">
             <Receipt size={16} className="text-purple-500" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-gray-900">
+            <h2 className="text-sm font-bold text-gray-900">
               Transactions / Bills
             </h2>
             <p className="text-[11px] text-gray-400 mt-px">
@@ -175,14 +175,14 @@ export default function BillsSection({
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 ">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center">
             <Receipt size={16} className="text-purple-500" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-gray-900">
+            <h2 className="text-sm font-bold text-gray-900">
               Transactions / Bills
             </h2>
             <p className="text-[11px] text-gray-400 mt-px">

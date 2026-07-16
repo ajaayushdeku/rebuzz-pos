@@ -59,7 +59,7 @@ export default function LowStockAlerts() {
         <div className="flex items-center gap-2">
           <AlertTriangle size={16} className="text-amber-500" />
           <div>
-            <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+            <h2 className="text-sm font-bold text-gray-900">
               Low Stock Alerts
               {alerts.length > 0 && (
                 <span className="text-[11px] font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">

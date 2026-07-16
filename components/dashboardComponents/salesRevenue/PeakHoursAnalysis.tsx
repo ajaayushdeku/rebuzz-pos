@@ -192,18 +192,19 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
   };
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full">
+    <div className="bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
       {/* HEADER */}
       <div className="flex flex-row  justify-between gap-3 mb-5">
         {/* <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"> */}
         <div className="flex-shrink-0">
-          <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
+          <h2 className="text-sm font-bold text-gray-900">
             Peak Hours Analysis
           </h2>
           <p className="text-xs text-gray-400 mt-0.5">
             Average number of orders per hour across the selected period
           </p>
         </div>
+
         {/* </div> */}
 
         {/* Hour Range Filter */}

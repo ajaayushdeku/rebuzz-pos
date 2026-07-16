@@ -150,7 +150,7 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
   const yMax = maxOrders <= 1 ? 2 : maxOrders * 3;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 mb-6">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 ">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
@@ -170,9 +170,7 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
             </svg>
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-gray-900">
-              Sales This Week
-            </h2>
+            <h2 className="text-sm font-bold text-gray-900">Sales This Week</h2>
             <p className="text-[11px] text-gray-400 mt-px">
               {weekRange.startDate} to {weekRange.endDate} &middot;{" "}
               {chartData.reduce((s, d) => s + d.orders, 0)} total sales

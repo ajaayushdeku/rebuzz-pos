@@ -387,9 +387,9 @@ export default function Heatmap({
   return (
     <div className="bg-white w-full">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-5 gap-3">
+      <div className="flex flex-row items-start justify-between mb-5 gap-3">
         <div>
-          <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
+          <h2 className="text-sm font-bold text-gray-900">
             Sales Activity Heatmap
           </h2>
           <p className="text-xs text-gray-400 mt-0.5">

@@ -82,11 +82,11 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
   const xDomain = xTicks[xTicks.length - 1];
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full min-w-0">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full min-w-0">
       {isEmpty && <SampleDataBadge />}
       {/* Header */}
       <div className="mb-4 md:mb-6">
-        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
+        <h2 className="text-sm font-bold text-gray-900">
           Loyalty Tier Breakdown
         </h2>
         <p className="text-xs text-gray-400 mt-0.5">

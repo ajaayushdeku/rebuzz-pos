@@ -87,15 +87,13 @@ export default function CampaignAnalysis({ data }: CampaignAnalysisProps) {
     `${currency.symbol} ${formatCompactNumber(value)}`;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full h-full relative select-none">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full h-full relative select-none">
       {/* Lock overlay */}
       <LockDimFeactureOverlay component_name="Campaign Analysis" />
 
       {/* Header */}
       <div className="mb-4 md:mb-5">
-        <h3 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-          Campaign Analysis
-        </h3>
+        <h2 className="text-sm font-bold text-gray-900">Campaign Analysis</h2>
         <p className="text-xs text-gray-400 mt-0.5">
           Sales before, during and after the latest discount campaign
         </p>

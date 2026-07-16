@@ -146,7 +146,7 @@ export default function GrossProfitTrendChart() {
   if (isError)
     return (
       <div className="bg-white rounded-2xl border border-gray-100 shadow-md p-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-1">
+        <h2 className="text-sm font-bold text-gray-900">
           Gross vs Net Profit Trend
         </h2>
         <div className="flex items-center justify-center h-56 text-gray-400 text-sm">
@@ -156,11 +156,11 @@ export default function GrossProfitTrendChart() {
     );
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full ">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full ">
       {showSampleBadge && <SampleDataBadge />}
 
       <div className="mb-6">
-        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
+        <h2 className="text-sm font-bold text-gray-900">
           Gross vs Net Profit Trend
         </h2>
         <p className="text-xs text-gray-400 mt-0.5">

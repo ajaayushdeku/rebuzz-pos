@@ -180,13 +180,13 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
   );
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg p-6 transition duration-300 w-full">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg p-5 transition duration-300 w-full">
       {isEmpty && <SampleDataBadge />}
 
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
+          <h2 className="text-sm font-bold text-gray-900">
             Sales Per Hour by Employee
           </h2>
           <p className="text-xs text-gray-400 mt-0.5">

@@ -1,21 +1,17 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Upload, ImageIcon, X } from "lucide-react";
+import { Upload, ImageIcon, X, Loader2 } from "lucide-react";
+import SettingsModalShell, {
+  modalCancelBtn,
+  modalPrimaryBtn,
+} from "@/components/settingsComponents/SettingsModalShell";
 import { Product } from "@/lib/types/product";
 import { useCreateProduct, useUpdateProduct } from "@/hooks/useProducts";
 import { useCategories, useCreateCategory } from "@/hooks/useCategories";
 import toast from "react-hot-toast";
-import { formatCurrencySymbol, formatCurrencySymbolOnly } from "@/utils/helper";
+import { formatCurrencySymbolOnly } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 
 type ProductFormData = {
@@ -295,7 +291,7 @@ export default function ProductFormModal({
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <Dialog
+    <SettingsModalShell
       open={open}
       onOpenChange={(o) => {
         if (!o) {
@@ -303,15 +299,46 @@ export default function ProductFormModal({
           onClose();
         }
       }}
+      title={isEditMode ? "Update Product" : "Create New Product"}
+      description={
+        isEditMode
+          ? "Update this product's details, pricing and stock"
+          : "Add a product with its pricing, image and stock"
+      }
+      footer={
+        <>
+          <button
+            type="button"
+            onClick={() => {
+              resetForm();
+              onClose();
+            }}
+            disabled={isPending}
+            className={modalCancelBtn}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={isPending}
+            className={modalPrimaryBtn}
+          >
+            {isPending ? (
+              <>
+                <Loader2 size={13} className="animate-spin" />
+                {isEditMode ? "Updating..." : "Saving..."}
+              </>
+            ) : isEditMode ? (
+              "Update Product"
+            ) : (
+              "Save Product"
+            )}
+          </button>
+        </>
+      }
     >
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-blue-600">
-            {isEditMode ? "Update Product" : "Create New Product"}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-5 py-2">
+      <div className="space-y-5">
           {/* ── Product image ── */}
           <Section title="Product Image">
             <div className="flex items-center gap-4">
@@ -700,34 +727,6 @@ export default function ProductFormModal({
             )}
           </Section>
         </div>
-
-        <DialogFooter className="gap-2 pt-2">
-          <Button
-            variant="outline"
-            onClick={() => {
-              resetForm();
-              onClose();
-            }}
-            disabled={isPending}
-            className="rounded-lg"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={isPending}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
-          >
-            {isPending
-              ? isEditMode
-                ? "Updating..."
-                : "Saving..."
-              : isEditMode
-                ? "Update Product"
-                : "Save Product"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </SettingsModalShell>
   );
 }

@@ -111,12 +111,10 @@ const PeakDaysAnalysis = ({ data }: PeakDayDataProps) => {
   );
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-4 md:p-6 w-full">
+    <div className="bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
       {/* HEADER */}
       <div className="mb-4 md:mb-6">
-        <h2 className="text-base md:text-lg font-semibold text-gray-900 tracking-tight">
-          Peak Days Analysis
-        </h2>
+        <h2 className="text-sm font-bold text-gray-900">Peak Days Analysis</h2>
         <p className="text-xs text-gray-400 mt-0.5">
           Average orders and sales per weekday across the selected period
         </p>
