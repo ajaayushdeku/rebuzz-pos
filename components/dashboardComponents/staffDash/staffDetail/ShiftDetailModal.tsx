@@ -7,6 +7,7 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Loader2,
+  AlertTriangle,
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -17,6 +18,7 @@ interface ShiftDetailModalProps {
   open: boolean;
   shiftDetail: ShiftDetail | null;
   loading: boolean;
+  error?: string | null;
   onClose: () => void;
 }
 
@@ -24,6 +26,7 @@ export default function ShiftDetailModal({
   open,
   shiftDetail,
   loading,
+  error,
   onClose,
 }: ShiftDetailModalProps) {
   const { currency } = useCurrency();
@@ -71,6 +74,13 @@ export default function ShiftDetailModal({
               <span className="ml-3 text-sm text-gray-400">
                 Loading shift details...
               </span>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3">
+                <AlertTriangle size={22} className="text-red-400" />
+              </div>
+              <p className="text-sm font-medium text-gray-500">{error}</p>
             </div>
           ) : shiftDetail ? (
             <ShiftDetailContent shiftDetail={shiftDetail} />

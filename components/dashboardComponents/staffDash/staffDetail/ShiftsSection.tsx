@@ -19,6 +19,8 @@ import ShiftDetailModal from "./ShiftDetailModal";
 interface ShiftsSectionProps {
   shifts: ShiftSummary[];
   shiftLoading: boolean;
+  shiftError?: string | null;
+  onRetry?: () => void;
   shiftPage: number;
   pageSize: number;
   shiftPages: number;
@@ -27,6 +29,7 @@ interface ShiftsSectionProps {
   modalOpen: boolean;
   modalDetail: ShiftDetail | null;
   modalLoading: boolean;
+  modalError?: string | null;
   onModalClose: () => void;
 }
 
@@ -132,6 +135,8 @@ function StatusBadge({ closingTime }: { closingTime?: string }) {
 export default function ShiftsSection({
   shifts,
   shiftLoading,
+  shiftError,
+  onRetry,
   shiftPage,
   pageSize,
   shiftPages,
@@ -140,6 +145,7 @@ export default function ShiftsSection({
   modalOpen,
   modalDetail,
   modalLoading,
+  modalError,
   onModalClose,
 }: ShiftsSectionProps) {
   const { currency } = useCurrency();
@@ -172,6 +178,33 @@ export default function ShiftsSection({
           <div className="flex items-center justify-center py-12">
             <Loader2 size={20} className="animate-spin text-amber-500" />
           </div>
+        ) : shiftError ? (
+          <div className="text-center py-12">
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3">
+              <svg
+                className="w-6 h-6 text-red-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+                />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-gray-500">{shiftError}</p>
+            {onRetry && (
+              <button
+                onClick={onRetry}
+                className="mt-3 px-4 py-1.5 text-xs font-medium text-white bg-amber-500 hover:bg-amber-600 rounded-lg transition-colors"
+              >
+                Retry
+              </button>
+            )}
+          </div>
         ) : shiftList.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3">
@@ -184,7 +217,7 @@ export default function ShiftsSection({
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto scrollbar-hide">
               <table className="w-full min-w-[900px] text-sm">
                 <thead>
                   <tr className="text-[11px] text-gray-400 uppercase tracking-wider border-b border-gray-100">
@@ -333,6 +366,7 @@ export default function ShiftsSection({
         open={modalOpen}
         shiftDetail={modalDetail}
         loading={modalLoading}
+        error={modalError}
         onClose={onModalClose}
       />
     </>

@@ -62,11 +62,16 @@ export default function StaffDetailPage() {
 
   const [loading, setLoading] = useState(true);
   const [shiftLoading, setShiftLoading] = useState(true);
+  const [overviewError, setOverviewError] = useState<string | null>(null);
+  const [shiftError, setShiftError] = useState<string | null>(null);
+  const [overviewReload, setOverviewReload] = useState(0);
+  const [shiftReload, setShiftReload] = useState(0);
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [modalDetail, setModalDetail] = useState<ShiftDetail | null>(null);
   const [modalLoading, setModalLoading] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
 
   const router = useRouter();
 
@@ -124,6 +129,7 @@ export default function StaffDetailPage() {
     if (!employeeId) return;
     const fetchData = async () => {
       setLoading(true);
+      setOverviewError(null);
       try {
         // ── All three fetches in parallel ─────────────────────────────────
         const [salesRes, ticketsRes, shiftsAllRes] = await Promise.all([
@@ -186,49 +192,61 @@ export default function StaffDetailPage() {
           });
           setBills(emp.bills ?? []);
         }
-      } catch {
+      } catch (err) {
+        setOverviewError(
+          err instanceof Error ? err.message : "Failed to load staff data",
+        );
         toast.error("Failed to load staff data");
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, [employeeId, dateRange.startDate, dateRange.endDate]);
+  }, [employeeId, dateRange.startDate, dateRange.endDate, overviewReload]);
 
   // ── Fetch shifts ─────────────────────────────────────────────────
   useEffect(() => {
     if (!employeeId) return;
     const fetchShifts = async () => {
       setShiftLoading(true);
+      setShiftError(null);
       try {
         const res = await fetch(
           `/api/staff/${employeeId}/shifts?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
         );
-        if (!res.ok) throw new Error("Failed");
+        if (!res.ok) throw new Error("Failed to load shifts");
         const json = await res.json();
         const shiftsData = json?.data ?? [];
         setShifts(shiftsData);
-      } catch {
+      } catch (err) {
+        setShiftError(
+          err instanceof Error ? err.message : "Failed to load shifts",
+        );
         toast.error("Failed to load shifts");
       } finally {
         setShiftLoading(false);
       }
     };
     fetchShifts();
-  }, [employeeId, dateRange.startDate, dateRange.endDate]);
+  }, [employeeId, dateRange.startDate, dateRange.endDate, shiftReload]);
 
   // ── Fetch shift detail for modal ────────────────────────────────────────
 
   const fetchShiftDetail = useCallback(async (shiftId: string) => {
     setModalOpen(true);
     setModalLoading(true);
+    setModalError(null);
+    setModalDetail(null);
     try {
       const res = await fetch(`/api/staff/shift/${shiftId}`);
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) throw new Error("Failed to load shift details");
       const json = await res.json();
       const details: ShiftDetail[] = json?.data?.shiftDetails ?? [];
       setModalDetail(details[0] ?? null);
-    } catch {
+    } catch (err) {
+      setModalError(
+        err instanceof Error ? err.message : "Failed to load shift details",
+      );
       toast.error("Failed to load shift details");
     } finally {
       setModalLoading(false);
@@ -257,6 +275,7 @@ export default function StaffDetailPage() {
   const handleModalClose = useCallback(() => {
     setModalOpen(false);
     setModalDetail(null);
+    setModalError(null);
   }, []);
 
   if (loading) {
@@ -308,6 +327,9 @@ export default function StaffDetailPage() {
           totalPayIn={totalPayIn}
           totalPayOut={totalPayOut}
           showOnlyOrders={employeeRole === "staff"}
+          loading={loading}
+          error={overviewError}
+          onRetry={() => setOverviewReload((n) => n + 1)}
         />
 
         {employeeRole !== "staff" && (
@@ -330,6 +352,8 @@ export default function StaffDetailPage() {
             <ShiftsSection
               shifts={shifts}
               shiftLoading={shiftLoading}
+              shiftError={shiftError}
+              onRetry={() => setShiftReload((n) => n + 1)}
               shiftPage={shiftPage}
               pageSize={pageSize}
               shiftPages={shiftPages}
@@ -338,6 +362,7 @@ export default function StaffDetailPage() {
               modalOpen={modalOpen}
               modalDetail={modalDetail}
               modalLoading={modalLoading}
+              modalError={modalError}
               onModalClose={handleModalClose}
             />
 

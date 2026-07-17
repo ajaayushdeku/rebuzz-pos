@@ -23,6 +23,7 @@ import { DataPoint } from "@/lib/types/chart";
 import WeeklyRevenueChart from "../dashboardComponents/overviewDash/WeeklyRevenueChart";
 import HourlySalesTrend from "../dashboardComponents/overviewDash/HourlySalesChart";
 import PaymentMethodsChart from "../dashboardComponents/overviewDash/PaymentMethodsChart";
+import SalesCategoryChart from "../dashboardComponents/overviewDash/SalesCategoryChart";
 import AIBusinessStory from "../dashboardComponents/overviewDash/AIBusinessStory";
 import BusinessInsightsAlerts from "../dashboardComponents/overviewDash/BusinessInsightsAlerts";
 import LowStockAlerts from "../dashboardComponents/overviewDash/LowStockAlerts";
@@ -328,4 +329,40 @@ export const BusinessInsightsAlertsWrapper = () => {
 
 export const LowStockAlertsWrapper = () => {
   return <LowStockAlerts />;
+};
+
+/** Resolve the global dashboard range into concrete [start, end] dates. */
+const resolveRange = (
+  range: string,
+  customStart?: string,
+  customEnd?: string,
+): [string, string] =>
+  customStart && customEnd
+    ? [customStart, customEnd]
+    : getDateRange(range, new Date());
+
+export const SalesCategoryChartWrapper = ({
+  range = "24h",
+  startDate,
+  endDate,
+}: {
+  range?: string;
+  startDate?: string;
+  endDate?: string;
+}) => {
+  const [start, end] = resolveRange(range, startDate, endDate);
+  return <SalesCategoryChart startDate={start} endDate={end} />;
+};
+
+export const PaymentMethodsChartWrapper = ({
+  range = "24h",
+  startDate,
+  endDate,
+}: {
+  range?: string;
+  startDate?: string;
+  endDate?: string;
+}) => {
+  const [start, end] = resolveRange(range, startDate, endDate);
+  return <PaymentMethodsChart startDate={start} endDate={end} />;
 };

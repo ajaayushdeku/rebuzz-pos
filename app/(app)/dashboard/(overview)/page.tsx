@@ -3,7 +3,9 @@ import { Suspense } from "react";
 import StatSkeleton from "@/components/ui/statskeleton";
 import TableSkeleton from "@/components/ui/tableskeleton";
 import ChartSkeleton from "@/components/ui/chartskeleton";
-import PieChartSkeleton from "@/components/ui/piechartskeleton";
+import WinningStatSkeleton from "@/components/ui/winningstatskeleton";
+import StorySkeleton from "@/components/ui/storyskeleton";
+import InsightsSkeleton from "@/components/ui/insightsskeleton";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import { CalendarDateFilter } from "@/components/dashboardComponents/staffDash/CalendarDateFilter";
 
@@ -13,13 +15,13 @@ import {
   HourlySalesTrendWrapper,
   LowStockAlertsWrapper,
   OverviewStatsWrapper,
+  PaymentMethodsChartWrapper,
   RecentTransactionWrapper,
+  SalesCategoryChartWrapper,
   TopItemsWrapper,
   WeeklyRevenueChartWrapper,
   WinningStatsWrapper,
 } from "@/components/componentWrappers/OverviewWrapper";
-import SalesCategoryChartWrapper from "@/components/componentWrappers/SalesCategoryChartWrapper";
-import PaymentMethodsChartWrapper from "@/components/componentWrappers/PaymentMethodsWrapper";
 
 const Page = async ({
   searchParams,
@@ -56,48 +58,54 @@ const Page = async ({
             <CalendarDateFilter />
           </div> */}
 
-          <Suspense
-            fallback={
-              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 ">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <StatSkeleton key={i} />
-                ))}
-              </div>
-            }
-          >
-            <OverviewStatsWrapper
-              range={range}
-              startDate={hasCustomDates ? startDate : undefined}
-              endDate={hasCustomDates ? endDate : undefined}
-              comparisonStartDate={comparisonStartDate || undefined}
-              comparisonEndDate={comparisonEndDate || undefined}
-            />
-          </Suspense>
+          <ChartErrorBoundary>
+            <Suspense
+              fallback={
+                <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 ">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <StatSkeleton key={i} />
+                  ))}
+                </div>
+              }
+            >
+              <OverviewStatsWrapper
+                range={range}
+                startDate={hasCustomDates ? startDate : undefined}
+                endDate={hasCustomDates ? endDate : undefined}
+                comparisonStartDate={comparisonStartDate || undefined}
+                comparisonEndDate={comparisonEndDate || undefined}
+              />
+            </Suspense>
+          </ChartErrorBoundary>
 
-          <Suspense
-            fallback={
-              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 ">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <StatSkeleton key={i} />
-                ))}
-              </div>
-            }
-          >
-            <WinningStatsWrapper />
-          </Suspense>
+          <ChartErrorBoundary>
+            <Suspense
+              fallback={
+                <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 ">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <WinningStatSkeleton key={i} />
+                  ))}
+                </div>
+              }
+            >
+              <WinningStatsWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
 
-          <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6">
             <ChartErrorBoundary>
               <Suspense fallback={<ChartSkeleton />}>
                 <WeeklyRevenueChartWrapper />
               </Suspense>
             </ChartErrorBoundary>
 
-            <ChartErrorBoundary>
-              <Suspense fallback={<PieChartSkeleton />}>
-                <SalesCategoryChartWrapper />
-              </Suspense>
-            </ChartErrorBoundary>
+            {/* Self-managing: follows the global range, handles its own
+                loading / error / empty states internally. */}
+            <SalesCategoryChartWrapper
+              range={range}
+              startDate={hasCustomDates ? startDate : undefined}
+              endDate={hasCustomDates ? endDate : undefined}
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
@@ -107,11 +115,13 @@ const Page = async ({
               </Suspense>
             </ChartErrorBoundary>
 
-            <ChartErrorBoundary>
-              <Suspense fallback={<PieChartSkeleton />}>
-                <PaymentMethodsChartWrapper />
-              </Suspense>
-            </ChartErrorBoundary>
+            {/* Self-managing: follows the global range, handles its own
+                loading / error / empty states internally. */}
+            <PaymentMethodsChartWrapper
+              range={range}
+              startDate={hasCustomDates ? startDate : undefined}
+              endDate={hasCustomDates ? endDate : undefined}
+            />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 ">
@@ -136,14 +146,14 @@ const Page = async ({
 
           <div className="w-full flex items-center justify-center ">
             <ChartErrorBoundary>
-              <Suspense fallback={<TableSkeleton rows={3} />}>
+              <Suspense fallback={<StorySkeleton />}>
                 <AIBusinessStoryWrapper />
               </Suspense>
             </ChartErrorBoundary>
           </div>
 
           <ChartErrorBoundary>
-            <Suspense fallback={<TableSkeleton rows={3} />}>
+            <Suspense fallback={<InsightsSkeleton />}>
               <BusinessInsightsAlertsWrapper />
             </Suspense>
           </ChartErrorBoundary>

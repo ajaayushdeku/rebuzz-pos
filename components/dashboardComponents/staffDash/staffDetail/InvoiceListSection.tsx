@@ -287,7 +287,7 @@ export default function InvoiceListSection({
           No invoices found for this date range
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto scrollbar-hide">
           <table className="w-full text-sm min-w-[800px]">
             <thead>
               <tr className="text-xs text-gray-400 border-b border-gray-100">

@@ -74,33 +74,42 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
   const { currency } = useCurrency();
   const [weekBills, setWeekBills] = useState<BillItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [reloadFlag, setReloadFlag] = useState(0);
 
-  // Fetch bills for the last 7 days only — independent of parent date range
-  // Loading starts as true, no need to set it again in the effect
+  // Fetch bills for the last 7 days only — independent of parent date range.
   useEffect(() => {
-    let cancelled = false;
     if (!employeeId) return;
+    let cancelled = false;
     const { startDate, endDate } = getLast7DaysRange();
-    fetch(
-      `/api/staff/sales-by-employee/${employeeId}?startDate=${startDate}&endDate=${endDate}`,
-    )
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed");
-        return res.json();
-      })
-      .then((json) => {
+
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(
+          `/api/staff/sales-by-employee/${employeeId}?startDate=${startDate}&endDate=${endDate}`,
+        );
+        if (!res.ok) throw new Error("Failed to load weekly sales");
+        const json = await res.json();
         if (!cancelled) setWeekBills(json?.data?.employeeData?.bills ?? []);
-      })
-      .catch(() => {
-        if (!cancelled) setWeekBills([]);
-      })
-      .finally(() => {
+      } catch (err) {
+        if (!cancelled) {
+          setWeekBills([]);
+          setError(
+            err instanceof Error ? err.message : "Failed to load weekly sales",
+          );
+        }
+      } finally {
         if (!cancelled) setLoading(false);
-      });
+      }
+    };
+
+    load();
     return () => {
       cancelled = true;
     };
-  }, [employeeId]);
+  }, [employeeId, reloadFlag]);
 
   const weekRange = useMemo(() => getLast7DaysRange(), []);
 
@@ -182,6 +191,31 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 size={20} className="animate-spin text-blue-500" />
+        </div>
+      ) : error ? (
+        <div className="text-center py-12">
+          <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3">
+            <svg
+              className="w-6 h-6 text-red-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+              />
+            </svg>
+          </div>
+          <p className="text-sm font-medium text-gray-500">{error}</p>
+          <button
+            onClick={() => setReloadFlag((f) => f + 1)}
+            className="mt-3 px-4 py-1.5 text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+          >
+            Retry
+          </button>
         </div>
       ) : isEmpty ? (
         <div className="text-center py-12">

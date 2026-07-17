@@ -216,39 +216,34 @@ export async function fetchAllShifts(
   startDate?: string,
   endDate?: string,
 ): Promise<RawShift[]> {
-  try {
-    // Resolve the date range from preset or custom dates
-    const { startDate: from, endDate: to } = getDateRange(
-      range,
-      startDate,
-      endDate,
-    );
+  // Resolve the date range from preset or custom dates
+  const { startDate: from, endDate: to } = getDateRange(
+    range,
+    startDate,
+    endDate,
+  );
 
-    const params = new URLSearchParams();
-    params.set("limit", "15");
-    if (from) params.set("from_date", from);
-    if (to) params.set("to_date", to);
+  const params = new URLSearchParams();
+  params.set("limit", "15");
+  if (from) params.set("from_date", from);
+  if (to) params.set("to_date", to);
 
-    const res = await fetch(
-      `${BASE}/business/shift/allshifts?${params.toString()}`,
-      {
-        headers: await authHeaders(),
-        next: { revalidate: 300 },
-      },
-    );
-    if (!res.ok) return [];
+  const res = await fetch(
+    `${BASE}/business/shift/allshifts?${params.toString()}`,
+    {
+      headers: await authHeaders(),
+      next: { revalidate: 300 },
+    },
+  );
+  // A real HTTP failure is an error — let it surface (not "no data").
+  if (!res.ok) throw new Error(`fetchAllShifts failed: ${res.status}`);
 
-    const json = await res.json();
+  const json = await res.json();
 
-    // Backend returns { message: "No shifts found!" } when empty
-    // Guard against any non-array shape
-    if (!json?.data || !Array.isArray(json.data)) return [];
+  // Backend returns { message: "No shifts found!" } when empty — genuine empty.
+  if (!json?.data || !Array.isArray(json.data)) return [];
 
-    return json.data;
-  } catch (err) {
-    console.error("fetchAllShifts error:", err);
-    return [];
-  }
+  return json.data;
 }
 
 // ── Core fetcher — tickets (for ticketTakenBy-based sales count) ────────
@@ -305,7 +300,11 @@ export async function getStaffData(
     const [employees, allUsersRaw, allShiftsRaw, tickets] = await Promise.all([
       fetchAllEmployeeSales(range, startDate, endDate),
       fetchAllEmployees(),
-      fetchAllShifts(range, dateRange.startDate, dateRange.endDate),
+      // Shift data is supplementary here (avg time) — degrade to [] on failure
+      // so a shift outage doesn't blank out the stat boxes.
+      fetchAllShifts(range, dateRange.startDate, dateRange.endDate).catch(
+        () => [],
+      ),
       fetchAllTickets(range, startDate, endDate),
     ]);
 
@@ -438,7 +437,7 @@ export async function getStaffData(
     return staffList.sort((a, b) => b.amount - a.amount);
   } catch (err) {
     console.error("getStaffData error:", err);
-    return [];
+    throw err;
   }
 }
 // ── getStaffRevenue — revenue bar chart ───────────────────────────────────
@@ -460,7 +459,7 @@ export async function getStaffRevenue(
       .sort((a, b) => a.name.localeCompare(b.name));
   } catch (err) {
     console.error("getStaffRevenue error:", err);
-    return [];
+    throw err;
   }
 }
 
@@ -523,7 +522,7 @@ export async function getStaffSalesPerHour(
     }));
   } catch (err) {
     console.error("getStaffSalesPerHour error:", err);
-    return [];
+    throw err;
   }
 }
 
@@ -606,6 +605,6 @@ export async function getShiftAnalysisData(
     });
   } catch (err) {
     console.error("getShiftAnalysisData error:", err);
-    return [];
+    throw err;
   }
 }
