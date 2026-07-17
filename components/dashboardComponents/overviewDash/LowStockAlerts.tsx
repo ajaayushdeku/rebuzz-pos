@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { AlertTriangle, ChevronRight, PackageCheck } from "lucide-react";
 import { useInventoryQuery } from "@/hooks/useInventory";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 type Level = "out" | "critical" | "warning";
 
@@ -57,20 +58,21 @@ export default function LowStockAlerts() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <AlertTriangle size={16} className="text-amber-500" />
-          <div>
-            <h2 className="text-sm font-bold text-gray-900">
-              Low Stock Alerts
-              {alerts.length > 0 && (
-                <span className="text-[11px] font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
-                  {alerts.length}
-                </span>
-              )}
-            </h2>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Items running out soon
-            </p>
+          <div className="flex flex-col items-center gap-1 align-start">
+            {" "}
+            <AlertTriangle size={16} className="text-amber-500" />
+            {alerts.length > 0 && (
+              <span className="text-[11px] font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                {alerts.length}
+              </span>
+            )}
           </div>
+
+          <ComponentHeader
+            title=" Low Stock Alerts
+              "
+            subHeader="  Items running out soon"
+          />
         </div>
         <Link
           href="/dashboard/inventory"

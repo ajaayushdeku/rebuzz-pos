@@ -18,6 +18,7 @@ import {
   Legend,
 } from "recharts";
 import type { BarShapeProps } from "recharts";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 export interface PeakHourlyData {
   hour: string;
@@ -196,14 +197,11 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
       {/* HEADER */}
       <div className="flex flex-row  justify-between gap-3 mb-5">
         {/* <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"> */}
-        <div className="flex-shrink-0">
-          <h2 className="text-sm font-bold text-gray-900">
-            Peak Hours Analysis
-          </h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Average number of orders per hour across the selected period
-          </p>
-        </div>
+
+        <ComponentHeader
+          title="Peak Hours Analysis"
+          subHeader="Average number of orders per hour across the selected period"
+        />
 
         {/* </div> */}
 

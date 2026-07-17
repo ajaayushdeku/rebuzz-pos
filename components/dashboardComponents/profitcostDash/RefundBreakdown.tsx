@@ -14,6 +14,7 @@ import {
   totalRefundLoss,
 } from "@/lib/mockData/mock-refundBreakDown";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -79,12 +80,10 @@ export default function RefundBreakdown() {
       <LockDimFeactureOverlay component_name="Refund Breakdown" />
 
       {/* Header */}
-      <div className="mb-0">
-        <h2 className="text-sm font-bold text-gray-900">Refund Breakdown</h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Value lost by refund reason
-        </p>
-      </div>
+      <ComponentHeader
+        title="Refund Breakdown"
+        subHeader="Value lost by refund reason"
+      />
 
       {/* Donut chart */}
       <div className="relative flex items-center justify-center shrink-0">

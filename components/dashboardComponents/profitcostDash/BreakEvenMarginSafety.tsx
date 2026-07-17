@@ -3,6 +3,7 @@
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 export interface BreakEvenData {
   revenue: number;
@@ -43,12 +44,10 @@ export default function BreakEvenMarginSafety() {
 
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-sm font-bold text-gray-900">
-          Break-even & Margin of Safety
-        </h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          How much revenue is required to cover all costs
-        </p>
+        <ComponentHeader
+          title="Break-even & Margin of Safety"
+          subHeader="How much revenue is required to cover all costs"
+        />
       </div>
 
       {/* KPI Row */}

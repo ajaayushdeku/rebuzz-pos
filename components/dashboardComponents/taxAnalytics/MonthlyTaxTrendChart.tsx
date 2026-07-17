@@ -18,6 +18,7 @@ import { Info } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { useMonthlyTaxTrend } from "@/hooks/useMonthlyTaxTrend";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 const RATE_COLORS = [
   "#6366f1",
@@ -81,17 +82,14 @@ export default function MonthlyTaxTrendChart() {
   const series = data?.series ?? [];
   const hasData = rows.some((r) => r.total > 0);
 
-  const formatY = (v: number) =>
-    `${currency.symbol} ${formatCompactNumber(v)}`;
+  const formatY = (v: number) => `${currency.symbol} ${formatCompactNumber(v)}`;
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
-      <div>
-        <h2 className="text-sm font-bold text-gray-900">Monthly Tax Trend</h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Tax generated over the last 6 months, broken down by applied rate
-        </p>
-      </div>
+      <ComponentHeader
+        title="Monthly Tax Trend"
+        subHeader=" Tax generated over the last 6 months, broken down by applied rate"
+      />
 
       {isLoading ? (
         <div className="flex items-center justify-center h-[280px]">
@@ -166,8 +164,8 @@ export default function MonthlyTaxTrendChart() {
       <div className="flex items-start gap-2 bg-gray-50 rounded-xl px-3 py-2.5">
         <Info size={13} className="text-gray-400 shrink-0 mt-0.5" />
         <p className="text-[11px] text-gray-500 leading-relaxed">
-          Each bar stacks the tax generated that month by the rate applied on the
-          bills, so you can see your total tax load trending over time.
+          Each bar stacks the tax generated that month by the rate applied on
+          the bills, so you can see your total tax load trending over time.
         </p>
       </div>
     </div>

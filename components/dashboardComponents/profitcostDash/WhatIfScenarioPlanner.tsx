@@ -11,6 +11,7 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 // function clamp(value: number, min: number, max: number) {
 //   return Math.min(max, Math.max(min, value));
@@ -72,12 +73,10 @@ export default function WhatIfScenarioPlanner() {
 
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-sm font-bold text-gray-900">
-          What-If Scenario Planner
-        </h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Adjust sliders to forecast profit impact
-        </p>
+        <ComponentHeader
+          title=" What-If Scenario Planner"
+          subHeader="Adjust sliders to forecast profit impact"
+        />
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">

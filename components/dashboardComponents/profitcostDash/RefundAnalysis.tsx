@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useRefundAnalysis } from "@/hooks/useRefundAnalysis";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -108,10 +109,10 @@ export default function RefundAnalysis({
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full overflow-hidden">
       <div className="min-w-0 mb-4">
-        <h2 className="text-sm font-bold text-gray-900">Refund Analysis</h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          All the refunded bills with lost value.
-        </p>
+        <ComponentHeader
+          title="Refund Analysis"
+          subHeader="All the refunded bills with lost value."
+        />
       </div>
 
       {/* Search */}

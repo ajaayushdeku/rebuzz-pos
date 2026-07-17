@@ -14,6 +14,7 @@ import { mockWaterfallData } from "@/lib/mockData/mock-profitcost-advanced";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCompactNumber } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 const BAR_COLORS: Record<string, string> = {
   start: "#64748b",
@@ -61,12 +62,10 @@ export default function ProfitWaterfallBridge() {
 
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-sm font-bold text-gray-900">
-          Profit Waterfall Bridge
-        </h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Step-by-step breakdown from Gross Revenue to Net Profit
-        </p>
+        <ComponentHeader
+          title="Profit Waterfall Bridge"
+          subHeader="Step-by-step breakdown from Gross Revenue to Net Profit"
+        />
       </div>
 
       <ResponsiveContainer width="100%" height={320}>

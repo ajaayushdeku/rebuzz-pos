@@ -14,6 +14,7 @@ import {
   AreaChart,
 } from "recharts";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 function calculatePrimeCost(cogs: number, labor: number, revenue: number) {
   return revenue > 0 ? ((cogs + labor) / revenue) * 100 : 0;
@@ -78,10 +79,10 @@ export default function PrimeCostTracker() {
 
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-sm font-bold text-gray-900">Prime Cost Tracker</h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          COGS + Labor as a % of Revenue
-        </p>
+        <ComponentHeader
+          title="Prime Cost Tracker"
+          subHeader="COGS + Labor as a % of Revenue"
+        />
       </div>
 
       {/* Current Prime Cost */}

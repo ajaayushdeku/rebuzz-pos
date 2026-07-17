@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/tooltip";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 export interface DayTimeProfitData {
   day: string;
@@ -82,12 +83,10 @@ export default function DayTimeProfitHeatmap({
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full relative select-none">
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-sm font-bold text-gray-900">
-          Day × Time Profit Heatmap
-        </h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Average profit generation by hour and day of week
-        </p>
+        <ComponentHeader
+          title=" Day × Time Profit Heatmap"
+          subHeader="Average profit generation by hour and day of week"
+        />
       </div>
 
       {/* Heatmap Grid */}

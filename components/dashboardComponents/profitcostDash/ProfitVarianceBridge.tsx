@@ -14,6 +14,7 @@ import { mockVarianceData } from "@/lib/mockData/mock-profitcost-advanced";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCompactNumber } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 const BAR_COLORS: Record<string, string> = {
   base: "#94a3b8",
@@ -67,12 +68,10 @@ export default function ProfitVarianceBridge() {
 
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-sm font-bold text-gray-900">
-          Profit Variance Bridge
-        </h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Why did net profit change vs last month?
-        </p>
+        <ComponentHeader
+          title="Profit Variance Bridge"
+          subHeader="Why did net profit change vs last month?"
+        />
       </div>
 
       <ResponsiveContainer width="100%" height={320}>

@@ -1,5 +1,6 @@
 "use client";
 
+import { ComponentHeader } from "@/components/ComponentHeader";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { RefreshCcw, TrendingDown, AlertCircle } from "lucide-react";
@@ -32,12 +33,10 @@ const TaxOnRefundedBills = ({
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6">
-      <div>
-        <h2 className="text-sm font-bold text-gray-900"> Tax on Refunds</h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Tax reversed for returned items
-        </p>
-      </div>
+      <ComponentHeader
+        title="Tax on Refunds"
+        subHeader="Tax reversed for returned items"
+      />
 
       {isLoading ? (
         <div className="flex items-center justify-center py-8">

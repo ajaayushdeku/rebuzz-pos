@@ -5,6 +5,7 @@ import { mockIncomeTaxProvisionData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 export default function IncomeTaxProvision() {
   const { currency } = useCurrency();
@@ -27,6 +28,12 @@ export default function IncomeTaxProvision() {
           monthly for accurate reporting
         </p>
       </div>
+
+      {/* <ComponentHeader
+        title="Income Tax Provision"
+        subHeader=" Annual income tax estimate based on current month profit — accrued
+          monthly for accurate reporting"
+      /> */}
 
       {/* Top row — 3 metric boxes */}
       <div className="flex items-stretch gap-3">

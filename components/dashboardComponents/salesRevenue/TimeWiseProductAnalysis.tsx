@@ -4,6 +4,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import type { TimeWiseProduct } from "@/lib/mockData/mockInsightData";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 interface TimeWiseProductAnalysisProps {
   data: TimeWiseProduct[];
@@ -24,12 +25,10 @@ export default function TimeWiseProductAnalysis({
 
       {/* Header */}
       <div className="mb-4 md:mb-5">
-        <h2 className="text-sm font-bold text-gray-900">
-          Time-Wise Product Analysis
-        </h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Top performing products specific to times of day
-        </p>
+        <ComponentHeader
+          title="Time-Wise Product Analysis"
+          subHeader="Top performing products specific to times of day"
+        />
       </div>
 
       {/* Cards grid */}

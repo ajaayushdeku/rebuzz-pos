@@ -15,6 +15,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { getPercentColor } from "@/lib/utils";
 import { useTopProducts } from "@/hooks/useTopProducts";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -87,14 +88,10 @@ export default function TopProducts({
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-        <div>
-          <h2 className="text-sm font-bold text-gray-900">
-            Top Selling Products
-          </h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Products contributing most to revenue growth
-          </p>
-        </div>
+        <ComponentHeader
+          title="Top Selling Products"
+          subHeader="Products contributing most to revenue growth"
+        />
       </div>
 
       {/* Search */}

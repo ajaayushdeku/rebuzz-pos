@@ -9,6 +9,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 type StoryView = "live" | "yesterday";
 
@@ -134,10 +135,8 @@ export default function AIBusinessStory() {
           <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center shrink-0">
             <Sparkles size={16} className="text-violet-600" />
           </div>
-          <div>
-            <h2 className="text-sm font-bold text-gray-900">{story.title}</h2>
-            <p className="text-xs text-gray-400 mt-0.5">{story.subtitle}</p>
-          </div>
+
+          <ComponentHeader title={story.title} subHeader={story.subtitle} />
         </div>
 
         <div className="flex items-center gap-2">

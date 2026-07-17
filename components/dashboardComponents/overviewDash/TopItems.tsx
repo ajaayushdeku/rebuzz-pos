@@ -3,6 +3,7 @@
 import { TrendingUp } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 type Rank = 1 | 2 | 3;
 
@@ -67,12 +68,11 @@ const TopItems = ({ topProducts }: TopProductProps) => {
     <div className="flex-1 bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
-        <div>
-          <h2 className="text-sm font-bold text-gray-900">Top 3 Items Today</h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Best performers in today&lsquo;s session
-          </p>
-        </div>
+        <ComponentHeader
+          title="Top 3 Items Today"
+          subHeader=" Best performers in today's session"
+        />
+
         <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600">
           <TrendingUp size={16} strokeWidth={2.25} />
         </div>

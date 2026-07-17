@@ -4,6 +4,7 @@ import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { ShoppingCart, DollarSign, Tag, UserRound } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 export interface UnitEconomics {
   avgProfitPerTransaction: number;
@@ -65,7 +66,7 @@ export default function UnitEconomics() {
     <div className="relative  w-full rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
       <LockDimFeactureOverlay component_name="Unit Economics" />
 
-      <h2 className="text-sm font-bold text-gray-900">Unit Economics</h2>
+      <ComponentHeader title="Unit Economics" subHeader="" />
 
       <div className="grid grid-cols-2 gap-5">
         {metrics.map((item, index) => {

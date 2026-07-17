@@ -16,6 +16,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { mockGrossProfitTrendData } from "@/lib/mockData/mock-profitcostdata";
 import { CustomTooltipProps } from "@/lib/types/chart";
 import SampleDataBadge from "@/components/ui/sampledatabadge";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 export interface ProfitTrendData {
   month: string;
@@ -160,12 +161,10 @@ export default function GrossProfitTrendChart() {
       {showSampleBadge && <SampleDataBadge />}
 
       <div className="mb-6">
-        <h2 className="text-sm font-bold text-gray-900">
-          Gross vs Net Profit Trend
-        </h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Monthly comparison of revenue and net profit
-        </p>
+        <ComponentHeader
+          title="Gross vs Net Profit Trend"
+          subHeader="Monthly comparison of revenue and net profit"
+        />
       </div>
 
       <div className="h-44 sm:h-56 md:h-64">

@@ -24,6 +24,7 @@ import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { CurrencyConfig, useCurrency } from "@/providers/CurrencyContext";
 import { useRevenueVsProfit } from "@/hooks/useRevenueVsProfit";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 // Types
 
@@ -181,12 +182,10 @@ export default function RevenueVsProfitChart({
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-sm font-bold text-gray-900">
-          Revenue vs Profit by Product
-        </h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Comparing top-line revenue against net profit per product
-        </p>
+        <ComponentHeader
+          title="Revenue vs Profit by Product"
+          subHeader="Comparing top-line revenue against net profit per product"
+        />
 
         {isError && (
           <p className="text-xs text-amber-400 mt-1">

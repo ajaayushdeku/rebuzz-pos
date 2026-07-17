@@ -6,6 +6,7 @@ import type { InstallmentStatus } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 const STATUS_CONFIG: Record<
   InstallmentStatus,
@@ -38,12 +39,10 @@ export default function AdvanceTaxInstallments() {
 
       {/* Header */}
       <div className="mb-4">
-        <h2 className="text-sm font-bold text-gray-900">
-          Advance Income Tax Installments
-        </h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Poush, Chaitra, and Ashad scheduled payments
-        </p>
+        <ComponentHeader
+          title=" Advance Income Tax Installments"
+          subHeader="Poush, Chaitra, and Ashad scheduled payments"
+        />
       </div>
 
       {/* Installment rows */}

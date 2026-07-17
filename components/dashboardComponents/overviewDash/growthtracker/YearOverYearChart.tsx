@@ -18,6 +18,7 @@ import { CustomTooltipProps } from "@/lib/types/chart";
 import { mockYearOverYearData } from "@/lib/mockData/mock-growthtrackerdata";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 // Types
 
 export interface YoYData {
@@ -175,13 +176,10 @@ export default function YearOverYearChart({ data }: YearOverYearProps) {
 
       {/* Header */}
       <div className="mb-2">
-        <h2 className="text-sm font-bold text-gray-900">
-          Year-over-Year Revenue
-        </h2>
-
-        <p className="text-xs text-gray-400 mt-0.5">
-          This year vs last year — monthly comparison
-        </p>
+        <ComponentHeader
+          title=" Year-over-Year Revenue"
+          subHeader="This year vs last year — monthly comparison"
+        />
       </div>
 
       <ResponsiveContainer width="100%" height={300}>

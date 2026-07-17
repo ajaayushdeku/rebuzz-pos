@@ -15,6 +15,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 export interface HourlyData {
   hour: string;
@@ -162,14 +163,10 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
     <div className="bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5  w-full">
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4 md:mb-6">
-        <div className="flex-shrink-0">
-          <h2 className="text-sm font-bold text-gray-900">
-            Hourly Sales Trend
-          </h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Revenue throughput across all operating hours today
-          </p>
-        </div>
+        <ComponentHeader
+          title="Hourly Sales Trend"
+          subHeader="Revenue throughput across all operating hours today"
+        />
 
         {/* Hour Range Filter */}
         <div className="flex flex-col gap-1.5">

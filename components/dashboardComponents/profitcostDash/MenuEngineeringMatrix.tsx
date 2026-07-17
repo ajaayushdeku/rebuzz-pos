@@ -20,6 +20,7 @@ import type { MenuCategory } from "@/lib/mockData/mock-profitcost-advanced";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 const CATEGORY_COLORS: Record<MenuCategory, string> = {
   Coffee: "#3b82f6",
@@ -103,12 +104,10 @@ export default function MenuEngineeringMatrix() {
 
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-sm font-bold text-gray-900">
-          Menu Engineering Matrix
-        </h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Popularity (Units Sold) vs Profitability (Contribution Margin)
-        </p>
+        <ComponentHeader
+          title="Menu Engineering Matrix"
+          subHeader="Popularity (Units Sold) vs Profitability (Contribution Margin)"
+        />
       </div>
 
       <div className="relative">

@@ -15,6 +15,7 @@ import { mockVATTrendData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 const FmtRs = (v: number) => {
   const { currency } = useCurrency();
@@ -93,14 +94,10 @@ export default function VATTrendChart() {
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
       <LockDimFeactureOverlay component_name="VAT Trend Chart" />
 
-      <div>
-        <h2 className="text-sm font-bold text-gray-900">
-          Input vs Output VAT Trend
-        </h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          How much VAT you collect vs reclaim, over 6 months
-        </p>
-      </div>
+      <ComponentHeader
+        title="Input vs Output VAT Trend"
+        subHeader=" How much VAT you collect vs reclaim, over 6 months"
+      />
 
       <ResponsiveContainer width="100%" height={280}>
         <LineChart

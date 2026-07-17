@@ -5,6 +5,7 @@ import { mockVAT20SummaryData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 const STATUS_STYLES = {
   ready: {
@@ -85,14 +86,11 @@ export default function VAT20ReturnSummary() {
           <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
             <FileText size={15} className="text-blue-600" />
           </div>
-          <div>
-            <h2 className="text-sm font-bold text-gray-900">
-              VAT-20 Return Summary
-            </h2>
-            <p className="text-xs text-gray-400 mt-0.5">
-              IRD Tax Return Form Preview
-            </p>
-          </div>
+
+          <ComponentHeader
+            title="VAT-20 Return Summary"
+            subHeader="IRD Tax Return Form Preview"
+          />
         </div>
         <span
           className={`flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border ${status.bg} ${status.text} ${status.border}`}

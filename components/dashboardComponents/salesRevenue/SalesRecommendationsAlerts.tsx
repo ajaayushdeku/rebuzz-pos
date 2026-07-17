@@ -1,5 +1,6 @@
 "use client";
 
+import { ComponentHeader } from "@/components/ComponentHeader";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { AlertTriangle, Info, CheckCircle2 } from "lucide-react";
 
@@ -55,14 +56,11 @@ export default function SalesRecommendationsAlerts() {
           <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
             <CheckCircle2 size={15} className="text-indigo-600" />
           </div>
-          <div>
-            <h2 className="text-sm font-bold text-gray-900">
-              Recommendations & Alerts
-            </h2>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Auto-generated insights from sales performance analysis
-            </p>
-          </div>
+
+          <ComponentHeader
+            title="Recommendations & Alerts"
+            subHeader="Auto-generated insights from sales performance analysis"
+          />
         </div>
       </div>
 

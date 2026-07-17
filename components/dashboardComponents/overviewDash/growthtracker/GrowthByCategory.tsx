@@ -6,6 +6,7 @@ import { ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useSalesByCategory } from "@/hooks/useSalesByCategory";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 /** Format a Date as YYYY-MM-DD (local). */
 function toDateStr(d: Date): string {
@@ -130,12 +131,10 @@ export default function GrowthByCategory() {
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6">
-      <div>
-        <h2 className="text-sm font-bold text-gray-900">Growth by Category</h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Month-over-month revenue growth per product category
-        </p>
-      </div>
+      <ComponentHeader
+        title="Growth by Category"
+        subHeader=" Month-over-month revenue growth per product category"
+      />
 
       {isLoading ? (
         <div className="space-y-4">

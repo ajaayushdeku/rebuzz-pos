@@ -5,6 +5,7 @@ import { mockVATComparisonData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 export default function WhatChangedAndWhy() {
   const { currency } = useCurrency();
@@ -22,11 +23,11 @@ export default function WhatChangedAndWhy() {
         ) : (
           <TrendingDown size={14} className="text-blue-500" />
         )}
-        <h2 className="text-sm font-bold text-gray-900">What Changed & Why</h2>
+        <ComponentHeader
+          title="What Changed & Why"
+          subHeader="Your VAT bill this month compared to last"
+        />
       </div>
-      <p className="text-xs text-gray-400 mb-5">
-        Your VAT bill this month compared to last
-      </p>
 
       {/* Comparison row */}
       <div className="flex items-center justify-between gap-4">

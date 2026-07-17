@@ -21,6 +21,7 @@ import type { MarginTrendPoint } from "@/lib/mockData/mock-profitcost-advanced";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCompactNumber } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -165,12 +166,10 @@ export default function MarginProfitForecastChart() {
 
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-sm font-bold text-gray-900">
-          Margin & Profit Trend with Forecast
-        </h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Historical net profit and margin % with 3-month projection
-        </p>
+        <ComponentHeader
+          title="Margin & Profit Trend with Forecast"
+          subHeader=" Historical net profit and margin % with 3-month projection"
+        />
       </div>
 
       <ResponsiveContainer width="100%" height={320}>

@@ -5,6 +5,7 @@ import { mockWhatYouOweData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 // ── Mini sparkline SVG (static illustrative) ──────────────────────────────
 // function Sparkline({ color, up }: { color: "green" | "red"; up: boolean }) {
@@ -50,14 +51,11 @@ export default function WhatYouActuallyOwe() {
 
         {/* Card header */}
         <div className="flex items-start justify-between mb-6">
-          <div>
-            <p className="text-sm font-bold text-blue-700">
-              What you actually owe
-            </p>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Your VAT bill this month
-            </p>
-          </div>
+          <ComponentHeader
+            title="What you actually owe"
+            subHeader="Your VAT bill this month"
+          />
+
           <div className="flex items-center gap-1.5 border border-blue-200 bg-blue-50 rounded-full px-3 py-1">
             <Calendar size={11} className="text-blue-500" />
             <span className="text-[11px] font-semibold text-blue-600">

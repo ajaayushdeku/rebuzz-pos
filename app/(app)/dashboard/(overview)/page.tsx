@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import StatSkeleton from "@/components/ui/statskeleton";
 import TableSkeleton from "@/components/ui/tableskeleton";
 import ChartSkeleton from "@/components/ui/chartskeleton";
+import PieChartSkeleton from "@/components/ui/piechartskeleton";
 import WinningStatSkeleton from "@/components/ui/winningstatskeleton";
 import StorySkeleton from "@/components/ui/storyskeleton";
 import InsightsSkeleton from "@/components/ui/insightsskeleton";
@@ -99,13 +100,15 @@ const Page = async ({
               </Suspense>
             </ChartErrorBoundary>
 
-            {/* Self-managing: follows the global range, handles its own
-                loading / error / empty states internally. */}
-            <SalesCategoryChartWrapper
-              range={range}
-              startDate={hasCustomDates ? startDate : undefined}
-              endDate={hasCustomDates ? endDate : undefined}
-            />
+            <ChartErrorBoundary>
+              <Suspense fallback={<PieChartSkeleton />}>
+                <SalesCategoryChartWrapper
+                  range={range}
+                  startDate={hasCustomDates ? startDate : undefined}
+                  endDate={hasCustomDates ? endDate : undefined}
+                />
+              </Suspense>
+            </ChartErrorBoundary>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
@@ -115,13 +118,15 @@ const Page = async ({
               </Suspense>
             </ChartErrorBoundary>
 
-            {/* Self-managing: follows the global range, handles its own
-                loading / error / empty states internally. */}
-            <PaymentMethodsChartWrapper
-              range={range}
-              startDate={hasCustomDates ? startDate : undefined}
-              endDate={hasCustomDates ? endDate : undefined}
-            />
+            <ChartErrorBoundary>
+              <Suspense fallback={<PieChartSkeleton />}>
+                <PaymentMethodsChartWrapper
+                  range={range}
+                  startDate={hasCustomDates ? startDate : undefined}
+                  endDate={hasCustomDates ? endDate : undefined}
+                />
+              </Suspense>
+            </ChartErrorBoundary>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 ">

@@ -6,6 +6,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import type { PriceChangeImpactItem } from "@/lib/mockData/mockInsightData";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 interface PriceChangeImpactProps {
   data: PriceChangeImpactItem[];
@@ -24,10 +25,10 @@ export default function PriceChangeImpact({ data }: PriceChangeImpactProps) {
 
       {/* Header */}
       <div className="mb-4 md:mb-5">
-        <h2 className="text-sm font-bold text-gray-900">Price Change Impact</h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Before vs after analysis of recent menu price updates
-        </p>
+        <ComponentHeader
+          title="Price Change Impact"
+          subHeader="Before vs after analysis of recent menu price updates"
+        />
       </div>
 
       {/* Table */}

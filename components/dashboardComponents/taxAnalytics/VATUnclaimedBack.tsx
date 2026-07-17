@@ -5,6 +5,7 @@ import { mockVATUnclaimedData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 export default function VATUnclaimedBack() {
   const { currency } = useCurrency();
@@ -18,14 +19,11 @@ export default function VATUnclaimedBack() {
         <div className="w-8 h-8 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
           <CreditCard size={15} className="text-green-600" />
         </div>
-        <div>
-          <h2 className="text-sm font-bold text-gray-900">
-            VAT You Haven&lsquo;t Claimed Back
-          </h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            VAT you paid suppliers but haven&lsquo;t recovered yet
-          </p>
-        </div>
+
+        <ComponentHeader
+          title=" VAT You Haven't Claimed Back"
+          subHeader="VAT you paid suppliers but haven't recovered yet"
+        />
       </div>
 
       {/* Big number */}

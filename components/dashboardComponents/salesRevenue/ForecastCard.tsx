@@ -8,6 +8,7 @@ import type {
   ConfidenceLevel,
 } from "@/lib/mockData/mock-forecast-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 const DRIVER_ICONS: Record<string, React.ReactNode> = {
   TrendingUp: <TrendingUp size={14} className="text-green-600" />,
@@ -43,14 +44,11 @@ export default function ForecastCard({ data }: ForecastCardProps) {
           <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
             <TrendingUp size={15} className="text-indigo-600" />
           </div>
-          <div>
-            <h2 className="text-sm font-bold text-gray-900">
-              What&lsquo;s coming forecast
-            </h2>
-            <p className="text-xs text-gray-400 mt-0.5">
-              AI-driven predictive demand metrics
-            </p>
-          </div>
+
+          <ComponentHeader
+            title="What's coming forecast"
+            subHeader="AI-driven predictive demand metrics"
+          />
         </div>
         <div className="flex flex-col items-end gap-1">
           <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">

@@ -17,6 +17,7 @@ import SampleDataBadge from "@/components/ui/sampledatabadge";
 import { CustomTooltipProps } from "@/lib/types/chart";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 export interface TargetActualData {
   month: string;
@@ -287,27 +288,23 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
 
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#60a5fa"
-                strokeWidth="2"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <circle cx="12" cy="12" r="6" />
-                <circle cx="12" cy="12" r="2" />
-              </svg>
-              <h2 className="text-sm font-bold text-gray-900">
-                Target vs Actual Revenue
-              </h2>
-            </div>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Monthly performance against set targets
-            </p>
+          <div className="flex items-center gap-2 mb-1">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#60a5fa"
+              strokeWidth="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <circle cx="12" cy="12" r="6" />
+              <circle cx="12" cy="12" r="2" />
+            </svg>
+            <ComponentHeader
+              title="Target vs Actual Revenue"
+              subHeader="Monthly performance against set targets"
+            />
           </div>
 
           <button

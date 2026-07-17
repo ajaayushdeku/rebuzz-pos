@@ -15,6 +15,7 @@ import type { BarShapeProps } from "recharts";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { CustomTooltipProps, DataPoint } from "@/lib/types/chart";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 interface WeeklyRevenueChartProps {
   data: DataPoint[];
@@ -75,12 +76,10 @@ const WeeklyRevenueChart = ({ data, peakDay }: WeeklyRevenueChartProps) => {
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6">
-      <div>
-        <h2 className="text-sm font-bold text-gray-900">Daily Sales Trend</h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Revenue performance – current week
-        </p>
-      </div>
+      <ComponentHeader
+        title="Daily Sales Trend"
+        subHeader="  Revenue performance – current week"
+      />
 
       <div className="h-56 md:h-72">
         <ResponsiveContainer width="100%" height="100%">

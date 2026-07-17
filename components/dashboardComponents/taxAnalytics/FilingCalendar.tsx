@@ -6,6 +6,7 @@ import type { FilingStatus } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 const STATUS_CONFIG: Record<
   FilingStatus,
@@ -41,12 +42,10 @@ export default function FilingCalendar() {
       <LockDimFeactureOverlay component_name="Filing Calendar" />
 
       {/* Header */}
-      <div>
-        <h2 className="text-sm font-bold text-gray-900">Filing Calendar</h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Tax filing and payment calendar with BS dates
-        </p>
-      </div>
+      <ComponentHeader
+        title="Filing Calendar"
+        subHeader="Tax filing and payment calendar with BS dates"
+      />
 
       {/* Upcoming alert banner */}
       {d.upcomingCount > 0 && (

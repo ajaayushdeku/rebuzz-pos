@@ -14,6 +14,7 @@ import { Product } from "./profit-per-product-column";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useProfitPerProduct } from "@/hooks/useProfitPerProduct";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -99,10 +100,10 @@ export default function ProfitPerProduct({
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full overflow-hidden">
       <div className="min-w-0 mb-4">
-        <h2 className="text-sm font-bold text-gray-900">Profit per Product</h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Revenue, cost and margins for top selling products.
-        </p>
+        <ComponentHeader
+          title="Profit per Product"
+          subHeader="Revenue, cost and margins for top selling products."
+        />
       </div>
 
       {/* Search */}

@@ -5,6 +5,7 @@ import { mockTDSOnRentData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 const STATUS_STYLES = {
   pending: {
@@ -41,12 +42,11 @@ export default function TDSOnRent() {
         <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
           <Building2 size={15} className="text-indigo-600" />
         </div>
-        <div>
-          <h2 className="text-sm font-bold text-gray-900">TDS on Rent</h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Track Tax Deducted at Source for rent payments
-          </p>
-        </div>
+
+        <ComponentHeader
+          title="TDS on Rent"
+          subHeader="Track Tax Deducted at Source for rent payments"
+        />
       </div>
 
       <div className="border-t border-gray-50 pt-3 space-y-4">

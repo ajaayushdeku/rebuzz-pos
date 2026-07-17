@@ -10,6 +10,7 @@ import {
   DEFAULT_TARGETS,
   type AnalyticsTargets,
 } from "@/lib/indexeddb/analyticsPreferences";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 type TargetPeriod = "daily" | "weekly" | "monthly";
 
@@ -206,12 +207,11 @@ export default function TargetTrackerCard() {
         <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
           <Target size={15} className="text-blue-600" />
         </div>
-        <div>
-          <h2 className="text-sm font-bold text-gray-900">Target tracker</h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Monitor daily, weekly, and monthly sales progress against goals
-          </p>
-        </div>
+
+        <ComponentHeader
+          title="Target tracker"
+          subHeader="Monitor daily, weekly, and monthly sales progress against goals"
+        />
       </div>
 
       {/* Period tabs */}

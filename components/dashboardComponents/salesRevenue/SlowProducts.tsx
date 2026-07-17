@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -92,10 +93,10 @@ export default function SlowProducts({
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
-      <h2 className="text-sm font-bold text-gray-900">Slow Moving Products</h2>
-      <p className="text-xs text-gray-400 mt-0.5">
-        Products with no sales in selected period, attention required.
-      </p>
+      <ComponentHeader
+        title="Slow Moving Products"
+        subHeader="Products with no sales in selected period, attention required."
+      />
 
       {/* Search + Days preset */}
       <div className="flex justify-between items-center gap-2 mt-4 mb-4">

@@ -5,6 +5,7 @@ import { mockNoVATPurchasesData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 export default function NoVATPurchases() {
   const { currency } = useCurrency();
@@ -19,14 +20,11 @@ export default function NoVATPurchases() {
         <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
           <ShoppingBag size={15} className="text-indigo-600" />
         </div>
-        <div>
-          <h2 className="text-sm font-bold text-gray-900">
-            Purchases With No VAT to Claim
-          </h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Tax-free items you bought — nothing to recover on these
-          </p>
-        </div>
+
+        <ComponentHeader
+          title=" Purchases With No VAT to Claim"
+          subHeader="Tax-free items you bought — nothing to recover on these"
+        />
       </div>
 
       {/* Two metric cols */}

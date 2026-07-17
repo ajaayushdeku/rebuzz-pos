@@ -5,6 +5,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { Transaction } from "../orderHistory/transaction-columns";
 import { statusStyles } from "@/lib/config/transaction";
 import { formatCurrency, formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 type RecentTransactionsProps = {
   title?: string;
@@ -23,10 +24,7 @@ export default function RecentTransactions({
   return (
     <div className="flex-1 bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
       <div className="flex items-center justify-between mb-3">
-        <div>
-          <h2 className="text-sm font-bold text-gray-900">{title}</h2>
-          <p className="text-xs text-gray-400 mt-0.5">{description}</p>
-        </div>
+        <ComponentHeader title={title} subHeader={description} />
 
         <Link
           href={viewAllHref}

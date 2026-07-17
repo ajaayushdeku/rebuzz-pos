@@ -6,6 +6,7 @@ import type { TDSReceivableStatus } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 const STATUS_CONFIG: Record<
   TDSReceivableStatus,
@@ -43,13 +44,12 @@ export default function TDSReceivable() {
           <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
             <FileText size={15} className="text-blue-600" />
           </div>
-          <div>
-            <h2 className="text-sm font-bold text-gray-900">TDS Receivable</h2>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Tax Deducted at Source by your clients on payments made to your
-              business
-            </p>
-          </div>
+
+          <ComponentHeader
+            title="TDS Receivable"
+            subHeader="Tax Deducted at Source by your clients on payments made to your
+              business"
+          />
         </div>
         <div className="text-right shrink-0">
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">

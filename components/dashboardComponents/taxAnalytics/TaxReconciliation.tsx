@@ -5,6 +5,7 @@ import { mockTaxReconciliationData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 export default function TaxReconciliation() {
   const { currency } = useCurrency();
@@ -26,7 +27,7 @@ export default function TaxReconciliation() {
       <LockDimFeactureOverlay component_name="Tax Reconciliation" />
 
       {/* Header */}
-      <h2 className="text-sm font-bold text-gray-900">Tax Reconciliation</h2>
+      <ComponentHeader title="Tax Reconciliation" subHeader="" />
 
       {/* Equation row */}
       <div className="overflow-x-auto">

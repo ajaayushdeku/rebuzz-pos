@@ -17,6 +17,7 @@ import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import type { CustomTooltipProps } from "@/lib/types/chart";
 import type { CompareSalesPoint } from "@/services/dashboardServices/apiSalesCompare";
 import { useSalesTrends } from "@/hooks/useSalesTrends";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 // Types
 type ViewMode = "daily" | "weekly" | "monthly";
@@ -103,12 +104,10 @@ export default function SalesTrendChart() {
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-        <div>
-          <h2 className="text-sm font-bold text-gray-900">Sales Trends</h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Revenue over time – switch between daily, weekly, and monthly views
-          </p>
-        </div>
+        <ComponentHeader
+          title="Sales Trends"
+          subHeader=" Revenue over time – switch between daily, weekly, and monthly views"
+        />
 
         {/* View switcher */}
         <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 self-start">

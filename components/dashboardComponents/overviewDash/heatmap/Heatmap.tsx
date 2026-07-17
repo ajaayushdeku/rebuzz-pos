@@ -6,6 +6,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 // Types
 
@@ -388,14 +389,11 @@ export default function Heatmap({
     <div className="bg-white w-full">
       {/* Header */}
       <div className="flex flex-row items-start justify-between mb-5 gap-3">
-        <div>
-          <h2 className="text-sm font-bold text-gray-900">
-            Sales Activity Heatmap
-          </h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Order counts by day and hour — darker cells = more orders
-          </p>
-        </div>
+        <ComponentHeader
+          title="Sales Activity Heatmap"
+          subHeader="Order counts by day and hour — darker cells = more orders"
+        />
+
         <Legend scheme={scheme} min={min} max={max} />
       </div>
 

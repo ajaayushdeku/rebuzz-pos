@@ -16,6 +16,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import type { CampaignAnalysisData } from "@/lib/mockData/mockInsightData";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 interface CampaignAnalysisProps {
   data: CampaignAnalysisData;
@@ -93,10 +94,10 @@ export default function CampaignAnalysis({ data }: CampaignAnalysisProps) {
 
       {/* Header */}
       <div className="mb-4 md:mb-5">
-        <h2 className="text-sm font-bold text-gray-900">Campaign Analysis</h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Sales before, during and after the latest discount campaign
-        </p>
+        <ComponentHeader
+          title="Campaign Analysis"
+          subHeader="Sales before, during and after the latest discount campaign"
+        />
       </div>
 
       {/* Chart */}

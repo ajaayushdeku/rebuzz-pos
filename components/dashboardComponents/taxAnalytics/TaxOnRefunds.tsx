@@ -5,6 +5,7 @@ import { mockTaxOnRefundsData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 export default function TaxOnRefunds() {
   const { currency } = useCurrency();
@@ -15,12 +16,11 @@ export default function TaxOnRefunds() {
       <LockDimFeactureOverlay component_name="Tax On Refunds" />
 
       {/* Header */}
-      <div>
-        <h2 className="text-sm font-bold text-gray-900">Tax on Refunds</h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Tax reversed for returned items
-        </p>
-      </div>
+
+      <ComponentHeader
+        title="Tax on Refunds"
+        subHeader="Tax reversed for returned items"
+      />
 
       {/* Two metric cards */}
       <div className="grid grid-cols-2 gap-3">

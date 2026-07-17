@@ -10,6 +10,7 @@ import type {
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -159,14 +160,11 @@ export default function TaxAuditLog() {
 
       {/* Header */}
       <div className="flex items-start justify-between mb-5">
-        <div>
-          <h2 className="text-sm font-bold text-gray-900">
-            Tax Detail / Audit Log
-          </h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Period-by-period breakdown of liabilities and payments
-          </p>
-        </div>
+        <ComponentHeader
+          title="Tax Detail / Audit Log"
+          subHeader=" Period-by-period breakdown of liabilities and payments"
+        />
+
         <button
           onClick={() => exportCSV(sorted)}
           className="flex items-center gap-1.5 border border-gray-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors"

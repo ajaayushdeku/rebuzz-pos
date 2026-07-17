@@ -1,5 +1,6 @@
 "use client";
 
+import { ComponentHeader } from "@/components/ComponentHeader";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { CheckCircle2, AlertTriangle, Info, Package, User } from "lucide-react";
 
@@ -109,14 +110,10 @@ export default function BusinessInsightsAlerts() {
       <LockDimFeactureOverlay component_name="Business Insights & Alerts" />
 
       {/* Header */}
-      <div>
-        <h2 className="text-sm font-bold text-gray-900">
-          Business Insights & Alerts
-        </h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Auto-generated insights based on today&lsquo;s data
-        </p>
-      </div>
+      <ComponentHeader
+        title="Business Insights & Alerts"
+        subHeader="  Auto-generated insights based on today's data"
+      />
 
       {/* Insight grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

@@ -11,6 +11,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useMonthlyTaxTrend, type TaxTotal } from "@/hooks/useMonthlyTaxTrend";
 import { RefreshCcw } from "lucide-react";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 const GREEN_COLORS = [
   "#059669",
@@ -235,12 +236,10 @@ export default function TaxRateBreakdown() {
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6">
-      <div>
-        <h2 className="text-sm font-bold text-gray-900">Tax Breakdown</h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Tax collected by applied rate over the last 6 months
-        </p>
-      </div>
+      <ComponentHeader
+        title="Tax Breakdown"
+        subHeader="Tax collected by applied rate over the last 6 months"
+      />
 
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
@@ -251,11 +250,13 @@ export default function TaxRateBreakdown() {
           Failed to load tax breakdown
         </p>
       ) : totals.length === 0 ? (
-     <div className="flex flex-col items-center justify-center py-12">
+        <div className="flex flex-col items-center justify-center py-12">
           <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
             <RefreshCcw size={24} className="text-gray-300" />
           </div>
-          <p className="text-sm font-medium text-gray-500">No tax data available</p>
+          <p className="text-sm font-medium text-gray-500">
+            No tax data available
+          </p>
           <p className="text-xs text-gray-400 mt-1">
             Tax Breakdown data will appear here
           </p>

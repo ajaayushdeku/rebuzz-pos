@@ -6,6 +6,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { revenueFlowMockData } from "@/lib/mockData/mock-finance-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 export default function RevenueFlowSankey() {
   const { currency } = useCurrency();
@@ -30,13 +31,10 @@ export default function RevenueFlowSankey() {
 
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-sm font-bold text-gray-900">
-          Revenue Flow (Sankey Diagram)
-        </h2>
-
-        <p className="text-xs text-gray-400 mt-0.5">
-          Visualizing how Gross Revenue distributes into expenses and Net Profit
-        </p>
+        <ComponentHeader
+          title="Revenue Flow (Sankey Diagram)"
+          subHeader="Visualizing how Gross Revenue distributes into expenses and Net Profit"
+        />
       </div>
 
       <div className=" h-[520px]">
