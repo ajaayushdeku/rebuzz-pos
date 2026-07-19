@@ -6,6 +6,8 @@ type CreateCustomerPayload = {
   customerPan?: string;
   role?: string;
   note?: string;
+  /** Optional profile photo — sent as multipart/form-data when present. */
+  image?: File | null;
 };
 
 type CreateResult =
@@ -24,13 +26,34 @@ const createCustomer = async (
   payload: CreateCustomerPayload,
 ): Promise<CreateResult> => {
   try {
-    const res = await fetch("/api/customers/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    const { image, ...fields } = payload;
+
+    // With a photo the request must be multipart so the file survives the hop
+    // to the backend; without one keep the simpler JSON body.
+    let res: Response;
+    if (image) {
+      const formData = new FormData();
+      for (const [key, value] of Object.entries(fields)) {
+        if (value !== undefined && value !== null) {
+          formData.append(key, String(value));
+        }
+      }
+      formData.append("image", image, image.name);
+
+      res = await fetch("/api/customers/create", {
+        method: "POST",
+        // No Content-Type header — fetch sets multipart/form-data with boundary
+        body: formData,
+      });
+    } else {
+      res = await fetch("/api/customers/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(fields),
+      });
+    }
 
     const data = await res.json();
 

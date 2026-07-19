@@ -11,15 +11,27 @@ export async function PUT(
     const { id } = await params;
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
-    const body = await request.json();
+    const contentType = request.headers.get("content-type") ?? "";
+
+    // Multipart carries the profile photo and is forwarded as-is; JSON is kept
+    // for callers that don't upload an image.
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${token}`,
+    };
+    let upstreamBody: BodyInit;
+
+    if (contentType.includes("multipart/form-data")) {
+      // DO NOT set Content-Type — fetch re-encodes with a fresh boundary
+      upstreamBody = await request.formData();
+    } else {
+      headers["Content-Type"] = "application/json";
+      upstreamBody = JSON.stringify(await request.json());
+    }
 
     const res = await fetch(`${BASE}/business/users/${id}`, {
       method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
+      headers,
+      body: upstreamBody,
     });
 
     const data = await res.json();

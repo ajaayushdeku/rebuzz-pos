@@ -6,9 +6,33 @@ const BASE = process.env.NEXT_PUBLIC_API_URL;
 export async function POST(request: Request) {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
-  const body = await request.json();
+  const contentType = request.headers.get("content-type") ?? "";
+  const isMultipart = contentType.includes("multipart/form-data");
 
-  const { name, email, phone, countryCode } = body;
+  // Multipart carries the profile photo and is forwarded as-is; JSON is kept
+  // for callers that don't upload an image.
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  let upstreamBody: BodyInit;
+  let fields: Record<string, unknown>;
+
+  if (isMultipart) {
+    const formData = await request.formData();
+    fields = Object.fromEntries(
+      [...formData.entries()].map(([k, v]) => [
+        k,
+        typeof v === "string" ? v : v.name,
+      ]),
+    );
+    // DO NOT set Content-Type — fetch re-encodes with a fresh boundary
+    upstreamBody = formData;
+  } else {
+    const body = await request.json();
+    fields = body;
+    headers["Content-Type"] = "application/json";
+    upstreamBody = JSON.stringify(body);
+  }
+
+  const { name, email, phone, countryCode } = fields as Record<string, string>;
   if (!name || !email || !phone || !countryCode) {
     return NextResponse.json(
       { message: "Name, email, phone, and country code are required" },
@@ -18,11 +42,8 @@ export async function POST(request: Request) {
 
   const response = await fetch(`${BASE}/business/auth/customer/create`, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
+    headers,
+    body: upstreamBody,
   });
 
   const data = await response.json();

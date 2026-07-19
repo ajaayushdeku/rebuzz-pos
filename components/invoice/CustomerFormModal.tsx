@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, ImageIcon, X } from "lucide-react";
 import checkCustomerExist from "@/services/apiCheckCustomerExist";
 import createCustomer from "@/services/apiCreateCustomer";
 import { useQueryClient } from "@tanstack/react-query";
@@ -45,6 +45,8 @@ const inputClass =
 const inputErrorClass =
   "w-full border border-red-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition";
 
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
 interface CustomerFormModalProps {
   open: boolean;
   onClose: () => void;
@@ -70,6 +72,35 @@ export default function CustomerFormModal({
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState("");
 
+  // Profile photo
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const clearImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setCreateError("Please select an image file.");
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      setCreateError("Image must be under 5MB.");
+      return;
+    }
+    setCreateError("");
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
   const resetAll = () => {
     setStep(1);
     setPhone("");
@@ -79,6 +110,7 @@ export default function CustomerFormModal({
     setForm(INITIAL_FORM);
     setCreateLoading(false);
     setCreateError("");
+    clearImage();
   };
 
   const handleCheckPhone = async () => {
@@ -131,6 +163,7 @@ export default function CustomerFormModal({
       ...(form.customerPan && { customerPan: form.customerPan }),
       role: "user",
       ...(form.note && { note: form.note }),
+      image: imageFile,
     });
 
     if (!result.success) {
@@ -257,6 +290,52 @@ export default function CustomerFormModal({
 
         {step === 2 && (
           <div className="space-y-5">
+            {/* Profile photo */}
+            <div>
+              <Label className="text-xs text-gray-500 mb-1.5 block">
+                Profile photo
+              </Label>
+              <div className="flex items-center gap-3">
+                {imagePreview ? (
+                  <div className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={imagePreview}
+                      alt="Profile preview"
+                      className="h-16 w-16 rounded-full object-cover border border-gray-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={clearImage}
+                      className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 shadow-sm hover:bg-red-600"
+                      aria-label="Remove photo"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="h-16 w-16 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
+                    <ImageIcon size={18} className="text-gray-400" />
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex-1 flex items-center justify-center gap-2 text-xs text-gray-500 border border-dashed border-gray-300 rounded-lg px-3 py-2.5 hover:border-blue-400 hover:text-blue-600 transition"
+                >
+                  <ImageIcon size={14} />
+                  {imageFile ? "Change photo" : "Upload photo"}
+                </button>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                className="hidden"
+              />
+            </div>
+
             <div>
               <Label className="text-xs text-gray-500 mb-1.5 block">
                 Name <span className="text-red-500">*</span>

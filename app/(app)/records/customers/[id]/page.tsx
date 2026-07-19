@@ -6,7 +6,7 @@ import { useCustomersList } from "@/hooks/useCustomersList";
 import { Customer } from "@/components/customer/customer-columns";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { getLoyaltyStatus } from "@/lib/types/customer";
+import { getCustomerImageUrl, getLoyaltyStatus } from "@/lib/types/customer";
 import {
   ArrowLeft,
   Pencil,
@@ -98,6 +98,43 @@ const scrollbarHideStyles = `
   }
 `;
 
+// â”€â”€ Avatar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+/** Customer photo with a graceful fallback to their initial. */
+function CustomerAvatar({
+  src,
+  name,
+  className = "",
+  textClass = "text-sm",
+}: {
+  src: string | null;
+  name: string;
+  className?: string;
+  textClass?: string;
+}) {
+  const [failed, setFailed] = useState(false);
+
+  if (src && !failed) {
+    return (
+      /* eslint-disable-next-line @next/next/no-img-element */
+      <img
+        src={src}
+        alt={name}
+        onError={() => setFailed(true)}
+        className={`rounded-full object-cover bg-gray-100 ${className}`}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold ${textClass} ${className}`}
+    >
+      {name.charAt(0).toUpperCase()}
+    </div>
+  );
+}
+
 // â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function CustomerDetailPage() {
@@ -176,6 +213,7 @@ export default function CustomerDetailPage() {
   }
 
   const loyaltyStatus = getLoyaltyStatus(customer.loyaltyPoint);
+  const imageUrl = getCustomerImageUrl(customer.image);
 
   // Calculate stats from history
   const validHistory = history.filter((p) => !p.isRefunded);
@@ -203,9 +241,12 @@ export default function CustomerDetailPage() {
               <ArrowLeft size={18} />
             </button>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
-                {customer.name.charAt(0).toUpperCase()}
-              </div>
+              <CustomerAvatar
+                src={imageUrl}
+                name={customer.name}
+                className="w-12 h-12 shrink-0 ring-2 ring-white shadow-md"
+                textClass="text-base"
+              />
               <div>
                 <h1 className="font-bold text-xl md:text-2xl text-gray-900">
                   {customer.name}
@@ -309,6 +350,32 @@ export default function CustomerDetailPage() {
               >
                 <Pencil size={14} />
               </button>
+            </div>
+
+            {/* Photo */}
+            <div className="flex items-center gap-4 pb-4 mb-1 border-b border-gray-50">
+              <CustomerAvatar
+                src={imageUrl}
+                name={customer.name}
+                className="w-16 h-16 shrink-0 border border-gray-200"
+                textClass="text-xl"
+              />
+              <div className="min-w-0">
+                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">
+                  Profile Photo
+                </p>
+                <p className="text-sm font-medium text-gray-900">
+                  {imageUrl ? customer.name : "No photo uploaded"}
+                </p>
+                {!imageUrl && (
+                  <button
+                    onClick={() => setEditOpen(true)}
+                    className="text-xs text-blue-600 hover:text-blue-700 mt-0.5"
+                  >
+                    Upload a photo
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="space-y-0">

@@ -10,6 +10,8 @@ export type RawCustomer = {
   isDeactivated?: boolean;
   note?: string | null;
   customerPan?: string | null;
+  /** Server-relative path, e.g. "images/users/user_xxx.jpg" */
+  image?: string | null;
 };
 export type RawCustomerListResponse = {
   status: string;
@@ -32,6 +34,8 @@ export type Customer = {
   note?: string | null;
   isDeactivated?: boolean;
   customerPan?: string | null;
+  /** Server-relative path, e.g. "images/users/user_xxx.jpg" */
+  image?: string | null;
 };
 
 export interface IndividualCustomer {
@@ -68,7 +72,25 @@ export function mapRawCustomerToCustomer(raw: RawCustomer): Customer {
     note: raw.note ?? null,
     isDeactivated: raw.isDeactivated ?? false,
     customerPan: raw.customerPan ?? null,
+    image: raw.image ?? null,
   };
+}
+
+/**
+ * Resolve a customer's stored image path to an absolute URL. The API returns a
+ * server-relative path ("images/users/user_xxx.jpg") which is served from the
+ * API host root, i.e. NEXT_PUBLIC_API_URL without its trailing "/api".
+ */
+export function getCustomerImageUrl(image?: string | null): string | null {
+  if (!image) return null;
+  if (/^https?:\/\//i.test(image)) return image;
+
+  const base = (process.env.NEXT_PUBLIC_API_URL ?? "")
+    .replace(/\/api\/?$/, "")
+    .replace(/\/$/, "");
+  if (!base) return null;
+
+  return `${base}/${image.replace(/^\//, "")}`;
 }
 
 export interface CreateCustomerInput {

@@ -16,6 +16,8 @@ export type Customer = {
   note?: string | null;
   isDeactivated?: boolean;
   customerPan?: string | null;
+  /** Server-relative path, e.g. "images/users/user_xxx.jpg" */
+  image?: string | null;
 };
 
 // ── Tier badge styling ─────────────────────────────────────────────────────
