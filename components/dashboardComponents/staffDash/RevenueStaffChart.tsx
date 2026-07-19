@@ -16,6 +16,7 @@ import SampleDataBadge from "@/components/ui/sampledatabadge";
 import { CustomTooltipProps } from "@/lib/types/chart";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 export interface StaffRevenue {
   name: string;
@@ -85,12 +86,10 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
       {isEmpty && <SampleDataBadge />}
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-sm font-bold text-gray-900">
-          Revenue per Employee
-        </h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Individual contribution to total revenue
-        </p>
+        <ComponentHeader
+          title="Revenue per Employee"
+          subHeader="Individual contribution to total revenue"
+        />
       </div>
 
       {/* Chart */}

@@ -1,3 +1,4 @@
+import { ComponentHeader } from "@/components/ComponentHeader";
 import { MergedSalesItem } from "@/services/apiInventory";
 
 const MAX_BARS = 8;
@@ -20,12 +21,10 @@ export default function StockMovementChart({
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex-1">
       <div className="mb-6">
-        <h2 className="text-sm font-bold text-gray-900">
-          Stock Movement Chart
-        </h2>
-        <p className="text-xs text-gray-400 mb-0.5">
-          Units sold per item – fast vs slow movers (Past 30days)
-        </p>
+        <ComponentHeader
+          title="Stock Movement Chart"
+          subHeader=" Units sold per item – fast vs slow movers (Past 30days)"
+        />
       </div>
 
       {chartItems.length === 0 ? (

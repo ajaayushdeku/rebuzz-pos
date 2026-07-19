@@ -1,6 +1,7 @@
 import { Pin } from "lucide-react";
 import { InventoryItem } from "@/services/apiInventory";
 import { MergedSalesItem } from "@/services/apiInventory";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 type Priority = "High" | "Medium" | "Low";
 
@@ -93,12 +94,10 @@ export default function PredictiveRestockingSuggestions({
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
       <div className="mb-6">
-        <h2 className="text-sm font-bold text-gray-900">
-          Predictive Restocking Suggestions
-        </h2>
-        <p className="text-xs text-gray-400 mb-5">
-          Restock recommendations based on current stock levels & sales velocity
-        </p>
+        <ComponentHeader
+          title="Predictive Restocking Suggestions"
+          subHeader="Restock recommendations based on current stock levels & sales velocity"
+        />
       </div>
 
       {suggestions.length === 0 ? (
@@ -107,7 +106,7 @@ export default function PredictiveRestockingSuggestions({
         </div>
       ) : (
         // <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
-        <div className="bg-white  overflow-x-auto">
+        <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <table className="w-full text-sm min-w-[700px]">
             <thead>
               <tr className="text-xs text-gray-400 border-b border-gray-100">

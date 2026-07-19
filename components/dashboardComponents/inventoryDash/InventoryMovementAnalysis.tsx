@@ -1,5 +1,6 @@
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { MergedSalesItem } from "@/services/apiInventory";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 const classifyItems = (items: MergedSalesItem[]) => {
   if (items.length === 0) return { fast: [], normal: [], slow: [] };
@@ -71,12 +72,10 @@ const InventoryMovementAnalysis = ({ items }: { items: MergedSalesItem[] }) => {
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex-1">
       <div className="mb-6">
-        <h2 className="text-sm font-bold text-gray-900">
-          Inventory Movement Analysis
-        </h2>
-        <p className="text-xs text-gray-400 mb-5">
-          Fast-moving vs slow-moving categorization
-        </p>
+        <ComponentHeader
+          title="Inventory Movement Analysis"
+          subHeader="Fast-moving vs slow-moving categorization"
+        />
       </div>
 
       {items.length === 0 ? (

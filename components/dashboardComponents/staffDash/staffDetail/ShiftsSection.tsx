@@ -15,6 +15,7 @@ import { formatCurrencySymbol } from "@/utils/helper";
 import { parseNepalDateTime, extractTime } from "./staffDetailHelpers";
 import type { ShiftSummary, ShiftDetail } from "./staffDetailHelpers";
 import ShiftDetailModal from "./ShiftDetailModal";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 interface ShiftsSectionProps {
   shifts: ShiftSummary[];
@@ -164,13 +165,12 @@ export default function ShiftsSection({
             <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
               <Clock size={15} className="text-orange-500" />
             </div>
-            <div>
-              <h2 className="text-sm font-bold text-gray-900">Staff Shifts</h2>
-              <p className="text-[11px] text-gray-400 mt-px">
-                {shiftList.length} {shiftList.length === 1 ? "shift" : "shifts"}{" "}
-                recorded
-              </p>
-            </div>
+
+            <ComponentHeader
+              title="Staff Shifts"
+              subHeader={`${shiftList.length} ${shiftList.length === 1 ? "shift" : "shifts"}
+                recorded`}
+            />
           </div>
         </div>
 

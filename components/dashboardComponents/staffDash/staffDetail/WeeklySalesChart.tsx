@@ -15,6 +15,7 @@ import type { BarShapeProps } from "recharts";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { parseNepalDateTime, type BillItem } from "./staffDetailHelpers";
 import { Loader2 } from "lucide-react";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 interface WeeklySalesChartProps {
   employeeId: string;
@@ -178,13 +179,12 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
               />
             </svg>
           </div>
-          <div>
-            <h2 className="text-sm font-bold text-gray-900">Sales This Week</h2>
-            <p className="text-[11px] text-gray-400 mt-px">
-              {weekRange.startDate} to {weekRange.endDate} &middot;{" "}
-              {chartData.reduce((s, d) => s + d.orders, 0)} total sales
-            </p>
-          </div>
+
+          <ComponentHeader
+            title="Sales This Week"
+            subHeader={`${weekRange.startDate} to ${weekRange.endDate}  ·
+              ${chartData.reduce((s, d) => s + d.orders, 0)} total sales`}
+          />
         </div>
       </div>
 

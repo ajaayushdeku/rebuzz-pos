@@ -50,21 +50,10 @@ export default function StaffBoxContainer({
       {/* Custom thin scrollbar styles */}
       <style jsx global>{`
         .scrollbar-custom {
-          scrollbar-width: thin;
-          scrollbar-color: #d1d5db transparent;
+          scrollbar-width: none;
         }
         .scrollbar-custom::-webkit-scrollbar {
-          height: 5px;
-        }
-        .scrollbar-custom::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .scrollbar-custom::-webkit-scrollbar-thumb {
-          background: #d1d5db;
-          border-radius: 9999px;
-        }
-        .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-          background: #9ca3af;
+          display: none;
         }
       `}</style>
 

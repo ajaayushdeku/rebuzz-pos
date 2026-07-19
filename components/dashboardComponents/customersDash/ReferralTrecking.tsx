@@ -1,5 +1,6 @@
 "use client";
 
+import { ComponentHeader } from "@/components/ComponentHeader";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { Share2 } from "lucide-react";
 
@@ -52,14 +53,11 @@ export default function ReferralTracking() {
           <div className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
             <Share2 size={15} className="text-violet-600" />
           </div>
-          <div>
-            <h2 className="text-sm font-bold text-gray-900">
-              Referral Tracking
-            </h2>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Track which customers bring in new customers via referrals
-            </p>
-          </div>
+
+          <ComponentHeader
+            title="Referral Tracking"
+            subHeader=" Track which customers bring in new customers via referrals"
+          />
         </div>
       </div>
 

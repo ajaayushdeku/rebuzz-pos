@@ -5,6 +5,7 @@ import { Loader2, Radar, Info } from "lucide-react";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
+import { ComponentHeader } from "@/components/ComponentHeader";
 interface AggregatedMetrics {
   totalRevenue: number;
   totalSales: number;
@@ -648,14 +649,11 @@ export default function PerformanceRadar({
           <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center">
             <Radar size={16} className="text-violet-500" />
           </div>
-          <div>
-            <h2 className="text-sm font-semibold text-gray-900">
-              Performance Radar
-            </h2>
-            <p className="text-[11px] text-gray-400 mt-px">
-              Loading metrics...
-            </p>
-          </div>
+
+          <ComponentHeader
+            title="Performance Radar"
+            subHeader="Loading metrics..."
+          />
         </div>
         <div className="flex items-center justify-center py-12">
           <Loader2 size={20} className="animate-spin text-violet-500" />
@@ -673,14 +671,11 @@ export default function PerformanceRadar({
           <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center">
             <Radar size={16} className="text-violet-500" />
           </div>
-          <div>
-            <h2 className="text-sm font-bold text-gray-900">
-              Performance Radar
-            </h2>
-            <p className="text-[11px] text-gray-400 mt-px">
-              Unable to load data
-            </p>
-          </div>
+
+          <ComponentHeader
+            title="Performance Radar"
+            subHeader=" Unable to load data"
+          />
         </div>
 
         <div className="text-center py-8">
@@ -769,13 +764,10 @@ export default function PerformanceRadar({
             <Radar size={16} className="text-violet-500" />
           </div>
 
-          <div>
-            <h2 className="text-sm font-bold text-gray-900">
-              Performance Radar
-            </h2>
-
-            <p className="text-[11px] text-gray-400 mt-px">No data available</p>
-          </div>
+          <ComponentHeader
+            title="Performance Radar"
+            subHeader="No data available"
+          />
         </div>
 
         <div className="text-center py-8">
@@ -810,16 +802,11 @@ export default function PerformanceRadar({
             <Radar size={16} className="text-violet-500" />
           </div>
 
-          <div>
-            <h2 className="text-sm font-bold text-gray-900">
-              Performance Radar
-            </h2>
-
-            <p className="text-[11px] text-gray-400 mt-px">
-              Employee&lsquo;s Performance Radar for {dateRange.startDate} to{" "}
-              {dateRange.endDate}
-            </p>
-          </div>
+          <ComponentHeader
+            title=" Performance Radar"
+            subHeader={`Employee's Performance Radar for ${dateRange.startDate} to
+              ${dateRange.endDate}`}
+          />
         </div>
 
         <div className="flex items-center gap-2">

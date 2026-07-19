@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Loader2, TrendingUp, Package } from "lucide-react";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 interface TopItem {
   itemId: string;
@@ -76,14 +77,11 @@ export default function TopItemsSales({
           <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
             <TrendingUp size={16} className="text-emerald-500" />
           </div>
-          <div>
-            <h2 className="text-sm font-semibold text-gray-900">
-              Top Items Sold
-            </h2>
-            <p className="text-[11px] text-gray-400 mt-px">
-              Loading top selling items...
-            </p>
-          </div>
+
+          <ComponentHeader
+            title="Top Items Sold"
+            subHeader=" Loading top selling items..."
+          />
         </div>
         <div className="flex items-center justify-center py-12">
           <Loader2 size={20} className="animate-spin text-emerald-500" />
@@ -101,14 +99,11 @@ export default function TopItemsSales({
           <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
             <TrendingUp size={16} className="text-emerald-500" />
           </div>
-          <div>
-            <h2 className="text-sm font-semibold text-gray-900">
-              Top Items Sold
-            </h2>
-            <p className="text-[11px] text-gray-400 mt-px">
-              Unable to load data
-            </p>
-          </div>
+
+          <ComponentHeader
+            title="Top Items Sold"
+            subHeader="Unable to load data"
+          />
         </div>
 
         <div className="text-center py-8">
@@ -171,14 +166,11 @@ export default function TopItemsSales({
           <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
             <TrendingUp size={16} className="text-emerald-500" />
           </div>
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900">
-              Top Items Sold
-            </h3>
-            <p className="text-xs text-gray-400 mt-px">
-              Units sold per item – fast vs slow movers
-            </p>
-          </div>
+
+          <ComponentHeader
+            title=" Top Items Sold"
+            subHeader=" Units sold per item – fast vs slow movers"
+          />
         </div>
         <div className="flex items-center justify-center py-10 text-gray-400 text-sm">
           No sales data available
@@ -199,12 +191,10 @@ export default function TopItemsSales({
           <TrendingUp size={16} className="text-emerald-500" />
         </div>
 
-        <div>
-          <h2 className="text-sm font-bold text-gray-900">Top Items Sold</h2>
-          <p className="text-[11px] text-gray-400 mt-px">
-            Units sold per item by the employee
-          </p>
-        </div>
+        <ComponentHeader
+          title="Top Items Sold"
+          subHeader="Units sold per item by the employee"
+        />
       </div>
 
       <div className="space-y-3 mt-6">

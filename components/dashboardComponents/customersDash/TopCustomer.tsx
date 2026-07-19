@@ -16,6 +16,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import CustomerFormModal from "@/components/invoice/CustomerFormModal";
 import CustomerHistoryModal from "@/components/dashboardComponents/customersDash/CustomerHistoryModal";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 export type LoyaltyTier = "Gold" | "Silver" | "Bronze" | "Platinum" | "None";
 
@@ -115,14 +116,10 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full overflow-hidden">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-        <div>
-          <h2 className="text-sm font-bold text-gray-900">
-            Customer Leaderboard
-          </h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Highest value contributors this month
-          </p>
-        </div>
+        <ComponentHeader
+          title="Customer Leaderboard"
+          subHeader="Highest value contributors this month"
+        />
 
         <button
           onClick={() => setCreateModalOpen(true)}

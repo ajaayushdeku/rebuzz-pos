@@ -14,6 +14,7 @@ import { formatCurrencySymbol } from "@/utils/helper";
 import { useRouter } from "next/navigation";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { parseNepalDateTime } from "./staffDetailHelpers";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 interface EnrichedTicket {
   _id: string;
@@ -163,14 +164,11 @@ export default function InvoiceListSection({
           <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
             <FileText size={16} className="text-orange-500" />
           </div>
-          <div>
-            <h2 className="text-sm font-bold text-gray-900">
-              Order / Invoice List
-            </h2>
-            <p className="text-[11px] text-gray-400 mt-px">
-              Loading orders/invoices...
-            </p>
-          </div>
+
+          <ComponentHeader
+            title="Order / Invoice List"
+            subHeader="Loading orders/invoices..."
+          />
         </div>
         <div className="flex items-center justify-center py-12">
           <Loader2 size={20} className="animate-spin text-orange-500" />
@@ -186,14 +184,11 @@ export default function InvoiceListSection({
           <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
             <FileText size={16} className="text-orange-500" />
           </div>
-          <div>
-            <h2 className="text-sm font-bold text-gray-900">
-              Order / Invoice List
-            </h2>
-            <p className="text-[11px] text-gray-400 mt-px">
-              Unable to load data
-            </p>
-          </div>
+
+          <ComponentHeader
+            title=" Order / Invoice List"
+            subHeader="Unable to load data"
+          />
         </div>
         <div className="text-center py-8">
           <p className="text-sm font-medium text-gray-500">{error}</p>
@@ -218,15 +213,12 @@ export default function InvoiceListSection({
           <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
             <FileText size={16} className="text-orange-500" />
           </div>
-          <div>
-            <h2 className="text-sm font-bold text-gray-900">
-              Order / Invoice List
-            </h2>
-            <p className="text-[11px] text-gray-400 mt-px">
-              {filteredTickets.length}{" "}
-              {filteredTickets.length === 1 ? "order" : "orders"}
-            </p>
-          </div>
+
+          <ComponentHeader
+            title="Order / Invoice List"
+            subHeader={`${filteredTickets.length}
+              ${filteredTickets.length === 1 ? "order" : "orders"} `}
+          />
         </div>
       </div>
 

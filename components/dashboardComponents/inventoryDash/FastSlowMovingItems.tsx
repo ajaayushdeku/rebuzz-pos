@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Flame, TrendingDown, ChevronDown, ChevronUp } from "lucide-react";
 import { MergedSalesItem } from "@/services/apiInventory";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 type MovingItem = {
   name: string;
@@ -145,24 +146,24 @@ const Panel = ({
         isFast ? "border-green-200" : "border-amber-200"
       }`}
     >
-      <div>
+      <div className="flex flex-row items-center gap-2">
         <div className="flex items-center gap-2 mb-0.5">
           {isFast ? (
-            <Flame size={15} className="text-green-600" />
+            <Flame size={18} className="text-green-600" />
           ) : (
-            <TrendingDown size={15} className="text-amber-500" />
+            <TrendingDown size={18} className="text-amber-500" />
           )}
-          <h3
-            className={`text-sm font-bold ${isFast ? "text-green-700" : "text-amber-600"}`}
-          >
-            {isFast ? "Fast Moving Items" : "Slow Moving Items"}
-          </h3>
         </div>
-        <p className="text-xs text-gray-400">
-          {isFast
-            ? "Your bestsellers — keep stocked and consider expanding"
-            : "These need attention — consider a promo or recipe change"}
-        </p>
+
+        <ComponentHeader
+          title={`${isFast ? "Fast Moving Items" : "Slow Moving Items"}`}
+          subHeader={`${
+            isFast
+              ? "Your bestsellers — keep stocked and consider expanding"
+              : "These need attention — consider a promo or recipe change"
+          }`}
+          titleColor={`${isFast ? "text-green-700" : "text-amber-600"}`}
+        />
       </div>
       <div className="space-y-2">
         {items.length === 0 ? (

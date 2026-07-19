@@ -3,7 +3,8 @@
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { Sparkles } from "lucide-react";
-import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
+import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 type MenuSuggestion = {
   emoji: string;
@@ -84,15 +85,12 @@ export default function AIMenuSuggestions() {
         <div className="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center shrink-0">
           <Sparkles size={16} className="text-violet-600" />
         </div>
-        <div>
-          <h2 className="text-base font-bold text-gray-900">
-            AI Menu Suggestions
-          </h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Based on your best-selling items — new ideas using what you already
-            have
-          </p>
-        </div>
+
+        <ComponentHeader
+          title="AI Menu Suggestions"
+          subHeader="    Based on your best-selling items — new ideas using what you already
+            have"
+        />
       </div>
 
       {/* Cards */}

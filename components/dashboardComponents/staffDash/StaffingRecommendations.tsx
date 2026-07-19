@@ -1,5 +1,6 @@
 "use client";
 
+import { ComponentHeader } from "@/components/ComponentHeader";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { Lightbulb } from "lucide-react";
 
@@ -37,14 +38,12 @@ export default function StaffingRecommendations() {
           <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
             <Lightbulb size={15} className="text-amber-600" />
           </div>
-          <div>
-            <h2 className="text-sm font-semibold text-amber-900">
-              Staffing Recommendations
-            </h2>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Optimize workforce allocation based on performance analysis
-            </p>
-          </div>
+
+          <ComponentHeader
+            title="Staffing Recommendations"
+            subHeader="Optimize workforce allocation based on performance analysis"
+            titleColor="text-amber-900"
+          />
         </div>
       </div>
 

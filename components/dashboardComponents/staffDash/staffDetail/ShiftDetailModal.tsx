@@ -13,6 +13,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import type { ShiftDetail } from "./staffDetailHelpers";
 import { parseNepalDateTime, extractTime } from "./staffDetailHelpers";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 interface ShiftDetailModalProps {
   open: boolean;
@@ -36,10 +37,7 @@ export default function ShiftDetailModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/50 " onClick={onClose} />
 
       {/* Modal */}
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
@@ -49,14 +47,11 @@ export default function ShiftDetailModal({
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
               <Clock size={15} className="text-white" />
             </div>
-            <div>
-              <h2 className="text-sm font-semibold text-gray-900">
-                Shift Details
-              </h2>
-              <p className="text-[11px] text-gray-400 mt-px">
-                {shiftDetail?.transactions?.length ?? 0} transactions recorded
-              </p>
-            </div>
+
+            <ComponentHeader
+              title="Shift Details"
+              subHeader={`${shiftDetail?.transactions?.length ?? 0} transactions recorded`}
+            />
           </div>
           <button
             onClick={onClose}

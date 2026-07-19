@@ -10,6 +10,7 @@ import {
 } from "../staffDash/staffDetail/staffDetailHelpers";
 import type { ShiftDetail } from "../staffDash/staffDetail/staffDetailHelpers";
 import ShiftDetailModal from "../staffDash/staffDetail/ShiftDetailModal";
+import { ComponentHeader } from "@/components/ComponentHeader";
 // import { DateRangeFilter, type DateRangeValue } from "./DateRangeFilter";
 
 interface LatestShiftsProps {
@@ -174,14 +175,14 @@ export default function LatestShifts({
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition duration-300 p-5 w-full">
       <div className="mb-6 flex items-center justify-between gap-3">
-        <div className="mb-0">
-          <h2 className="text-sm font-bold text-gray-900">Latest Shifts</h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            {/* {filteredShifts.length}{" "}
+        {/* {filteredShifts.length}{" "}
             {filteredShifts.length === 1 ? "shift" : "shifts"} recorded */}
-            Latest Shifts from all the employees
-          </p>
-        </div>
+
+        <ComponentHeader
+          title="Latest Shifts"
+          subHeader={`
+            Latest Shifts from all the employees`}
+        />
 
         <div className="flex items-center gap-3">
           <p className=" px-3 pr-0 text-xs font-medium text-gray-500">

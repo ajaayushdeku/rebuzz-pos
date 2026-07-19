@@ -1,5 +1,9 @@
 import { useCallback } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useSuspenseQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { InventoryItem, MergedSalesItem } from "@/services/apiInventory";
 
 export const INVENTORY_KEY = ["inventory"] as const;
@@ -154,6 +158,32 @@ export function useInventoryQuery() {
 export function useSalesByItemQuery(startDate?: string, endDate?: string) {
   return useQuery({
     // Distinct cache entry per range; no args → all-time (used by the charts).
+    queryKey: [...SALES_KEY, startDate ?? null, endDate ?? null],
+    queryFn: () => fetchSalesByItemClient(startDate, endDate),
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+// ── Suspense variants ──────────────────────────────────────────────────────
+// Same cache keys as the hooks above (so non-suspense consumers share the data),
+// but these suspend while loading and throw on error — letting the inventory
+// page drive loading through <Suspense> and errors through <ChartErrorBoundary>.
+
+export function useInventorySuspenseQuery() {
+  return useSuspenseQuery({
+    queryKey: INVENTORY_KEY,
+    queryFn: fetchInventoryClient,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useSalesByItemSuspenseQuery(
+  startDate?: string,
+  endDate?: string,
+) {
+  return useSuspenseQuery({
     queryKey: [...SALES_KEY, startDate ?? null, endDate ?? null],
     queryFn: () => fetchSalesByItemClient(startDate, endDate),
     staleTime: 60 * 1000,

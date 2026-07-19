@@ -64,20 +64,22 @@ export default async function Page({
       </div>
 
       <div className="flex flex-col gap-6">
-        <Suspense
-          fallback={
-            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <StatSkeleton key={i} />
-              ))}
-            </div>
-          }
-        >
-          <ProfitStatsWrapper
-            startDate={effectiveStartDate}
-            endDate={effectiveEndDate}
-          />
-        </Suspense>
+        <ChartErrorBoundary>
+          <Suspense
+            fallback={
+              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <StatSkeleton key={i} />
+                ))}
+              </div>
+            }
+          >
+            <ProfitStatsWrapper
+              startDate={effectiveStartDate}
+              endDate={effectiveEndDate}
+            />
+          </Suspense>
+        </ChartErrorBoundary>
 
         <ChartErrorBoundary>
           <Suspense fallback={<ChartSkeleton />}>

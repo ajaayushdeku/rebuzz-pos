@@ -21,19 +21,12 @@ export default function IncomeTaxProvision() {
       <LockDimFeactureOverlay component_name="Income Tax Provision" />
 
       {/* Header */}
-      <div>
-        <h2 className="text-sm font-bold text-white">Income Tax Provision</h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Annual income tax estimate based on current month profit — accrued
-          monthly for accurate reporting
-        </p>
-      </div>
-
-      {/* <ComponentHeader
+      <ComponentHeader
         title="Income Tax Provision"
         subHeader=" Annual income tax estimate based on current month profit — accrued
           monthly for accurate reporting"
-      /> */}
+        titleColor="text-white"
+      />
 
       {/* Top row — 3 metric boxes */}
       <div className="flex items-stretch gap-3">

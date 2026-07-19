@@ -15,6 +15,7 @@ import { parseNepalDateTime } from "./staffDetailHelpers";
 import { useRouter } from "next/navigation";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { statusStyles, paymentMethods } from "@/lib/config/transaction";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 interface BillRecord {
   _id: string;
@@ -129,14 +130,11 @@ export default function BillsSection({
           <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center">
             <Receipt size={16} className="text-purple-500" />
           </div>
-          <div>
-            <h2 className="text-sm font-bold text-gray-900">
-              Transactions / Bills
-            </h2>
-            <p className="text-[11px] text-gray-400 mt-px">
-              Loading transactions...
-            </p>
-          </div>
+
+          <ComponentHeader
+            title="Transactions / Bills"
+            subHeader="Loading transactions..."
+          />
         </div>
         <div className="flex items-center justify-center py-12">
           <Loader2 size={20} className="animate-spin text-purple-500" />
@@ -152,14 +150,11 @@ export default function BillsSection({
           <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center">
             <Receipt size={16} className="text-purple-500" />
           </div>
-          <div>
-            <h2 className="text-sm font-bold text-gray-900">
-              Transactions / Bills
-            </h2>
-            <p className="text-[11px] text-gray-400 mt-px">
-              Unable to load data
-            </p>
-          </div>
+
+          <ComponentHeader
+            title="Transactions / Bills"
+            subHeader=" Unable to load data"
+          />
         </div>
         <div className="text-center py-8">
           <p className="text-sm font-medium text-gray-500">{error}</p>
@@ -181,15 +176,12 @@ export default function BillsSection({
           <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center">
             <Receipt size={16} className="text-purple-500" />
           </div>
-          <div>
-            <h2 className="text-sm font-bold text-gray-900">
-              Transactions / Bills
-            </h2>
-            <p className="text-[11px] text-gray-400 mt-px">
-              {filteredBills.length}{" "}
-              {filteredBills.length === 1 ? "bill" : "bills"}
-            </p>
-          </div>
+
+          <ComponentHeader
+            title="Transactions / Bills"
+            subHeader={`${filteredBills.length}
+              ${filteredBills.length === 1 ? "bill" : "bills"}`}
+          />
         </div>
       </div>
 

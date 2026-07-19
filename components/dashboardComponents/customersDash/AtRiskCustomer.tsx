@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { TriangleAlert } from "lucide-react";
 import CustomerHistoryModal from "@/components/dashboardComponents/customersDash/CustomerHistoryModal";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 type SpendingLevel = "High" | "Medium" | "Low";
 
@@ -105,11 +106,11 @@ export default function AtRiskCustomer({
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full overflow-hidden">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <h2 className="text-sm font-bold text-gray-900">At-Risk Customers</h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Inactive customers for over two weeks or with no purchases yet,
-            requiring re-engagement
-          </p>
+          <ComponentHeader
+            title="At-Risk Customers"
+            subHeader=" Inactive customers for over two weeks or with no purchases yet,
+            requiring re-engagement"
+          />
         </div>
         <div className="text-yellow-600 border-yellow-500 border bg-yellow-100 flex items-center rounded-2xl px-2 py-0.5 gap-1 shrink-0">
           <TriangleAlert size={11} className="shrink-0" />

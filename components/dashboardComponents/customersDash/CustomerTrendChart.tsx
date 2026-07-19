@@ -18,6 +18,7 @@ import type {
 } from "recharts/types/component/DefaultTooltipContent";
 import SampleDataBadge from "@/components/ui/sampledatabadge";
 import { mockCustomerTrendData } from "@/lib/mockData/mock-customer-data";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 // Types
 
@@ -154,11 +155,11 @@ export default function CustomerTrendChart({ data }: CustomerTrendProps) {
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full">
       {isEmpty && <SampleDataBadge />}
       {/* Header */}
-      <div className="mb-4 md:mb-6">
-        <h2 className="text-sm font-bold text-gray-900">Customer Trend</h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Monthly breakdown over the last 6 months
-        </p>
+      <div className="mb-4 ">
+        <ComponentHeader
+          title="Customer Trend"
+          subHeader=" Monthly breakdown over the last 6 months"
+        />
       </div>
 
       {/* Chart */}

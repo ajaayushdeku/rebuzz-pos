@@ -5,7 +5,7 @@ import { Search, ArrowUpDown, X } from "lucide-react";
 
 import { InventoryItem } from "@/lib/mockData/mock-inventory-data";
 import { useSalesByItemQuery } from "@/hooks/useInventory";
-import ProductCard from "./ProductCard";
+import ProductCard from "@/components/product/ProductCard";
 
 const INITIAL_COUNT = 6;
 const LOAD_MORE_COUNT = 6;

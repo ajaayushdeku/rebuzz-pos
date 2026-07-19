@@ -1,4 +1,5 @@
 "use client";
+import { ComponentHeader } from "@/components/ComponentHeader";
 import SampleDataBadge from "@/components/ui/sampledatabadge";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import type {
@@ -85,12 +86,10 @@ export default function CustomerSegmentationChart({
 
       {/* Header */}
       <div className="mb-1 ">
-        <h2 className="text-sm font-bold text-gray-900">
-          Customer Segmentation
-        </h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Customer Activity distribution over the last 15 days
-        </p>
+        <ComponentHeader
+          title="Customer Segmentation"
+          subHeader=" Customer Activity distribution over the last 15 days"
+        />
       </div>
 
       {/* Pie Chart + Legend */}
