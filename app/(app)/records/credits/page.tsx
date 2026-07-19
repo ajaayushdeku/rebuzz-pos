@@ -27,12 +27,20 @@ export default function Page() {
     queryFn: fetchCreditsClient,
   });
 
-  const { data: completedCredits = [] } = useQuery({
+  const {
+    data: completedCredits = [],
+    isLoading: completedLoading,
+    error: completedError,
+  } = useQuery({
     queryKey: ["credits", "completed"],
     queryFn: () => fetchCreditsByStatus("completed"),
   });
 
-  const { data: archivedCredits = [] } = useQuery({
+  const {
+    data: archivedCredits = [],
+    isLoading: archivedLoading,
+    error: archivedError,
+  } = useQuery({
     queryKey: ["credits", "archived"],
     queryFn: () => fetchCreditsByStatus("archived"),
   });
@@ -162,6 +170,8 @@ export default function Page() {
             actionsMode="full"
             creditStatus="completed"
             showStatusFilter={false}
+            isLoading={completedLoading}
+            error={completedError}
           />
         </div>
 
@@ -178,6 +188,8 @@ export default function Page() {
             actionsMode="none"
             creditStatus="archived"
             showStatusFilter={false}
+            isLoading={archivedLoading}
+            error={archivedError}
           />
         </div>
       </div>

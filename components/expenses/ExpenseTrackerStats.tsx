@@ -11,6 +11,7 @@ import type {
   Payload,
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
+import { ComponentHeader } from "../ComponentHeader";
 
 interface SliceData {
   purpose: string;
@@ -92,7 +93,13 @@ export default function ExpenseTrackerStats() {
       {/* ── Summary cards (2/5 width) ── */}
       <div className="lg:col-span-2">
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-          <h3 className="text-sm font-semibold text-gray-800 mb-4">Overview</h3>
+          <div className="mb-4">
+            <ComponentHeader
+              title="Overview"
+              subHeader="Total Stats for expenses, income and net diff"
+            />
+          </div>
+
           <div className="space-y-3">
             <div className="bg-red-50 rounded-xl p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -175,9 +182,13 @@ export default function ExpenseTrackerStats() {
       {/* ── Donut chart card (3/5 width) ── */}
       <div className="lg:col-span-3">
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 h-full">
-          <h3 className="text-sm font-semibold text-gray-800 mb-4">
-            Expense Breakdown
-          </h3>
+          <div className="mb-4">
+            <ComponentHeader
+              title="Expenses by Category"
+              subHeader="Share of total expenses this month"
+            />
+          </div>
+
           {expenseByPurpose.length === 0 ? (
             <div className="flex items-center justify-center py-10 text-gray-400 text-sm">
               No expense data yet
@@ -194,8 +205,8 @@ export default function ExpenseTrackerStats() {
                       nameKey="purpose"
                       cx="50%"
                       cy="50%"
-                      innerRadius={55}
-                      outerRadius={90}
+                      innerRadius={68}
+                      outerRadius={100}
                       paddingAngle={4}
                       startAngle={90}
                       endAngle={-270}
@@ -231,7 +242,7 @@ export default function ExpenseTrackerStats() {
                             totalExpense,
                             currency.symbol,
                             currency.locale,
-                          ).replace(/^.*?(\d[\d,.]*).*$/, "$1")
+                          )
                         : "0"}
                     </text>
                     <text

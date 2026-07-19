@@ -235,7 +235,7 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
             </svg>
           </div>
           <p className="text-sm font-medium text-gray-500">
-            No orders this week
+            No sales this week
           </p>
           <p className="text-xs text-gray-400 mt-1">
             No sales recorded for this period

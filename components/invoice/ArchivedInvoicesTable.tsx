@@ -130,6 +130,16 @@ export default function ArchivedInvoicesTable({
           Archived Invoices
         </h2>
 
+        {/* Hide scrollbar styles */}
+        <style jsx global>{`
+          .scrollbar-hide {
+            scrollbar-width: none;
+          }
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
+
         {/* Search */}
         <div className="relative mb-4">
           <Search
@@ -148,7 +158,7 @@ export default function ArchivedInvoicesTable({
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto scrollbar-hide">
           <table className="w-full text-sm min-w-[900px]">
             <thead>
               <tr className="text-xs text-gray-400 border-b border-gray-100">
@@ -256,10 +266,10 @@ export default function ArchivedInvoicesTable({
                         >
                           <button
                             onClick={() => setRestoreTarget(inv)}
-                            className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            className="p-1.5 text-xs flex flex-row items-center gap-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors hover:cursor-pointer"
                             title="Restore invoice"
                           >
-                            <RotateCcw className="h-3.5 w-3.5" />
+                            Unarchive <RotateCcw className="h-3.5 w-3.5" />
                           </button>
                         </div>
                       </td>

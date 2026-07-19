@@ -43,12 +43,17 @@ export default function CreditsTable({
   actionsMode = "full",
   creditStatus,
   showStatusFilter = true,
+  isLoading = false,
+  error = null,
 }: {
   credits: Credit[];
   /** full = every action, delete-only = only Delete, none = no Actions column */
   actionsMode?: "full" | "delete-only" | "none";
   creditStatus?: "completed" | "archived";
   showStatusFilter?: boolean;
+  /** Loading/error for the query feeding `credits` — surfaced inside the table. */
+  isLoading?: boolean;
+  error?: unknown;
 }) {
   const colCount = actionsMode === "none" ? 7 : 8;
   const { currency } = useCurrency();
@@ -271,7 +276,27 @@ export default function CreditsTable({
             </tr>
           </thead>
           <tbody>
-            {paged.length === 0 ? (
+            {isLoading ? (
+              <tr>
+                <td colSpan={colCount} className="text-center py-12">
+                  <span className="inline-flex items-center gap-2 text-sm text-gray-400">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Loading credits...
+                  </span>
+                </td>
+              </tr>
+            ) : error ? (
+              <tr>
+                <td
+                  colSpan={colCount}
+                  className="text-center py-12 text-sm text-red-500"
+                >
+                  {error instanceof Error
+                    ? error.message
+                    : "Failed to load credits"}
+                </td>
+              </tr>
+            ) : paged.length === 0 ? (
               <tr>
                 <td
                   colSpan={colCount}

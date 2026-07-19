@@ -1,18 +1,70 @@
 "use client";
 
+import { useMemo } from "react";
 import { mockWhereMoneyGoesData } from "@/lib/mockData/mock-expense-data";
 import { Zap } from "lucide-react";
 import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
+import { PURPOSE_COLORS, useTracker } from "@/providers/ExpenseContext";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 
 export default function WhereMoneyGoes() {
   const { currency } = useCurrency();
+  const { transactions } = useTracker();
 
+  // Top suppliers still uses mock data (no supplier data in the tracker).
   const d = mockWhereMoneyGoesData;
 
+  // Real spend per expense category — total for the bar, with a
+  // month-over-month trend indicator.
+  const categorySpend = useMemo(() => {
+    const now = new Date();
+    const thisKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const prevKey = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`;
+
+    const map = new Map<
+      string,
+      { total: number; thisMonth: number; lastMonth: number }
+    >();
+    for (const t of transactions) {
+      if (t.type !== "expense") continue;
+      const entry = map.get(t.purpose) ?? {
+        total: 0,
+        thisMonth: 0,
+        lastMonth: 0,
+      };
+      entry.total += t.amount;
+      const key = t.date.slice(0, 7);
+      if (key === thisKey) entry.thisMonth += t.amount;
+      else if (key === prevKey) entry.lastMonth += t.amount;
+      map.set(t.purpose, entry);
+    }
+
+    return [...map.entries()]
+      .sort((a, b) => b[1].total - a[1].total)
+      .map(([label, v]) => {
+        const diff = v.thisMonth - v.lastMonth;
+        const changeDir: "up" | "down" | "flat" =
+          diff > 0 ? "up" : diff < 0 ? "down" : "flat";
+        const changePct =
+          v.lastMonth > 0
+            ? Math.round((Math.abs(diff) / v.lastMonth) * 100)
+            : v.thisMonth > 0
+              ? 100
+              : 0;
+        return {
+          label,
+          amount: v.total,
+          changeDir,
+          changePct,
+          color: PURPOSE_COLORS[label] ?? "#6b7280",
+        };
+      });
+  }, [transactions]);
+
   // Max amount for bar scaling
-  const maxAmount = Math.max(...d.categories.map((c) => c.amount));
+  const maxAmount = Math.max(1, ...categorySpend.map((c) => c.amount));
 
   const fmtRs = (v: number) => {
     return `${formatCurrencySymbol(v, currency.symbol, currency.locale)}`;
@@ -29,55 +81,63 @@ export default function WhereMoneyGoes() {
       <div className=" grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* ── Spend by category ── */}
         <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-          <LockDimFeactureOverlay component_name="Spend by Category" />
-
           <h3 className="text-sm font-bold text-gray-900 mb-4">
             Spend by category
           </h3>
 
-          <div className="space-y-4">
-            {d.categories.map((cat) => {
-              const barWidth = Math.round((cat.amount / maxAmount) * 100);
-              const isUp = cat.changeDir === "up";
-              const isFlat = cat.changeDir === "flat";
+          {categorySpend.length === 0 ? (
+            <div className="py-8 text-center text-sm text-gray-400">
+              No expenses recorded yet.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {categorySpend.map((cat) => {
+                const barWidth = Math.round((cat.amount / maxAmount) * 100);
+                const isUp = cat.changeDir === "up";
+                const isFlat = cat.changeDir === "flat";
 
-              return (
-                <div key={cat.label}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base leading-none">
-                        {cat.emoji}
-                      </span>
-                      <span className="text-sm text-gray-700 font-medium">
-                        {cat.label}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-bold text-gray-900">
-                        {fmtRs(cat.amount)}
-                      </p>
-                      {isFlat ? (
-                        <p className="text-[11px] text-gray-400">flat</p>
-                      ) : (
-                        <p
-                          className={`text-[11px] font-semibold ${isUp ? "text-red-500" : "text-green-500"}`}
-                        >
-                          {isUp ? "↑" : "↓"} {cat.changePct}%
+                return (
+                  <div key={cat.label}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{ backgroundColor: cat.color }}
+                        />
+                        <span className="text-sm text-gray-700 font-medium">
+                          {cat.label}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-gray-900">
+                          {fmtRs(cat.amount)}
                         </p>
-                      )}
+                        {isFlat ? (
+                          <p className="text-[11px] text-gray-400">flat</p>
+                        ) : (
+                          <p
+                            className={`text-[11px] font-semibold ${isUp ? "text-red-500" : "text-green-500"}`}
+                          >
+                            {isUp ? "↑" : "↓"} {cat.changePct}%
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    {/* Progress bar */}
+                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${barWidth}%`,
+                          backgroundColor: cat.color,
+                        }}
+                      />
                     </div>
                   </div>
-                  {/* Progress bar */}
-                  <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-blue-500 rounded-full transition-all duration-500"
-                      style={{ width: `${barWidth}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* ── Top suppliers ── */}

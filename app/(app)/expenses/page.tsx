@@ -3,15 +3,14 @@
 import { ExpenseTrackerProvider, useTracker } from "@/providers/ExpenseContext";
 import ExpenseTrackerStats from "@/components/expenses/ExpenseTrackerStats";
 import ExpenseIncomeForm from "@/components/expenses/ExpenseIncomeForm";
+import BudgetForm from "@/components/expenses/BudgetForm";
 import PurposeSummaryTables from "@/components/expenses/PurposeSummeryTables";
 import RecentTransactions from "@/components/expenses/RecentTransactions";
 import { Loader2 } from "lucide-react";
 import ExpenseBudgetGauges from "@/components/expenses/ExpenseBudgetGauges";
-import ExpensesByCategory from "@/components/expenses/ExpensesByCategory";
 import BudgetVsActual from "@/components/expenses/BudgetVsActual";
 import MonthlyExpenseTrend from "@/components/expenses/MonthlyExpenseTrend";
 import CashFlowTrend from "@/components/expenses/CashFlowTrend";
-import BudgetVsActualTable from "@/components/expenses/BudgetVsActualTable";
 import WhereMoneyGoes from "@/components/expenses/WhereMoneyGoes";
 import CostHealth from "@/components/expenses/CostHealth";
 import HiddenCostLeaks from "@/components/expenses/HiddenCostLeaks";
@@ -42,7 +41,10 @@ function TrackerPage() {
               Track your business cash flow
             </p>
           </div>
-          <ExpenseIncomeForm />
+          <div className="flex items-center gap-2">
+            <BudgetForm />
+            <ExpenseIncomeForm />
+          </div>
         </div>
 
         {/* Working Components */}
@@ -53,10 +55,7 @@ function TrackerPage() {
         {/* Locked Features */}
         <ExpenseBudgetGauges />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
-          <ExpensesByCategory />
-          <BudgetVsActual />
-        </div>
+        <BudgetVsActual />
 
         <MonthlyExpenseTrend />
 
@@ -65,8 +64,6 @@ function TrackerPage() {
         <CostHealth />
 
         <WhereMoneyGoes />
-
-        <BudgetVsActualTable />
 
         <HiddenCostLeaks />
       </div>

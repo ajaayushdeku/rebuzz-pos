@@ -28,6 +28,15 @@ export type Transaction = {
   createdAt: string;
 };
 
+export type Budget = {
+  id: string;
+  /** Expense category this threshold applies to — an expense purpose. */
+  purpose: string;
+  /** Spending threshold for the category. */
+  amount: number;
+  createdAt: string;
+};
+
 type PurposeStore = {
   expense: string[];
   income: string[];
@@ -35,12 +44,16 @@ type PurposeStore = {
 
 type TrackerContextValue = {
   transactions: Transaction[];
+  budgets: Budget[];
   expensePurposes: string[];
   incomePurposes: string[];
   isLoading: boolean;
   addTransaction: (t: Omit<Transaction, "id" | "createdAt">) => Promise<void>;
   updateTransaction: (id: string, patch: Partial<Transaction>) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
+  addBudget: (b: Omit<Budget, "id" | "createdAt">) => Promise<void>;
+  updateBudget: (id: string, patch: Partial<Budget>) => Promise<void>;
+  deleteBudget: (id: string) => Promise<void>;
   addPurpose: (type: TransactionType, name: string) => Promise<void>;
   removePurpose: (type: TransactionType, name: string) => Promise<void>;
 };
@@ -114,9 +127,10 @@ export function getOrAssignColor(name: string): string {
 // ── IndexedDB helpers ─────────────────────────────────────────────────────
 
 const DB_NAME = "rebuzz_expense_tracker";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_TRANSACTIONS = "transactions";
 const STORE_PURPOSES = "purposes";
+const STORE_BUDGETS = "budgets";
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -136,6 +150,11 @@ function openDB(): Promise<IDBDatabase> {
 
       if (!db.objectStoreNames.contains(STORE_PURPOSES)) {
         db.createObjectStore(STORE_PURPOSES, { keyPath: "id" });
+      }
+
+      if (!db.objectStoreNames.contains(STORE_BUDGETS)) {
+        const store = db.createObjectStore(STORE_BUDGETS, { keyPath: "id" });
+        store.createIndex("purpose", "purpose", { unique: false });
       }
     };
 
@@ -188,6 +207,7 @@ const TrackerContext = createContext<TrackerContextValue | null>(null);
 
 export function ExpenseTrackerProvider({ children }: { children: ReactNode }) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
   const [purposes, setPurposes] = useState<PurposeStore>(DEFAULT_PURPOSES);
   const [isLoading, setIsLoading] = useState(true);
   const dbRef = useRef<IDBDatabase | null>(null);
@@ -208,6 +228,13 @@ export function ExpenseTrackerProvider({ children }: { children: ReactNode }) {
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         );
 
+        // Load budgets sorted by createdAt desc
+        const budgetRows = await dbGetAll<Budget>(db, STORE_BUDGETS);
+        budgetRows.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
+
         // Load purposes (stored as { id: "purposes", expense: [...], income: [...] })
         const purposeRows = await dbGetAll<{ id: string } & PurposeStore>(
           db,
@@ -217,6 +244,7 @@ export function ExpenseTrackerProvider({ children }: { children: ReactNode }) {
 
         if (mounted) {
           setTransactions(txns);
+          setBudgets(budgetRows);
           if (savedPurposes) {
             setPurposes({
               expense: savedPurposes.expense,
@@ -292,6 +320,59 @@ export function ExpenseTrackerProvider({ children }: { children: ReactNode }) {
     setTransactions((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
+  // ── addBudget ───────────────────────────────────────────────────────────
+  // A category has a single threshold: if one already exists for the same
+  // purpose, its amount is updated instead of adding a duplicate.
+  const addBudget = useCallback(
+    async (b: Omit<Budget, "id" | "createdAt">) => {
+      const db = dbRef.current;
+      if (!db) return;
+
+      const existing = budgets.find((x) => x.purpose === b.purpose);
+
+      if (existing) {
+        const updated: Budget = { ...existing, amount: b.amount };
+        await dbPut(db, STORE_BUDGETS, updated);
+        setBudgets((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+        return;
+      }
+
+      const newBudget: Budget = {
+        ...b,
+        id: crypto.randomUUID(),
+        createdAt: new Date().toISOString(),
+      };
+      await dbPut(db, STORE_BUDGETS, newBudget);
+      setBudgets((prev) => [newBudget, ...prev]);
+    },
+    [budgets],
+  );
+
+  // ── updateBudget ────────────────────────────────────────────────────────
+  const updateBudget = useCallback(
+    async (id: string, patch: Partial<Budget>) => {
+      const db = dbRef.current;
+      if (!db) return;
+
+      setBudgets((prev) => {
+        const updated = prev.map((b) => (b.id === id ? { ...b, ...patch } : b));
+        const record = updated.find((b) => b.id === id);
+        if (record) dbPut(db, STORE_BUDGETS, record).catch(console.error);
+        return updated;
+      });
+    },
+    [],
+  );
+
+  // ── deleteBudget ────────────────────────────────────────────────────────
+  const deleteBudget = useCallback(async (id: string) => {
+    const db = dbRef.current;
+    if (!db) return;
+
+    await dbDelete(db, STORE_BUDGETS, id);
+    setBudgets((prev) => prev.filter((b) => b.id !== id));
+  }, []);
+
   // ── addPurpose ──────────────────────────────────────────────────────────
   const addPurpose = useCallback(
     async (type: TransactionType, name: string) => {
@@ -329,12 +410,16 @@ export function ExpenseTrackerProvider({ children }: { children: ReactNode }) {
     <TrackerContext.Provider
       value={{
         transactions,
+        budgets,
         expensePurposes: purposes.expense,
         incomePurposes: purposes.income,
         isLoading,
         addTransaction,
         updateTransaction,
         deleteTransaction,
+        addBudget,
+        updateBudget,
+        deleteBudget,
         addPurpose,
         removePurpose,
       }}

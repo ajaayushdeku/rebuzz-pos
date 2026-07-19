@@ -1,9 +1,10 @@
 "use client";
 
-import { mockBudgetVsActualData } from "@/lib/mockData/mock-expense-data";
-import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
+import { useMemo } from "react";
+import { PURPOSE_COLORS, useTracker } from "@/providers/ExpenseContext";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "../ComponentHeader";
 
 function getPctStyle(pct: number): string {
   if (pct >= 100) return "bg-amber-100 text-amber-700";
@@ -12,84 +13,153 @@ function getPctStyle(pct: number): string {
   return "bg-green-50 text-green-600";
 }
 
+// variance = actual - budget → positive means over budget.
+const VarianceBadge = ({ variance }: { variance: number }) => {
+  const { currency } = useCurrency();
+
+  if (variance === 0) {
+    return (
+      <span className="text-[11px] font-semibold text-gray-500 border border-gray-200 rounded-full px-2.5 py-0.5">
+        on budget
+      </span>
+    );
+  }
+  const over = variance > 0;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 text-[11px] font-semibold rounded-full px-2.5 py-0.5 border ${
+        over
+          ? "bg-red-50 text-red-600 border-red-200"
+          : "bg-green-50 text-green-600 border-green-200"
+      }`}
+    >
+      {over ? "↑" : "✓"}{" "}
+      {formatCurrencySymbol(
+        Math.abs(variance),
+        currency.symbol,
+        currency.locale,
+      )}{" "}
+      {over ? "over" : "under"}
+    </span>
+  );
+};
+
 export default function BudgetVsActual() {
   const { currency } = useCurrency();
-  const rows = mockBudgetVsActualData;
+  const { transactions, budgets } = useTracker();
+
+  // Actual expense spend per category vs the saved budget threshold.
+  const rows = useMemo(() => {
+    const spendByCategory = new Map<string, number>();
+    for (const t of transactions) {
+      if (t.type === "expense") {
+        spendByCategory.set(
+          t.purpose,
+          (spendByCategory.get(t.purpose) ?? 0) + t.amount,
+        );
+      }
+    }
+
+    return budgets.map((b) => {
+      const actual = spendByCategory.get(b.purpose) ?? 0;
+      return {
+        category: b.purpose,
+        actual,
+        budget: b.amount,
+        variance: actual - b.amount,
+        pct: b.amount > 0 ? Math.round((actual / b.amount) * 100) : 0,
+        color: PURPOSE_COLORS[b.purpose] ?? "#6b7280",
+      };
+    });
+  }, [transactions, budgets]);
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
-      <LockDimFeactureOverlay component_name="Budget Vs Actual" />
-      <div>
-        <h2 className="text-sm font-bold text-gray-900">Budget vs Actual</h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Spending vs planned budget per category
-        </p>
+      <div className="mb-2">
+        <ComponentHeader
+          title="Budget vs Actual"
+          subHeader="Spending vs planned budget per category"
+        />
       </div>
 
-      {/* Table header */}
-      <div className="grid grid-cols-4 gap-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest pb-2 border-b border-gray-100">
-        <span>Category</span>
-        <span className="text-right">Actual</span>
-        <span className="text-right">Budget</span>
-        <span className="text-right">Status</span>
-      </div>
-
-      {/* Rows */}
-      <div className="space-y-1">
-        {rows.map((row) => (
-          <div
-            key={row.category}
-            className="grid grid-cols-4 gap-3 items-center py-2.5 border-b border-gray-50 last:border-0"
-          >
-            {/* Category */}
-            <div className="flex items-center gap-2 min-w-0">
-              <span
-                className="w-2 h-2 rounded-full shrink-0"
-                style={{ backgroundColor: row.color }}
-              />
-              <span className="text-sm text-gray-800 font-medium truncate">
-                {row.category}
-              </span>
-            </div>
-
-            {/* Actual */}
-            <span className="text-sm font-bold text-gray-900 text-right">
-              {formatCurrencySymbol(
-                row.actual,
-                currency.symbol,
-                currency.locale,
-              )}
-            </span>
-
-            {/* Budget */}
-            <span className="text-sm text-gray-400 text-right">
-              {formatCurrencySymbol(
-                row.budget,
-                currency.symbol,
-                currency.locale,
-              )}
-            </span>
-
-            {/* Status: progress bar + % badge */}
-            <div className="flex items-center justify-end gap-2">
-              <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all duration-500"
-                  style={{
-                    width: `${Math.min(row.pct, 100)}%`,
-                    backgroundColor: row.color,
-                  }}
-                />
-              </div>
-              <span
-                className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0 ${getPctStyle(row.pct)}`}
-              >
-                {row.pct}%
-              </span>
-            </div>
+      {rows.length === 0 ? (
+        <div className="py-8 text-center text-sm text-gray-400">
+          No budgets set yet — use “Set Budget” to add thresholds.
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          {/* Table header */}
+          <div className="grid grid-cols-[1.4fr_1fr_1fr_1.3fr_1.4fr] gap-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest pb-2 border-b border-gray-100 min-w-[520px]">
+            <span>Category</span>
+            <span className="text-right">Actual</span>
+            <span className="text-right">Budget</span>
+            <span className="text-right">Variance</span>
+            <span className="text-right">Status</span>
           </div>
-        ))}
-      </div>
+
+          {/* Rows */}
+          <div className="space-y-1 min-w-[520px]">
+            {rows.map((row) => (
+              <div
+                key={row.category}
+                className="grid grid-cols-[1.4fr_1fr_1fr_1.3fr_1.4fr] gap-3 items-center py-2.5 border-b border-gray-50 last:border-0"
+              >
+                {/* Category */}
+                <div className="flex items-center gap-2 min-w-0">
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{ backgroundColor: row.color }}
+                  />
+                  <span className="text-sm text-gray-800 font-medium truncate">
+                    {row.category}
+                  </span>
+                </div>
+
+                {/* Actual */}
+                <span className="text-sm font-bold text-gray-900 text-right">
+                  {formatCurrencySymbol(
+                    row.actual,
+                    currency.symbol,
+                    currency.locale,
+                  )}
+                </span>
+
+                {/* Budget */}
+                <span className="text-sm text-gray-400 text-right">
+                  {formatCurrencySymbol(
+                    row.budget,
+                    currency.symbol,
+                    currency.locale,
+                  )}
+                </span>
+
+                {/* Variance badge */}
+                <div className="flex justify-end">
+                  <VarianceBadge variance={row.variance} />
+                </div>
+
+                {/* Status: progress bar + % badge */}
+                <div className="flex items-center justify-end gap-2">
+                  <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${Math.min(row.pct, 100)}%`,
+                        backgroundColor: row.color,
+                      }}
+                    />
+                  </div>
+                  <span
+                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0 ${getPctStyle(row.pct)}`}
+                  >
+                    {row.pct}%
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

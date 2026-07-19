@@ -225,6 +225,15 @@ export default function Transactions({
 
   return (
     <div className="py-2">
+      {/* Hide scrollbar styles */}
+      <style jsx global>{`
+        .scrollbar-hide {
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
       {/* Search + Filters */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
         <div className="relative flex-1">
@@ -271,7 +280,7 @@ export default function Transactions({
 
       {/* Table — horizontally scrollable on mobile */}
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
-      <div className="bg-white overflow-x-auto">
+      <div className="bg-white overflow-x-auto scrollbar-hide">
         <table className="w-full text-sm min-w-[1000px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
@@ -425,10 +434,10 @@ export default function Transactions({
                         <button
                           onClick={() => setRefundTarget(transaction)}
                           title="Refund this transaction"
-                          className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-white bg-orange-500 hover:bg-orange-300 border border-orange-200 rounded-lg  transition-colors"
+                          className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-orange-400 hover:bg-orange-500 hover:text-white rounded-lg  transition-colors hover:cursor-pointer"
                         >
-                          <RotateCcw size={12} />
                           Refund
+                          <RotateCcw size={12} />
                         </button>
                       )}
                     </td>

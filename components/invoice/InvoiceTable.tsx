@@ -144,6 +144,15 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
     <>
       {/* Controls */}
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        {/* Hide scrollbar styles */}
+        <style jsx global>{`
+          .scrollbar-hide {
+            scrollbar-width: none;
+          }
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
         <div className="relative flex-1">
           <Search
             size={14}
@@ -178,7 +187,7 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
 
       {/* Table — horizontally scrollable on mobile */}
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
-      <div className="bg-white  overflow-x-auto">
+      <div className="bg-white overflow-x-auto scrollbar-hide">
         <table className="w-full text-sm min-w-[1000px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
