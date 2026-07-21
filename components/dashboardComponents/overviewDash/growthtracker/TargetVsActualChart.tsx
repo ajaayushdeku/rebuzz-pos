@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   ComposedChart,
   Area,
@@ -18,6 +19,7 @@ import { CustomTooltipProps } from "@/lib/types/chart";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { fetchTargets } from "@/services/apiTarget.client";
 
 export interface TargetActualData {
   month: string;
@@ -25,55 +27,20 @@ export interface TargetActualData {
   target: number;
 }
 
-// ── IndexedDB config ──────────────────────────────────────────────────────
-
-const DB_NAME = "rebuzz_growth";
-const DB_VERSION = 1;
-const STORE_TARGETS = "targets";
-
-// ── IndexedDB helpers ─────────────────────────────────────────────────────
-
-function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-
-    req.onupgradeneeded = (e) => {
-      const db = (e.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains(STORE_TARGETS)) {
-        // Each record: { month: "Jan", target: 50000 }
-        db.createObjectStore(STORE_TARGETS, { keyPath: "month" });
-      }
-    };
-
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-function dbGetAll<T>(db: IDBDatabase, storeName: string): Promise<T[]> {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(storeName, "readonly");
-    const req = tx.objectStore(storeName).getAll();
-    req.onsuccess = () => resolve(req.result as T[]);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-function dbPutAll(
-  db: IDBDatabase,
-  storeName: string,
-  records: { month: string; target: number }[],
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(storeName, "readwrite");
-    const store = tx.objectStore(storeName);
-    for (const record of records) {
-      store.put(record);
-    }
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
-}
+const MONTHS_SHORT = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
 // ── Chart helpers ─────────────────────────────────────────────────────────
 
@@ -179,93 +146,27 @@ export interface TargetVsActualProps {
 
 export default function TargetVsActualChart({ data }: TargetVsActualProps) {
   const { currency } = useCurrency();
-  const dbRef = useRef<IDBDatabase | null>(null);
-  const [chartData, setChartData] = useState<TargetActualData[]>(data);
-  const [isLoadingTargets, setIsLoadingTargets] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalVersion, setModalVersion] = useState(0);
+  const year = new Date().getFullYear();
 
-  // ── Open DB and load saved targets on mount ───────────────────────────
-  useEffect(() => {
-    let mounted = true;
+  // Saved targets come from the API; actuals come from the server-provided
+  // `data`. We overlay the saved target onto each month (absent month → 0).
+  const { data: saved, isLoading: isLoadingTargets } = useQuery({
+    queryKey: ["target", year],
+    queryFn: () => fetchTargets(year),
+    staleTime: 60 * 1000,
+  });
 
-    async function loadTargets() {
-      try {
-        const db = await openDB();
-        dbRef.current = db;
-
-        const saved = await dbGetAll<{ month: string; target: number }>(
-          db,
-          STORE_TARGETS,
-        );
-
-        if (!mounted) return;
-
-        if (saved.length > 0) {
-          // Build a map: "Jan" → target value
-          const targetMap = new Map(saved.map((r) => [r.month, r.target]));
-
-          // Merge saved targets into server data
-          setChartData(
-            data.map((row) => ({
-              ...row,
-              target: targetMap.get(row.month) ?? row.target,
-            })),
-          );
-        } else {
-          setChartData(data);
-        }
-      } catch (err) {
-        console.error("Failed to load targets from IndexedDB:", err);
-        if (mounted) setChartData(data);
-      } finally {
-        if (mounted) setIsLoadingTargets(false);
-      }
-    }
-
-    loadTargets();
-    return () => {
-      mounted = false;
-    };
-  }, []); // only on mount — intentionally not re-running on data change
-
-  // ── When server data updates (navigation), merge with saved targets ───
-  useEffect(() => {
-    if (isLoadingTargets) return; // wait for DB load first
-    const db = dbRef.current;
-    if (!db) {
-      setChartData(data);
-      return;
-    }
-
-    dbGetAll<{ month: string; target: number }>(db, STORE_TARGETS)
-      .then((saved) => {
-        const targetMap = new Map(saved.map((r) => [r.month, r.target]));
-        setChartData(
-          data.map((row) => ({
-            ...row,
-            target: targetMap.get(row.month) ?? row.target,
-          })),
-        );
-      })
-      .catch(() => setChartData(data));
-  }, [data]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Save targets to IndexedDB ─────────────────────────────────────────
-  const handleSaveTargets = useCallback(async (updated: TargetActualData[]) => {
-    setChartData(updated);
-
-    const db = dbRef.current;
-    if (!db) return;
-
-    try {
-      // Store each month as a separate record: { month, target }
-      const records = updated.map(({ month, target }) => ({ month, target }));
-      await dbPutAll(db, STORE_TARGETS, records);
-    } catch (err) {
-      console.error("Failed to save targets to IndexedDB:", err);
-    }
-  }, []);
+  const chartData = useMemo<TargetActualData[]>(() => {
+    if (!saved) return data;
+    const targetByMonth = new Map(
+      saved.monthlyTargets.map((t) => [t.month, t.amount]),
+    );
+    return data.map((row) => {
+      const monthNum = MONTHS_SHORT.indexOf(row.month) + 1;
+      return { ...row, target: targetByMonth.get(monthNum) ?? 0 };
+    });
+  }, [data, saved]);
 
   const isEmpty = chartData.every((d) => d.actual === 0 && d.target === 0);
   const formatYAxis = (value: number): string =>
@@ -308,10 +209,7 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
           </div>
 
           <button
-            onClick={() => {
-              setModalOpen(true);
-              setModalVersion((v) => v + 1);
-            }}
+            onClick={() => setModalOpen(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-xl hover:bg-blue-50 transition-colors shrink-0"
           >
             <svg
@@ -396,11 +294,9 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
       </div>
 
       <SetTargetsModal
-        key={modalVersion}
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        data={chartData}
-        onSave={handleSaveTargets}
+        year={year}
       />
     </>
   );
