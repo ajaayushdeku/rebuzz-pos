@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
   Plus,
@@ -20,6 +21,13 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import StaffFormModal from "@/components/settingsComponents/staffs/StaffFormModal";
 
 // â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -94,6 +102,7 @@ function StatusBadge({ deactivated }: { deactivated?: boolean }) {
 
 export default function StaffManagementPage() {
   // â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const router = useRouter();
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -416,7 +425,10 @@ export default function StaffManagementPage() {
                     paged.map((staffMember, idx) => (
                       <tr
                         key={staffMember._id}
-                        className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
+                        onClick={() =>
+                          router.push(`/records/employee/${staffMember._id}`)
+                        }
+                        className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
                       >
                         <td className="py-3 px-4 text-gray-400 text-xs">
                           {page * pageSize + idx + 1}
@@ -522,50 +534,60 @@ export default function StaffManagementPage() {
         />
 
         {/* â”€â”€ Delete Confirmation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-        {deleteConfirm && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40  p-4"
-            onClick={() => setDeleteConfirm(null)}
-          >
-            <div
-              className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-6 text-center">
-                <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
-                  <Trash2 className="h-6 w-6 text-red-500" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Delete Staff?
-                </h3>
-                <p className="text-sm text-gray-500 mt-2">
-                  This action cannot be undone. The staff member will be
-                  permanently removed.
-                </p>
+        <Dialog
+          open={!!deleteConfirm}
+          onOpenChange={(o) => !o && !deleting && setDeleteConfirm(null)}
+        >
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-2">
+                <Trash2 className="h-5 w-5 text-red-600" />
               </div>
-              <div className="px-6 pb-6 flex gap-3">
-                <Button
-                  onClick={() => setDeleteConfirm(null)}
-                  variant="outline"
-                  className="flex-1 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => handleDelete(deleteConfirm)}
-                  disabled={deleting}
-                  className="flex-1 rounded-lg bg-red-600 hover:bg-red-700 text-white"
-                >
-                  {deleting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    "Delete"
-                  )}
-                </Button>
-              </div>
+              <DialogTitle className="text-center text-base font-semibold">
+                Delete Staff?
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="text-center space-y-1 py-1">
+              <p className="text-sm text-gray-600">
+                Are you sure you want to delete{" "}
+                <span className="font-semibold text-gray-900">
+                  {staff.find((s) => s._id === deleteConfirm)?.name ||
+                    "this staff member"}
+                </span>
+                ?
+              </p>
+              <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mt-2">
+                This action cannot be undone.
+              </p>
             </div>
-          </div>
-        )}
+
+            <DialogFooter className="gap-2">
+              <Button
+                onClick={() => setDeleteConfirm(null)}
+                variant="outline"
+                disabled={deleting}
+                className="text-sm rounded-lg flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
+                disabled={deleting}
+                className="bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg flex-1"
+              >
+                {deleting ? (
+                  <span className="flex items-center gap-1.5">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Deleting...
+                  </span>
+                ) : (
+                  "Delete"
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

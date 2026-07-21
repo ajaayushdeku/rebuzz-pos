@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useParams, useRouter } from "next/navigation";
 import { useCustomersList } from "@/hooks/useCustomersList";
 import { Customer } from "@/components/customer/customer-columns";
@@ -23,12 +24,19 @@ import {
   ChevronLeft,
   ChevronRight,
   Hash,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EditCustomerModal from "@/components/customer/EditCustomerModal";
 import LoyaltyPointModal from "@/components/customer/LoyaltyPointModal";
 import toast from "react-hot-toast";
 import { statusStyles, paymentMethods } from "@/lib/config/transaction";
+import {
+  WhatsAppIcon,
+  whatsappLink,
+} from "@/components/customer/CustomerTable";
+import { CustomerAvatar } from "@/components/customer/CustomerAvatar";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 // â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -98,43 +106,6 @@ const scrollbarHideStyles = `
   }
 `;
 
-// â”€â”€ Avatar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-/** Customer photo with a graceful fallback to their initial. */
-function CustomerAvatar({
-  src,
-  name,
-  className = "",
-  textClass = "text-sm",
-}: {
-  src: string | null;
-  name: string;
-  className?: string;
-  textClass?: string;
-}) {
-  const [failed, setFailed] = useState(false);
-
-  if (src && !failed) {
-    return (
-      /* eslint-disable-next-line @next/next/no-img-element */
-      <img
-        src={src}
-        alt={name}
-        onError={() => setFailed(true)}
-        className={`rounded-full object-cover bg-gray-100 ${className}`}
-      />
-    );
-  }
-
-  return (
-    <div
-      className={`rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold ${textClass} ${className}`}
-    >
-      {name.charAt(0).toUpperCase()}
-    </div>
-  );
-}
-
 // â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function CustomerDetailPage() {
@@ -146,10 +117,11 @@ export default function CustomerDetailPage() {
 
   const [editOpen, setEditOpen] = useState(false);
   const [loyaltyOpen, setLoyaltyOpen] = useState(false);
+  const [viewerOpen, setViewerOpen] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(true);
   const [history, setHistory] = useState<PurchaseHistoryItem[]>([]);
   const [page, setPage] = useState(0);
-  const pageSize = 10;
+  const pageSize = 5;
 
   const customer = customers.find((c) => c.id === customerId);
 
@@ -176,14 +148,12 @@ export default function CustomerDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50/50 px-6 py-8 md:px-10">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-center py-20">
-            <Loader2 size={24} className="animate-spin text-blue-500" />
-            <span className="ml-3 text-sm text-gray-500">
-              Loading customer...
-            </span>
-          </div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50/50">
+        <div className="flex items-center">
+          <Loader2 size={24} className="animate-spin text-blue-500" />
+          <span className="ml-3 text-sm text-gray-500">
+            Loading customer...
+          </span>
         </div>
       </div>
     );
@@ -229,8 +199,10 @@ export default function CustomerDetailPage() {
   const paged = history.slice(page * pageSize, (page + 1) * pageSize);
 
   return (
-    <div className="min-h-screen bg-gray-50/50 px-6 py-8 md:px-10">
-      <div className="max-w-6xl mx-auto">
+    // <div className="min-h-screen bg-gray-50/50 px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+      {/* <div className="max-w-6xl mx-auto"> */}
+      <div>
         {/* â”€â”€ Header â”€â”€ */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
@@ -246,6 +218,7 @@ export default function CustomerDetailPage() {
                 name={customer.name}
                 className="w-12 h-12 shrink-0 ring-2 ring-white shadow-md"
                 textClass="text-base"
+                onClick={imageUrl ? () => setViewerOpen(true) : undefined}
               />
               <div>
                 <h1 className="font-bold text-xl md:text-2xl text-gray-900">
@@ -258,7 +231,7 @@ export default function CustomerDetailPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <span
               className={`text-xs font-bold px-3 py-1.5 rounded-full ${TIER_BG[loyaltyStatus]} ring-2 ${TIER_RING[loyaltyStatus]} shadow-sm`}
             >
@@ -268,6 +241,20 @@ export default function CustomerDetailPage() {
               <span className="text-xs font-medium text-red-600 bg-red-50 px-2.5 py-1 rounded-full border border-red-200">
                 Inactive
               </span>
+            )}
+
+            <div className="h-5 bg-gray-300 w-[2px]" />
+
+            {customer.phone && (
+              <a
+                href={whatsappLink(customer.phone)}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`Chat on WhatsApp — ${customer.phone}`}
+                className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-green-600 hover:bg-green-50 transition-colors"
+              >
+                <WhatsAppIcon className="h-6 w-6" />
+              </a>
             )}
           </div>
         </div>
@@ -337,12 +324,16 @@ export default function CustomerDetailPage() {
           {/* Customer Info Card */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+              <div className="flex items-center gap-3 mb-2">
                 <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
                   <User size={14} className="text-blue-500" />
                 </div>
-                Customer Information
-              </h2>
+                <ComponentHeader
+                  title="Customer Informations"
+                  subHeader="Customer Details"
+                />
+              </div>
+
               <button
                 onClick={() => setEditOpen(true)}
                 className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -359,6 +350,7 @@ export default function CustomerDetailPage() {
                 name={customer.name}
                 className="w-16 h-16 shrink-0 border border-gray-200"
                 textClass="text-xl"
+                onClick={imageUrl ? () => setViewerOpen(true) : undefined}
               />
               <div className="min-w-0">
                 <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">
@@ -418,7 +410,7 @@ export default function CustomerDetailPage() {
                       {row.label}
                     </p>
                     <p className="text-sm font-medium text-gray-900 break-words">
-                      {row.value ?? "â€”"}
+                      {row.value ?? "—"}
                     </p>
                   </div>
                 </div>
@@ -429,12 +421,15 @@ export default function CustomerDetailPage() {
           {/* Loyalty Card */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+              <div className="flex items-center gap-3 ">
                 <div className="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center">
                   <Star size={14} className="text-amber-500" />
                 </div>
-                Loyalty Program
-              </h2>
+                <ComponentHeader
+                  title="Loyalty Program"
+                  subHeader="Customer's loyalty points, due amount and total spending"
+                />
+              </div>
               <button
                 onClick={() => setLoyaltyOpen(true)}
                 className="p-1.5 text-gray-400 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
@@ -534,12 +529,15 @@ export default function CustomerDetailPage() {
         {/* â”€â”€ Order History â”€â”€ */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mt-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center">
                 <Calendar size={14} className="text-purple-500" />
               </div>
-              Order History
-            </h2>
+              <ComponentHeader
+                title="Order History"
+                subHeader="Customer's Order/Transaction History"
+              />
+            </div>
             <span className="text-xs text-gray-400 font-medium">
               {history.length} {history.length === 1 ? "order" : "orders"}
             </span>
@@ -742,6 +740,41 @@ export default function CustomerDetailPage() {
         open={loyaltyOpen}
         onClose={() => setLoyaltyOpen(false)}
       />
+
+      {/* â”€â”€ Photo viewer (full image) â”€â”€ */}
+      {viewerOpen &&
+        imageUrl &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4"
+            onClick={() => setViewerOpen(false)}
+          >
+            <button
+              type="button"
+              onClick={() => setViewerOpen(false)}
+              aria-label="Close"
+              className="absolute top-4 right-4 text-white/80 hover:text-white"
+            >
+              <X size={26} />
+            </button>
+
+            <div
+              className="max-w-3xl w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={imageUrl}
+                alt={customer.name}
+                className="w-full max-h-[80vh] object-contain rounded-lg bg-black"
+              />
+              <p className="text-center text-white/70 text-xs mt-2 truncate">
+                {customer.name}
+              </p>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

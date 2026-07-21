@@ -107,18 +107,6 @@ export const navigationConfig: NavigationItem[] = [
     ],
   },
   {
-    type: "single",
-    label: "Expense / Purchase",
-    icon: ShoppingCart,
-    href: "/expenses",
-  },
-  {
-    type: "single",
-    label: "Offer",
-    icon: BadgePercent,
-    href: "/offers",
-  },
-  {
     type: "section",
     label: "Settings",
     icon: Settings,
@@ -137,6 +125,19 @@ export const navigationConfig: NavigationItem[] = [
       { label: "Loyalty Point", href: "/settings/loyalty-points", icon: Award },
     ],
   },
+  {
+    type: "single",
+    label: "Expense / Purchase",
+    icon: ShoppingCart,
+    href: "/expenses",
+  },
+  {
+    type: "single",
+    label: "Offer",
+    icon: BadgePercent,
+    href: "/offers",
+  },
+
   {
     type: "single",
     label: "Receipt AI",

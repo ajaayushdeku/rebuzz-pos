@@ -25,6 +25,13 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatDatetime } from "@/utils/helper";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -441,86 +448,89 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
       </div>
 
       {/* Delete Confirmation Modal */}
-      {deleteTarget && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-          onClick={() => setDeleteTarget(null)}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6 text-center">
-              <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
-                <Trash2 className="h-6 w-6 text-red-500" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900">
-                Delete Invoice?
-              </h3>
-              <p className="text-sm text-gray-500 mt-2">
-                This action cannot be undone. The invoice{" "}
-                <span className="font-medium text-gray-700">
-                  ORD-{deleteTarget.invoice}
-                </span>{" "}
-                will be permanently removed.
-              </p>
+      <Dialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => !o && !deleting && setDeleteTarget(null)}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-2">
+              <Trash2 className="h-5 w-5 text-red-600" />
             </div>
-            <div className="px-6 pb-6 flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setDeleteTarget(null)}
-                disabled={deleting}
-                className="flex-1 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={async () => {
-                  setDeleting(true);
-                  try {
-                    const res = await fetch(
-                      `/api/invoices/${deleteTarget.invoice}/archive`,
-                      {
-                        method: "DELETE",
-                        headers: { "Content-Type": "application/json" },
-                      },
-                    );
-                    if (!res.ok) {
-                      const data = await res.json().catch(() => ({}));
-                      throw new Error(
-                        (data as { error?: string }).error ||
-                          "Failed to delete invoice",
-                      );
-                    }
-                    toast.success("Invoice deleted successfully");
-                    setDeleteTarget(null);
-                    window.location.reload();
-                  } catch (err) {
-                    toast.error(
-                      err instanceof Error
-                        ? err.message
-                        : "Failed to delete invoice",
-                    );
-                  } finally {
-                    setDeleting(false);
-                  }
-                }}
-                disabled={deleting}
-                className="flex-1 rounded-lg bg-red-600 hover:bg-red-700 text-white"
-              >
-                {deleting ? (
-                  <span className="flex items-center gap-1.5">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Deleting...
-                  </span>
-                ) : (
-                  "Delete"
-                )}
-              </Button>
-            </div>
+            <DialogTitle className="text-center text-base font-semibold">
+              Delete Invoice?
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="text-center space-y-1 py-1">
+            <p className="text-sm text-gray-600">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold text-gray-900">
+                ORD-{deleteTarget?.invoice}
+              </span>
+              ?
+            </p>
+            <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mt-2">
+              This action cannot be undone.
+            </p>
           </div>
-        </div>
-      )}
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteTarget(null)}
+              disabled={deleting}
+              className="text-sm rounded-lg flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!deleteTarget) return;
+                setDeleting(true);
+                try {
+                  const res = await fetch(
+                    `/api/invoices/${deleteTarget.invoice}/archive`,
+                    {
+                      method: "DELETE",
+                      headers: { "Content-Type": "application/json" },
+                    },
+                  );
+                  if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(
+                      (data as { error?: string }).error ||
+                        "Failed to delete invoice",
+                    );
+                  }
+                  toast.success("Invoice deleted successfully");
+                  setDeleteTarget(null);
+                  window.location.reload();
+                } catch (err) {
+                  toast.error(
+                    err instanceof Error
+                      ? err.message
+                      : "Failed to delete invoice",
+                  );
+                } finally {
+                  setDeleting(false);
+                }
+              }}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg flex-1"
+            >
+              {deleting ? (
+                <span className="flex items-center gap-1.5">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Deleting...
+                </span>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Record Payment Modal */}
       <RecordPaymentModal
@@ -555,57 +565,59 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
       />
 
       {/* Move to Credit Confirmation Modal */}
-      {moveTarget && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-          onClick={() => !moving && setMoveTarget(null)}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6 text-center">
-              <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-4">
-                <Wallet className="h-6 w-6 text-amber-500" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900">
-                Move to Credit?
-              </h3>
-              <p className="text-sm text-gray-500 mt-2">
-                Invoice{" "}
-                <span className="font-medium text-gray-700">
-                  ORD-{moveTarget.invoice}
-                </span>{" "}
-                will be moved to the credit section and removed from this list.
-              </p>
+      <Dialog
+        open={!!moveTarget}
+        onOpenChange={(o) => !o && !moving && setMoveTarget(null)}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <div className="mx-auto w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mb-2">
+              <Wallet className="h-5 w-5 text-amber-600" />
             </div>
-            <div className="px-6 pb-6 flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setMoveTarget(null)}
-                disabled={moving}
-                className="flex-1 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleMoveToCredit}
-                disabled={moving}
-                className="flex-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white"
-              >
-                {moving ? (
-                  <span className="flex items-center gap-1.5">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Moving...
-                  </span>
-                ) : (
-                  "Move to Credit"
-                )}
-              </Button>
-            </div>
+            <DialogTitle className="text-center text-base font-semibold">
+              Move to Credit?
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="text-center space-y-1 py-1">
+            <p className="text-sm text-gray-600">
+              Move invoice{" "}
+              <span className="font-semibold text-gray-900">
+                ORD-{moveTarget?.invoice}
+              </span>{" "}
+              to the credit section?
+            </p>
+            <p className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mt-2">
+              It will be removed from this list.
+            </p>
           </div>
-        </div>
-      )}
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setMoveTarget(null)}
+              disabled={moving}
+              className="text-sm rounded-lg flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleMoveToCredit}
+              disabled={moving}
+              className="bg-amber-600 hover:bg-amber-700 text-white text-sm rounded-lg flex-1"
+            >
+              {moving ? (
+                <span className="flex items-center gap-1.5">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Moving...
+                </span>
+              ) : (
+                "Move to Credit"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

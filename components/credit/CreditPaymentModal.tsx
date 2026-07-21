@@ -120,8 +120,8 @@ export default function CreditPaymentModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-              <HandCoins size={16} className="text-emerald-600" />
+            <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+              <HandCoins size={16} className="text-blue-600" />
             </div>
             <div>
               <h2 className="text-base font-bold text-gray-900">
@@ -204,7 +204,7 @@ export default function CreditPaymentModal({
           <button
             onClick={handleSubmit}
             disabled={saving || !isValidValue}
-            className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 text-sm font-semibold transition-colors disabled:opacity-50"
+            className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 text-sm font-semibold transition-colors disabled:opacity-50"
           >
             {saving ? (
               <span className="flex items-center justify-center gap-1.5">

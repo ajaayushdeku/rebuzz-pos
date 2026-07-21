@@ -23,6 +23,7 @@ import BillsSection from "@/components/dashboardComponents/staffDash/staffDetail
 import PerformanceRadar from "@/components/dashboardComponents/staffDash/staffDetail/PerformanceRadar";
 import TopItemsSales from "@/components/dashboardComponents/staffDash/staffDetail/TopItemsSales";
 import InvoiceListSection from "@/components/dashboardComponents/staffDash/staffDetail/InvoiceListSection";
+import { CustomerAvatar } from "@/components/customer/CustomerAvatar";
 
 export interface StaffUser {
   _id: string;
@@ -305,6 +306,17 @@ export default function StaffDetailPage() {
               <ArrowLeft size={18} />
             </button>
             <div className="flex items-center gap-3">
+              <CustomerAvatar
+                src={null}
+                name={
+                  employeeDetail?.name ??
+                  ownerDetail?.name ??
+                  overview?.name ??
+                  "Staff"
+                }
+                className="w-12 h-12 shrink-0 ring-2 ring-white shadow-md"
+                textClass="text-base"
+              />
               <div>
                 <h1 className="font-bold text-xl md:text-2xl text-gray-900">
                   {employeeDetail?.name ??
