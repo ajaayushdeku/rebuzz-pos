@@ -1,18 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Target, Pencil } from "lucide-react";
+import { useState } from "react";
+import { Target, Pencil, Loader2, Check, X } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import {
-  getStoredTargets,
-  saveStoredTargets,
-  DEFAULT_TARGETS,
-  type AnalyticsTargets,
-} from "@/lib/indexeddb/analyticsPreferences";
 import { ComponentHeader } from "@/components/ComponentHeader";
-
-type TargetPeriod = "daily" | "weekly" | "monthly";
+import {
+  fetchTargetProgress,
+  setTargets,
+  type TargetPeriod,
+  type ProgressStatus,
+  type SetTargetsPayload,
+} from "@/services/apiTarget.client";
 
 const TABS: { label: string; value: TargetPeriod }[] = [
   { label: "Daily", value: "daily" },
@@ -26,178 +28,119 @@ const PERIOD_LABEL: Record<TargetPeriod, string> = {
   monthly: "Monthly sales goal (this month)",
 };
 
-// Which stored target field backs each period tab.
-const TARGET_FIELD: Record<TargetPeriod, keyof AnalyticsTargets> = {
-  daily: "dailyTarget",
-  weekly: "weeklyTarget",
-  monthly: "monthlyTarget",
-};
-
-function getStatusBadge(pct: number): { label: string; className: string } {
-  if (pct >= 100)
-    return {
-      label: "Goal reached",
-      className: "bg-green-50 text-green-700 border-green-200",
-    };
-  if (pct >= 85)
-    return {
-      label: "Close to goal",
-      className: "bg-amber-50 text-amber-700 border-amber-200",
-    };
-  if (pct >= 60)
-    return {
-      label: "On track",
-      className: "bg-blue-50 text-blue-700 border-blue-200",
-    };
-  return {
+// Status is authoritative from the backend — never recomputed on the client.
+// (This is the fix for the old divide-by-zero bug that showed "Behind",
+// "0% achieved" and "surpassed 🎉" all at once when the goal was 0.)
+const STATUS_BADGE: Record<
+  ProgressStatus,
+  { label: string; className: string }
+> = {
+  no_target: {
+    label: "Set a goal",
+    className: "bg-gray-50 text-gray-500 border-gray-200",
+  },
+  behind: {
     label: "Behind target",
     className: "bg-red-50 text-red-600 border-red-200",
-  };
-}
+  },
+  on_track: {
+    label: "On track",
+    className: "bg-blue-50 text-blue-700 border-blue-200",
+  },
+  surpassed: {
+    label: "Surpassed",
+    className: "bg-green-50 text-green-700 border-green-200",
+  },
+};
 
-function getBarColor(pct: number): string {
-  if (pct >= 100) return "bg-green-500";
-  if (pct >= 85) return "bg-amber-400";
-  if (pct >= 60) return "bg-blue-500";
-  return "bg-red-400";
-}
+const STATUS_BAR: Record<ProgressStatus, string> = {
+  no_target: "bg-gray-300",
+  behind: "bg-red-400",
+  on_track: "bg-blue-500",
+  surpassed: "bg-green-500",
+};
 
-/** Local YYYY-MM-DD (no UTC shift). */
-function toLocalDateStr(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-// Date ranges for the current calendar period — independent of the dashboard's
-// global date filter.
-//  • Daily   → today → today
-//  • Weekly  → current calendar week (Sunday, the project convention) → today
-//  • Monthly → 1st of the month → today (month-to-date)
-//
-// Weekly and monthly end at today rather than the end of the period: the report
-// API returns no data when endDate is in the future, and revenue can only
-// accrue up to today anyway.
-function computeRanges(): Record<
-  TargetPeriod,
-  { startDate: string; endDate: string }
-> {
+/** Build the PUT /target body for editing the active period's goal. */
+function buildSetPayload(
+  period: TargetPeriod,
+  amount: number,
+): SetTargetsPayload {
+  if (period === "daily") return { dailyTarget: amount };
+  if (period === "weekly") return { weeklyTarget: amount };
   const now = new Date();
-  const today = toLocalDateStr(now);
-
-  const weekStart = new Date(now);
-  weekStart.setDate(now.getDate() - now.getDay()); // Sunday of the current week
-
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
   return {
-    daily: { startDate: today, endDate: today },
-    weekly: { startDate: toLocalDateStr(weekStart), endDate: today },
-    monthly: { startDate: toLocalDateStr(monthStart), endDate: today },
+    monthly: {
+      year: now.getFullYear(),
+      targets: [{ month: now.getMonth() + 1, amount }],
+    },
   };
 }
 
 export default function TargetTrackerCard() {
   const { currency } = useCurrency();
+  const queryClient = useQueryClient();
   const [activePeriod, setActivePeriod] = useState<TargetPeriod>("weekly");
-
-  // ── Targets (IndexedDB-backed local preferences) ──
-  const [targets, setTargets] = useState<AnalyticsTargets>(DEFAULT_TARGETS);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
-
-  // Load saved targets once on mount.
-  useEffect(() => {
-    let cancelled = false;
-    getStoredTargets().then((stored) => {
-      if (!cancelled) setTargets(stored);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // ── Revenue (current calendar period) ──
-  // Ranges are fixed to the current period at mount, so switching tabs never
-  // recomputes them and never pulls in the dashboard's global date filter.
-  const ranges = useMemo(() => computeRanges(), []);
-
-  // Cache revenue per date-range so re-selecting a tab doesn't refetch.
-  const revenueCache = useRef<Record<string, number>>({});
-  const [revenue, setRevenue] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    const { startDate, endDate } = ranges[activePeriod];
-    const key = `${startDate}_${endDate}`;
-
-    // Serve from cache when possible — only fetch the selected period.
-    if (revenueCache.current[key] !== undefined) {
-      setRevenue(revenueCache.current[key]);
-      setError(false);
-      setLoading(false);
-      return;
-    }
-
-    let cancelled = false;
-    setLoading(true);
-    setError(false);
-    setRevenue(null);
-
-    fetch(`/api/report?startDate=${startDate}&endDate=${endDate}&limit=25`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`Failed: ${res.status}`);
-        return res.json();
-      })
-      .then((json) => {
-        const rev = Number(json?.data?.report?.totalRevenue ?? 0);
-        revenueCache.current[key] = rev;
-        if (!cancelled) setRevenue(rev);
-      })
-      .catch(() => {
-        if (!cancelled) setError(true);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [activePeriod, ranges]);
-
-  // ── Derived progress ──
-  const goal = targets[TARGET_FIELD[activePeriod]];
-  const actual = revenue ?? 0;
-
-  const { pct, remaining } = useMemo(() => {
-    const p = goal > 0 ? Math.min(100, Math.round((actual / goal) * 100)) : 0;
-    return { pct: p, remaining: Math.max(0, goal - actual) };
-  }, [goal, actual]);
-
-  const badge = getStatusBadge(pct);
-  const barColor = getBarColor(pct);
 
   const fmt = (v: number) =>
     formatCurrencySymbol(v, currency.symbol, currency.locale);
 
-  // ── Target editing ──
+  // ── Progress (single source of truth from the API) ──
+  const {
+    data: progress,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["target-progress", activePeriod],
+    queryFn: () => fetchTargetProgress(activePeriod),
+    staleTime: 60 * 1000,
+  });
+
+  // ── Saving a new goal (admin only upstream — 403 otherwise) ──
+  const { mutate: saveGoal, isPending: saving } = useMutation({
+    mutationFn: (amount: number) =>
+      setTargets(buildSetPayload(activePeriod, amount)),
+    onSuccess: () => {
+      toast.success("Target updated");
+      setEditing(false);
+      // Refresh every period's progress + any saved-target / overview readers.
+      queryClient.invalidateQueries({ queryKey: ["target-progress"] });
+      queryClient.invalidateQueries({ queryKey: ["target"] });
+      queryClient.invalidateQueries({ queryKey: ["target-monthly-overview"] });
+    },
+    onError: (err) => {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to update target",
+      );
+    },
+  });
+
+  const target = progress?.target ?? 0;
+  const achieved = progress?.achieved ?? 0;
+  const remaining = progress?.remaining ?? 0;
+  const status: ProgressStatus = progress?.progressStatus ?? "no_target";
+  const hasTarget = status !== "no_target";
+  const pct =
+    progress?.percentAchieved != null
+      ? Math.min(100, Math.round(progress.percentAchieved))
+      : 0;
+
+  const badge = STATUS_BADGE[status];
+
   const startEdit = () => {
-    setDraft(String(goal));
+    setDraft(target > 0 ? String(target) : "");
     setEditing(true);
   };
 
   const commitEdit = () => {
     const parsed = Math.max(0, Number(draft) || 0);
-    const next: AnalyticsTargets = {
-      ...targets,
-      [TARGET_FIELD[activePeriod]]: parsed,
-    };
-    setTargets(next);
+    saveGoal(parsed);
+  };
+
+  const cancelEdit = () => {
     setEditing(false);
-    void saveStoredTargets(next);
+    setDraft("");
   };
 
   return (
@@ -239,90 +182,133 @@ export default function TargetTrackerCard() {
         <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
           {PERIOD_LABEL[activePeriod]}
         </p>
-        <span
-          className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${badge.className}`}
-        >
-          {badge.label}
-        </span>
+        {!isLoading && !isError && (
+          <span
+            className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${badge.className}`}
+          >
+            {badge.label}
+          </span>
+        )}
       </div>
 
       {/* Actual value */}
-      {loading ? (
+      {isLoading ? (
         <div className="h-9 w-32 bg-gray-100 rounded-md animate-pulse mb-4" />
       ) : (
         <p className="text-3xl font-bold text-gray-900 tracking-tight mb-4">
-          {fmt(actual)}
+          {fmt(achieved)}
         </p>
       )}
 
-      {error && (
+      {isError && (
         <p className="text-[11px] text-red-500 -mt-3 mb-3">
-          Couldn&apos;t load revenue — showing your saved target.
+          Couldn&apos;t load target progress. Please try again.
         </p>
       )}
 
-      {/* Progress bar */}
+      {/* Progress bar + editable goal */}
       <div className="mb-3">
-        <div className="flex items-center justify-between text-xs text-gray-500 mb-1.5">
-          <span className="font-medium">{pct}% achieved</span>
+        <div className="flex items-center justify-between gap-2 text-xs text-gray-500 mb-1.5">
+          <span className="font-medium shrink-0">
+            {hasTarget ? `${pct}% achieved` : "No goal set"}
+          </span>
 
-          {/* Editable goal */}
           {editing ? (
-            <span className="flex items-center gap-1">
+            /* Edit mode — inline input + icon-only Save/Cancel (no save-on-blur) */
+            <span className="flex items-center gap-1.5">
               Goal:
-              <input
-                type="number"
-                min={0}
-                value={draft}
-                autoFocus
-                onChange={(e) => setDraft(e.target.value)}
-                onBlur={commitEdit}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") commitEdit();
-                  if (e.key === "Escape") setEditing(false);
-                }}
-                className="w-24 border border-gray-200 rounded px-1.5 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
+              <div className="relative">
+                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none">
+                  {currency.symbol}
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  value={draft}
+                  autoFocus
+                  disabled={saving}
+                  onChange={(e) => setDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") commitEdit();
+                    if (e.key === "Escape") cancelEdit();
+                  }}
+                  placeholder="0"
+                  className="w-24 border border-gray-200 rounded-md pl-5 pr-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={commitEdit}
+                disabled={saving}
+                title="Save target"
+                className="shrink-0 inline-flex items-center justify-center h-6 w-6 rounded-md bg-blue-600 hover:bg-blue-700 text-white transition-colors disabled:opacity-50"
+              >
+                {saving ? (
+                  <Loader2 size={13} className="animate-spin" />
+                ) : (
+                  <Check size={13} />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={cancelEdit}
+                disabled={saving}
+                title="Cancel"
+                className="shrink-0 inline-flex items-center justify-center h-6 w-6 rounded-md border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                <X size={13} />
+              </button>
             </span>
           ) : (
             <button
               type="button"
               onClick={startEdit}
+              disabled={isLoading || isError}
               title="Click to edit target"
-              className="inline-flex items-center gap-1 hover:text-gray-700 transition-colors"
+              className="inline-flex items-center gap-1 hover:text-gray-700 transition-colors disabled:opacity-50"
             >
-              Goal: {fmt(goal)}
+              {hasTarget ? `Goal: ${fmt(target)}` : "Set a goal"}
               <Pencil size={11} className="opacity-50" />
             </button>
           )}
         </div>
-        <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-500 ${barColor}`}
-            style={{ width: `${pct}%` }}
-          />
-        </div>
+
+        {/* % bar — always shown when a goal exists, including in edit mode */}
+        {hasTarget && (
+          <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${STATUS_BAR[status]}`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Remaining / progress detail */}
       <div className="flex items-center justify-between text-xs pt-3 border-t border-gray-50">
         <span className="text-gray-500">
-          {remaining > 0 ? (
+          {!hasTarget ? (
+            <span className="text-gray-400">
+              Set a goal to start tracking progress
+            </span>
+          ) : status === "surpassed" ? (
+            <span className="text-green-600 font-semibold">
+              Target surpassed 🎉
+            </span>
+          ) : (
             <>
               <span className="font-semibold text-gray-700">
                 {fmt(remaining)}
               </span>{" "}
               remaining to hit target
             </>
-          ) : (
-            <span className="text-green-600 font-semibold">
-              Target surpassed 🎉
-            </span>
           )}
         </span>
-        <span className="text-gray-400 font-medium">
-          {fmt(actual)} of {fmt(goal)}
-        </span>
+        {hasTarget && (
+          <span className="text-gray-400 font-medium">
+            {fmt(achieved)} of {fmt(target)}
+          </span>
+        )}
       </div>
     </div>
   );
