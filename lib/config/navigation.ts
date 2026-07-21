@@ -72,7 +72,7 @@ export const navigationConfig: NavigationItem[] = [
         icon: TrendingUp,
       },
       {
-        label: "Profit vs Expense",
+        label: "Profit & Cost",
         href: "/dashboard/profit-cost",
         icon: HandCoins,
       },
@@ -107,6 +107,18 @@ export const navigationConfig: NavigationItem[] = [
     ],
   },
   {
+    type: "single",
+    label: "Expense Analytics",
+    icon: ShoppingCart,
+    href: "/expenses",
+  },
+  {
+    type: "single",
+    label: "Offer",
+    icon: BadgePercent,
+    href: "/offers",
+  },
+  {
     type: "section",
     label: "Settings",
     icon: Settings,
@@ -124,18 +136,6 @@ export const navigationConfig: NavigationItem[] = [
       { label: "Category", href: "/settings/category", icon: Tag },
       { label: "Loyalty Point", href: "/settings/loyalty-points", icon: Award },
     ],
-  },
-  {
-    type: "single",
-    label: "Expense / Purchase",
-    icon: ShoppingCart,
-    href: "/expenses",
-  },
-  {
-    type: "single",
-    label: "Offer",
-    icon: BadgePercent,
-    href: "/offers",
   },
 
   {

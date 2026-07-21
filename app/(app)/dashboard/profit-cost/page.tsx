@@ -50,7 +50,7 @@ export default async function Page({
       <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
         <div>
           <h1 className="font-bold text-xl md:text-2xl truncate">
-            Profit vs Expense
+            Profit & Cost
           </h1>
 
           <p className="text-xs text-gray-400 mt-0.5">
@@ -96,7 +96,7 @@ export default async function Page({
           </Suspense>
         </ChartErrorBoundary>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <ChartErrorBoundary>
             <Suspense fallback={<TableSkeleton rows={4} />}>
               <ProfitPerProductWrapper
@@ -116,7 +116,7 @@ export default async function Page({
           </ChartErrorBoundary>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <ChartErrorBoundary>
             <Suspense fallback={<ChartSkeleton />}>
               <ProfitWaterfallBridgeWrapper />
@@ -130,7 +130,7 @@ export default async function Page({
           </ChartErrorBoundary>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <ChartErrorBoundary>
             <Suspense fallback={<ChartSkeleton />}>
               <MenuEngineeringMatrixWrapper />
@@ -150,7 +150,7 @@ export default async function Page({
           </Suspense>
         </ChartErrorBoundary>
 
-        <div className="grid grid-cols-1 md:grid-cols-[5fr_3fr] gap-4 ">
+        <div className="grid grid-cols-1 md:grid-cols-[5fr_3fr] gap-6 ">
           {/* <div className="flex flex-col "> */}
           <ChartErrorBoundary>
             <Suspense fallback={<ChartSkeleton />}>
@@ -183,7 +183,7 @@ export default async function Page({
           </Suspense>
         </ChartErrorBoundary>
 
-        <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6">
           <ChartErrorBoundary>
             <Suspense fallback={<ChartSkeleton />}>
               <WhatIfScenarioPlannerWrapper />
