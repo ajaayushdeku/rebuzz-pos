@@ -15,7 +15,6 @@ import {
   MonthlyTaxTrendChartWrapper,
   WhatChangedAndWhyWrapper,
   TDSOnRentWrapper,
-  TaxOnRefundsWrapper,
   VATUnclaimedBackWrapper,
   NoVATPurchasesWrapper,
   VAT20ReturnSummaryWrapper,
@@ -105,8 +104,8 @@ export default function TaxAnalyticsPage() {
 
         {/* VAT Trend Charts - 2 column grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <VATTrendChartWrapper />
           <MonthlyTaxTrendChartWrapper />
+          <VATTrendChartWrapper />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
@@ -115,9 +114,8 @@ export default function TaxAnalyticsPage() {
         </div>
 
         {/* Supplementary tax cards - 3 column grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1">
           <TDSOnRentWrapper />
-          <TaxOnRefundsWrapper />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">

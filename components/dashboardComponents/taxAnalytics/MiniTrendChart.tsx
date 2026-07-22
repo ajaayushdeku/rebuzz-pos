@@ -16,6 +16,8 @@ export interface VatStat {
   trend: "up" | "down";
   chartColor: "green" | "red" | "blue";
   sparkline: number[];
+  /** Shown on hover to explain what the card represents. */
+  description: string;
 }
 
 interface MiniTrendChartProps {
@@ -41,6 +43,8 @@ export const vatStats: VatStat[] = [
     trend: "up",
     chartColor: "green",
     sparkline: [18, 19, 19, 20, 22, 24, 23, 26, 28, 29],
+    description:
+      "Total revenue this month before any deductions. Higher sales means more VAT to collect and remit.",
   },
   {
     id: "collected",
@@ -50,6 +54,8 @@ export const vatStats: VatStat[] = [
     trend: "down",
     chartColor: "red",
     sparkline: [25, 26, 27, 28, 29, 28, 27, 29, 30, 30],
+    description:
+      "VAT you charged customers at 13%. This money belongs to IRD — you're holding it on their behalf.",
   },
   {
     id: "purchase",
@@ -59,6 +65,7 @@ export const vatStats: VatStat[] = [
     trend: "up",
     chartColor: "green",
     sparkline: [16, 16, 16, 16, 16, 18, 16, 20, 20, 20],
+    description: "2.1% vs last month",
   },
   {
     id: "payable",
@@ -68,6 +75,8 @@ export const vatStats: VatStat[] = [
     trend: "down",
     chartColor: "red",
     sparkline: [20, 21, 22, 23, 24, 24, 23, 26, 26, 26],
+    description:
+      "What you actually owe IRD = Output VAT − Input VAT − Refunds. This is your real tax bill.",
   },
 ];
 

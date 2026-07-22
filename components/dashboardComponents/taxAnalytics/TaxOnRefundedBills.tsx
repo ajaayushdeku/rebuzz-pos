@@ -47,7 +47,7 @@ const TaxOnRefundedBills = ({
           Failed to load Highest Tax Generated
         </p>
       ) : data.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12">
+        <div className="flex flex-col items-center justify-center pb-4">
           <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
             <RefreshCcw size={24} className="text-gray-300" />
           </div>

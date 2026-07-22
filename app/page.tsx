@@ -95,6 +95,7 @@ import {
   Zap,
 } from "lucide-react";
 import NavbarWelcome from "@/components/NavbarWelcome";
+import ServerEnvBadge from "@/components/ServerEnvBadge";
 
 const FEATURES = [
   {
@@ -168,6 +169,7 @@ const Page = async () => {
           <span className="text-gray-900 text-lg font-bold tracking-tight">
             ReBuzz
           </span>
+          <ServerEnvBadge className="ml-1" />
         </div>
 
         {token ? (

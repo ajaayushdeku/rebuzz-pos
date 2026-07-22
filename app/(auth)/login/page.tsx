@@ -9,6 +9,7 @@ import Divider from "@/components/Divider";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import loginUser from "@/services/authServices/apiLogin";
+import ServerEnvBadge from "@/components/ServerEnvBadge";
 
 type LoginFormValues = {
   email: string;
@@ -75,10 +76,11 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white px-6 font-sans">
       {/* Logo Section */}
-      <div className="mb-6 md:mb-10 flex items-center gap-2">
+      <div className="mb-6 md:mb-10 flex flex-col items-center gap-3">
         <span className="text-2xl text-blue-900 font-bold tracking-tight">
           <Link href="/">Rebuzz</Link>
         </span>
+        <ServerEnvBadge />
       </div>
 
       {/* Header */}

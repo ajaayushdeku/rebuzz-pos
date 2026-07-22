@@ -8,18 +8,31 @@ import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 
 interface VatStatCardProps {
   stat: VatStat;
+  /** Show the "feature unavailable" overlay (API not ready yet). */
+  locked?: boolean;
 }
 
-export default function VatStatCard({ stat }: VatStatCardProps) {
+export default function VatStatCard({
+  stat,
+  locked = false,
+}: VatStatCardProps) {
   const { currency } = useCurrency();
 
   const isPositive = stat.trend === "up";
 
   return (
     <div
-      className=" relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg
+      className=" group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg
       "
     >
+      {/* Hover info — slides up from the bottom on hover (hidden when locked) */}
+      {!locked && stat.description && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 p-3">
+          <div className="rounded-xl bg-slate-900/95 px-3 py-2.5 text-[11px] leading-relaxed text-white shadow-lg opacity-0 translate-y-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
+            {stat.description}
+          </div>
+        </div>
+      )}
       {/* Background Glow */}
       <div
         className=" absolute -top-20 -left-10 h-48 w-48 rounded-full bg-emerald-50 blur-3xl opacity-70
@@ -39,7 +52,10 @@ export default function VatStatCard({ stat }: VatStatCardProps) {
             {stat.title}
           </h3>
 
-          <Info size={15} className="text-slate-300" />
+          <Info
+            size={15}
+            className="text-slate-300 transition-colors group-hover:text-slate-500"
+          />
         </div>
 
         {/* Value */}
@@ -82,6 +98,8 @@ export default function VatStatCard({ stat }: VatStatCardProps) {
           </div>
         </div>
       </div>
+
+      {locked && <LockDimFeactureOverlay component_name="VAT Stat Cards" />}
     </div>
   );
 }

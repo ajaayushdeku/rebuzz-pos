@@ -5,6 +5,7 @@ import User from "./User";
 import HelpButton from "./HelpButton";
 import MobileButton from "./MobileButton";
 import { useBusiness } from "@/hooks/useBusiness";
+import ServerEnvBadge from "@/components/ServerEnvBadge";
 // import { Button } from "../ui/button";
 // import { Badge, Bell } from "lucide-react";
 
@@ -19,9 +20,11 @@ export default function Navbar() {
           <div className="text-xl font-semibold text-blue-600">
             <Link href="/">Rebuzz</Link>
           </div>
+          <ServerEnvBadge className="hidden sm:inline-flex" />
         </div>
 
         <div className="flex items-center gap-3">
+          <ServerEnvBadge className="sm:hidden" />
           {/* <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5 text-gray-600" />
             <Badge
