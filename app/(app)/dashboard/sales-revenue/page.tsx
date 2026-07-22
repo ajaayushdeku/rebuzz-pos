@@ -140,7 +140,10 @@ export default async function Page({
         <div className="grid grid-cols-1 gap-4">
           <ChartErrorBoundary>
             <Suspense fallback={<ChartSkeleton />}>
-              <TimeWiseProductAnalysisWrapper />
+              <TimeWiseProductAnalysisWrapper
+                startDate={startDate}
+                endDate={endDate}
+              />
             </Suspense>
           </ChartErrorBoundary>
         </div>

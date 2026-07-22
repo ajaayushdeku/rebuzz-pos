@@ -18,7 +18,6 @@ import SalesRecommendationsAlerts from "../dashboardComponents/salesRevenue/Sale
 import {
   mockCampaignAnalysis,
   mockPriceChangeImpact,
-  mockTimeWiseProductData,
 } from "@/lib/mockData/mockInsightData";
 
 export function TopProductsWrapper({
@@ -92,8 +91,16 @@ export function PriceChangeImpactWrapper() {
   return <PriceChangeImpact data={mockPriceChangeImpact} />;
 }
 
-export function TimeWiseProductAnalysisWrapper() {
-  return <TimeWiseProductAnalysis data={mockTimeWiseProductData} />;
+export function TimeWiseProductAnalysisWrapper({
+  startDate,
+  endDate,
+}: {
+  startDate: string;
+  endDate: string;
+}) {
+  // Fetches transactions for the global date range client-side and buckets
+  // them into time-of-day windows.
+  return <TimeWiseProductAnalysis startDate={startDate} endDate={endDate} />;
 }
 
 export function SalesRecommendationsAlertsWrapper() {
