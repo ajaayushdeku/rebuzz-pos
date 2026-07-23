@@ -38,6 +38,8 @@ export async function GET() {
     const monthlyRevenue: { monthStart: string; totalRevenue: number }[] =
       compareRes.data?.data ?? [];
 
+    console.log("Monthly Sales:", monthlyRevenue);
+
     const revenueMap = new Map<string, number>();
     for (const m of monthlyRevenue) {
       const label = new Date(m.monthStart + "T00:00:00").toLocaleDateString(

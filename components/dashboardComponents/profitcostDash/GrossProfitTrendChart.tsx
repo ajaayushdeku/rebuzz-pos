@@ -13,9 +13,7 @@ import {
 } from "recharts";
 import { formatCurrencySymbol, formatCompactNumber } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { mockGrossProfitTrendData } from "@/lib/mockData/mock-profitcostdata";
 import { CustomTooltipProps } from "@/lib/types/chart";
-import SampleDataBadge from "@/components/ui/sampledatabadge";
 import { ComponentHeader } from "@/components/ComponentHeader";
 
 export interface ProfitTrendData {
@@ -128,13 +126,11 @@ export default function GrossProfitTrendChart() {
     !data ||
     data.length === 0 ||
     data.every((d) => d.grossRevenue === 0 && d.netProfit === 0);
-  const displayData = isEmpty ? mockGrossProfitTrendData : data;
-  const showSampleBadge = isEmpty && !isLoading;
 
   const formatYAxis = (value: number): string =>
     `${currency.symbol} ${formatCompactNumber(value)}`;
 
-  const yTicks = getYAxisTicks(displayData);
+  const yTicks = getYAxisTicks(data);
   const yMax = yTicks[yTicks.length - 1] * 1.05;
 
   if (isLoading)
@@ -158,8 +154,6 @@ export default function GrossProfitTrendChart() {
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full ">
-      {showSampleBadge && <SampleDataBadge />}
-
       <div className="mb-6">
         <ComponentHeader
           title="Gross vs Net Profit Trend"
@@ -167,63 +161,69 @@ export default function GrossProfitTrendChart() {
         />
       </div>
 
-      <div className="h-44 sm:h-56 md:h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={displayData}
-            margin={{ top: 10, right: 20, left: 10, bottom: 10 }}
-          >
-            <CartesianGrid vertical={false} stroke="#f3f4f6" />
+      {isEmpty ? (
+        <div className="flex items-center justify-center h-44 sm:h-56 md:h-64 text-sm text-gray-400">
+          No profit data for this period yet.
+        </div>
+      ) : (
+        <div className="h-44 sm:h-56 md:h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={data}
+              margin={{ top: 10, right: 20, left: 10, bottom: 10 }}
+            >
+              <CartesianGrid vertical={false} stroke="#f3f4f6" />
 
-            <YAxis
-              tickFormatter={formatYAxis}
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 12 }}
-              ticks={yTicks}
-              domain={[0, yMax]}
-              width={52}
-            />
-            <Tooltip content={<CustomTooltip currency={currency} />} />
-            <Legend content={<CustomLegend />} />
-            <Line
-              type="monotone"
-              dataKey="grossRevenue"
-              name="Gross Revenue"
-              stroke="#60a5fa"
-              strokeWidth={2.5}
-              dot={{ r: 4, fill: "#60a5fa", stroke: "#fff", strokeWidth: 2 }}
-              activeDot={{
-                r: 6,
-                fill: "#60a5fa",
-                stroke: "#fff",
-                strokeWidth: 2,
-              }}
-            />
-            <Line
-              type="monotone"
-              dataKey="netProfit"
-              name="Net Profit"
-              stroke="#34d399"
-              strokeWidth={2.5}
-              dot={{ r: 4, fill: "#34d399", stroke: "#fff", strokeWidth: 2 }}
-              activeDot={{
-                r: 6,
-                fill: "#34d399",
-                stroke: "#fff",
-                strokeWidth: 2,
-              }}
-            />
-            <XAxis
-              dataKey="month"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 12 }}
-              dy={8}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+              <YAxis
+                tickFormatter={formatYAxis}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#9ca3af", fontSize: 12 }}
+                ticks={yTicks}
+                domain={[0, yMax]}
+                width={52}
+              />
+              <Tooltip content={<CustomTooltip currency={currency} />} />
+              <Legend content={<CustomLegend />} />
+              <Line
+                type="monotone"
+                dataKey="grossRevenue"
+                name="Gross Revenue"
+                stroke="#60a5fa"
+                strokeWidth={2.5}
+                dot={{ r: 4, fill: "#60a5fa", stroke: "#fff", strokeWidth: 2 }}
+                activeDot={{
+                  r: 6,
+                  fill: "#60a5fa",
+                  stroke: "#fff",
+                  strokeWidth: 2,
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="netProfit"
+                name="Net Profit"
+                stroke="#34d399"
+                strokeWidth={2.5}
+                dot={{ r: 4, fill: "#34d399", stroke: "#fff", strokeWidth: 2 }}
+                activeDot={{
+                  r: 6,
+                  fill: "#34d399",
+                  stroke: "#fff",
+                  strokeWidth: 2,
+                }}
+              />
+              <XAxis
+                dataKey="month"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#9ca3af", fontSize: 12 }}
+                dy={8}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </div>
   );
 }

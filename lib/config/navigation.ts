@@ -1,6 +1,5 @@
 import {
   CreditCard,
-  ShoppingCart,
   Receipt,
   Gauge,
   LucideIcon,
@@ -8,22 +7,28 @@ import {
   Building2,
   User,
   Users,
+  UsersRound,
   Settings,
   Package,
+  Boxes,
   BadgePercent,
+  Gift,
   Tag,
   TrendingUp,
   HandCoins,
   UserCog,
-  ClipboardList,
   LayoutDashboard,
   FileText,
   Lock,
+  ShieldCheck,
   Award,
   ScanEye,
   Coins,
-  BarChart3,
+  Landmark,
   PieChart,
+  Wallet,
+  Banknote,
+  History,
 } from "lucide-react";
 
 export type NavigationItem =
@@ -56,7 +61,7 @@ export const profileNavigationConfig: NavigationItem[] = [
   {
     type: "single",
     label: "Password & Security",
-    icon: Settings,
+    icon: ShieldCheck,
     href: "/profile/password",
   },
 ];
@@ -81,25 +86,25 @@ export const navigationConfig: NavigationItem[] = [
       {
         label: "Tax Analytics",
         href: "/dashboard/tax-analytics",
-        icon: Receipt,
+        icon: Landmark,
       },
       {
         label: "Expense Analytics",
         href: "/dashboard/expenses",
-        icon: BarChart3,
+        icon: PieChart,
       },
-      { label: "Inventory", href: "/dashboard/inventory", icon: Package },
-      { label: "Employee", href: "/dashboard/employee", icon: UserCog },
+      { label: "Inventory", href: "/dashboard/inventory", icon: Boxes },
+      { label: "Employee", href: "/dashboard/employee", icon: UsersRound },
       { label: "Customers", href: "/dashboard/customers", icon: Users },
     ],
   },
   {
     type: "section",
     label: "Sales & Payments",
-    icon: FileText,
+    icon: Banknote,
     items: [
       { label: "Invoices", href: "/records/invoices", icon: FileText },
-      { label: "Expenses", href: "/records/expenses", icon: CreditCard },
+      { label: "Expenses", href: "/records/expenses", icon: Wallet },
       {
         label: "Credits",
         href: "/records/credits",
@@ -108,7 +113,7 @@ export const navigationConfig: NavigationItem[] = [
       {
         label: "Order History",
         href: "/records/order-history",
-        icon: ShoppingCart,
+        icon: History,
       },
       { label: "Customers", href: "/records/customers", icon: Users },
       { label: "Products", href: "/records/products", icon: Package },
@@ -118,7 +123,7 @@ export const navigationConfig: NavigationItem[] = [
   {
     type: "single",
     label: "Offer",
-    icon: BadgePercent,
+    icon: Gift,
     href: "/offers",
   },
   {
