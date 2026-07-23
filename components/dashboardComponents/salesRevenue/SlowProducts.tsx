@@ -9,6 +9,8 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  RefreshCcw,
+  PackageCheck,
 } from "lucide-react";
 import { SlowProduct } from "./slow-product-columns";
 import { getDaysColor } from "@/lib/utils";
@@ -223,9 +225,19 @@ export default function SlowProducts({
               <tr>
                 <td
                   colSpan={4}
-                  className="text-center py-12 text-sm text-gray-400"
+                  className="text-center py-2 text-sm text-gray-400"
                 >
-                  No products found
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mb-3">
+                      <PackageCheck size={24} className="text-green-500" />
+                    </div>
+                    <p className="text-sm font-medium text-gray-500">
+                      No slow moving product data
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      All products sales are in good state.
+                    </p>
+                  </div>
                 </td>
               </tr>
             ) : (

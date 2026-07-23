@@ -94,7 +94,15 @@ function BreakdownSection({
       </h3>
 
       {colored.length === 0 ? (
-        <p className="text-sm text-gray-400 text-center py-10">{emptyLabel}</p>
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+            <RefreshCcw size={24} className="text-gray-500" />
+          </div>
+          <p className="text-sm font-medium text-gray-500">{emptyLabel}</p>
+          <p className="text-xs text-gray-400 mt-1">
+            Relevent data will appear here
+          </p>
+        </div>
       ) : (
         <div className="flex flex-col gap-6">
           {/* Donut */}

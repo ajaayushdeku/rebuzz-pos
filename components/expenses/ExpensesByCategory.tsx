@@ -82,7 +82,7 @@ export default function ExpensesByCategory() {
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-      <div className="mb-4">
+      <div className="mb-6">
         <ComponentHeader
           title="Expenses by Category"
           subHeader="Share of total expenses this month"
@@ -91,8 +91,8 @@ export default function ExpensesByCategory() {
 
       {expenseByPurpose.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-            <RefreshCcw size={24} className="text-gray-300" />
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+            <RefreshCcw size={24} className="text-gray-500" />
           </div>
           <p className="text-sm font-medium text-gray-500">No expense data</p>
           <p className="text-xs text-gray-400 mt-1">
@@ -100,7 +100,7 @@ export default function ExpensesByCategory() {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col sm:flex-row items-start gap-6">
+        <div className="flex flex-col sm:flex-row items-start gap-6 px-6">
           {/* ── Donut on the left ── */}
           <div className="shrink-0 w-full sm:w-48 flex justify-center">
             <ResponsiveContainer width={200} height={200}>

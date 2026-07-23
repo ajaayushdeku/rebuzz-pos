@@ -21,6 +21,7 @@ import type {
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { TaxRankedChartSkeleton } from "./TaxAnalyticsSkeletons";
 
 const BRIGHT_COLORS = [
   "#EF4444", // bright red
@@ -137,17 +138,15 @@ const TaxByCategory = ({
       />
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-8">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        </div>
+        <TaxRankedChartSkeleton />
       ) : isError ? (
         <p className="text-sm text-red-400 text-center py-16">
           Failed to load category tax data
         </p>
       ) : sorted.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-            <RefreshCcw size={24} className="text-gray-300" />
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+            <RefreshCcw size={24} className="text-gray-500" />
           </div>
           <p className="text-sm font-medium text-gray-500">
             No tax by category data

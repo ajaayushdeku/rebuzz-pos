@@ -4,8 +4,6 @@ import { Suspense, useState } from "react";
 import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import ChartSkeleton from "@/components/ui/chartskeleton";
-import TableSkeleton from "@/components/ui/tableskeleton";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import {
   DateRangeFilter,
@@ -22,6 +20,14 @@ import {
   PredictiveRestockingSuggestionsWrapper,
   ProductStockEditModalWrapper,
 } from "@/components/componentWrappers/InventoryWrapper";
+import {
+  InventoryAlertsSkeleton,
+  ProductCardGridSkeleton,
+  FastSlowMovingItemsSkeleton,
+  StockMovementChartSkeleton,
+  InventoryMovementAnalysisSkeleton,
+  PredictiveRestockingSkeleton,
+} from "@/components/dashboardComponents/inventoryDash/InventorySkeletons";
 
 /** Default revenue/profit window: last 30 days. */
 function getDefaultDateRange(): DateRangeValue {
@@ -30,20 +36,6 @@ function getDefaultDateRange(): DateRangeValue {
   const start = new Date(today);
   start.setDate(today.getDate() - 29);
   return { startDate: toStr(start), endDate: toStr(today) };
-}
-
-/** Grid of placeholder cards while the product grid loads. */
-function ProductGridSkeleton() {
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div
-          key={i}
-          className="h-56 rounded-xl border border-gray-100 bg-gray-50 animate-pulse"
-        />
-      ))}
-    </div>
-  );
 }
 
 export default function InventoryPage() {
@@ -95,13 +87,13 @@ export default function InventoryPage() {
         />
 
         <ChartErrorBoundary>
-          <Suspense fallback={<TableSkeleton rows={2} />}>
+          <Suspense fallback={<InventoryAlertsSkeleton />}>
             <InventoryAlertsWrapper />
           </Suspense>
         </ChartErrorBoundary>
 
         <ChartErrorBoundary>
-          <Suspense fallback={<ProductGridSkeleton />}>
+          <Suspense fallback={<ProductCardGridSkeleton />}>
             <ProductCardGridWrapper
               startDate={dateRange.startDate}
               endDate={dateRange.endDate}
@@ -110,7 +102,7 @@ export default function InventoryPage() {
         </ChartErrorBoundary>
 
         <ChartErrorBoundary>
-          <Suspense fallback={<TableSkeleton rows={4} />}>
+          <Suspense fallback={<FastSlowMovingItemsSkeleton />}>
             <FastSlowMovingItemsWrapper />
           </Suspense>
         </ChartErrorBoundary>
@@ -120,20 +112,20 @@ export default function InventoryPage() {
 
         <div className="flex flex-col lg:flex-row gap-6 ">
           <ChartErrorBoundary>
-            <Suspense fallback={<ChartSkeleton />}>
+            <Suspense fallback={<StockMovementChartSkeleton />}>
               <StockMovementChartWrapper />
             </Suspense>
           </ChartErrorBoundary>
 
           <ChartErrorBoundary>
-            <Suspense fallback={<ChartSkeleton />}>
+            <Suspense fallback={<InventoryMovementAnalysisSkeleton />}>
               <InventoryMovementAnalysisWrapper />
             </Suspense>
           </ChartErrorBoundary>
         </div>
 
         <ChartErrorBoundary>
-          <Suspense fallback={<TableSkeleton rows={4} />}>
+          <Suspense fallback={<PredictiveRestockingSkeleton />}>
             <PredictiveRestockingSuggestionsWrapper />
           </Suspense>
         </ChartErrorBoundary>

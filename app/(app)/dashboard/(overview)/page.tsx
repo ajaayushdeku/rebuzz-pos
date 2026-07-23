@@ -97,7 +97,7 @@ const Page = async ({
             </Suspense>
           </ChartErrorBoundary>
 
-          <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6">
             <ChartErrorBoundary>
               <Suspense fallback={<WeeklyRevenueChartSkeleton />}>
                 <WeeklyRevenueChartWrapper />
@@ -115,7 +115,7 @@ const Page = async ({
             </ChartErrorBoundary>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6">
             <ChartErrorBoundary>
               <Suspense fallback={<HourlySalesTrendSkeleton />}>
                 <HourlySalesTrendWrapper />

@@ -18,6 +18,7 @@ import type { CustomTooltipProps } from "@/lib/types/chart";
 import type { CompareSalesPoint } from "@/services/dashboardServices/apiSalesCompare";
 import { useSalesTrends } from "@/hooks/useSalesTrends";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import ChartSkeleton from "@/components/ui/chartskeleton";
 
 // Types
 type ViewMode = "daily" | "weekly" | "monthly";
@@ -77,13 +78,13 @@ const VIEW_OPTIONS: {
 ];
 
 // Loading skeleton
-const ChartSkeleton = () => (
-  <div className="animate-pulse space-y-3 p-4">
-    <div className="h-4 bg-gray-200 rounded w-1/3" />
-    <div className="h-3 bg-gray-200 rounded w-1/2" />
-    <div className="h-55 sm:h-75 bg-gray-100 rounded-xl mt-4" />
-  </div>
-);
+// const ChartSkeleton = () => (
+//   <div className="animate-pulse space-y-3 p-4">
+//     <div className="h-4 bg-gray-200 rounded w-1/3" />
+//     <div className="h-3 bg-gray-200 rounded w-1/2" />
+//     <div className="h-55 sm:h-75 bg-gray-100 rounded-xl mt-4" />
+//   </div>
+// );
 
 // Chart
 
@@ -141,11 +142,11 @@ export default function SalesTrendChart() {
       )}
 
       {/* Empty state */}
-      {!isLoading && !isError && (!rawData || rawData.length === 0) && (
+      {/* {!isLoading && !isError && (!rawData || rawData.length === 0) && (
         <div className="flex items-center justify-center h-55 sm:h-75 text-gray-400">
           <p className="text-sm">No sales data available</p>
         </div>
-      )}
+      )} */}
 
       {/* Chart */}
       {!isLoading && !isError && rawData && rawData.length > 0 && (

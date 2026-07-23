@@ -1,8 +1,7 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
-
 import { ExpenseTrackerProvider, useTracker } from "@/providers/ExpenseContext";
+import { ExpenseAnalyticsSkeleton } from "@/components/expenses/ExpenseAnalyticsSkeletons";
 import ExpenseBudgetGauges from "@/components/expenses/ExpenseBudgetGauges";
 import ExpensesByCategory from "@/components/expenses/ExpensesByCategory";
 import BudgetVsActual from "@/components/expenses/BudgetVsActual";
@@ -14,17 +13,6 @@ import HiddenCostLeaks from "@/components/expenses/HiddenCostLeaks";
 
 function ExpenseAnalyticsPage() {
   const { isLoading } = useTracker();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex items-center gap-2 text-gray-400 text-sm">
-          <Loader2 size={16} className="animate-spin" />
-          Loading your data...
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
@@ -40,14 +28,22 @@ function ExpenseAnalyticsPage() {
             </p>
           </div>
         </div>
+
         {/* ── Charts & visual analytics ── */}
-        <ExpenseBudgetGauges /> <ExpensesByCategory />
-        <BudgetVsActual />
-        <MonthlyExpenseTrend />
-        <CashFlowTrend />
-        <CostHealth />
-        <WhereMoneyGoes />
-        <HiddenCostLeaks />
+        {isLoading ? (
+          <ExpenseAnalyticsSkeleton />
+        ) : (
+          <>
+            <ExpenseBudgetGauges />
+            <ExpensesByCategory />
+            <BudgetVsActual />
+            <MonthlyExpenseTrend />
+            <CashFlowTrend />
+            <CostHealth />
+            <WhereMoneyGoes />
+            <HiddenCostLeaks />
+          </>
+        )}
       </div>
     </div>
   );

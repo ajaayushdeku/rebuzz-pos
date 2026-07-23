@@ -6,7 +6,7 @@ import {
   type DateRangeValue,
 } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
 import type {
   StaffOverview,
@@ -23,6 +23,7 @@ import BillsSection from "@/components/dashboardComponents/staffDash/staffDetail
 import PerformanceRadar from "@/components/dashboardComponents/staffDash/staffDetail/PerformanceRadar";
 import TopItemsSales from "@/components/dashboardComponents/staffDash/staffDetail/TopItemsSales";
 import InvoiceListSection from "@/components/dashboardComponents/staffDash/staffDetail/InvoiceListSection";
+import { StaffDetailSkeleton } from "@/components/dashboardComponents/staffDash/staffDetail/StaffDetailSkeletons";
 import { CustomerAvatar } from "@/components/customer/CustomerAvatar";
 
 export interface StaffUser {
@@ -279,19 +280,6 @@ export default function StaffDetailPage() {
     setModalError(null);
   }, []);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50/50">
-        <div className="flex items-center">
-          <Loader2 size={24} className="animate-spin text-blue-500" />
-          <span className="ml-3 text-sm text-gray-500">
-            Loading employee details...
-          </span>
-        </div>
-      </div>
-    );
-  }
-
   return (
     // <div className="min-h-screen bg-gray-50/50 px-6 py-8 md:px-10">
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
@@ -334,57 +322,66 @@ export default function StaffDetailPage() {
           <DateRangeFilter value={dateRange} onChange={handleDateRangeChange} />
         </div>
 
-        <StatsCardGrid
-          overview={overview}
-          totalPayIn={totalPayIn}
-          totalPayOut={totalPayOut}
-          showOnlyOrders={employeeRole === "staff"}
-          loading={loading}
-          error={overviewError}
-          onRetry={() => setOverviewReload((n) => n + 1)}
-        />
-
-        {employeeRole !== "staff" && (
-          <div className="flex flex-col gap-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 ">
-              <div className="lg:col-span-1">
-                <WeeklySalesChart employeeId={employeeId} />
-              </div>
-              <div className="lg:col-span-1">
-                <PerformanceRadar
-                  employeeId={employeeId}
-                  avgTime={avgTime}
-                  dateRange={dateRange}
-                />
-              </div>
-            </div>
-
-            <TopItemsSales employeeId={employeeId} dateRange={dateRange} />
-
-            <ShiftsSection
-              shifts={shifts}
-              shiftLoading={shiftLoading}
-              shiftError={shiftError}
-              onRetry={() => setShiftReload((n) => n + 1)}
-              shiftPage={shiftPage}
-              pageSize={pageSize}
-              shiftPages={shiftPages}
-              onPageChange={setShiftPage}
-              onFetchShiftDetail={fetchShiftDetail}
-              modalOpen={modalOpen}
-              modalDetail={modalDetail}
-              modalLoading={modalLoading}
-              modalError={modalError}
-              onModalClose={handleModalClose}
+        {loading ? (
+          <StaffDetailSkeleton />
+        ) : (
+          <>
+            <StatsCardGrid
+              overview={overview}
+              totalPayIn={totalPayIn}
+              totalPayOut={totalPayOut}
+              showOnlyOrders={employeeRole === "staff"}
+              loading={loading}
+              error={overviewError}
+              onRetry={() => setOverviewReload((n) => n + 1)}
             />
 
-            <BillsSection employeeId={employeeId} dateRange={dateRange} />
-          </div>
-        )}
+            {employeeRole !== "staff" && (
+              <div className="flex flex-col gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 ">
+                  <div className="lg:col-span-1">
+                    <WeeklySalesChart employeeId={employeeId} />
+                  </div>
+                  <div className="lg:col-span-1">
+                    <PerformanceRadar
+                      employeeId={employeeId}
+                      avgTime={avgTime}
+                      dateRange={dateRange}
+                    />
+                  </div>
+                </div>
 
-        <div className="mt-6">
-          <InvoiceListSection employeeId={employeeId} dateRange={dateRange} />
-        </div>
+                <TopItemsSales employeeId={employeeId} dateRange={dateRange} />
+
+                <ShiftsSection
+                  shifts={shifts}
+                  shiftLoading={shiftLoading}
+                  shiftError={shiftError}
+                  onRetry={() => setShiftReload((n) => n + 1)}
+                  shiftPage={shiftPage}
+                  pageSize={pageSize}
+                  shiftPages={shiftPages}
+                  onPageChange={setShiftPage}
+                  onFetchShiftDetail={fetchShiftDetail}
+                  modalOpen={modalOpen}
+                  modalDetail={modalDetail}
+                  modalLoading={modalLoading}
+                  modalError={modalError}
+                  onModalClose={handleModalClose}
+                />
+
+                <BillsSection employeeId={employeeId} dateRange={dateRange} />
+              </div>
+            )}
+
+            <div className="mt-6">
+              <InvoiceListSection
+                employeeId={employeeId}
+                dateRange={dateRange}
+              />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

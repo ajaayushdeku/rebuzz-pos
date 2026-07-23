@@ -5,6 +5,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { RefreshCcw, TrendingDown, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { TaxRefundStatsSkeleton } from "./TaxAnalyticsSkeletons";
 
 interface RefundTaxItem {
   billNumber: string;
@@ -39,17 +40,15 @@ const TaxOnRefundedBills = ({
       />
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-8">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        </div>
+        <TaxRefundStatsSkeleton />
       ) : isError ? (
         <p className="text-sm text-red-400 text-center py-16">
           Failed to load Highest Tax Generated
         </p>
       ) : data.length === 0 ? (
         <div className="flex flex-col items-center justify-center pb-4">
-          <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-            <RefreshCcw size={24} className="text-gray-300" />
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+            <RefreshCcw size={24} className="text-gray-500" />
           </div>
           <p className="text-sm font-medium text-gray-500">No refunded bills</p>
           <p className="text-xs text-gray-400 mt-1">

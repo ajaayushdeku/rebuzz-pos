@@ -2,11 +2,12 @@
 
 import { useMemo } from "react";
 import { mockWhereMoneyGoesData } from "@/lib/mockData/mock-expense-data";
-import { Zap } from "lucide-react";
+import { RefreshCcw, Zap } from "lucide-react";
 import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
 import { PURPOSE_COLORS, useTracker } from "@/providers/ExpenseContext";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { ComponentHeader } from "../ComponentHeader";
 
 export default function WhereMoneyGoes() {
   const { currency } = useCurrency();
@@ -73,21 +74,32 @@ export default function WhereMoneyGoes() {
   return (
     <div className="flex flex-col gap-2">
       {/* Section header */}
-      <h2 className="text-sm font-bold text-gray-900">Where the money goes</h2>
-      <p className="text-xs text-gray-400 mb-3">
-        Category breakdown and top vendor concentration
-      </p>
+
+      <div className="mb-4">
+        {" "}
+        <ComponentHeader
+          title="Where the money goes"
+          subHeader=" Category breakdown and top vendor concentration"
+        />
+      </div>
 
       <div className=" grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* ── Spend by category ── */}
         <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-          <h3 className="text-sm font-bold text-gray-900 mb-4">
-            Spend by category
-          </h3>
+          <ComponentHeader title=" Spend by category" subHeader="" />
 
           {categorySpend.length === 0 ? (
-            <div className="py-8 text-center text-sm text-gray-400">
-              No expenses recorded yet.
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                <RefreshCcw size={24} className="text-gray-500" />
+              </div>
+              <p className="text-sm font-medium text-gray-500">
+                {" "}
+                No expenses recorded yet.
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                Category Expense data will appear here
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -144,10 +156,10 @@ export default function WhereMoneyGoes() {
         <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
           <LockDimFeactureOverlay component_name="Top Suppliers" />
 
-          <div>
-            <h3 className="text-sm font-bold text-gray-900">Top suppliers</h3>
-            <p className="text-xs text-gray-400 mt-0.5">Who you pay the most</p>
-          </div>
+          <ComponentHeader
+            title="Top Suppliers"
+            subHeader="Who you pay the most"
+          />
 
           <div className="space-y-4">
             {d.topSuppliers.map((supplier) => (

@@ -345,75 +345,70 @@ export default function GrossVsCOGSVsNetProfit({
       <div
         className={`transition-opacity duration-200 ${isFetching ? "opacity-60" : "opacity-100"}`}
       >
-        {isFetching && chartData.length === 0 ? (
+        {/* {isFetching && chartData.length === 0 ? (
           <div className="h-56 sm:h-72 flex items-end pb-4">
             <div className="w-full">
               <ChartSkeleton />
             </div>
           </div>
-        ) : (
-          <div className="h-56 sm:h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={displayData}
-                margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
-                barCategoryGap="20%"
-                barGap={3}
-              >
-                <CartesianGrid vertical={false} stroke="#f3f4f6" />
+        ) : ( */}
+        <div className="h-56 sm:h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={displayData}
+              margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+              barCategoryGap="20%"
+              barGap={3}
+            >
+              <CartesianGrid vertical={false} stroke="#f3f4f6" />
 
-                <XAxis
-                  dataKey="category"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: "#9ca3af", fontSize: 11 }}
-                  dy={8}
-                  interval={0}
-                  // Truncate long category names on X axis
-                  tickFormatter={(val: string) =>
-                    val.length > 10 ? val.slice(0, 9) + "…" : val
-                  }
-                />
+              <XAxis
+                dataKey="category"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#9ca3af", fontSize: 11 }}
+                dy={8}
+                interval={0}
+                // Truncate long category names on X axis
+                tickFormatter={(val: string) =>
+                  val.length > 10 ? val.slice(0, 9) + "…" : val
+                }
+              />
 
-                <YAxis
-                  tickFormatter={formatYAxis}
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: "#9ca3af", fontSize: 12 }}
-                  ticks={yTicks}
-                  domain={[yAxisMin, yAxisMax]}
-                  width={58}
-                />
+              <YAxis
+                tickFormatter={formatYAxis}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#9ca3af", fontSize: 12 }}
+                ticks={yTicks}
+                domain={[yAxisMin, yAxisMax]}
+                width={58}
+              />
 
-                <Tooltip
-                  content={<CustomTooltip currency={currency} />}
-                  cursor={{ fill: "rgba(0,0,0,0.03)" }}
-                />
+              <Tooltip
+                content={<CustomTooltip currency={currency} />}
+                cursor={{ fill: "rgba(0,0,0,0.03)" }}
+              />
 
-                <Legend content={<CustomLegend />} />
+              <Legend content={<CustomLegend />} />
 
-                <Bar
-                  dataKey="grossRevenue"
-                  name="Gross Revenue"
-                  shape={GrossRevenueBar}
-                  fill="#9ca3af"
-                />
-                <Bar
-                  dataKey="cogs"
-                  name="COGS"
-                  shape={COGSBar}
-                  fill="#f472b6"
-                />
-                <Bar
-                  dataKey="netProfit"
-                  name="Net Profit"
-                  shape={NetProfitBar}
-                  fill="#60a5fa"
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        )}
+              <Bar
+                dataKey="grossRevenue"
+                name="Gross Revenue"
+                shape={GrossRevenueBar}
+                fill="#9ca3af"
+              />
+              <Bar dataKey="cogs" name="COGS" shape={COGSBar} fill="#f472b6" />
+              <Bar
+                dataKey="netProfit"
+                name="Net Profit"
+                shape={NetProfitBar}
+                fill="#60a5fa"
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        {/* )} */}
       </div>
 
       {/* Pagination controls */}

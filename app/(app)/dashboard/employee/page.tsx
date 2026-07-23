@@ -4,10 +4,14 @@ import Link from "next/link";
 import { UserPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import StatSkeleton from "@/components/ui/statskeleton";
-import ChartSkeleton from "@/components/ui/chartskeleton";
 import TableSkeleton from "@/components/ui/tableskeleton";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
+import {
+  StaffStatsSkeleton,
+  StaffSalesChartSkeleton,
+  StaffRevenueSkeleton,
+  LatestShiftsSkeleton,
+} from "@/components/dashboardComponents/staffDash/StaffSkeletons";
 import { CalendarDateFilter } from "@/components/dashboardComponents/staffDash/CalendarDateFilter";
 import {
   ShiftAnalysisWrapper,
@@ -69,15 +73,7 @@ const Page = async ({
 
       <div className="flex flex-col gap-6">
         <ChartErrorBoundary>
-          <Suspense
-            fallback={
-              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-4">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <StatSkeleton key={i} />
-                ))}
-              </div>
-            }
-          >
+          <Suspense fallback={<StaffStatsSkeleton />}>
             <StaffStatWrapper
               range={range}
               startDate={hasCustomDates ? startDate : undefined}
@@ -87,7 +83,7 @@ const Page = async ({
         </ChartErrorBoundary>
 
         <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
+          <Suspense fallback={<StaffSalesChartSkeleton />}>
             <StaffSalesChartWrapper
               range={range}
               startDate={hasCustomDates ? startDate : undefined}
@@ -107,7 +103,7 @@ const Page = async ({
           </Suspense>
         </ChartErrorBoundary> */}
           <ChartErrorBoundary>
-            <Suspense fallback={<TableSkeleton rows={3} />}>
+            <Suspense fallback={<LatestShiftsSkeleton />}>
               <LatestShiftsWrapper
                 range={range}
                 startDate={hasCustomDates ? startDate : undefined}
@@ -117,7 +113,7 @@ const Page = async ({
           </ChartErrorBoundary>
 
           <ChartErrorBoundary>
-            <Suspense fallback={<ChartSkeleton />}>
+            <Suspense fallback={<StaffRevenueSkeleton />}>
               <StaffRevenueWrapper
                 range={range}
                 startDate={hasCustomDates ? startDate : undefined}

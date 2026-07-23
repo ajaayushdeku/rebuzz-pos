@@ -11,6 +11,7 @@ import {
   X,
   UserPlus,
   History,
+  RefreshCcw,
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -211,9 +212,19 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
               <tr>
                 <td
                   colSpan={7}
-                  className="text-center py-12 text-sm text-gray-400"
+                  className="text-center py-2 text-sm text-gray-400"
                 >
-                  No customers found
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                      <RefreshCcw size={24} className="text-gray-500" />
+                    </div>
+                    <p className="text-sm font-medium text-gray-500">
+                      No customer data
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Customer Leaderboard data will appear here
+                    </p>
+                  </div>
                 </td>
               </tr>
             ) : (

@@ -5,6 +5,7 @@ import { PURPOSE_COLORS, useTracker } from "@/providers/ExpenseContext";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "../ComponentHeader";
+import { RefreshCcw } from "lucide-react";
 
 function getPctStyle(pct: number): string {
   if (pct >= 100) return "bg-amber-100 text-amber-700";
@@ -83,8 +84,16 @@ export default function BudgetVsActual() {
       </div>
 
       {rows.length === 0 ? (
-        <div className="py-8 text-center text-sm text-gray-400">
-          No budgets set yet — use “Set Budget” to add thresholds.
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+            <RefreshCcw size={24} className="text-gray-500" />
+          </div>
+          <p className="text-sm font-medium text-gray-500">
+            No Budget vs Actual Expense data
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            No budgets set yet — use “Set Budget” to add thresholds.
+          </p>
         </div>
       ) : (
         <div className="overflow-x-auto">

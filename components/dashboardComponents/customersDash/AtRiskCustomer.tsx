@@ -11,6 +11,7 @@ import {
   X,
   History,
   Send,
+  RefreshCcw,
 } from "lucide-react";
 import { TriangleAlert } from "lucide-react";
 import CustomerHistoryModal from "@/components/dashboardComponents/customersDash/CustomerHistoryModal";
@@ -185,9 +186,19 @@ export default function AtRiskCustomer({
               <tr>
                 <td
                   colSpan={5}
-                  className="text-center py-12 text-sm text-gray-400"
+                  className="text-center py-2 text-sm text-gray-400"
                 >
-                  No customers found
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                      <RefreshCcw size={24} className="text-gray-500" />
+                    </div>
+                    <p className="text-sm font-medium text-gray-500">
+                      No at-risk customer found
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      At-risk customer data will appear here
+                    </p>
+                  </div>
                 </td>
               </tr>
             ) : (

@@ -87,7 +87,7 @@ const CustomLegend = () => (
 );
 
 const PeakDaysAnalysis = ({ data }: PeakDayDataProps) => {
-  const hasData = data.some((d) => d.averageOrders > 0 || d.averageSales > 0);
+  // const hasData = data.some((d) => d.averageOrders > 0 || d.averageSales > 0);
 
   // ── Y-axis for counts (integers) ──
   const formatYAxis = (value: number): string =>
@@ -127,62 +127,62 @@ const PeakDaysAnalysis = ({ data }: PeakDayDataProps) => {
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         <div style={{ minWidth: 560 }}>
-          {hasData ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart
-                data={data}
-                margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
-                barCategoryGap="15%"
-                barGap={2}
-              >
-                <CartesianGrid vertical={false} stroke="#f3f4f6" />
+          {/* {hasData ? ( */}
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart
+              data={data}
+              margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+              barCategoryGap="15%"
+              barGap={2}
+            >
+              <CartesianGrid vertical={false} stroke="#f3f4f6" />
 
-                <XAxis
-                  dataKey="day"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: "#9ca3af", fontSize: 10 }}
-                  dy={8}
-                />
+              <XAxis
+                dataKey="day"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#9ca3af", fontSize: 10 }}
+                dy={8}
+              />
 
-                <YAxis
-                  tickFormatter={formatYAxis}
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: "#9ca3af", fontSize: 12 }}
-                  ticks={ticks}
-                  domain={[0, domainMax]}
-                  allowDecimals={false}
-                  width={45}
-                />
+              <YAxis
+                tickFormatter={formatYAxis}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#9ca3af", fontSize: 12 }}
+                ticks={ticks}
+                domain={[0, domainMax]}
+                allowDecimals={false}
+                width={45}
+              />
 
-                <Tooltip
-                  content={<CustomTooltip />}
-                  cursor={{ fill: "rgba(58,124,237,0.06)" }}
-                />
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={{ fill: "rgba(58,124,237,0.06)" }}
+              />
 
-                <Legend content={<CustomLegend />} />
+              <Legend content={<CustomLegend />} />
 
-                <Bar
-                  dataKey="averageOrders"
-                  name="Avg. Orders"
-                  shape={OrdersBar}
-                  fill={ORDERS_COLOR}
-                />
-                <Bar
-                  dataKey="averageSales"
-                  name="Avg. Sales"
-                  shape={SalesBar}
-                  fill={SALES_COLOR}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-              <p className="text-sm">No data for the selected period</p>
-              <p className="text-xs mt-1">Try adjusting the date range above</p>
-            </div>
-          )}
+              <Bar
+                dataKey="averageOrders"
+                name="Avg. Orders"
+                shape={OrdersBar}
+                fill={ORDERS_COLOR}
+              />
+              <Bar
+                dataKey="averageSales"
+                name="Avg. Sales"
+                shape={SalesBar}
+                fill={SALES_COLOR}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+          {/* // ) : (
+          //   <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+          //     <p className="text-sm">No data for the selected period</p>
+          //     <p className="text-xs mt-1">Try adjusting the date range above</p>
+          //   </div>
+          // )} */}
         </div>
       </div>
     </div>

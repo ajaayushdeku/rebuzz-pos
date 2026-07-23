@@ -172,8 +172,17 @@ export default function TopItemsSales({
             subHeader=" Units sold per item – fast vs slow movers"
           />
         </div>
-        <div className="flex items-center justify-center py-10 text-gray-400 text-sm">
-          No sales data available
+
+        <div className="text-center py-8">
+          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+            <TrendingUp size={24} className="text-gray-500" />
+          </div>
+          <p className="text-sm font-medium text-gray-500">
+            No sales data available
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            No top items sold data for this period
+          </p>
         </div>
       </div>
     );

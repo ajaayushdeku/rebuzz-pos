@@ -11,6 +11,7 @@ import type {
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { TaxableSplitSkeleton } from "./TaxAnalyticsSkeletons";
 
 interface TaxableBreakdown {
   taxableRevenue: number;
@@ -126,19 +127,19 @@ const TaxableVsNonTaxableItems = ({
       />
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-8">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        </div>
+        <TaxableSplitSkeleton />
       ) : isError ? (
         <p className="text-sm text-red-400 text-center py-16">
           Failed to load taxable & non-taxable items
         </p>
       ) : totalRevenue === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-            <RefreshCcw size={24} className="text-gray-300" />
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+            <RefreshCcw size={24} className="text-gray-500" />
           </div>
-          <p className="text-sm font-medium text-gray-500">No revenue data</p>
+          <p className="text-sm font-medium text-gray-500">
+            No taxable & non-taxable items revenue data
+          </p>
           <p className="text-xs text-gray-400 mt-1">
             Taxable & Non-Taxable Items will appear here
           </p>

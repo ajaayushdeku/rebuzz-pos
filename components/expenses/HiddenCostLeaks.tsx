@@ -5,6 +5,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { Info } from "lucide-react";
 import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
+import { ComponentHeader } from "../ComponentHeader";
 
 // ── Simple sparkline ───────────────────────────────────────────────────────
 function Sparkline({ up }: { up: boolean }) {
@@ -29,14 +30,10 @@ export default function HiddenCostLeaks() {
   return (
     <div className="flex flex-col gap-5">
       {/* Section header */}
-      <div>
-        <h2 className="text-sm font-bold text-gray-900">
-          Where money quietly leaks
-        </h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Costs most shops never track
-        </p>
-      </div>
+      <ComponentHeader
+        title="Where money quietly leaks"
+        subHeader="Costs most shops never track"
+      />
 
       {/* ── Top 3 cards ── */}
       <div className="relative grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -45,9 +42,8 @@ export default function HiddenCostLeaks() {
         <div className=" bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <span className="text-lg">🛵</span>
-            <h3 className="text-sm font-bold text-gray-900">
-              Delivery commission
-            </h3>
+
+            <ComponentHeader title="Delivery commission" subHeader="" />
           </div>
           <div>
             <p className="text-2xl font-bold text-red-500">
@@ -90,9 +86,8 @@ export default function HiddenCostLeaks() {
         <div className=" bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <span className="text-lg">🗑️</span>
-            <h3 className="text-sm font-bold text-gray-900">
-              Wastage & spoilage
-            </h3>
+
+            <ComponentHeader title="  Wastage & spoilaged" subHeader="" />
           </div>
           <div>
             <p className="text-2xl font-bold text-red-500">
@@ -122,7 +117,8 @@ export default function HiddenCostLeaks() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <span className="text-lg">🔥</span>
-            <h3 className="text-sm font-bold text-gray-900">LPG / gas spend</h3>
+
+            <ComponentHeader title=" LPG / gas spend" subHeader="" />
           </div>
           <div>
             <p className="text-2xl font-bold text-red-500">
@@ -141,12 +137,12 @@ export default function HiddenCostLeaks() {
 
       {/* Section divider */}
       <div>
-        <h3 className="text-sm font-bold text-gray-900 mb-0.5">
-          Connects to your tax dashboard
-        </h3>
-        <p className="text-xs text-gray-400 mb-4">
-          Two expense items that change what you owe
-        </p>
+        <div className="mb-4">
+          <ComponentHeader
+            title=" Connects to your tax dashboard"
+            subHeader="Two expense items that change what you owe"
+          />
+        </div>
 
         <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4">
           <LockDimFeactureOverlay component_name="Connection to Tax Dashboard" />
@@ -155,9 +151,11 @@ export default function HiddenCostLeaks() {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3">
             <div className="flex items-center gap-2">
               <span className="text-lg">📋</span>
-              <h3 className="text-sm font-bold text-gray-900">
-                VAT input credit (recoverable)
-              </h3>
+
+              <ComponentHeader
+                title=" VAT input credit (recoverable)"
+                subHeader=""
+              />
             </div>
             <p className="text-2xl font-bold text-blue-600">
               {fmtRs(d.vatInputCredit.amount)}

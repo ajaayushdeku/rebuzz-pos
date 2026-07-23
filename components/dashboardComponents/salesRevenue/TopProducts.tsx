@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  RefreshCcw,
 } from "lucide-react";
 import { TopProduct } from "./top-product-columns";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -192,9 +193,19 @@ export default function TopProducts({
               <tr>
                 <td
                   colSpan={7}
-                  className="text-center py-12 text-sm text-gray-400"
+                  className="text-center py-2 text-sm text-gray-400"
                 >
-                  No products found for selected date range
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
+                      <RefreshCcw size={24} className="text-gray-300" />
+                    </div>
+                    <p className="text-sm font-medium text-gray-500">
+                      No top selling product data
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Top selling products data will appear here
+                    </p>
+                  </div>
                 </td>
               </tr>
             ) : (

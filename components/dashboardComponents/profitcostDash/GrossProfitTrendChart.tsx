@@ -15,6 +15,7 @@ import { formatCurrencySymbol, formatCompactNumber } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { CustomTooltipProps } from "@/lib/types/chart";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import ChartSkeleton from "@/components/ui/chartskeleton";
 
 export interface ProfitTrendData {
   month: string;
@@ -93,13 +94,13 @@ const CustomLegend = () => (
 
 // ── Skeleton loader ───────────────────────────────────────────────────────
 
-const ChartSkeleton = () => (
-  <div className="animate-pulse space-y-3 p-4">
-    <div className="h-4 bg-gray-200 rounded w-1/3" />
-    <div className="h-3 bg-gray-200 rounded w-1/2" />
-    <div className="h-56 bg-gray-100 rounded-xl mt-4" />
-  </div>
-);
+// const ChartSkeleton = () => (
+//   <div className="animate-pulse space-y-3 p-4">
+//     <div className="h-4 bg-gray-200 rounded w-1/3" />
+//     <div className="h-3 bg-gray-200 rounded w-1/2" />
+//     <div className="h-56 bg-gray-100 rounded-xl mt-4" />
+//   </div>
+// );
 
 export default function GrossProfitTrendChart() {
   const { currency } = useCurrency();

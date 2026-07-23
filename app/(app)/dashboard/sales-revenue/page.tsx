@@ -7,6 +7,10 @@ import ChartSkeleton from "@/components/ui/chartskeleton";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 
 import SalesRevenueHeader from "@/components/dashboardComponents/salesRevenue/SalesRevenueHeader";
+import {
+  PeakHoursAnalysisSkeleton,
+  PeakDaysAnalysisSkeleton,
+} from "@/components/dashboardComponents/salesRevenue/SalesRevenueSkeletons";
 import { resolveRange } from "@/components/dashboardComponents/salesRevenue/salesRevenueRange";
 import {
   PeakHoursAnalysisWrapper,
@@ -102,7 +106,7 @@ export default async function Page({
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 gap-4">
           <div className="lg:col-span-1">
             <ChartErrorBoundary>
-              <Suspense fallback={<ChartSkeleton />}>
+              <Suspense fallback={<PeakHoursAnalysisSkeleton />}>
                 <PeakHoursAnalysisWrapper
                   startDate={startDate}
                   endDate={endDate}
@@ -113,7 +117,7 @@ export default async function Page({
 
           <div className="lg:col-span-1">
             <ChartErrorBoundary>
-              <Suspense fallback={<ChartSkeleton />}>
+              <Suspense fallback={<PeakDaysAnalysisSkeleton />}>
                 <PeakDaysAnalysisWrapper
                   startDate={startDate}
                   endDate={endDate}

@@ -771,8 +771,8 @@ export default function PerformanceRadar({
         </div>
 
         <div className="text-center py-8">
-          <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3">
-            <Radar size={24} className="text-gray-300" />
+          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+            <Radar size={24} className="text-gray-500" />
           </div>
           <p className="text-sm font-medium text-gray-500">
             No performance data found

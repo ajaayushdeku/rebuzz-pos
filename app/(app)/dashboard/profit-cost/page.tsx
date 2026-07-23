@@ -1,10 +1,14 @@
 import { Suspense } from "react";
 
-import StatSkeleton from "@/components/ui/statskeleton";
 import ChartSkeleton from "@/components/ui/chartskeleton";
 import TableSkeleton from "@/components/ui/tableskeleton";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import ProfitCostHeader from "@/components/dashboardComponents/profitcostDash/ProfitCostHeader";
+import {
+  ProfitStatsSkeleton,
+  ProfitPerProductSkeleton,
+  DayTimeProfitHeatmapSkeleton,
+} from "@/components/dashboardComponents/profitcostDash/ProfitCostSkeletons";
 import { resolveRange } from "@/components/dashboardComponents/profitcostDash/profitCostRange";
 import {
   GrossProfitTrendChartWrapper,
@@ -65,15 +69,7 @@ export default async function Page({
 
       <div className="flex flex-col gap-6">
         <ChartErrorBoundary>
-          <Suspense
-            fallback={
-              <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-4">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <StatSkeleton key={i} />
-                ))}
-              </div>
-            }
-          >
+          <Suspense fallback={<ProfitStatsSkeleton />}>
             <ProfitStatsWrapper
               startDate={effectiveStartDate}
               endDate={effectiveEndDate}
@@ -98,7 +94,7 @@ export default async function Page({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <ChartErrorBoundary>
-            <Suspense fallback={<TableSkeleton rows={4} />}>
+            <Suspense fallback={<ProfitPerProductSkeleton />}>
               <ProfitPerProductWrapper
                 startDate={effectiveStartDate}
                 endDate={effectiveEndDate}
@@ -175,7 +171,7 @@ export default async function Page({
         </div>
 
         <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
+          <Suspense fallback={<DayTimeProfitHeatmapSkeleton />}>
             <DayTimeProfitHeatmapWrapper
               startDate={effectiveStartDate}
               endDate={effectiveEndDate}

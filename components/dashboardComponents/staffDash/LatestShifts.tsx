@@ -238,10 +238,13 @@ export default function LatestShifts({
         </div>
       ) : filteredShifts.length === 0 ? (
         <div className="text-center py-12">
-          <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3">
-            <Clock size={20} className="text-gray-300" />
+          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+            <Clock size={24} className="text-gray-500" />
           </div>
           <p className="text-sm font-medium text-gray-500">No shifts found</p>
+          <p className="text-xs text-gray-400 mt-1">
+            Shift data will appear here
+          </p>
         </div>
       ) : (
         <>

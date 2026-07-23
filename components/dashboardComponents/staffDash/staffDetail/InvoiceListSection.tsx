@@ -275,8 +275,16 @@ export default function InvoiceListSection({
       </div>
 
       {displayTickets.length === 0 ? (
-        <div className="text-center py-8 text-sm text-gray-400">
-          No invoices found for this date range
+        <div className="text-center py-12">
+          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+            <FileText size={24} className="text-gray-500" />
+          </div>
+          <p className="text-sm font-medium text-gray-500">
+            No order/invoice data found
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            No invoices found for this date range
+          </p>
         </div>
       ) : (
         <div className="overflow-x-auto scrollbar-hide">

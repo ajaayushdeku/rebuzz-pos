@@ -183,8 +183,8 @@ export default function ExpenseBudgetGauges() {
 
         {gauges.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-              <Wallet size={20} className="text-gray-400" />
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+              <Wallet size={24} className="text-gray-500" />
             </div>
             <p className="text-sm font-medium text-gray-500">
               No budgets set yet

@@ -1,7 +1,5 @@
 import { Suspense } from "react";
 import TableSkeleton from "@/components/ui/tableskeleton";
-import ChartSkeleton from "@/components/ui/chartskeleton";
-import PieChartSkeleton from "@/components/ui/piechartskeleton";
 import StatSkeleton from "@/components/ui/statskeleton";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import CreateCustomerButton from "@/components/customer/CreateCustomerButton";
@@ -15,6 +13,12 @@ import {
   TopCustomersWrapper,
   ReferralTrackingWrapper,
 } from "@/components/componentWrappers/CustomersWrapper";
+import {
+  LoyaltyTierChartSkeleton,
+  CustomerSegmentationSkeleton,
+  CustomerTrendChartSkeleton,
+  CustomerTableSkeleton,
+} from "@/components/dashboardComponents/customersDash/CustomerSkeletons";
 
 function getPresetRange(range: string): { startDate: string; endDate: string } {
   const today = new Date();
@@ -112,7 +116,7 @@ export default async function Page({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-2">
             <ChartErrorBoundary>
-              <Suspense fallback={<ChartSkeleton />}>
+              <Suspense fallback={<LoyaltyTierChartSkeleton />}>
                 <LoyaltyTierChartWrapper />
               </Suspense>
             </ChartErrorBoundary>
@@ -120,7 +124,7 @@ export default async function Page({
 
           <div className="md:col-span-1">
             <ChartErrorBoundary>
-              <Suspense fallback={<PieChartSkeleton />}>
+              <Suspense fallback={<CustomerSegmentationSkeleton />}>
                 <CustomerSegmentationChartWrapper />
               </Suspense>
             </ChartErrorBoundary>
@@ -128,19 +132,21 @@ export default async function Page({
         </div>
 
         <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
+          <Suspense fallback={<CustomerTrendChartSkeleton />}>
             <CustomerTrendChartWrapper />
           </Suspense>
         </ChartErrorBoundary>
 
         <ChartErrorBoundary>
-          <Suspense fallback={<TableSkeleton rows={5} />}>
+          <Suspense fallback={<CustomerTableSkeleton titleWidth="w-36" />}>
             <TopCustomersWrapper />
           </Suspense>
         </ChartErrorBoundary>
 
         <ChartErrorBoundary>
-          <Suspense fallback={<TableSkeleton rows={5} />}>
+          <Suspense
+            fallback={<CustomerTableSkeleton titleWidth="w-40" withBadge />}
+          >
             <AtRiskCustomerWrapper />
           </Suspense>
         </ChartErrorBoundary>
