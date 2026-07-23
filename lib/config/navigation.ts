@@ -22,6 +22,8 @@ import {
   Award,
   ScanEye,
   Coins,
+  BarChart3,
+  PieChart,
 } from "lucide-react";
 
 export type NavigationItem =
@@ -81,6 +83,11 @@ export const navigationConfig: NavigationItem[] = [
         href: "/dashboard/tax-analytics",
         icon: Receipt,
       },
+      {
+        label: "Expense Analytics",
+        href: "/dashboard/expenses",
+        icon: BarChart3,
+      },
       { label: "Inventory", href: "/dashboard/inventory", icon: Package },
       { label: "Employee", href: "/dashboard/employee", icon: UserCog },
       { label: "Customers", href: "/dashboard/customers", icon: Users },
@@ -92,6 +99,7 @@ export const navigationConfig: NavigationItem[] = [
     icon: FileText,
     items: [
       { label: "Invoices", href: "/records/invoices", icon: FileText },
+      { label: "Expenses", href: "/records/expenses", icon: CreditCard },
       {
         label: "Credits",
         href: "/records/credits",
@@ -106,12 +114,7 @@ export const navigationConfig: NavigationItem[] = [
       { label: "Products", href: "/records/products", icon: Package },
     ],
   },
-  {
-    type: "single",
-    label: "Expense Analytics",
-    icon: ShoppingCart,
-    href: "/expenses",
-  },
+
   {
     type: "single",
     label: "Offer",

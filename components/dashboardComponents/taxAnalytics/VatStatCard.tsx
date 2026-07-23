@@ -22,7 +22,7 @@ export default function VatStatCard({
 
   return (
     <div
-      className=" group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg
+      className=" group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 
       "
     >
       {/* Hover info — slides up from the bottom on hover (hidden when locked) */}

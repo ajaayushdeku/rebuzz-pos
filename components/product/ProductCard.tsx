@@ -203,7 +203,7 @@ export default function ProductCard({
                   />
                 </div>
 
-                <div className="mt-1.5 flex items-center justify-between text-[10px]">
+                <div className="my-1.5 flex items-center justify-between text-[10px]">
                   <span className={`font-medium ${cfg.text}`}>
                     {status === "critical"
                       ? `Below threshold · min ${item.lowStock}`

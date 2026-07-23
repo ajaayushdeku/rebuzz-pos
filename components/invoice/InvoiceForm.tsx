@@ -259,7 +259,7 @@ export default function InvoiceForm({
         { invoiceNumber, ticketData },
         {
           onSuccess: () => {
-            toast.success("Invoice updated");
+            // toast.success("Invoice updated");
             router.push(`/invoices/${invoiceNumber}`);
           },
           onError: (err) => {
@@ -270,7 +270,7 @@ export default function InvoiceForm({
     } else {
       saveTicket(ticketData, {
         onSuccess: (response) => {
-          toast.success("Invoice saved");
+          // toast.success("Invoice saved");
           const newId = response?.data?.ticket?.invoice;
           if (newId) router.push(`/invoices/${newId}`);
         },
