@@ -110,13 +110,13 @@ export default function BudgetVsActual() {
                     className="w-2 h-2 rounded-full shrink-0"
                     style={{ backgroundColor: row.color }}
                   />
-                  <span className="text-sm text-gray-800 font-medium truncate">
+                  <span className="text-xs text-gray-800 font-medium truncate">
                     {row.category}
                   </span>
                 </div>
 
                 {/* Actual */}
-                <span className="text-sm font-bold text-gray-900 text-right">
+                <span className="text-xs font-bold text-gray-900 text-right">
                   {formatCurrencySymbol(
                     row.actual,
                     currency.symbol,
@@ -125,7 +125,7 @@ export default function BudgetVsActual() {
                 </span>
 
                 {/* Budget */}
-                <span className="text-sm text-gray-400 text-right">
+                <span className="text-xs text-gray-400 text-right">
                   {formatCurrencySymbol(
                     row.budget,
                     currency.symbol,

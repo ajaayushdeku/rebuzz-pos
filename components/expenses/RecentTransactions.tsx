@@ -11,6 +11,8 @@ import {
   Search,
   Trash2,
   ArrowUpDown,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { PURPOSE_COLORS, useTracker } from "@/providers/ExpenseContext";
 
@@ -32,6 +34,17 @@ export default function RecentTransactions() {
       setSortDir("desc");
     }
   };
+
+  const SortIcon = ({ colKey }: { colKey: SortKey }) =>
+    sort === colKey ? (
+      sortDir === "asc" ? (
+        <ChevronUp className="h-3 w-3" />
+      ) : (
+        <ChevronDown className="h-3 w-3" />
+      )
+    ) : (
+      <ArrowUpDown className="h-3 w-3 opacity-30" />
+    );
 
   const filtered = useMemo(() => {
     return transactions
@@ -55,10 +68,12 @@ export default function RecentTransactions() {
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      {/* ── Header: title + filter tabs + search ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <h3 className="text-sm font-semibold text-gray-900">
           Recent Transactions
         </h3>
+
         <div className="flex items-center gap-2 flex-wrap">
           {/* Filter tabs */}
           <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
@@ -76,114 +91,145 @@ export default function RecentTransactions() {
               </button>
             ))}
           </div>
+
           {/* Search */}
           <div className="relative">
             <Search
-              size={12}
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400"
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
             />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search..."
-              className="pl-7 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-36"
+              placeholder="Search by remarks or purpose..."
+              className="w-full sm:w-64 pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
             />
           </div>
         </div>
       </div>
 
-      {/* Column headers */}
-      <div className="grid grid-cols-12 text-xs text-gray-400 font-medium border-b border-gray-100 pb-2 mb-2">
-        <div className="col-span-4">Details</div>
-        <div className="col-span-3">Purpose</div>
-        <div
-          className="col-span-2 flex items-center gap-1 cursor-pointer hover:text-gray-600"
-          onClick={() => toggleSort("date")}
-        >
-          Date <ArrowUpDown size={11} />
-        </div>
-        <div
-          className="col-span-2 flex items-center justify-end gap-1 cursor-pointer hover:text-gray-600"
-          onClick={() => toggleSort("amount")}
-        >
-          Amount <ArrowUpDown size={11} />
-        </div>
-        <div className="col-span-1" />
-      </div>
-
-      {filtered.length === 0 ? (
-        <div className="text-center py-10 text-gray-400 text-sm">
-          No transactions found
-        </div>
-      ) : (
-        <div className="space-y-1">
-          {filtered.map((t) => {
-            const isExpense = t.type === "expense";
-            const Icon = isExpense ? TrendingDown : TrendingUp;
-            const color = isExpense ? "text-red-500" : "text-green-500";
-            const bg = isExpense ? "bg-red-50" : "bg-green-50";
-
-            return (
-              <div
-                key={t.id}
-                className="grid grid-cols-12 items-center py-2.5 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 rounded-lg px-1 transition-colors"
+      {/* ── Table ── */}
+      <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <table className="w-full text-sm min-w-[700px]">
+          <thead>
+            <tr className="text-xs text-gray-400 border-b border-gray-100">
+              <th className="text-left pb-3 pt-3 px-4 font-medium">Details</th>
+              <th className="text-left pb-3 pt-3 px-4 font-medium">Purpose</th>
+              <th
+                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                onClick={() => toggleSort("date")}
               >
-                <div className="col-span-4 flex items-center gap-2">
-                  <div
-                    className={`w-7 h-7 ${bg} rounded-lg flex items-center justify-center shrink-0`}
-                  >
-                    <Icon size={13} className={color} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium text-gray-800 truncate">
-                      {t.remarks || "—"}
-                    </p>
-                    {t.recurring && (
-                      <div className="flex items-center gap-0.5 mt-0.5">
-                        <RepeatIcon size={9} className="text-blue-400" />
-                        <span className="text-[10px] text-blue-400 capitalize">
-                          {t.frequency}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="col-span-3">
-                  <span
-                    className="text-xs px-2 py-0.5 rounded-full font-medium"
-                    style={{
-                      backgroundColor:
-                        (PURPOSE_COLORS[t.purpose] ?? "#6b7280") + "20",
-                      color: PURPOSE_COLORS[t.purpose] ?? "#6b7280",
-                    }}
-                  >
-                    {t.purpose}
-                  </span>
-                </div>
-                <div className="col-span-2 text-xs text-gray-400">{t.date}</div>
-                <div
-                  className={`col-span-2 text-right text-xs font-semibold ${color}`}
+                <span className="flex items-center gap-1">
+                  Date <SortIcon colKey="date" />
+                </span>
+              </th>
+              <th
+                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                onClick={() => toggleSort("amount")}
+              >
+                <span className="flex items-center justify-end gap-1">
+                  Amount <SortIcon colKey="amount" />
+                </span>
+              </th>
+              <th className="text-right pb-3 pt-3 px-4 font-medium">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={5}
+                  className="text-center py-12 text-sm text-gray-400"
                 >
-                  {isExpense ? "− " : "+ "}
-                  {formatCurrencySymbol(
-                    t.amount,
-                    currency.symbol,
-                    currency.locale,
-                  )}
-                </div>
-                <div className="col-span-1 flex justify-end">
-                  <button
-                    onClick={() => deleteTransaction(t.id)}
-                    className="text-gray-300 hover:text-red-500 transition-colors"
+                  No transactions found
+                </td>
+              </tr>
+            ) : (
+              filtered.map((t) => {
+                const isExpense = t.type === "expense";
+                const Icon = isExpense ? TrendingDown : TrendingUp;
+                const color = isExpense ? "text-red-500" : "text-green-500";
+                const bg = isExpense ? "bg-red-50" : "bg-green-50";
+
+                return (
+                  <tr
+                    key={t.id}
+                    className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
                   >
-                    <Trash2 size={13} />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+                    {/* Details */}
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-7 h-7 ${bg} rounded-lg flex items-center justify-center shrink-0`}
+                        >
+                          <Icon size={13} className={color} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-medium text-gray-900 truncate">
+                            {t.remarks || "—"}
+                          </p>
+                          {t.recurring && (
+                            <div className="flex items-center gap-0.5 mt-0.5">
+                              <RepeatIcon size={9} className="text-blue-400" />
+                              <span className="text-[10px] text-blue-400 capitalize">
+                                {t.frequency}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Purpose */}
+                    <td className="py-3 px-4">
+                      <span
+                        className="text-xs px-2 py-0.5 rounded-full font-medium"
+                        style={{
+                          backgroundColor:
+                            (PURPOSE_COLORS[t.purpose] ?? "#6b7280") + "20",
+                          color: PURPOSE_COLORS[t.purpose] ?? "#6b7280",
+                        }}
+                      >
+                        {t.purpose}
+                      </span>
+                    </td>
+
+                    {/* Date */}
+                    <td className="py-3 px-4 text-xs text-gray-600">
+                      {t.date}
+                    </td>
+
+                    {/* Amount */}
+                    <td
+                      className={`py-3 px-4 text-right text-xs font-semibold ${color}`}
+                    >
+                      {isExpense ? "− " : "+ "}
+                      {formatCurrencySymbol(
+                        t.amount,
+                        currency.symbol,
+                        currency.locale,
+                      )}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-3 px-4">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => deleteTransaction(t.id)}
+                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete transaction"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

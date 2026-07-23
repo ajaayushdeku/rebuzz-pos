@@ -46,7 +46,7 @@ export default async function Page({
       {/* ── Header ── */}
       <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200 mb-4">
         <div>
-          <h1 className="font-bold text-xl md:text-2xl truncate">
+          <h1 className="font-bold text-xl md:text-2xl truncate ">
             Sales & Revenue
           </h1>
 

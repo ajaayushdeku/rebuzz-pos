@@ -192,52 +192,68 @@ function SummaryTable({ type }: { type: TransactionType }) {
       <h3 className="text-sm font-semibold text-gray-900 mb-4 capitalize">
         {type} by Purpose
       </h3>
-      {grouped.length === 0 ? (
-        <p className="text-sm text-gray-400 text-center py-8">No {type}s yet</p>
-      ) : (
-        <table className="w-full text-sm">
+
+      <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <table className="w-full text-sm min-w-[380px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
-              <th className="text-left pb-2 font-medium">Purpose</th>
-              <th className="text-center pb-2 font-medium">Transactions</th>
-              <th className="text-right pb-2 font-medium">Total</th>
+              <th className="text-left pb-3 pt-3 px-4 font-medium">Purpose</th>
+              <th className="text-center pb-3 pt-3 px-4 font-medium">
+                Transactions
+              </th>
+              <th className="text-right pb-3 pt-3 px-4 font-medium">Total</th>
             </tr>
           </thead>
           <tbody>
-            {grouped.map(([purpose, { count, total }]) => (
-              <tr
-                key={purpose}
-                onClick={() => setSelected(purpose)}
-                className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
-              >
-                <td className="py-2.5">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="w-2 h-2 rounded-full shrink-0"
-                      style={{
-                        backgroundColor: PURPOSE_COLORS[purpose] ?? "#6b7280",
-                      }}
-                    />
-                    <span className="text-gray-700 font-medium">{purpose}</span>
-                  </div>
-                </td>
-                <td className="py-2.5 text-center text-gray-500">{count}</td>
+            {grouped.length === 0 ? (
+              <tr>
                 <td
-                  className={`py-2.5 text-right font-semibold ${
-                    type === "expense" ? "text-red-600" : "text-green-600"
-                  }`}
+                  colSpan={3}
+                  className="text-center py-12 text-sm text-gray-400"
                 >
-                  {formatCurrencySymbol(
-                    total,
-                    currency.symbol,
-                    currency.locale,
-                  )}
+                  No {type}s yet
                 </td>
               </tr>
-            ))}
+            ) : (
+              grouped.map(([purpose, { count, total }]) => (
+                <tr
+                  key={purpose}
+                  onClick={() => setSelected(purpose)}
+                  className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
+                >
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-2 h-2 rounded-full shrink-0"
+                        style={{
+                          backgroundColor: PURPOSE_COLORS[purpose] ?? "#6b7280",
+                        }}
+                      />
+                      <span className="text-xs font-medium text-gray-900">
+                        {purpose}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="py-3 px-4 text-center text-xs text-gray-600">
+                    {count}
+                  </td>
+                  <td
+                    className={`py-3 px-4 text-right text-xs font-semibold ${
+                      type === "expense" ? "text-red-600" : "text-green-600"
+                    }`}
+                  >
+                    {formatCurrencySymbol(
+                      total,
+                      currency.symbol,
+                      currency.locale,
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
-      )}
+      </div>
 
       {selected && (
         <TransactionModal

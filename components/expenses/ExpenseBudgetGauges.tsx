@@ -13,6 +13,7 @@ import {
 import { useTracker } from "@/providers/ExpenseContext";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
+import { ComponentHeader } from "../ComponentHeader";
 
 // ── Radial gauge built with SVG ───────────────────────────────────────────
 
@@ -172,13 +173,13 @@ export default function ExpenseBudgetGauges() {
   return (
     <div className="relative flex flex-col gap-4">
       {/* Gauges card */}
-      <div className=" bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-        <h3 className="text-sm font-bold text-gray-900 mb-1">
-          Expense Budget Gauges
-        </h3>
-        <p className="text-xs text-gray-400 mb-6">
-          Current spending vs allocated budget per category
-        </p>
+      <div className=" bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+        <div className="mb-4">
+          <ComponentHeader
+            title="Expense Budget Gauges"
+            subHeader="Current spending vs allocated budget per category"
+          />
+        </div>
 
         {gauges.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">

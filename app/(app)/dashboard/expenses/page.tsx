@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 
 import { ExpenseTrackerProvider, useTracker } from "@/providers/ExpenseContext";
 import ExpenseBudgetGauges from "@/components/expenses/ExpenseBudgetGauges";
+import ExpensesByCategory from "@/components/expenses/ExpensesByCategory";
 import BudgetVsActual from "@/components/expenses/BudgetVsActual";
 import MonthlyExpenseTrend from "@/components/expenses/MonthlyExpenseTrend";
 import CashFlowTrend from "@/components/expenses/CashFlowTrend";
@@ -39,20 +40,13 @@ function ExpenseAnalyticsPage() {
             </p>
           </div>
         </div>
-
         {/* ── Charts & visual analytics ── */}
-        <ExpenseBudgetGauges />
-
+        <ExpenseBudgetGauges /> <ExpensesByCategory />
         <BudgetVsActual />
-
         <MonthlyExpenseTrend />
-
         <CashFlowTrend />
-
         <CostHealth />
-
         <WhereMoneyGoes />
-
         <HiddenCostLeaks />
       </div>
     </div>

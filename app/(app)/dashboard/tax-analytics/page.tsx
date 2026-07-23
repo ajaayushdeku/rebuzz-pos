@@ -54,7 +54,7 @@ export default function TaxAnalyticsPage() {
             Tax Analytics
           </h1>
 
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-xs text-gray-400 mt-0.5 ">
             Overview of tax collected, refunded, and categorized
           </p>
         </div>

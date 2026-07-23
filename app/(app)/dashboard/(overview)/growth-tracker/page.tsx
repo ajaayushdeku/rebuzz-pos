@@ -12,15 +12,16 @@ import {
   YearOverYearWrapper,
   GrowthByCategoryWrapper,
 } from "@/components/componentWrappers/GrowthWrapper";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 export default async function Page() {
   return (
     <div className="py-4 md:py-8 px-2 md:px-4">
       <div className="mb-4">
-        <h2 className="text-sm font-bold text-gray-900">Growth Tracker</h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Month-over-month and year-over-year performance analysis
-        </p>
+        <ComponentHeader
+          title="Growth Tracker"
+          subHeader=" Month-over-month and year-over-year performance analysis"
+        />
       </div>
 
       <div className="flex flex-col gap-6">
