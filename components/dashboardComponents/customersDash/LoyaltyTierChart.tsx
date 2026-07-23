@@ -16,8 +16,7 @@ import type {
   Payload,
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
-import SampleDataBadge from "@/components/ui/sampledatabadge";
-import { mockTierData } from "@/lib/mockData/mock-customer-data";
+import { Award } from "lucide-react";
 import { ComponentHeader } from "@/components/ComponentHeader";
 
 export interface TierData {
@@ -73,8 +72,11 @@ const CustomBar = (props: BarShapeProps) => {
 };
 
 export default function LoyaltyTierChart({ data }: TierDataProps) {
-  const isEmpty = !data || data.length === 0;
-  const displayData = data;
+  // Empty covers "no tiers returned" and "tiers returned but nobody in them" —
+  // both render an unreadable, all-zero chart.
+  const isEmpty =
+    !data || data.length === 0 || data.every((d) => d.members === 0);
+  const displayData = data ?? [];
 
   // Dynamic X-axis based on actual data
   const maxMembers = Math.max(...displayData.map((d) => d.members), 1);
@@ -84,7 +86,6 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full min-w-0">
-      {isEmpty && <SampleDataBadge />}
       {/* Header */}
       <div className="mb-4 ">
         <ComponentHeader
@@ -94,66 +95,81 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
       </div>
 
       {/* Chart */}
-      <div className="h-44 sm:h-56 md:h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={displayData}
-            layout="vertical"
-            margin={{
-              top: 0,
-              right: 40,
-              left: 10,
-              bottom: 0,
-            }}
-            barCategoryGap="30%"
-          >
-            <CartesianGrid horizontal={false} stroke="#f3f4f6" />
-
-            <XAxis
-              type="number"
-              axisLine={false}
-              tickLine={false}
-              tick={{
-                fill: "#9ca3af",
-                fontSize: 12,
+      {isEmpty ? (
+        <div className="h-44 sm:h-56 md:h-64 flex flex-col items-center justify-center gap-2 text-center">
+          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+            <Award size={24} className="text-gray-500" />
+          </div>
+          <p className="text-sm font-medium text-gray-500">
+            No loyalty tier data
+          </p>
+          <p className="text-xs text-gray-400 max-w-[15rem]">
+            Tier breakdown appears once customers are enrolled in the loyalty
+            program.
+          </p>
+        </div>
+      ) : (
+        <div className="h-44 sm:h-56 md:h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={displayData}
+              layout="vertical"
+              margin={{
+                top: 0,
+                right: 40,
+                left: 10,
+                bottom: 0,
               }}
-              ticks={xTicks}
-              domain={[0, xDomain]}
-            />
+              barCategoryGap="30%"
+            >
+              <CartesianGrid horizontal={false} stroke="#f3f4f6" />
 
-            <YAxis
-              type="category"
-              dataKey="tier"
-              axisLine={false}
-              tickLine={false}
-              tick={{
-                fill: "#9ca3af",
-                fontSize: 13,
-              }}
-              width={52}
-            />
+              <XAxis
+                type="number"
+                axisLine={false}
+                tickLine={false}
+                tick={{
+                  fill: "#9ca3af",
+                  fontSize: 12,
+                }}
+                ticks={xTicks}
+                domain={[0, xDomain]}
+              />
 
-            <Tooltip
-              content={<CustomTooltip />}
-              cursor={{
-                fill: "rgba(96,165,250,0.05)",
-              }}
-            />
-
-            <Bar dataKey="members" shape={CustomBar}>
-              <LabelList
-                dataKey="members"
-                position="right"
-                style={{
-                  fill: "#6b7280",
+              <YAxis
+                type="category"
+                dataKey="tier"
+                axisLine={false}
+                tickLine={false}
+                tick={{
+                  fill: "#9ca3af",
                   fontSize: 13,
-                  fontWeight: 500,
+                }}
+                width={52}
+              />
+
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={{
+                  fill: "rgba(96,165,250,0.05)",
                 }}
               />
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+
+              <Bar dataKey="members" shape={CustomBar}>
+                <LabelList
+                  dataKey="members"
+                  position="right"
+                  style={{
+                    fill: "#6b7280",
+                    fontSize: 13,
+                    fontWeight: 500,
+                  }}
+                />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </div>
   );
 }
