@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Minus, RefreshCcw } from "lucide-react";
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -153,8 +153,14 @@ export default function GrowthByCategory() {
           Failed to load category growth
         </div>
       ) : rows.length === 0 ? (
-        <div className="flex items-center justify-center py-10 text-sm text-gray-400">
-          No sales data available
+        <div className="flex flex-col items-center justify-center py-10 text-gray-400">
+          <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-2">
+            <RefreshCcw size={24} className="text-gray-500" />
+          </div>
+          <p className="text-sm font-medium text-gray-500">No category found</p>
+          <p className="text-xs text-gray-400 mt-1">
+            Category growth data will appear here
+          </p>
         </div>
       ) : (
         <>

@@ -122,10 +122,10 @@ export default function GrossProfitTrendChart() {
       .finally(() => setIsLoading(false));
   }, []);
 
-  const isEmpty =
-    !data ||
-    data.length === 0 ||
-    data.every((d) => d.grossRevenue === 0 && d.netProfit === 0);
+  // const isEmpty =
+  //   !data ||
+  //   data.length === 0 ||
+  //   data.every((d) => d.grossRevenue === 0 && d.netProfit === 0);
 
   const formatYAxis = (value: number): string =>
     `${currency.symbol} ${formatCompactNumber(value)}`;
@@ -161,69 +161,69 @@ export default function GrossProfitTrendChart() {
         />
       </div>
 
-      {isEmpty ? (
+      {/* {isEmpty ? (
         <div className="flex items-center justify-center h-44 sm:h-56 md:h-64 text-sm text-gray-400">
           No profit data for this period yet.
         </div>
-      ) : (
-        <div className="h-44 sm:h-56 md:h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={data}
-              margin={{ top: 10, right: 20, left: 10, bottom: 10 }}
-            >
-              <CartesianGrid vertical={false} stroke="#f3f4f6" />
+      ) : ( */}
+      <div className="h-44 sm:h-56 md:h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            data={data}
+            margin={{ top: 10, right: 20, left: 10, bottom: 10 }}
+          >
+            <CartesianGrid vertical={false} stroke="#f3f4f6" />
 
-              <YAxis
-                tickFormatter={formatYAxis}
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: "#9ca3af", fontSize: 12 }}
-                ticks={yTicks}
-                domain={[0, yMax]}
-                width={52}
-              />
-              <Tooltip content={<CustomTooltip currency={currency} />} />
-              <Legend content={<CustomLegend />} />
-              <Line
-                type="monotone"
-                dataKey="grossRevenue"
-                name="Gross Revenue"
-                stroke="#60a5fa"
-                strokeWidth={2.5}
-                dot={{ r: 4, fill: "#60a5fa", stroke: "#fff", strokeWidth: 2 }}
-                activeDot={{
-                  r: 6,
-                  fill: "#60a5fa",
-                  stroke: "#fff",
-                  strokeWidth: 2,
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="netProfit"
-                name="Net Profit"
-                stroke="#34d399"
-                strokeWidth={2.5}
-                dot={{ r: 4, fill: "#34d399", stroke: "#fff", strokeWidth: 2 }}
-                activeDot={{
-                  r: 6,
-                  fill: "#34d399",
-                  stroke: "#fff",
-                  strokeWidth: 2,
-                }}
-              />
-              <XAxis
-                dataKey="month"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: "#9ca3af", fontSize: 12 }}
-                dy={8}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      )}
+            <YAxis
+              tickFormatter={formatYAxis}
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "#9ca3af", fontSize: 12 }}
+              ticks={yTicks}
+              domain={[0, yMax]}
+              width={52}
+            />
+            <Tooltip content={<CustomTooltip currency={currency} />} />
+            <Legend content={<CustomLegend />} />
+            <Line
+              type="monotone"
+              dataKey="grossRevenue"
+              name="Gross Revenue"
+              stroke="#60a5fa"
+              strokeWidth={2.5}
+              dot={{ r: 4, fill: "#60a5fa", stroke: "#fff", strokeWidth: 2 }}
+              activeDot={{
+                r: 6,
+                fill: "#60a5fa",
+                stroke: "#fff",
+                strokeWidth: 2,
+              }}
+            />
+            <Line
+              type="monotone"
+              dataKey="netProfit"
+              name="Net Profit"
+              stroke="#34d399"
+              strokeWidth={2.5}
+              dot={{ r: 4, fill: "#34d399", stroke: "#fff", strokeWidth: 2 }}
+              activeDot={{
+                r: 6,
+                fill: "#34d399",
+                stroke: "#fff",
+                strokeWidth: 2,
+              }}
+            />
+            <XAxis
+              dataKey="month"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "#9ca3af", fontSize: 12 }}
+              dy={8}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+      {/* )} */}
     </div>
   );
 }

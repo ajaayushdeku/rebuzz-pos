@@ -84,10 +84,11 @@ const TopItems = ({ topProducts }: TopProductProps) => {
       {/* Body */}
       {!hasData ? (
         <div className="flex flex-col items-center justify-center py-10 text-gray-400">
-          <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center mb-2">
-            <TrendingUp size={18} className="text-gray-300" />
+          <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-2">
+            <TrendingUp size={24} className="text-gray-500" />
           </div>
-          <p className="text-sm">No sales data available</p>
+          <p className="text-sm font-medium text-gray-500">No sales yet</p>
+          <p className="text-xs text-gray-400 mt-1">No items sales for today</p>
         </div>
       ) : (
         <div className="mt-1">

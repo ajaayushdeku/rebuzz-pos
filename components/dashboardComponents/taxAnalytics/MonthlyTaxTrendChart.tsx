@@ -99,11 +99,12 @@ export default function MonthlyTaxTrendChart() {
         <div className="flex items-center justify-center h-[280px] text-sm text-red-400">
           Failed to load tax trend
         </div>
-      ) : !hasData ? (
-        <div className="flex items-center justify-center h-[280px] text-sm text-gray-400">
-          No tax data available
-        </div>
       ) : (
+        // ) : !hasData ? (
+        //   <div className="flex items-center justify-center h-[280px] text-sm text-gray-400">
+        //     No tax data available
+        //   </div>
+        // ) : (
         <>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart

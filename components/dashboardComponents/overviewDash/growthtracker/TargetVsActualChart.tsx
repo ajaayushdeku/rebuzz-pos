@@ -130,13 +130,13 @@ const CustomLegend = () => (
 
 // ── Skeleton ──────────────────────────────────────────────────────────────
 
-const ChartSkeleton = () => (
-  <div className="animate-pulse space-y-3">
-    <div className="h-4 bg-gray-200 rounded w-1/3" />
-    <div className="h-3 bg-gray-200 rounded w-1/2" />
-    <div className="h-72 bg-gray-100 rounded-xl mt-4" />
-  </div>
-);
+// const ChartSkeleton = () => (
+//   <div className="animate-pulse space-y-3">
+//     <div className="h-4 bg-gray-200 rounded w-1/3" />
+//     <div className="h-3 bg-gray-200 rounded w-1/2" />
+//     <div className="h-72 bg-gray-100 rounded-xl mt-4" />
+//   </div>
+// );
 
 // ── Main chart ────────────────────────────────────────────────────────────
 
@@ -174,13 +174,13 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
   const yTicks = getYAxisTicks(chartData);
   const yMax = yTicks[yTicks.length - 1] * 1.05;
 
-  if (isLoadingTargets) {
-    return (
-      <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-6 w-full">
-        <ChartSkeleton />
-      </div>
-    );
-  }
+  // if (isLoadingTargets) {
+  //   return (
+  //     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-6 w-full">
+  //       <ChartSkeleton />
+  //     </div>
+  //   );
+  // }
 
   return (
     <>

@@ -104,13 +104,13 @@ export default function LowStockAlerts() {
         </p>
       ) : alerts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-8 text-center">
-          <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center mb-2">
-            <PackageCheck size={18} className="text-green-500" />
+          <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mb-2">
+            <PackageCheck size={24} className="text-green-500" />
           </div>
-          <p className="text-sm font-medium text-gray-700">
+          <p className="text-sm font-medium text-gray-500">
             All items are well stocked
           </p>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-xs text-gray-400 mt-1">
             No items are running low right now
           </p>
         </div>

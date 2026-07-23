@@ -143,7 +143,7 @@ export default function CashFlowTrend() {
     return rows;
   }, [transactions]);
 
-  const hasData = data.some((d) => d.inflow > 0 || d.outflow > 0);
+  // const hasData = data.some((d) => d.inflow > 0 || d.outflow > 0);
 
   const fmtK = (v: number) => {
     return `${currency.symbol} ${formatCompactNumber(v)}`;
@@ -164,55 +164,55 @@ export default function CashFlowTrend() {
         title="Cash Flow Trend"
         subHeader="Monthly comparison of cash inflows vs outflows"
       />
-      {!hasData ? (
+      {/* {!hasData ? (
         <div className="py-16 text-center text-sm text-gray-400">
           No income or expenses recorded yet.
         </div>
-      ) : (
-        <ResponsiveContainer width="100%" height={280}>
-          <LineChart
-            data={data}
-            margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
-          >
-            <CartesianGrid vertical={false} stroke="#f3f4f6" />
-            <XAxis
-              dataKey="month"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 11 }}
-              dy={8}
-            />
-            <YAxis
-              tickFormatter={fmtK}
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 11 }}
-              width={42}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend content={<CustomLegend />} />
+      ) : ( */}
+      <ResponsiveContainer width="100%" height={280}>
+        <LineChart
+          data={data}
+          margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+        >
+          <CartesianGrid vertical={false} stroke="#f3f4f6" />
+          <XAxis
+            dataKey="month"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: "#9ca3af", fontSize: 11 }}
+            dy={8}
+          />
+          <YAxis
+            tickFormatter={fmtK}
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: "#9ca3af", fontSize: 11 }}
+            width={42}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <Legend content={<CustomLegend />} />
 
-            <Line
-              type="monotone"
-              dataKey="inflow"
-              name="Cash Inflow"
-              stroke="#22c55e"
-              strokeWidth={2.5}
-              dot={{ r: 4, fill: "white", stroke: "#22c55e", strokeWidth: 2 }}
-              activeDot={{ r: 5 }}
-            />
-            <Line
-              type="monotone"
-              dataKey="outflow"
-              name="Cash Outflow"
-              stroke="#ef4444"
-              strokeWidth={2.5}
-              dot={{ r: 4, fill: "white", stroke: "#ef4444", strokeWidth: 2 }}
-              activeDot={{ r: 5 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      )}
+          <Line
+            type="monotone"
+            dataKey="inflow"
+            name="Cash Inflow"
+            stroke="#22c55e"
+            strokeWidth={2.5}
+            dot={{ r: 4, fill: "white", stroke: "#22c55e", strokeWidth: 2 }}
+            activeDot={{ r: 5 }}
+          />
+          <Line
+            type="monotone"
+            dataKey="outflow"
+            name="Cash Outflow"
+            stroke="#ef4444"
+            strokeWidth={2.5}
+            dot={{ r: 4, fill: "white", stroke: "#ef4444", strokeWidth: 2 }}
+            activeDot={{ r: 5 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+      {/* )} */}
     </div>
   );
 }

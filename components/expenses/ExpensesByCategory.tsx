@@ -12,6 +12,7 @@ import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { PURPOSE_COLORS, useTracker } from "@/providers/ExpenseContext";
 import { ComponentHeader } from "../ComponentHeader";
+import { RefreshCcw } from "lucide-react";
 
 interface SliceData {
   purpose: string;
@@ -89,8 +90,14 @@ export default function ExpensesByCategory() {
       </div>
 
       {expenseByPurpose.length === 0 ? (
-        <div className="flex items-center justify-center py-10 text-gray-400 text-sm">
-          No expense data yet
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
+            <RefreshCcw size={24} className="text-gray-300" />
+          </div>
+          <p className="text-sm font-medium text-gray-500">No expense data</p>
+          <p className="text-xs text-gray-400 mt-1">
+            Expenses by Category data will appear here
+          </p>
         </div>
       ) : (
         <div className="flex flex-col sm:flex-row items-start gap-6">

@@ -2,13 +2,17 @@ import { Suspense } from "react";
 
 import StatSkeleton from "@/components/ui/statskeleton";
 import TableSkeleton from "@/components/ui/tableskeleton";
-import ChartSkeleton from "@/components/ui/chartskeleton";
 import PieChartSkeleton from "@/components/ui/piechartskeleton";
 import WinningStatSkeleton from "@/components/ui/winningstatskeleton";
 import StorySkeleton from "@/components/ui/storyskeleton";
 import InsightsSkeleton from "@/components/ui/insightsskeleton";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
-import { CalendarDateFilter } from "@/components/dashboardComponents/staffDash/CalendarDateFilter";
+import {
+  WeeklyRevenueChartSkeleton,
+  HourlySalesTrendSkeleton,
+  TopItemsSkeleton,
+  RecentTransactionsSkeleton,
+} from "@/components/dashboardComponents/overviewDash/OverviewSkeletons";
 
 import {
   AIBusinessStoryWrapper,
@@ -62,7 +66,7 @@ const Page = async ({
           <ChartErrorBoundary>
             <Suspense
               fallback={
-                <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 ">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 ">
                   {Array.from({ length: 4 }).map((_, i) => (
                     <StatSkeleton key={i} />
                   ))}
@@ -82,7 +86,7 @@ const Page = async ({
           <ChartErrorBoundary>
             <Suspense
               fallback={
-                <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-2 md:gap-3 ">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 ">
                   {Array.from({ length: 4 }).map((_, i) => (
                     <WinningStatSkeleton key={i} />
                   ))}
@@ -93,9 +97,9 @@ const Page = async ({
             </Suspense>
           </ChartErrorBoundary>
 
-          <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
             <ChartErrorBoundary>
-              <Suspense fallback={<ChartSkeleton />}>
+              <Suspense fallback={<WeeklyRevenueChartSkeleton />}>
                 <WeeklyRevenueChartWrapper />
               </Suspense>
             </ChartErrorBoundary>
@@ -113,7 +117,7 @@ const Page = async ({
 
           <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4">
             <ChartErrorBoundary>
-              <Suspense fallback={<ChartSkeleton />}>
+              <Suspense fallback={<HourlySalesTrendSkeleton />}>
                 <HourlySalesTrendWrapper />
               </Suspense>
             </ChartErrorBoundary>
@@ -131,7 +135,7 @@ const Page = async ({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 ">
             <ChartErrorBoundary>
-              <Suspense fallback={<TableSkeleton rows={3} />}>
+              <Suspense fallback={<TopItemsSkeleton />}>
                 <TopItemsWrapper />
               </Suspense>
             </ChartErrorBoundary>
@@ -144,7 +148,7 @@ const Page = async ({
           </div>
 
           <ChartErrorBoundary>
-            <Suspense fallback={<TableSkeleton rows={3} />}>
+            <Suspense fallback={<RecentTransactionsSkeleton />}>
               <RecentTransactionWrapper />
             </Suspense>
           </ChartErrorBoundary>

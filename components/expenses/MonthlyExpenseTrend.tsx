@@ -146,68 +146,66 @@ export default function MonthlyExpenseTrend() {
         subHeader="Stacked breakdown of expenses over the last 6 months"
       />
 
-      {categories.length === 0 ? (
+      {/* {categories.length === 0 ? (
         <div className="py-16 text-center text-sm text-gray-400">
           No expenses recorded yet.
         </div>
-      ) : (
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart
-            data={data}
-            margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
-            barCategoryGap="25%"
-          >
-            <CartesianGrid vertical={false} stroke="#f3f4f6" />
-            <XAxis
-              dataKey="month"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 11 }}
-              dy={8}
-            />
-            <YAxis
-              tickFormatter={fmtK}
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 11 }}
-              width={42}
-            />
-            <Tooltip
-              content={<CustomTooltip />}
-              cursor={{ fill: "rgba(0,0,0,0.03)" }}
-            />
-            <Legend
-              content={() => (
-                <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 mt-3">
-                  {categories.map((cat) => (
-                    <div key={cat.name} className="flex items-center gap-1.5">
-                      <span
-                        className="w-2.5 h-2.5 rounded-sm shrink-0"
-                        style={{ backgroundColor: cat.color }}
-                      />
-                      <span className="text-xs" style={{ color: cat.color }}>
-                        {cat.name}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            />
+      ) : ( */}
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart
+          data={data}
+          margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+          barCategoryGap="25%"
+        >
+          <CartesianGrid vertical={false} stroke="#f3f4f6" />
+          <XAxis
+            dataKey="month"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: "#9ca3af", fontSize: 11 }}
+            dy={8}
+          />
+          <YAxis
+            tickFormatter={fmtK}
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: "#9ca3af", fontSize: 11 }}
+            width={42}
+          />
+          <Tooltip
+            content={<CustomTooltip />}
+            cursor={{ fill: "rgba(0,0,0,0.03)" }}
+          />
+          <Legend
+            content={() => (
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 mt-3">
+                {categories.map((cat) => (
+                  <div key={cat.name} className="flex items-center gap-1.5">
+                    <span
+                      className="w-2.5 h-2.5 rounded-sm shrink-0"
+                      style={{ backgroundColor: cat.color }}
+                    />
+                    <span className="text-xs" style={{ color: cat.color }}>
+                      {cat.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          />
 
-            {categories.map((cat, i) => (
-              <Bar
-                key={cat.name}
-                dataKey={cat.name}
-                stackId="expenses"
-                fill={cat.color}
-                radius={
-                  i === categories.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]
-                }
-              />
-            ))}
-          </BarChart>
-        </ResponsiveContainer>
-      )}
+          {categories.map((cat, i) => (
+            <Bar
+              key={cat.name}
+              dataKey={cat.name}
+              stackId="expenses"
+              fill={cat.color}
+              radius={i === categories.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+            />
+          ))}
+        </BarChart>
+      </ResponsiveContainer>
+      {/* )} */}
     </div>
   );
 }

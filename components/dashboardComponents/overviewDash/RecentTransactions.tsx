@@ -1,10 +1,10 @@
 "use client";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, RefreshCcw } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { Transaction } from "../orderHistory/transaction-columns";
 import { statusStyles } from "@/lib/config/transaction";
-import { formatCurrency, formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
 
 type RecentTransactionsProps = {
@@ -56,9 +56,19 @@ export default function RecentTransactions({
               <tr>
                 <td
                   colSpan={4}
-                  className="text-center py-12 text-sm text-gray-400"
+                  className="text-center py-2 text-sm text-gray-400"
                 >
-                  No transactions found
+                  <div className="flex flex-col items-center justify-center py-10 text-gray-400">
+                    <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-2">
+                      <RefreshCcw size={24} className="text-gray-500" />
+                    </div>
+                    <p className="text-sm font-medium text-gray-500">
+                      No recent transactions found
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Recently made transaction will appear here
+                    </p>
+                  </div>
                 </td>
               </tr>
             ) : (

@@ -1,10 +1,4 @@
 import { Suspense } from "react";
-import ChartSkeleton from "@/components/ui/chartskeleton";
-// import {
-//   GrowthStatsWrapper,
-//   TargetVsActualWrapper,
-//   YearOverYearWrapper,
-// } from "../../_components/GrowthWrapper";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import {
   GrowthStatsWrapper,
@@ -13,6 +7,12 @@ import {
   GrowthByCategoryWrapper,
 } from "@/components/componentWrappers/GrowthWrapper";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  GrowthStatsSkeleton,
+  TargetVsActualSkeleton,
+  YearOverYearSkeleton,
+  GrowthByCategorySkeleton,
+} from "@/components/dashboardComponents/overviewDash/growthtracker/GrowthSkeletons";
 
 export default async function Page() {
   return (
@@ -26,26 +26,25 @@ export default async function Page() {
 
       <div className="flex flex-col gap-6">
         <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
+          <Suspense fallback={<GrowthStatsSkeleton />}>
             <GrowthStatsWrapper />
           </Suspense>
         </ChartErrorBoundary>
 
         <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
+          <Suspense fallback={<TargetVsActualSkeleton />}>
             <TargetVsActualWrapper />
           </Suspense>
         </ChartErrorBoundary>
 
         <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
+          <Suspense fallback={<YearOverYearSkeleton />}>
             <YearOverYearWrapper />
           </Suspense>
         </ChartErrorBoundary>
-        {/* <YearOverYearChart data={yoyData} /> */}
 
         <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
+          <Suspense fallback={<GrowthByCategorySkeleton />}>
             <GrowthByCategoryWrapper />
           </Suspense>
         </ChartErrorBoundary>
