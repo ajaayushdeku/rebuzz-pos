@@ -155,7 +155,7 @@ export default function InventoryValueSummary({
   );
 
   return (
-    <div className="mb-6">
+    <div className="mb-4">
       {/* <div className="mb-3">
         <h2 className="text-sm font-semibold text-gray-800">
           Inventory Valuation

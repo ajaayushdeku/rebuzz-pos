@@ -25,6 +25,14 @@ type SalesSortKey =
 
 type SortKey = "default" | ItemSortKey | SalesSortKey;
 
+// Stock-tracking filter tabs.
+type StockTab = "all" | "tracked" | "untracked";
+const STOCK_TABS: { value: StockTab; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "tracked", label: "Stock Track" },
+  { value: "untracked", label: "Non-Stock Track" },
+];
+
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: "default", label: "Default" },
   { value: "stock-desc", label: "Stock: High → Low" },
@@ -83,6 +91,7 @@ const ProductCardGrid = ({
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("default");
+  const [stockTab, setStockTab] = useState<StockTab>("tracked");
 
   // Per-product revenue, net profit & order count for the selected range.
   const { data: sales } = useSalesByItemQuery(startDate, endDate);
@@ -133,13 +142,31 @@ const ProductCardGrid = ({
     return out;
   }, [items]);
 
+  // Counts per stock-tracking tab (over the fully expanded list).
+  const stockCounts = useMemo(() => {
+    const tracked = expandedItems.filter((i) => i.usesStocks).length;
+    return {
+      all: expandedItems.length,
+      tracked,
+      untracked: expandedItems.length - tracked,
+    };
+  }, [expandedItems]);
+
   // Search (by name) then sort. Kept memoized so cards don't re-process on
   // unrelated re-renders.
   const processed = useMemo(() => {
+    // Stock-tracking tab first, then search by name.
+    const byStock =
+      stockTab === "all"
+        ? expandedItems
+        : expandedItems.filter((i) =>
+            stockTab === "tracked" ? i.usesStocks : !i.usesStocks,
+          );
+
     const q = search.trim().toLowerCase();
     const filtered = q
-      ? expandedItems.filter((i) => i.name.toLowerCase().includes(q))
-      : expandedItems;
+      ? byStock.filter((i) => i.name.toLowerCase().includes(q))
+      : byStock;
 
     if (sortBy === "default") return filtered;
 
@@ -156,10 +183,10 @@ const ProductCardGrid = ({
     }
 
     return [...filtered].sort(SORT_COMPARATORS[sortBy as ItemSortKey]);
-  }, [expandedItems, search, sortBy, salesMap]);
+  }, [expandedItems, search, sortBy, salesMap, stockTab]);
 
-  // Reset the "Load More" window whenever the search or sort changes.
-  const filterKey = `${search}|${sortBy}`;
+  // Reset the "Load More" window whenever the search, sort or tab changes.
+  const filterKey = `${search}|${sortBy}|${stockTab}`;
   const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
   if (prevFilterKey !== filterKey) {
     setPrevFilterKey(filterKey);
@@ -219,20 +246,49 @@ const ProductCardGrid = ({
           )}
         </div>
 
-        {/* Sort */}
-        <div className="flex items-center gap-2 shrink-0">
-          <ArrowUpDown size={14} className="text-gray-400" />
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortKey)}
-            className="h-9 text-xs border border-gray-200 rounded-lg px-2.5 bg-white text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-          >
-            {SORT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
+        {/* Right controls: sort dropdown (left) then stock-tracking tabs (right) */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 shrink-0">
+          {/* Sort */}
+          <div className="flex items-center gap-2 shrink-0">
+            <ArrowUpDown size={14} className="text-gray-400" />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortKey)}
+              className="h-9 text-xs border border-gray-200 rounded-lg px-2.5 bg-white text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Stock-tracking tabs */}
+          <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-lg w-fit">
+            {STOCK_TABS.map((tab) => (
+              <button
+                key={tab.value}
+                onClick={() => setStockTab(tab.value)}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                  stockTab === tab.value
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                {tab.label}
+                <span
+                  className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                    stockTab === tab.value
+                      ? "bg-blue-50 text-blue-600"
+                      : "bg-gray-200 text-gray-500"
+                  }`}
+                >
+                  {stockCounts[tab.value]}
+                </span>
+              </button>
             ))}
-          </select>
+          </div>
         </div>
       </div>
 
