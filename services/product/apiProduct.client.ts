@@ -10,6 +10,9 @@ export async function fetchProductsListClient(): Promise<Product[]> {
   const payload = await res.json();
 
   const rawProducts = payload?.data?.products || [];
+
+  console.log("Product table's all product:", rawProducts);
+
   return rawProducts.map(mapRawProductToProduct);
 }
 

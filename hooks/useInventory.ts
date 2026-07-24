@@ -20,31 +20,43 @@ async function fetchInventoryClient(): Promise<InventoryItem[]> {
   return (
     raw
       // .filter((p: any) => p && typeof p.costPrice === "number" && p.costPrice > 0)
-      .map(
-        (p: any): InventoryItem => ({
-          id: p._id,
-          name: p.name ?? "Unnamed Product",
-          unit: p.soldBy ?? "each",
-          inStock: typeof p.inStock === "number" ? p.inStock : 0,
-          lowStock: typeof p.lowStock === "number" ? p.lowStock : 0,
-          usesStocks: Boolean(p.usesStocks),
-          isTaxable: Boolean(p.isTaxable),
-          isAvailable:
-            p.isAvailable !== undefined ? Boolean(p.isAvailable) : true,
-          orderedCount: typeof p.orderedCount === "number" ? p.orderedCount : 0,
-          costPrice: p.costPrice,
-          price: typeof p.price === "number" ? p.price : 0,
-          image:
-            typeof p.image === "string" && p.image
-              ? p.image
-              : (p.images?.[0] ?? undefined),
-          images: Array.isArray(p.images)
-            ? p.images.filter(
-                (s: unknown): s is string => typeof s === "string",
-              )
+      .map((p: any): InventoryItem => ({
+        id: p._id,
+        name: p.name ?? "Unnamed Product",
+        unit: p.soldBy ?? "each",
+        inStock: typeof p.inStock === "number" ? p.inStock : 0,
+        lowStock: typeof p.lowStock === "number" ? p.lowStock : 0,
+        usesStocks: Boolean(p.usesStocks),
+        isTaxable: Boolean(p.isTaxable),
+        isAvailable:
+          p.isAvailable !== undefined ? Boolean(p.isAvailable) : true,
+        orderedCount: typeof p.orderedCount === "number" ? p.orderedCount : 0,
+        costPrice: p.costPrice,
+        price: typeof p.price === "number" ? p.price : 0,
+        image:
+          typeof p.image === "string" && p.image
+            ? p.image
+            : (p.images?.[0] ?? undefined),
+        images: Array.isArray(p.images)
+          ? p.images.filter((s: unknown): s is string => typeof s === "string")
+          : undefined,
+        variants:
+          Array.isArray(p.variants?.variantItems) &&
+          p.variants.variantItems.length > 0
+            ? p.variants.variantItems.map((v: Record<string, unknown>) => ({
+                id: String(v._id ?? ""),
+                optionValues: Array.isArray(v.optionValues)
+                  ? (v.optionValues as string[])
+                  : [],
+                price: typeof v.price === "number" ? v.price : 0,
+                costPrice: typeof v.costPrice === "number" ? v.costPrice : 0,
+                inStock: typeof v.inStock === "number" ? v.inStock : 0,
+                lowStock: typeof v.lowStock === "number" ? v.lowStock : 0,
+                isAvailable:
+                  v.isAvailable !== undefined ? Boolean(v.isAvailable) : true,
+              }))
             : undefined,
-        }),
-      )
+      }))
   );
 }
 
@@ -120,18 +132,36 @@ async function fetchProductTotals(): Promise<ProductTotals> {
 
   let totalSellingPrice = 0;
   let totalCostPrice = 0;
+  let productCount = 0;
   for (const p of raw) {
-    const price = typeof p?.price === "number" ? p.price : 0;
-    const costPrice = typeof p?.costPrice === "number" ? p.costPrice : 0;
-    const stock = typeof p?.inStock === "number" ? p.inStock : 0;
-    totalSellingPrice += price * stock;
-    totalCostPrice += costPrice * stock;
+    const variantItems = p?.variants?.variantItems;
+    const hasVariants = Array.isArray(variantItems) && variantItems.length > 0;
+
+    if (hasVariants) {
+      // A product WITH variants carries its price/stock on the variants, not
+      // the base (base price/stock are 0). Value & count come from variants.
+      for (const v of variantItems) {
+        const price = typeof v?.price === "number" ? v.price : 0;
+        const costPrice = typeof v?.costPrice === "number" ? v.costPrice : 0;
+        const stock = typeof v?.inStock === "number" ? v.inStock : 0;
+        totalSellingPrice += price * stock;
+        totalCostPrice += costPrice * stock;
+      }
+      productCount += variantItems.length;
+    } else {
+      const price = typeof p?.price === "number" ? p.price : 0;
+      const costPrice = typeof p?.costPrice === "number" ? p.costPrice : 0;
+      const stock = typeof p?.inStock === "number" ? p.inStock : 0;
+      totalSellingPrice += price * stock;
+      totalCostPrice += costPrice * stock;
+      productCount += 1;
+    }
   }
 
   return {
     totalSellingPrice: Math.round(totalSellingPrice * 100) / 100,
     totalCostPrice: Math.round(totalCostPrice * 100) / 100,
-    productCount: raw.length,
+    productCount,
   };
 }
 

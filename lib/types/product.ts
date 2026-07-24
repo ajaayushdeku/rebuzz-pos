@@ -1,3 +1,14 @@
+export interface ProductVariant {
+  id: string;
+  /** e.g. ["buff"] or ["large", "spicy"] — one value per option group. */
+  optionValues: string[];
+  price: number;
+  costPrice?: number;
+  inStock?: number;
+  lowStock?: number;
+  isAvailable?: boolean;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -12,6 +23,8 @@ export interface Product {
   inStock?: number;
   lowStock?: number;
   soldBy?: "each" | "volume" | "";
+  /** Present when the product is sold in variances (e.g. Momo → buff/chicken/veg). */
+  variants?: ProductVariant[];
 }
 
 export type RawProduct = {
@@ -43,6 +56,25 @@ export type RawProduct = {
   discounts: string[];
   discountType: string;
   isLocked: boolean;
+  variants?: RawVariantGroup;
+};
+
+export type RawVariantItem = {
+  isAvailable: boolean;
+  optionValues: string[];
+  price: number;
+  costPrice: number;
+  _id: string;
+  inStock: number;
+  lowStock: number;
+};
+
+export type RawVariantGroup = {
+  _id: string;
+  productId: string;
+  adminId: string;
+  options: { values: string[]; _id: string; title: string }[];
+  variantItems: RawVariantItem[];
 };
 
 export function mapRawProductToProduct(raw: RawProduct): Product {
@@ -62,6 +94,15 @@ export function mapRawProductToProduct(raw: RawProduct): Product {
     inStock: raw.inStock ?? 0,
     lowStock: raw.lowStock ?? 0,
     soldBy: (raw.soldBy as "each" | "volume" | "") ?? "",
+    variants: raw.variants?.variantItems?.map((v) => ({
+      id: v._id,
+      optionValues: v.optionValues ?? [],
+      price: v.price ?? 0,
+      costPrice: v.costPrice ?? 0,
+      inStock: v.inStock ?? 0,
+      lowStock: v.lowStock ?? 0,
+      isAvailable: v.isAvailable ?? true,
+    })),
   };
 }
 

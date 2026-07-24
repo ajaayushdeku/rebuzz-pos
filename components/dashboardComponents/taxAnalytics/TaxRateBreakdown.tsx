@@ -259,8 +259,8 @@ export default function TaxRateBreakdown() {
         </p>
       ) : totals.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-            <RefreshCcw size={24} className="text-gray-300" />
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+            <RefreshCcw size={24} className="text-gray-500" />
           </div>
           <p className="text-sm font-medium text-gray-500">
             No tax data available

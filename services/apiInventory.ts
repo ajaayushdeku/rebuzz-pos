@@ -20,6 +20,18 @@ export type InventoryItem = {
   image?: string;
   /** Additional gallery image URLs (the `images` field). */
   images?: string[];
+  /** Variances of this product (e.g. Momo → buff/chicken/veg), if any. */
+  variants?: InventoryVariant[];
+};
+
+export type InventoryVariant = {
+  id: string;
+  optionValues: string[];
+  price: number;
+  costPrice: number;
+  inStock: number;
+  lowStock: number;
+  isAvailable: boolean;
 };
 
 export type SalesItem = {
@@ -54,11 +66,11 @@ export async function fetchInventoryProducts(): Promise<InventoryItem[]> {
   const json = await res.json();
   const raw = json?.data?.products ?? [];
 
-  return raw
-    // Temporarily disabled for testing — include all products regardless of costPrice.
-    // .filter((p: any) => p && typeof p.costPrice === "number" && p.costPrice > 0)
-    .map(
-      (p: any): InventoryItem => ({
+  return (
+    raw
+      // Temporarily disabled for testing — include all products regardless of costPrice.
+      // .filter((p: any) => p && typeof p.costPrice === "number" && p.costPrice > 0)
+      .map((p: any): InventoryItem => ({
         id: p._id,
         name: p.name ?? "Unnamed Product",
         unit: p.soldBy ?? "each",
@@ -78,8 +90,8 @@ export async function fetchInventoryProducts(): Promise<InventoryItem[]> {
         images: Array.isArray(p.images)
           ? p.images.filter((s: unknown): s is string => typeof s === "string")
           : undefined,
-      }),
-    );
+      }))
+  );
 }
 
 // ── Fetch sales by item (for chart + analysis) ────────────────────────────

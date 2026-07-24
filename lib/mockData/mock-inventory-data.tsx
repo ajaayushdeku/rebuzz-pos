@@ -46,6 +46,16 @@ export type InventoryItem = {
   image?: string;
   /** Additional gallery image URLs (the `images` field). */
   images?: string[];
+  /** Variances of this product (e.g. Momo → buff/chicken/veg), if any. */
+  variants?: {
+    id: string;
+    optionValues: string[];
+    price: number;
+    costPrice: number;
+    inStock: number;
+    lowStock: number;
+    isAvailable: boolean;
+  }[];
 };
 
 // ── Status Logic ─────────────────────────────────────────────

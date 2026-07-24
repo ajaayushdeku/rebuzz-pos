@@ -21,10 +21,7 @@ type ItemSortKey =
 
 // Sales-based sorts (revenue / net profit for the selected range).
 type SalesSortKey =
-  | "revenue-desc"
-  | "revenue-asc"
-  | "profit-desc"
-  | "profit-asc";
+  "revenue-desc" | "revenue-asc" | "profit-desc" | "profit-asc";
 
 type SortKey = "default" | ItemSortKey | SalesSortKey;
 
@@ -104,13 +101,45 @@ const ProductCardGrid = ({
     return map;
   }, [sales]);
 
+  // Expand products that have variances into one card per variant. Each variant
+  // inherits the base product's image and taxable status, but carries its own
+  // name (base + option values), price, cost and stock. A product without
+  // variants passes through unchanged.
+  const expandedItems = useMemo(() => {
+    const out: InventoryItem[] = [];
+    for (const item of items) {
+      if (item.variants && item.variants.length > 0) {
+        for (const v of item.variants) {
+          out.push({
+            ...item, // inherit image, images, isTaxable, unit, orderedCount…
+            id: v.id,
+            name:
+              v.optionValues.length > 0
+                ? `${item.name} · ${v.optionValues.join(" · ")}`
+                : item.name,
+            price: v.price,
+            costPrice: v.costPrice,
+            inStock: v.inStock,
+            lowStock: v.lowStock,
+            usesStocks: true,
+            isAvailable: v.isAvailable,
+            variants: undefined,
+          });
+        }
+      } else {
+        out.push(item);
+      }
+    }
+    return out;
+  }, [items]);
+
   // Search (by name) then sort. Kept memoized so cards don't re-process on
   // unrelated re-renders.
   const processed = useMemo(() => {
     const q = search.trim().toLowerCase();
     const filtered = q
-      ? items.filter((i) => i.name.toLowerCase().includes(q))
-      : items;
+      ? expandedItems.filter((i) => i.name.toLowerCase().includes(q))
+      : expandedItems;
 
     if (sortBy === "default") return filtered;
 
@@ -127,7 +156,7 @@ const ProductCardGrid = ({
     }
 
     return [...filtered].sort(SORT_COMPARATORS[sortBy as ItemSortKey]);
-  }, [items, search, sortBy, salesMap]);
+  }, [expandedItems, search, sortBy, salesMap]);
 
   // Reset the "Load More" window whenever the search or sort changes.
   const filterKey = `${search}|${sortBy}`;

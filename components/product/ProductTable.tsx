@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, Fragment } from "react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrency, formatCurrencySymbol } from "@/utils/helper";
 import {
@@ -15,8 +15,9 @@ import {
   Loader2,
   ChevronRight,
   ChevronLeft,
+  CornerDownRight,
 } from "lucide-react";
-import { Product } from "@/lib/types/product";
+import { Product, ProductVariant } from "@/lib/types/product";
 import ProductDetailModal from "./ProductDetailModal";
 import ProductFormModal from "./ProductFormModal";
 import { useDeleteProduct } from "@/hooks/useProducts";
@@ -92,8 +93,32 @@ export default function ProductTable({ products }: { products: Product[] }) {
     });
   }, [filtered, sortConfig]);
 
-  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
-  const paged = sorted.slice(page * pageSize, (page + 1) * pageSize);
+  // The counted "products" are: standalone products (no variants) + every
+  // variant of a product that has them. A product WITH variants is not counted
+  // itself — its variants stand in for it — so it renders only as a group
+  // header. These units drive both the total count and pagination; each gets
+  // its own sequential S.No. A variant group may split across a page boundary,
+  // in which case its header repeats at the top of the next page.
+  const units = useMemo(() => {
+    const rows: Array<
+      | { kind: "product"; product: Product }
+      | { kind: "variant"; product: Product; variant: ProductVariant }
+    > = [];
+    for (const product of sorted) {
+      const variants = product.variants ?? [];
+      if (variants.length === 0) {
+        rows.push({ kind: "product", product });
+      } else {
+        for (const variant of variants) {
+          rows.push({ kind: "variant", product, variant });
+        }
+      }
+    }
+    return rows;
+  }, [sorted]);
+
+  const totalPages = Math.max(1, Math.ceil(units.length / pageSize));
+  const paged = units.slice(page * pageSize, (page + 1) * pageSize);
 
   const toggleSort = (key: string) => {
     setSortConfig((prev) =>
@@ -185,86 +210,236 @@ export default function ProductTable({ products }: { products: Product[] }) {
                 </td>
               </tr>
             ) : (
-              paged.map((product, idx) => (
-                <tr
-                  key={product.id}
-                  onClick={() => handleRowClick(product)}
-                  className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
-                >
-                  <td className="py-3 px-4 text-gray-400 text-xs">
-                    {page * pageSize + idx + 1}
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="font-medium text-xs text-gray-900">
-                      {product.name}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="text-xs text-gray-500 truncate max-w-[200px] block">
-                      {product.description || "—"}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
-                    {/* {formatCurrency(product.price, currency)} */}
-                    {formatCurrencySymbol(
-                      product.price,
-                      currency.symbol,
-                      currency.locale,
-                    )}
-                  </td>
-                  <td className="py-3 px-4 text-center">
-                    {product.isTaxable ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
-                        <Percent className="h-3 w-3" />
-                        Taxable
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-400 border border-gray-200">
-                        Non-taxable
-                      </span>
-                    )}
-                  </td>
-                  <td className="py-3 px-4 text-center">
-                    {!product.usesStocks ? (
-                      <span className="text-xs text-gray-400">Not tracked</span>
-                    ) : (
-                      <div className="flex items-center justify-center gap-1.5">
-                        <Package className="h-3.5 w-3.5 text-blue-500" />
-                        <span className="text-sm font-medium text-gray-700">
-                          {product.inStock ?? 0}
-                        </span>
-                        {product.lowStock !== undefined &&
-                          product.lowStock > 0 && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200">
-                              Low: {product.lowStock}
+              (() => {
+                // Track the last variant group we emitted a header for, so a
+                // group split across pages gets its header repeated on top.
+                let lastHeaderId: string | null = null;
+
+                return paged.map((row, idx) => {
+                  const serial = page * pageSize + idx + 1;
+
+                  if (row.kind === "variant") {
+                    const { product, variant } = row;
+                    const showHeader = product.id !== lastHeaderId;
+                    lastHeaderId = product.id;
+                    const variantCount = product.variants?.length ?? 0;
+
+                    // Variant row — a variance of the base product. Tax status is
+                    // inherited from the base; edit/delete intentionally omitted.
+                    return (
+                      <Fragment key={variant.id}>
+                        {showHeader && (
+                          <tr
+                            onClick={() => handleRowClick(product)}
+                            className="border-b border-gray-50 cursor-pointer hover:bg-gray-50 transition-colors"
+                          >
+                            {/* Group header — not a counted product, so no S.No */}
+                            <td className="py-3 px-4"></td>
+                            <td className="py-3 px-4">
+                              <span className="flex items-center gap-2">
+                                <span className="font-medium text-xs text-gray-900">
+                                  {product.name}
+                                </span>
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-purple-50 text-purple-600 border border-purple-200">
+                                  {variantCount} variant
+                                  {variantCount > 1 ? "s" : ""}
+                                </span>
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="text-xs text-gray-500 truncate max-w-[200px] block">
+                                {product.description || "—"}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-right text-xs text-gray-300">
+                              —
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              {product.isTaxable ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                                  <Percent className="h-3 w-3" />
+                                  Taxable
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-400 border border-gray-200">
+                                  Non-taxable
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-center text-xs text-gray-300">
+                              —
+                            </td>
+                            <td className="py-3 px-4">
+                              <div
+                                className="flex items-center justify-end gap-1"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <button
+                                  onClick={() => handleEdit(product)}
+                                  className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                  title="Edit product"
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(product)}
+                                  className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                  title="Delete product"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                        <tr className="border-b border-gray-50 last:border-0 bg-gray-50/40">
+                          <td className="py-2.5 px-4 text-gray-400 text-xs">
+                            {serial}
+                          </td>
+                          <td className="py-2.5 px-4">
+                            <span className="flex items-center gap-1.5 pl-3">
+                              <CornerDownRight className="h-3.5 w-3.5 text-gray-300 shrink-0" />
+                              <span className="text-xs text-gray-600 capitalize">
+                                {product.name}
+                                {variant.optionValues.length > 0 && (
+                                  <span className="text-gray-400">
+                                    {" · "}
+                                    {variant.optionValues.join(" · ")}
+                                  </span>
+                                )}
+                              </span>
                             </span>
-                          )}
-                      </div>
-                    )}
-                  </td>
-                  <td className="py-3 px-4">
-                    <div
-                      className="flex items-center justify-end gap-1"
-                      onClick={(e) => e.stopPropagation()}
+                          </td>
+                          <td className="py-2.5 px-4">
+                            <span className="text-xs text-gray-400">
+                              Variant
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-4 text-xs text-right font-semibold text-gray-700">
+                            {formatCurrencySymbol(
+                              variant.price,
+                              currency.symbol,
+                              currency.locale,
+                            )}
+                          </td>
+                          <td className="py-2.5 px-4 text-center">
+                            {product.isTaxable ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                                <Percent className="h-3 w-3" />
+                                Taxable
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-400 border border-gray-200">
+                                Non-taxable
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2.5 px-4 text-center">
+                            <div className="flex items-center justify-center gap-1.5">
+                              <Package className="h-3.5 w-3.5 text-blue-400" />
+                              <span className="text-sm font-medium text-gray-600">
+                                {variant.inStock ?? 0}
+                              </span>
+                              {variant.lowStock !== undefined &&
+                                variant.lowStock > 0 && (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200">
+                                    Low: {variant.lowStock}
+                                  </span>
+                                )}
+                            </div>
+                          </td>
+                          <td className="py-2.5 px-4"></td>
+                        </tr>
+                      </Fragment>
+                    );
+                  }
+
+                  // Standalone product (no variants) — a counted product.
+                  lastHeaderId = null;
+                  const { product } = row;
+                  return (
+                    <tr
+                      key={product.id}
+                      onClick={() => handleRowClick(product)}
+                      className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
                     >
-                      <button
-                        onClick={() => handleEdit(product)}
-                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Edit product"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(product)}
-                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete product"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+                      <td className="py-3 px-4 text-gray-400 text-xs">
+                        {serial}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="font-medium text-xs text-gray-900">
+                          {product.name}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="text-xs text-gray-500 truncate max-w-[200px] block">
+                          {product.description || "—"}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
+                        {formatCurrencySymbol(
+                          product.price,
+                          currency.symbol,
+                          currency.locale,
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        {product.isTaxable ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                            <Percent className="h-3 w-3" />
+                            Taxable
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-400 border border-gray-200">
+                            Non-taxable
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        {!product.usesStocks ? (
+                          <span className="text-xs text-gray-400">
+                            Not tracked
+                          </span>
+                        ) : (
+                          <div className="flex items-center justify-center gap-1.5">
+                            <Package className="h-3.5 w-3.5 text-blue-500" />
+                            <span className="text-sm font-medium text-gray-700">
+                              {product.inStock ?? 0}
+                            </span>
+                            {product.lowStock !== undefined &&
+                              product.lowStock > 0 && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200">
+                                  Low: {product.lowStock}
+                                </span>
+                              )}
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div
+                          className="flex items-center justify-end gap-1"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            onClick={() => handleEdit(product)}
+                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Edit product"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(product)}
+                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete product"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                });
+              })()
             )}
           </tbody>
         </table>
@@ -286,7 +461,7 @@ export default function ProductTable({ products }: { products: Product[] }) {
         </button>
 
         <span className="text-xs text-gray-400 font-medium">
-          Page {page + 1} of {totalPages} · {sorted.length} products
+          Page {page + 1} of {totalPages} · {units.length} products
         </span>
 
         <button
