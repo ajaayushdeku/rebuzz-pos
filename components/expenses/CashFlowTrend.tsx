@@ -20,6 +20,7 @@ import { useTracker } from "@/providers/ExpenseContext";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "../ComponentHeader";
+import { ArrowLeftRight } from "lucide-react";
 
 /** Coerce a recharts payload value (number | string | array) to a number. */
 const toNumber = (v: ValueType | undefined): number =>
@@ -160,10 +161,15 @@ export default function CashFlowTrend() {
         </p>
       </div> */}
 
-      <ComponentHeader
-        title="Cash Flow Trend"
-        subHeader="Monthly comparison of cash inflows vs outflows"
-      />
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+          <ArrowLeftRight size={15} className="text-emerald-600" />
+        </div>
+        <ComponentHeader
+          title="Cash Flow Trend"
+          subHeader="Monthly comparison of cash inflows vs outflows"
+        />
+      </div>
       {/* {!hasData ? (
         <div className="py-16 text-center text-sm text-gray-400">
           No income or expenses recorded yet.

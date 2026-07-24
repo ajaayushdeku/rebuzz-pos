@@ -11,7 +11,7 @@ import {
   X,
   History,
   Send,
-  RefreshCcw,
+  UserX,
 } from "lucide-react";
 import { TriangleAlert } from "lucide-react";
 import CustomerHistoryModal from "@/components/dashboardComponents/customersDash/CustomerHistoryModal";
@@ -107,11 +107,16 @@ export default function AtRiskCustomer({
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full overflow-hidden">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <ComponentHeader
-            title="At-Risk Customers"
-            subHeader=" Inactive customers for over two weeks or with no purchases yet,
-            requiring re-engagement"
-          />
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
+              <UserX size={15} className="text-rose-600" />
+            </div>
+            <ComponentHeader
+              title="At-Risk Customers"
+              subHeader=" Inactive customers for over two weeks or with no purchases yet,
+              requiring re-engagement"
+            />
+          </div>
         </div>
         <div className="text-yellow-600 border-yellow-500 border bg-yellow-100 flex items-center rounded-2xl px-2 py-0.5 gap-1 shrink-0">
           <TriangleAlert size={11} className="shrink-0" />
@@ -190,7 +195,7 @@ export default function AtRiskCustomer({
                 >
                   <div className="flex flex-col items-center justify-center py-12">
                     <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                      <RefreshCcw size={24} className="text-gray-500" />
+                      <UserX size={24} className="text-gray-500" />
                     </div>
                     <p className="text-sm font-medium text-gray-500">
                       No at-risk customer found

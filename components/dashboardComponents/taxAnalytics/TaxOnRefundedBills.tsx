@@ -3,7 +3,7 @@
 import { ComponentHeader } from "@/components/ComponentHeader";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { RefreshCcw, TrendingDown, AlertCircle } from "lucide-react";
+import { RefreshCcw, TrendingDown, AlertCircle, Undo2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { TaxRefundStatsSkeleton } from "./TaxAnalyticsSkeletons";
 
@@ -34,10 +34,15 @@ const TaxOnRefundedBills = ({
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6">
-      <ComponentHeader
-        title="Tax on Refunds"
-        subHeader="Tax reversed for returned items"
-      />
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
+          <Undo2 size={15} className="text-rose-600" />
+        </div>
+        <ComponentHeader
+          title="Tax on Refunds"
+          subHeader="Tax reversed for returned items"
+        />
+      </div>
 
       {isLoading ? (
         <TaxRefundStatsSkeleton />
@@ -48,7 +53,7 @@ const TaxOnRefundedBills = ({
       ) : data.length === 0 ? (
         <div className="flex flex-col items-center justify-center pb-4">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-            <RefreshCcw size={24} className="text-gray-500" />
+            <Undo2 size={24} className="text-gray-500" />
           </div>
           <p className="text-sm font-medium text-gray-500">No refunded bills</p>
           <p className="text-xs text-gray-400 mt-1">

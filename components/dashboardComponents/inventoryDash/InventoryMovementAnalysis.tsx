@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Minus, RefreshCcw } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Activity } from "lucide-react";
 import { MergedSalesItem } from "@/services/apiInventory";
 import { ComponentHeader } from "@/components/ComponentHeader";
 
@@ -72,16 +72,21 @@ const InventoryMovementAnalysis = ({ items }: { items: MergedSalesItem[] }) => {
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex-1">
       <div className="mb-6">
-        <ComponentHeader
-          title="Inventory Movement Analysis"
-          subHeader="Fast-moving vs slow-moving categorization"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+            <Activity size={15} className="text-blue-600" />
+          </div>
+          <ComponentHeader
+            title="Inventory Movement Analysis"
+            subHeader="Fast-moving vs slow-moving categorization"
+          />
+        </div>
       </div>
 
       {items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-            <RefreshCcw size={24} className="text-gray-500" />
+            <Activity size={24} className="text-gray-500" />
           </div>
           <p className="text-sm font-medium text-gray-500">
             {" "}

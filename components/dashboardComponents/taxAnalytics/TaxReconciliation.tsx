@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Scale } from "lucide-react";
 import { mockTaxReconciliationData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -27,7 +27,12 @@ export default function TaxReconciliation() {
       <LockDimFeactureOverlay component_name="Tax Reconciliation" />
 
       {/* Header */}
-      <ComponentHeader title="Tax Reconciliation" subHeader="" />
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+          <Scale size={15} className="text-emerald-600" />
+        </div>
+        <ComponentHeader title="Tax Reconciliation" subHeader="" />
+      </div>
 
       {/* Equation row */}
       <div className="overflow-x-auto">

@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Download, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  Download,
+  ArrowUpDown,
+  ChevronUp,
+  ChevronDown,
+  ScrollText,
+} from "lucide-react";
 import { mockAuditLogData } from "@/lib/mockData/mock-tax-data";
 import type {
   AuditLogEntry,
@@ -160,10 +166,15 @@ export default function TaxAuditLog() {
 
       {/* Header */}
       <div className="flex items-start justify-between mb-5">
-        <ComponentHeader
-          title="Tax Detail / Audit Log"
-          subHeader=" Period-by-period breakdown of liabilities and payments"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center shrink-0">
+            <ScrollText size={15} className="text-slate-600" />
+          </div>
+          <ComponentHeader
+            title="Tax Detail / Audit Log"
+            subHeader=" Period-by-period breakdown of liabilities and payments"
+          />
+        </div>
 
         <button
           onClick={() => exportCSV(sorted)}

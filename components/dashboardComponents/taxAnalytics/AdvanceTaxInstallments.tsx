@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, CheckCircle2 } from "lucide-react";
+import { Calendar, CheckCircle2, CalendarClock } from "lucide-react";
 import { mockAdvanceTaxInstallments } from "@/lib/mockData/mock-tax-data";
 import type { InstallmentStatus } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
@@ -39,10 +39,15 @@ export default function AdvanceTaxInstallments() {
 
       {/* Header */}
       <div className="mb-4">
-        <ComponentHeader
-          title=" Advance Income Tax Installments"
-          subHeader="Poush, Chaitra, and Ashad scheduled payments"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+            <CalendarClock size={15} className="text-blue-600" />
+          </div>
+          <ComponentHeader
+            title=" Advance Income Tax Installments"
+            subHeader="Poush, Chaitra, and Ashad scheduled payments"
+          />
+        </div>
       </div>
 
       {/* Installment rows */}

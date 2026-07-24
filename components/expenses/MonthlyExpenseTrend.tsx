@@ -20,6 +20,7 @@ import { PURPOSE_COLORS, useTracker } from "@/providers/ExpenseContext";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { ComponentHeader } from "../ComponentHeader";
+import { ChartColumnStacked } from "lucide-react";
 
 /** Coerce a recharts payload value (number | string | array) to a number. */
 const toNumber = (v: ValueType | undefined): number =>
@@ -141,10 +142,15 @@ export default function MonthlyExpenseTrend() {
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
-      <ComponentHeader
-        title="Monthly Expense Trend by Category"
-        subHeader="Stacked breakdown of expenses over the last 6 months"
-      />
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
+          <ChartColumnStacked size={15} className="text-violet-600" />
+        </div>
+        <ComponentHeader
+          title="Monthly Expense Trend by Category"
+          subHeader="Stacked breakdown of expenses over the last 6 months"
+        />
+      </div>
 
       {/* {categories.length === 0 ? (
         <div className="py-16 text-center text-sm text-gray-400">

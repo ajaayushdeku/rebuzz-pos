@@ -1,6 +1,6 @@
 "use client";
 
-import { Info, ArrowRight, Loader2 } from "lucide-react";
+import { Info, ArrowRight, Loader2, Landmark } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -56,12 +56,17 @@ export default function IncomeTaxProvision() {
   return (
     <div className="relative bg-gray-900 rounded-2xl p-6 flex flex-col gap-5">
       {/* Header */}
-      <ComponentHeader
-        title="Income Tax Provision"
-        subHeader=" Annual income tax estimate based on current month profit — accrued
-          monthly for accurate reporting"
-        titleColor="text-white"
-      />
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+          <Landmark size={15} className="text-white" />
+        </div>
+        <ComponentHeader
+          title="Income Tax Provision"
+          subHeader=" Annual income tax estimate based on current month profit — accrued
+            monthly for accurate reporting"
+          titleColor="text-white"
+        />
+      </div>
 
       {isLoading ? (
         <div className="flex items-center justify-center py-10 text-gray-400">

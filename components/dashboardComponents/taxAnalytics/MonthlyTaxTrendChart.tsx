@@ -14,7 +14,7 @@ import type {
   Payload,
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
-import { Info } from "lucide-react";
+import { Info, ChartColumnBig } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { useMonthlyTaxTrend } from "@/hooks/useMonthlyTaxTrend";
@@ -86,10 +86,15 @@ export default function MonthlyTaxTrendChart() {
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
-      <ComponentHeader
-        title="Monthly Tax Trend"
-        subHeader=" Tax generated over the last 6 months, broken down by applied rate"
-      />
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+          <ChartColumnBig size={15} className="text-blue-600" />
+        </div>
+        <ComponentHeader
+          title="Monthly Tax Trend"
+          subHeader=" Tax generated over the last 6 months, broken down by applied rate"
+        />
+      </div>
 
       {isLoading ? (
         <div className="flex items-center justify-center h-[280px]">

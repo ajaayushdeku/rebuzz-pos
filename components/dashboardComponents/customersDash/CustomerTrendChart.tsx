@@ -19,6 +19,7 @@ import type {
 import SampleDataBadge from "@/components/ui/sampledatabadge";
 import { mockCustomerTrendData } from "@/lib/mockData/mock-customer-data";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { TrendingUp } from "lucide-react";
 
 // Types
 
@@ -156,10 +157,15 @@ export default function CustomerTrendChart({ data }: CustomerTrendProps) {
       {isEmpty && <SampleDataBadge />}
       {/* Header */}
       <div className="mb-4 ">
-        <ComponentHeader
-          title="Customer Trend"
-          subHeader=" Monthly breakdown over the last 6 months"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+            <TrendingUp size={15} className="text-blue-600" />
+          </div>
+          <ComponentHeader
+            title="Customer Trend"
+            subHeader=" Monthly breakdown over the last 6 months"
+          />
+        </div>
       </div>
 
       {/* Chart */}

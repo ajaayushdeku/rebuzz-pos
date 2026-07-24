@@ -10,7 +10,7 @@ import type {
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useMonthlyTaxTrend, type TaxTotal } from "@/hooks/useMonthlyTaxTrend";
-import { RefreshCcw } from "lucide-react";
+import { Percent } from "lucide-react";
 import { ComponentHeader } from "@/components/ComponentHeader";
 
 const GREEN_COLORS = [
@@ -96,7 +96,7 @@ function BreakdownSection({
       {colored.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-            <RefreshCcw size={24} className="text-gray-500" />
+            <Percent size={24} className="text-gray-500" />
           </div>
           <p className="text-sm font-medium text-gray-500">{emptyLabel}</p>
           <p className="text-xs text-gray-400 mt-1">
@@ -244,10 +244,20 @@ export default function TaxRateBreakdown() {
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6">
-      <ComponentHeader
-        title="Tax Breakdown"
-        subHeader="Tax collected by applied rate over the last 6 months"
-      />
+      <div className="flex items-center gap-2.5">
+        <div
+          className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+          style={{
+            background: "linear-gradient(90deg, #2a9070c3 50%, #7c3aedbd 50%)",
+          }}
+        >
+          <Percent size={15} className="text-white" />
+        </div>
+        <ComponentHeader
+          title="Tax Breakdown"
+          subHeader="Tax collected by applied rate over the last 6 months"
+        />
+      </div>
 
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
@@ -260,7 +270,7 @@ export default function TaxRateBreakdown() {
       ) : totals.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-            <RefreshCcw size={24} className="text-gray-500" />
+            <Percent size={24} className="text-gray-500" />
           </div>
           <p className="text-sm font-medium text-gray-500">
             No tax data available

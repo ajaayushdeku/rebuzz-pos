@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, ArrowRight } from "lucide-react";
+import { Calendar, ArrowRight, Wallet } from "lucide-react";
 import { mockWhatYouOweData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -51,10 +51,15 @@ export default function WhatYouActuallyOwe() {
 
         {/* Card header */}
         <div className="flex items-start justify-between mb-6">
-          <ComponentHeader
-            title="What you actually owe"
-            subHeader="Your VAT bill this month"
-          />
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+              <Wallet size={15} className="text-indigo-600" />
+            </div>
+            <ComponentHeader
+              title="What you actually owe"
+              subHeader="Your VAT bill this month"
+            />
+          </div>
 
           <div className="flex items-center gap-1.5 border border-blue-200 bg-blue-50 rounded-full px-3 py-1">
             <Calendar size={11} className="text-blue-500" />

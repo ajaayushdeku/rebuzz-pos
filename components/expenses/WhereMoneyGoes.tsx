@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { mockWhereMoneyGoesData } from "@/lib/mockData/mock-expense-data";
-import { RefreshCcw, Zap } from "lucide-react";
+import { Wallet, Zap } from "lucide-react";
 import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
 import { PURPOSE_COLORS, useTracker } from "@/providers/ExpenseContext";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -77,10 +77,15 @@ export default function WhereMoneyGoes() {
 
       <div className="mb-4">
         {" "}
-        <ComponentHeader
-          title="Where the money goes"
-          subHeader=" Category breakdown and top vendor concentration"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+            <Wallet size={15} className="text-amber-600" />
+          </div>
+          <ComponentHeader
+            title="Where the money goes"
+            subHeader=" Category breakdown and top vendor concentration"
+          />
+        </div>
       </div>
 
       <div className=" grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -91,7 +96,7 @@ export default function WhereMoneyGoes() {
           {categorySpend.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                <RefreshCcw size={24} className="text-gray-500" />
+                <Wallet size={24} className="text-gray-500" />
               </div>
               <p className="text-sm font-medium text-gray-500">
                 {" "}

@@ -16,7 +16,7 @@ import type {
   Payload,
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal, TrendingUp } from "lucide-react";
 import SampleDataBadge from "@/components/ui/sampledatabadge";
 import StaffFilterModal from "./StaffFilterModal";
 import { ComponentHeader } from "@/components/ComponentHeader";
@@ -186,10 +186,15 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
 
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
-        <ComponentHeader
-          title="Sales Per Hour by Employee"
-          subHeader="Throughput breakdown across the day per team member."
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
+            <TrendingUp size={15} className="text-green-600" />
+          </div>
+          <ComponentHeader
+            title="Sales Per Hour by Employee"
+            subHeader="Throughput breakdown across the day per team member."
+          />
+        </div>
 
         {/* Filter button */}
         {!isEmpty && allStaffNames.length > 0 && (

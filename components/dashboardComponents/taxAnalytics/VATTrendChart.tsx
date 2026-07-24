@@ -10,7 +10,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { Info } from "lucide-react";
+import { Info, ChartSpline } from "lucide-react";
 import { mockVATTrendData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
@@ -94,10 +94,15 @@ export default function VATTrendChart() {
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
       <LockDimFeactureOverlay component_name="VAT Trend Chart" />
 
-      <ComponentHeader
-        title="Input vs Output VAT Trend"
-        subHeader=" How much VAT you collect vs reclaim, over 6 months"
-      />
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+          <ChartSpline size={15} className="text-blue-600" />
+        </div>
+        <ComponentHeader
+          title="Input vs Output VAT Trend"
+          subHeader=" How much VAT you collect vs reclaim, over 6 months"
+        />
+      </div>
 
       <ResponsiveContainer width="100%" height={280}>
         <LineChart

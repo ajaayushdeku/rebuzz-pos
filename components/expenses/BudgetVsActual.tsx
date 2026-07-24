@@ -5,7 +5,7 @@ import { PURPOSE_COLORS, useTracker } from "@/providers/ExpenseContext";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "../ComponentHeader";
-import { RefreshCcw } from "lucide-react";
+import { ChartColumnBig } from "lucide-react";
 
 function getPctStyle(pct: number): string {
   if (pct >= 100) return "bg-amber-100 text-amber-700";
@@ -77,16 +77,21 @@ export default function BudgetVsActual() {
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
       <div className="mb-2">
-        <ComponentHeader
-          title="Budget vs Actual"
-          subHeader="Spending vs planned budget per category"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+            <ChartColumnBig size={15} className="text-blue-600" />
+          </div>
+          <ComponentHeader
+            title="Budget vs Actual"
+            subHeader="Spending vs planned budget per category"
+          />
+        </div>
       </div>
 
       {rows.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-            <RefreshCcw size={24} className="text-gray-500" />
+            <ChartColumnBig size={24} className="text-gray-500" />
           </div>
           <p className="text-sm font-medium text-gray-500">
             No Budget vs Actual Expense data

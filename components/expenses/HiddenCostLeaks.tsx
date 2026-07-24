@@ -3,7 +3,7 @@
 import { mockHiddenCostLeaksData } from "@/lib/mockData/mock-expense-data";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { Info } from "lucide-react";
+import { Info, Droplets } from "lucide-react";
 import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
 import { ComponentHeader } from "../ComponentHeader";
 
@@ -30,10 +30,15 @@ export default function HiddenCostLeaks() {
   return (
     <div className="flex flex-col gap-5">
       {/* Section header */}
-      <ComponentHeader
-        title="Where money quietly leaks"
-        subHeader="Costs most shops never track"
-      />
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-xl bg-cyan-50 flex items-center justify-center shrink-0">
+          <Droplets size={15} className="text-cyan-600" />
+        </div>
+        <ComponentHeader
+          title="Where money quietly leaks"
+          subHeader="Costs most shops never track"
+        />
+      </div>
 
       {/* ── Top 3 cards ── */}
       <div className="relative grid grid-cols-1 md:grid-cols-3 gap-4">

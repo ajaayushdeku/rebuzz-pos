@@ -77,10 +77,15 @@ export default function CustomerSegmentationChart({
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full min-w-0">
       {/* Header */}
       <div className="mb-1 ">
-        <ComponentHeader
-          title="Customer Segmentation"
-          subHeader=" Customer Activity distribution over the last 15 days"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-sky-50 flex items-center justify-center shrink-0">
+            <ChartPie size={15} className="text-sky-600" />
+          </div>
+          <ComponentHeader
+            title="Customer Segmentation"
+            subHeader=" Customer Activity distribution over the last 15 days"
+          />
+        </div>
       </div>
 
       {/* Pie Chart + Legend */}

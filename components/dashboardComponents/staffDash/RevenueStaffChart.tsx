@@ -17,6 +17,7 @@ import { CustomTooltipProps } from "@/lib/types/chart";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { ChartColumnBig } from "lucide-react";
 
 export interface StaffRevenue {
   name: string;
@@ -86,10 +87,15 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
       {isEmpty && <SampleDataBadge />}
       {/* Header */}
       <div className="mb-6">
-        <ComponentHeader
-          title="Revenue per Employee"
-          subHeader="Individual contribution to total revenue"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+            <ChartColumnBig size={15} className="text-emerald-600" />
+          </div>
+          <ComponentHeader
+            title="Revenue per Employee"
+            subHeader="Individual contribution to total revenue"
+          />
+        </div>
       </div>
 
       {/* Chart */}

@@ -1,4 +1,4 @@
-import { PackageCheck, Pin } from "lucide-react";
+import { PackageCheck, Pin, PackagePlus } from "lucide-react";
 import { InventoryItem } from "@/services/apiInventory";
 import { MergedSalesItem } from "@/services/apiInventory";
 import { ComponentHeader } from "@/components/ComponentHeader";
@@ -94,10 +94,15 @@ export default function PredictiveRestockingSuggestions({
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
       <div className="mb-6">
-        <ComponentHeader
-          title="Predictive Restocking Suggestions"
-          subHeader="Restock recommendations based on current stock levels & sales velocity"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+            <PackagePlus size={15} className="text-indigo-600" />
+          </div>
+          <ComponentHeader
+            title="Predictive Restocking Suggestions"
+            subHeader="Restock recommendations based on current stock levels & sales velocity"
+          />
+        </div>
       </div>
 
       {suggestions.length === 0 ? (

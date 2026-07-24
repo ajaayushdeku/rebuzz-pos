@@ -11,7 +11,7 @@ import {
   X,
   UserPlus,
   History,
-  RefreshCcw,
+  Trophy,
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -117,10 +117,15 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full overflow-hidden">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-        <ComponentHeader
-          title="Customer Leaderboard"
-          subHeader="Highest value contributors this month"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+            <Trophy size={15} className="text-amber-600" />
+          </div>
+          <ComponentHeader
+            title="Customer Leaderboard"
+            subHeader="Highest value contributors this month"
+          />
+        </div>
 
         <button
           onClick={() => setCreateModalOpen(true)}
@@ -216,7 +221,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                 >
                   <div className="flex flex-col items-center justify-center py-12">
                     <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                      <RefreshCcw size={24} className="text-gray-500" />
+                      <Trophy size={24} className="text-gray-500" />
                     </div>
                     <p className="text-sm font-medium text-gray-500">
                       No customer data

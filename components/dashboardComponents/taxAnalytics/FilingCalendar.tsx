@@ -1,6 +1,12 @@
 "use client";
 
-import { AlertCircle, Calendar, CheckCircle2, Clock } from "lucide-react";
+import {
+  AlertCircle,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  CalendarDays,
+} from "lucide-react";
 import { mockFilingCalendarData } from "@/lib/mockData/mock-tax-data";
 import type { FilingStatus } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
@@ -42,10 +48,15 @@ export default function FilingCalendar() {
       <LockDimFeactureOverlay component_name="Filing Calendar" />
 
       {/* Header */}
-      <ComponentHeader
-        title="Filing Calendar"
-        subHeader="Tax filing and payment calendar with BS dates"
-      />
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+          <CalendarDays size={15} className="text-blue-600" />
+        </div>
+        <ComponentHeader
+          title="Filing Calendar"
+          subHeader="Tax filing and payment calendar with BS dates"
+        />
+      </div>
 
       {/* Upcoming alert banner */}
       {d.upcomingCount > 0 && (

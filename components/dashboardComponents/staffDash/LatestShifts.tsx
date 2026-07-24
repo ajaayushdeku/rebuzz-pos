@@ -178,11 +178,16 @@ export default function LatestShifts({
         {/* {filteredShifts.length}{" "}
             {filteredShifts.length === 1 ? "shift" : "shifts"} recorded */}
 
-        <ComponentHeader
-          title="Latest Shifts"
-          subHeader={`
-            Latest Shifts from all the employees`}
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+            <Clock size={15} className="text-blue-600" />
+          </div>
+          <ComponentHeader
+            title="Latest Shifts"
+            subHeader={`
+              Latest Shifts from all the employees`}
+          />
+        </div>
 
         <div className="flex items-center gap-3">
           <p className=" px-3 pr-0 text-xs font-medium text-gray-500">

@@ -79,7 +79,14 @@ export default function WhatChangedAndWhy() {
             ? 100
             : 0;
 
-      return { thisMonth, lastMonth, change, changePct, thisRevenue, lastRevenue };
+      return {
+        thisMonth,
+        lastMonth,
+        change,
+        changePct,
+        thisRevenue,
+        lastRevenue,
+      };
     },
     staleTime: 60 * 1000,
   });
