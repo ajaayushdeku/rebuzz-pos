@@ -22,7 +22,7 @@ import type {
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { CurrencyConfig, useCurrency } from "@/providers/CurrencyContext";
 import { useSalesByCategory } from "@/hooks/useSalesByCategory";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChartColumnBig } from "lucide-react";
 import { ComponentHeader } from "@/components/ComponentHeader";
 
 // ── Types ─────────────────────────────────────────────────────────────────
@@ -262,10 +262,15 @@ export default function GrossVsCOGSVsNetProfit({
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
       {/* Header */}
       <div className="mb-6">
-        <ComponentHeader
-          title="Gross Revenue vs COGS vs Net Profit"
-          subHeader="Per-category breakdown of revenue, cost, and profitability"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+            <ChartColumnBig size={15} className="text-blue-600" />
+          </div>
+          <ComponentHeader
+            title="Gross Revenue vs COGS vs Net Profit"
+            subHeader="Per-category breakdown of revenue, cost, and profitability"
+          />
+        </div>
 
         {isError && (
           <p className="text-xs text-amber-400 mt-1">

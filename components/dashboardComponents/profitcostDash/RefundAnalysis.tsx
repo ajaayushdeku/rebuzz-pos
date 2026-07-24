@@ -9,7 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  RefreshCcw,
+  Undo2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -110,10 +110,15 @@ export default function RefundAnalysis({
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full overflow-hidden">
       <div className="min-w-0 mb-4">
-        <ComponentHeader
-          title="Refund Analysis"
-          subHeader="All the refunded bills with lost value."
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
+            <Undo2 size={15} className="text-rose-600" />
+          </div>
+          <ComponentHeader
+            title="Refund Analysis"
+            subHeader="All the refunded bills with lost value."
+          />
+        </div>
       </div>
 
       {/* Search */}
@@ -205,7 +210,7 @@ export default function RefundAnalysis({
                 >
                   <div className="flex flex-col items-center justify-center py-12">
                     <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-                      <RefreshCcw size={24} className="text-gray-300" />
+                      <Undo2 size={24} className="text-gray-300" />
                     </div>
                     <p className="text-sm font-medium text-gray-500">
                       No refund data

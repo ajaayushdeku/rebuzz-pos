@@ -4,6 +4,7 @@ import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { Scale } from "lucide-react";
 
 export interface BreakEvenData {
   revenue: number;
@@ -44,10 +45,15 @@ export default function BreakEvenMarginSafety() {
 
       {/* Header */}
       <div className="mb-6">
-        <ComponentHeader
-          title="Break-even & Margin of Safety"
-          subHeader="How much revenue is required to cover all costs"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+            <Scale size={15} className="text-emerald-600" />
+          </div>
+          <ComponentHeader
+            title="Break-even & Margin of Safety"
+            subHeader="How much revenue is required to cover all costs"
+          />
+        </div>
       </div>
 
       {/* KPI Row */}

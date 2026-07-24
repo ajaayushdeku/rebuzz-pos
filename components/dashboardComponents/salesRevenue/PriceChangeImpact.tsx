@@ -1,6 +1,6 @@
 "use client";
 
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Tag } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line } from "recharts";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -24,7 +24,10 @@ export default function PriceChangeImpact({ data }: PriceChangeImpactProps) {
       <LockDimFeactureOverlay component_name="Prime Change Impact" />
 
       {/* Header */}
-      <div className="mb-4 md:mb-5">
+      <div className="flex items-center gap-2.5 mb-4 md:mb-5">
+        <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+          <Tag size={15} className="text-amber-600" />
+        </div>
         <ComponentHeader
           title="Price Change Impact"
           subHeader="Before vs after analysis of recent menu price updates"

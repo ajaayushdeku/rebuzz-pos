@@ -21,6 +21,7 @@ import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { Grid2x2 } from "lucide-react";
 
 const CATEGORY_COLORS: Record<MenuCategory, string> = {
   Coffee: "#3b82f6",
@@ -104,10 +105,15 @@ export default function MenuEngineeringMatrix() {
 
       {/* Header */}
       <div className="mb-6">
-        <ComponentHeader
-          title="Menu Engineering Matrix"
-          subHeader="Popularity (Units Sold) vs Profitability (Contribution Margin)"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+            <Grid2x2 size={15} className="text-indigo-600" />
+          </div>
+          <ComponentHeader
+            title="Menu Engineering Matrix"
+            subHeader="Popularity (Units Sold) vs Profitability (Contribution Margin)"
+          />
+        </div>
       </div>
 
       <div className="relative">

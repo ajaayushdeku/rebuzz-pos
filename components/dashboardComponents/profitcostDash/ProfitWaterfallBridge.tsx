@@ -15,6 +15,7 @@ import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCompactNumber } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { ChartColumnDecreasing } from "lucide-react";
 
 const BAR_COLORS: Record<string, string> = {
   start: "#64748b",
@@ -62,10 +63,15 @@ export default function ProfitWaterfallBridge() {
 
       {/* Header */}
       <div className="mb-6">
-        <ComponentHeader
-          title="Profit Waterfall Bridge"
-          subHeader="Step-by-step breakdown from Gross Revenue to Net Profit"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-teal-50 flex items-center justify-center shrink-0">
+            <ChartColumnDecreasing size={15} className="text-teal-600" />
+          </div>
+          <ComponentHeader
+            title="Profit Waterfall Bridge"
+            subHeader="Step-by-step breakdown from Gross Revenue to Net Profit"
+          />
+        </div>
       </div>
 
       <ResponsiveContainer width="100%" height={320}>

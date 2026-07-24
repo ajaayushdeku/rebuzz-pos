@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, Timer } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
@@ -188,7 +188,10 @@ export default function TimeWiseProductAnalysis({
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full relative select-none">
       {/* Header */}
-      <div className="mb-4 md:mb-5">
+      <div className="flex items-center gap-2.5 mb-4 md:mb-5">
+        <div className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
+          <Timer size={15} className="text-violet-600" />
+        </div>
         <ComponentHeader
           title="Time-Wise Product Analysis"
           subHeader="Top performing products specific to times of day"

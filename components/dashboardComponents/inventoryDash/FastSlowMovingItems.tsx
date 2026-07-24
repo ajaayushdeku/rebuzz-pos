@@ -167,9 +167,22 @@ const Panel = ({
       </div>
       <div className="space-y-2">
         {items.length === 0 ? (
-          <p className="text-xs text-gray-400 text-center py-6">
-            No {isFast ? "fast" : "slow"} moving items
-          </p>
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+              {isFast ? (
+                <Flame size={24} className="text-gray-500" />
+              ) : (
+                <TrendingDown size={24} className="text-gray-500" />
+              )}
+            </div>
+            <p className="text-sm font-medium text-gray-500">
+              {" "}
+              No {isFast ? "fast" : "slow"} moving items
+            </p>
+            <p className="text-xs text-gray-400 mt-1">
+              {isFast ? "Fast" : "Slow"} moving items data will appear here
+            </p>
+          </div>
         ) : (
           displayedItems.map((item) => (
             <ItemRow key={item.name} item={item} type={type} />

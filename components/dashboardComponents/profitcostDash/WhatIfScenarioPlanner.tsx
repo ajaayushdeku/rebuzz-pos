@@ -7,7 +7,7 @@ import {
   ScenarioAdjustments,
 } from "@/lib/mockData/mock-whatifscenario";
 import { useMemo, useState } from "react";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, SlidersHorizontal } from "lucide-react";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -73,10 +73,15 @@ export default function WhatIfScenarioPlanner() {
 
       {/* Header */}
       <div className="mb-6">
-        <ComponentHeader
-          title=" What-If Scenario Planner"
-          subHeader="Adjust sliders to forecast profit impact"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
+            <SlidersHorizontal size={15} className="text-violet-600" />
+          </div>
+          <ComponentHeader
+            title=" What-If Scenario Planner"
+            subHeader="Adjust sliders to forecast profit impact"
+          />
+        </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">

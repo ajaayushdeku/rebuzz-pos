@@ -16,6 +16,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { Clock } from "lucide-react";
 
 export interface HourlyData {
   hour: string;
@@ -162,11 +163,16 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
   return (
     <div className="bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5  w-full">
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4 md:mb-6">
-        <ComponentHeader
-          title="Hourly Sales Trend"
-          subHeader="Revenue throughput across all operating hours today"
-        />
+      <div className=" flex flex-col  md:flex-row md:items-center md:justify-between gap-3 mb-4 md:mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center shrink-0">
+            <Clock size={16} />
+          </div>
+          <ComponentHeader
+            title="Hourly Sales Trend"
+            subHeader="Revenue throughput across all operating hours today"
+          />
+        </div>
 
         {/* Hour Range Filter */}
         <div className="flex flex-col gap-1.5">

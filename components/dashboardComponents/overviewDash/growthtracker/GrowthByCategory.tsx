@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
-import { ArrowUpRight, ArrowDownRight, Minus, RefreshCcw } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowUpRight, ArrowDownRight, Minus, TrendingUp } from "lucide-react";
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -131,10 +131,15 @@ export default function GrowthByCategory() {
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6">
-      <ComponentHeader
-        title="Growth by Category"
-        subHeader=" Month-over-month revenue growth per product category"
-      />
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+          <TrendingUp size={16} />
+        </div>
+        <ComponentHeader
+          title="Growth by Category"
+          subHeader=" Month-over-month revenue growth per product category"
+        />
+      </div>
 
       {isLoading ? (
         <div className="space-y-4">
@@ -155,7 +160,7 @@ export default function GrowthByCategory() {
       ) : rows.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-10 text-gray-400">
           <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-2">
-            <RefreshCcw size={24} className="text-gray-500" />
+            <TrendingUp size={24} className="text-gray-500" />
           </div>
           <p className="text-sm font-medium text-gray-500">No category found</p>
           <p className="text-xs text-gray-400 mt-1">

@@ -9,7 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  RefreshCcw,
+  Package,
 } from "lucide-react";
 import { Product } from "./profit-per-product-column";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -101,10 +101,15 @@ export default function ProfitPerProduct({
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full overflow-hidden">
       <div className="min-w-0 mb-4">
-        <ComponentHeader
-          title="Profit per Product"
-          subHeader="Revenue, cost and margins for top selling products."
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+            <Package size={15} className="text-blue-600" />
+          </div>
+          <ComponentHeader
+            title="Profit per Product"
+            subHeader="Revenue, cost and margins for top selling products."
+          />
+        </div>
       </div>
 
       {/* Search */}
@@ -204,7 +209,7 @@ export default function ProfitPerProduct({
                 >
                   <div className="flex flex-col items-center justify-center py-12">
                     <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-                      <RefreshCcw size={24} className="text-gray-300" />
+                      <Package size={24} className="text-gray-300" />
                     </div>
                     <p className="text-sm font-medium text-gray-500">
                       No product data

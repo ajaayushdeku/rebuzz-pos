@@ -15,6 +15,7 @@ import {
 } from "@/lib/mockData/mock-refundBreakDown";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { ChartPie } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -80,10 +81,15 @@ export default function RefundBreakdown() {
       <LockDimFeactureOverlay component_name="Refund Breakdown" />
 
       {/* Header */}
-      <ComponentHeader
-        title="Refund Breakdown"
-        subHeader="Value lost by refund reason"
-      />
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
+          <ChartPie size={15} className="text-rose-600" />
+        </div>
+        <ComponentHeader
+          title="Refund Breakdown"
+          subHeader="Value lost by refund reason"
+        />
+      </div>
 
       {/* Donut chart */}
       <div className="relative flex items-center justify-center shrink-0">

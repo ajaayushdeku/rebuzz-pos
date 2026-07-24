@@ -1,6 +1,7 @@
 "use client";
 
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { CalendarDays } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -114,7 +115,10 @@ const PeakDaysAnalysis = ({ data }: PeakDayDataProps) => {
   return (
     <div className="bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
       {/* HEADER */}
-      <div className="mb-4 md:mb-6">
+      <div className="flex items-center gap-2.5 mb-4 md:mb-6">
+        <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+          <CalendarDays size={15} className="text-blue-600" />
+        </div>
         <ComponentHeader
           title="Peak Days Analysis"
           subHeader="Average orders and sales per weekday across the selected period"

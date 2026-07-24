@@ -11,6 +11,7 @@ import {
   X,
   RefreshCcw,
   PackageCheck,
+  TrendingDown,
 } from "lucide-react";
 import { SlowProduct } from "./slow-product-columns";
 import { getDaysColor } from "@/lib/utils";
@@ -95,10 +96,15 @@ export default function SlowProducts({
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
-      <ComponentHeader
-        title="Slow Moving Products"
-        subHeader="Products with no sales in selected period, attention required."
-      />
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
+          <TrendingDown size={15} className="text-rose-600" />
+        </div>
+        <ComponentHeader
+          title="Slow Moving Products"
+          subHeader="Products with no sales in selected period, attention required."
+        />
+      </div>
 
       {/* Search + Days preset */}
       <div className="flex justify-between items-center gap-2 mt-4 mb-4">

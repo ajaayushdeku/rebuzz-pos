@@ -1,6 +1,6 @@
 "use client";
 
-import { TrendingUp } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
@@ -67,15 +67,14 @@ const TopItems = ({ topProducts }: TopProductProps) => {
   return (
     <div className="flex-1 bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+          <Trophy size={15} className="text-amber-600" />
+        </div>
         <ComponentHeader
           title="Top 3 Items Today"
           subHeader=" Best performers in today's session"
         />
-
-        <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-          <TrendingUp size={16} strokeWidth={2.25} />
-        </div>
       </div>
 
       {/* Divider */}
@@ -85,7 +84,7 @@ const TopItems = ({ topProducts }: TopProductProps) => {
       {!hasData ? (
         <div className="flex flex-col items-center justify-center py-10 text-gray-400">
           <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-2">
-            <TrendingUp size={24} className="text-gray-500" />
+            <Trophy size={24} className="text-gray-500" />
           </div>
           <p className="text-sm font-medium text-gray-500">No sales yet</p>
           <p className="text-xs text-gray-400 mt-1">No items sales for today</p>

@@ -15,6 +15,7 @@ import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCompactNumber } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { ArrowLeftRight } from "lucide-react";
 
 const BAR_COLORS: Record<string, string> = {
   base: "#94a3b8",
@@ -68,10 +69,15 @@ export default function ProfitVarianceBridge() {
 
       {/* Header */}
       <div className="mb-6">
-        <ComponentHeader
-          title="Profit Variance Bridge"
-          subHeader="Why did net profit change vs last month?"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-sky-50 flex items-center justify-center shrink-0">
+            <ArrowLeftRight size={15} className="text-sky-600" />
+          </div>
+          <ComponentHeader
+            title="Profit Variance Bridge"
+            subHeader="Why did net profit change vs last month?"
+          />
+        </div>
       </div>
 
       <ResponsiveContainer width="100%" height={320}>

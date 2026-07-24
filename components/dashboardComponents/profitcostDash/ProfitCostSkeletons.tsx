@@ -140,10 +140,7 @@ export function DayTimeProfitHeatmapSkeleton() {
                 style={{ gridTemplateColumns: columns }}
               >
                 {Array.from({ length: HEATMAP_HOURS }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-6 flex items-center justify-center"
-                  >
+                  <div key={i} className="h-6 flex items-center justify-center">
                     <div className="h-3 w-8 bg-gray-100 rounded" />
                   </div>
                 ))}

@@ -7,6 +7,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { Grid3x3 } from "lucide-react";
 
 // Types
 
@@ -389,10 +390,22 @@ export default function Heatmap({
     <div className="bg-white w-full">
       {/* Header */}
       <div className="flex flex-row items-start justify-between mb-5 gap-3">
-        <ComponentHeader
-          title="Sales Activity Heatmap"
-          subHeader="Order counts by day and hour — darker cells = more orders"
-        />
+        <div className="flex items-center gap-3">
+          {/* Icon tint follows the active heatmap color scheme. */}
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            style={{
+              backgroundColor: `rgba(${scheme.stops[1].join(",")}, 0.12)`,
+              color: `rgb(${scheme.stops[1].join(",")})`,
+            }}
+          >
+            <Grid3x3 size={16} />
+          </div>
+          <ComponentHeader
+            title="Sales Activity Heatmap"
+            subHeader="Order counts by day and hour — darker cells = more orders"
+          />
+        </div>
 
         <Legend scheme={scheme} min={min} max={max} />
       </div>

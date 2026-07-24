@@ -7,6 +7,7 @@ import { formatCurrencySymbol } from "@/utils/helper";
 import { revenueFlowMockData } from "@/lib/mockData/mock-finance-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { Waypoints } from "lucide-react";
 
 export default function RevenueFlowSankey() {
   const { currency } = useCurrency();
@@ -31,10 +32,15 @@ export default function RevenueFlowSankey() {
 
       {/* Header */}
       <div className="mb-6">
-        <ComponentHeader
-          title="Revenue Flow (Sankey Diagram)"
-          subHeader="Visualizing how Gross Revenue distributes into expenses and Net Profit"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-cyan-50 flex items-center justify-center shrink-0">
+            <Waypoints size={15} className="text-cyan-600" />
+          </div>
+          <ComponentHeader
+            title="Revenue Flow (Sankey Diagram)"
+            subHeader="Visualizing how Gross Revenue distributes into expenses and Net Profit"
+          />
+        </div>
       </div>
 
       <div className=" h-[520px]">

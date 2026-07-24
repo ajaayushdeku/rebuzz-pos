@@ -10,7 +10,7 @@ import type {
 import { useEffect, useRef, useState } from "react";
 import { PaymentMethodRevenue } from "@/services/paymentMethods.client";
 import { usePaymentMethods } from "@/hooks/usePaymentMethods";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, CreditCard } from "lucide-react";
 import { ComponentHeader } from "@/components/ComponentHeader";
 
 interface PaymentMethodDataWithColor extends PaymentMethodRevenue {
@@ -25,15 +25,16 @@ interface PaymentMethodsChartProps {
 }
 
 const COLOR_PALETTE = [
+  "#14b8a6",
+  "#8b5cf6",
   "#60a5fa",
   "#f97316",
-  "#14b8a6",
+  "#34d399",
   "#f87171",
   "#06b6d4",
-  "#8b5cf6",
   "#a78bfa",
   "#ec4899",
-  "#34d399",
+
   "#f59e0b",
 ];
 
@@ -132,9 +133,12 @@ const PaymentMethodsChart = ({
   }, [coloredData]);
 
   return (
-    <div className="w-full bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
+    <div className="w-full  bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5 ">
       {/* Header — follows the global date range */}
-      <div className="mb-4">
+      <div className="mb-4 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+          <CreditCard size={16} />
+        </div>
         <ComponentHeader
           title="Payment Methods"
           subHeader=" Revenue split by payment type"
@@ -144,21 +148,7 @@ const PaymentMethodsChart = ({
       {data.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-10 text-center">
           <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                stroke="#9CA3AF"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <CreditCard size={24} className="text-gray-400" />
           </div>
           <p className="text-sm font-medium text-gray-500">
             No payment method data found
@@ -202,7 +192,7 @@ const PaymentMethodsChart = ({
               ref={scrollRef}
               className=" mt-2
     px-2
-    h-20
+    h-10
     overflow-y-auto
     space-y-3
     scrollbar-hide

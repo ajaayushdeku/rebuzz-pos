@@ -16,6 +16,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { CustomTooltipProps, DataPoint } from "@/lib/types/chart";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { ChartColumnBig } from "lucide-react";
 
 interface WeeklyRevenueChartProps {
   data: DataPoint[];
@@ -76,10 +77,15 @@ const WeeklyRevenueChart = ({ data, peakDay }: WeeklyRevenueChartProps) => {
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6">
-      <ComponentHeader
-        title="Daily Sales Trend"
-        subHeader="  Revenue performance – current week"
-      />
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+          <ChartColumnBig size={16} />
+        </div>
+        <ComponentHeader
+          title="Daily Sales Trend"
+          subHeader="  Revenue performance – current week"
+        />
+      </div>
 
       <div className="h-56 md:h-72">
         <ResponsiveContainer width="100%" height="100%">

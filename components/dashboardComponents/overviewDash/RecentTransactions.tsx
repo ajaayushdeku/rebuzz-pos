@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { ChevronRight, RefreshCcw } from "lucide-react";
+import { ChevronRight, Receipt } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { Transaction } from "../orderHistory/transaction-columns";
 import { statusStyles } from "@/lib/config/transaction";
@@ -24,15 +24,20 @@ export default function RecentTransactions({
   return (
     <div className="flex-1 bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
       <div className="flex items-center justify-between mb-3">
-        <ComponentHeader title={title} subHeader={description} />
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+            <Receipt size={16} />
+          </div>
+          <ComponentHeader title={title} subHeader={description} />
+        </div>
 
         <Link
           href={viewAllHref}
-          className="group flex items-center gap-1 rounded-xl px-3 py-2 text-sm font-medium text-blue-600 transition-all hover:bg-blue-50"
+          className="group flex items-center gap-1 rounded-xl px-3 py-2 text-xs font-medium text-blue-600 transition-all hover:bg-blue-50"
         >
           View all
           <ChevronRight
-            size={22}
+            size={13}
             className="transition-transform duration-200 group-hover:translate-x-0.5"
           />
         </Link>
@@ -60,7 +65,7 @@ export default function RecentTransactions({
                 >
                   <div className="flex flex-col items-center justify-center py-10 text-gray-400">
                     <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-2">
-                      <RefreshCcw size={24} className="text-gray-500" />
+                      <Receipt size={24} className="text-gray-500" />
                     </div>
                     <p className="text-sm font-medium text-gray-500">
                       No recent transactions found

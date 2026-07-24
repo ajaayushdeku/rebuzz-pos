@@ -1,5 +1,6 @@
 import { ComponentHeader } from "@/components/ComponentHeader";
 import { MergedSalesItem } from "@/services/apiInventory";
+import { RefreshCcw } from "lucide-react";
 
 const MAX_BARS = 8;
 
@@ -28,8 +29,17 @@ export default function StockMovementChart({
       </div>
 
       {chartItems.length === 0 ? (
-        <div className="flex items-center justify-center py-10 text-gray-400 text-sm">
-          No sales data available
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+            <RefreshCcw size={24} className="text-gray-500" />
+          </div>
+          <p className="text-sm font-medium text-gray-500">
+            {" "}
+            No stock movement data available
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            Stock Movement data will appear here
+          </p>
         </div>
       ) : (
         <>

@@ -20,6 +20,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import { fetchTargets } from "@/services/apiTarget.client";
+import { Target } from "lucide-react";
 
 export interface TargetActualData {
   month: string;
@@ -189,19 +190,10 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
 
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
-          <div className="flex items-center gap-2 mb-1">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#60a5fa"
-              strokeWidth="2"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <circle cx="12" cy="12" r="6" />
-              <circle cx="12" cy="12" r="2" />
-            </svg>
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <Target size={16} />
+            </div>
             <ComponentHeader
               title="Target vs Actual Revenue"
               subHeader="Monthly performance against set targets"

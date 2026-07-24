@@ -22,6 +22,7 @@ import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCompactNumber } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { ChartSpline } from "lucide-react";
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -166,10 +167,15 @@ export default function MarginProfitForecastChart() {
 
       {/* Header */}
       <div className="mb-6">
-        <ComponentHeader
-          title="Margin & Profit Trend with Forecast"
-          subHeader=" Historical net profit and margin % with 3-month projection"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
+            <ChartSpline size={15} className="text-violet-600" />
+          </div>
+          <ComponentHeader
+            title="Margin & Profit Trend with Forecast"
+            subHeader=" Historical net profit and margin % with 3-month projection"
+          />
+        </div>
       </div>
 
       <ResponsiveContainer width="100%" height={320}>

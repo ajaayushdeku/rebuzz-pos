@@ -17,6 +17,7 @@ import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import type { CampaignAnalysisData } from "@/lib/mockData/mockInsightData";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { Megaphone } from "lucide-react";
 
 interface CampaignAnalysisProps {
   data: CampaignAnalysisData;
@@ -93,7 +94,10 @@ export default function CampaignAnalysis({ data }: CampaignAnalysisProps) {
       <LockDimFeactureOverlay component_name="Campaign Analysis" />
 
       {/* Header */}
-      <div className="mb-4 md:mb-5">
+      <div className="flex items-center gap-2.5 mb-4 md:mb-5">
+        <div className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
+          <Megaphone size={15} className="text-violet-600" />
+        </div>
         <ComponentHeader
           title="Campaign Analysis"
           subHeader="Sales before, during and after the latest discount campaign"

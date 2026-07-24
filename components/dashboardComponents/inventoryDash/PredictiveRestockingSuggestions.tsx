@@ -1,4 +1,4 @@
-import { Pin } from "lucide-react";
+import { PackageCheck, Pin } from "lucide-react";
 import { InventoryItem } from "@/services/apiInventory";
 import { MergedSalesItem } from "@/services/apiInventory";
 import { ComponentHeader } from "@/components/ComponentHeader";
@@ -101,8 +101,16 @@ export default function PredictiveRestockingSuggestions({
       </div>
 
       {suggestions.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
-          All stock levels are healthy
+        <div className="flex flex-col items-center justify-center py-8 text-center">
+          <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mb-2">
+            <PackageCheck size={24} className="text-green-500" />
+          </div>
+          <p className="text-sm font-medium text-gray-500">
+            All stock levels are healthy
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            No items are running low right now
+          </p>
         </div>
       ) : (
         // <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">

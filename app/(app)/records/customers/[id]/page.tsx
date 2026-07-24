@@ -12,7 +12,6 @@ import {
   ArrowLeft,
   Pencil,
   Star,
-  Loader2,
   Mail,
   Phone,
   FileText,
@@ -37,6 +36,10 @@ import {
 } from "@/components/customer/CustomerTable";
 import { CustomerAvatar } from "@/components/customer/CustomerAvatar";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  CustomerDetailSkeleton,
+  OrderHistoryTableSkeleton,
+} from "@/components/customer/CustomerDetailSkeletons";
 
 // â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -147,16 +150,7 @@ export default function CustomerDetailPage() {
   }, [customerId]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50/50">
-        <div className="flex items-center">
-          <Loader2 size={24} className="animate-spin text-blue-500" />
-          <span className="ml-3 text-sm text-gray-500">
-            Loading customer...
-          </span>
-        </div>
-      </div>
-    );
+    return <CustomerDetailSkeleton />;
   }
 
   if (!customer) {
@@ -544,18 +538,25 @@ export default function CustomerDetailPage() {
           </div>
 
           {historyLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 size={20} className="animate-spin text-blue-500" />
-              <span className="ml-2 text-sm text-gray-500">
-                Loading order history...
-              </span>
-            </div>
+            <OrderHistoryTableSkeleton />
           ) : history.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                <ShoppingBag size={20} className="text-gray-300" />
+            // <div className="flex flex-col items-center justify-center py-12">
+            //   <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+            //     <ShoppingBag size={20} className="text-gray-300" />
+            //   </div>
+            //   <p className="text-sm text-gray-400">No order history found</p>
+            // </div>
+
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-2">
+                <ShoppingBag size={24} className="text-gray-500" />
               </div>
-              <p className="text-sm text-gray-400">No order history found</p>
+              <p className="text-sm font-medium text-gray-500">
+                No order history data available
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                No order history found
+              </p>
             </div>
           ) : (
             <>

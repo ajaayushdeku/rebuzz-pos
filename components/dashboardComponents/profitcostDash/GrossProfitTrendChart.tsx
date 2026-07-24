@@ -15,6 +15,7 @@ import { formatCurrencySymbol, formatCompactNumber } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { CustomTooltipProps } from "@/lib/types/chart";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { TrendingUp } from "lucide-react";
 import ChartSkeleton from "@/components/ui/chartskeleton";
 
 export interface ProfitTrendData {
@@ -156,10 +157,15 @@ export default function GrossProfitTrendChart() {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full ">
       <div className="mb-6">
-        <ComponentHeader
-          title="Gross vs Net Profit Trend"
-          subHeader="Monthly comparison of revenue and net profit"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+            <TrendingUp size={15} className="text-blue-600" />
+          </div>
+          <ComponentHeader
+            title="Gross vs Net Profit Trend"
+            subHeader="Monthly comparison of revenue and net profit"
+          />
+        </div>
       </div>
 
       {/* {isEmpty ? (

@@ -19,6 +19,7 @@ import { mockYearOverYearData } from "@/lib/mockData/mock-growthtrackerdata";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { ChartColumnBig } from "lucide-react";
 // Types
 
 export interface YoYData {
@@ -175,7 +176,10 @@ export default function YearOverYearChart({ data }: YearOverYearProps) {
       {isEmpty && <SampleDataBadge />}
 
       {/* Header */}
-      <div className="mb-2">
+      <div className="mb-2 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+          <ChartColumnBig size={16} />
+        </div>
         <ComponentHeader
           title=" Year-over-Year Revenue"
           subHeader="This year vs last year — monthly comparison"

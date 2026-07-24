@@ -19,6 +19,7 @@ import {
 } from "recharts";
 import type { BarShapeProps } from "recharts";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { Clock } from "lucide-react";
 
 export interface PeakHourlyData {
   hour: string;
@@ -198,10 +199,15 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
       <div className="flex flex-row  justify-between gap-3 mb-5">
         {/* <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"> */}
 
-        <ComponentHeader
-          title="Peak Hours Analysis"
-          subHeader="Average number of orders per hour across the selected period"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
+            <Clock size={15} className="text-violet-600" />
+          </div>
+          <ComponentHeader
+            title="Peak Hours Analysis"
+            subHeader="Average number of orders per hour across the selected period"
+          />
+        </div>
 
         {/* </div> */}
 

@@ -115,10 +115,16 @@ const Page = async ({
             </ChartErrorBoundary>
           </div>
 
+          <ChartErrorBoundary>
+            <Suspense fallback={<HourlySalesTrendSkeleton />}>
+              <HourlySalesTrendWrapper />
+            </Suspense>
+          </ChartErrorBoundary>
+
           <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6">
             <ChartErrorBoundary>
-              <Suspense fallback={<HourlySalesTrendSkeleton />}>
-                <HourlySalesTrendWrapper />
+              <Suspense fallback={<TopItemsSkeleton />}>
+                <TopItemsWrapper />
               </Suspense>
             </ChartErrorBoundary>
 
@@ -135,8 +141,8 @@ const Page = async ({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 ">
             <ChartErrorBoundary>
-              <Suspense fallback={<TopItemsSkeleton />}>
-                <TopItemsWrapper />
+              <Suspense fallback={<RecentTransactionsSkeleton />}>
+                <RecentTransactionWrapper />
               </Suspense>
             </ChartErrorBoundary>
 
@@ -146,12 +152,6 @@ const Page = async ({
               </Suspense>
             </ChartErrorBoundary>
           </div>
-
-          <ChartErrorBoundary>
-            <Suspense fallback={<RecentTransactionsSkeleton />}>
-              <RecentTransactionWrapper />
-            </Suspense>
-          </ChartErrorBoundary>
 
           <div className="w-full flex items-center justify-center ">
             <ChartErrorBoundary>

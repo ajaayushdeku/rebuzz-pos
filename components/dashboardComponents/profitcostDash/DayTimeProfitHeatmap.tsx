@@ -10,6 +10,7 @@ import {
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { Grid3x3 } from "lucide-react";
 
 export interface DayTimeProfitData {
   day: string;
@@ -83,10 +84,15 @@ export default function DayTimeProfitHeatmap({
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full relative select-none">
       {/* Header */}
       <div className="mb-6">
-        <ComponentHeader
-          title=" Day × Time Profit Heatmap"
-          subHeader="Average profit generation by hour and day of week"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
+            <Grid3x3 size={15} className="text-green-600" />
+          </div>
+          <ComponentHeader
+            title=" Day × Time Profit Heatmap"
+            subHeader="Average profit generation by hour and day of week"
+          />
+        </div>
       </div>
 
       {/* Heatmap Grid */}

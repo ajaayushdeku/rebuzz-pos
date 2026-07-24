@@ -1,6 +1,6 @@
 "use client";
 
-import { Lock } from "lucide-react";
+import { Lock, Gauge } from "lucide-react";
 import { primeCostMock } from "@/lib/mockData/mock-primecost";
 import {
   LineChart,
@@ -79,10 +79,15 @@ export default function PrimeCostTracker() {
 
       {/* Header */}
       <div className="mb-6">
-        <ComponentHeader
-          title="Prime Cost Tracker"
-          subHeader="COGS + Labor as a % of Revenue"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+            <Gauge size={15} className="text-amber-600" />
+          </div>
+          <ComponentHeader
+            title="Prime Cost Tracker"
+            subHeader="COGS + Labor as a % of Revenue"
+          />
+        </div>
       </div>
 
       {/* Current Prime Cost */}

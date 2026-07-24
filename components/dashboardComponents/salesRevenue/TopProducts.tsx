@@ -9,7 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  RefreshCcw,
+  Trophy,
 } from "lucide-react";
 import { TopProduct } from "./top-product-columns";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -89,10 +89,15 @@ export default function TopProducts({
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-        <ComponentHeader
-          title="Top Selling Products"
-          subHeader="Products contributing most to revenue growth"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+            <Trophy size={15} className="text-amber-600" />
+          </div>
+          <ComponentHeader
+            title="Top Selling Products"
+            subHeader="Products contributing most to revenue growth"
+          />
+        </div>
       </div>
 
       {/* Search */}
@@ -197,7 +202,7 @@ export default function TopProducts({
                 >
                   <div className="flex flex-col items-center justify-center py-12">
                     <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-                      <RefreshCcw size={24} className="text-gray-300" />
+                      <Trophy size={24} className="text-gray-300" />
                     </div>
                     <p className="text-sm font-medium text-gray-500">
                       No top selling product data

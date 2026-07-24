@@ -18,6 +18,7 @@ import type { CustomTooltipProps } from "@/lib/types/chart";
 import type { CompareSalesPoint } from "@/services/dashboardServices/apiSalesCompare";
 import { useSalesTrends } from "@/hooks/useSalesTrends";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { TrendingUp } from "lucide-react";
 import ChartSkeleton from "@/components/ui/chartskeleton";
 
 // Types
@@ -105,10 +106,15 @@ export default function SalesTrendChart() {
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-        <ComponentHeader
-          title="Sales Trends"
-          subHeader=" Revenue over time – switch between daily, weekly, and monthly views"
-        />
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+            <TrendingUp size={15} className="text-blue-600" />
+          </div>
+          <ComponentHeader
+            title="Sales Trends"
+            subHeader=" Revenue over time – switch between daily, weekly, and monthly views"
+          />
+        </div>
 
         {/* View switcher */}
         <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 self-start">
