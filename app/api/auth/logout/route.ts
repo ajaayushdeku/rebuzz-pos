@@ -1,5 +1,6 @@
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
+import { clearAccounts } from "@/lib/auth/accounts";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
@@ -30,6 +31,10 @@ export const POST = async (req: NextRequest) => {
     path: "/",
     maxAge: 0,
   });
+
+  // Full sign-out clears every saved account too. To sign out of just one
+  // account while staying in another, use "Remove" in the account switcher.
+  clearAccounts(response);
 
   return response;
 };

@@ -32,10 +32,17 @@ export function middleware(request: NextRequest) {
     (page) => normalizedPath === page || normalizedPath.startsWith(page + "/"),
   );
 
+  // Adding another account: a logged-in user intentionally visits /login?add=1
+  // to sign into a second account. Skip the auth-only redirect for that case.
+  const isAddingAccount =
+    normalizedPath === "/login" &&
+    request.nextUrl.searchParams.get("add") === "1";
+
   // ── Authorized user on auth-only pages → redirect to dashboard ──
   if (
     token &&
     isPublicPage &&
+    !isAddingAccount &&
     authOnlyPages.some(
       (page) =>
         normalizedPath === page || normalizedPath.startsWith(page + "/"),

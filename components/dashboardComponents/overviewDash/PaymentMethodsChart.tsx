@@ -192,7 +192,7 @@ const PaymentMethodsChart = ({
               ref={scrollRef}
               className=" mt-2
     px-2
-    h-10
+    h-14
     overflow-y-auto
     space-y-3
     scrollbar-hide

@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -22,12 +22,17 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormValues>();
+  } = useForm<LoginFormValues>({
+    // Prefilled when re-authenticating an account from the switcher
+    // (e.g. /login?add=1&email=user@example.com).
+    defaultValues: { email: searchParams.get("email") ?? "", password: "" },
+  });
 
   const checkBusinessAndRedirect = async () => {
     try {
@@ -232,4 +237,11 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+// useSearchParams (for the ?email= prefill) must sit under a Suspense boundary.
+export default function LoginPageWithSuspense() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPage />
+    </Suspense>
+  );
+}
