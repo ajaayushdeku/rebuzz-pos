@@ -3,7 +3,14 @@
 import { useState } from "react";
 import type { Category } from "@/lib/types/category";
 import { normalizeColor } from "@/services/category.client";
-import { Pencil, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Tags,
+} from "lucide-react";
 
 const PAGE_SIZE = 5;
 
@@ -12,11 +19,13 @@ const CategoryTable = ({
   search,
   onEdit,
   onDelete,
+  loading = false,
 }: {
   categories: Category[];
   search: string;
   onEdit: (c: Category) => void;
   onDelete: (id: string) => void;
+  loading?: boolean;
 }) => {
   const [page, setPage] = useState(0);
 
@@ -32,14 +41,6 @@ const CategoryTable = ({
     (effectivePage + 1) * PAGE_SIZE,
   );
 
-  if (filtered.length === 0) {
-    return (
-      <div className="text-center py-8 text-sm text-gray-400">
-        No categories found
-      </div>
-    );
-  }
-
   return (
     <>
       <table className="w-full text-sm">
@@ -51,43 +52,73 @@ const CategoryTable = ({
           </tr>
         </thead>
         <tbody>
-          {paged.map((c) => (
-            <tr
-              key={c._id}
-              className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
-            >
-              <td className="py-3 font-medium text-xs text-gray-800">
-                {c.name}
-              </td>
-              <td className="py-3">
-                <div className="flex items-center gap-2">
-                  <span
-                    className="w-5 h-5 rounded-md border border-gray-200 shrink-0"
-                    style={{ backgroundColor: normalizeColor(c.color) }}
-                  />
-                  <span className="text-xs text-gray-500 font-mono">
-                    {normalizeColor(c.color)}
-                  </span>
-                </div>
-              </td>
-              <td className="py-3">
-                <div className="flex items-center justify-end gap-1.5">
-                  <button
-                    onClick={() => onEdit(c)}
-                    className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                  >
-                    <Pencil size={13} />
-                  </button>
-                  <button
-                    onClick={() => onDelete(c._id)}
-                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <Trash2 size={13} />
-                  </button>
+          {loading ? (
+            <tr>
+              <td colSpan={3} className="py-10 text-center">
+                <div className="flex items-center justify-center gap-2 text-gray-400">
+                  <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+                  <span className="text-sm">Loading categories...</span>
                 </div>
               </td>
             </tr>
-          ))}
+          ) : filtered.length === 0 ? (
+            <tr>
+              <td
+                colSpan={3}
+                className="text-center py-2 text-sm text-gray-400"
+              >
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                    <Tags size={24} className="text-gray-500" />
+                  </div>
+                  <p className="text-sm font-medium text-gray-500">
+                    No categories found
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Create a category to get started.
+                  </p>
+                </div>
+              </td>
+            </tr>
+          ) : (
+            paged.map((c) => (
+              <tr
+                key={c._id}
+                className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
+              >
+                <td className="py-3 font-medium text-xs text-gray-800">
+                  {c.name}
+                </td>
+                <td className="py-3">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-5 h-5 rounded-md border border-gray-200 shrink-0"
+                      style={{ backgroundColor: normalizeColor(c.color) }}
+                    />
+                    <span className="text-xs text-gray-500 font-mono">
+                      {normalizeColor(c.color)}
+                    </span>
+                  </div>
+                </td>
+                <td className="py-3">
+                  <div className="flex items-center justify-end gap-1.5">
+                    <button
+                      onClick={() => onEdit(c)}
+                      className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    >
+                      <Pencil size={13} />
+                    </button>
+                    <button
+                      onClick={() => onDelete(c._id)}
+                      className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
 

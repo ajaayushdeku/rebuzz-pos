@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { Tax, GroupedTax } from "@/services/apiTaxes.client";
-import { Loader2, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import {
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+  Trash2,
+  Layers,
+} from "lucide-react";
 
 const PAGE_SIZE = 5;
 
@@ -11,6 +17,7 @@ const GroupTaxTable = ({
   onToggle,
   onDelete,
   togglingId,
+  loading = false,
 }: {
   groupedTaxes: GroupedTax[];
   taxes: Tax[];
@@ -18,6 +25,7 @@ const GroupTaxTable = ({
   onToggle: (id: string, currentlyEnabled: boolean) => void;
   onDelete: (group: GroupedTax) => void;
   togglingId: string | null;
+  loading?: boolean;
 }) => {
   const [page, setPage] = useState(0);
 
@@ -39,14 +47,6 @@ const GroupTaxTable = ({
     (effectivePage + 1) * PAGE_SIZE,
   );
 
-  if (filtered.length === 0) {
-    return (
-      <div className="text-center py-8 text-sm text-gray-400">
-        No group taxes yet.
-      </div>
-    );
-  }
-
   return (
     <>
       <div className="overflow-x-auto -mx-5 px-5 md:mx-0 md:px-0">
@@ -62,53 +62,82 @@ const GroupTaxTable = ({
               </tr>
             </thead>
             <tbody>
-              {paged.map((group) => {
-                const rate = getGroupRate(group.taxIds);
-                const names = group.taxIds
-                  .map((id) => taxes.find((t) => t._id === id)?.name ?? "")
-                  .filter(Boolean)
-                  .join(", ");
-                return (
-                  <tr
-                    key={group._id}
-                    className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="py-10 text-center">
+                    <div className="flex items-center justify-center gap-2 text-gray-400">
+                      <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+                      <span className="text-sm">Loading group taxes...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="text-center py-2 text-sm text-gray-400"
                   >
-                    <td className="py-3 font-medium text-xs text-gray-800">
-                      {group.name}
-                    </td>
-                    <td className="py-3 text-blue-600 text-xs font-semibold">
-                      {rate}%
-                    </td>
-                    <td className="py-3 text-gray-400 text-xs whitespace-normal break-words">
-                      {names || "—"}
-                    </td>
-                    <td className="py-3 text-center">
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${group.isEnabled ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
-                      >
-                        {group.isEnabled ? "Active" : "Inactive"}
-                      </span>
-                    </td>
-                    <td className="py-3">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={() => onToggle(group._id, group.isEnabled)}
-                          className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${group.isEnabled ? "bg-blue-600" : "bg-gray-200"}`}
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                        <Layers size={24} className="text-gray-500" />
+                      </div>
+                      <p className="text-sm font-medium text-gray-500">
+                        No group taxes yet
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Combine standard taxes to create one.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                paged.map((group) => {
+                  const rate = getGroupRate(group.taxIds);
+                  const names = group.taxIds
+                    .map((id) => taxes.find((t) => t._id === id)?.name ?? "")
+                    .filter(Boolean)
+                    .join(", ");
+                  return (
+                    <tr
+                      key={group._id}
+                      className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td className="py-3 font-medium text-xs text-gray-800">
+                        {group.name}
+                      </td>
+                      <td className="py-3 text-blue-600 text-xs font-semibold">
+                        {rate}%
+                      </td>
+                      <td className="py-3 text-gray-400 text-xs whitespace-normal break-words">
+                        {names || "—"}
+                      </td>
+                      <td className="py-3 text-center">
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full font-medium ${group.isEnabled ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
                         >
-                          {togglingId === group._id ? (
-                            <Loader2 className="absolute inset-0 m-auto h-3 w-3 animate-spin text-white" />
-                          ) : (
-                            <span
-                              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${group.isEnabled ? "translate-x-[18px]" : "translate-x-0.5"}`}
-                            />
-                          )}
-                        </button>
-                        <button
-                          onClick={() => onDelete(group)}
-                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                        >
-                          {/* <svg
+                          {group.isEnabled ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td className="py-3">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => onToggle(group._id, group.isEnabled)}
+                            className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${group.isEnabled ? "bg-blue-600" : "bg-gray-200"}`}
+                          >
+                            {togglingId === group._id ? (
+                              <Loader2 className="absolute inset-0 m-auto h-3 w-3 animate-spin text-white" />
+                            ) : (
+                              <span
+                                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${group.isEnabled ? "translate-x-[18px]" : "translate-x-0.5"}`}
+                              />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => onDelete(group)}
+                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            {/* <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="13"
                             height="13"
@@ -123,13 +152,14 @@ const GroupTaxTable = ({
                             <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
                             <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
                           </svg> */}
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

@@ -317,6 +317,7 @@ export default function TaxSettingsPage() {
             onToggle={handleToggle}
             onDelete={openDeleteNormal}
             togglingId={togglingId}
+            loading={isLoading}
           />
         </div>
 
@@ -335,6 +336,7 @@ export default function TaxSettingsPage() {
             onToggle={handleToggle}
             onDelete={openDeleteGroup}
             togglingId={togglingId}
+            loading={isLoading}
           />
         </div>
       </div>

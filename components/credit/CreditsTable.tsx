@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Loader2,
   Trash2,
+  CreditCard,
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -102,10 +103,7 @@ export default function CreditsTable({
 
   // The by-status (completed/archived) list may omit invoiceNo, so resolve it
   // from the credit detail on demand before opening an invoice-scoped action.
-  const withInvoiceNo = async (
-    c: Credit,
-    run: (invoiceNo: number) => void,
-  ) => {
+  const withInvoiceNo = async (c: Credit, run: (invoiceNo: number) => void) => {
     let invoiceNo: number | null = c.invoiceNo ?? null;
     if (invoiceNo == null) {
       try {
@@ -307,9 +305,19 @@ export default function CreditsTable({
               <tr>
                 <td
                   colSpan={colCount}
-                  className="text-center py-12 text-sm text-gray-400"
+                  className="text-center py-2 text-sm text-gray-400"
                 >
-                  No credits found
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                      <CreditCard size={24} className="text-gray-500" />
+                    </div>
+                    <p className="text-sm font-medium text-gray-500">
+                      No credits found
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Customer credit records will appear here.
+                    </p>
+                  </div>
                 </td>
               </tr>
             ) : (

@@ -204,9 +204,19 @@ export default function ProductTable({ products }: { products: Product[] }) {
               <tr>
                 <td
                   colSpan={7}
-                  className="text-center py-12 text-sm text-gray-400"
+                  className="text-center py-2 text-sm text-gray-400"
                 >
-                  No products found
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                      <Package size={24} className="text-gray-500" />
+                    </div>
+                    <p className="text-sm font-medium text-gray-500">
+                      No products found
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Products you add will appear here.
+                    </p>
+                  </div>
                 </td>
               </tr>
             ) : (

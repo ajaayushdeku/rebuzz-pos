@@ -138,18 +138,13 @@ export default function CategorySettingsPage() {
 
         {/* Category Table */}
         <div className="bg-white rounded-xl p-5">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : (
-            <CategoryTable
-              categories={categories}
-              search={search}
-              onEdit={openEdit}
-              onDelete={openDelete}
-            />
-          )}
+          <CategoryTable
+            categories={categories}
+            search={search}
+            onEdit={openEdit}
+            onDelete={openDelete}
+            loading={isLoading}
+          />
         </div>
       </div>
 

@@ -182,18 +182,14 @@ export default function DiscountSettingsPage() {
               <Percent size={14} className="text-blue-500" /> Percentage
               Discounts
             </h3>
-            {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-              </div>
-            ) : (
-              <DiscountTable
-                discounts={percentageDiscounts}
-                search={search}
-                onEdit={openEdit}
-                onDelete={openDelete}
-              />
-            )}
+            <DiscountTable
+              discounts={percentageDiscounts}
+              discountType="percent"
+              search={search}
+              onEdit={openEdit}
+              onDelete={openDelete}
+              loading={isLoading}
+            />
           </div>
 
           <div className="bg-white rounded-xl  p-5">
@@ -201,18 +197,14 @@ export default function DiscountSettingsPage() {
               <DollarSign size={14} className="text-green-500" /> Fixed Amount
               Discounts
             </h3>
-            {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-              </div>
-            ) : (
-              <DiscountTable
-                discounts={fixedDiscounts}
-                search={search}
-                onEdit={openEdit}
-                onDelete={openDelete}
-              />
-            )}
+            <DiscountTable
+              discounts={fixedDiscounts}
+              discountType="fixed"
+              search={search}
+              onEdit={openEdit}
+              onDelete={openDelete}
+              loading={isLoading}
+            />
           </div>
         </div>
 

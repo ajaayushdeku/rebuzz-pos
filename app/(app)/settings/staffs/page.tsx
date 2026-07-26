@@ -364,162 +364,157 @@ export default function StaffManagementPage() {
         </div>
 
         {/* â”€â”€ Staff Table â”€â”€ */}
-        {loading ? (
-          <div className="flex items-center justify-center py-24">
-            <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
-          </div>
-        ) : staff.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-12 text-center">
-            <UserCog className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 font-medium">No staff members found</p>
-            <p className="text-sm text-gray-400 mt-1">
-              Click &ldquo;Add New Staff&rdquo; to get started
-            </p>
-          </div>
-        ) : (
-          <>
-            {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
-            <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-              <table className="w-full text-sm min-w-[1000px]">
-                <thead>
-                  <tr className="text-xs text-gray-400 border-b border-gray-100">
-                    <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
-                      S.No
-                    </th>
-                    <th
-                      className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                      onClick={() => toggleSort("name")}
-                    >
-                      <span className="flex items-center gap-1">
-                        Staff Name {SortIcon({ colKey: "name" })}
-                      </span>
-                    </th>
-                    <th className="text-left pb-3 pt-3 px-4 font-medium">
-                      Email
-                    </th>
-                    <th className="text-left pb-3 pt-3 px-4 font-medium">
-                      Phone
-                    </th>
-                    <th className="text-center pb-3 pt-3 px-4 font-medium">
-                      Role
-                    </th>
-                    <th className="text-center pb-3 pt-3 px-4 font-medium">
-                      Status
-                    </th>
-                    <th className="text-right pb-3 pt-3 px-4 font-medium">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paged.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={7}
-                        className="text-center py-12 text-sm text-gray-400"
-                      >
+        {/* Table always renders; loading + empty states live inside the tbody. */}
+        <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <table className="w-full text-sm min-w-[1000px]">
+            <thead>
+              <tr className="text-xs text-gray-400 border-b border-gray-100">
+                <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+                  S.No
+                </th>
+                <th
+                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("name")}
+                >
+                  <span className="flex items-center gap-1">
+                    Staff Name {SortIcon({ colKey: "name" })}
+                  </span>
+                </th>
+                <th className="text-left pb-3 pt-3 px-4 font-medium">Email</th>
+                <th className="text-left pb-3 pt-3 px-4 font-medium">Phone</th>
+                <th className="text-center pb-3 pt-3 px-4 font-medium">Role</th>
+                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                  Status
+                </th>
+                <th className="text-right pb-3 pt-3 px-4 font-medium">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-16">
+                    <div className="flex items-center justify-center gap-2 text-gray-400">
+                      <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+                      <span className="text-sm">Loading staff...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : paged.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="text-center py-2 text-sm text-gray-400"
+                  >
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                        <UserCog size={28} className="text-gray-500" />
+                      </div>
+                      <p className="text-sm font-medium text-gray-500">
                         No staff members found
-                      </td>
-                    </tr>
-                  ) : (
-                    paged.map((staffMember, idx) => (
-                      <tr
-                        key={staffMember._id}
-                        onClick={() =>
-                          router.push(`/records/employee/${staffMember._id}`)
-                        }
-                        className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Click &ldquo;Add New Staff&rdquo; to get started
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                paged.map((staffMember, idx) => (
+                  <tr
+                    key={staffMember._id}
+                    onClick={() =>
+                      router.push(`/records/employee/${staffMember._id}`)
+                    }
+                    className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="py-3 px-4 text-gray-400 text-xs">
+                      {page * pageSize + idx + 1}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="font-medium text-gray-900 text-xs">
+                        {staffMember.name || "—"}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                        <Mail className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                        {staffMember.email || "—"}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                        <Phone className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                        {staffMember.phone || "—"}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-xs text-center">
+                      <RoleBadge role={staffMember.role} />
+                    </td>
+                    <td className="py-3 px-4 text-xs text-center">
+                      <StatusBadge deactivated={staffMember.isDeactivated} />
+                    </td>
+                    <td className="py-3 px-4">
+                      <div
+                        className="flex items-center justify-end gap-1"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        <td className="py-3 px-4 text-gray-400 text-xs">
-                          {page * pageSize + idx + 1}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className="font-medium text-gray-900">
-                            {staffMember.name || "â€”"}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                            <Mail className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                            {staffMember.email || "â€”"}
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                            <Phone className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                            {staffMember.phone || "â€”"}
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <RoleBadge role={staffMember.role} />
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <StatusBadge
-                            deactivated={staffMember.isDeactivated}
-                          />
-                        </td>
-                        <td className="py-3 px-4">
-                          <div
-                            className="flex items-center justify-end gap-1"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <button
-                              onClick={() => openEdit(staffMember)}
-                              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                              title="Edit"
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              onClick={() => setDeleteConfirm(staffMember._id)}
-                              className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Delete"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                        <button
+                          onClick={() => openEdit(staffMember)}
+                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Edit"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirm(staffMember._id)}
+                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
-            {/* Pagination */}
-            <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
-              <button
-                onClick={() => setPage(Math.max(0, page - 1))}
-                disabled={page === 0}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  page === 0
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                }`}
-              >
-                <ChevronLeft size={14} />
-                Previous
-              </button>
+        {/* Pagination */}
+        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+          <button
+            onClick={() => setPage(Math.max(0, page - 1))}
+            disabled={page === 0}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              page === 0
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            }`}
+          >
+            <ChevronLeft size={14} />
+            Previous
+          </button>
 
-              <span className="text-xs text-gray-400 font-medium">
-                Page {page + 1} of {totalPages} Â· {sorted.length} staff members
-              </span>
+          <span className="text-xs text-gray-400 font-medium">
+            Page {page + 1} of {totalPages} · {sorted.length} staff members
+          </span>
 
-              <button
-                onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
-                disabled={page >= totalPages - 1}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  page >= totalPages - 1
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                }`}
-              >
-                Next
-                <ChevronRight size={14} />
-              </button>
-            </div>
-          </>
-        )}
+          <button
+            onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
+            disabled={page >= totalPages - 1}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              page >= totalPages - 1
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            }`}
+          >
+            Next
+            <ChevronRight size={14} />
+          </button>
+        </div>
 
         {/* â”€â”€ Add/Edit Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <StaffFormModal

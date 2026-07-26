@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  FileText,
 } from "lucide-react";
 import { Invoice } from "@/lib/types/invoice";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -238,9 +239,19 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
               <tr>
                 <td
                   colSpan={9}
-                  className="text-center py-12 text-sm text-gray-400"
+                  className="text-center py-2 text-sm text-gray-400"
                 >
-                  No invoices found
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                      <FileText size={24} className="text-gray-500" />
+                    </div>
+                    <p className="text-sm font-medium text-gray-500">
+                      No invoice found
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      All recently created invoice will appear here
+                    </p>
+                  </div>
                 </td>
               </tr>
             ) : (

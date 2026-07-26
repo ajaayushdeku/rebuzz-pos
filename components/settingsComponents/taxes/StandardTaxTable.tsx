@@ -6,6 +6,7 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
+  Receipt,
 } from "lucide-react";
 
 const PAGE_SIZE = 5;
@@ -17,6 +18,7 @@ const StandardTaxTable = ({
   onToggle,
   onDelete,
   togglingId,
+  loading = false,
 }: {
   taxes: Tax[];
   search: string;
@@ -24,6 +26,7 @@ const StandardTaxTable = ({
   onToggle: (id: string, currentlyEnabled: boolean) => void;
   onDelete: (tax: Tax) => void;
   togglingId: string | null;
+  loading?: boolean;
 }) => {
   const [page, setPage] = useState(0);
 
@@ -39,14 +42,6 @@ const StandardTaxTable = ({
     (effectivePage + 1) * PAGE_SIZE,
   );
 
-  if (filtered.length === 0) {
-    return (
-      <div className="text-center py-8 text-sm text-gray-400">
-        No taxes yet. Create one above.
-      </div>
-    );
-  }
-
   return (
     <>
       <div className="overflow-x-auto -mx-5 px-5 md:mx-0 md:px-0">
@@ -61,53 +56,83 @@ const StandardTaxTable = ({
               </tr>
             </thead>
             <tbody>
-              {paged.map((tax) => (
-                <tr
-                  key={tax._id}
-                  className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
-                >
-                  <td className="py-3 font-medium text-xs text-gray-800">
-                    {tax.name}
-                  </td>
-                  <td className="py-3 text-xs text-gray-500">{tax.rate}%</td>
-                  <td className="py-3 text-xs text-center">
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${tax.isEnabled ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"} `}
-                    >
-                      {tax.isEnabled ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                  <td className="py-3">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => onEdit(tax)}
-                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                      >
-                        <Pencil size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onToggle(tax._id, tax.isEnabled)}
-                        className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${tax.isEnabled ? "bg-blue-600" : "bg-gray-200"}`}
-                      >
-                        {togglingId === tax._id ? (
-                          <Loader2 className="absolute inset-0 m-auto h-3 w-3 animate-spin text-white" />
-                        ) : (
-                          <span
-                            className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${tax.isEnabled ? "translate-x-[18px]" : "translate-x-0.5"}`}
-                          />
-                        )}
-                      </button>
-                      <button
-                        onClick={() => onDelete(tax)}
-                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <Trash2 size={13} />
-                      </button>
+              {loading ? (
+                <tr>
+                  <td colSpan={4} className="py-10 text-center">
+                    <div className="flex items-center justify-center gap-2 text-gray-400">
+                      <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+                      <span className="text-sm">Loading taxes...</span>
                     </div>
                   </td>
                 </tr>
-              ))}
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="text-center py-2 text-sm text-gray-400"
+                  >
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                        <Receipt size={24} className="text-gray-500" />
+                      </div>
+                      <p className="text-sm font-medium text-gray-500">
+                        No taxes yet
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Create one above.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                paged.map((tax) => (
+                  <tr
+                    key={tax._id}
+                    className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
+                  >
+                    <td className="py-3 font-medium text-xs text-gray-800">
+                      {tax.name}
+                    </td>
+                    <td className="py-3 text-xs text-gray-500">{tax.rate}%</td>
+                    <td className="py-3 text-xs text-center">
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${tax.isEnabled ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"} `}
+                      >
+                        {tax.isEnabled ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+                    <td className="py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => onEdit(tax)}
+                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        >
+                          <Pencil size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onToggle(tax._id, tax.isEnabled)}
+                          className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${tax.isEnabled ? "bg-blue-600" : "bg-gray-200"}`}
+                        >
+                          {togglingId === tax._id ? (
+                            <Loader2 className="absolute inset-0 m-auto h-3 w-3 animate-spin text-white" />
+                          ) : (
+                            <span
+                              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${tax.isEnabled ? "translate-x-[18px]" : "translate-x-0.5"}`}
+                            />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => onDelete(tax)}
+                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
