@@ -99,7 +99,7 @@ export default async function Page({
       <div className="flex flex-col gap-6">
         <Suspense
           fallback={
-            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 mt-4">
               {Array.from({ length: 4 }).map((_, i) => (
                 <StatSkeleton key={i} />
               ))}
