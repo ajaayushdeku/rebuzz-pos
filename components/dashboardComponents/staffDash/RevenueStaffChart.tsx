@@ -75,7 +75,7 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
   const isEmpty = !data || data.length === 0;
   const displayData = isEmpty ? [{ name: "No Data", revenue: 0 }] : data;
   const formatYAxis = (value: number): string =>
-    `${currency.symbol} ${formatCompactNumber(value)}`;
+    `${currency.symbol} ${formatCompactNumber(value, currency.locale)}`;
 
   // Replace the hardcoded ticks/domain with dynamic calculation:
   const maxRevenue = Math.max(...displayData.map((d) => d.revenue), 1);

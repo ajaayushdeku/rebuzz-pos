@@ -157,7 +157,7 @@ export default function RevenueVsProfitChart({
   }, [totalPages]);
 
   const formatYAxis = (value: number): string =>
-    `${currency.symbol} ${formatCompactNumber(value)}`;
+    `${currency.symbol} ${formatCompactNumber(value, currency.locale)}`;
 
   // ── Dynamic Y-axis that handles negative profit ──
   const allValues =

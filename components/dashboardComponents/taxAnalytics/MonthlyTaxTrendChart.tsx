@@ -82,7 +82,8 @@ export default function MonthlyTaxTrendChart() {
   const series = data?.series ?? [];
   const hasData = rows.some((r) => r.total > 0);
 
-  const formatY = (v: number) => `${currency.symbol} ${formatCompactNumber(v)}`;
+  const formatY = (v: number) =>
+    `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`;
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">

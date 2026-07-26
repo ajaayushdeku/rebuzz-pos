@@ -30,7 +30,7 @@ export default function TDSReceivable() {
 
   function fmtK(v: number) {
     return v >= 1000
-      ? `${currency.symbol} ${formatCompactNumber(v)}`
+      ? `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`
       : `Rs ${v}`;
   }
 

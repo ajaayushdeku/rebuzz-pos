@@ -137,7 +137,7 @@ export default function MonthlyExpenseTrend() {
   }, [transactions]);
 
   const fmtK = (v: number) => {
-    return `${currency.symbol} ${formatCompactNumber(v)}`;
+    return `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`;
   };
 
   return (

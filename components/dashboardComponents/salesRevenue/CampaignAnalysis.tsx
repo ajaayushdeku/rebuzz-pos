@@ -86,7 +86,7 @@ export default function CampaignAnalysis({ data }: CampaignAnalysisProps) {
   const yMax = yTicks[yTicks.length - 1] * 1.05;
 
   const formatYAxis = (value: number): string =>
-    `${currency.symbol} ${formatCompactNumber(value)}`;
+    `${currency.symbol} ${formatCompactNumber(value, currency.locale)}`;
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full h-full relative select-none">

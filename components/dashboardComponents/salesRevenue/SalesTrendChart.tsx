@@ -97,7 +97,7 @@ export default function SalesTrendChart() {
   // console.log("Sales Compare:", rawData);
 
   const formatYAxis = (value: number): string =>
-    `${currency.symbol} ${formatCompactNumber(value)}`;
+    `${currency.symbol} ${formatCompactNumber(value, currency.locale)}`;
 
   const yTicks = rawData ? getYAxisTicks(rawData) : [0, 0, 0, 0, 0];
   const yMax = yTicks[yTicks.length - 1] * 1.08;

@@ -19,7 +19,7 @@ import { ComponentHeader } from "@/components/ComponentHeader";
 
 const FmtRs = (v: number) => {
   const { currency } = useCurrency();
-  return `${currency.symbol} ${formatCompactNumber(v)}`;
+  return `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`;
 };
 
 const CustomTooltip = ({ active, payload, label }: any) => {

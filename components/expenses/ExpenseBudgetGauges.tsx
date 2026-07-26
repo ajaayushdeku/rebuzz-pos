@@ -39,7 +39,7 @@ function RadialGauge({
 
   const fmtK = (v: number) =>
     v >= 1000
-      ? `${currency.symbol} ${formatCompactNumber(v)}`
+      ? `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`
       : `${currency.symbol} ${v}`;
 
   return (

@@ -166,7 +166,7 @@ export default function YearOverYearChart({ data }: YearOverYearProps) {
   const { currency } = useCurrency();
 
   const formatYAxis = (value: number): string =>
-    `${currency.symbol} ${formatCompactNumber(value)}`;
+    `${currency.symbol} ${formatCompactNumber(value, currency.locale)}`;
 
   const yTicks = getYAxisTicks(displayData);
   const yMax = yTicks[yTicks.length - 1] * 1.05;

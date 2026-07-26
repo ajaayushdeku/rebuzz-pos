@@ -90,7 +90,7 @@ export default function ProfitWaterfallBridge() {
           />
           <YAxis
             tickFormatter={(v) =>
-              `${currency.symbol} ${formatCompactNumber(v)}`
+              `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`
             }
             axisLine={false}
             tickLine={false}

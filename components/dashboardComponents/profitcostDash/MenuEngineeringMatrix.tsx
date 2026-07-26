@@ -158,7 +158,7 @@ export default function MenuEngineeringMatrix() {
               domain={[0, 9]}
               ticks={[0, 2, 4, 6, 8]}
               tickFormatter={(v) =>
-                `${currency.symbol} ${formatCompactNumber(v)}`
+                `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`
               }
               axisLine={false}
               tickLine={false}

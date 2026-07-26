@@ -188,12 +188,12 @@ export default function ExpensesByCategory() {
                 <span className="text-xs font-semibold text-gray-700 w-10 text-right shrink-0">
                   {entry.pct.toFixed(0)}%
                 </span>
-                <span className="text-xs text-gray-400 w-16 text-right shrink-0">
+                <span className="text-xs text-gray-400 w-24 text-right shrink-0">
                   {formatCurrencySymbol(
                     entry.amount,
                     currency.symbol,
                     currency.locale,
-                  ).replace(/^Rs\s*/, "")}
+                  )}
                 </span>
               </div>
             ))}

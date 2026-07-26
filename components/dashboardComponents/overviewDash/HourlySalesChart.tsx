@@ -123,7 +123,7 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
   }, [data, selectedRange]);
 
   const formatYAxis = (value: number): string =>
-    `${currency.symbol} ${formatCompactNumber(value)}`;
+    `${currency.symbol} ${formatCompactNumber(value, currency.locale)}`;
 
   const maxRevenue = Math.max(...filteredData.map((d) => d.revenue), 0);
   const domainMax =

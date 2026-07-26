@@ -171,7 +171,7 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
 
   const isEmpty = chartData.every((d) => d.actual === 0 && d.target === 0);
   const formatYAxis = (value: number): string =>
-    `${currency.symbol} ${formatCompactNumber(value)}`;
+    `${currency.symbol} ${formatCompactNumber(value, currency.locale)}`;
   const yTicks = getYAxisTicks(chartData);
   const yMax = yTicks[yTicks.length - 1] * 1.05;
 

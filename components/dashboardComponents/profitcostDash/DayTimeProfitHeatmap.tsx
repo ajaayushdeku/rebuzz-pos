@@ -153,7 +153,7 @@ export default function DayTimeProfitHeatmap({
                             className={`h-10 rounded flex items-center justify-center text-[10px] font-medium cursor-default ${getColor(profit)} ${getTextColor(profit)}`}
                           >
                             {profit >= 10000
-                              ? `${currency.symbol} ${formatCompactNumber(profit)}`
+                              ? `${currency.symbol} ${formatCompactNumber(profit, currency.locale)}`
                               : formatCurrencySymbol(
                                   profit,
                                   currency.symbol,

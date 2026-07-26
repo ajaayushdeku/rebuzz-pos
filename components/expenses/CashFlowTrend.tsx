@@ -147,7 +147,7 @@ export default function CashFlowTrend() {
   // const hasData = data.some((d) => d.inflow > 0 || d.outflow > 0);
 
   const fmtK = (v: number) => {
-    return `${currency.symbol} ${formatCompactNumber(v)}`;
+    return `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`;
   };
 
   return (

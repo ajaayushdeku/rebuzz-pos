@@ -60,7 +60,7 @@ const CustomTooltip = ({
   active?: boolean;
   payload?: TooltipEntry[];
   label?: string;
-  currency: { symbol: string };
+  currency: { symbol: string; locale: string };
 }) => {
   if (!active || !payload?.length) return null;
   return (
@@ -80,7 +80,7 @@ const CustomTooltip = ({
               <span className="font-bold text-gray-800">
                 {entry.name === "Margin %" || entry.name === "forecastMarginMax"
                   ? `${entry.value}%`
-                  : `${currency.symbol} ${formatCompactNumber(Number(entry.value))}`}
+                  : `${currency.symbol} ${formatCompactNumber(Number(entry.value), currency.locale)}`}
               </span>
             </div>
           ),
@@ -198,7 +198,7 @@ export default function MarginProfitForecastChart() {
             yAxisId="profit"
             orientation="left"
             tickFormatter={(v) =>
-              `${currency.symbol} ${formatCompactNumber(v)}`
+              `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`
             }
             axisLine={false}
             tickLine={false}

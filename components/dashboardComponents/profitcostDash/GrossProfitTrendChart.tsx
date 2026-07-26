@@ -130,7 +130,7 @@ export default function GrossProfitTrendChart() {
   //   data.every((d) => d.grossRevenue === 0 && d.netProfit === 0);
 
   const formatYAxis = (value: number): string =>
-    `${currency.symbol} ${formatCompactNumber(value)}`;
+    `${currency.symbol} ${formatCompactNumber(value, currency.locale)}`;
 
   const yTicks = getYAxisTicks(data);
   const yMax = yTicks[yTicks.length - 1] * 1.05;

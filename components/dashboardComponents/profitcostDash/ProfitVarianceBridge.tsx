@@ -96,7 +96,7 @@ export default function ProfitVarianceBridge() {
           />
           <YAxis
             tickFormatter={(v) =>
-              `${currency.symbol} ${formatCompactNumber(v)}`
+              `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`
             }
             axisLine={false}
             tickLine={false}
