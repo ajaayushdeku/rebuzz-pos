@@ -54,7 +54,8 @@ export default function LowStockAlerts() {
   const visible = alerts.slice(0, MAX_VISIBLE);
 
   return (
-    <div className="relative bg-white rounded-2xl border-l-4 border-l-amber-400 border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
+    // <div className="relative bg-white rounded-2xl border-l-4 border-l-amber-400 border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
+    <div className="relative bg-white rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5 flex flex-col gap-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -121,7 +122,7 @@ export default function LowStockAlerts() {
             return (
               <div
                 key={alert.name}
-                className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0"
+                className="flex items-center justify-between py-3 px-4 border-b border-gray-50 last:border-0"
               >
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-gray-900 truncate">

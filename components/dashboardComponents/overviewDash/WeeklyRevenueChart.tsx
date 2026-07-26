@@ -76,8 +76,8 @@ const WeeklyRevenueChart = ({ data, peakDay }: WeeklyRevenueChartProps) => {
     `${currency.symbol} ${formatCompactNumber(value, currency.locale)}`;
 
   return (
-    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6">
-      <div className="flex items-center gap-3">
+    <div className="w-full bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
+      <div className="flex items-center gap-3 mb-4">
         <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
           <ChartColumnBig size={16} />
         </div>
