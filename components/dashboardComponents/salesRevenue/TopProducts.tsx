@@ -201,8 +201,8 @@ export default function TopProducts({
                   className="text-center py-2 text-sm text-gray-400"
                 >
                   <div className="flex flex-col items-center justify-center py-12">
-                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-                      <Trophy size={24} className="text-gray-300" />
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                      <Trophy size={24} className="text-gray-500" />
                     </div>
                     <p className="text-sm font-medium text-gray-500">
                       No top selling product data

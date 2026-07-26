@@ -1,10 +1,12 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"; // used only by the hidden resend button
 import Link from "next/link";
+// Resend feature temporarily hidden — re-enable RotateCw + resendToken when restoring.
 import { RotateCw } from "lucide-react";
-import { resendToken, verifyToken } from "@/services/authServices/apiVerify";
+import { verifyToken } from "@/services/authServices/apiVerify";
+import { resendToken } from "@/services/authServices/apiVerify";
 
 const CODE_LENGTH = 6;
 const EXPIRY_SECONDS = 5 * 60;
@@ -27,7 +29,7 @@ export default function VerifyForm() {
 
   const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const [secondsLeft, setSecondsLeft] = useState(EXPIRY_SECONDS);
-  const [isResending, setIsResending] = useState(false);
+  const [isResending, setIsResending] = useState(false); // Resend hidden for now
   const [serverError, setServerError] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -106,6 +108,7 @@ export default function VerifyForm() {
     }
   };
 
+  // Resend feature temporarily hidden — restore alongside the button below.
   const handleResend = async () => {
     setIsResending(true);
     setServerError(null);
@@ -141,7 +144,6 @@ export default function VerifyForm() {
             <span className="font-semibold text-gray-700">{email}</span>.
           </p>
         </div>
-
         {/* OTP Inputs */}
         <div
           className="flex justify-center gap-2 md:gap-3 mb-5"
@@ -167,7 +169,6 @@ export default function VerifyForm() {
             />
           ))}
         </div>
-
         {/* Expiry */}
         <p className="text-center text-xs text-gray-500 mb-4">
           Code expires in{" "}
@@ -181,7 +182,6 @@ export default function VerifyForm() {
             {minutes}:{seconds.toString().padStart(2, "0")}
           </span>
         </p>
-
         {/* Server error */}
         {serverError && (
           <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-4">
@@ -191,7 +191,7 @@ export default function VerifyForm() {
           </div>
         )}
 
-        {/* Resend button */}
+        {/* Resend button — temporarily hidden. */}
         <Button
           onClick={handleResend}
           disabled={isResending || secondsLeft > 0}
@@ -202,7 +202,6 @@ export default function VerifyForm() {
           />
           {isResending ? "Sending..." : "Send Again"}
         </Button>
-
         <p className="text-xs text-gray-400 text-center mt-4">
           Didn&lsquo;t receive the code? Check your spam folder or try again.
         </p>

@@ -3,8 +3,7 @@ import axios from "axios";
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
 type ApiResult<T = unknown> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+  { success: true; data: T } | { success: false; error: string };
 
 const extractError = (data: {
   data: string | { message?: string } | Record<string, string>;
@@ -20,7 +19,8 @@ export async function verifyToken(
   token: string,
 ): Promise<ApiResult> {
   try {
-    const res = await axios.put(
+    // POST /{slug}/auth/email_token verifies the email + token (not PUT).
+    const res = await axios.post(
       `${BASE}/${slug}/auth/email_token`,
       { email, token },
       {
@@ -58,7 +58,8 @@ export async function resendToken(
   email: string,
 ): Promise<ApiResult> {
   try {
-    const res = await axios.post(
+    // PUT /{slug}/auth/email_token issues/(re)sends a fresh verification token.
+    const res = await axios.put(
       `${BASE}/${slug}/auth/email_token`,
       { email },
       {
