@@ -58,6 +58,19 @@ const STATUS_STYLES: Record<string, string> = {
 
 const STATUS_FILTER_OPTIONS = ["paid", "unpaid"];
 
+/** Relative "time ago" label: moments / min / hours / days ago. */
+function timeAgo(date: Date): string {
+  const diffMs = Date.now() - date.getTime();
+  const sec = Math.floor(diffMs / 1000);
+  if (sec < 60) return "moments ago";
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min} min ago`;
+  const hours = Math.floor(min / 60);
+  if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} ${days === 1 ? "day" : "days"} ago`;
+}
+
 export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
   const { currency } = useCurrency();
   const router = useRouter();
@@ -268,9 +281,14 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                       {page * pageSize + idx + 1}
                     </td>
                     <td className="py-3 px-4">
-                      <span className="font-medium text-xs text-gray-900">
+                      <span className="font-medium text-xs text-gray-900 block">
                         ORD-{inv.invoice}
                       </span>
+                      {invoiceDate && (
+                        <span className="text-[11px] text-gray-400">
+                          {timeAgo(invoiceDate)}
+                        </span>
+                      )}
                     </td>
                     <td className="py-3 px-4 text-xs text-gray-600">
                       {inv.ticket_name || "—"}

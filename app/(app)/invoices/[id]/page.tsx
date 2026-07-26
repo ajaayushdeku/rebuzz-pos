@@ -563,14 +563,14 @@ const InvoiceDetailPage = () => {
                   )}
                 </p>
               </div>
-              <div>
+              {/* <div>
                 <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
                   Due
                 </p>
                 <p className="text-xl font-semibold text-gray-800">
                   0 days ago
                 </p>
-              </div>
+              </div> */}
             </div>
           </div>
 

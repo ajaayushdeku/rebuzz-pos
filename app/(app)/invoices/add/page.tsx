@@ -279,7 +279,7 @@ export default function Page() {
 
     saveTicket(ticketData, {
       onSuccess: (response) => {
-        toast.success("Invoice saved");
+        // toast.success("Invoice saved");
         const newId = response?.data?.ticket?.invoice;
         if (newId) router.push(`/invoices/${newId}`);
       },

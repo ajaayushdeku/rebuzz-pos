@@ -73,6 +73,7 @@ function mapBillToTransaction(bill: RawBill, isDetail = false): Transaction {
     totalPoints: bill.totalPoints,
     updatedAt: bill.updatedAt,
     createdAt: bill.createdAt,
+    paidAt: bill.paidAt,
     discountByPoints: bill.discountByPoints,
     // ✅ Only include customer when mapping detail response
     customer:

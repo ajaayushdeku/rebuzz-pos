@@ -18,8 +18,21 @@ import { Transaction } from "./transaction-columns";
 import TransactionDetailModal from "./TransactionDetailModal";
 import { statusStyles, paymentMethods } from "@/lib/config/transaction";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { parseNepalDateTime } from "../staffDash/staffDetail/staffDetailHelpers";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+
+/** Relative "time ago" label: moments / min / hours / days ago. */
+function timeAgo(date: Date): string {
+  const sec = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (sec < 60) return "moments ago";
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min} min ago`;
+  const hours = Math.floor(min / 60);
+  if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} ${days === 1 ? "day" : "days"} ago`;
+}
 import {
   Dialog,
   DialogContent,
@@ -369,6 +382,7 @@ export default function Transactions({
                   paymentMethods[transaction.paymentMethod] ??
                   paymentMethods["Cash"];
                 const isRefunded = transaction.status === "refunded";
+                const billDate = parseNepalDateTime(transaction.paidAt ?? "");
 
                 return (
                   <tr
@@ -382,9 +396,14 @@ export default function Transactions({
                       {page * pageSize + idx + 1}
                     </td>
                     <td className="py-3 px-4">
-                      <span className="font-semibold text-xs text-gray-900">
+                      <span className="font-semibold text-xs text-gray-900 block">
                         BILL-{transaction.billNo}
                       </span>
+                      {billDate && (
+                        <span className="text-[11px] text-gray-400">
+                          {timeAgo(billDate)}
+                        </span>
+                      )}
                     </td>
                     <td className="py-3 px-4">
                       <span className="font-semibold text-xs text-gray-900">

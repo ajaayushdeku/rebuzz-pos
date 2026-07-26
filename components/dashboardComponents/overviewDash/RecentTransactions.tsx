@@ -14,6 +14,28 @@ type RecentTransactionsProps = {
   transactions: Transaction[];
 };
 
+/** Best-effort Date for a transaction (ISO createdAt, else date + timestamp). */
+function getTxDate(tx: Transaction): Date | null {
+  const raw =
+    tx.createdAt ||
+    (tx.date && tx.timestamp ? `${tx.date} ${tx.timestamp}` : tx.date);
+  if (!raw) return null;
+  const d = new Date(raw);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+/** Relative "time ago" label: moments / min / hours / days ago. */
+function timeAgo(date: Date): string {
+  const sec = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (sec < 60) return "moments ago";
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min} min ago`;
+  const hours = Math.floor(min / 60);
+  if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} ${days === 1 ? "day" : "days"} ago`;
+}
+
 export default function RecentTransactions({
   title = "Recent Transactions",
   description = "Revenue performance - current week",
@@ -79,6 +101,7 @@ export default function RecentTransactions({
             ) : (
               transactions.map((tx) => {
                 const styles = statusStyles[tx.status];
+                const txDate = getTxDate(tx);
                 return (
                   <tr
                     key={tx.id}
@@ -88,6 +111,11 @@ export default function RecentTransactions({
                       <p className="text-xs font-semibold text-gray-900">
                         {tx.id}
                       </p>
+                      {txDate && (
+                        <p className="text-[11px] text-gray-400">
+                          {timeAgo(txDate)}
+                        </p>
+                      )}
                     </td>
                     <td className="py-3 px-4 text-xs text-gray-700">
                       {tx.invoiceName}

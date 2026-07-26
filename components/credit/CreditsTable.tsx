@@ -46,6 +46,18 @@ import {
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
+/** Relative "time ago" label: moments / min / hours / days ago. */
+function timeAgo(date: Date): string {
+  const sec = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (sec < 60) return "moments ago";
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min} min ago`;
+  const hours = Math.floor(min / 60);
+  if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} ${days === 1 ? "day" : "days"} ago`;
+}
+
 export default function CreditsTable({
   credits,
   actionsMode = "full",
@@ -394,8 +406,18 @@ export default function CreditsTable({
                       </td>
 
                       {/* Invoice Number */}
-                      <td className="py-3.5 px-4 text-xs text-gray-800">
-                        {c.invoiceNo ?? "—"}
+                      <td className="py-3.5 px-4">
+                        <span className="text-xs text-gray-800 block font-semibold">
+                          {c.invoiceNo ? `ORD-${c.invoiceNo}` : "—"}
+                        </span>
+                        {(() => {
+                          const d = parseNepalDateTime(c.creationDate);
+                          return d ? (
+                            <span className="text-[11px] text-gray-400">
+                              {timeAgo(d)}
+                            </span>
+                          ) : null;
+                        })()}
                       </td>
 
                       {/* Customer */}

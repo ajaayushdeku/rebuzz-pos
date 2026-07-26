@@ -42,6 +42,7 @@ export type Transaction = {
   totalPoints?: number;
   createdAt?: string;
   updatedAt?: string;
+  paidAt?: string;
   discountByPoints?: number;
   // Only populated in detail response
   customer?: { name: string; email: string; phone: string } | null;
