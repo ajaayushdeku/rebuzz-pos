@@ -310,7 +310,19 @@ export const getPeakDaysData = async (
     ordersInRange.map((t) => t.createdAt),
   );
 
-  return WEEKDAY_ORDER.map((day) => ({
+  // Order the 7 weekday bars as a rolling window that ENDS on the range's last
+  // day (today), so the current day sits on the right and the oldest day is on
+  // the left — e.g. if today is Monday: Tue, Wed, Thu, Fri, Sat, Sun, Mon.
+  const endWd = weekdayOf(rangeEnd); // 0=Sun … 6=Sat (UTC-based)
+  const orderedDays =
+    endWd === null
+      ? WEEKDAY_ORDER
+      : Array.from(
+          { length: 7 },
+          (_, i) => WEEKDAY_LABELS[(endWd - (6 - i) + 7) % 7],
+        );
+
+  return orderedDays.map((day) => ({
     day,
     averageOrders: ordersAvg[day] ?? 0,
     averageSales: salesAvg[day] ?? 0,

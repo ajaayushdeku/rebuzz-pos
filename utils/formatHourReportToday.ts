@@ -27,26 +27,23 @@ export const formatHourlyData = (
 
     if (!timePart) return;
 
-    let hour = parseInt(timePart.split(":")[0], 10);
-    let minute = parseInt(timePart.split(":")[1], 10);
+    const hour = parseInt(timePart.split(":")[0], 10);
+    // const minute = parseInt(timePart.split(":")[1], 10);
 
-    // If hour is less than 12,
-    // it means it's UTC time from MongoDB
-    // so convert to Nepal time (+5:45)
-    if (hour < 12) {
-      minute += 45;
-
-      if (minute >= 60) {
-        minute -= 60;
-        hour += 1;
-      }
-
-      hour += 5;
-
-      if (hour >= 24) {
-        hour -= 24;
-      }
-    }
+    // `paidAt` is already Nepal local time — use the hour as-is.
+    // NOTE: previous heuristic (commented out for now). It treated hours < 12
+    // as UTC and added the +5:45 Nepal offset, double-shifting morning times.
+    // if (hour < 12) {
+    //   minute += 45;
+    //   if (minute >= 60) {
+    //     minute -= 60;
+    //     hour += 1;
+    //   }
+    //   hour += 5;
+    //   if (hour >= 24) {
+    //     hour -= 24;
+    //   }
+    // }
 
     const label = formatHourLabel(hour);
 
@@ -69,21 +66,23 @@ const deriveHourFromPaidAt = (paidAt: string): number | null => {
     : paidAt.split(" ")[1];
   if (!timePart) return null;
 
-  let hour = parseInt(timePart.split(":")[0], 10);
-  let minute = parseInt(timePart.split(":")[1], 10);
+  const hour = parseInt(timePart.split(":")[0], 10);
+  // const minute = parseInt(timePart.split(":")[1], 10);
   if (Number.isNaN(hour)) return null;
-  if (Number.isNaN(minute)) minute = 0;
 
-  // If hour is less than 12, it's UTC time from MongoDB — convert to Nepal (+5:45).
-  if (hour < 12) {
-    minute += 45;
-    if (minute >= 60) {
-      minute -= 60;
-      hour += 1;
-    }
-    hour += 5;
-    if (hour >= 24) hour -= 24;
-  }
+  // `paidAt` is already Nepal local time — use the hour as-is.
+  // NOTE: previous heuristic (commented out for now). It treated hours < 12 as
+  // UTC and added the +5:45 Nepal offset, double-shifting morning times.
+  // if (Number.isNaN(minute)) minute = 0;
+  // if (hour < 12) {
+  //   minute += 45;
+  //   if (minute >= 60) {
+  //     minute -= 60;
+  //     hour += 1;
+  //   }
+  //   hour += 5;
+  //   if (hour >= 24) hour -= 24;
+  // }
   return hour;
 };
 
@@ -174,8 +173,10 @@ export const formatDayTimeProfitAverages = (
   }[],
 ): DayTimeProfitData[] => {
   // acc[day][hour] = { total, count }
-  const acc: Record<string, Record<number, { total: number; count: number }>> =
-    {};
+  const acc: Record<
+    string,
+    Record<number, { total: number; count: number }>
+  > = {};
   for (const day of HEATMAP_DAYS) {
     acc[day] = {};
     for (let h = 0; h <= 23; h++) acc[day][h] = { total: 0, count: 0 };

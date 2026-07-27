@@ -107,7 +107,7 @@ export const COLOR_SCHEMES: Record<string, ColorScheme> = {
 
 // Constants
 
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const HOURS = [
   "12am",
   "1am",

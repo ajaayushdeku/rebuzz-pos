@@ -26,13 +26,19 @@ function parseNepalTime(rawDate: string): Date {
   const normalized = rawDate.includes("T")
     ? rawDate.replace("Z", "")
     : rawDate.replace(" ", "T");
-  const rawHour = parseInt(normalized.split("T")[1]?.split(":")[0] ?? "12", 10);
-  if (rawHour >= 12) {
-    return new Date(normalized);
-  }
-  const date = new Date(normalized + "+00:00");
-  date.setMinutes(date.getMinutes() + 5 * 60 + 45);
-  return date;
+  // `paidAt` is already Nepal local time — parse it as-is (no offset).
+  return new Date(normalized);
+
+  // NOTE: previous heuristic (commented out for now). It treated hours < 12 as
+  // UTC and added the +5:45 Nepal offset, which double-shifted morning (Nepal)
+  // times — e.g. a 10:49 sale rendered as 16:34.
+  // const rawHour = parseInt(normalized.split("T")[1]?.split(":")[0] ?? "12", 10);
+  // if (rawHour >= 12) {
+  //   return new Date(normalized);
+  // }
+  // const date = new Date(normalized + "+00:00");
+  // date.setMinutes(date.getMinutes() + 5 * 60 + 45);
+  // return date;
 }
 
 function mapBillToTransaction(bill: RawBill, isDetail = false): Transaction {

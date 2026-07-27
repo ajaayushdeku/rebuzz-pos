@@ -56,40 +56,51 @@ function parseNepalHour(paidAt: string): {
 } {
   if (!paidAt) return { hour: -1, dayOfWeek: -1, dateStr: "" };
 
+  // `paidAt` is already Nepal local time — read the hour and calendar date
+  // straight from the string (no timezone math → no server-TZ drift).
+  const datePart =
+    (paidAt.includes("T") ? paidAt.split("T")[0] : paidAt.split(" ")[0]) || "";
   const timePart =
     (paidAt.includes("T") ? paidAt.split("T")[1] : paidAt.split(" ")[1]) || "";
-  const [h, m] = timePart.split(":").map(Number);
+  const hour = parseInt(timePart.split(":")[0], 10);
+  if (Number.isNaN(hour)) return { hour: -1, dayOfWeek: -1, dateStr: "" };
 
-  // ── Compute Nepal hour from string (no Date involved) ──────────────────
-  let nepalHour: number;
-  if (h >= 12) {
-    nepalHour = h; // Already Nepal 24-hour time
-  } else {
-    // UTC time — add 5 hours 45 minutes
-    nepalHour = h + 5;
-    if ((m ?? 0) + 45 >= 60) nepalHour += 1;
-  }
+  // Day-of-week from the Nepal calendar date (UTC noon avoids off-by-one).
+  const md = /^(\d{4})-(\d{2})-(\d{2})/.exec(datePart);
+  const dayOfWeek = md
+    ? new Date(
+        Date.UTC(Number(md[1]), Number(md[2]) - 1, Number(md[3]), 12),
+      ).getUTCDay()
+    : -1;
 
-  // ── Build a proper Nepal Date for dayOfWeek and dateStr ─────────────────
-  const rawDate = paidAt.includes("T")
-    ? paidAt.replace("Z", "")
-    : paidAt.replace(" ", "T");
-  let nepalDate: Date;
+  return { hour, dayOfWeek, dateStr: datePart };
 
-  if (h >= 12) {
-    // Already Nepal time
-    nepalDate = new Date(rawDate + "+05:45");
-  } else {
-    // UTC — parse as UTC then add offset
-    nepalDate = new Date(rawDate + "+00:00");
-    nepalDate.setMinutes(nepalDate.getMinutes() + 5 * 60 + 45);
-  }
-
-  return {
-    hour: nepalHour,
-    dayOfWeek: nepalDate.getDay(), // 0=Sun...6=Sat
-    dateStr: nepalDate.toISOString().split("T")[0],
-  };
+  // NOTE: previous heuristic (commented out for now). It treated hours < 12 as
+  // UTC and added the +5:45 Nepal offset, double-shifting morning (Nepal) times
+  // (e.g. 10:49 → 16:34) and mis-dating early-morning bills.
+  // const [h, m] = timePart.split(":").map(Number);
+  // let nepalHour: number;
+  // if (h >= 12) {
+  //   nepalHour = h; // Already Nepal 24-hour time
+  // } else {
+  //   nepalHour = h + 5; // UTC time — add 5 hours 45 minutes
+  //   if ((m ?? 0) + 45 >= 60) nepalHour += 1;
+  // }
+  // const rawDate = paidAt.includes("T")
+  //   ? paidAt.replace("Z", "")
+  //   : paidAt.replace(" ", "T");
+  // let nepalDate: Date;
+  // if (h >= 12) {
+  //   nepalDate = new Date(rawDate + "+05:45");
+  // } else {
+  //   nepalDate = new Date(rawDate + "+00:00");
+  //   nepalDate.setMinutes(nepalDate.getMinutes() + 5 * 60 + 45);
+  // }
+  // return {
+  //   hour: nepalHour,
+  //   dayOfWeek: nepalDate.getDay(),
+  //   dateStr: nepalDate.toISOString().split("T")[0],
+  // };
 }
 
 // ── Label helpers ─────────────────────────────────────────────────────────
@@ -128,8 +139,8 @@ const hourToLabel = (hour: number): string | null => {
   return HOUR_LABELS[hour];
 };
 
-// 0 = Sun → remap to Mon-first: Sun becomes index 6
-const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+// Sunday-first week: getUTCDay() 0=Sun maps directly to index 0.
+const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 // Civil (calendar) yyyy-mm-dd for a Date, using local getters.
 // On the (UTC) server this matches the dateStr produced by parseNepalHour.
@@ -173,28 +184,28 @@ const getHeatmapData = async (): Promise<HeatmapDataSet> => {
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
 
-  // ── Weekly: Mon of current week → today ───────────────────────────────
+  // ── Weekly: Sun of current week → today ───────────────────────────────
   const jsDay = today.getDay(); // 0=Sun, 1=Mon...6=Sat
-  // How many days back to Monday (if today is Sunday, go back 6 days)
-  const diffToMonday = jsDay === 0 ? 6 : jsDay - 1;
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - diffToMonday);
-  const weekStart = monday.toISOString().split("T")[0];
+  // Days back to Sunday (Sun-first week): Sunday itself is 0 days back.
+  const diffToSunday = jsDay;
+  const weekStartDate = new Date(today);
+  weekStartDate.setDate(today.getDate() - diffToSunday);
+  const weekStart = weekStartDate.toISOString().split("T")[0];
 
-  // ── Monthly: full Mon-aligned calendar grid for the current month ─────
-  // Week 1 starts on the Monday of the week that contains the 1st, so the
+  // ── Monthly: full Sun-aligned calendar grid for the current month ─────
+  // Week 1 starts on the Sunday of the week that contains the 1st, so the
   // trailing days of the previous month are included (and their sales shown).
   const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
   const firstJsDay = firstOfMonth.getDay(); // 0=Sun...6=Sat
-  const firstDiffToMonday = firstJsDay === 0 ? 6 : firstJsDay - 1;
+  const firstDiffToSunday = firstJsDay;
 
   const gridStart = new Date(firstOfMonth);
-  gridStart.setDate(firstOfMonth.getDate() - firstDiffToMonday);
+  gridStart.setDate(firstOfMonth.getDate() - firstDiffToSunday);
   const gridStartStr = toCivilISO(gridStart);
 
-  // Number of Mon-aligned weeks the month spans (typically 5).
+  // Number of Sun-aligned weeks the month spans (typically 5–6).
   const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-  const weekCount = Math.ceil((firstDiffToMonday + lastOfMonth.getDate()) / 7);
+  const weekCount = Math.ceil((firstDiffToSunday + lastOfMonth.getDate()) / 7);
 
   const [weekBills, monthBills] = await Promise.all([
     fetchBills(weekStart, todayStr),
@@ -215,12 +226,12 @@ const getHeatmapData = async (): Promise<HeatmapDataSet> => {
     }
   }
 
-  // Current week: which days are valid (Mon=0 to today's day index)
-  // diffToMonday tells us how many days have passed since Monday
-  // e.g. if today is Wed (jsDay=3), diffToMonday=2, valid days = Mon(0), Tue(1), Wed(2)
+  // Current week: which days are valid (Sun=0 to today's day index).
+  // diffToSunday = days since Sunday. e.g. today Wed (jsDay=3) → valid days
+  // Sun(0), Mon(1), Tue(2), Wed(3).
   const validDayIndices = new Set<number>();
-  for (let i = 0; i <= diffToMonday; i++) {
-    validDayIndices.add(i); // 0=Mon, 1=Tue, ... 6=Sun in DAY_LABELS
+  for (let i = 0; i <= diffToSunday; i++) {
+    validDayIndices.add(i); // 0=Sun, 1=Mon, ... 6=Sat in DAY_LABELS
   }
 
   for (const bill of weekBills) {
@@ -240,13 +251,13 @@ const getHeatmapData = async (): Promise<HeatmapDataSet> => {
     // ── Guard: bill must fall within current week ─────────────────────────
     if (dateStr < weekStart || dateStr > todayStr) continue;
 
-    // Convert JS day (0=Sun) to Mon-first index (Mon=0...Sun=6)
-    const monFirstIdx = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    // JS day (0=Sun...6=Sat) maps directly to the Sun-first index.
+    const sunFirstIdx = dayOfWeek;
 
-    if (!validDayIndices.has(monFirstIdx)) continue;
+    if (!validDayIndices.has(sunFirstIdx)) continue;
 
     const hourLabel = hourToLabel(hour);
-    const dayLabel = DAY_LABELS[monFirstIdx];
+    const dayLabel = DAY_LABELS[sunFirstIdx];
 
     if (hourLabel && currentWeek[dayLabel] !== undefined) {
       currentWeek[dayLabel][hourLabel] += 1;
@@ -290,8 +301,8 @@ const getHeatmapData = async (): Promise<HeatmapDataSet> => {
   // ── Per-day dates for the current week (for y-axis labels) ────────────
   const weekDates: Record<string, string> = {};
   for (let i = 0; i < DAY_LABELS.length; i++) {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
+    const d = new Date(weekStartDate);
+    d.setDate(weekStartDate.getDate() + i);
     weekDates[DAY_LABELS[i]] = toCivilISO(d);
   }
 

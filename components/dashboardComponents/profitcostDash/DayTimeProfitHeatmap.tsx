@@ -38,7 +38,7 @@ const getTextColor = (profit: number): string => {
   return "text-gray-700";
 };
 
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 // All 24 hours of the day
 const TIME_COLUMNS: { label: string; hour: number }[] = [
