@@ -111,9 +111,10 @@ export function parseNepalDateTime(raw: string): Date | null {
   const normalized = raw.includes("T")
     ? raw.replace("Z", "")
     : raw.replace(" ", "T");
-  const rawHour = parseInt(normalized.split("T")[1]?.split(":")[0] ?? "12", 10);
+  // Milliseconds present -> already Nepal local time; absent -> UTC (+5:45).
+  const hasMs = /\.\d/.test(normalized);
   let date: Date;
-  if (rawHour >= 12) {
+  if (hasMs) {
     date = new Date(normalized);
   } else {
     date = new Date(normalized + "+00:00");

@@ -23,18 +23,20 @@ function normalizePaymentMethod(method: string): PaymentMethod {
  * is identical on every machine (dev in Nepal or a UTC server) — otherwise the
  * runtime timezone would add the Nepal offset a second time.
  *
- * Hours < 12 are stored as UTC and need the +5:45 Nepal offset; hours >= 12 are
- * already Nepal time and are used as-is.
+ * paidAt WITH milliseconds (e.g. "…28.424") is already Nepal wall-clock and is
+ * used as-is; paidAt WITHOUT milliseconds (e.g. "…27") is UTC and needs the
+ * +5:45 Nepal offset.
  */
-function parseNepalTime(rawDate: string): Date {
+export function parseNepalTime(rawDate: string): Date {
   const normalized = rawDate.includes("T")
     ? rawDate.replace("Z", "")
     : rawDate.replace(" ", "T");
-  const rawHour = parseInt(normalized.split("T")[1]?.split(":")[0] ?? "12", 10);
+  // Milliseconds present -> already Nepal local time; absent -> UTC.
+  const hasMs = /\.\d/.test(normalized);
   // Parse the wall-clock components AS UTC (append "Z"), never as local time,
   // so downstream UTC formatting round-trips the intended value.
   const utc = new Date(normalized + "Z");
-  if (rawHour >= 12) {
+  if (hasMs) {
     return utc;
   }
   return new Date(utc.getTime() + (5 * 60 + 45) * 60 * 1000);

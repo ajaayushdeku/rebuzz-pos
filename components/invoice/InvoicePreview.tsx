@@ -14,6 +14,7 @@ import businessLogo from "@/public/rebuzz.png";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { InvoiceItemGroup } from "@/lib/types/invoice";
 import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
+import { parseNepalTime } from "@/lib/mappers/transaction";
 import type { CreditPayment } from "@/services/apiCredit.client";
 import InvoiceBillTable from "./InvoiceBillTable";
 
@@ -114,15 +115,27 @@ function InvoiceContent({
     invoice.customerEmail ||
     "Guest";
 
-  const formattedDate = new Date(
-    billData?.createdAt ? billData.createdAt : invoice.createdAt,
-  ).toLocaleString(undefined, {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  // Bill's paidAt needs the Nepal-timezone correction; parse it the same way as
+  // Order History and format with `timeZone: "UTC"` so the result is identical on
+  // every machine. Fall back to the raw createdAt when there's no bill data.
+  const formattedDate = billData?.paidAt
+    ? parseNepalTime(billData.paidAt).toLocaleString("en-US", {
+        timeZone: "UTC",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+    : new Date(invoice.createdAt).toLocaleString(undefined, {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
 
   const formattedCancelledDate = new Date(
     billData?.updatedAt ?? invoice.updatedAt,
@@ -298,7 +311,8 @@ function InvoiceContent({
               {paymentList.map((p) => (
                 <div key={p._id} className="flex justify-between text-gray-500">
                   <span>
-                    {formatPaymentDate(p.paymentDate)} · {p.paymentMethod || "cash"}
+                    {formatPaymentDate(p.paymentDate)} ·{" "}
+                    {p.paymentMethod || "cash"}
                   </span>
                   <span className="font-medium text-gray-700">
                     {currency.symbol}
