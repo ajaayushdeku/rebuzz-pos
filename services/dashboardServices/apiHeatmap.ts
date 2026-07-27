@@ -56,51 +56,38 @@ function parseNepalHour(paidAt: string): {
 } {
   if (!paidAt) return { hour: -1, dayOfWeek: -1, dateStr: "" };
 
-  // `paidAt` is already Nepal local time — read the hour and calendar date
-  // straight from the string (no timezone math → no server-TZ drift).
-  const datePart =
-    (paidAt.includes("T") ? paidAt.split("T")[0] : paidAt.split(" ")[0]) || "";
   const timePart =
     (paidAt.includes("T") ? paidAt.split("T")[1] : paidAt.split(" ")[1]) || "";
-  const hour = parseInt(timePart.split(":")[0], 10);
-  if (Number.isNaN(hour)) return { hour: -1, dayOfWeek: -1, dateStr: "" };
+  const [h, m] = timePart.split(":").map(Number);
 
-  // Day-of-week from the Nepal calendar date (UTC noon avoids off-by-one).
-  const md = /^(\d{4})-(\d{2})-(\d{2})/.exec(datePart);
-  const dayOfWeek = md
-    ? new Date(
-        Date.UTC(Number(md[1]), Number(md[2]) - 1, Number(md[3]), 12),
-      ).getUTCDay()
-    : -1;
+  // ── Compute Nepal hour from string ─────────────────────────────────────
+  // Bills store `paidAt` such that pre-noon hours are UTC and need the +5:45
+  // Nepal offset to render the correct local time.
+  let nepalHour: number;
+  if (h >= 12) {
+    nepalHour = h; // Already Nepal 24-hour time
+  } else {
+    nepalHour = h + 5; // UTC time — add 5 hours 45 minutes
+    if ((m ?? 0) + 45 >= 60) nepalHour += 1;
+  }
 
-  return { hour, dayOfWeek, dateStr: datePart };
+  // ── Build a proper Nepal Date for dayOfWeek and dateStr ─────────────────
+  const rawDate = paidAt.includes("T")
+    ? paidAt.replace("Z", "")
+    : paidAt.replace(" ", "T");
+  let nepalDate: Date;
+  if (h >= 12) {
+    nepalDate = new Date(rawDate + "+05:45");
+  } else {
+    nepalDate = new Date(rawDate + "+00:00");
+    nepalDate.setMinutes(nepalDate.getMinutes() + 5 * 60 + 45);
+  }
 
-  // NOTE: previous heuristic (commented out for now). It treated hours < 12 as
-  // UTC and added the +5:45 Nepal offset, double-shifting morning (Nepal) times
-  // (e.g. 10:49 → 16:34) and mis-dating early-morning bills.
-  // const [h, m] = timePart.split(":").map(Number);
-  // let nepalHour: number;
-  // if (h >= 12) {
-  //   nepalHour = h; // Already Nepal 24-hour time
-  // } else {
-  //   nepalHour = h + 5; // UTC time — add 5 hours 45 minutes
-  //   if ((m ?? 0) + 45 >= 60) nepalHour += 1;
-  // }
-  // const rawDate = paidAt.includes("T")
-  //   ? paidAt.replace("Z", "")
-  //   : paidAt.replace(" ", "T");
-  // let nepalDate: Date;
-  // if (h >= 12) {
-  //   nepalDate = new Date(rawDate + "+05:45");
-  // } else {
-  //   nepalDate = new Date(rawDate + "+00:00");
-  //   nepalDate.setMinutes(nepalDate.getMinutes() + 5 * 60 + 45);
-  // }
-  // return {
-  //   hour: nepalHour,
-  //   dayOfWeek: nepalDate.getDay(),
-  //   dateStr: nepalDate.toISOString().split("T")[0],
-  // };
+  return {
+    hour: nepalHour,
+    dayOfWeek: nepalDate.getDay(), // 0=Sun...6=Sat
+    dateStr: nepalDate.toISOString().split("T")[0],
+  };
 }
 
 // ── Label helpers ─────────────────────────────────────────────────────────

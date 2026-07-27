@@ -23,6 +23,8 @@ export type Transaction = {
   id: string;
   date: string;
   timestamp: string;
+  /** Same time as `timestamp` but 12-hour with AM/PM, e.g. "02:06 PM". */
+  timestamp12h?: string;
   invoiceName: string;
   amount: string;
   paymentMethod: PaymentMethod;

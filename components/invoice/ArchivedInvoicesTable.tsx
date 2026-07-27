@@ -288,6 +288,17 @@ export default function ArchivedInvoicesTable({
                             minute: "2-digit",
                             hour12: false,
                           })}
+                          {invoiceArchivedDate && (
+                            <span className="text-[10px] font-normal text-gray-400">
+                              {"  "}[{" "}
+                              {invoiceArchivedDate.toLocaleTimeString("en-US", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: true,
+                              })}{" "}
+                              ]
+                            </span>
+                          )}
                         </span>
                         <span className="text-[11px] text-gray-400">
                           {invoiceArchivedDate?.toLocaleDateString("en-US", {

@@ -390,6 +390,15 @@ export default function CreditsTable({
                                   minute: "2-digit",
                                   hour12: false,
                                 })}
+                                <span className="text-[10px] font-normal text-gray-400">
+                                  {"  "}[{" "}
+                                  {d.toLocaleTimeString("en-US", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  })}{" "}
+                                  ]
+                                </span>
                               </span>
                               <span className="text-[11px] text-gray-400">
                                 {d.toLocaleDateString("en-US", {

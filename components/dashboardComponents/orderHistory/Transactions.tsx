@@ -413,6 +413,11 @@ export default function Transactions({
                     <td className="py-3 px-4">
                       <span className="font-medium text-gray-800 text-xs block">
                         {transaction.timestamp}
+                        {transaction.timestamp12h && (
+                          <span className="text-[10px] font-normal text-gray-400">
+                            {"  "}[ {transaction.timestamp12h} ]
+                          </span>
+                        )}
                       </span>
                       <span className="text-[11px] text-gray-400">
                         {transaction.date}

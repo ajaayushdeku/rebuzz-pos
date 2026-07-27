@@ -18,27 +18,26 @@ function normalizePaymentMethod(method: string): PaymentMethod {
 }
 
 /**
- * Parse a raw date string (Nepal time, no timezone info) into a Date object.
- * Hours >= 12 are treated as local time (works for server/client in similar TZ).
- * Hours < 12 are treated as UTC + 5:45 (Nepal offset) to get correct local time.
+ * Parse a raw `paidAt` string into a Date whose UTC fields equal the Nepal
+ * wall-clock time. Callers MUST format it with `timeZone: "UTC"` so the result
+ * is identical on every machine (dev in Nepal or a UTC server) — otherwise the
+ * runtime timezone would add the Nepal offset a second time.
+ *
+ * Hours < 12 are stored as UTC and need the +5:45 Nepal offset; hours >= 12 are
+ * already Nepal time and are used as-is.
  */
 function parseNepalTime(rawDate: string): Date {
   const normalized = rawDate.includes("T")
     ? rawDate.replace("Z", "")
     : rawDate.replace(" ", "T");
-  // `paidAt` is already Nepal local time — parse it as-is (no offset).
-  return new Date(normalized);
-
-  // NOTE: previous heuristic (commented out for now). It treated hours < 12 as
-  // UTC and added the +5:45 Nepal offset, which double-shifted morning (Nepal)
-  // times — e.g. a 10:49 sale rendered as 16:34.
-  // const rawHour = parseInt(normalized.split("T")[1]?.split(":")[0] ?? "12", 10);
-  // if (rawHour >= 12) {
-  //   return new Date(normalized);
-  // }
-  // const date = new Date(normalized + "+00:00");
-  // date.setMinutes(date.getMinutes() + 5 * 60 + 45);
-  // return date;
+  const rawHour = parseInt(normalized.split("T")[1]?.split(":")[0] ?? "12", 10);
+  // Parse the wall-clock components AS UTC (append "Z"), never as local time,
+  // so downstream UTC formatting round-trips the intended value.
+  const utc = new Date(normalized + "Z");
+  if (rawHour >= 12) {
+    return utc;
+  }
+  return new Date(utc.getTime() + (5 * 60 + 45) * 60 * 1000);
 }
 
 function mapBillToTransaction(bill: RawBill, isDetail = false): Transaction {
@@ -46,14 +45,22 @@ function mapBillToTransaction(bill: RawBill, isDetail = false): Transaction {
   return {
     id: `ORD-${bill.invoiceNo}`,
     date: paidAt.toLocaleDateString("en-US", {
+      timeZone: "UTC",
       month: "short",
       day: "numeric",
       year: "numeric",
     }),
     timestamp: paidAt.toLocaleTimeString("en-US", {
+      timeZone: "UTC",
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
+    }),
+    timestamp12h: paidAt.toLocaleTimeString("en-US", {
+      timeZone: "UTC",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
     }),
     invoiceName: bill.ticketName ?? "—",
     amount: String(bill.grandTotal),
