@@ -29,6 +29,7 @@ import {
   Wallet,
   Banknote,
   History,
+  Utensils,
 } from "lucide-react";
 
 export type NavigationItem =
@@ -94,6 +95,11 @@ export const navigationConfig: NavigationItem[] = [
         icon: PieChart,
       },
       { label: "Inventory", href: "/dashboard/inventory", icon: Boxes },
+      {
+        label: "Live Tables",
+        href: "/dashboard/live-tables",
+        icon: Utensils,
+      },
       { label: "Employee", href: "/dashboard/employee", icon: UsersRound },
       { label: "Customers", href: "/dashboard/customers", icon: Users },
     ],

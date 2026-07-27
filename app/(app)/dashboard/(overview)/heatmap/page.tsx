@@ -5,7 +5,7 @@ import HeatmapSkeleton from "@/components/dashboardComponents/overviewDash/heatm
 
 export default async function Page() {
   return (
-    <div className="py-2 md:py-8 px-2 md:px-4">
+    <div className="py-4 md:py-8 px-2 md:px-4">
       <ChartErrorBoundary>
         <Suspense fallback={<HeatmapSkeleton />}>
           <HeatmapWrapper />

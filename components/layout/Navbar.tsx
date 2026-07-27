@@ -17,9 +17,12 @@ export default function Navbar() {
       <div className="flex items-center justify-between px-6 py-3">
         <div className="flex items-center gap-3">
           <MobileButton />
-          <div className="text-xl font-semibold text-blue-600">
-            <Link href="/">Rebuzz</Link>
-          </div>
+          <Link
+            href="/"
+            className="text-xl font-bold tracking-tight text-blue-600 transition-opacity hover:opacity-80"
+          >
+            Rebuzz
+          </Link>
           <ServerEnvBadge className="hidden sm:inline-flex" />
         </div>
 
