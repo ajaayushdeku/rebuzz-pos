@@ -1,7 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { Users, DollarSign, Clock, LayoutGrid } from "lucide-react";
+import { useRef, useState } from "react";
+import {
+  Users,
+  DollarSign,
+  Clock,
+  LayoutGrid,
+  Move,
+  Check,
+  RotateCcw,
+} from "lucide-react";
 import type { LiveTable, ViewMode } from "@/lib/mockData/mock-live-tables";
 import {
   fmtMinutes,
@@ -12,18 +20,48 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCurrencySymbolOnly } from "@/utils/helper";
 import { useTableTicket } from "@/hooks/useTableTicket";
 
+// ── Layout persistence (per-browser) ──────────────────────────────────────
+// Positions aren't stored by the API, so a custom floor arrangement is saved
+// to localStorage keyed by the table's stable `_id`.
+const LAYOUT_STORAGE_KEY = "live-tables-layout";
+type LayoutMap = Record<string, { x: number; y: number }>;
+
+function loadLayout(): LayoutMap {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(LAYOUT_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 // ── Table node ────────────────────────────────────────────────────────────
 
 function TableNode({
   table,
   mode,
   isSelected,
+  editing,
+  pos,
   onClick,
+  onDragStart,
+  onDragMove,
+  onDragEnd,
 }: {
   table: LiveTable;
   mode: ViewMode;
   isSelected: boolean;
+  editing: boolean;
+  pos: { x: number; y: number };
   onClick: () => void;
+  onDragStart: (
+    e: React.PointerEvent<HTMLDivElement>,
+    table: LiveTable,
+  ) => void;
+  onDragMove: (e: React.PointerEvent<HTMLDivElement>) => void;
+  onDragEnd: (e: React.PointerEvent<HTMLDivElement>) => void;
 }) {
   const { currency } = useCurrency();
   const color = getStatusColor(table.status);
@@ -96,29 +134,34 @@ function TableNode({
     <div
       style={{
         position: "absolute",
-        left: `${table.x}%`,
-        top: `${table.y}%`,
+        left: `${pos.x}%`,
+        top: `${pos.y}%`,
         transform: "translate(-50%, -50%)",
         width: width,
         height: height,
         borderRadius: radius,
         border: `2px solid ${isSelected ? "#fff" : color}`,
         backgroundColor: isSelected ? color + "40" : "#1e2a3a",
-        cursor: "pointer",
+        cursor: editing ? "grab" : "pointer",
+        touchAction: editing ? "none" : undefined,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         gap: 3,
         padding: 4,
-        transition: "all 0.15s ease",
+        // No position transition while editing so the node tracks the pointer.
+        transition: editing ? "box-shadow 0.15s ease" : "all 0.15s ease",
         boxShadow: isSelected
           ? `0 0 0 3px ${color}60`
           : table.hasAlert
             ? `0 0 0 2px #f59e0b`
             : "none",
       }}
-      onClick={onClick}
+      onClick={editing ? undefined : onClick}
+      onPointerDown={editing ? (e) => onDragStart(e, table) : undefined}
+      onPointerMove={editing ? onDragMove : undefined}
+      onPointerUp={editing ? onDragEnd : undefined}
     >
       {/* Cover count badge */}
       {table.covers > 0 && (
@@ -271,7 +314,79 @@ export default function FloorPlanView({
   const [zone, setZone] = useState<"indoor" | "outdoor">("indoor");
   const [mode, setMode] = useState<ViewMode>("status");
 
+  // ── Drag-to-arrange (Edit Layout) ──────────────────────────────────────
+  const [editing, setEditing] = useState(false);
+  const [layout, setLayout] = useState<LayoutMap>(() => loadLayout());
+  const [dragPos, setDragPos] = useState<{
+    id: string;
+    x: number;
+    y: number;
+  } | null>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{ id: string; w: number; h: number } | null>(null);
+  const dragPosRef = useRef<{ x: number; y: number } | null>(null);
+
   const tables = zone === "indoor" ? indoorTables : outdoorTables;
+
+  // Effective position: live drag > saved layout > auto-generated (table.x/y).
+  const posFor = (t: LiveTable): { x: number; y: number } => {
+    if (dragPos && dragPos.id === t._id) return { x: dragPos.x, y: dragPos.y };
+    return layout[t._id] ?? { x: t.x, y: t.y };
+  };
+
+  const handleDragStart = (
+    e: React.PointerEvent<HTMLDivElement>,
+    t: LiveTable,
+  ) => {
+    e.preventDefault();
+    const el = e.currentTarget;
+    el.setPointerCapture?.(e.pointerId);
+    dragRef.current = { id: t._id, w: el.offsetWidth, h: el.offsetHeight };
+    const start = posFor(t);
+    dragPosRef.current = { x: start.x, y: start.y };
+    setDragPos({ id: t._id, x: start.x, y: start.y });
+  };
+
+  const handleDragMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    const canvas = canvasRef.current;
+    if (!drag || !canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    // Clamp so the node stays fully inside the canvas (half its size margin).
+    const halfW = (drag.w / 2 / rect.width) * 100;
+    const halfH = (drag.h / 2 / rect.height) * 100;
+    let x = ((e.clientX - rect.left) / rect.width) * 100;
+    let y = ((e.clientY - rect.top) / rect.height) * 100;
+    x = Math.min(100 - halfW, Math.max(halfW, x));
+    y = Math.min(100 - halfH, Math.max(halfH, y));
+    dragPosRef.current = { x, y };
+    setDragPos({ id: drag.id, x, y });
+  };
+
+  const handleDragEnd = () => {
+    const drag = dragRef.current;
+    const pos = dragPosRef.current;
+    dragRef.current = null;
+    dragPosRef.current = null;
+    setDragPos(null);
+    if (!drag || !pos) return;
+    const next = { ...layout, [drag.id]: pos };
+    setLayout(next);
+    try {
+      window.localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // ignore quota / privacy-mode errors
+    }
+  };
+
+  const resetLayout = () => {
+    setLayout({});
+    try {
+      window.localStorage.removeItem(LAYOUT_STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+  };
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -310,8 +425,8 @@ export default function FloorPlanView({
         </div>
       </div>
 
-      {/* Zone tabs */}
-      <div className="px-5 py-3 border-b border-gray-50">
+      {/* Zone tabs + Edit Layout controls */}
+      <div className="px-5 py-3 border-b border-gray-50 flex items-center justify-between gap-2">
         <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 w-fit">
           {[
             { id: "indoor", label: "Indoor", count: indoorTables.length },
@@ -339,13 +454,51 @@ export default function FloorPlanView({
             </button>
           ))}
         </div>
+
+        {/* Edit Layout controls */}
+        <div className="flex items-center gap-2">
+          {editing && (
+            <button
+              onClick={resetLayout}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all"
+            >
+              <RotateCcw size={13} />
+              Reset
+            </button>
+          )}
+          <button
+            onClick={() => setEditing((v) => !v)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+              editing
+                ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                : "bg-white text-gray-700 border-gray-200 hover:border-gray-300"
+            }`}
+          >
+            {editing ? <Check size={13} /> : <Move size={13} />}
+            {editing ? "Done" : "Edit Layout"}
+          </button>
+        </div>
       </div>
 
       {/* ── Dark floor canvas ── */}
       <div
+        ref={canvasRef}
         className="relative mx-5 my-5 rounded-2xl overflow-hidden"
         style={{ background: "#0d1b2a", height: 500 }}
       >
+        {/* Edit-mode hint */}
+        {editing && (
+          <div
+            className="absolute top-4 right-4 flex items-center gap-1.5 bg-blue-500/20 border border-blue-400/40 rounded-full px-3 py-1"
+            style={{ zIndex: 10 }}
+          >
+            <Move size={11} className="text-blue-200" />
+            <span className="text-[10px] text-blue-100 font-semibold tracking-wide">
+              Drag tables to rearrange
+            </span>
+          </div>
+        )}
+
         {/* Kitchen Pass label */}
         <div
           className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1"
@@ -395,7 +548,12 @@ export default function FloorPlanView({
             table={table}
             mode={mode}
             isSelected={selectedTableId === table.id}
+            editing={editing}
+            pos={posFor(table)}
             onClick={() => onSelectTable(table)}
+            onDragStart={handleDragStart}
+            onDragMove={handleDragMove}
+            onDragEnd={handleDragEnd}
           />
         ))}
       </div>
