@@ -4,6 +4,14 @@ const nextConfig: NextConfig = {
   images: {
     deviceSizes: [640, 768, 1024, 1280],
     formats: ["image/avif", "image/webp"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "api.beta.rebuzzpos.com",
+        port: "",
+        pathname: "/**",
+      },
+    ],
   },
   experimental: {
     optimizePackageImports: [

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import {
   Building2,
@@ -12,6 +12,8 @@ import {
   Pencil,
   X,
   Check,
+  Camera,
+  AlertTriangle,
 } from "lucide-react";
 
 import { useBusiness, useUpdateBusiness } from "@/hooks/useBusiness";
@@ -60,6 +62,12 @@ export default function BusinessSettingsPage() {
 
   const [editOpen, setEditOpen] = useState(false);
 
+  // ── Logo state ─────────────────────────────────────────────────────────────
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoError, setLogoError] = useState<string | null>(null);
+
   // ── Form state ─────────────────────────────────────────────────────────────
   const [form, setForm] = useState({
     businessName: "",
@@ -103,6 +111,42 @@ export default function BusinessSettingsPage() {
     return Object.keys(e).length === 0;
   };
 
+  // ── Logo change handler ────────────────────────────────────────────────────
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setLogoError(null);
+
+    // Validate type
+    if (!file.type.startsWith("image/")) {
+      setLogoError("Please select a valid image file (PNG, JPG, or WEBP).");
+      return;
+    }
+
+    // Validate size — warn if over 1 MB, reject if over 5 MB
+    const MB = file.size / (1024 * 1024);
+    if (MB > 5) {
+      setLogoError(
+        `Image is too large (${MB.toFixed(1)} MB). Maximum allowed size is 5 MB. Please compress and try again.`,
+      );
+      return;
+    }
+
+    if (MB > 1) {
+      setLogoError(
+        `Warning: Image size is ${MB.toFixed(1)} MB. Large images may slow down your business profile loading time. Consider compressing the image to under 1 MB for optimal performance.`,
+      );
+      // Allow upload but show warning — don't return
+    }
+
+    setLogoFile(file);
+    // Show local preview immediately
+    const reader = new FileReader();
+    reader.onload = (ev) => setLogoPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
   const handleSave = () => {
     if (!validate()) return;
 
@@ -114,6 +158,7 @@ export default function BusinessSettingsPage() {
       panNo: form.panNumber ? Number(form.panNumber) : 0,
       businessType: business?.businessType ?? "",
       accurateLocation: form.accurateLocation.trim(),
+      logo: logoFile ?? undefined,
     });
 
     setEditOpen(false);
@@ -131,9 +176,16 @@ export default function BusinessSettingsPage() {
         panNumber: business.panNumber ? String(business.panNumber) : "",
       });
     }
+    // Reset logo state
+    setLogoPreview(null);
+    setLogoFile(null);
+    setLogoError(null);
     setErrors({});
     setEditOpen(false);
   };
+
+  // Determine which logo to display: preview > saved > default
+  const displayLogo = logoPreview ?? business?.logo ?? null;
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
@@ -171,14 +223,26 @@ export default function BusinessSettingsPage() {
               {/* Card header with logo + business name */}
               <div className="p-6 pb-4 flex items-center gap-5">
                 <div className="w-20 h-20 rounded-xl bg-gray-100 overflow-hidden flex items-center justify-center shrink-0 border border-gray-200">
-                  <Image
-                    src={businessLogo}
-                    alt="Business Logo"
-                    width={80}
-                    height={80}
-                    className="object-contain"
-                    priority
-                  />
+                  {displayLogo ? (
+                    <Image
+                      src={displayLogo}
+                      alt="Business Logo"
+                      width={80}
+                      height={80}
+                      className="w-full h-full object-cover"
+                      unoptimized={!!logoPreview}
+                      priority
+                    />
+                  ) : (
+                    <Image
+                      src={businessLogo}
+                      alt="Business Logo"
+                      width={80}
+                      height={80}
+                      className="object-contain"
+                      priority
+                    />
+                  )}
                 </div>
 
                 <div className="min-w-0">
@@ -249,6 +313,99 @@ export default function BusinessSettingsPage() {
                 </div>
 
                 <div className="p-6 space-y-5">
+                  {/* ── Logo Upload ─────────────────────── */}
+                  <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex flex-col sm:flex-row sm:items-start gap-4">
+                    <div className="shrink-0 w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
+                      <Camera className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div className="flex-1 space-y-3">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">
+                          Business Logo
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          Upload your business logo. PNG, JPG, WEBP accepted.
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-5">
+                        <div className="relative group">
+                          {displayLogo ? (
+                            <div className="w-20 h-20 rounded-2xl border border-gray-200 overflow-hidden">
+                              <Image
+                                src={displayLogo}
+                                alt="Business logo"
+                                width={80}
+                                height={80}
+                                className="w-full h-full object-cover"
+                                unoptimized={!!logoPreview}
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center bg-gray-50">
+                              <Camera size={22} className="text-gray-300" />
+                            </div>
+                          )}
+
+                          {/* Overlay click target */}
+                          <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                          >
+                            <Camera size={18} className="text-white" />
+                          </button>
+                        </div>
+
+                        <div>
+                          <p className="text-sm font-medium text-gray-700">
+                            {displayLogo ? "Current Logo" : "No Logo"}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="mt-2 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                          >
+                            {displayLogo ? "Change logo" : "Upload logo"}
+                          </button>
+                        </div>
+
+                        {/* Hidden file input */}
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp"
+                          className="hidden"
+                          onChange={handleLogoChange}
+                        />
+                      </div>
+
+                      {/* ── Size warning message ──────────── */}
+                      {logoError && (
+                        <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                          <AlertTriangle
+                            size={16}
+                            className="text-amber-500 shrink-0 mt-0.5"
+                          />
+                          <p className="text-xs text-amber-700 leading-relaxed">
+                            {logoError}
+                          </p>
+                        </div>
+                      )}
+
+                      {!logoError && (
+                        <p className="text-xs text-gray-400 flex items-center gap-1.5">
+                          <AlertTriangle size={12} className="text-gray-400" />
+                          Recommended: keep image under <strong>
+                            1 MB
+                          </strong>{" "}
+                          for faster loading. Maximum allowed:{" "}
+                          <strong>5 MB</strong>.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
                   {/* Business Name */}
                   <FieldCard
                     icon={Building2}
