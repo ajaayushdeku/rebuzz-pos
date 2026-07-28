@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { Users, Clock, DollarSign, Sparkles } from "lucide-react";
 import type { LiveTable } from "@/lib/mockData/mock-live-tables";
 import { fmtMinutes, getStatusLabel } from "@/lib/mockData/mock-live-tables";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { useTableTicket } from "@/hooks/useTableTicket";
 
 const STATUS_BADGE: Record<string, string> = {
   seated: "bg-blue-100 text-blue-700",
@@ -32,8 +34,24 @@ function TableCard({
   onClick: () => void;
 }) {
   const { currency } = useCurrency();
-  const isActive = table.status === "seated" || table.status === "paying";
+
+  // Occupied tables carry an open ticket — fetch it for the live bill + time.
+  const { data: ticket } = useTableTicket(table.currentTicket?.invoice ?? null);
+  const [nowMs] = useState(() => Date.now());
+
+  const isActive =
+    table.status === "seated" ||
+    table.status === "paying" ||
+    !!table.currentTicket;
   const borderTop = STATUS_BORDER[table.status] ?? "border-t-gray-200";
+
+  const bill = ticket?.grandTotal ?? table.bill;
+  const seatedMinutes = ticket?.createdAt
+    ? Math.max(
+        0,
+        Math.round((nowMs - new Date(ticket.createdAt).getTime()) / 60000),
+      )
+    : table.seatedMinutes;
 
   return (
     <div
@@ -43,7 +61,7 @@ function TableCard({
       }`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-start justify-between mb-3">
         <div>
           <p className="text-sm font-bold text-gray-900">Table {table.id}</p>
           <p className="text-[11px] text-gray-400">
@@ -56,7 +74,10 @@ function TableCard({
         >
           {table.status === "cleaning"
             ? "Needs Cleaning"
-            : table.status.charAt(0).toUpperCase() + table.status.slice(1)}
+            : // : table.status.charAt(0).toUpperCase() + table.status.slice(1)}
+              table.status === "seated"
+              ? "Occupied"
+              : table.status === "open" && "Available"}
         </span>
       </div>
 
@@ -83,28 +104,24 @@ function TableCard({
               </span>
             </div>
           )}
-          {table.seatedMinutes != null && (
+          {seatedMinutes != null && (
             <div className="flex items-center gap-2">
               <Clock size={12} className="text-gray-400 shrink-0" />
               <span>
                 Seated:{" "}
                 <span className="font-semibold text-gray-900">
-                  {fmtMinutes(table.seatedMinutes)}
+                  {fmtMinutes(seatedMinutes)}
                 </span>
               </span>
             </div>
           )}
-          {table.bill != null && (
+          {bill != null && (
             <div className="flex items-center gap-2">
               <DollarSign size={12} className="text-gray-400 shrink-0" />
               <span>
                 Bill:{" "}
                 <span className="font-semibold text-green-600">
-                  {formatCurrencySymbol(
-                    table.bill,
-                    currency.symbol,
-                    currency.locale,
-                  )}
+                  {formatCurrencySymbol(bill, currency.symbol, currency.locale)}
                 </span>
               </span>
             </div>

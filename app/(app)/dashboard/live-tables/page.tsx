@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { LayoutGrid, Map } from "lucide-react";
+import { LayoutGrid, Map, Loader2, Utensils } from "lucide-react";
 
-import { MOCK_TABLES } from "@/lib/mockData/mock-live-tables";
 import type { LiveTable } from "@/lib/mockData/mock-live-tables";
+import { useLiveTables, useTableLiveSales } from "@/hooks/useLiveTables";
 import LiveStatBar from "@/components/dashboardComponents/liveTables/LiveStatBar";
 import FloorPlanView from "@/components/dashboardComponents/liveTables/FloorPlanVIew";
 import GridView from "@/components/dashboardComponents/liveTables/GridView";
@@ -16,21 +16,23 @@ export default function LiveTablesPage() {
   const [tab, setTab] = useState<Tab>("floor");
   const [selectedTable, setSelectedTable] = useState<LiveTable | null>(null);
 
-  const indoorTables = MOCK_TABLES.filter((t) => t.zone === "indoor");
-  const outdoorTables = MOCK_TABLES.filter((t) => t.zone === "outdoor");
-  const totalSales = MOCK_TABLES.reduce((s, t) => s + (t.bill ?? 0), 0);
-  const openTables = MOCK_TABLES.filter((t) => t.status === "open").length;
-  const coveredSeats = MOCK_TABLES.reduce((s, t) => s + t.covers, 0);
-  const totalCapacity = MOCK_TABLES.filter((t) => t.zone === "indoor").reduce(
-    (s, t) => s + t.capacity,
-    0,
-  );
-  const occupancyPct = Math.round(
-    (indoorTables.filter((t) => t.status === "seated" || t.status === "paying")
-      .length /
-      indoorTables.length) *
-      100,
-  );
+  const { data: tables = [], isLoading, isError } = useLiveTables();
+  const { data: liveSales = 0 } = useTableLiveSales();
+
+  const indoorTables = tables.filter((t) => t.zone === "indoor");
+  const outdoorTables = tables.filter((t) => t.zone === "outdoor");
+  const openTables = tables.filter((t) => t.status === "open").length;
+  const coveredSeats = tables.reduce((s, t) => s + t.covers, 0);
+  const totalCapacity = indoorTables.reduce((s, t) => s + t.capacity, 0);
+  const occupancyPct = indoorTables.length
+    ? Math.round(
+        (indoorTables.filter(
+          (t) => t.status === "seated" || t.status === "paying",
+        ).length /
+          indoorTables.length) *
+          100,
+      )
+    : 0;
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
@@ -71,35 +73,63 @@ export default function LiveTablesPage() {
             ))}
           </div>
 
-          {/* ── Stat bar (floor plan only) ── */}
-          {tab === "floor" && (
-            <LiveStatBar
-              occupancyPct={occupancyPct}
-              coveredSeats={coveredSeats}
-              totalCapacity={totalCapacity}
-              openTables={openTables}
-              liveSales={totalSales}
-            />
-          )}
-
-          {/* ── Views ── */}
-          {tab === "floor" ? (
-            <FloorPlanView
-              indoorTables={indoorTables}
-              outdoorTables={outdoorTables}
-              selectedTableId={selectedTable?.id ?? null}
-              onSelectTable={setSelectedTable}
-            />
+          {isLoading ? (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 flex flex-col items-center justify-center gap-3 text-gray-400">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <p className="text-sm">Loading tables…</p>
+            </div>
+          ) : isError ? (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 flex flex-col items-center justify-center gap-1.5 text-center">
+              <p className="text-sm font-medium text-red-500">
+                Failed to load tables
+              </p>
+              <p className="text-xs text-gray-400">
+                Please check your connection and try again.
+              </p>
+            </div>
+          ) : tables.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 flex flex-col items-center justify-center gap-3 text-center">
+              <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center">
+                <Utensils className="h-6 w-6 text-gray-300" />
+              </div>
+              <p className="text-sm font-medium text-gray-600">No tables yet</p>
+              <p className="text-xs text-gray-400">
+                Tables you add will appear here.
+              </p>
+            </div>
           ) : (
-            <GridView
-              tables={MOCK_TABLES}
-              selectedTableId={selectedTable?.id ?? null}
-              onSelectTable={setSelectedTable}
-            />
-          )}
+            <>
+              {/* ── Stat bar (floor plan only) ── */}
+              {tab === "floor" && (
+                <LiveStatBar
+                  occupancyPct={occupancyPct}
+                  coveredSeats={coveredSeats}
+                  totalCapacity={totalCapacity}
+                  openTables={openTables}
+                  liveSales={liveSales}
+                />
+              )}
 
-          {/* ── Table detail ── */}
-          {selectedTable && <TableDetail table={selectedTable} />}
+              {/* ── Views ── */}
+              {tab === "floor" ? (
+                <FloorPlanView
+                  indoorTables={indoorTables}
+                  outdoorTables={outdoorTables}
+                  selectedTableId={selectedTable?.id ?? null}
+                  onSelectTable={setSelectedTable}
+                />
+              ) : (
+                <GridView
+                  tables={tables}
+                  selectedTableId={selectedTable?.id ?? null}
+                  onSelectTable={setSelectedTable}
+                />
+              )}
+
+              {/* ── Table detail ── */}
+              {selectedTable && <TableDetail table={selectedTable} />}
+            </>
+          )}
         </div>
       </div>
     </div>

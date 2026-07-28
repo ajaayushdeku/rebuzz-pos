@@ -45,6 +45,8 @@ export type RawBill = {
   isRefunded: boolean;
   fonepay_prn: string | null;
   printCount: number;
+  // Present when the bill was placed against a dine-in table (null otherwise).
+  table?: string | { _id?: string; name?: string } | null;
   createdAt: string;
   updatedAt: string;
   // Only present in detail response

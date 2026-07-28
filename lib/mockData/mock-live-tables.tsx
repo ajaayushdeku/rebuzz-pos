@@ -1,11 +1,7 @@
 // ── Types ─────────────────────────────────────────────────────────────────
 
 export type TableStatus =
-  | "seated"
-  | "open"
-  | "reserved"
-  | "cleaning"
-  | "paying";
+  "seated" | "open" | "reserved" | "cleaning" | "paying";
 
 export type TableShape = "square" | "round" | "rectangle";
 export type TableZone = "indoor" | "outdoor";
@@ -18,7 +14,27 @@ export type OrderItem = {
   price: number;
 };
 
+/** Shape returned by the backend under `currentTicket`. */
+export type CurrentTicket = {
+  _id: string;
+  invoice: number;
+};
+
 export type LiveTable = {
+  // ── Fields from the GET /tables API response ──
+  _id: string;
+  adminId: string;
+  name: string;
+  seats: number;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  /** Backend occupancy signal — null when the table is free, a ticket ref when
+   *  occupied. (The API's coarse "free" | "occupied" status maps to this.) */
+  currentTicket: CurrentTicket | null;
+
+  // ── UI-only presentation fields (not returned by the API) ──
   id: number;
   label: string;
   zone: TableZone;
@@ -39,8 +55,20 @@ export type LiveTable = {
 
 // ── Mock data ─────────────────────────────────────────────────────────────
 
+const ADMIN_ID = "69a155597a68b44fbe7c93a3";
+const TS = "2026-07-13T09:26:06.374Z";
+
 export const MOCK_TABLES: LiveTable[] = [
   {
+    _id: "6a54af2eb20282c806537901",
+    adminId: ADMIN_ID,
+    name: "Table 1",
+    seats: 2,
+    notes: null,
+    createdAt: TS,
+    updatedAt: TS,
+    __v: 0,
+    currentTicket: { _id: "6a6852342aa167ceb80d7201", invoice: 101 },
     id: 1,
     label: "1",
     zone: "indoor",
@@ -59,6 +87,15 @@ export const MOCK_TABLES: LiveTable[] = [
     ],
   },
   {
+    _id: "6a54af2eb20282c806537902",
+    adminId: ADMIN_ID,
+    name: "Table 2",
+    seats: 2,
+    notes: null,
+    createdAt: TS,
+    updatedAt: TS,
+    __v: 0,
+    currentTicket: null,
     id: 2,
     label: "2",
     zone: "indoor",
@@ -73,6 +110,15 @@ export const MOCK_TABLES: LiveTable[] = [
     y: 18,
   },
   {
+    _id: "6a54af2eb20282c806537903",
+    adminId: ADMIN_ID,
+    name: "Table 3",
+    seats: 2,
+    notes: null,
+    createdAt: TS,
+    updatedAt: TS,
+    __v: 0,
+    currentTicket: { _id: "6a6852342aa167ceb80d7202", invoice: 102 },
     id: 3,
     label: "3",
     zone: "indoor",
@@ -93,6 +139,15 @@ export const MOCK_TABLES: LiveTable[] = [
     ],
   },
   {
+    _id: "6a54af2eb20282c806537904",
+    adminId: ADMIN_ID,
+    name: "Table 4",
+    seats: 2,
+    notes: null,
+    createdAt: TS,
+    updatedAt: TS,
+    __v: 0,
+    currentTicket: null,
     id: 4,
     label: "4",
     zone: "indoor",
@@ -107,6 +162,15 @@ export const MOCK_TABLES: LiveTable[] = [
     y: 18,
   },
   {
+    _id: "6a54af2eb20282c806537905",
+    adminId: ADMIN_ID,
+    name: "Table 5",
+    seats: 4,
+    notes: null,
+    createdAt: TS,
+    updatedAt: TS,
+    __v: 0,
+    currentTicket: { _id: "6a6852342aa167ceb80d7203", invoice: 103 },
     id: 5,
     label: "5",
     zone: "indoor",
@@ -121,6 +185,15 @@ export const MOCK_TABLES: LiveTable[] = [
     y: 18,
   },
   {
+    _id: "6a54af2eb20282c806537906",
+    adminId: ADMIN_ID,
+    name: "Table 6",
+    seats: 4,
+    notes: null,
+    createdAt: TS,
+    updatedAt: TS,
+    __v: 0,
+    currentTicket: { _id: "6a6852342aa167ceb80d7204", invoice: 104 },
     id: 6,
     label: "6",
     zone: "indoor",
@@ -135,6 +208,15 @@ export const MOCK_TABLES: LiveTable[] = [
     y: 48,
   },
   {
+    _id: "6a54af2eb20282c806537907",
+    adminId: ADMIN_ID,
+    name: "Table 7",
+    seats: 4,
+    notes: null,
+    createdAt: TS,
+    updatedAt: TS,
+    __v: 0,
+    currentTicket: null,
     id: 7,
     label: "7",
     zone: "indoor",
@@ -149,6 +231,15 @@ export const MOCK_TABLES: LiveTable[] = [
     y: 73,
   },
   {
+    _id: "6a54af2eb20282c806537908",
+    adminId: ADMIN_ID,
+    name: "Table 8",
+    seats: 4,
+    notes: null,
+    createdAt: TS,
+    updatedAt: TS,
+    __v: 0,
+    currentTicket: { _id: "6a6852342aa167ceb80d7205", invoice: 105 },
     id: 8,
     label: "8",
     zone: "indoor",
@@ -163,6 +254,15 @@ export const MOCK_TABLES: LiveTable[] = [
     y: 73,
   },
   {
+    _id: "6a54af2eb20282c806537909",
+    adminId: ADMIN_ID,
+    name: "Table 9",
+    seats: 4,
+    notes: null,
+    createdAt: TS,
+    updatedAt: TS,
+    __v: 0,
+    currentTicket: null,
     id: 9,
     label: "9",
     zone: "indoor",
@@ -177,6 +277,15 @@ export const MOCK_TABLES: LiveTable[] = [
     y: 73,
   },
   {
+    _id: "6a54af2eb20282c806537910",
+    adminId: ADMIN_ID,
+    name: "Table 10",
+    seats: 8,
+    notes: null,
+    createdAt: TS,
+    updatedAt: TS,
+    __v: 0,
+    currentTicket: { _id: "6a6852342aa167ceb80d7206", invoice: 106 },
     id: 10,
     label: "10",
     zone: "indoor",
@@ -194,6 +303,15 @@ export const MOCK_TABLES: LiveTable[] = [
     orders: [],
   },
   {
+    _id: "6a54af2eb20282c806537911",
+    adminId: ADMIN_ID,
+    name: "Table 11",
+    seats: 6,
+    notes: null,
+    createdAt: TS,
+    updatedAt: TS,
+    __v: 0,
+    currentTicket: { _id: "6a6852342aa167ceb80d7207", invoice: 107 },
     id: 11,
     label: "11",
     zone: "indoor",
@@ -208,6 +326,15 @@ export const MOCK_TABLES: LiveTable[] = [
     y: 48,
   },
   {
+    _id: "6a54af2eb20282c806537912",
+    adminId: ADMIN_ID,
+    name: "Table 12",
+    seats: 4,
+    notes: null,
+    createdAt: TS,
+    updatedAt: TS,
+    __v: 0,
+    currentTicket: null,
     id: 12,
     label: "12",
     zone: "indoor",
@@ -223,6 +350,15 @@ export const MOCK_TABLES: LiveTable[] = [
   },
   // Outdoor tables
   {
+    _id: "6a54af2eb20282c806537913",
+    adminId: ADMIN_ID,
+    name: "Table 13",
+    seats: 4,
+    notes: "Outdoors",
+    createdAt: TS,
+    updatedAt: TS,
+    __v: 0,
+    currentTicket: { _id: "6a6852342aa167ceb80d7208", invoice: 108 },
     id: 13,
     label: "O1",
     zone: "outdoor",
@@ -237,6 +373,15 @@ export const MOCK_TABLES: LiveTable[] = [
     y: 25,
   },
   {
+    _id: "6a54af2eb20282c806537914",
+    adminId: ADMIN_ID,
+    name: "Table 14",
+    seats: 2,
+    notes: "Outdoors",
+    createdAt: TS,
+    updatedAt: TS,
+    __v: 0,
+    currentTicket: null,
     id: 14,
     label: "O2",
     zone: "outdoor",
@@ -251,6 +396,15 @@ export const MOCK_TABLES: LiveTable[] = [
     y: 25,
   },
   {
+    _id: "6a54af2eb20282c806537915",
+    adminId: ADMIN_ID,
+    name: "Table 15",
+    seats: 6,
+    notes: "Outdoors",
+    createdAt: TS,
+    updatedAt: TS,
+    __v: 0,
+    currentTicket: null,
     id: 15,
     label: "O3",
     zone: "outdoor",
@@ -266,6 +420,15 @@ export const MOCK_TABLES: LiveTable[] = [
     y: 50,
   },
   {
+    _id: "6a54af2eb20282c806537916",
+    adminId: ADMIN_ID,
+    name: "Table 16",
+    seats: 4,
+    notes: "Outdoors",
+    createdAt: TS,
+    updatedAt: TS,
+    __v: 0,
+    currentTicket: null,
     id: 16,
     label: "O4",
     zone: "outdoor",

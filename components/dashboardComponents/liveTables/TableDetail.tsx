@@ -1,10 +1,19 @@
 "use client";
 
-import { DollarSign, Clock, Users, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { DollarSign, Clock, Users, Sparkles, Loader2 } from "lucide-react";
 import type { LiveTable } from "@/lib/mockData/mock-live-tables";
 import { fmtMinutes } from "@/lib/mockData/mock-live-tables";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { useTableTicket } from "@/hooks/useTableTicket";
+
+type OrderRow = {
+  name: string;
+  qty: number;
+  price: number;
+  status: "served" | "pending" | "preparing";
+};
 
 const STATUS_BADGE: Record<string, string> = {
   seated: "bg-blue-600 text-white",
@@ -26,17 +35,67 @@ interface TableDetailProps {
 
 export default function TableDetail({ table }: TableDetailProps) {
   const { currency } = useCurrency();
+
+  // Occupied tables carry an open ticket — fetch its live details.
+  const invoiceNo = table.currentTicket?.invoice ?? null;
+  const { data: ticket, isLoading: ticketLoading } = useTableTicket(invoiceNo);
+
   const statusLabel =
     table.status.charAt(0).toUpperCase() + table.status.slice(1);
-  const isActive = table.status === "seated" || table.status === "paying";
-  const total = (table.orders ?? []).reduce((s, o) => s + o.price * o.qty, 0);
+  // Treat any table with an open ticket as active so its live stats (bill, time
+  // seated, order) render — matching what the floor-plan nodes already show.
+  const isActive =
+    table.status === "seated" ||
+    table.status === "paying" ||
+    !!table.currentTicket;
+
+  // Prefer live ticket data; fall back to the table's own (derived) values.
+  const ticketOrders: OrderRow[] = (ticket?.items ?? []).flatMap((group) =>
+    (group.item ?? []).map((i) => ({
+      name: i.productName,
+      qty: i.quantity,
+      price: i.unitPrice,
+      status: "pending" as const,
+    })),
+  );
+  const orders: OrderRow[] = ticket ? ticketOrders : (table.orders ?? []);
+
+  const currentBill = ticket?.grandTotal ?? table.bill ?? 0;
+  const lineTotal = orders.reduce((s, o) => s + o.price * o.qty, 0);
+  const total = ticket ? currentBill : lineTotal;
+  // Total number of products across the order (sum of quantities, not types).
+  const totalItems = orders.reduce((s, o) => s + o.qty, 0);
+
+  // Tax: each item's `taxAmount` is per single unit, so multiply by quantity
+  // and sum across every taxable item in the ticket.
+  const taxAmount = (ticket?.items ?? []).reduce(
+    (groupSum, group) =>
+      groupSum +
+      (group.item ?? []).reduce(
+        (sum, i) => sum + (i.taxApplied ? i.taxAmount * i.quantity : 0),
+        0,
+      ),
+    0,
+  );
+
+  // Capture "now" once at mount via a lazy initializer so render stays pure.
+  const [nowMs] = useState(() => Date.now());
+
+  const seatedMinutes = ticket?.createdAt
+    ? Math.max(
+        0,
+        Math.round((nowMs - new Date(ticket.createdAt).getTime()) / 60000),
+      )
+    : table.seatedMinutes;
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
       {/* Header */}
       <div className="flex items-start justify-between mb-2">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Table {table.id}</h2>
+          <h2 className="text-xl font-bold text-gray-900">
+            {table.name || `Table ${table.id}`}
+          </h2>
           <div className="flex items-center gap-2 mt-0.5">
             <span className="text-xs text-gray-500 capitalize">
               {table.shape}
@@ -58,7 +117,9 @@ export default function TableDetail({ table }: TableDetailProps) {
         <span
           className={`text-xs font-bold px-3 py-1.5 rounded-full ${STATUS_BADGE[table.status]}`}
         >
-          {statusLabel}
+          {statusLabel === "Seated"
+            ? "Occupied"
+            : statusLabel === "Open" && "Available"}
         </span>
       </div>
 
@@ -71,7 +132,7 @@ export default function TableDetail({ table }: TableDetailProps) {
               bg: "bg-green-50",
               label: "Current Bill",
               value: formatCurrencySymbol(
-                table.bill ?? 0,
+                currentBill,
                 currency.symbol,
                 currency.locale,
               ),
@@ -80,7 +141,7 @@ export default function TableDetail({ table }: TableDetailProps) {
               icon: <Clock size={18} className="text-blue-500" />,
               bg: "bg-blue-50",
               label: "Time Seated",
-              value: fmtMinutes(table.seatedMinutes ?? 0),
+              value: fmtMinutes(seatedMinutes ?? 0),
             },
             {
               icon: <Users size={18} className="text-violet-500" />,
@@ -91,8 +152,8 @@ export default function TableDetail({ table }: TableDetailProps) {
             {
               icon: <Sparkles size={18} className="text-amber-500" />,
               bg: "bg-amber-50",
-              label: "Server",
-              value: table.server ?? "—",
+              label: "Ticket",
+              value: ticket?.ticketName || "—",
             },
           ].map(({ icon, bg, label, value }) => (
             <div
@@ -114,7 +175,14 @@ export default function TableDetail({ table }: TableDetailProps) {
       )}
 
       {/* ── Order details ── */}
-      {(table.orders ?? []).length > 0 && (
+      {isActive && ticketLoading && orders.length === 0 && (
+        <div className="flex items-center justify-center gap-2 py-6 text-gray-400 text-sm">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Loading order…
+        </div>
+      )}
+
+      {orders.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -123,13 +191,11 @@ export default function TableDetail({ table }: TableDetailProps) {
                 Order Details
               </p>
             </div>
-            <p className="text-xs text-gray-400">
-              {table.orders!.length} items
-            </p>
+            <p className="text-xs text-gray-400">{totalItems} items</p>
           </div>
 
           <div className="space-y-2">
-            {table.orders!.map((item, i) => (
+            {orders.map((item, i) => (
               <div
                 key={i}
                 className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0"
@@ -156,12 +222,26 @@ export default function TableDetail({ table }: TableDetailProps) {
             ))}
           </div>
 
-          {/* Total */}
-          <div className="flex items-center justify-between pt-3 mt-1 border-t border-gray-100">
-            <span className="text-sm font-semibold text-gray-700">Total</span>
-            <span className="text-base font-bold text-green-600">
-              {formatCurrencySymbol(total, currency.symbol, currency.locale)}
-            </span>
+          {/* Tax + Total */}
+          <div className="pt-3 mt-1 border-t border-gray-100 space-y-1.5">
+            {ticket && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-500">Tax</span>
+                <span className="font-medium text-gray-700">
+                  {formatCurrencySymbol(
+                    taxAmount,
+                    currency.symbol,
+                    currency.locale,
+                  )}
+                </span>
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-gray-700">Total</span>
+              <span className="text-base font-bold text-green-600">
+                {formatCurrencySymbol(total, currency.symbol, currency.locale)}
+              </span>
+            </div>
           </div>
         </div>
       )}

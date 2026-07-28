@@ -9,7 +9,8 @@ import {
   getStatusLabel,
 } from "@/lib/mockData/mock-live-tables";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrencySymbolOnly } from "@/utils/helper";
+import { formatCurrencySymbol, formatCurrencySymbolOnly } from "@/utils/helper";
+import { useTableTicket } from "@/hooks/useTableTicket";
 
 // ── Table node ────────────────────────────────────────────────────────────
 
@@ -27,10 +28,23 @@ function TableNode({
   const { currency } = useCurrency();
   const color = getStatusColor(table.status);
   const isRound = table.shape === "round";
+  const isRect = table.shape === "rectangle";
   const isLarge = table.isLarge;
 
-  const size = isLarge ? 84 : 64;
-  const radius = isRound ? "9999px" : isLarge ? "16px" : "12px";
+  // Square (≤4 seats), rectangle (5–8), round (>8).
+  const width = isRound ? 84 : isRect ? 100 : 64;
+  const height = isRound ? 84 : isRect ? 58 : 64;
+
+  // Fetch the open ticket when a mode needs its data (Total amount / Time seated).
+  const needsTicket = mode === "total" || mode === "time";
+  const ticketInvoice = needsTicket
+    ? (table.currentTicket?.invoice ?? null)
+    : null;
+  const { data: ticket } = useTableTicket(ticketInvoice);
+  // Capture "now" once at mount so render stays pure (no Date.now() in body).
+  const [nowMs] = useState(() => Date.now());
+
+  const radius = isRound ? "9999px" : "12px";
 
   // What to show inside based on mode
   const mainLine = (): string => {
@@ -55,16 +69,28 @@ function TableNode({
         return table.status === "open" || table.status === "cleaning"
           ? "—"
           : `${table.covers}`;
-      case "total":
-        return table.bill
-          ? `${formatCurrencySymbolOnly(currency.symbol)} ${table.bill}`
+      case "total": {
+        const amount = ticket?.grandTotal ?? table.bill;
+        return amount != null
+          ? `${formatCurrencySymbol(amount, currency.symbol, currency.locale)}`
           : "—";
-      case "time":
-        return table.seatedMinutes ? fmtMinutes(table.seatedMinutes) : "—";
+      }
+      case "time": {
+        const minutes = ticket?.createdAt
+          ? Math.max(
+              0,
+              Math.round(
+                (nowMs - new Date(ticket.createdAt).getTime()) / 60000,
+              ),
+            )
+          : table.seatedMinutes;
+        return minutes != null ? fmtMinutes(minutes) : "—";
+      }
     }
   };
 
-  const dotCount = Math.min(table.covers, 6);
+  // Seat dots represent the table's seat count (capped so they fit the node).
+  const dotCount = Math.min(table.seats, 8);
 
   return (
     <div
@@ -73,8 +99,8 @@ function TableNode({
         left: `${table.x}%`,
         top: `${table.y}%`,
         transform: "translate(-50%, -50%)",
-        width: size,
-        height: size,
+        width: width,
+        height: height,
         borderRadius: radius,
         border: `2px solid ${isSelected ? "#fff" : color}`,
         backgroundColor: isSelected ? color + "40" : "#1e2a3a",
@@ -154,8 +180,16 @@ function TableNode({
 
       {/* Sub content */}
       {mode === "status" ? (
-        <div style={{ display: "flex", gap: 3 }}>
-          {Array.from({ length: Math.min(dotCount, 6) }).map((_, i) => (
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 3,
+            justifyContent: "center",
+            maxWidth: width - 12,
+          }}
+        >
+          {Array.from({ length: dotCount }).map((_, i) => (
             <span
               key={i}
               style={{
