@@ -10,6 +10,7 @@ import {
 } from "@/lib/mockData/mock-inventory-data";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
+import { useBusiness } from "@/hooks/useBusiness";
 import businessLogo from "@/public/rebuzz.png";
 import {
   AlertCircle,
@@ -76,10 +77,12 @@ export default function ProductCard({
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [imgError, setImgError] = useState(false);
   const status = getStockStatus(item);
   const barPct = getBarPercent(item);
   const cfg = statusConfig[status];
   const { currency } = useCurrency();
+  const { data: business } = useBusiness();
 
   const fmt = (v: number) =>
     formatCurrencySymbol(v, currency.symbol, currency.locale);
@@ -114,12 +117,13 @@ export default function ProductCard({
           aria-label="View product image"
           className="relative h-40 w-full shrink-0 bg-gray-100 group focus:outline-none"
         >
-          {primary ? (
+          {primary && !imgError ? (
             <>
               <img
                 src={primary}
                 alt={item.name}
                 loading="lazy"
+                onError={() => setImgError(true)}
                 className="absolute inset-0 w-full h-full object-cover"
               />
               <span className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center">
@@ -137,9 +141,9 @@ export default function ProductCard({
           ) : (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
               <img
-                src={businessLogo.src}
+                src={business?.logo || businessLogo.src}
                 alt="Business Logo"
-                className="w-20 h-15 object-contain opacity-90"
+                className="w-25 h-25 object-contain opacity-90"
               />
             </div>
           )}

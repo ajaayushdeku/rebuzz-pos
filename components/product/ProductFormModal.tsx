@@ -248,7 +248,7 @@ export default function ProductFormModal({
         },
         {
           onSuccess: () => {
-            toast.success(`Product "${form.name}" updated`);
+            // toast.success(`Product "${form.name}" updated`);
             resetForm();
             onClose();
           },
@@ -339,394 +339,388 @@ export default function ProductFormModal({
       }
     >
       <div className="space-y-5">
-          {/* ── Product image ── */}
-          <Section title="Product Image">
-            <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center shrink-0">
-                {imagePreview ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={imagePreview}
-                    alt="Product"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <ImageIcon size={22} className="text-gray-300" />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <input
-                  ref={imageInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
+        {/* ── Product image ── */}
+        <Section title="Product Image">
+          <div className="flex items-center gap-4">
+            <div className="w-20 h-20 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center shrink-0">
+              {imagePreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={imagePreview}
+                  alt="Product"
+                  className="w-full h-full object-cover"
                 />
-                <div className="flex items-center gap-2">
+              ) : (
+                <ImageIcon size={22} className="text-gray-300" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => imageInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition"
+                >
+                  <Upload size={13} />
+                  {imagePreview ? "Change image" : "Upload image"}
+                </button>
+                {imageFile && (
                   <button
                     type="button"
-                    onClick={() => imageInputRef.current?.click()}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition"
+                    onClick={clearImage}
+                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 transition"
                   >
-                    <Upload size={13} />
-                    {imagePreview ? "Change image" : "Upload image"}
+                    <X size={13} />
+                    Remove
                   </button>
-                  {imageFile && (
-                    <button
-                      type="button"
-                      onClick={clearImage}
-                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 transition"
-                    >
-                      <X size={13} />
-                      Remove
-                    </button>
-                  )}
-                </div>
-                <p className="text-[11px] text-gray-400 mt-1.5">
-                  PNG or JPG, up to 5MB.
-                </p>
-              </div>
-            </div>
-          </Section>
-
-          {/* ── Product info ── */}
-          <Section title="Product Info">
-            <div className="space-y-3">
-              <div>
-                <Label className="text-xs text-gray-500 mb-1.5 block">
-                  Product name <span className="text-red-500">*</span>
-                </Label>
-                <input
-                  value={form.name}
-                  onChange={(e) => set("name", e.target.value)}
-                  placeholder="e.g. Popcorn"
-                  className={errors.name ? inputErrorClass : inputClass}
-                />
-                {errors.name && (
-                  <p className="text-xs text-red-500 mt-1">{errors.name}</p>
                 )}
               </div>
+              <p className="text-[11px] text-gray-400 mt-1.5">
+                PNG or JPG, up to 5MB.
+              </p>
+            </div>
+          </div>
+        </Section>
 
-              {/* Category dropdown */}
-              <div>
-                <Label className="text-xs text-gray-500 mb-1.5 block">
-                  Category
-                </Label>
-                {showNewCategory ? (
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <input
-                        value={newCategoryName}
-                        onChange={(e) => setNewCategoryName(e.target.value)}
-                        placeholder="Category name"
-                        className={`${inputClass} flex-1`}
-                      />
-                      <input
-                        type="color"
-                        value={newCategoryColor}
-                        onChange={(e) => setNewCategoryColor(e.target.value)}
-                        className="h-9 w-9 rounded-lg border border-gray-200 cursor-pointer shrink-0"
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
+        {/* ── Product info ── */}
+        <Section title="Product Info">
+          <div className="space-y-3">
+            <div>
+              <Label className="text-xs text-gray-500 mb-1.5 block">
+                Product name <span className="text-red-500">*</span>
+              </Label>
+              <input
+                value={form.name}
+                onChange={(e) => set("name", e.target.value)}
+                placeholder="e.g. Popcorn"
+                className={errors.name ? inputErrorClass : inputClass}
+              />
+              {errors.name && (
+                <p className="text-xs text-red-500 mt-1">{errors.name}</p>
+              )}
+            </div>
+
+            {/* Category dropdown */}
+            <div>
+              <Label className="text-xs text-gray-500 mb-1.5 block">
+                Category
+              </Label>
+              {showNewCategory ? (
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      placeholder="Category name"
+                      className={`${inputClass} flex-1`}
+                    />
+                    <input
+                      type="color"
+                      value={newCategoryColor}
+                      onChange={(e) => setNewCategoryColor(e.target.value)}
+                      className="h-9 w-9 rounded-lg border border-gray-200 cursor-pointer shrink-0"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowNewCategory(false);
+                        setNewCategoryName("");
+                        setNewCategoryColor("#60a5fa");
+                      }}
+                      className="text-xs text-gray-500 hover:text-gray-700"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!newCategoryName.trim()) {
+                          toast.error("Category name is required");
+                          return;
+                        }
+                        try {
+                          const newCat =
+                            await createCategoryMutation.mutateAsync({
+                              name: newCategoryName.trim(),
+                              color: newCategoryColor.replace("#", ""),
+                            });
+                          set("categoryId", newCat._id);
                           setShowNewCategory(false);
                           setNewCategoryName("");
                           setNewCategoryColor("#60a5fa");
-                        }}
-                        className="text-xs text-gray-500 hover:text-gray-700"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          if (!newCategoryName.trim()) {
-                            toast.error("Category name is required");
-                            return;
-                          }
-                          try {
-                            const newCat =
-                              await createCategoryMutation.mutateAsync({
-                                name: newCategoryName.trim(),
-                                color: newCategoryColor.replace("#", ""),
-                              });
-                            set("categoryId", newCat._id);
-                            setShowNewCategory(false);
-                            setNewCategoryName("");
-                            setNewCategoryColor("#60a5fa");
-                          } catch {
-                            toast.error("Failed to create category");
-                          }
-                        }}
-                        disabled={createCategoryMutation.isPending}
-                        className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-                      >
-                        {createCategoryMutation.isPending
-                          ? "Creating..."
-                          : "Create & Select"}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <div className="relative flex-1" ref={categoryDropdownRef}>
-                      <select
-                        value={form.categoryId}
-                        onChange={(e) => set("categoryId", e.target.value)}
-                        className={`${inputClass} appearance-none pr-8`}
-                      >
-                        <option value="">No category</option>
-                        {categories.map((cat) => (
-                          <option key={cat._id} value={cat._id}>
-                            {cat.name}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <svg
-                          width="12"
-                          height="12"
-                          viewBox="0 0 12 12"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M3 4.5L6 7.5L9 4.5"
-                            stroke="#9CA3AF"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowNewCategory(true)}
-                      className="h-9 w-9 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 transition shrink-0"
-                      title="Create new category"
+                        } catch {
+                          toast.error("Failed to create category");
+                        }
+                      }}
+                      disabled={createCategoryMutation.isPending}
+                      className="text-xs text-blue-600 hover:text-blue-700 font-medium"
                     >
+                      {createCategoryMutation.isPending
+                        ? "Creating..."
+                        : "Create & Select"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <div className="relative flex-1" ref={categoryDropdownRef}>
+                    <select
+                      value={form.categoryId}
+                      onChange={(e) => set("categoryId", e.target.value)}
+                      className={`${inputClass} appearance-none pr-8`}
+                    >
+                      <option value="">No category</option>
+                      {categories.map((cat) => (
+                        <option key={cat._id} value={cat._id}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
                       <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 14 14"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 12 12"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
-                          d="M7 1V13M1 7H13"
-                          stroke="#6B7280"
+                          d="M3 4.5L6 7.5L9 4.5"
+                          stroke="#9CA3AF"
                           strokeWidth="1.5"
                           strokeLinecap="round"
+                          strokeLinejoin="round"
                         />
                       </svg>
-                    </button>
+                    </div>
                   </div>
-                )}
-              </div>
-
-              <div>
-                <Label className="text-xs text-gray-500 mb-1.5 block">
-                  Description
-                </Label>
-                <textarea
-                  value={form.description}
-                  onChange={(e) => set("description", e.target.value)}
-                  placeholder="Short description..."
-                  rows={2}
-                  className={`${inputClass} resize-none`}
-                />
-              </div>
-            </div>
-          </Section>
-
-          {/* ── Pricing ── */}
-          <Section title="Pricing">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs text-gray-500 mb-1.5 block">
-                  Selling price
-                </Label>
-                <div className="relative">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
-                    {formatCurrencySymbolOnly(currency.symbol)}
-                  </span>
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.price}
-                    onChange={(e) => set("price", Number(e.target.value))}
-                    className={`${errors.price ? inputErrorClass : inputClass} pl-7`}
-                    placeholder="0"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewCategory(true)}
+                    className="h-9 w-9 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 transition shrink-0"
+                    title="Create new category"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 14 14"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M7 1V13M1 7H13"
+                        stroke="#6B7280"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </button>
                 </div>
-                {errors.price && (
-                  <p className="text-xs text-red-500 mt-1">{errors.price}</p>
-                )}
-              </div>
-
-              <div>
-                <Label className="text-xs text-gray-500 mb-1.5 block">
-                  Cost price
-                </Label>
-                <div className="relative">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
-                    {formatCurrencySymbolOnly(currency.symbol)}
-                  </span>
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.costPrice}
-                    onChange={(e) => set("costPrice", Number(e.target.value))}
-                    className={`${errors.costPrice ? inputErrorClass : inputClass} pl-7`}
-                    placeholder="0"
-                  />
-                </div>
-                {errors.costPrice && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {errors.costPrice}
-                  </p>
-                )}
-              </div>
-            </div>
-          </Section>
-
-          {/* ── Tax & Inventory ── */}
-          <Section title="Tax & Inventory">
-            <div className="bg-gray-50 rounded-xl border border-gray-100 divide-y divide-gray-100">
-              {/* Is taxable */}
-              <div className="flex items-center justify-between px-4 py-3">
-                <div>
-                  <p className="text-sm font-medium text-gray-800">
-                    Is Taxable
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    Apply tax to this product
-                  </p>
-                </div>
-                <Toggle
-                  checked={form.isTaxable}
-                  onChange={(v) => set("isTaxable", v)}
-                />
-              </div>
-
-              {/* Track stock */}
-              <div className="flex items-center justify-between px-4 py-3">
-                <div>
-                  <p className="text-sm font-medium text-gray-800">
-                    Track Stock
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    Monitor inventory levels
-                  </p>
-                </div>
-                <Toggle
-                  checked={form.usesStocks}
-                  onChange={(v) => {
-                    set("usesStocks", v);
-                    if (!v) {
-                      set("inStock", 0);
-                      set("lowStock", 0);
-                      setErrors((prev) => ({
-                        ...prev,
-                        inStock: undefined,
-                        lowStock: undefined,
-                      }));
-                    }
-                  }}
-                />
-              </div>
+              )}
             </div>
 
-            {/* Stock fields — shown only when usesStocks is true */}
-            {form.usesStocks && (
-              <div className="space-y-3">
-                <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                  ⓘ In the inventory page, the maximum stock threshold for all
-                  products is set to 1,000 units.
+            <div>
+              <Label className="text-xs text-gray-500 mb-1.5 block">
+                Description
+              </Label>
+              <textarea
+                value={form.description}
+                onChange={(e) => set("description", e.target.value)}
+                placeholder="Short description..."
+                rows={2}
+                className={`${inputClass} resize-none`}
+              />
+            </div>
+          </div>
+        </Section>
+
+        {/* ── Pricing ── */}
+        <Section title="Pricing">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs text-gray-500 mb-1.5 block">
+                Selling price
+              </Label>
+              <div className="relative">
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
+                  {formatCurrencySymbolOnly(currency.symbol)}
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  value={form.price}
+                  onChange={(e) => set("price", Number(e.target.value))}
+                  className={`${errors.price ? inputErrorClass : inputClass} pl-7`}
+                  placeholder="0"
+                />
+              </div>
+              {errors.price && (
+                <p className="text-xs text-red-500 mt-1">{errors.price}</p>
+              )}
+            </div>
+
+            <div>
+              <Label className="text-xs text-gray-500 mb-1.5 block">
+                Cost price
+              </Label>
+              <div className="relative">
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
+                  {formatCurrencySymbolOnly(currency.symbol)}
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  value={form.costPrice}
+                  onChange={(e) => set("costPrice", Number(e.target.value))}
+                  className={`${errors.costPrice ? inputErrorClass : inputClass} pl-7`}
+                  placeholder="0"
+                />
+              </div>
+              {errors.costPrice && (
+                <p className="text-xs text-red-500 mt-1">{errors.costPrice}</p>
+              )}
+            </div>
+          </div>
+        </Section>
+
+        {/* ── Tax & Inventory ── */}
+        <Section title="Tax & Inventory">
+          <div className="bg-gray-50 rounded-xl border border-gray-100 divide-y divide-gray-100">
+            {/* Is taxable */}
+            <div className="flex items-center justify-between px-4 py-3">
+              <div>
+                <p className="text-sm font-medium text-gray-800">Is Taxable</p>
+                <p className="text-xs text-gray-400">
+                  Apply tax to this product
                 </p>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-xs text-gray-500 mb-1.5 block">
-                      In stock
-                    </Label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={form.inStock}
-                      onChange={(e) => {
-                        set("inStock", Number(e.target.value));
-                        if (form.lowStock > Number(e.target.value)) {
-                          setErrors((prev) => ({
-                            ...prev,
-                            lowStock: "Low stock cannot exceed in stock.",
-                          }));
-                        } else {
-                          setErrors((prev) => ({
-                            ...prev,
-                            lowStock: undefined,
-                          }));
-                        }
-                      }}
-                      className={errors.inStock ? inputErrorClass : inputClass}
-                      placeholder="e.g. 50"
-                    />
-                    {errors.inStock && (
-                      <p className="text-xs text-red-500 mt-1">
-                        {errors.inStock}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <Label className="text-xs text-gray-500 mb-1.5 block">
-                      Low stock threshold
-                    </Label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={form.lowStock}
-                      onChange={(e) => {
-                        const val = Number(e.target.value);
-                        set("lowStock", val);
-                        if (val > form.inStock) {
-                          setErrors((prev) => ({
-                            ...prev,
-                            lowStock: "Low stock cannot exceed in stock.",
-                          }));
-                        } else {
-                          setErrors((prev) => ({
-                            ...prev,
-                            lowStock: undefined,
-                          }));
-                        }
-                      }}
-                      className={`${errors.lowStock ? inputErrorClass : inputClass} ${
-                        form.lowStock > 0 &&
-                        form.lowStock <= form.inStock &&
-                        form.lowStock <= 5
-                          ? "border-amber-300 focus:ring-amber-400"
-                          : ""
-                      }`}
-                      placeholder="e.g. 5"
-                    />
-                    {errors.lowStock ? (
-                      <p className="text-xs text-red-500 mt-1">
-                        {errors.lowStock}
-                      </p>
-                    ) : form.lowStock > 0 && form.lowStock <= 5 ? (
-                      <p className="text-xs text-amber-500 mt-1">
-                        ⚠ Alert triggers when stock reaches this level
-                      </p>
-                    ) : null}
-                  </div>
+              </div>
+              <Toggle
+                checked={form.isTaxable}
+                onChange={(v) => set("isTaxable", v)}
+              />
+            </div>
+
+            {/* Track stock */}
+            <div className="flex items-center justify-between px-4 py-3">
+              <div>
+                <p className="text-sm font-medium text-gray-800">Track Stock</p>
+                <p className="text-xs text-gray-400">
+                  Monitor inventory levels
+                </p>
+              </div>
+              <Toggle
+                checked={form.usesStocks}
+                onChange={(v) => {
+                  set("usesStocks", v);
+                  if (!v) {
+                    set("inStock", 0);
+                    set("lowStock", 0);
+                    setErrors((prev) => ({
+                      ...prev,
+                      inStock: undefined,
+                      lowStock: undefined,
+                    }));
+                  }
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Stock fields — shown only when usesStocks is true */}
+          {form.usesStocks && (
+            <div className="space-y-3">
+              <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                ⓘ In the inventory page, the maximum stock threshold for all
+                products is set to 1,000 units.
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs text-gray-500 mb-1.5 block">
+                    In stock
+                  </Label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={form.inStock}
+                    onChange={(e) => {
+                      set("inStock", Number(e.target.value));
+                      if (form.lowStock > Number(e.target.value)) {
+                        setErrors((prev) => ({
+                          ...prev,
+                          lowStock: "Low stock cannot exceed in stock.",
+                        }));
+                      } else {
+                        setErrors((prev) => ({
+                          ...prev,
+                          lowStock: undefined,
+                        }));
+                      }
+                    }}
+                    className={errors.inStock ? inputErrorClass : inputClass}
+                    placeholder="e.g. 50"
+                  />
+                  {errors.inStock && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.inStock}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-500 mb-1.5 block">
+                    Low stock threshold
+                  </Label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={form.lowStock}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      set("lowStock", val);
+                      if (val > form.inStock) {
+                        setErrors((prev) => ({
+                          ...prev,
+                          lowStock: "Low stock cannot exceed in stock.",
+                        }));
+                      } else {
+                        setErrors((prev) => ({
+                          ...prev,
+                          lowStock: undefined,
+                        }));
+                      }
+                    }}
+                    className={`${errors.lowStock ? inputErrorClass : inputClass} ${
+                      form.lowStock > 0 &&
+                      form.lowStock <= form.inStock &&
+                      form.lowStock <= 5
+                        ? "border-amber-300 focus:ring-amber-400"
+                        : ""
+                    }`}
+                    placeholder="e.g. 5"
+                  />
+                  {errors.lowStock ? (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.lowStock}
+                    </p>
+                  ) : form.lowStock > 0 && form.lowStock <= 5 ? (
+                    <p className="text-xs text-amber-500 mt-1">
+                      ⚠ Alert triggers when stock reaches this level
+                    </p>
+                  ) : null}
                 </div>
               </div>
-            )}
-          </Section>
-        </div>
+            </div>
+          )}
+        </Section>
+      </div>
     </SettingsModalShell>
   );
 }

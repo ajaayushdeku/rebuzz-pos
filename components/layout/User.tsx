@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import Image from "next/image";
 
 import {
   ChevronDown,
@@ -28,6 +29,7 @@ import { Badge } from "../ui/badge";
 
 interface UserProps {
   initialBusinessName: string;
+  businessLogo?: string | null;
 }
 
 type Account = {
@@ -48,7 +50,7 @@ function initials(text: string): string {
   return namePart.slice(0, 2).toUpperCase();
 }
 
-export default function User({ initialBusinessName }: UserProps) {
+export default function User({ initialBusinessName, businessLogo }: UserProps) {
   const router = useRouter();
 
   const queryClient = useQueryClient();
@@ -145,13 +147,28 @@ export default function User({ initialBusinessName }: UserProps) {
   };
 
   return (
-    <div className="bg-blue-100 rounded-xl px-3 py-0.5">
+    <div className="bg-blue-100 rounded-xl p-0.5">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             className="flex items-center gap-2 md:px-3 px-1"
           >
+            {businessLogo ? (
+              <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 border border-gray-200">
+                <Image
+                  src={businessLogo}
+                  alt="Business logo"
+                  width={28}
+                  height={28}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <span className="w-7 h-7 rounded-full bg-blue-600 text-white text-[11px] font-semibold flex items-center justify-center shrink-0">
+                {initials(initialBusinessName)}
+              </span>
+            )}
             <span className="font-medium text-gray-600">
               {initialBusinessName}{" "}
             </span>
@@ -165,9 +182,21 @@ export default function User({ initialBusinessName }: UserProps) {
         <DropdownMenuContent align="end" className="w-64">
           {/* Active account */}
           <DropdownMenuLabel className="flex items-center gap-2.5 py-2">
-            <span className="w-8 h-8 rounded-full bg-blue-600 text-white text-xs font-semibold flex items-center justify-center shrink-0">
-              {initials(initialBusinessName)}
-            </span>
+            {businessLogo ? (
+              <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-gray-200">
+                <Image
+                  src={businessLogo}
+                  alt="Business logo"
+                  width={32}
+                  height={32}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <span className="w-8 h-8 rounded-full bg-blue-600 text-white text-xs font-semibold flex items-center justify-center shrink-0">
+                {initials(initialBusinessName)}
+              </span>
+            )}
             <div className="min-w-0">
               <p className="text-sm font-semibold text-gray-800 truncate">
                 {initialBusinessName}
