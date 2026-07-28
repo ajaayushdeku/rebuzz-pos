@@ -11,6 +11,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "appapi.rebuzzpos.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
   experimental: {
