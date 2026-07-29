@@ -137,7 +137,7 @@ export default function CashFlowTrend() {
     for (const t of transactions) {
       const row = byKey.get(t.date.slice(0, 7));
       if (!row) continue;
-      if (t.type === "income") row.inflow += t.amount;
+      if (t.kind === "income") row.inflow += t.amount;
       else row.outflow += t.amount;
     }
 

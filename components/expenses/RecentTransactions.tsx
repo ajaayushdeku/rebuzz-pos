@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -14,19 +14,87 @@ import {
   ChevronUp,
   ChevronDown,
   Receipt,
+  AlertTriangle,
+  Loader2,
 } from "lucide-react";
-import { PURPOSE_COLORS, useTracker } from "@/providers/ExpenseContext";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import {
+  getPurposeColor,
+  useTracker,
+  type Transaction,
+} from "@/providers/ExpenseContext";
 
 type SortKey = "date" | "amount";
 type SortDir = "asc" | "desc";
 
+const SortIcon = ({
+  colKey,
+  sort,
+  sortDir,
+}: {
+  colKey: SortKey;
+  sort: SortKey;
+  sortDir: SortDir;
+}) =>
+  sort === colKey ? (
+    sortDir === "asc" ? (
+      <ChevronUp className="h-3 w-3" />
+    ) : (
+      <ChevronDown className="h-3 w-3" />
+    )
+  ) : (
+    <ArrowUpDown className="h-3 w-3 opacity-30" />
+  );
+
 export default function RecentTransactions() {
-  const { transactions, deleteTransaction } = useTracker();
+  const { transactions, deleteTransaction, allPurposes } = useTracker();
   const { currency } = useCurrency();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "expense" | "income">("all");
   const [sort, setSort] = useState<SortKey>("date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  // Delete confirmation modal state
+  const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Map purposeId → { name, icon } (from the purpose fetch API via context)
+  const purposeLookup = useMemo(() => {
+    const map: Record<string, { name: string; icon: string }> = {};
+    for (const p of allPurposes) {
+      map[p._id] = { name: p.name, icon: p.icon };
+    }
+    return map;
+  }, [allPurposes]);
+
+  const getPurposeName = useCallback(
+    (purposeId: string) => purposeLookup[purposeId]?.name ?? purposeId,
+    [purposeLookup],
+  );
+
+  const getPurposeIconStr = useCallback(
+    (purposeId: string) => purposeLookup[purposeId]?.icon ?? "public",
+    [purposeLookup],
+  );
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      await deleteTransaction(deleteTarget._id);
+      setDeleteTarget(null);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const toggleSort = (key: SortKey) => {
     if (sort === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -36,25 +104,16 @@ export default function RecentTransactions() {
     }
   };
 
-  const SortIcon = ({ colKey }: { colKey: SortKey }) =>
-    sort === colKey ? (
-      sortDir === "asc" ? (
-        <ChevronUp className="h-3 w-3" />
-      ) : (
-        <ChevronDown className="h-3 w-3" />
-      )
-    ) : (
-      <ArrowUpDown className="h-3 w-3 opacity-30" />
-    );
-
   const filtered = useMemo(() => {
     return transactions
       .filter((t) => {
-        const matchType = filter === "all" || t.type === filter;
+        const matchType = filter === "all" || t.kind === filter;
         const matchSearch =
           !search ||
-          t.remarks.toLowerCase().includes(search.toLowerCase()) ||
-          t.purpose.toLowerCase().includes(search.toLowerCase());
+          t.remark.toLowerCase().includes(search.toLowerCase()) ||
+          getPurposeName(t.purposeId)
+            .toLowerCase()
+            .includes(search.toLowerCase());
         return matchType && matchSearch;
       })
       .sort((a, b) => {
@@ -121,7 +180,7 @@ export default function RecentTransactions() {
                 onClick={() => toggleSort("date")}
               >
                 <span className="flex items-center gap-1">
-                  Date <SortIcon colKey="date" />
+                  Date <SortIcon colKey="date" sort={sort} sortDir={sortDir} />
                 </span>
               </th>
               <th
@@ -129,7 +188,8 @@ export default function RecentTransactions() {
                 onClick={() => toggleSort("amount")}
               >
                 <span className="flex items-center justify-end gap-1">
-                  Amount <SortIcon colKey="amount" />
+                  Amount{" "}
+                  <SortIcon colKey="amount" sort={sort} sortDir={sortDir} />
                 </span>
               </th>
               <th className="text-right pb-3 pt-3 px-4 font-medium">Actions</th>
@@ -157,14 +217,14 @@ export default function RecentTransactions() {
               </tr>
             ) : (
               filtered.map((t) => {
-                const isExpense = t.type === "expense";
+                const isExpense = t.kind === "expense";
                 const Icon = isExpense ? TrendingDown : TrendingUp;
                 const color = isExpense ? "text-red-500" : "text-green-500";
                 const bg = isExpense ? "bg-red-50" : "bg-green-50";
 
                 return (
                   <tr
-                    key={t.id}
+                    key={t._id}
                     className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
                   >
                     {/* Details */}
@@ -177,13 +237,13 @@ export default function RecentTransactions() {
                         </div>
                         <div className="min-w-0">
                           <p className="text-xs font-medium text-gray-900 truncate">
-                            {t.remarks || "—"}
+                            {t.remark || "—"}
                           </p>
-                          {t.recurring && (
+                          {t.isRecurring && (
                             <div className="flex items-center gap-0.5 mt-0.5">
                               <RepeatIcon size={9} className="text-blue-400" />
                               <span className="text-[10px] text-blue-400 capitalize">
-                                {t.frequency}
+                                {t.frequency || "N/A"}
                               </span>
                             </div>
                           )}
@@ -193,16 +253,22 @@ export default function RecentTransactions() {
 
                     {/* Purpose */}
                     <td className="py-3 px-4">
-                      <span
-                        className="text-xs px-2 py-0.5 rounded-full font-medium"
-                        style={{
-                          backgroundColor:
-                            (PURPOSE_COLORS[t.purpose] ?? "#6b7280") + "20",
-                          color: PURPOSE_COLORS[t.purpose] ?? "#6b7280",
-                        }}
-                      >
-                        {t.purpose}
-                      </span>
+                      {(() => {
+                        const purposeName = getPurposeName(t.purposeId);
+                        const iconStr = getPurposeIconStr(t.purposeId);
+                        const iconColor = getPurposeColor(iconStr, purposeName);
+                        return (
+                          <span
+                            className="text-xs px-2 py-0.5 rounded-full font-medium"
+                            style={{
+                              backgroundColor: iconColor + "20",
+                              color: iconColor,
+                            }}
+                          >
+                            {purposeName}
+                          </span>
+                        );
+                      })()}
                     </td>
 
                     {/* Date */}
@@ -226,7 +292,7 @@ export default function RecentTransactions() {
                     <td className="py-3 px-4">
                       <div className="flex items-center justify-end gap-1">
                         <button
-                          onClick={() => deleteTransaction(t.id)}
+                          onClick={() => setDeleteTarget(t)}
                           className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                           title="Delete transaction"
                         >
@@ -241,6 +307,54 @@ export default function RecentTransactions() {
           </tbody>
         </table>
       </div>
+
+      {/* ── Delete confirmation modal ── */}
+      <Dialog
+        open={deleteTarget !== null}
+        onOpenChange={(o) => {
+          if (!o && !isDeleting) setDeleteTarget(null);
+        }}
+      >
+        <DialogContent className="max-w-sm" showCloseButton={!isDeleting}>
+          <DialogHeader>
+            <div className="mx-auto mb-2 w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
+              <AlertTriangle className="h-6 w-6 text-red-500" />
+            </div>
+            <DialogTitle className="text-base font-semibold text-center text-gray-900">
+              Delete transaction?
+            </DialogTitle>
+            <DialogDescription className="text-center text-sm text-gray-500">
+              {deleteTarget
+                ? `“${deleteTarget.remark || getPurposeName(deleteTarget.purposeId)}” will be permanently removed. This action cannot be undone.`
+                : "This transaction will be permanently removed. This action cannot be undone."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-row gap-2 sm:justify-center">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteTarget(null)}
+              disabled={isDeleting}
+              className="flex-1 sm:flex-none"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={isDeleting}
+              className="flex-1 sm:flex-none bg-red-600 text-white hover:bg-red-700"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" /> Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

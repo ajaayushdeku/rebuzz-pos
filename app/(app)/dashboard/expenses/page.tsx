@@ -2,12 +2,12 @@
 
 import { ExpenseTrackerProvider, useTracker } from "@/providers/ExpenseContext";
 import { ExpenseAnalyticsSkeleton } from "@/components/expenses/ExpenseAnalyticsSkeletons";
-import ExpenseBudgetGauges from "@/components/expenses/ExpenseBudgetGauges";
-import ExpensesByCategory from "@/components/expenses/ExpensesByCategory";
+// import ExpenseBudgetGauges from "@/components/expenses/ExpenseBudgetGauges";
+// import ExpensesByCategory from "@/components/expenses/ExpensesByCategory";
 import BudgetVsActual from "@/components/expenses/BudgetVsActual";
-import MonthlyExpenseTrend from "@/components/expenses/MonthlyExpenseTrend";
+// import MonthlyExpenseTrend from "@/components/expenses/MonthlyExpenseTrend";
 import CashFlowTrend from "@/components/expenses/CashFlowTrend";
-import WhereMoneyGoes from "@/components/expenses/WhereMoneyGoes";
+// import WhereMoneyGoes from "@/components/expenses/WhereMoneyGoes";
 import CostHealth from "@/components/expenses/CostHealth";
 import HiddenCostLeaks from "@/components/expenses/HiddenCostLeaks";
 
@@ -34,13 +34,13 @@ function ExpenseAnalyticsPage() {
           <ExpenseAnalyticsSkeleton />
         ) : (
           <>
-            <ExpenseBudgetGauges />
-            <ExpensesByCategory />
+            {/* <ExpenseBudgetGauges />
+            <ExpensesByCategory /> */}
             <BudgetVsActual />
-            <MonthlyExpenseTrend />
+            {/* <MonthlyExpenseTrend /> */}
             <CashFlowTrend />
             <CostHealth />
-            <WhereMoneyGoes />
+            {/* <WhereMoneyGoes /> */}
             <HiddenCostLeaks />
           </>
         )}

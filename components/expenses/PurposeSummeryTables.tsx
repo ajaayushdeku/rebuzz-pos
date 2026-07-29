@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, createElement } from "react";
 
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -12,19 +12,43 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  PURPOSE_COLORS,
+  getPurposeColor,
   Transaction,
   TransactionType,
   useTracker,
 } from "@/providers/ExpenseContext";
+import { getPurposeIcon } from "@/lib/purpose-icons";
+
+// Small wrapper to render a purpose icon without creating a component during render
+function PurposeIcon({
+  icon,
+  name,
+  size = 13,
+  color,
+}: {
+  icon: string;
+  name: string;
+  size?: number;
+  color?: string;
+}) {
+  const Icon = getPurposeIcon(icon, name);
+  return createElement(Icon, {
+    size,
+    style: color ? { color } : undefined,
+  });
+}
 
 function TransactionModal({
-  purpose,
+  purposeId,
+  purposeName,
+  purposeIcon,
   type,
   open,
   onClose,
 }: {
-  purpose: string;
+  purposeId: string;
+  purposeName: string;
+  purposeIcon: string;
   type: TransactionType;
   open: boolean;
   onClose: () => void;
@@ -40,22 +64,22 @@ function TransactionModal({
     () =>
       transactions.filter(
         (t) =>
-          t.type === type &&
-          t.purpose === purpose &&
-          (t.remarks.toLowerCase().includes(search.toLowerCase()) || !search),
+          t.kind === type &&
+          t.purposeId === purposeId &&
+          (t.remark.toLowerCase().includes(search.toLowerCase()) || !search),
       ),
-    [transactions, type, purpose, search],
+    [transactions, type, purposeId, search],
   );
 
   const startEdit = (t: Transaction) => {
-    setEditingId(t.id);
-    setEditRemarks(t.remarks);
+    setEditingId(t._id);
+    setEditRemarks(t.remark);
     setEditAmount(String(t.amount));
   };
 
   const saveEdit = (id: string) => {
     updateTransaction(id, {
-      remarks: editRemarks,
+      remark: editRemarks,
       amount: parseFloat(editAmount) || 0,
     });
     setEditingId(null);
@@ -67,10 +91,19 @@ function TransactionModal({
         <DialogHeader>
           <DialogTitle className="text-sm font-semibold text-gray-900 flex items-center gap-2">
             <span
-              className="w-2.5 h-2.5 rounded-full"
-              style={{ backgroundColor: PURPOSE_COLORS[purpose] ?? "#6b7280" }}
-            />
-            {purpose} — {type}
+              className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+              style={{
+                backgroundColor:
+                  getPurposeColor(purposeIcon, purposeName) + "20",
+              }}
+            >
+              <PurposeIcon
+                icon={purposeIcon}
+                name={purposeName}
+                color={getPurposeColor(purposeIcon, purposeName)}
+              />
+            </span>
+            {purposeName} — {type}
           </DialogTitle>
         </DialogHeader>
 
@@ -95,10 +128,10 @@ function TransactionModal({
           ) : (
             filtered.map((t) => (
               <div
-                key={t.id}
+                key={t._id}
                 className="border border-gray-100 rounded-lg px-3 py-2.5"
               >
-                {editingId === t.id ? (
+                {editingId === t._id ? (
                   <div className="space-y-2">
                     <input
                       value={editRemarks}
@@ -113,7 +146,7 @@ function TransactionModal({
                         className="flex-1 border border-gray-200 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                       />
                       <button
-                        onClick={() => saveEdit(t.id)}
+                        onClick={() => saveEdit(t._id)}
                         className="px-3 py-1.5 bg-blue-600 text-white rounded text-xs"
                       >
                         Save
@@ -130,7 +163,7 @@ function TransactionModal({
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-800">
-                        {t.remarks || "—"}
+                        {t.remark || "—"}
                       </p>
                       <p className="text-xs text-gray-400">{t.date}</p>
                     </div>
@@ -153,7 +186,7 @@ function TransactionModal({
                         <Pencil size={13} />
                       </button>
                       <button
-                        onClick={() => deleteTransaction(t.id)}
+                        onClick={() => deleteTransaction(t._id)}
                         className="text-gray-400 hover:text-red-500"
                       >
                         <Trash2 size={13} />
@@ -171,18 +204,32 @@ function TransactionModal({
 }
 
 function SummaryTable({ type }: { type: TransactionType }) {
-  const { transactions } = useTracker();
+  const { transactions, allPurposes } = useTracker();
   const { currency } = useCurrency();
   const [selected, setSelected] = useState<string | null>(null);
+
+  // Build purposeId → { name, icon } lookup
+  const purposeLookup = useMemo(() => {
+    const map: Record<string, { name: string; icon: string }> = {};
+    for (const p of allPurposes) {
+      map[p._id] = { name: p.name, icon: p.icon };
+    }
+    return map;
+  }, [allPurposes]);
+
+  const getPurposeName = (purposeId: string) =>
+    purposeLookup[purposeId]?.name ?? purposeId;
+  const getPurposeIconStr = (purposeId: string) =>
+    purposeLookup[purposeId]?.icon ?? "public";
 
   const grouped = useMemo(() => {
     const map: Record<string, { count: number; total: number }> = {};
     transactions
-      .filter((t) => t.type === type)
+      .filter((t) => t.kind === type)
       .forEach((t) => {
-        if (!map[t.purpose]) map[t.purpose] = { count: 0, total: 0 };
-        map[t.purpose].count++;
-        map[t.purpose].total += t.amount;
+        if (!map[t.purposeId]) map[t.purposeId] = { count: 0, total: 0 };
+        map[t.purposeId].count++;
+        map[t.purposeId].total += t.amount;
       });
     return Object.entries(map).sort(([, a], [, b]) => b.total - a.total);
   }, [transactions, type]);
@@ -215,41 +262,57 @@ function SummaryTable({ type }: { type: TransactionType }) {
                 </td>
               </tr>
             ) : (
-              grouped.map(([purpose, { count, total }]) => (
-                <tr
-                  key={purpose}
-                  onClick={() => setSelected(purpose)}
-                  className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
-                >
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="w-2 h-2 rounded-full shrink-0"
-                        style={{
-                          backgroundColor: PURPOSE_COLORS[purpose] ?? "#6b7280",
-                        }}
-                      />
-                      <span className="text-xs font-medium text-gray-900">
-                        {purpose}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4 text-center text-xs text-gray-600">
-                    {count}
-                  </td>
-                  <td
-                    className={`py-3 px-4 text-right text-xs font-semibold ${
-                      type === "expense" ? "text-red-600" : "text-green-600"
-                    }`}
+              grouped.map(([purposeId, { count, total }]) => {
+                const purposeName = getPurposeName(purposeId);
+                return (
+                  <tr
+                    key={purposeId}
+                    onClick={() => setSelected(purposeId)}
+                    className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
                   >
-                    {formatCurrencySymbol(
-                      total,
-                      currency.symbol,
-                      currency.locale,
-                    )}
-                  </td>
-                </tr>
-              ))
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+                          style={{
+                            backgroundColor:
+                              getPurposeColor(
+                                getPurposeIconStr(purposeId),
+                                purposeName,
+                              ) + "20",
+                          }}
+                        >
+                          <PurposeIcon
+                            icon={getPurposeIconStr(purposeId)}
+                            name={purposeName}
+                            color={getPurposeColor(
+                              getPurposeIconStr(purposeId),
+                              purposeName,
+                            )}
+                          />
+                        </span>
+                        <span className="text-xs font-medium text-gray-900">
+                          {purposeName}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-center text-xs text-gray-600">
+                      {count}
+                    </td>
+                    <td
+                      className={`py-3 px-4 text-right text-xs font-semibold ${
+                        type === "expense" ? "text-red-600" : "text-green-600"
+                      }`}
+                    >
+                      {formatCurrencySymbol(
+                        total,
+                        currency.symbol,
+                        currency.locale,
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -257,7 +320,9 @@ function SummaryTable({ type }: { type: TransactionType }) {
 
       {selected && (
         <TransactionModal
-          purpose={selected}
+          purposeId={selected}
+          purposeName={getPurposeName(selected)}
+          purposeIcon={getPurposeIconStr(selected)}
           type={type}
           open={!!selected}
           onClose={() => setSelected(null)}

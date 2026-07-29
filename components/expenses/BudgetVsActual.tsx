@@ -53,10 +53,10 @@ export default function BudgetVsActual() {
   const rows = useMemo(() => {
     const spendByCategory = new Map<string, number>();
     for (const t of transactions) {
-      if (t.type === "expense") {
+      if (t.kind === "expense") {
         spendByCategory.set(
-          t.purpose,
-          (spendByCategory.get(t.purpose) ?? 0) + t.amount,
+          t.purposeId,
+          (spendByCategory.get(t.purposeId) ?? 0) + t.amount,
         );
       }
     }

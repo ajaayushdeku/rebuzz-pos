@@ -6,9 +6,22 @@ import {
   useEffect,
   useState,
   useCallback,
-  useRef,
   type ReactNode,
 } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  fetchPurposes,
+  createPurpose as apiCreatePurpose,
+  updatePurpose as apiUpdatePurpose,
+  deletePurpose as apiDeletePurpose,
+  createExpenseEntry,
+  fetchTransactions,
+  type PurposeItem,
+  type CreateExpensePayload,
+  type CreatePurposePayload,
+} from "@/services/apiExpense.client";
+import { mockBudgetOperations, type Budget } from "@/lib/mockData/mock-budgets";
+import toast from "react-hot-toast";
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -16,82 +29,81 @@ export type TransactionType = "expense" | "income";
 export type Frequency = "daily" | "weekly" | "monthly" | "yearly";
 
 export type Transaction = {
-  id: string;
-  type: TransactionType;
-  purpose: string;
-  remarks: string;
+  _id: string;
+  kind: TransactionType;
+  purposeId: string;
+  remark: string;
   amount: number;
   date: string;
-  recurring: boolean;
-  frequency?: Frequency;
-  endDate?: string;
+  isRecurring: boolean;
+  frequency: string | null;
+  endDate: string | null;
+  otherDetail: string | null;
   createdAt: string;
 };
 
-export type Budget = {
-  id: string;
-  /** Expense category this threshold applies to — an expense purpose. */
-  purpose: string;
-  /** Spending threshold for the category. */
-  amount: number;
-  createdAt: string;
+export type Summary = {
+  expenseTotal: number;
+  incomeTotal: number;
+  net: number;
 };
 
-type PurposeStore = {
-  expense: string[];
-  income: string[];
-};
+// ── Purpose Colors ────────────────────────────────────────────────────────
 
-type TrackerContextValue = {
-  transactions: Transaction[];
-  budgets: Budget[];
-  expensePurposes: string[];
-  incomePurposes: string[];
-  isLoading: boolean;
-  addTransaction: (t: Omit<Transaction, "id" | "createdAt">) => Promise<void>;
-  updateTransaction: (id: string, patch: Partial<Transaction>) => Promise<void>;
-  deleteTransaction: (id: string) => Promise<void>;
-  addBudget: (b: Omit<Budget, "id" | "createdAt">) => Promise<void>;
-  updateBudget: (id: string, patch: Partial<Budget>) => Promise<void>;
-  deleteBudget: (id: string) => Promise<void>;
-  addPurpose: (type: TransactionType, name: string) => Promise<void>;
-  removePurpose: (type: TransactionType, name: string) => Promise<void>;
-};
-
-// ── Default purposes ──────────────────────────────────────────────────────
-
-const DEFAULT_PURPOSES: PurposeStore = {
-  expense: [
-    "Rent",
-    "Utilities",
-    "Groceries",
-    "Salary",
-    "Marketing",
-    "Supplies",
-    "Transport",
-    "Maintenance",
-  ],
-  income: ["Sales", "Service", "Consultation", "Refund", "Investment", "Other"],
-};
-
-// ── Purpose colors ────────────────────────────────────────────────────────
-
+// Colors keyed by icon value (Material Design icon names from the API)
+// and purpose name (for backward compatibility / custom purposes)
 export const PURPOSE_COLORS: Record<string, string> = {
-  Rent: "#ef4444",
-  Utilities: "#f97316",
-  Groceries: "#eab308",
-  Salary: "#6366f1",
-  Marketing: "#8b5cf6",
-  Supplies: "#14b8a6",
-  Transport: "#3b82f6",
-  Maintenance: "#f43f5e",
-  Sales: "#22c55e",
-  Service: "#10b981",
-  Consultation: "#0ea5e9",
-  Refund: "#a78bfa",
-  Investment: "#f59e0b",
-  Other: "#6b7280",
+  // ── By icon value ──
+  restaurant: "#f97316",
+  shopping_cart: "#22c55e",
+  card_giftcard: "#a855f7",
+  lightbulb: "#f59e0b",
+  directions_bus: "#3b82f6",
+  movie: "#ec4899",
+  person: "#f43f5e",
+  checkroom: "#6366f1",
+  monitor_heart: "#ef4444",
+  home: "#14b8a6",
+  school: "#8b5cf6",
+  public: "#6b7280",
+  work: "#10b981",
+  desktop: "#06b6d4",
+  local_cafe: "#b45309",
+  camera: "#7c3aed",
+  directions_car: "#2563eb",
+  pedal_bike: "#16a34a",
+  flight: "#0ea5e9",
+  music: "#db2777",
+  smartphone: "#4f46e5",
+  book: "#7c3aed",
+  favorite: "#e11d48",
+  sports_esports: "#9333ea",
+  pie_chart: "#d97706",
+  // ── By purpose name (matching default purposes from the API) ──
+  "Food And Drinks": "#f97316",
+  Grocery: "#22c55e",
+  "Gifts/Donations": "#a855f7",
+  Utilities: "#f59e0b",
+  Transportation: "#3b82f6",
+  Entertainment: "#ec4899",
+  "Personal Care": "#f43f5e",
+  Clothing: "#6366f1",
+  Health: "#ef4444",
+  Housing: "#14b8a6",
+  Education: "#8b5cf6",
+  Others: "#6b7280",
+  Salary: "#10b981",
+  Freelance: "#06b6d4",
+  "Gift Received": "#a855f7",
 };
+
+// Resolve the color for a purpose: try icon value first, then name, then fallback
+export function getPurposeColor(icon: string, name: string): string {
+  const iconKey = (icon || "").toLowerCase();
+  if (PURPOSE_COLORS[iconKey]) return PURPOSE_COLORS[iconKey];
+  if (PURPOSE_COLORS[name]) return PURPOSE_COLORS[name];
+  return "#6b7280";
+}
 
 const COLOR_POOL = [
   "#ef4444",
@@ -124,304 +136,310 @@ export function getOrAssignColor(name: string): string {
   return PURPOSE_COLORS[name];
 }
 
-// ── IndexedDB helpers ─────────────────────────────────────────────────────
+type TrackerContextValue = {
+  // Purposes
+  expensePurposes: PurposeItem[];
+  incomePurposes: PurposeItem[];
+  allPurposes: PurposeItem[];
+  isPurposesLoading: boolean;
 
-const DB_NAME = "rebuzz_expense_tracker";
-const DB_VERSION = 2;
-const STORE_TRANSACTIONS = "transactions";
-const STORE_PURPOSES = "purposes";
-const STORE_BUDGETS = "budgets";
+  // Transactions
+  transactions: Transaction[];
+  summary: Summary;
+  isLoading: boolean;
 
-function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
+  // Budgets
+  budgets: Budget[];
+  addBudget: (budget: { purpose: string; amount: number }) => Promise<void>;
+  updateBudget: (
+    id: string,
+    updates: { purpose?: string; amount?: number },
+  ) => Promise<void>;
+  deleteBudget: (id: string) => Promise<void>;
 
-    req.onupgradeneeded = (e) => {
-      const db = (e.target as IDBOpenDBRequest).result;
+  // Month/year filter
+  month: number;
+  year: number;
+  setMonth: (m: number) => void;
+  setYear: (y: number) => void;
 
-      if (!db.objectStoreNames.contains(STORE_TRANSACTIONS)) {
-        const store = db.createObjectStore(STORE_TRANSACTIONS, {
-          keyPath: "id",
-        });
-        store.createIndex("type", "type", { unique: false });
-        store.createIndex("date", "date", { unique: false });
-        store.createIndex("createdAt", "createdAt", { unique: false });
-      }
-
-      if (!db.objectStoreNames.contains(STORE_PURPOSES)) {
-        db.createObjectStore(STORE_PURPOSES, { keyPath: "id" });
-      }
-
-      if (!db.objectStoreNames.contains(STORE_BUDGETS)) {
-        const store = db.createObjectStore(STORE_BUDGETS, { keyPath: "id" });
-        store.createIndex("purpose", "purpose", { unique: false });
-      }
-    };
-
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-// Generic read all from a store
-function dbGetAll<T>(db: IDBDatabase, storeName: string): Promise<T[]> {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(storeName, "readonly");
-    const req = tx.objectStore(storeName).getAll();
-    req.onsuccess = () => resolve(req.result as T[]);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-// Generic put (upsert)
-function dbPut(
-  db: IDBDatabase,
-  storeName: string,
-  value: unknown,
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(storeName, "readwrite");
-    const req = tx.objectStore(storeName).put(value);
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
-  });
-}
-
-// Generic delete by key
-function dbDelete(
-  db: IDBDatabase,
-  storeName: string,
-  key: string,
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(storeName, "readwrite");
-    const req = tx.objectStore(storeName).delete(key);
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
-  });
-}
-
-// ── Context ───────────────────────────────────────────────────────────────
+  // Actions
+  addTransaction: (t: CreateExpensePayload) => Promise<void>;
+  updateTransaction: (id: string, patch: Partial<Transaction>) => Promise<void>;
+  deleteTransaction: (id: string) => Promise<void>;
+  addPurpose: (
+    name: string,
+    appliesTo: "expense" | "income" | "both",
+    icon?: string,
+  ) => Promise<void>;
+  updatePurpose: (
+    id: string,
+    payload: Partial<CreatePurposePayload>,
+  ) => Promise<void>;
+  deletePurpose: (id: string) => Promise<void>;
+  refetchTransactions: () => void;
+};
 
 const TrackerContext = createContext<TrackerContextValue | null>(null);
 
+// ── Provider ──────────────────────────────────────────────────────────────
+
 export function ExpenseTrackerProvider({ children }: { children: ReactNode }) {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [budgets, setBudgets] = useState<Budget[]>([]);
-  const [purposes, setPurposes] = useState<PurposeStore>(DEFAULT_PURPOSES);
-  const [isLoading, setIsLoading] = useState(true);
-  const dbRef = useRef<IDBDatabase | null>(null);
+  const queryClient = useQueryClient();
+  const now = new Date();
+  const [month, setMonth] = useState(now.getMonth() + 1);
+  const [year, setYear] = useState(now.getFullYear());
 
-  // ── Initialize DB and load data ─────────────────────────────────────────
-  useEffect(() => {
-    let mounted = true;
+  // ── Purposes ──────────────────────────────────────────────────────────
+  const { data: allPurposes = [], isLoading: isPurposesLoading } = useQuery<
+    PurposeItem[]
+  >({
+    queryKey: ["expense-purposes"],
+    queryFn: fetchPurposes,
+    staleTime: 10 * 60 * 1000,
+  });
 
-    async function init() {
-      try {
-        const db = await openDB();
-        dbRef.current = db;
-
-        // Load transactions sorted by createdAt desc
-        const txns = await dbGetAll<Transaction>(db, STORE_TRANSACTIONS);
-        txns.sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-        );
-
-        // Load budgets sorted by createdAt desc
-        const budgetRows = await dbGetAll<Budget>(db, STORE_BUDGETS);
-        budgetRows.sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-        );
-
-        // Load purposes (stored as { id: "purposes", expense: [...], income: [...] })
-        const purposeRows = await dbGetAll<{ id: string } & PurposeStore>(
-          db,
-          STORE_PURPOSES,
-        );
-        const savedPurposes = purposeRows.find((r) => r.id === "purposes");
-
-        if (mounted) {
-          setTransactions(txns);
-          setBudgets(budgetRows);
-          if (savedPurposes) {
-            setPurposes({
-              expense: savedPurposes.expense,
-              income: savedPurposes.income,
-            });
-            // Pre-assign colors for saved purposes
-            [...savedPurposes.expense, ...savedPurposes.income].forEach(
-              getOrAssignColor,
-            );
-          }
-          setIsLoading(false);
-        }
-      } catch (err) {
-        console.error("IndexedDB init error:", err);
-        if (mounted) setIsLoading(false);
-      }
-    }
-
-    init();
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  // ── Persist purposes helper ─────────────────────────────────────────────
-  const savePurposes = useCallback(async (next: PurposeStore) => {
-    const db = dbRef.current;
-    if (!db) return;
-    await dbPut(db, STORE_PURPOSES, { id: "purposes", ...next });
-  }, []);
-
-  // ── addTransaction ──────────────────────────────────────────────────────
-  const addTransaction = useCallback(
-    async (t: Omit<Transaction, "id" | "createdAt">) => {
-      const db = dbRef.current;
-      if (!db) return;
-
-      const newTxn: Transaction = {
-        ...t,
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
-      };
-
-      await dbPut(db, STORE_TRANSACTIONS, newTxn);
-      setTransactions((prev) => [newTxn, ...prev]);
-    },
-    [],
+  const expensePurposes = allPurposes.filter(
+    (p) => p.appliesTo === "expense" || p.appliesTo === "both",
+  );
+  const incomePurposes = allPurposes.filter(
+    (p) => p.appliesTo === "income" || p.appliesTo === "both",
   );
 
-  // ── updateTransaction ───────────────────────────────────────────────────
+  // ── Transactions ──────────────────────────────────────────────────────
+  const {
+    data: txData,
+    isLoading: isTxLoading,
+    refetch: refetchTransactions,
+  } = useQuery({
+    queryKey: ["expense-transactions", month, year],
+    queryFn: () => fetchTransactions(month, year),
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const transactions: Transaction[] = txData?.transactions ?? [];
+  const summary: Summary = txData?.summary ?? {
+    expenseTotal: 0,
+    incomeTotal: 0,
+    net: 0,
+  };
+
+  // ── addTransaction mutation ───────────────────────────────────────────
+  const addTransactionMutation = useMutation({
+    mutationFn: createExpenseEntry,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["expense-transactions", month, year],
+      });
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to save transaction");
+    },
+  });
+
+  const addTransaction = useCallback(
+    async (payload: CreateExpensePayload) => {
+      await addTransactionMutation.mutateAsync(payload);
+    },
+    [addTransactionMutation],
+  );
+
+  // ── updateTransaction mutation ────────────────────────────────────────
+  const updateTransactionMutation = useMutation({
+    mutationFn: async ({
+      id,
+      ...patch
+    }: {
+      id: string;
+      kind?: TransactionType;
+      purposeId?: string;
+      remark?: string;
+      amount?: number;
+      date?: string;
+      isRecurring?: boolean;
+      frequency?: string | null;
+      endDate?: string | null;
+      otherDetail?: string | null;
+    }) => {
+      const response = await fetch(`/api/expense/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      });
+      if (!response.ok) throw new Error("Failed to update transaction");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["expense-transactions", month, year],
+      });
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to update transaction");
+    },
+  });
+
   const updateTransaction = useCallback(
     async (id: string, patch: Partial<Transaction>) => {
-      const db = dbRef.current;
-      if (!db) return;
-
-      setTransactions((prev) => {
-        const updated = prev.map((t) => (t.id === id ? { ...t, ...patch } : t));
-        // Persist the updated record
-        const record = updated.find((t) => t.id === id);
-        if (record) dbPut(db, STORE_TRANSACTIONS, record).catch(console.error);
-        return updated;
-      });
+      await updateTransactionMutation.mutateAsync({ id, ...patch });
     },
-    [],
+    [updateTransactionMutation],
   );
 
-  // ── deleteTransaction ───────────────────────────────────────────────────
-  const deleteTransaction = useCallback(async (id: string) => {
-    const db = dbRef.current;
-    if (!db) return;
+  // ── deleteTransaction mutation ────────────────────────────────────────
+  const deleteTransactionMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/expense/${id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error("Failed to delete transaction");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["expense-transactions", month, year],
+      });
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to delete transaction");
+    },
+  });
 
-    await dbDelete(db, STORE_TRANSACTIONS, id);
-    setTransactions((prev) => prev.filter((t) => t.id !== id));
+  const deleteTransaction = useCallback(
+    async (id: string) => {
+      await deleteTransactionMutation.mutateAsync(id);
+    },
+    [deleteTransactionMutation],
+  );
+
+  // ── addPurpose mutation ───────────────────────────────────────────────
+  const addPurposeMutation = useMutation({
+    mutationFn: ({
+      name,
+      appliesTo,
+      icon,
+    }: {
+      name: string;
+      appliesTo: "expense" | "income" | "both";
+      icon?: string;
+    }) => apiCreatePurpose({ name, appliesTo, icon }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expense-purposes"] });
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to create purpose");
+    },
+  });
+
+  const addPurpose = useCallback(
+    async (
+      name: string,
+      appliesTo: "expense" | "income" | "both",
+      icon?: string,
+    ) => {
+      getOrAssignColor(name);
+      await addPurposeMutation.mutateAsync({ name, appliesTo, icon });
+    },
+    [addPurposeMutation],
+  );
+
+  // ── updatePurpose mutation ───────────────────────────────────────────
+  const updatePurposeMutation = useMutation({
+    mutationFn: ({
+      id,
+      ...payload
+    }: { id: string } & Partial<CreatePurposePayload>) =>
+      apiUpdatePurpose(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expense-purposes"] });
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to update purpose");
+    },
+  });
+
+  const updatePurpose = useCallback(
+    async (id: string, payload: Partial<CreatePurposePayload>) => {
+      await updatePurposeMutation.mutateAsync({ id, ...payload });
+    },
+    [updatePurposeMutation],
+  );
+
+  // ── deletePurpose mutation ───────────────────────────────────────────
+  const deletePurposeMutation = useMutation({
+    mutationFn: (id: string) => apiDeletePurpose(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expense-purposes"] });
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to delete purpose");
+    },
+  });
+
+  const deletePurpose = useCallback(
+    async (id: string) => {
+      await deletePurposeMutation.mutateAsync(id);
+    },
+    [deletePurposeMutation],
+  );
+
+  // ── Budgets (mock) ───────────────────────────────────────────────────
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+
+  // Load budgets on mount
+  useEffect(() => {
+    mockBudgetOperations.getAll().then(setBudgets);
   }, []);
 
-  // ── addBudget ───────────────────────────────────────────────────────────
-  // A category has a single threshold: if one already exists for the same
-  // purpose, its amount is updated instead of adding a duplicate.
   const addBudget = useCallback(
-    async (b: Omit<Budget, "id" | "createdAt">) => {
-      const db = dbRef.current;
-      if (!db) return;
-
-      const existing = budgets.find((x) => x.purpose === b.purpose);
-
-      if (existing) {
-        const updated: Budget = { ...existing, amount: b.amount };
-        await dbPut(db, STORE_BUDGETS, updated);
-        setBudgets((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
-        return;
-      }
-
-      const newBudget: Budget = {
-        ...b,
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
-      };
-      await dbPut(db, STORE_BUDGETS, newBudget);
-      setBudgets((prev) => [newBudget, ...prev]);
-    },
-    [budgets],
-  );
-
-  // ── updateBudget ────────────────────────────────────────────────────────
-  const updateBudget = useCallback(
-    async (id: string, patch: Partial<Budget>) => {
-      const db = dbRef.current;
-      if (!db) return;
-
-      setBudgets((prev) => {
-        const updated = prev.map((b) => (b.id === id ? { ...b, ...patch } : b));
-        const record = updated.find((b) => b.id === id);
-        if (record) dbPut(db, STORE_BUDGETS, record).catch(console.error);
-        return updated;
-      });
+    async (budget: { purpose: string; amount: number }) => {
+      const newBudget = await mockBudgetOperations.create(
+        budget.purpose,
+        budget.amount,
+      );
+      setBudgets((prev) => [...prev, newBudget]);
     },
     [],
   );
 
-  // ── deleteBudget ────────────────────────────────────────────────────────
-  const deleteBudget = useCallback(async (id: string) => {
-    const db = dbRef.current;
-    if (!db) return;
+  const updateBudget = useCallback(
+    async (id: string, updates: { purpose?: string; amount?: number }) => {
+      const updated = await mockBudgetOperations.update(id, updates);
+      setBudgets((prev) => prev.map((b) => (b.id === id ? updated : b)));
+    },
+    [],
+  );
 
-    await dbDelete(db, STORE_BUDGETS, id);
+  const deleteBudget = useCallback(async (id: string) => {
+    await mockBudgetOperations.delete(id);
     setBudgets((prev) => prev.filter((b) => b.id !== id));
   }, []);
-
-  // ── addPurpose ──────────────────────────────────────────────────────────
-  const addPurpose = useCallback(
-    async (type: TransactionType, name: string) => {
-      getOrAssignColor(name);
-      setPurposes((prev) => {
-        const next = {
-          ...prev,
-          [type]: prev[type].includes(name)
-            ? prev[type]
-            : [...prev[type], name],
-        };
-        savePurposes(next).catch(console.error);
-        return next;
-      });
-    },
-    [savePurposes],
-  );
-
-  // ── removePurpose ───────────────────────────────────────────────────────
-  const removePurpose = useCallback(
-    async (type: TransactionType, name: string) => {
-      setPurposes((prev) => {
-        const next = {
-          ...prev,
-          [type]: prev[type].filter((p) => p !== name),
-        };
-        savePurposes(next).catch(console.error);
-        return next;
-      });
-    },
-    [savePurposes],
-  );
 
   return (
     <TrackerContext.Provider
       value={{
+        expensePurposes,
+        incomePurposes,
+        allPurposes,
+        isPurposesLoading,
         transactions,
+        summary,
+        isLoading: isTxLoading,
         budgets,
-        expensePurposes: purposes.expense,
-        incomePurposes: purposes.income,
-        isLoading,
-        addTransaction,
-        updateTransaction,
-        deleteTransaction,
         addBudget,
         updateBudget,
         deleteBudget,
+        month,
+        year,
+        setMonth,
+        setYear,
+        addTransaction,
+        updateTransaction,
+        deleteTransaction,
         addPurpose,
-        removePurpose,
+        updatePurpose,
+        deletePurpose,
+        refetchTransactions,
       }}
     >
       {children}

@@ -13,7 +13,7 @@ export default function ExpenseTrackerStats() {
   const totalExpense = useMemo(
     () =>
       transactions
-        .filter((t) => t.type === "expense")
+        .filter((t) => t.kind === "expense")
         .reduce((s, t) => s + t.amount, 0),
     [transactions],
   );
@@ -21,7 +21,7 @@ export default function ExpenseTrackerStats() {
   const totalIncome = useMemo(
     () =>
       transactions
-        .filter((t) => t.type === "income")
+        .filter((t) => t.kind === "income")
         .reduce((s, t) => s + t.amount, 0),
     [transactions],
   );
