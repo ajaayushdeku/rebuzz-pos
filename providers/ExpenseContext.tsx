@@ -20,8 +20,13 @@ import {
   type CreateExpensePayload,
   type CreatePurposePayload,
 } from "@/services/apiExpense.client";
-import { mockBudgetOperations, type Budget } from "@/lib/mockData/mock-budgets";
 import toast from "react-hot-toast";
+
+export type Budget = {
+  id: string;
+  purposeId: string;
+  amount: number;
+};
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -150,14 +155,10 @@ type TrackerContextValue = {
 
   // Budgets
   budgets: Budget[];
-  addBudget: (budget: {
-    purposeId: string;
-    purpose: string;
-    amount: number;
-  }) => Promise<void>;
+  addBudget: (budget: { purposeId: string; amount: number }) => Promise<void>;
   updateBudget: (
     id: string,
-    updates: { purposeId?: string; purpose?: string; amount?: number },
+    updates: { purposeId?: string; amount?: number },
   ) => Promise<void>;
   deleteBudget: (id: string) => Promise<void>;
 
@@ -387,40 +388,63 @@ export function ExpenseTrackerProvider({ children }: { children: ReactNode }) {
     [deletePurposeMutation],
   );
 
-  // ── Budgets (mock) ───────────────────────────────────────────────────
-  const [budgets, setBudgets] = useState<Budget[]>([]);
+  // ── Budgets (localStorage) ───────────────────────────────────────────
+  const BUDGETS_STORAGE_KEY = "rebuzz-budgets";
 
-  // Load budgets on mount
-  useEffect(() => {
-    mockBudgetOperations.getAll().then(setBudgets);
-  }, []);
+  const loadBudgetsFromStorage = (): Budget[] => {
+    try {
+      const raw = localStorage.getItem(BUDGETS_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const saveBudgetsToStorage = (budgets: Budget[]) => {
+    try {
+      localStorage.setItem(BUDGETS_STORAGE_KEY, JSON.stringify(budgets));
+    } catch {
+      // Silently fail if storage is full
+    }
+  };
+
+  const [budgets, setBudgets] = useState<Budget[]>(() =>
+    loadBudgetsFromStorage(),
+  );
 
   const addBudget = useCallback(
-    async (budget: { purposeId: string; purpose: string; amount: number }) => {
-      const newBudget = await mockBudgetOperations.create(
-        budget.purposeId,
-        budget.purpose,
-        budget.amount,
-      );
-      setBudgets((prev) => [...prev, newBudget]);
+    async (budget: { purposeId: string; amount: number }) => {
+      const newBudget: Budget = {
+        id: crypto.randomUUID?.() ?? Date.now().toString(),
+        purposeId: budget.purposeId,
+        amount: budget.amount,
+      };
+      setBudgets((prev) => {
+        const next = [...prev, newBudget];
+        saveBudgetsToStorage(next);
+        return next;
+      });
     },
     [],
   );
 
   const updateBudget = useCallback(
-    async (
-      id: string,
-      updates: { purposeId?: string; purpose?: string; amount?: number },
-    ) => {
-      const updated = await mockBudgetOperations.update(id, updates);
-      setBudgets((prev) => prev.map((b) => (b.id === id ? updated : b)));
+    async (id: string, updates: { purposeId?: string; amount?: number }) => {
+      setBudgets((prev) => {
+        const next = prev.map((b) => (b.id === id ? { ...b, ...updates } : b));
+        saveBudgetsToStorage(next);
+        return next;
+      });
     },
     [],
   );
 
   const deleteBudget = useCallback(async (id: string) => {
-    await mockBudgetOperations.delete(id);
-    setBudgets((prev) => prev.filter((b) => b.id !== id));
+    setBudgets((prev) => {
+      const next = prev.filter((b) => b.id !== id);
+      saveBudgetsToStorage(next);
+      return next;
+    });
   }, []);
 
   return (

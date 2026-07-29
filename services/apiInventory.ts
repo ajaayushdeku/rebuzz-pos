@@ -70,27 +70,31 @@ export async function fetchInventoryProducts(): Promise<InventoryItem[]> {
     raw
       // Temporarily disabled for testing — include all products regardless of costPrice.
       // .filter((p: any) => p && typeof p.costPrice === "number" && p.costPrice > 0)
-      .map((p: any): InventoryItem => ({
-        id: p._id,
-        name: p.name ?? "Unnamed Product",
-        unit: p.soldBy ?? "each",
-        inStock: typeof p.inStock === "number" ? p.inStock : 0,
-        lowStock: typeof p.lowStock === "number" ? p.lowStock : 0,
-        usesStocks: Boolean(p.usesStocks),
-        isTaxable: Boolean(p.isTaxable),
-        isAvailable:
-          p.isAvailable !== undefined ? Boolean(p.isAvailable) : true,
-        orderedCount: typeof p.orderedCount === "number" ? p.orderedCount : 0,
-        costPrice: p.costPrice,
-        price: typeof p.price === "number" ? p.price : 0,
-        image:
-          typeof p.image === "string" && p.image
-            ? p.image
-            : (p.images?.[0] ?? undefined),
-        images: Array.isArray(p.images)
-          ? p.images.filter((s: unknown): s is string => typeof s === "string")
-          : undefined,
-      }))
+      .map(
+        (p: any): InventoryItem => ({
+          id: p._id,
+          name: p.name ?? "Unnamed Product",
+          unit: p.soldBy ?? "each",
+          inStock: typeof p.inStock === "number" ? p.inStock : 0,
+          lowStock: typeof p.lowStock === "number" ? p.lowStock : 0,
+          usesStocks: Boolean(p.usesStocks),
+          isTaxable: Boolean(p.isTaxable),
+          isAvailable:
+            p.isAvailable !== undefined ? Boolean(p.isAvailable) : true,
+          orderedCount: typeof p.orderedCount === "number" ? p.orderedCount : 0,
+          costPrice: p.costPrice,
+          price: typeof p.price === "number" ? p.price : 0,
+          image:
+            typeof p.image === "string" && p.image
+              ? p.image
+              : (p.images?.[0] ?? undefined),
+          images: Array.isArray(p.images)
+            ? p.images.filter(
+                (s: unknown): s is string => typeof s === "string",
+              )
+            : undefined,
+        }),
+      )
   );
 }
 

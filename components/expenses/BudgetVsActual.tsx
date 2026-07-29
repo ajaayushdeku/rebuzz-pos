@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { PURPOSE_COLORS, useTracker } from "@/providers/ExpenseContext";
+import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "../ComponentHeader";
@@ -47,7 +47,22 @@ const VarianceBadge = ({ variance }: { variance: number }) => {
 
 export default function BudgetVsActual() {
   const { currency } = useCurrency();
-  const { transactions, budgets } = useTracker();
+  const { transactions, budgets, expensePurposes } = useTracker();
+
+  // Build purposeId → { name } lookup
+  const purposeLookup = useMemo(() => {
+    const map = new Map<string, { name: string; icon: string }>();
+    for (const p of expensePurposes) {
+      map.set(p._id, { name: p.name, icon: p.icon ?? "" });
+    }
+    return map;
+  }, [expensePurposes]);
+
+  const getPurposeName = (purposeId: string) =>
+    purposeLookup.get(purposeId)?.name ?? purposeId;
+
+  const getPurposeIcon = (purposeId: string) =>
+    purposeLookup.get(purposeId)?.icon ?? "";
 
   // Actual expense spend per category vs the saved budget threshold.
   const rows = useMemo(() => {
@@ -62,17 +77,18 @@ export default function BudgetVsActual() {
     }
 
     return budgets.map((b) => {
-      const actual = spendByCategory.get(b.purpose) ?? 0;
+      const purposeName = getPurposeName(b.purposeId);
+      const actual = spendByCategory.get(b.purposeId) ?? 0;
       return {
-        category: b.purpose,
+        category: purposeName,
         actual,
         budget: b.amount,
         variance: actual - b.amount,
         pct: b.amount > 0 ? Math.round((actual / b.amount) * 100) : 0,
-        color: PURPOSE_COLORS[b.purpose] ?? "#6b7280",
+        color: getPurposeColor(getPurposeIcon(b.purposeId), purposeName),
       };
     });
-  }, [transactions, budgets]);
+  }, [transactions, budgets, getPurposeName, getPurposeIcon]);
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">

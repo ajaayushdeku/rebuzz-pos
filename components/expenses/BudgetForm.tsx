@@ -12,7 +12,11 @@ import {
 } from "@/components/ui/dialog";
 import ManagePurposesModal from "./ManagePurposesModal";
 import toast from "react-hot-toast";
-import { PURPOSE_COLORS, useTracker } from "@/providers/ExpenseContext";
+import {
+  getPurposeColor,
+  PURPOSE_COLORS,
+  useTracker,
+} from "@/providers/ExpenseContext";
 import { formatCurrencySymbol, formatCurrencySymbolOnly } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 
@@ -75,7 +79,6 @@ export default function BudgetForm() {
     } else {
       await addBudget({
         purposeId: selectedPurposeId,
-        purpose: selectedPurposeName,
         amount: parseFloat(amount),
       });
       toast.success(`Budget set for ${selectedPurposeName}`);
@@ -226,11 +229,17 @@ export default function BudgetForm() {
                     <span
                       className="w-2 h-2 rounded-full shrink-0"
                       style={{
-                        backgroundColor: PURPOSE_COLORS[b.purpose] ?? "#6b7280",
+                        backgroundColor: getPurposeColor(
+                          expensePurposes.find((p) => p._id === b.purposeId)
+                            ?.icon ?? "",
+                          expensePurposes.find((p) => p._id === b.purposeId)
+                            ?.name ?? b.purposeId,
+                        ),
                       }}
                     />
                     <span className="text-xs text-gray-700 truncate">
-                      {b.purpose}
+                      {expensePurposes.find((p) => p._id === b.purposeId)
+                        ?.name ?? b.purposeId}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -244,7 +253,7 @@ export default function BudgetForm() {
                     <button
                       onClick={() => startEdit(b.id, b.purposeId, b.amount)}
                       className="text-gray-300 hover:text-blue-600 transition-colors"
-                      aria-label={`Edit budget for ${b.purpose}`}
+                      aria-label={`Edit budget for ${expensePurposes.find((p) => p._id === b.purposeId)?.name ?? b.purposeId}`}
                     >
                       <Pencil size={13} />
                     </button>
@@ -254,7 +263,7 @@ export default function BudgetForm() {
                         deleteBudget(b.id);
                       }}
                       className="text-gray-300 hover:text-red-500 transition-colors"
-                      aria-label={`Delete budget for ${b.purpose}`}
+                      aria-label={`Delete budget for ${expensePurposes.find((p) => p._id === b.purposeId)?.name ?? b.purposeId}`}
                     >
                       <Trash2 size={13} />
                     </button>
