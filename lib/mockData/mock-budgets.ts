@@ -3,19 +3,45 @@
 export interface Budget {
   id: string;
   purposeId: string;
+  purpose: string;
   amount: number;
 }
 
 // ── Mock Budgets ─────────────────────────────────────────────────────────────
 
 export const mockBudgets: Budget[] = [
-  { id: "1", purposeId: "Food & ingredients", amount: 312000 },
-  { id: "2", purposeId: "Staff wages", amount: 268000 },
-  { id: "3", purposeId: "Delivery commissions", amount: 86000 },
-  { id: "4", purposeId: "Utilities & gas", amount: 40000 },
-  { id: "5", purposeId: "Packaging", amount: 53000 },
-  { id: "6", purposeId: "Marketing & ads", amount: 44000 },
-  { id: "7", purposeId: "Rent & rates", amount: 120000 },
+  {
+    id: "1",
+    purposeId: "Food & ingredients",
+    purpose: "Food & ingredients",
+    amount: 312000,
+  },
+  { id: "2", purposeId: "Staff wages", purpose: "Staff wages", amount: 268000 },
+  {
+    id: "3",
+    purposeId: "Delivery commissions",
+    purpose: "Delivery commissions",
+    amount: 86000,
+  },
+  {
+    id: "4",
+    purposeId: "Utilities & gas",
+    purpose: "Utilities & gas",
+    amount: 40000,
+  },
+  { id: "5", purposeId: "Packaging", purpose: "Packaging", amount: 53000 },
+  {
+    id: "6",
+    purposeId: "Marketing & ads",
+    purpose: "Marketing & ads",
+    amount: 44000,
+  },
+  {
+    id: "7",
+    purposeId: "Rent & rates",
+    purpose: "Rent & rates",
+    amount: 120000,
+  },
 ];
 
 // ── Mock Budget CRUD Operations ──────────────────────────────────────────────
@@ -29,11 +55,16 @@ export const mockBudgetOperations = {
     return [...budgets];
   },
 
-  create: async (purposeId: string, amount: number): Promise<Budget> => {
+  create: async (
+    purposeId: string,
+    purpose: string,
+    amount: number,
+  ): Promise<Budget> => {
     await new Promise((resolve) => setTimeout(resolve, 300));
     const newBudget: Budget = {
       id: Date.now().toString(),
       purposeId,
+      purpose,
       amount,
     };
     budgets.push(newBudget);

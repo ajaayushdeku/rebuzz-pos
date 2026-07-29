@@ -25,19 +25,25 @@ export default function BudgetForm() {
     useTracker();
 
   const [open, setOpen] = useState(false);
-  const [purpose, setPurpose] = useState("");
+  const [selectedPurposeId, setSelectedPurposeId] = useState("");
   const [amount, setAmount] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [managingPurposes, setManagingPurposes] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Get the selected purpose name for display
+  const selectedPurpose = expensePurposes.find(
+    (p) => p._id === selectedPurposeId,
+  );
+  const selectedPurposeName = selectedPurpose?.name ?? "";
+
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!purpose) e.purpose = "Select a category";
+    if (!selectedPurposeId) e.purpose = "Select a category";
     if (!amount || parseFloat(amount) <= 0) e.amount = "Enter a valid amount";
     // Block picking a category that another threshold already uses.
     const clash = budgets.find(
-      (b) => b.purpose === purpose && b.id !== editingId,
+      (b) => b.purposeId === selectedPurposeId && b.id !== editingId,
     );
     if (clash) e.purpose = "This category already has a budget";
     setErrors(e);
@@ -45,15 +51,15 @@ export default function BudgetForm() {
   };
 
   const resetForm = () => {
-    setPurpose("");
+    setSelectedPurposeId("");
     setAmount("");
     setEditingId(null);
     setErrors({});
   };
 
-  const startEdit = (id: string, p: string, amt: number) => {
+  const startEdit = (id: string, purposeId: string, amt: number) => {
     setEditingId(id);
-    setPurpose(p);
+    setSelectedPurposeId(purposeId);
     setAmount(String(amt));
     setErrors({});
   };
@@ -61,11 +67,18 @@ export default function BudgetForm() {
   const handleSubmit = async () => {
     if (!validate()) return;
     if (editingId) {
-      await updateBudget(editingId, { purpose, amount: parseFloat(amount) });
-      toast.success(`Budget updated for ${purpose}`);
+      await updateBudget(editingId, {
+        purposeId: selectedPurposeId,
+        amount: parseFloat(amount),
+      });
+      toast.success(`Budget updated for ${selectedPurposeName}`);
     } else {
-      await addBudget({ purpose, amount: parseFloat(amount) });
-      toast.success(`Budget set for ${purpose}`);
+      await addBudget({
+        purposeId: selectedPurposeId,
+        purpose: selectedPurposeName,
+        amount: parseFloat(amount),
+      });
+      toast.success(`Budget set for ${selectedPurposeName}`);
     }
     resetForm();
   };
@@ -110,19 +123,19 @@ export default function BudgetForm() {
             </div>
             <div className="relative">
               <select
-                value={purpose}
+                value={selectedPurposeId}
                 onChange={(e) => {
-                  setPurpose(e.target.value);
+                  setSelectedPurposeId(e.target.value);
                   if (errors.purpose) setErrors((p) => ({ ...p, purpose: "" }));
                 }}
                 className={`${inputClass} appearance-none pr-8 ${
-                  purpose ? "pl-8" : ""
+                  selectedPurposeId ? "pl-8" : ""
                 } ${errors.purpose ? "border-red-300" : ""}`}
               >
                 <option value="">Select category...</option>
                 {expensePurposes.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
+                  <option key={p._id} value={p._id}>
+                    {p.name}
                   </option>
                 ))}
               </select>
@@ -130,11 +143,12 @@ export default function BudgetForm() {
                 size={13}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
               />
-              {purpose && (
+              {selectedPurposeName && (
                 <span
                   className="absolute left-3 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full"
                   style={{
-                    backgroundColor: PURPOSE_COLORS[purpose] ?? "#6b7280",
+                    backgroundColor:
+                      PURPOSE_COLORS[selectedPurposeName] ?? "#6b7280",
                   }}
                 />
               )}
@@ -228,7 +242,7 @@ export default function BudgetForm() {
                       )}
                     </span>
                     <button
-                      onClick={() => startEdit(b.id, b.purpose, b.amount)}
+                      onClick={() => startEdit(b.id, b.purposeId, b.amount)}
                       className="text-gray-300 hover:text-blue-600 transition-colors"
                       aria-label={`Edit budget for ${b.purpose}`}
                     >

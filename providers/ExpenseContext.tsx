@@ -150,10 +150,14 @@ type TrackerContextValue = {
 
   // Budgets
   budgets: Budget[];
-  addBudget: (budget: { purpose: string; amount: number }) => Promise<void>;
+  addBudget: (budget: {
+    purposeId: string;
+    purpose: string;
+    amount: number;
+  }) => Promise<void>;
   updateBudget: (
     id: string,
-    updates: { purpose?: string; amount?: number },
+    updates: { purposeId?: string; purpose?: string; amount?: number },
   ) => Promise<void>;
   deleteBudget: (id: string) => Promise<void>;
 
@@ -392,8 +396,9 @@ export function ExpenseTrackerProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addBudget = useCallback(
-    async (budget: { purpose: string; amount: number }) => {
+    async (budget: { purposeId: string; purpose: string; amount: number }) => {
       const newBudget = await mockBudgetOperations.create(
+        budget.purposeId,
         budget.purpose,
         budget.amount,
       );
@@ -403,7 +408,10 @@ export function ExpenseTrackerProvider({ children }: { children: ReactNode }) {
   );
 
   const updateBudget = useCallback(
-    async (id: string, updates: { purpose?: string; amount?: number }) => {
+    async (
+      id: string,
+      updates: { purposeId?: string; purpose?: string; amount?: number },
+    ) => {
       const updated = await mockBudgetOperations.update(id, updates);
       setBudgets((prev) => prev.map((b) => (b.id === id ? updated : b)));
     },
