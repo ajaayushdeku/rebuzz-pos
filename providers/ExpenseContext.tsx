@@ -267,7 +267,7 @@ export function ExpenseTrackerProvider({ children }: { children: ReactNode }) {
       otherDetail?: string | null;
     }) => {
       const response = await fetch(`/api/expense/${id}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(patch),
       });

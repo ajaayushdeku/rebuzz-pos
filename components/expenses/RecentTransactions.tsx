@@ -10,6 +10,7 @@ import {
   RepeatIcon,
   Search,
   Trash2,
+  Pencil,
   ArrowUpDown,
   ChevronUp,
   ChevronDown,
@@ -31,6 +32,7 @@ import {
   useTracker,
   type Transaction,
 } from "@/providers/ExpenseContext";
+import ExpenseIncomeForm from "./ExpenseIncomeForm";
 
 type SortKey = "date" | "amount";
 type SortDir = "asc" | "desc";
@@ -61,6 +63,11 @@ export default function RecentTransactions() {
   const [filter, setFilter] = useState<"all" | "expense" | "income">("all");
   const [sort, setSort] = useState<SortKey>("date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  // Edit state
+  const [editTransaction, setEditTransaction] = useState<Transaction | null>(
+    null,
+  );
 
   // Delete confirmation modal state
   const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
@@ -292,6 +299,13 @@ export default function RecentTransactions() {
                     <td className="py-3 px-4">
                       <div className="flex items-center justify-end gap-1">
                         <button
+                          onClick={() => setEditTransaction(t)}
+                          className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Edit transaction"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
                           onClick={() => setDeleteTarget(t)}
                           className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                           title="Delete transaction"
@@ -355,6 +369,12 @@ export default function RecentTransactions() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ── Edit transaction form ── */}
+      <ExpenseIncomeForm
+        editTransaction={editTransaction}
+        onEditSuccess={() => setEditTransaction(null)}
+      />
     </div>
   );
 }

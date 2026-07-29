@@ -4,13 +4,16 @@ import { useState, useMemo, createElement } from "react";
 
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { Pencil, Trash2, Search } from "lucide-react";
+import { Pencil, Trash2, Search, AlertTriangle, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import {
   getPurposeColor,
   Transaction,
@@ -18,6 +21,8 @@ import {
   useTracker,
 } from "@/providers/ExpenseContext";
 import { getPurposeIcon } from "@/lib/purpose-icons";
+import toast from "react-hot-toast";
+import ExpenseIncomeForm from "./ExpenseIncomeForm";
 
 // Small wrapper to render a purpose icon without creating a component during render
 function PurposeIcon({
@@ -53,12 +58,17 @@ function TransactionModal({
   open: boolean;
   onClose: () => void;
 }) {
-  const { transactions, deleteTransaction, updateTransaction } = useTracker();
+  const { transactions, deleteTransaction } = useTracker();
   const { currency } = useCurrency();
   const [search, setSearch] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editRemarks, setEditRemarks] = useState("");
-  const [editAmount, setEditAmount] = useState("");
+  // Edit state
+  const [editTransaction, setEditTransaction] = useState<Transaction | null>(
+    null,
+  );
+
+  // Delete confirmation state
+  const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const filtered = useMemo(
     () =>
@@ -72,17 +82,21 @@ function TransactionModal({
   );
 
   const startEdit = (t: Transaction) => {
-    setEditingId(t._id);
-    setEditRemarks(t.remark);
-    setEditAmount(String(t.amount));
+    setEditTransaction(t);
   };
 
-  const saveEdit = (id: string) => {
-    updateTransaction(id, {
-      remark: editRemarks,
-      amount: parseFloat(editAmount) || 0,
-    });
-    setEditingId(null);
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await deleteTransaction(deleteTarget._id);
+      toast.success("Transaction deleted");
+      setDeleteTarget(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete");
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -131,33 +145,9 @@ function TransactionModal({
                 key={t._id}
                 className="border border-gray-100 rounded-lg px-3 py-2.5"
               >
-                {editingId === t._id ? (
-                  <div className="space-y-2">
-                    <input
-                      value={editRemarks}
-                      onChange={(e) => setEditRemarks(e.target.value)}
-                      className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    />
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        value={editAmount}
-                        onChange={(e) => setEditAmount(e.target.value)}
-                        className="flex-1 border border-gray-200 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      />
-                      <button
-                        onClick={() => saveEdit(t._id)}
-                        className="px-3 py-1.5 bg-blue-600 text-white rounded text-xs"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => setEditingId(null)}
-                        className="px-3 py-1.5 border border-gray-200 rounded text-xs"
-                      >
-                        Cancel
-                      </button>
-                    </div>
+                {editTransaction?._id === t._id ? (
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-blue-600 italic">Editing...</p>
                   </div>
                 ) : (
                   <div className="flex items-center justify-between">
@@ -186,7 +176,7 @@ function TransactionModal({
                         <Pencil size={13} />
                       </button>
                       <button
-                        onClick={() => deleteTransaction(t._id)}
+                        onClick={() => setDeleteTarget(t)}
                         className="text-gray-400 hover:text-red-500"
                       >
                         <Trash2 size={13} />
@@ -199,6 +189,60 @@ function TransactionModal({
           )}
         </div>
       </DialogContent>
+
+      {/* ── Edit transaction form ── */}
+      <ExpenseIncomeForm
+        editTransaction={editTransaction}
+        onEditSuccess={() => setEditTransaction(null)}
+      />
+
+      {/* ── Delete confirmation modal ── */}
+      <Dialog
+        open={deleteTarget !== null}
+        onOpenChange={(o) => {
+          if (!o && !deleting) setDeleteTarget(null);
+        }}
+      >
+        <DialogContent className="max-w-sm" showCloseButton={!deleting}>
+          <DialogHeader>
+            <div className="mx-auto mb-2 w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
+              <AlertTriangle className="h-6 w-6 text-red-500" />
+            </div>
+            <DialogTitle className="text-base font-semibold text-center text-gray-900">
+              Delete transaction?
+            </DialogTitle>
+            <DialogDescription className="text-center text-sm text-gray-500">
+              {deleteTarget
+                ? `“${deleteTarget.remark || purposeName}” will be permanently removed. This action cannot be undone.`
+                : "This transaction will be permanently removed."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-row gap-2 sm:justify-center">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteTarget(null)}
+              disabled={deleting}
+              className="flex-1 sm:flex-none"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="flex-1 sm:flex-none bg-red-600 text-white hover:bg-red-700"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" /> Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Loader2, Settings } from "lucide-react";
+import { Plus, Loader2, Settings, Pencil } from "lucide-react";
 import toast from "react-hot-toast";
 import {
   Dialog,
@@ -20,15 +20,31 @@ import {
   getPurposeColor,
   useTracker,
   type TransactionType,
+  type Transaction,
 } from "@/providers/ExpenseContext";
 import { getPurposeIcon } from "@/lib/purpose-icons";
 import ManagePurposesModal from "./ManagePurposesModal";
 
 const FREQUENCIES = ["daily", "weekly", "monthly", "yearly"] as const;
 
-export default function ExpenseIncomeForm() {
-  const { expensePurposes, incomePurposes, isPurposesLoading, addTransaction } =
-    useTracker();
+type Props = {
+  /** When provided, the form opens in edit mode for this transaction */
+  editTransaction?: Transaction | null;
+  /** Callback fired after successful edit */
+  onEditSuccess?: () => void;
+};
+
+export default function ExpenseIncomeForm({
+  editTransaction,
+  onEditSuccess,
+}: Props = {}) {
+  const {
+    expensePurposes,
+    incomePurposes,
+    isPurposesLoading,
+    addTransaction,
+    updateTransaction,
+  } = useTracker();
 
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<TransactionType>("expense");
@@ -45,7 +61,28 @@ export default function ExpenseIncomeForm() {
   const [endDate, setEndDate] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const isEditing = !!editTransaction;
   const purposes = tab === "expense" ? expensePurposes : incomePurposes;
+
+  // Initialize form from editTransaction when it changes
+  const [initialized, setInitialized] = useState(false);
+  if (editTransaction && !initialized) {
+    setTab(editTransaction.kind);
+    setPurposeId(editTransaction.purposeId);
+    setRemark(editTransaction.remark);
+    setAmount(String(editTransaction.amount));
+    setDate(editTransaction.date);
+    setRecurring(editTransaction.isRecurring);
+    setFrequency(editTransaction.frequency ?? "monthly");
+    setEndDate(editTransaction.endDate ?? "");
+    setErrors({});
+    setOpen(true);
+    setInitialized(true);
+  }
+  // Reset initialized flag when editTransaction changes
+  if (!editTransaction && initialized) {
+    setInitialized(false);
+  }
 
   const resetForm = () => {
     setPurposeId("");
@@ -74,18 +111,33 @@ export default function ExpenseIncomeForm() {
     if (!validate()) return;
     setSaving(true);
     try {
-      await addTransaction({
-        kind: tab,
-        purposeId,
-        remark: remark.trim(),
-        amount: Number(amount),
-        date,
-        isRecurring: recurring,
-        frequency: recurring ? frequency : null,
-        endDate: recurring && endDate ? endDate : null,
-        otherDetail: null,
-      });
-      toast.success(`${tab === "expense" ? "Expense" : "Income"} saved!`);
+      if (isEditing && editTransaction) {
+        await updateTransaction(editTransaction._id, {
+          kind: tab,
+          purposeId,
+          remark: remark.trim(),
+          amount: Number(amount),
+          date,
+          isRecurring: recurring,
+          frequency: recurring ? frequency : null,
+          endDate: recurring && endDate ? endDate : null,
+        });
+        toast.success("Transaction updated!");
+        onEditSuccess?.();
+      } else {
+        await addTransaction({
+          kind: tab,
+          purposeId,
+          remark: remark.trim(),
+          amount: Number(amount),
+          date,
+          isRecurring: recurring,
+          frequency: recurring ? frequency : null,
+          endDate: recurring && endDate ? endDate : null,
+          otherDetail: null,
+        });
+        toast.success(`${tab === "expense" ? "Expense" : "Income"} saved!`);
+      }
       resetForm();
       setOpen(false);
     } catch (err) {
@@ -97,27 +149,30 @@ export default function ExpenseIncomeForm() {
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
-      >
-        <Plus size={15} />
-        Add Transaction
-      </button>
+      {!isEditing && (
+        <button
+          onClick={() => setOpen(true)}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
+        >
+          <Plus size={15} />
+          Add Transaction
+        </button>
+      )}
 
       <Dialog
         open={open}
         onOpenChange={(o) => {
           if (!o) {
             resetForm();
+            if (isEditing) onEditSuccess?.();
           }
-          setOpen(o);
+          if (!isEditing) setOpen(o);
         }}
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold text-gray-900">
-              Add Transaction
+              {isEditing ? "Edit Transaction" : "Add Transaction"}
             </DialogTitle>
           </DialogHeader>
 
@@ -314,6 +369,7 @@ export default function ExpenseIncomeForm() {
               onClick={() => {
                 resetForm();
                 setOpen(false);
+                if (isEditing) onEditSuccess?.();
               }}
               className="flex-1 py-2.5 text-sm text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors font-medium"
             >
@@ -331,7 +387,9 @@ export default function ExpenseIncomeForm() {
               {saving && <Loader2 size={13} className="animate-spin" />}
               {saving
                 ? "Saving..."
-                : `Add ${tab === "expense" ? "Expense" : "Income"}`}
+                : isEditing
+                  ? "Update"
+                  : `Add ${tab === "expense" ? "Expense" : "Income"}`}
             </button>
           </div>
         </DialogContent>

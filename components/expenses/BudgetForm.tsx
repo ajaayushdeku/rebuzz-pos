@@ -10,13 +10,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import ManagePurposesModal from "./ManagePurposesModal";
 import toast from "react-hot-toast";
-import {
-  getPurposeColor,
-  PURPOSE_COLORS,
-  useTracker,
-} from "@/providers/ExpenseContext";
+import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
+import { getPurposeIcon } from "@/lib/purpose-icons";
 import { formatCurrencySymbol, formatCurrencySymbolOnly } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 
@@ -124,38 +128,33 @@ export default function BudgetForm() {
                 Manage
               </button>
             </div>
-            <div className="relative">
-              <select
-                value={selectedPurposeId}
-                onChange={(e) => {
-                  setSelectedPurposeId(e.target.value);
-                  if (errors.purpose) setErrors((p) => ({ ...p, purpose: "" }));
-                }}
-                className={`${inputClass} appearance-none pr-8 ${
-                  selectedPurposeId ? "pl-8" : ""
-                } ${errors.purpose ? "border-red-300" : ""}`}
+            <Select
+              value={selectedPurposeId}
+              onValueChange={(v) => {
+                setSelectedPurposeId(v);
+                if (errors.purpose) setErrors((p) => ({ ...p, purpose: "" }));
+              }}
+            >
+              <SelectTrigger
+                className={`w-full h-10 ${errors.purpose ? "border-red-300" : ""}`}
               >
-                <option value="">Select category...</option>
-                {expensePurposes.map((p) => (
-                  <option key={p._id} value={p._id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown
-                size={13}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-              />
-              {selectedPurposeName && (
-                <span
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full"
-                  style={{
-                    backgroundColor:
-                      PURPOSE_COLORS[selectedPurposeName] ?? "#6b7280",
-                  }}
-                />
-              )}
-            </div>
+                <SelectValue placeholder="Select category..." />
+              </SelectTrigger>
+              <SelectContent className="max-h-60 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                {expensePurposes.map((p) => {
+                  const Icon = getPurposeIcon(p.icon, p.name);
+                  const iconColor = getPurposeColor(p.icon, p.name);
+                  return (
+                    <SelectItem key={p._id} value={p._id}>
+                      <span className="flex items-center gap-2">
+                        <Icon className="size-4" style={{ color: iconColor }} />
+                        {p.name}
+                      </span>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
             {errors.purpose && (
               <p className="text-xs text-red-500 mt-1">{errors.purpose}</p>
             )}

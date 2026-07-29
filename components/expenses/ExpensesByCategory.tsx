@@ -136,7 +136,7 @@ export default function ExpensesByCategory() {
                   cy="50%"
                   innerRadius={68}
                   outerRadius={100}
-                  paddingAngle={4}
+                  paddingAngle={2}
                   startAngle={90}
                   endAngle={-270}
                   strokeWidth={0}

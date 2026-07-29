@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, createElement } from "react";
 import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
+import { getPurposeIcon } from "@/lib/purpose-icons";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "../ComponentHeader";
@@ -49,7 +50,7 @@ export default function BudgetVsActual() {
   const { currency } = useCurrency();
   const { transactions, budgets, expensePurposes } = useTracker();
 
-  // Build purposeId → { name } lookup
+  // Build purposeId → { name, icon } lookup
   const purposeLookup = useMemo(() => {
     const map = new Map<string, { name: string; icon: string }>();
     for (const p of expensePurposes) {
@@ -61,7 +62,7 @@ export default function BudgetVsActual() {
   const getPurposeName = (purposeId: string) =>
     purposeLookup.get(purposeId)?.name ?? purposeId;
 
-  const getPurposeIcon = (purposeId: string) =>
+  const getPurposeIconStr = (purposeId: string) =>
     purposeLookup.get(purposeId)?.icon ?? "";
 
   // Actual expense spend per category vs the saved budget threshold.
@@ -78,17 +79,19 @@ export default function BudgetVsActual() {
 
     return budgets.map((b) => {
       const purposeName = getPurposeName(b.purposeId);
+      const iconStr = getPurposeIconStr(b.purposeId);
       const actual = spendByCategory.get(b.purposeId) ?? 0;
       return {
         category: purposeName,
+        icon: iconStr,
         actual,
         budget: b.amount,
         variance: actual - b.amount,
         pct: b.amount > 0 ? Math.round((actual / b.amount) * 100) : 0,
-        color: getPurposeColor(getPurposeIcon(b.purposeId), purposeName),
+        color: getPurposeColor(iconStr, purposeName),
       };
     });
-  }, [transactions, budgets, getPurposeName, getPurposeIcon]);
+  }, [transactions, budgets, getPurposeName, getPurposeIconStr]);
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
@@ -137,9 +140,16 @@ export default function BudgetVsActual() {
                 {/* Category */}
                 <div className="flex items-center gap-2 min-w-0">
                   <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: row.color }}
-                  />
+                    className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+                    style={{
+                      backgroundColor: row.color + "20",
+                    }}
+                  >
+                    {createElement(getPurposeIcon(row.icon, row.category), {
+                      size: 13,
+                      style: { color: row.color },
+                    })}
+                  </span>
                   <span className="text-xs text-gray-800 font-medium truncate">
                     {row.category}
                   </span>
