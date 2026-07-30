@@ -188,10 +188,11 @@ export default function ProductCard({
 
               {item?.categories && (
                 <span
-                  className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0"
+                  className="text-[10px] px-2 py-0.5 rounded-full border font-semibold shrink-0"
                   style={{
                     color: categoryColor,
                     backgroundColor: `${categoryColor}20`,
+                    borderColor: categoryColor,
                   }}
                 >
                   {category?.name}

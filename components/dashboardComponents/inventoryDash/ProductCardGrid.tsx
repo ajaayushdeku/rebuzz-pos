@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { Search, ArrowUpDown, X } from "lucide-react";
 
 import { InventoryItem } from "@/lib/mockData/mock-inventory-data";
@@ -97,13 +97,19 @@ const ProductCardGrid = ({
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("default");
   const [stockTab, setStockTab] = useState<StockTab>("tracked");
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
-    undefined,
-  );
 
   const { data: categories = [] } = useCategories();
+  const [selectedCategory, setSelectedCategory] = useState<
+    string | undefined
+  >();
 
-  console.log("All categories:", categories);
+  useEffect(() => {
+    if (!selectedCategory && categories.length) {
+      const allCategory = categories.find((cat) => cat.name === "All");
+      setSelectedCategory(allCategory?._id);
+    }
+  }, [categories, selectedCategory]);
+
   const selectedCategoryData = categories.find(
     (cat) => cat._id === selectedCategory,
   );
@@ -197,11 +203,14 @@ const ProductCardGrid = ({
 
     // 3. Category filter
     const allCategoryId = categories.find((cat) => cat.name === "All")?._id;
+    const noneCategoryId = categories.find((cat) => cat.name === "None")?._id;
 
     const byCategory =
       selectedCategory === allCategoryId
         ? bySearch
-        : bySearch.filter((i) => i.categories === selectedCategory);
+        : selectedCategory === noneCategoryId
+          ? bySearch.filter((i) => !i.categories)
+          : bySearch.filter((i) => i.categories === selectedCategory);
 
     console.log("By Category:", byCategory);
 
@@ -349,7 +358,7 @@ const ProductCardGrid = ({
               key={cat._id ?? cat.name}
               type="button"
               onClick={() => setSelectedCategory(cat._id)}
-              className="px-4 py-1.5 rounded-full border text-sm font-medium transition-all duration-200 bg-white border-gray-200 text-gray-700 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-600"
+              className="px-4 py-1.5 rounded-full border text-xs font-medium transition-all duration-200 bg-white border-gray-200 text-gray-700 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-600"
               style={{
                 color: isActive ? categoryColor : undefined,
                 backgroundColor: isActive ? `${categoryColor}30` : undefined,
@@ -375,7 +384,7 @@ const ProductCardGrid = ({
                 key={cat._id ?? cat.name}
                 type="button"
                 onClick={() => setSelectedCategory(cat._id)}
-                className="px-4 py-1.5 rounded-full border text-sm font-medium transition-all duration-200 bg-white border-gray-200 text-gray-700 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-600"
+                className="px-4 py-1.5 rounded-full border text-xs font-medium transition-all duration-200 bg-white border-gray-200 text-gray-700 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-600"
                 style={{
                   color: isActive ? categoryColor : undefined,
                   backgroundColor: isActive ? `${categoryColor}30` : undefined,
