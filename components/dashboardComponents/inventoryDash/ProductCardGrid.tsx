@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { Search, ArrowUpDown, X } from "lucide-react";
+import { Search, ArrowUpDown, X, BoxesIcon } from "lucide-react";
 
 import { InventoryItem } from "@/lib/mockData/mock-inventory-data";
 import { useSalesByItemQuery } from "@/hooks/useInventory";
@@ -399,8 +399,15 @@ const ProductCardGrid = ({
 
       {/* Empty state */}
       {processed.length === 0 && (
-        <div className="flex flex-col items-center py-10 text-gray-400 text-sm">
-          <span className="font-medium">No products found</span>
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+            <BoxesIcon size={24} className="text-gray-500" />
+          </div>
+          <p className="text-sm font-medium text-gray-500">No products found</p>
+          <p className="text-xs text-gray-400 mt-1">
+            Filtered product data will appear here
+          </p>
+
           {search && (
             <p className="mt-1 text-xs text-gray-300">
               Try a different search term.
