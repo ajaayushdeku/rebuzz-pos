@@ -38,12 +38,14 @@ interface ShiftsSectionProps {
 
 function tryParse(raw: string | undefined): Date | null {
   if (!raw) return null;
-  const d = parseNepalDateTime(raw);
-  if (d) return d;
-  const datePart = raw.split("T")[0] ?? raw.split(" ")[0] ?? raw;
-  const fallback = new Date(datePart);
-  if (!isNaN(fallback.getTime())) return fallback;
-  return null;
+
+  const d = new Date(raw);
+
+  if (!isNaN(d.getTime())) {
+    return d;
+  }
+
+  return parseNepalDateTime(raw);
 }
 
 function formatDateShort(d: Date): string {
@@ -80,32 +82,15 @@ function formatShiftDateRange(
 const extractTimeWithAmPm = (raw: string | undefined): string => {
   if (!raw) return "—";
 
-  const d = parseNepalDateTime(raw);
-  if (d) {
+  const d = new Date(raw);
+
+  if (!isNaN(d.getTime())) {
     return d.toLocaleString("en-US", {
+      timeZone: "Asia/Kathmandu",
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
     });
-  }
-
-  // ── Fallback: raw string already has explicit AM/PM, e.g. "2026-05-21 04:34:09 PM" ──
-  const match = raw.match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)/i);
-  if (match) {
-    const hour = match[1];
-    const minute = match[2];
-    const ampm = match[3].toUpperCase();
-    return `${hour}:${minute} ${ampm}`;
-  }
-
-  // Fallback for 24-hour format without AM/PM marker
-  const fallback = raw.match(/(\d{1,2}):(\d{2})/);
-  if (fallback) {
-    const h = parseInt(fallback[1], 10);
-    const m = fallback[2];
-    const ampm = h >= 12 ? "PM" : "AM";
-    const hour12 = h % 12 || 12;
-    return `${hour12}:${m} ${ampm}`;
   }
 
   return raw;
@@ -205,7 +190,7 @@ export default function ShiftsSection({
               </button>
             )}
           </div>
-        ) : shiftList.length !== 0 ? (
+        ) : shiftList.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
               <Clock size={24} className="text-gray-500" />

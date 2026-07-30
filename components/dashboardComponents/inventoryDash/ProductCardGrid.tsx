@@ -212,8 +212,6 @@ const ProductCardGrid = ({
           ? bySearch.filter((i) => !i.categories)
           : bySearch.filter((i) => i.categories === selectedCategory);
 
-    console.log("By Category:", byCategory);
-
     if (sortBy === "default") return byCategory;
 
     // 4. Sorting

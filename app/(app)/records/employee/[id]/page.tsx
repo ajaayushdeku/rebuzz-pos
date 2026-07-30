@@ -12,6 +12,7 @@ import type {
   StaffOverview,
   ShiftSummary,
   ShiftDetail,
+  ShiftDetailTransaction,
   BillItem,
   EmployeeData,
 } from "@/components/dashboardComponents/staffDash/staffDetail/staffDetailHelpers";
@@ -203,22 +204,120 @@ export default function StaffDetailPage() {
         setLoading(false);
       }
     };
+
     fetchData();
   }, [employeeId, dateRange.startDate, dateRange.endDate, overviewReload]);
 
-  // ── Fetch shifts ─────────────────────────────────────────────────
+  // ── Fetch shifts (analytics-first, with shift-detail enrichment) ────────
   useEffect(() => {
     if (!employeeId) return;
     const fetchShifts = async () => {
       setShiftLoading(true);
       setShiftError(null);
       try {
+        // ── 1. Try employee analytics API for shifts ────────────────────────
+        const eaRes = await fetch(
+          `/api/employee-analytics/${employeeId}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
+        );
+
+        if (eaRes.ok) {
+          const eaJson = await eaRes.json();
+          const eaShifts: {
+            shiftId: string;
+            openingTime: string;
+            closingTime: string;
+            durationMinutes: number;
+          }[] = eaJson?.data?.shifts ?? [];
+
+          if (eaShifts.length > 0) {
+            // ── Fetch shift details for each to get missing financial data ──
+            const detailed: ShiftSummary[] = await Promise.all(
+              eaShifts.map(async (s) => {
+                try {
+                  const detailRes = await fetch(
+                    `/api/staff/shift/${s.shiftId}`,
+                  );
+                  if (!detailRes.ok) {
+                    return {
+                      shiftId: s.shiftId,
+                      openingTime: s.openingTime,
+                      closingTIme: s.closingTime,
+                    } as ShiftSummary;
+                  }
+                  const detailJson = await detailRes.json();
+                  const detail = detailJson?.data?.shiftDetails?.[0];
+                  if (!detail) {
+                    return {
+                      shiftId: s.shiftId,
+                      openingTime: s.openingTime,
+                      closingTIme: s.closingTime,
+                    } as ShiftSummary;
+                  }
+
+                  const txns: ShiftDetailTransaction[] =
+                    detail.transactions ?? [];
+                  const payIn = txns
+                    .filter((t) => t.transactionType === "pay-in")
+                    .reduce((sum, t) => sum + (t.transactionAmount ?? 0), 0);
+                  const payOut = txns
+                    .filter((t) => t.transactionType === "pay-out")
+                    .reduce((sum, t) => sum + (t.transactionAmount ?? 0), 0);
+                  const saleTxns = txns.filter(
+                    (t) => t.transactionType === "sale",
+                  );
+                  const totalSale = saleTxns.reduce(
+                    (sum, t) => sum + (t.transactionAmount ?? 0),
+                    0,
+                  );
+                  const cashSale = saleTxns
+                    .filter((t) => t.paymentMethod === "cash")
+                    .reduce((sum, t) => sum + (t.transactionAmount ?? 0), 0);
+                  const onlineSale = saleTxns
+                    .filter((t) => t.paymentMethod !== "cash")
+                    .reduce((sum, t) => sum + (t.transactionAmount ?? 0), 0);
+
+                  const openingCash = detail.openingCash ?? 0;
+                  const closingCash = detail.closingCash ?? 0;
+                  const expectedAmount =
+                    openingCash + payIn + totalSale - payOut;
+                  const difference = closingCash - expectedAmount;
+
+                  return {
+                    shiftId: s.shiftId,
+                    openingTime: s.openingTime,
+                    closingTIme: s.closingTime,
+                    payIn,
+                    payOut,
+                    totalSale,
+                    cashSale,
+                    onlineSale,
+                    openingCash,
+                    closingCash,
+                    expectedAmount,
+                    difference,
+                    billImages: [],
+                  } as ShiftSummary;
+                } catch {
+                  return {
+                    shiftId: s.shiftId,
+                    openingTime: s.openingTime,
+                    closingTIme: s.closingTime,
+                  } as ShiftSummary;
+                }
+              }),
+            );
+            setShifts(detailed);
+            return;
+          }
+        }
+
+        // ── 2. Fallback: no analytics shifts — use staff shifts API ──────────
         const res = await fetch(
           `/api/staff/${employeeId}/shifts?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
         );
         if (!res.ok) throw new Error("Failed to load shifts");
         const json = await res.json();
-        const shiftsData = json?.data ?? [];
+        const shiftsData: ShiftSummary[] = json?.data ?? [];
         setShifts(shiftsData);
       } catch (err) {
         setShiftError(
@@ -353,22 +452,24 @@ export default function StaffDetailPage() {
 
                 <TopItemsSales employeeId={employeeId} dateRange={dateRange} />
 
-                <ShiftsSection
-                  shifts={shifts}
-                  shiftLoading={shiftLoading}
-                  shiftError={shiftError}
-                  onRetry={() => setShiftReload((n) => n + 1)}
-                  shiftPage={shiftPage}
-                  pageSize={pageSize}
-                  shiftPages={shiftPages}
-                  onPageChange={setShiftPage}
-                  onFetchShiftDetail={fetchShiftDetail}
-                  modalOpen={modalOpen}
-                  modalDetail={modalDetail}
-                  modalLoading={modalLoading}
-                  modalError={modalError}
-                  onModalClose={handleModalClose}
-                />
+                {employeeRole === "basic" && (
+                  <ShiftsSection
+                    shifts={shifts}
+                    shiftLoading={shiftLoading}
+                    shiftError={shiftError}
+                    onRetry={() => setShiftReload((n) => n + 1)}
+                    shiftPage={shiftPage}
+                    pageSize={pageSize}
+                    shiftPages={shiftPages}
+                    onPageChange={setShiftPage}
+                    onFetchShiftDetail={fetchShiftDetail}
+                    modalOpen={modalOpen}
+                    modalDetail={modalDetail}
+                    modalLoading={modalLoading}
+                    modalError={modalError}
+                    onModalClose={handleModalClose}
+                  />
+                )}
 
                 <BillsSection employeeId={employeeId} dateRange={dateRange} />
               </div>

@@ -51,8 +51,11 @@ export const GET = async (
   const endDate = searchParams.get("endDate") ?? "";
 
   try {
-    // Fetch bills from the external API with limit=10
-    let billsUrl = `${BASE}/business/ticket/bills?limit=10`;
+    // Fetch bills from the external API with a high limit so all bills in the
+    // date range are retrieved (matches the pattern used by tickets/bills routes).
+    // Using a small limit (e.g. 10) only returns the most recent bills across ALL
+    // employees, so the selected employee's bills are usually missing.
+    let billsUrl = `${BASE}/business/ticket/bills?limit=1000`;
     if (startDate) billsUrl += `&startDate=${startDate}`;
     if (endDate) billsUrl += `&endDate=${endDate}`;
 

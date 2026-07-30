@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, TrendingUp, Package } from "lucide-react";
+import { Loader2, TrendingUp } from "lucide-react";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { ComponentHeader } from "@/components/ComponentHeader";
 
@@ -14,6 +14,105 @@ interface TopItem {
 interface TopItemsSalesProps {
   employeeId: string;
   dateRange: DateRangeValue;
+}
+
+interface TopItemEA {
+  productId: string;
+  name: string;
+  quantity: number;
+  revenue: number;
+  profit: number;
+}
+
+export interface EmployeeAnalytics {
+  businessName: string;
+
+  period: {
+    startDate: string;
+    endDate: string;
+  };
+
+  employee: {
+    _id: string;
+    name: string;
+    email: string;
+    phone: string;
+    role: string;
+  };
+
+  kpis: {
+    totalBills: number;
+    totalRevenue: number;
+    totalProfit: number;
+    profitMargin: number;
+    avgBillValue: number;
+    avgItemsPerBill: number;
+    itemsSold: number;
+    totalDiscount: number;
+    redeemPoints: number;
+    totalRefunds: number;
+    refundedAmount: number;
+    addonAttachRate: number;
+    totalAddonsSold: number;
+    totalAddonRevenue: number;
+    totalShiftMinutes: number;
+    salesPerHour: number;
+    billsPerHour: number;
+  };
+
+  paymentSplit: {
+    cash: number;
+    qr: number;
+    card: number;
+    other: number;
+  };
+
+  dailyTimeline: {
+    date: string;
+    bills: number;
+    revenue: number;
+    profit: number;
+  }[];
+
+  hourlyDistribution: {
+    hour: number;
+    bills: number;
+    revenue: number;
+  }[];
+
+  topProducts: {
+    productId: string;
+    name: string;
+    quantity: number;
+    revenue: number;
+    profit: number;
+  }[];
+
+  topCategories: {
+    name: string;
+    quantity: number;
+    revenue: number;
+  }[];
+
+  shifts: {
+    shiftId: string;
+    openingTime: string;
+    closingTime: string;
+    durationMinutes: number;
+  }[];
+
+  recentBills: {
+    _id: string;
+    orderId: string;
+    invoiceNo: number;
+    paidBillNo: number;
+    totalAmount: number;
+    grandTotal: number;
+    discount: number;
+    paymentMethod: string;
+    paidAt: string;
+    createdAt: string;
+  }[];
 }
 
 const MAX_ITEMS = 8;
@@ -30,31 +129,59 @@ export default function TopItemsSales({
   dateRange,
 }: TopItemsSalesProps) {
   const [items, setItems] = useState<TopItem[]>([]);
+  const [topItems, setTopItems] = useState<TopItemEA[]>([]);
+  const [noEmployeeAnalytics, setNoEmployeeAnalytics] =
+    useState<boolean>(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [totalBillsAnalyzed, setTotalBillsAnalyzed] = useState(0);
+  const [reload, setReload] = useState(0);
 
+  // ── Load top items: try employee-analytics first, fall back to top-items ──
   useEffect(() => {
     if (!employeeId) return;
 
-    const fetchTopItems = async () => {
+    const loadTopItems = async () => {
       setLoading(true);
       setError(null);
+      setNoEmployeeAnalytics(false);
+      setItems([]);
+      setTopItems([]);
+
       try {
-        const res = await fetch(
+        // ── 1. Try employee analytics API ────────────────────────────────────
+        const eaRes = await fetch(
+          `/api/employee-analytics/${employeeId}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
+        );
+
+        if (eaRes.ok) {
+          const eaData = await eaRes.json();
+          if (eaData?.status === "success" && eaData.data) {
+            const topProducts = eaData.data.topProducts ?? [];
+            setTopItems(topProducts);
+
+            // If analytics returned top products, we're done — no fallback needed
+            if (topProducts.length > 0) {
+              return;
+            }
+          }
+        }
+
+        // ── 2. Fallback: employee has no analytics data — use top-items API ──
+        setNoEmployeeAnalytics(true);
+
+        const tiRes = await fetch(
           `/api/staff/${employeeId}/top-items?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
         );
 
-        if (!res.ok) {
+        if (!tiRes.ok) {
           throw new Error("Failed to fetch top items");
         }
 
-        const data = await res.json();
-        if (data?.status === "success") {
-          setItems(data.data.items ?? []);
-          setTotalBillsAnalyzed(data.data.totalBillsAnalyzed ?? 0);
+        const tiData = await tiRes.json();
+        if (tiData?.status === "success") {
+          setItems(tiData.data.items ?? []);
         } else {
-          throw new Error(data?.error || "Failed to fetch top items");
+          throw new Error(tiData?.error || "Failed to fetch top items");
         }
       } catch (err) {
         setError(
@@ -65,8 +192,8 @@ export default function TopItemsSales({
       }
     };
 
-    fetchTopItems();
-  }, [employeeId, dateRange.startDate, dateRange.endDate]);
+    loadTopItems();
+  }, [employeeId, dateRange.startDate, dateRange.endDate, reload]);
 
   // ── Loading state ─────────────────────────────────────────────────────────
 
@@ -124,30 +251,7 @@ export default function TopItemsSales({
           </div>
           <p className="text-sm font-medium text-gray-500">{error}</p>
           <button
-            onClick={() => {
-              setLoading(true);
-              setError(null);
-              const fetchAgain = async () => {
-                try {
-                  const res = await fetch(
-                    `/api/staff/${employeeId}/top-items?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
-                  );
-                  if (!res.ok) throw new Error("Failed");
-                  const data = await res.json();
-                  if (data?.status === "success") {
-                    setItems(data.data.items ?? []);
-                    setTotalBillsAnalyzed(data.data.totalBillsAnalyzed ?? 0);
-                  } else {
-                    throw new Error(data?.error || "Failed");
-                  }
-                } catch {
-                  setError("Failed to load top items");
-                } finally {
-                  setLoading(false);
-                }
-              };
-              fetchAgain();
-            }}
+            onClick={() => setReload((n) => n + 1)}
             className="mt-3 px-4 py-1.5 text-xs font-medium text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors"
           >
             Retry
@@ -158,8 +262,8 @@ export default function TopItemsSales({
   }
 
   // ── Empty state ───────────────────────────────────────────────────────────
-
-  if (items.length === 0) {
+  // if (items.length === 0) {
+  if (items.length === 0 && topItems.length === 0) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
         <div className="flex items-center gap-3 mb-2">
@@ -189,9 +293,57 @@ export default function TopItemsSales({
   }
 
   // ── Render chart ──────────────────────────────────────────────────────────
+  const max = noEmployeeAnalytics
+    ? Math.max(...items.slice(0, MAX_ITEMS).map((i) => i.totalQuantity), 1)
+    : Math.max(...topItems.slice(0, MAX_ITEMS).map((i) => i.quantity), 1);
 
-  const chartItems = items.slice(0, MAX_ITEMS);
-  const max = Math.max(...chartItems.map((i) => i.totalQuantity), 1);
+  const itemRows = noEmployeeAnalytics
+    ? items.slice(0, MAX_ITEMS).map((item, idx) => {
+        const quantity = item.totalQuantity;
+        const pct = (quantity / max) * 100;
+        return (
+          <div key={item.itemId} className="flex items-center gap-3">
+            <span className="text-xs text-gray-500 w-15 text-right shrink-0 leading-tight truncate">
+              {item.itemName}
+            </span>
+            <div className="flex-1 bg-gray-100 rounded-full h-4 relative overflow-hidden">
+              <div
+                className="h-4 rounded-full transition-all duration-700"
+                style={{
+                  width: `${pct}%`,
+                  backgroundColor: getBarColor(idx, quantity, max),
+                }}
+              />
+            </div>
+            <span className="text-xs text-gray-400 w-8 text-right shrink-0">
+              {quantity}
+            </span>
+          </div>
+        );
+      })
+    : topItems.slice(0, MAX_ITEMS).map((item, idx) => {
+        const quantity = item.quantity;
+        const pct = (quantity / max) * 100;
+        return (
+          <div key={item.productId} className="flex items-center gap-3">
+            <span className="text-xs text-gray-500 w-15 text-right shrink-0 leading-tight truncate">
+              {item.name}
+            </span>
+            <div className="flex-1 bg-gray-100 rounded-full h-4 relative overflow-hidden">
+              <div
+                className="h-4 rounded-full transition-all duration-700"
+                style={{
+                  width: `${pct}%`,
+                  backgroundColor: getBarColor(idx, quantity, max),
+                }}
+              />
+            </div>
+            <span className="text-xs text-gray-400 w-8 text-right shrink-0">
+              {quantity}
+            </span>
+          </div>
+        );
+      });
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 ">
@@ -206,30 +358,7 @@ export default function TopItemsSales({
         />
       </div>
 
-      <div className="space-y-3 mt-6">
-        {chartItems.map((item, idx) => {
-          const pct = (item.totalQuantity / max) * 100;
-          return (
-            <div key={item.itemId} className="flex items-center gap-3">
-              <span className="text-xs text-gray-500 w-15 text-right shrink-0 leading-tight truncate">
-                {item.itemName}
-              </span>
-              <div className="flex-1 bg-gray-100 rounded-full h-4 relative overflow-hidden">
-                <div
-                  className="h-4 rounded-full transition-all duration-700"
-                  style={{
-                    width: `${pct}%`,
-                    backgroundColor: getBarColor(idx, item.totalQuantity, max),
-                  }}
-                />
-              </div>
-              <span className="text-xs text-gray-400 w-8 text-right shrink-0">
-                {item.totalQuantity}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+      <div className="space-y-3 mt-6">{itemRows}</div>
 
       {/* X-axis */}
       <div className="flex items-center gap-3 mt-4">

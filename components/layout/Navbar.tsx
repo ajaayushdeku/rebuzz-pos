@@ -6,6 +6,7 @@ import HelpButton from "./HelpButton";
 import MobileButton from "./MobileButton";
 import { useBusiness } from "@/hooks/useBusiness";
 import ServerEnvBadge from "@/components/ServerEnvBadge";
+import Image from "next/image";
 // import { Button } from "../ui/button";
 // import { Badge, Bell } from "lucide-react";
 
@@ -19,9 +20,18 @@ export default function Navbar() {
           <MobileButton />
           <Link
             href="/"
-            className="text-xl font-bold tracking-tight text-blue-600 transition-opacity hover:opacity-80"
+            className="text-xl font-bold tracking-tight text-blue-600 transition-opacity hover:opacity-80 flex flex-row items-center gap-2"
           >
-            Rebuzz
+            <Image
+              src="/rebuzz.png"
+              alt="ReBuzz Logo"
+              width={32}
+              height={32}
+              className="rounded-lg"
+            />
+            <span className="text-gray-900 text-lg font-bold tracking-tight">
+              ReBuzz
+            </span>
           </Link>
           <ServerEnvBadge className="hidden sm:inline-flex" />
         </div>
