@@ -332,7 +332,7 @@ export default function StatsCardGrid({
         className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
       >
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-gray-400 font-medium">Avg Time</span>
+          <span className="text-xs text-gray-400 font-medium">Avg Shift Time</span>
           <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
             <Clock size={16} className="text-indigo-500" />
           </div>
