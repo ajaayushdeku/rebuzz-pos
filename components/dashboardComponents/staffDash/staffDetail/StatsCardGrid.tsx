@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   ShoppingCart,
   DollarSign,
@@ -9,6 +10,16 @@ import {
   TrendingUp,
   AlertTriangle,
   BarChart3,
+  PiggyBank,
+  Percent,
+  Package,
+  RefreshCcw,
+  Scale,
+  Zap,
+  List,
+  ChevronDown,
+  ChevronUp,
+  Timer,
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -24,6 +35,15 @@ interface StatsCardGridProps {
   onRetry?: () => void;
 }
 
+function formatMinutesToHours(minutes: number): string {
+  const hrs = Math.floor(minutes / 60);
+  const mins = Math.round(minutes % 60);
+  if (hrs > 0) {
+    return `${hrs}h ${mins}m`;
+  }
+  return `${mins}m`;
+}
+
 export default function StatsCardGrid({
   overview,
   totalPayIn,
@@ -34,12 +54,14 @@ export default function StatsCardGrid({
   onRetry,
 }: StatsCardGridProps) {
   const { currency } = useCurrency();
+  const [visibleCount, setVisibleCount] = useState(4);
+  const INCREMENT = 4;
 
   // ── Loading state ──────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
-        {Array.from({ length: showOnlyOrders ? 1 : 6 }).map((_, i) => (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        {Array.from({ length: showOnlyOrders ? 1 : 4 }).map((_, i) => (
           <div
             key={i}
             className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 animate-pulse"
@@ -89,30 +111,391 @@ export default function StatsCardGrid({
     );
   }
 
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
-      {showOnlyOrders ? (
-        /* Staff role: only show Orders */
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+  const hasAnalyticsKpis =
+    overview.totalProfit !== undefined ||
+    overview.profitMargin !== undefined ||
+    overview.avgBillValue !== undefined ||
+    overview.avgItemsPerBill !== undefined ||
+    overview.itemsSold !== undefined ||
+    overview.totalRefunds !== undefined ||
+    overview.refundedAmount !== undefined ||
+    overview.salesPerHour !== undefined ||
+    overview.billsPerHour !== undefined ||
+    overview.totalShiftMinutes !== undefined;
+
+  // Collect all stat cards into an array
+  const statCards: React.ReactNode[] = [];
+
+  if (!showOnlyOrders) {
+    // 1. Total Orders
+    statCards.push(
+      <div
+        key="orders"
+        className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+      >
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs text-gray-400 font-medium">
+            Total Orders (All Time)
+          </span>
+          <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+            <ShoppingCart size={16} className="text-blue-500" />
+          </div>
+        </div>
+        <p className="text-lg font-bold text-gray-900 truncate">
+          {String(overview?.totalOrders ?? 0)}
+        </p>
+      </div>,
+    );
+
+    // 2. Total Sales
+    statCards.push(
+      <div
+        key="sales"
+        className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+      >
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs text-gray-400 font-medium">Total Sales</span>
+          <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
+            <TrendingUp size={16} className="text-indigo-500" />
+          </div>
+        </div>
+        <p className="text-lg font-bold text-gray-900 truncate">
+          {String(overview?.totalSales ?? 0)}
+        </p>
+      </div>,
+    );
+
+    // 3. Total Revenue
+    statCards.push(
+      <div
+        key="revenue"
+        className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+      >
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs text-gray-400 font-medium">
+            Total Revenue
+          </span>
+          <div className="w-7 h-7 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
+            <DollarSign size={16} className="text-green-500" />
+          </div>
+        </div>
+        <p className="text-lg font-bold text-gray-900 truncate">
+          {formatCurrencySymbol(
+            overview?.totalRevenue ?? 0,
+            currency.symbol,
+            currency.locale,
+          )}
+        </p>
+      </div>,
+    );
+
+    // 4. Total Profit
+    if (hasAnalyticsKpis && overview.totalProfit !== undefined) {
+      statCards.push(
+        <div
+          key="totalProfit"
+          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+        >
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-gray-400 font-medium">
-              Total Orders
+              Total Profit
             </span>
-            <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-              <ShoppingCart size={16} className="text-blue-500" />
+            <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+              <PiggyBank size={16} className="text-emerald-500" />
             </div>
           </div>
           <p className="text-lg font-bold text-gray-900 truncate">
-            {String(overview?.totalOrders ?? 0)}
+            {formatCurrencySymbol(
+              overview.totalProfit,
+              currency.symbol,
+              currency.locale,
+            )}
           </p>
+        </div>,
+      );
+    }
+
+    // 5. Profit Margin
+    if (hasAnalyticsKpis && overview.profitMargin !== undefined) {
+      statCards.push(
+        <div
+          key="profitMargin"
+          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-gray-400 font-medium">
+              Profit Margin
+            </span>
+            <div className="w-7 h-7 rounded-lg bg-cyan-50 flex items-center justify-center shrink-0">
+              <Percent size={16} className="text-cyan-500" />
+            </div>
+          </div>
+          <p className="text-lg font-bold text-gray-900 truncate">
+            {overview.profitMargin.toFixed(2)}%
+          </p>
+        </div>,
+      );
+    }
+
+    // 6. Avg Bill Value
+    if (hasAnalyticsKpis && overview.avgBillValue !== undefined) {
+      statCards.push(
+        <div
+          key="avgBillValue"
+          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-gray-400 font-medium">
+              Avg Bill Value
+            </span>
+            <div className="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
+              <DollarSign size={16} className="text-amber-500" />
+            </div>
+          </div>
+          <p className="text-lg font-bold text-gray-900 truncate">
+            {formatCurrencySymbol(
+              overview.avgBillValue,
+              currency.symbol,
+              currency.locale,
+            )}
+          </p>
+        </div>,
+      );
+    }
+
+    // 7. Total Pay In
+    statCards.push(
+      <div
+        key="payIn"
+        className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+      >
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs text-gray-400 font-medium">
+            Total Pay In
+          </span>
+          <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+            <ArrowDownLeft size={16} className="text-emerald-500" />
+          </div>
         </div>
-      ) : (
-        <>
-          {/* Total Orders */}
+        <p className="text-lg font-bold text-gray-900 truncate">
+          {formatCurrencySymbol(totalPayIn, currency.symbol, currency.locale)}
+        </p>
+      </div>,
+    );
+
+    // 8. Total Pay Out
+    statCards.push(
+      <div
+        key="payOut"
+        className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+      >
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs text-gray-400 font-medium">
+            Total Pay Out
+          </span>
+          <div className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
+            <ArrowUpRight size={16} className="text-red-500" />
+          </div>
+        </div>
+        <p className="text-lg font-bold text-gray-900 truncate">
+          {formatCurrencySymbol(totalPayOut, currency.symbol, currency.locale)}
+        </p>
+      </div>,
+    );
+
+    // 9. Total Shift Time
+    if (hasAnalyticsKpis && overview.totalShiftMinutes !== undefined) {
+      statCards.push(
+        <div
+          key="totalShiftTime"
+          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-gray-400 font-medium">
+              Total Shift Time
+            </span>
+            <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+              <Timer size={16} className="text-blue-500" />
+            </div>
+          </div>
+          <p className="text-lg font-bold text-gray-900 truncate">
+            {formatMinutesToHours(overview.totalShiftMinutes)}
+          </p>
+        </div>,
+      );
+    }
+
+    // 10. Avg Time
+    statCards.push(
+      <div
+        key="avgTime"
+        className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+      >
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs text-gray-400 font-medium">Avg Time</span>
+          <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
+            <Clock size={16} className="text-indigo-500" />
+          </div>
+        </div>
+        <p className="text-lg font-bold text-gray-900 truncate">
+          {overview?.avgTime ?? "—"}
+        </p>
+      </div>,
+    );
+
+    // 11. Sales Per Hour
+    if (hasAnalyticsKpis && overview.salesPerHour !== undefined) {
+      statCards.push(
+        <div
+          key="salesPerHour"
+          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-gray-400 font-medium">
+              Revenue/Hour
+            </span>
+            <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
+              <Zap size={16} className="text-violet-500" />
+            </div>
+          </div>
+          <p className="text-lg font-bold text-gray-900 truncate">
+            {formatCurrencySymbol(
+              overview.salesPerHour,
+              currency.symbol,
+              currency.locale,
+            )}
+          </p>
+        </div>,
+      );
+    }
+
+    // 12. Bills Per Hour
+    if (hasAnalyticsKpis && overview.billsPerHour !== undefined) {
+      statCards.push(
+        <div
+          key="billsPerHour"
+          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-gray-400 font-medium">
+              Bills/Hour
+            </span>
+            <div className="w-7 h-7 rounded-lg bg-teal-50 flex items-center justify-center shrink-0">
+              <TrendingUp size={16} className="text-teal-500" />
+            </div>
+          </div>
+          <p className="text-lg font-bold text-gray-900 truncate">
+            {overview.billsPerHour.toFixed(2)}
+          </p>
+        </div>,
+      );
+    }
+
+    // 13. Avg Items Per Bill
+    if (hasAnalyticsKpis && overview.avgItemsPerBill !== undefined) {
+      statCards.push(
+        <div
+          key="avgItemsPerBill"
+          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-gray-400 font-medium">
+              Avg Items/Bill
+            </span>
+            <div className="w-7 h-7 rounded-lg bg-pink-50 flex items-center justify-center shrink-0">
+              <List size={16} className="text-pink-500" />
+            </div>
+          </div>
+          <p className="text-lg font-bold text-gray-900 truncate">
+            {overview.avgItemsPerBill.toFixed(2)}
+          </p>
+        </div>,
+      );
+    }
+
+    // 14. Items Sold
+    if (hasAnalyticsKpis && overview.itemsSold !== undefined) {
+      statCards.push(
+        <div
+          key="itemsSold"
+          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-gray-400 font-medium">
+              Items Sold
+            </span>
+            <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center shrink-0">
+              <Package size={16} className="text-orange-500" />
+            </div>
+          </div>
+          <p className="text-lg font-bold text-gray-900 truncate">
+            {String(overview.itemsSold)}
+          </p>
+        </div>,
+      );
+    }
+
+    // 15. Total Refunds
+    if (hasAnalyticsKpis && overview.totalRefunds !== undefined) {
+      statCards.push(
+        <div
+          key="totalRefunds"
+          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-gray-400 font-medium">
+              Total Refunds
+            </span>
+            <div className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
+              <RefreshCcw size={16} className="text-red-500" />
+            </div>
+          </div>
+          <p className="text-lg font-bold text-gray-900 truncate">
+            {String(overview.totalRefunds)}
+          </p>
+        </div>,
+      );
+    }
+
+    // 16. Refunded Amount
+    if (hasAnalyticsKpis && overview.refundedAmount !== undefined) {
+      statCards.push(
+        <div
+          key="refundedAmount"
+          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-gray-400 font-medium">
+              Refunded Amount
+            </span>
+            <div className="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
+              <Scale size={16} className="text-rose-500" />
+            </div>
+          </div>
+          <p className="text-lg font-bold text-gray-900 truncate">
+            {formatCurrencySymbol(
+              overview.refundedAmount,
+              currency.symbol,
+              currency.locale,
+            )}
+          </p>
+        </div>,
+      );
+    }
+  }
+
+  const hasMoreCards = visibleCount < statCards.length;
+  const visibleCards = statCards.slice(0, visibleCount);
+  const remaining = statCards.length - visibleCount;
+
+  return (
+    <div className="mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {showOnlyOrders ? (
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-gray-400 font-medium">
-                Total Orders (All Time)
+                Total Orders
               </span>
               <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
                 <ShoppingCart size={16} className="text-blue-500" />
@@ -122,94 +505,53 @@ export default function StatsCardGrid({
               {String(overview?.totalOrders ?? 0)}
             </p>
           </div>
+        ) : (
+          visibleCards
+        )}
+      </div>
 
-          {/* Total Sales */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-gray-400 font-medium">
-                Total Sales
-              </span>
-              <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
-                <TrendingUp size={16} className="text-indigo-500" />
-              </div>
-            </div>
-            <p className="text-lg font-bold text-gray-900 truncate">
-              {String(overview?.totalSales ?? 0)}
-            </p>
-          </div>
-
-          {/* Total Revenue */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-gray-400 font-medium">
-                Total Revenue
-              </span>
-              <div className="w-7 h-7 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
-                <DollarSign size={16} className="text-green-500" />
-              </div>
-            </div>
-            <p className="text-lg font-bold text-gray-900 truncate">
-              {formatCurrencySymbol(
-                overview?.totalRevenue ?? 0,
-                currency.symbol,
-                currency.locale,
+      {/* Load More / Hide button */}
+      {statCards.length > 4 && !showOnlyOrders && (
+        <div className="flex justify-center mt-4">
+          {visibleCount > 4 ? (
+            <div className="flex items-center gap-2">
+              {hasMoreCards && (
+                <button
+                  onClick={() =>
+                    setVisibleCount((prev) =>
+                      Math.min(prev + INCREMENT, statCards.length),
+                    )
+                  }
+                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors shadow-sm"
+                >
+                  <ChevronDown size={14} />
+                  Load More ({Math.min(INCREMENT, remaining)} more)
+                </button>
               )}
-            </p>
-          </div>
-
-          {/* Avg Time */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-gray-400 font-medium">
-                Avg Time
-              </span>
-              <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
-                <Clock size={16} className="text-indigo-500" />
-              </div>
+              <button
+                onClick={() =>
+                  setVisibleCount((prev) => Math.max(prev - INCREMENT, 4))
+                }
+                className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors shadow-sm"
+              >
+                <ChevronUp size={14} />
+                Hide
+              </button>
             </div>
-            <p className="text-lg font-bold text-gray-900 truncate">
-              {overview?.avgTime ?? "—"}
-            </p>
-          </div>
-
-          {/* Total Pay In */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-gray-400 font-medium">
-                Total Pay In
-              </span>
-              <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-                <ArrowDownLeft size={16} className="text-emerald-500" />
-              </div>
-            </div>
-            <p className="text-lg font-bold text-gray-900 truncate">
-              {formatCurrencySymbol(
-                totalPayIn,
-                currency.symbol,
-                currency.locale,
-              )}
-            </p>
-          </div>
-
-          {/* Total Pay Out */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-gray-400 font-medium">
-                Total Pay Out
-              </span>
-              <div className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
-                <ArrowUpRight size={16} className="text-red-500" />
-              </div>
-            </div>
-            <p className="text-lg font-bold text-gray-900 truncate">
-              {formatCurrencySymbol(
-                totalPayOut,
-                currency.symbol,
-                currency.locale,
-              )}
-            </p>
-          </div>
-        </>
+          ) : (
+            <button
+              onClick={() =>
+                setVisibleCount((prev) =>
+                  Math.min(prev + INCREMENT, statCards.length),
+                )
+              }
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors shadow-sm"
+            >
+              <ChevronDown size={14} />
+              Load More ({Math.min(INCREMENT, remaining)} more)
+            </button>
+          )}
+        </div>
       )}
     </div>
   );

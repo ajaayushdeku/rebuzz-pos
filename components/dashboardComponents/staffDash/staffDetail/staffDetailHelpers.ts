@@ -6,6 +6,18 @@ export type StaffOverview = {
   totalRevenue: number;
   totalOrders: number;
   avgTime: string;
+  // Employee Analytics KPIs
+  totalBills?: number;
+  totalProfit?: number;
+  profitMargin?: number;
+  avgBillValue?: number;
+  avgItemsPerBill?: number;
+  itemsSold?: number;
+  totalRefunds?: number;
+  refundedAmount?: number;
+  totalShiftMinutes?: number;
+  salesPerHour?: number;
+  billsPerHour?: number;
 };
 
 export type ShiftSummary = {

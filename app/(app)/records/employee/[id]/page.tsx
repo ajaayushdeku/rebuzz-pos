@@ -134,24 +134,38 @@ export default function StaffDetailPage() {
       setLoading(true);
       setOverviewError(null);
       try {
-        // ── All three fetches in parallel ─────────────────────────────────
-        const [salesRes, ticketsRes, shiftsAllRes] = await Promise.all([
-          fetch(
-            `/api/staff/sales-by-employee/${employeeId}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
-          ),
-          fetch(
-            `/api/staff/${employeeId}/tickets?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
-          ),
-          fetch(
-            `/api/staff/shifts-all?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
-          ),
-        ]);
+        // ── 1. Try employee analytics API first ──────────────────────────────
+        const eaRes = await fetch(
+          `/api/employee-analytics/${employeeId}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
+        );
 
-        if (!salesRes.ok) throw new Error("Failed to fetch sales data");
-        const salesJson = await salesRes.json();
-        const emp: EmployeeData = salesJson?.data?.employeeData;
+        let eaKpis: {
+          totalBills?: number;
+          totalRevenue?: number;
+          totalProfit?: number;
+          profitMargin?: number;
+          avgBillValue?: number;
+          avgItemsPerBill?: number;
+          itemsSold?: number;
+          totalRefunds?: number;
+          refundedAmount?: number;
+          totalShiftMinutes?: number;
+          salesPerHour?: number;
+          billsPerHour?: number;
+        } | null = null;
 
-        // ── Ticket count ──────────────────────────────────────────────────
+        let employeeName = "";
+
+        if (eaRes.ok) {
+          const eaJson = await eaRes.json();
+          eaKpis = eaJson?.data?.kpis ?? null;
+          employeeName = eaJson?.data?.employee?.name ?? "";
+        }
+
+        // ── Ticket count (always needed) ──────────────────────────────────
+        const ticketsRes = await fetch(
+          `/api/staff/${employeeId}/tickets?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
+        );
         let ticketCount = 0;
         if (ticketsRes.ok) {
           const ticketsJson = await ticketsRes.json();
@@ -159,6 +173,9 @@ export default function StaffDetailPage() {
         }
 
         // ── avgTime from shifts ───────────────────────────────────────────
+        const shiftsAllRes = await fetch(
+          `/api/staff/shifts-all?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
+        );
         let computedAvgTime = "—";
         if (shiftsAllRes.ok) {
           const shiftsJson = await shiftsAllRes.json();
@@ -185,15 +202,47 @@ export default function StaffDetailPage() {
 
         setAvgTime(computedAvgTime);
 
-        if (emp) {
+        if (eaKpis) {
+          // ── Use employee analytics KPIs for overview ──────────────────────
           setOverview({
-            name: emp.name,
-            totalSales: emp.totalSales ?? 0,
-            totalRevenue: emp.totalRevenue ?? 0,
+            name: employeeName,
+            totalSales: eaKpis.totalBills ?? 0,
+            totalRevenue: eaKpis.totalRevenue ?? 0,
             totalOrders: ticketCount,
             avgTime: computedAvgTime,
+            totalBills: eaKpis.totalBills,
+            totalProfit: eaKpis.totalProfit,
+            profitMargin: eaKpis.profitMargin,
+            avgBillValue: eaKpis.avgBillValue,
+            avgItemsPerBill: eaKpis.avgItemsPerBill,
+            itemsSold: eaKpis.itemsSold,
+            totalRefunds: eaKpis.totalRefunds,
+            refundedAmount: eaKpis.refundedAmount,
+            totalShiftMinutes: eaKpis.totalShiftMinutes,
+            salesPerHour: eaKpis.salesPerHour,
+            billsPerHour: eaKpis.billsPerHour,
           });
-          setBills(emp.bills ?? []);
+          setBills([]);
+        } else {
+          // ── 2. Fallback: no analytics data — use sales-by-employee API ────
+          const salesRes = await fetch(
+            `/api/staff/sales-by-employee/${employeeId}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
+          );
+
+          if (!salesRes.ok) throw new Error("Failed to fetch sales data");
+          const salesJson = await salesRes.json();
+          const emp: EmployeeData = salesJson?.data?.employeeData;
+
+          if (emp) {
+            setOverview({
+              name: emp.name,
+              totalSales: emp.totalSales ?? 0,
+              totalRevenue: emp.totalRevenue ?? 0,
+              totalOrders: ticketCount,
+              avgTime: computedAvgTime,
+            });
+            setBills(emp.bills ?? []);
+          }
         }
       } catch (err) {
         setOverviewError(
@@ -451,25 +500,25 @@ export default function StaffDetailPage() {
                 </div>
 
                 <TopItemsSales employeeId={employeeId} dateRange={dateRange} />
-
-                {employeeRole === "basic" && (
-                  <ShiftsSection
-                    shifts={shifts}
-                    shiftLoading={shiftLoading}
-                    shiftError={shiftError}
-                    onRetry={() => setShiftReload((n) => n + 1)}
-                    shiftPage={shiftPage}
-                    pageSize={pageSize}
-                    shiftPages={shiftPages}
-                    onPageChange={setShiftPage}
-                    onFetchShiftDetail={fetchShiftDetail}
-                    modalOpen={modalOpen}
-                    modalDetail={modalDetail}
-                    modalLoading={modalLoading}
-                    modalError={modalError}
-                    onModalClose={handleModalClose}
-                  />
-                )}
+                {/* 
+                {employeeRole === "basic" && ( */}
+                <ShiftsSection
+                  shifts={shifts}
+                  shiftLoading={shiftLoading}
+                  shiftError={shiftError}
+                  onRetry={() => setShiftReload((n) => n + 1)}
+                  shiftPage={shiftPage}
+                  pageSize={pageSize}
+                  shiftPages={shiftPages}
+                  onPageChange={setShiftPage}
+                  onFetchShiftDetail={fetchShiftDetail}
+                  modalOpen={modalOpen}
+                  modalDetail={modalDetail}
+                  modalLoading={modalLoading}
+                  modalError={modalError}
+                  onModalClose={handleModalClose}
+                />
+                {/* )} */}
 
                 <BillsSection employeeId={employeeId} dateRange={dateRange} />
               </div>

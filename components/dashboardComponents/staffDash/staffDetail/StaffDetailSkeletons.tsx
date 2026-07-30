@@ -39,9 +39,9 @@ function BarsSkeleton() {
 }
 
 /** Matches <StatsCardGrid /> — a 6-up grid of small metric tiles. */
-export function StatsCardGridSkeleton({ count = 6 }: { count?: number }) {
+export function StatsCardGridSkeleton({ count = 4 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6 animate-pulse">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 animate-pulse">
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}

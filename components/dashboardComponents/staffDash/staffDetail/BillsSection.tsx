@@ -31,6 +31,33 @@ interface BillRecord {
   generatedBy?: string;
 }
 
+interface RecentBill {
+  _id: string;
+  orderId: string;
+  invoiceNo: number;
+  paidBillNo: number;
+  totalAmount: number;
+  grandTotal: number;
+  discount: number;
+  paymentMethod: string;
+  paidAt: string;
+  createdAt: string;
+}
+
+interface TicketDetail {
+  _id?: string;
+  invoice?: number;
+  grandTotal?: number;
+  paidStatus?: string;
+  isRefunded?: boolean;
+  ticketName?: string;
+  customerName?: string;
+  customerPhone?: string;
+  paymentMethod?: string;
+  createdAt?: string;
+  archivedAt?: string | null;
+}
+
 interface BillsSectionProps {
   employeeId: string;
   dateRange: DateRangeValue;
@@ -51,6 +78,7 @@ export default function BillsSection({
   const [page, setPage] = useState(0);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [noEmployeeAnalytics, setNoEmployeeAnalytics] = useState(false);
   const pageSize = 5;
 
   useEffect(() => {
@@ -59,7 +87,87 @@ export default function BillsSection({
     const fetchBills = async () => {
       setLoading(true);
       setError(null);
+      setNoEmployeeAnalytics(false);
+      setBills([]);
+
       try {
+        // ── 1. Try employee analytics API first ────────────────────────────────
+        const eaRes = await fetch(
+          `/api/employee-analytics/${employeeId}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
+        );
+
+        if (eaRes.ok) {
+          const eaData = await eaRes.json();
+          const recentBills: RecentBill[] = eaData?.data?.recentBills ?? [];
+
+          if (recentBills.length > 0) {
+            // ── Enrich bills with missing data (ticketName, isRefunded/status) ──
+            // Fetch individual ticket details for each bill to get name & status
+            const enrichedBills: BillRecord[] = await Promise.all(
+              recentBills.map(async (rb) => {
+                try {
+                  const ticketRes = await fetch(
+                    `/api/tickets/${rb.invoiceNo}`,
+                    { cache: "no-store" },
+                  );
+                  if (ticketRes.ok) {
+                    const ticketJson = await ticketRes.json();
+                    // The API returns data wrapper with Tickets array
+                    const ticket: TicketDetail =
+                      ticketJson?.data?.Tickets ??
+                      ticketJson?.data?.ticket ??
+                      ticketJson?.data?.ticket ??
+                      ticketJson?.ticket ??
+                      ticketJson?.data ??
+                      ticketJson;
+
+                    return {
+                      _id: rb._id,
+                      invoiceNo: rb.invoiceNo,
+                      paidBillNo: rb.paidBillNo,
+                      totalAmount: rb.totalAmount,
+                      grandTotal: rb.grandTotal,
+                      paidAt: rb.paidAt,
+                      paymentMethod: rb.paymentMethod,
+                      isRefunded:
+                        ticket?.isRefunded === true ||
+                        ticket?.paidStatus === "refunded"
+                          ? true
+                          : false,
+                      ticketName: ticket?.ticketName ?? undefined,
+                      customerId: null,
+                      generatedBy: undefined,
+                    };
+                  }
+                } catch {
+                  // If ticket detail fetch fails, use the recent bill data as-is
+                }
+
+                // Fallback: return recent bill with defaults for missing fields
+                return {
+                  _id: rb._id,
+                  invoiceNo: rb.invoiceNo,
+                  paidBillNo: rb.paidBillNo,
+                  totalAmount: rb.totalAmount,
+                  grandTotal: rb.grandTotal,
+                  paidAt: rb.paidAt,
+                  paymentMethod: rb.paymentMethod,
+                  isRefunded: false,
+                  ticketName: undefined,
+                  customerId: null,
+                  generatedBy: undefined,
+                };
+              }),
+            );
+
+            setBills(enrichedBills);
+            return;
+          }
+        }
+
+        // ── 2. Fallback: employee has no analytics data — use staff bills API ──
+        setNoEmployeeAnalytics(true);
+
         const res = await fetch(
           `/api/staff/bills/${employeeId}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
         );
