@@ -46,6 +46,7 @@ export const ProductCardGridWrapper = ({
   endDate,
 }: DateRangeProps) => {
   const { data: inventory } = useInventorySuspenseQuery();
+
   return (
     <ProductCardGrid
       items={inventory}

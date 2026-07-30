@@ -6,6 +6,8 @@ import { Search, ArrowUpDown, X } from "lucide-react";
 import { InventoryItem } from "@/lib/mockData/mock-inventory-data";
 import { useSalesByItemQuery } from "@/hooks/useInventory";
 import ProductCard from "@/components/product/ProductCard";
+import { useCategories } from "@/hooks/useCategories";
+import { normalizeColor } from "@/services/category.client";
 
 const INITIAL_COUNT = 6;
 const LOAD_MORE_COUNT = 6;
@@ -21,7 +23,10 @@ type ItemSortKey =
 
 // Sales-based sorts (revenue / net profit for the selected range).
 type SalesSortKey =
-  "revenue-desc" | "revenue-asc" | "profit-desc" | "profit-asc";
+  | "revenue-desc"
+  | "revenue-asc"
+  | "profit-desc"
+  | "profit-asc";
 
 type SortKey = "default" | ItemSortKey | SalesSortKey;
 
@@ -92,6 +97,27 @@ const ProductCardGrid = ({
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("default");
   const [stockTab, setStockTab] = useState<StockTab>("tracked");
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+    undefined,
+  );
+
+  const { data: categories = [] } = useCategories();
+
+  console.log("All categories:", categories);
+  const selectedCategoryData = categories.find(
+    (cat) => cat._id === selectedCategory,
+  );
+  const categoryColor = selectedCategoryData
+    ? normalizeColor(selectedCategoryData.color)
+    : undefined;
+
+  const defaultCategories = categories.filter(
+    (cat) => cat.name === "All" || cat.name === "None",
+  );
+
+  const customCategories = categories.filter(
+    (cat) => cat.name !== "All" && cat.name !== "None",
+  );
 
   // Per-product revenue, net profit & order count for the selected range.
   const { data: sales } = useSalesByItemQuery(startDate, endDate);
@@ -155,7 +181,7 @@ const ProductCardGrid = ({
   // Search (by name) then sort. Kept memoized so cards don't re-process on
   // unrelated re-renders.
   const processed = useMemo(() => {
-    // Stock-tracking tab first, then search by name.
+    // 1. Stock filter
     const byStock =
       stockTab === "all"
         ? expandedItems
@@ -163,14 +189,25 @@ const ProductCardGrid = ({
             stockTab === "tracked" ? i.usesStocks : !i.usesStocks,
           );
 
+    // 2. Search filter
     const q = search.trim().toLowerCase();
-    const filtered = q
+    const bySearch = q
       ? byStock.filter((i) => i.name.toLowerCase().includes(q))
       : byStock;
 
-    if (sortBy === "default") return filtered;
+    // 3. Category filter
+    const allCategoryId = categories.find((cat) => cat.name === "All")?._id;
 
-    // Sales-based sorts read revenue / net profit from the range data.
+    const byCategory =
+      selectedCategory === allCategoryId
+        ? bySearch
+        : bySearch.filter((i) => i.categories === selectedCategory);
+
+    console.log("By Category:", byCategory);
+
+    if (sortBy === "default") return byCategory;
+
+    // 4. Sorting
     if ((SALES_SORT_KEYS as string[]).includes(sortBy)) {
       const metric = (item: InventoryItem) => {
         const s = salesMap.get(item.name.toLowerCase());
@@ -178,12 +215,22 @@ const ProductCardGrid = ({
           ? (s?.revenue ?? 0)
           : (s?.netProfit ?? 0);
       };
+
       const dir = sortBy.endsWith("-asc") ? 1 : -1;
-      return [...filtered].sort((a, b) => (metric(a) - metric(b)) * dir);
+
+      return [...byCategory].sort((a, b) => (metric(a) - metric(b)) * dir);
     }
 
-    return [...filtered].sort(SORT_COMPARATORS[sortBy as ItemSortKey]);
-  }, [expandedItems, search, sortBy, salesMap, stockTab]);
+    return [...byCategory].sort(SORT_COMPARATORS[sortBy as ItemSortKey]);
+  }, [
+    expandedItems,
+    search,
+    selectedCategory,
+    categories,
+    sortBy,
+    salesMap,
+    stockTab,
+  ]);
 
   // Reset the "Load More" window whenever the search, sort or tab changes.
   const filterKey = `${search}|${sortBy}|${stockTab}`;
@@ -290,6 +337,55 @@ const ProductCardGrid = ({
             ))}
           </div>
         </div>
+      </div>
+
+      <div className="flex items-center flex-wrap gap-2 mb-4">
+        {/* Default filters */}
+        {defaultCategories.map((cat) => {
+          const isActive = selectedCategory === cat._id;
+
+          return (
+            <button
+              key={cat._id ?? cat.name}
+              type="button"
+              onClick={() => setSelectedCategory(cat._id)}
+              className="px-4 py-1.5 rounded-full border text-sm font-medium transition-all duration-200 bg-white border-gray-200 text-gray-700 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-600"
+              style={{
+                color: isActive ? categoryColor : undefined,
+                backgroundColor: isActive ? `${categoryColor}30` : undefined,
+                borderColor: isActive ? categoryColor : undefined,
+              }}
+            >
+              {cat.name === "None" ? "Uncategorized" : cat.name}
+            </button>
+          );
+        })}
+
+        {/* Vertical divider */}
+        <div className="mx-1 h-6 w-px bg-gray-300 shrink-0" />
+
+        {/* User categories */}
+        {customCategories
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map((cat) => {
+            const isActive = selectedCategory === cat._id;
+
+            return (
+              <button
+                key={cat._id ?? cat.name}
+                type="button"
+                onClick={() => setSelectedCategory(cat._id)}
+                className="px-4 py-1.5 rounded-full border text-sm font-medium transition-all duration-200 bg-white border-gray-200 text-gray-700 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-600"
+                style={{
+                  color: isActive ? categoryColor : undefined,
+                  backgroundColor: isActive ? `${categoryColor}30` : undefined,
+                  borderColor: isActive ? categoryColor : undefined,
+                }}
+              >
+                {cat.name}
+              </button>
+            );
+          })}
       </div>
 
       {/* Empty state */}

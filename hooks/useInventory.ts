@@ -16,47 +16,51 @@ async function fetchInventoryClient(): Promise<InventoryItem[]> {
   if (!res.ok) throw new Error(`Failed to fetch inventory: ${res.status}`);
   const json = await res.json();
   const raw = json?.data?.products ?? [];
-
   return (
     raw
       // .filter((p: any) => p && typeof p.costPrice === "number" && p.costPrice > 0)
-      .map((p: any): InventoryItem => ({
-        id: p._id,
-        name: p.name ?? "Unnamed Product",
-        unit: p.soldBy ?? "each",
-        inStock: typeof p.inStock === "number" ? p.inStock : 0,
-        lowStock: typeof p.lowStock === "number" ? p.lowStock : 0,
-        usesStocks: Boolean(p.usesStocks),
-        isTaxable: Boolean(p.isTaxable),
-        isAvailable:
-          p.isAvailable !== undefined ? Boolean(p.isAvailable) : true,
-        orderedCount: typeof p.orderedCount === "number" ? p.orderedCount : 0,
-        costPrice: p.costPrice,
-        price: typeof p.price === "number" ? p.price : 0,
-        image:
-          typeof p.image === "string" && p.image
-            ? p.image
-            : (p.images?.[0] ?? undefined),
-        images: Array.isArray(p.images)
-          ? p.images.filter((s: unknown): s is string => typeof s === "string")
-          : undefined,
-        variants:
-          Array.isArray(p.variants?.variantItems) &&
-          p.variants.variantItems.length > 0
-            ? p.variants.variantItems.map((v: Record<string, unknown>) => ({
-                id: String(v._id ?? ""),
-                optionValues: Array.isArray(v.optionValues)
-                  ? (v.optionValues as string[])
-                  : [],
-                price: typeof v.price === "number" ? v.price : 0,
-                costPrice: typeof v.costPrice === "number" ? v.costPrice : 0,
-                inStock: typeof v.inStock === "number" ? v.inStock : 0,
-                lowStock: typeof v.lowStock === "number" ? v.lowStock : 0,
-                isAvailable:
-                  v.isAvailable !== undefined ? Boolean(v.isAvailable) : true,
-              }))
+      .map(
+        (p: any): InventoryItem => ({
+          id: p._id,
+          name: p.name ?? "Unnamed Product",
+          unit: p.soldBy ?? "each",
+          inStock: typeof p.inStock === "number" ? p.inStock : 0,
+          lowStock: typeof p.lowStock === "number" ? p.lowStock : 0,
+          usesStocks: Boolean(p.usesStocks),
+          isTaxable: Boolean(p.isTaxable),
+          isAvailable:
+            p.isAvailable !== undefined ? Boolean(p.isAvailable) : true,
+          orderedCount: typeof p.orderedCount === "number" ? p.orderedCount : 0,
+          costPrice: p.costPrice,
+          price: typeof p.price === "number" ? p.price : 0,
+          categories: p.categories,
+          image:
+            typeof p.image === "string" && p.image
+              ? p.image
+              : (p.images?.[0] ?? undefined),
+          images: Array.isArray(p.images)
+            ? p.images.filter(
+                (s: unknown): s is string => typeof s === "string",
+              )
             : undefined,
-      }))
+          variants:
+            Array.isArray(p.variants?.variantItems) &&
+            p.variants.variantItems.length > 0
+              ? p.variants.variantItems.map((v: Record<string, unknown>) => ({
+                  id: String(v._id ?? ""),
+                  optionValues: Array.isArray(v.optionValues)
+                    ? (v.optionValues as string[])
+                    : [],
+                  price: typeof v.price === "number" ? v.price : 0,
+                  costPrice: typeof v.costPrice === "number" ? v.costPrice : 0,
+                  inStock: typeof v.inStock === "number" ? v.inStock : 0,
+                  lowStock: typeof v.lowStock === "number" ? v.lowStock : 0,
+                  isAvailable:
+                    v.isAvailable !== undefined ? Boolean(v.isAvailable) : true,
+                }))
+              : undefined,
+        }),
+      )
   );
 }
 

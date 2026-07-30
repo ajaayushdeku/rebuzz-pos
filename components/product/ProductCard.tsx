@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   getBarPercent,
@@ -22,6 +22,8 @@ import {
   Expand,
   X,
 } from "lucide-react";
+import { useCategories } from "@/hooks/useCategories";
+import { normalizeColor } from "@/services/category.client";
 
 const statusConfig = {
   healthy: {
@@ -83,6 +85,17 @@ export default function ProductCard({
   const cfg = statusConfig[status];
   const { currency } = useCurrency();
   const { data: business } = useBusiness();
+  const { data: categories = [] } = useCategories();
+
+  // Resolve the category id stored on the product to its name + colour.
+  const category = useMemo(
+    () => categories.find((c) => c._id === item.categories),
+    [categories, item.categories],
+  );
+
+  const categoryColor = category
+    ? (normalizeColor(category.color) ?? undefined)
+    : undefined;
 
   const fmt = (v: number) =>
     formatCurrencySymbol(v, currency.symbol, currency.locale);
@@ -166,10 +179,22 @@ export default function ProductCard({
               {item.name}
             </h3>
 
-            <span className="flex flex-row">
+            <span className="flex flex-row gap-1">
               {item.isTaxable && (
                 <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-semibold shrink-0">
                   Taxable
+                </span>
+              )}
+
+              {item?.categories && (
+                <span
+                  className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0"
+                  style={{
+                    color: categoryColor,
+                    backgroundColor: `${categoryColor}20`,
+                  }}
+                >
+                  {category?.name}
                 </span>
               )}
 

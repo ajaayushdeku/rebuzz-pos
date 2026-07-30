@@ -16,6 +16,7 @@ export type InventoryItem = {
   orderedCount: number;
   costPrice: number;
   price: number;
+  categories: string;
   /** Primary product image URL (from the products API), if any. */
   image?: string;
   /** Additional gallery image URLs (the `images` field). */
@@ -84,6 +85,7 @@ export async function fetchInventoryProducts(): Promise<InventoryItem[]> {
           orderedCount: typeof p.orderedCount === "number" ? p.orderedCount : 0,
           costPrice: p.costPrice,
           price: typeof p.price === "number" ? p.price : 0,
+          categories: p.categories,
           image:
             typeof p.image === "string" && p.image
               ? p.image
