@@ -23,6 +23,8 @@ const PRESET_RANGES = [
   { value: "24h", label: "Today" },
   { value: "week", label: "Last 7 Days" },
   { value: "month", label: "Last 30 Days" },
+  { value: "threemonth", label: "Last 3 Months" },
+  { value: "sixmonth", label: "Last 6 Months" },
   { value: "year", label: "Last Year" },
 ];
 
@@ -64,7 +66,7 @@ function getPresetRange(range: string): {
       start.setDate(today.getDate() - 6);
       break;
     }
-    case "month":
+    case "month": {
       // ── Previous calendar-based implementation retained for future use. ──
       // Calendar month: 1st of current month
       // start = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -72,7 +74,26 @@ function getPresetRange(range: string): {
       start = new Date(today);
       start.setDate(today.getDate() - 29);
       break;
-    case "year":
+    }
+    case "threemonth": {
+      // ── Previous calendar-based implementation retained for future use. ──
+      // Calendar last 3 months: 3 months from current day
+      // start = new Date(today.getFullYear(), today.getMonth(), 3);
+      // ── New rolling 90-day period ──
+      start = new Date(today);
+      start.setDate(today.getDate() - 89);
+      break;
+    }
+    case "sixmonth": {
+      // ── Previous calendar-based implementation retained for future use. ──
+      // Calendar last 6 months: 6 months from current day
+      // start = new Date(today.getFullYear(), today.getMonth(), 6);
+      // ── New rolling 180-day period ──
+      start = new Date(today);
+      start.setDate(today.getDate() - 179);
+      break;
+    }
+    case "year": {
       // ── Previous calendar-based implementation retained for future use. ──
       // Calendar year: Jan 1 of current year
       // start = new Date(today.getFullYear(), 0, 1);
@@ -80,6 +101,7 @@ function getPresetRange(range: string): {
       start = new Date(today);
       start.setDate(today.getDate() - 364);
       break;
+    }
     default:
       start = new Date(today.getFullYear(), today.getMonth(), 1);
   }

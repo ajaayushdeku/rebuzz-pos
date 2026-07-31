@@ -20,13 +20,27 @@ function getPresetRange(range: string): { startDate: string; endDate: string } {
       start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       break;
     case "week": {
+      // start = new Date(today);
+      // start.setDate(today.getDate() - today.getDay());
       start = new Date(today);
-      start.setDate(today.getDate() - today.getDay());
+      start.setDate(today.getDate() - 6);
       break;
     }
     case "month":
-      start = new Date(today.getFullYear(), today.getMonth(), 1);
+      // start = new Date(today.getFullYear(), today.getMonth(), 1);
+      start = new Date(today);
+      start.setDate(today.getDate() - 29);
       break;
+    case "threemonth": {
+      start = new Date(today);
+      start.setDate(today.getDate() - 89);
+      break;
+    }
+    case "sixmonth": {
+      start = new Date(today);
+      start.setDate(today.getDate() - 179);
+      break;
+    }
     case "year":
       start = new Date(today.getFullYear(), 0, 1);
       break;

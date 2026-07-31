@@ -24,6 +24,10 @@ const getActiveLabel = (range?: string, startDate?: string): string => {
       return "Active This Week";
     case "month":
       return "Active This Month";
+    case "threemonth":
+      return "Active Last 3 Months";
+    case "sixmonth":
+      return "Active Last 6 Months";
     case "year":
       return "Active This Year";
     default:

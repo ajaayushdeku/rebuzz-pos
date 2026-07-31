@@ -38,6 +38,14 @@ export function getPresetRange(range: string): ResolvedRange {
       start = new Date(today);
       start.setDate(today.getDate() - 29);
       break;
+    case "threemonth":
+      start = new Date(today);
+      start.setDate(today.getDate() - 89);
+      break;
+    case "sixmonth":
+      start = new Date(today);
+      start.setDate(today.getDate() - 179);
+      break;
     case "year":
       start = new Date(today);
       start.setDate(today.getDate() - 364);

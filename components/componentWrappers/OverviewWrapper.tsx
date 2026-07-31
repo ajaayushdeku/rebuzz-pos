@@ -78,6 +78,18 @@ const getDateRange = (range: string, now: Date): [string, string] => {
       start.setDate(now.getDate() - 29);
       break;
     }
+    case "threemonth": {
+      // ── New rolling 90-day period ──
+      start = new Date(now);
+      start.setDate(now.getDate() - 89);
+      break;
+    }
+    case "sixmonth": {
+      // ── New rolling 180-day period ──
+      start = new Date(now);
+      start.setDate(now.getDate() - 179);
+      break;
+    }
     case "year": {
       // ── Previous calendar-based implementation retained for future use. ──
       // Calendar year: Jan 1 of current year
@@ -135,6 +147,22 @@ const getPreviousDateRange = (range: string, now: Date): [string, string] => {
       start.setDate(end.getDate() - 29);
       break;
     }
+    case "threemonth": {
+      // ── New rolling 90-day period: immediately preceding 90 days ──
+      end = new Date(now);
+      end.setDate(now.getDate() - 90);
+      start = new Date(end);
+      start.setDate(end.getDate() - 89);
+      break;
+    }
+    case "sixmonth": {
+      // ── New rolling 180-day period: immediately preceding 180 days ──
+      end = new Date(now);
+      end.setDate(now.getDate() - 180);
+      start = new Date(end);
+      start.setDate(end.getDate() - 179);
+      break;
+    }
     case "year": {
       // ── Previous calendar-based implementation retained for future use. ──
       // Previous full calendar year: Jan 1 → Dec 31
@@ -165,6 +193,10 @@ const getPeriodLabel = (range: string): string => {
       return "from previous 7 days";
     case "month":
       return "from previous 30 days";
+    case "threemonth":
+      return "from previous 90 days";
+    case "sixmonth":
+      return "from previous 180 days";
     case "year":
       return "from previous year";
     default:
@@ -227,7 +259,19 @@ export const OverviewStatsWrapper = async ({
 
   // Map filter range to the appropriate compare-sales-* API type
   const compareType =
-    range === "24h" ? "date" : (range as "date" | "week" | "month" | "year");
+    range === "24h"
+      ? "date"
+      : range === "week"
+        ? "week"
+        : range === "month"
+          ? "month"
+          : range === "threemonth"
+            ? "month"
+            : range === "sixmonth"
+              ? "month"
+              : range === "year"
+                ? "year"
+                : "date";
 
   const currentStats = await getStatsData(startDate, endDate, compareType);
   const previousStats = await getStatsData(

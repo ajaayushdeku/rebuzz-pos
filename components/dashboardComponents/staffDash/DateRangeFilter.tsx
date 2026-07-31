@@ -27,6 +27,8 @@ const PRESET_RANGES = [
   { value: "24h", label: "Today" },
   { value: "week", label: "Last 7 Days" },
   { value: "month", label: "Last 30 Days" },
+  { value: "threemonth", label: "Last 3 Months" },
+  { value: "sixmonth", label: "Last 6 Months" },
   { value: "year", label: "Last Year" },
 ];
 
@@ -70,6 +72,24 @@ function getPresetRange(range: string): { startDate: string; endDate: string } {
       // ── New rolling 30-day period ──
       start = new Date(today);
       start.setDate(today.getDate() - 29);
+      break;
+    }
+    case "threemonth": {
+      // ── Previous calendar-based implementation retained for future use. ──
+      // Calendar month: 1st of current month
+      // start = new Date(today.getFullYear(), today.getMonth(), 1);
+      // ── New rolling 30-day period ──
+      start = new Date(today);
+      start.setDate(today.getDate() - 89);
+      break;
+    }
+    case "sixmonth": {
+      // ── Previous calendar-based implementation retained for future use. ──
+      // Calendar month: 1st of current month
+      // start = new Date(today.getFullYear(), today.getMonth(), 1);
+      // ── New rolling 30-day period ──
+      start = new Date(today);
+      start.setDate(today.getDate() - 179);
       break;
     }
     case "year": {
