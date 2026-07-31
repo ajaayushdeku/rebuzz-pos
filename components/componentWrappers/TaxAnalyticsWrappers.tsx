@@ -14,7 +14,7 @@ import HighestTaxGenerated from "@/components/dashboardComponents/taxAnalytics/H
 import TaxByCategory from "@/components/dashboardComponents/taxAnalytics/TaxByCategory";
 import TaxOnRefundedBills from "@/components/dashboardComponents/taxAnalytics/TaxOnRefundedBills";
 import VatStatCard from "../dashboardComponents/taxAnalytics/VatStatCard";
-import { vatStats } from "../dashboardComponents/taxAnalytics/MiniTrendChart";
+import { VatStat } from "../dashboardComponents/taxAnalytics/MiniTrendChart";
 import VATTrendChart from "../dashboardComponents/taxAnalytics/VATTrendChart";
 import MonthlyTaxTrendChart from "../dashboardComponents/taxAnalytics/MonthlyTaxTrendChart";
 import WhatChangedAndWhy from "../dashboardComponents/taxAnalytics/WhatChangedAndWhy";
@@ -28,7 +28,9 @@ import IncomeTaxProvision from "../dashboardComponents/taxAnalytics/IncomeTaxPro
 import AdvanceTaxInstallments from "../dashboardComponents/taxAnalytics/AdvanceTaxInstallments";
 import TDSReceivable from "../dashboardComponents/taxAnalytics/TDSReceivable";
 import TaxRateBreakdown from "../dashboardComponents/taxAnalytics/TaxRateBreakdown";
-import WhatYouActuallyOwe from "../dashboardComponents/taxAnalytics/WhatYouActuallyOwe";
+import WhatYouActuallyOwe, {
+  WhatYouOweData,
+} from "../dashboardComponents/taxAnalytics/WhatYouActuallyOwe";
 import TaxAuditLog from "../dashboardComponents/taxAnalytics/TaxAuditLog";
 
 interface RefundBillWithTax {
@@ -150,6 +152,44 @@ async function fetchTaxCollected(
   return total;
 }
 
+/**
+ * VAT paid on purchases = 13% of each expense transaction summed.
+ * The expense API uses month/year, so pass them directly.
+ */
+async function fetchExpenseVat(month: number, year: number): Promise<number> {
+  const res = await fetch(`/api/expense?month=${month}&year=${year}`);
+  if (!res.ok) throw new Error(`Failed to fetch expenses: ${res.status}`);
+  const json = await res.json();
+  const transactions = json?.data?.transactions ?? [];
+
+  let totalVat = 0;
+  for (const t of transactions) {
+    if (t.kind === "expense") {
+      // 13% VAT on each expense amount, rounded to 2 decimal places
+      totalVat += Math.round(t.amount * 0.13 * 100) / 100;
+    }
+  }
+  return totalVat;
+}
+
+/**
+ * Refund tax = sum of taxRefunded across all refunded bills in the date range.
+ */
+async function fetchRefundTax(
+  startDate: string,
+  endDate: string,
+): Promise<number> {
+  const params = new URLSearchParams({ startDate, endDate });
+  const res = await fetch(`/api/tax/refunded-bills?${params.toString()}`);
+  if (!res.ok) throw new Error(`Failed to fetch refunded bills: ${res.status}`);
+  const data = await res.json();
+  let total = 0;
+  for (const bill of data) {
+    total += Number(bill.taxRefunded) || 0;
+  }
+  return total;
+}
+
 /** Month-over-month change as an absolute percent + trend direction. */
 function monthChange(
   current: number,
@@ -165,14 +205,54 @@ function monthChange(
   return { change: current > 0 ? 100 : 0, trend: "up" };
 }
 
-// Cards still on mock data (their APIs aren't ready) — shown with the lock.
-const LOCKED_CARD_IDS = new Set(["purchase", "payable"]);
+// No cards are locked — all use real data.
+const LOCKED_CARD_IDS = new Set<string>();
 
 export function VatStatsWrapper() {
   const ranges = getMonthRanges();
 
-  // Real data: Total Sales (revenue) and VAT Collected (actual tax generated
-  // from sales). The other two cards stay on mock until their APIs are ready.
+  // Static card metadata — only the overlay info (title, description) lives here.
+  const CARD_META: Pick<VatStat, "id" | "title" | "description">[] = [
+    {
+      id: "sales",
+      title: "Total Sales",
+      description:
+        "Total revenue this month before any deductions. Higher sales means more VAT to collect and remit.",
+    },
+    {
+      id: "collected",
+      title: "VAT Collected",
+      description:
+        "VAT you charged customers at 13%. This money belongs to IRD — you're holding it on their behalf.",
+    },
+    {
+      id: "purchase",
+      title: "VAT Paid On Purchases",
+      description:
+        "VAT you paid on purchases (supplies, rent, etc.). This offsets what you owe — the higher, the better.",
+    },
+    {
+      id: "payable",
+      title: "Net VAT Payable",
+      description:
+        "What you actually owe IRD = Output VAT − Input VAT − Refunds. This is your real tax bill.",
+    },
+  ];
+
+  const EMPTY_STATS: VatStat[] = CARD_META.map((meta) => ({
+    ...meta,
+    amount: null,
+    change: 0,
+    trend: "up",
+    chartColor: "green" as const,
+    sparkline: [],
+  }));
+
+  // All four cards use real data:
+  //   sales   → revenue (business report)
+  //   collected → VAT from order-history transactions
+  //   purchase → 13% of each expense transaction
+  //   payable → collected − purchase − refund tax
   const { data } = useQuery({
     queryKey: [
       "vat-stats",
@@ -182,28 +262,57 @@ export function VatStatsWrapper() {
       ranges.lastMonth.endDate,
     ],
     queryFn: async () => {
-      const [thisRevenue, lastRevenue, thisTax, lastTax] = await Promise.all([
+      // Compute month/year directly from current date for the expense API.
+      const now = new Date();
+      const thisMonth = now.getMonth() + 1; // 1-indexed
+      const thisYear = now.getFullYear();
+      // Previous month (handle January → December of previous year)
+      const lastMonth = thisMonth === 1 ? 12 : thisMonth - 1;
+      const lastYear = thisMonth === 1 ? thisYear - 1 : thisYear;
+
+      const [
+        thisRevenue,
+        lastRevenue,
+        thisTax,
+        lastTax,
+        thisExpenseVat,
+        lastExpenseVat,
+        thisRefundTax,
+        lastRefundTax,
+      ] = await Promise.all([
         fetchRevenue(ranges.thisMonth.startDate, ranges.thisMonth.endDate),
         fetchRevenue(ranges.lastMonth.startDate, ranges.lastMonth.endDate),
         fetchTaxCollected(ranges.thisMonth.startDate, ranges.thisMonth.endDate),
         fetchTaxCollected(ranges.lastMonth.startDate, ranges.lastMonth.endDate),
+        fetchExpenseVat(thisMonth, thisYear),
+        fetchExpenseVat(lastMonth, lastYear),
+        fetchRefundTax(ranges.thisMonth.startDate, ranges.thisMonth.endDate),
+        fetchRefundTax(ranges.lastMonth.startDate, ranges.lastMonth.endDate),
       ]);
-      return { thisRevenue, lastRevenue, thisTax, lastTax };
+      return {
+        thisRevenue,
+        lastRevenue,
+        thisTax,
+        lastTax,
+        thisExpenseVat,
+        lastExpenseVat,
+        thisRefundTax,
+        lastRefundTax,
+      };
     },
     staleTime: 60 * 1000,
   });
 
-  const stats = useMemo(() => {
-    if (!data) return vatStats;
-    return vatStats.map((card) => {
-      if (card.id === "sales") {
+  const stats: VatStat[] = useMemo(() => {
+    if (!data) return EMPTY_STATS;
+    return CARD_META.map((meta) => {
+      if (meta.id === "sales") {
         const { change, trend } = monthChange(
           data.thisRevenue,
           data.lastRevenue,
         );
-        // Sparkline reflects the month-to-month comparison: last → this.
         return {
-          ...card,
+          ...meta,
           amount: data.thisRevenue,
           change,
           trend,
@@ -211,10 +320,10 @@ export function VatStatsWrapper() {
           chartColor: (trend === "up" ? "green" : "red") as "green" | "red",
         };
       }
-      if (card.id === "collected") {
+      if (meta.id === "collected") {
         const { change, trend } = monthChange(data.thisTax, data.lastTax);
         return {
-          ...card,
+          ...meta,
           amount: data.thisTax,
           change,
           trend,
@@ -222,7 +331,48 @@ export function VatStatsWrapper() {
           chartColor: (trend === "up" ? "green" : "red") as "green" | "red",
         };
       }
-      return card; // purchase & payable stay on mock
+      if (meta.id === "purchase") {
+        const { change, trend } = monthChange(
+          data.thisExpenseVat,
+          data.lastExpenseVat,
+        );
+        return {
+          ...meta,
+          amount: data.thisExpenseVat,
+          change,
+          trend,
+          sparkline: [data.lastExpenseVat, data.thisExpenseVat],
+          chartColor: (trend === "up" ? "green" : "red") as "green" | "red",
+        };
+      }
+      if (meta.id === "payable") {
+        // Net VAT Payable = VAT Collected − VAT Paid on Purchases − Refund Tax
+        const thisPayable = Math.max(
+          0,
+          data.thisTax - data.thisExpenseVat - data.thisRefundTax,
+        );
+        const lastPayable = Math.max(
+          0,
+          data.lastTax - data.lastExpenseVat - data.lastRefundTax,
+        );
+        const { change, trend } = monthChange(thisPayable, lastPayable);
+        return {
+          ...meta,
+          amount: thisPayable,
+          change,
+          trend,
+          sparkline: [lastPayable, thisPayable],
+          chartColor: (trend === "up" ? "red" : "green") as "red" | "green",
+        };
+      }
+      return {
+        ...meta,
+        amount: null,
+        change: 0,
+        trend: "up",
+        chartColor: "green" as const,
+        sparkline: [],
+      };
     });
   }, [data]);
 
@@ -335,8 +485,76 @@ export function TaxOnRefundedBillsWrapper({
 }
 
 export function WhatYouActuallyOweWrapper() {
-  return <WhatYouActuallyOwe />;
+  const ranges = getMonthRanges();
+
+  // Compute month/year directly from current date for the expense API.
+  const now = new Date();
+  const thisMonth = now.getMonth() + 1;
+  const thisYear = now.getFullYear();
+
+  const { data } = useQuery({
+    queryKey: [
+      "what-you-owe",
+      ranges.thisMonth.startDate,
+      ranges.thisMonth.endDate,
+    ],
+    queryFn: async () => {
+      const [thisTax, thisExpenseVat, thisRefundTax] = await Promise.all([
+        fetchTaxCollected(ranges.thisMonth.startDate, ranges.thisMonth.endDate),
+        fetchExpenseVat(thisMonth, thisYear),
+        fetchRefundTax(ranges.thisMonth.startDate, ranges.thisMonth.endDate),
+      ]);
+
+      const thisPayable = Math.max(0, thisTax - thisExpenseVat - thisRefundTax);
+
+      // Build a human-readable due date (e.g. "25 Falgun 2082")
+      const dueDate = getDueDate();
+
+      const result: WhatYouOweData = {
+        collected: thisTax,
+        inputVat: thisExpenseVat,
+        refund: thisRefundTax,
+        payable: thisPayable,
+        dueDate,
+      };
+      return result;
+    },
+    staleTime: 60 * 1000,
+  });
+
+  return <WhatYouActuallyOwe data={data ?? fallbackWhatYouOweData} />;
 }
+
+/** Approximate the 25th of the next month in BS (Nepali) format. */
+function getDueDate(): string {
+  const now = new Date();
+  const bsMonths = [
+    "Baisakh",
+    "Jestha",
+    "Ashad",
+    "Shrawan",
+    "Bhadra",
+    "Ashoj",
+    "Kartik",
+    "Mangsir",
+    "Poush",
+    "Magh",
+    "Falgun",
+    "Chaitra",
+  ];
+  // Next month in BS (rough mapping: AD month + 2 ≈ BS month index)
+  const nextMonthIdx = (now.getMonth() + 2) % 12;
+  const bsYear = now.getFullYear() + 56; // approximate BS year
+  return `25 ${bsMonths[nextMonthIdx]} ${bsYear}`;
+}
+
+const fallbackWhatYouOweData: WhatYouOweData = {
+  collected: 0,
+  inputVat: 0,
+  refund: 0,
+  payable: 0,
+  dueDate: "—",
+};
 
 export function VATTrendChartWrapper() {
   return <VATTrendChart />;

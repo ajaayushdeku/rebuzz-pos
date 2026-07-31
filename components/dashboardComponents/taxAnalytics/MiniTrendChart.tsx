@@ -11,7 +11,7 @@ export interface VatSummary {
 export interface VatStat {
   id: string;
   title: string;
-  amount: number;
+  amount: number | null;
   change: number;
   trend: "up" | "down";
   chartColor: "green" | "red" | "blue";
@@ -33,52 +33,6 @@ export const vatSummary: VatSummary = {
   payable: 99450,
   dueDate: "25 Falgun 2082",
 };
-
-export const vatStats: VatStat[] = [
-  {
-    id: "sales",
-    title: "Total Sales",
-    amount: 1500000,
-    change: 12.4,
-    trend: "up",
-    chartColor: "green",
-    sparkline: [18, 19, 19, 20, 22, 24, 23, 26, 28, 29],
-    description:
-      "Total revenue this month before any deductions. Higher sales means more VAT to collect and remit.",
-  },
-  {
-    id: "collected",
-    title: "VAT Collected",
-    amount: 156000,
-    change: 8.5,
-    trend: "down",
-    chartColor: "red",
-    sparkline: [25, 26, 27, 28, 29, 28, 27, 29, 30, 30],
-    description:
-      "VAT you charged customers at 13%. This money belongs to IRD — you're holding it on their behalf.",
-  },
-  {
-    id: "purchase",
-    title: "VAT Paid On Purchases",
-    amount: 54600,
-    change: 2.1,
-    trend: "up",
-    chartColor: "green",
-    sparkline: [16, 16, 16, 16, 16, 18, 16, 20, 20, 20],
-    description: "2.1% vs last month",
-  },
-  {
-    id: "payable",
-    title: "Net VAT Payable",
-    amount: 99450,
-    change: 11.2,
-    trend: "down",
-    chartColor: "red",
-    sparkline: [20, 21, 22, 23, 24, 24, 23, 26, 26, 26],
-    description:
-      "What you actually owe IRD = Output VAT − Input VAT − Refunds. This is your real tax bill.",
-  },
-];
 
 const colors = {
   green: {

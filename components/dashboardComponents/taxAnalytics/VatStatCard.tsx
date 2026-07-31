@@ -4,7 +4,7 @@ import MiniTrendChart, { VatStat } from "./MiniTrendChart";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { ArrowUp, ArrowDown, Info } from "lucide-react";
-import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+// import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 
 interface VatStatCardProps {
   stat: VatStat;
@@ -19,6 +19,7 @@ export default function VatStatCard({
   const { currency } = useCurrency();
 
   const isPositive = stat.trend === "up";
+  const hasData = stat.amount !== null;
 
   return (
     <div
@@ -61,45 +62,54 @@ export default function VatStatCard({
         {/* Value */}
         <div>
           <h2 className="text-[20px] font-bold tracking-tight text-slate-900">
-            {formatCurrencySymbol(
-              stat.amount,
-              currency.symbol,
-              currency.locale,
-            )}
+            {stat.amount !== null
+              ? formatCurrencySymbol(
+                  stat.amount,
+                  currency.symbol,
+                  currency.locale,
+                )
+              : "—"}
           </h2>
 
-          <div className="mt-1 flex items-center justify-between gap-2">
-            <div>
-              <div className="mt-3 flex items-center gap-2">
-                {isPositive ? (
-                  <ArrowUp size={14} className="text-emerald-600" />
-                ) : (
-                  <ArrowDown size={14} className="text-red-500" />
-                )}
+          {hasData && (
+            <div className="mt-1 flex items-center justify-between gap-2">
+              <div>
+                <div className="mt-3 flex items-center gap-2">
+                  {isPositive ? (
+                    <ArrowUp size={14} className="text-emerald-600" />
+                  ) : (
+                    <ArrowDown size={14} className="text-red-500" />
+                  )}
 
-                <span
-                  className={`text-[12px] font-semibold ${
-                    isPositive ? "text-emerald-600" : "text-red-500"
-                  }`}
-                >
-                  {stat.change}%
-                </span>
+                  <span
+                    className={`text-[12px] font-semibold ${
+                      isPositive ? "text-emerald-600" : "text-red-500"
+                    }`}
+                  >
+                    {stat.change}%
+                  </span>
+                </div>
+
+                <p className="mt-1 text-[10px] uppercase tracking-wider text-slate-400">
+                  VS LAST MONTH
+                </p>
               </div>
 
-              <p className="mt-1 text-[10px] uppercase tracking-wider text-slate-400">
-                VS LAST MONTH
-              </p>
+              {/* Sparkline */}
+              {stat.sparkline.length > 0 && (
+                <div className="mt-3 flex justify-end">
+                  <MiniTrendChart
+                    data={stat.sparkline}
+                    color={stat.chartColor}
+                  />
+                </div>
+              )}
             </div>
-
-            {/* Sparkline */}
-            <div className="mt-3 flex justify-end">
-              <MiniTrendChart data={stat.sparkline} color={stat.chartColor} />
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
-      {locked && <LockDimFeactureOverlay component_name="VAT Stat Cards" />}
+      {/* {locked && <LockDimFeactureOverlay component_name="VAT Stat Cards" />} */}
     </div>
   );
 }
