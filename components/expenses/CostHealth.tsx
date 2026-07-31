@@ -7,7 +7,7 @@ import { getPurposeIcon } from "@/lib/purpose-icons";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "../ComponentHeader";
-import { Activity, PieChart } from "lucide-react";
+import { Activity, ChevronDown, ChevronUp, PieChart } from "lucide-react";
 import { createElement } from "react";
 
 const STATUS_STYLES: Record<
@@ -293,10 +293,10 @@ export default function CostHealth() {
               onClick={() =>
                 setVisibleCount((prev) => Math.min(prev + 4, cards.length))
               }
-              className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg px-4 py-2 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors"
             >
-              Load More
-              <span className="text-[10px] text-blue-400">
+              <ChevronDown size={14} /> Load More
+              <span className="text-xs text-blue-400">
                 ( {cards.length - visibleCount} more )
               </span>
             </button>
@@ -304,9 +304,9 @@ export default function CostHealth() {
           {canHide && (
             <button
               onClick={() => setVisibleCount((prev) => Math.max(prev - 4, 4))}
-              className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg px-4 py-2 transition-colors"
+              className="px-4 py-2 rounded-lg border border-gray-200 bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed flex flex-row items-center gap-1"
             >
-              Hide
+              <ChevronUp size={14} /> Hide
               {/* <span className="text-[10px] text-gray-400">
                 ( last {Math.min(4, visibleCount - 4)} )
               </span> */}

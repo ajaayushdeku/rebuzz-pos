@@ -332,7 +332,9 @@ export default function StatsCardGrid({
         className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
       >
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-gray-400 font-medium">Avg Shift Time</span>
+          <span className="text-xs text-gray-400 font-medium">
+            Avg Shift Time
+          </span>
           <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
             <Clock size={16} className="text-indigo-500" />
           </div>
@@ -522,17 +524,20 @@ export default function StatsCardGrid({
                       Math.min(prev + INCREMENT, statCards.length),
                     )
                   }
-                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors shadow-sm"
+                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors"
                 >
                   <ChevronDown size={14} />
-                  Load More ({Math.min(INCREMENT, remaining)} more)
+                  Load More{" "}
+                  <span className="text-xs text-blue-400">
+                    ( {Math.min(INCREMENT, remaining)} more )
+                  </span>
                 </button>
               )}
               <button
                 onClick={() =>
                   setVisibleCount((prev) => Math.max(prev - INCREMENT, 4))
                 }
-                className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors shadow-sm"
+                className="px-4 py-2 rounded-lg border border-gray-200 bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed flex flex-row items-center gap-1"
               >
                 <ChevronUp size={14} />
                 Hide
@@ -545,10 +550,13 @@ export default function StatsCardGrid({
                   Math.min(prev + INCREMENT, statCards.length),
                 )
               }
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors shadow-sm"
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors"
             >
               <ChevronDown size={14} />
-              Load More ({Math.min(INCREMENT, remaining)} more)
+              Load More{" "}
+              <span className="text-xs text-blue-400">
+                ( {Math.min(INCREMENT, remaining)} more )
+              </span>
             </button>
           )}
         </div>

@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { Search, ArrowUpDown, X, BoxesIcon } from "lucide-react";
+import {
+  Search,
+  ArrowUpDown,
+  X,
+  BoxesIcon,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 
 import { InventoryItem } from "@/lib/mockData/mock-inventory-data";
 import { useSalesByItemQuery } from "@/hooks/useInventory";
@@ -451,7 +458,7 @@ const ProductCardGrid = ({
             <button
               onClick={handleLoadMore}
               disabled={loading}
-              className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors"
             >
               {loading && (
                 <svg
@@ -475,7 +482,14 @@ const ProductCardGrid = ({
                   />
                 </svg>
               )}
-              {loading ? "Loading..." : "Load More"}
+
+              {loading ? (
+                "Loading..."
+              ) : (
+                <span className="flex flex-row items-center gap-1">
+                  <ChevronDown size={14} /> Load More
+                </span>
+              )}
             </button>
           )}
 
@@ -483,8 +497,9 @@ const ProductCardGrid = ({
             <button
               onClick={handleHide}
               disabled={loading}
-              className="px-4 py-2 rounded-lg border border-gray-200 bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 rounded-lg border border-gray-200 bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed flex flex-row items-center gap-1"
             >
+              <ChevronUp size={14} />
               Hide
             </button>
           )}
