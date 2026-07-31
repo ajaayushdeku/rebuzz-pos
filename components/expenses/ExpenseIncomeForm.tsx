@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Loader2, Settings, Pencil } from "lucide-react";
+import { Plus, Loader2, Settings } from "lucide-react";
 import toast from "react-hot-toast";
 import {
   Dialog,
@@ -24,6 +24,7 @@ import {
 } from "@/providers/ExpenseContext";
 import { getPurposeIcon } from "@/lib/purpose-icons";
 import ManagePurposesModal from "./ManagePurposesModal";
+import { Button } from "../ui/button";
 
 const FREQUENCIES = ["daily", "weekly", "monthly", "yearly"] as const;
 
@@ -150,13 +151,13 @@ export default function ExpenseIncomeForm({
   return (
     <>
       {!isEditing && (
-        <button
+        <Button
           onClick={() => setOpen(true)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
+          className="bg-blue-600 hover:bg-blue-700 px-3 md:px-2 py-2.5 text-white rounded-xl text-sm font-semibold flex flex-row gap-1 items-center"
         >
-          <Plus size={15} />
-          Add Transaction
-        </button>
+          <Plus size={15} className="h-4 w-4" />
+          <span className=" hidden md:block">Add Expense</span>
+        </Button>
       )}
 
       <Dialog

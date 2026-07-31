@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Wallet, ChevronDown, Trash2, Settings, Pencil } from "lucide-react";
+import { Wallet, Trash2, Settings, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -98,7 +98,7 @@ export default function BudgetForm() {
           className="border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg flex items-center gap-2"
         >
           <Wallet className="h-4 w-4" />
-          Set Budget
+          <span className="hidden md:block"> Set Budget</span>
         </Button>
       </DialogTrigger>
 

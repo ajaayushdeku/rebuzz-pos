@@ -8,6 +8,7 @@ import ExpenseIncomeForm from "@/components/expenses/ExpenseIncomeForm";
 import BudgetForm from "@/components/expenses/BudgetForm";
 import PurposeSummaryTables from "@/components/expenses/PurposeSummeryTables";
 import RecentTransactions from "@/components/expenses/RecentTransactions";
+import ExpenseMonthYearFilter from "@/components/expenses/ExpenseMonthYearFilter";
 
 function ExpenseRecordsPage() {
   const { isLoading } = useTracker();
@@ -37,6 +38,7 @@ function ExpenseRecordsPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <ExpenseMonthYearFilter />
             <BudgetForm />
             <ExpenseIncomeForm />
           </div>

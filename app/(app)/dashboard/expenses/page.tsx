@@ -10,6 +10,9 @@ import CashFlowTrend from "@/components/expenses/CashFlowTrend";
 import WhereMoneyGoes from "@/components/expenses/WhereMoneyGoes";
 import CostHealth from "@/components/expenses/CostHealth";
 import HiddenCostLeaks from "@/components/expenses/HiddenCostLeaks";
+import ExpenseMonthYearFilter from "@/components/expenses/ExpenseMonthYearFilter";
+import BudgetForm from "@/components/expenses/BudgetForm";
+import ExpenseIncomeForm from "@/components/expenses/ExpenseIncomeForm";
 
 function ExpenseAnalyticsPage() {
   const { isLoading } = useTracker();
@@ -26,6 +29,11 @@ function ExpenseAnalyticsPage() {
             <p className="text-xs text-gray-400 mt-0.5">
               Visual breakdown of your spending, budgets and cash flow
             </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <ExpenseMonthYearFilter />
+            <BudgetForm />
+            <ExpenseIncomeForm />
           </div>
         </div>
 
