@@ -373,6 +373,7 @@ export default function RecentTransactions() {
       {/* ── Edit transaction form ── */}
       <ExpenseIncomeForm
         editTransaction={editTransaction}
+        offAddExpense={true}
         onEditSuccess={() => setEditTransaction(null)}
       />
     </div>

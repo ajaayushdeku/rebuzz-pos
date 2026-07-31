@@ -31,12 +31,14 @@ const FREQUENCIES = ["daily", "weekly", "monthly", "yearly"] as const;
 type Props = {
   /** When provided, the form opens in edit mode for this transaction */
   editTransaction?: Transaction | null;
+  offAddExpense?: boolean;
   /** Callback fired after successful edit */
   onEditSuccess?: () => void;
 };
 
 export default function ExpenseIncomeForm({
   editTransaction,
+  offAddExpense,
   onEditSuccess,
 }: Props = {}) {
   const {
@@ -150,7 +152,7 @@ export default function ExpenseIncomeForm({
 
   return (
     <>
-      {!isEditing && (
+      {!isEditing && !offAddExpense && (
         <Button
           onClick={() => setOpen(true)}
           className="bg-blue-600 hover:bg-blue-700 px-3 md:px-2 py-2.5 text-white rounded-xl text-sm font-semibold flex flex-row gap-1 items-center"

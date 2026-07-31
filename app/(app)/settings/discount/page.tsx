@@ -175,9 +175,8 @@ export default function DiscountSettingsPage() {
         </div>
 
         {/* Discount Tables side by side */}
-        <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-2">
-          <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-px bg-gray-200" />
-          <div className="bg-white rounded-xl p-5">
+        <div className="relative grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div className="bg-white rounded-xl px-6 py-5">
             <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <Percent size={14} className="text-blue-500" /> Percentage
               Discounts
@@ -192,10 +191,10 @@ export default function DiscountSettingsPage() {
             />
           </div>
 
-          {/* Horizontal divider */}
-          <div className="border-t border-gray-200 my-6" />
+          {/* Vertical divider */}
+          <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-px bg-gray-200" />
 
-          <div className="bg-white rounded-xl  p-5">
+          <div className="bg-white rounded-xl px-6 py-5">
             <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <DollarSign size={14} className="text-green-500" /> Fixed Amount
               Discounts
