@@ -34,6 +34,15 @@ interface PeakHourlyDataProps {
 const clampHour = (value: number): number =>
   Math.max(0, Math.min(23, Math.floor(Number.isNaN(value) ? 0 : value)));
 
+/** Convert a 24‑hour time string (e.g. "14:00") to 12‑hour AM/PM (e.g. "2:00 PM"). */
+function toAmPm(hour24: string): string {
+  const [h, m] = hour24.split(":").map(Number);
+  if (isNaN(h) || isNaN(m)) return hour24;
+  const period = h >= 12 ? "PM" : "AM";
+  const h12 = h % 12 || 12;
+  return `${h12}:${String(m).padStart(2, "0")} ${period}`;
+}
+
 const CustomLegend = () => (
   <div className="flex items-center justify-center gap-5 mt-2">
     {[{ label: "Avg. Orders", color: "#3a7ced" }].map(({ label, color }) => (
@@ -323,7 +332,7 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
           className="overflow-x-auto pb-2 scrollbar-hide"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          <div style={{ minWidth: Math.max(filteredData.length * 60, 600) }}>
+          <div style={{ minWidth: Math.max(filteredData.length * 90, 600) }}>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart
                 data={filteredData}
@@ -341,12 +350,35 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
                   dataKey="hour"
                   axisLine={false}
                   tickLine={false}
-                  tick={{
-                    fill: "#9ca3af",
-                    fontSize: 10,
-                  }}
                   dy={8}
                   interval="preserveStartEnd"
+                  tick={({
+                    x,
+                    y,
+                    payload,
+                  }: {
+                    x: number | string;
+                    y: number | string;
+                    payload: { value: string };
+                  }) => {
+                    const ampm = toAmPm(payload.value);
+                    const yNum = Number(y);
+                    return (
+                      <text
+                        x={x}
+                        y={yNum + 8}
+                        textAnchor="middle"
+                        fill="#9ca3af"
+                        fontSize={10}
+                      >
+                        {payload.value}
+                        <tspan fontSize={8} fill="#b0b7c3">
+                          {" "}
+                          [{ampm}]
+                        </tspan>
+                      </text>
+                    );
+                  }}
                 />
 
                 <YAxis

@@ -56,6 +56,15 @@ const CustomTooltip = ({
 const clampHour = (value: number): number =>
   Math.max(0, Math.min(23, Math.floor(Number.isNaN(value) ? 0 : value)));
 
+/** Convert a 24‑hour time string (e.g. "14:00") to 12‑hour AM/PM (e.g. "2:00 PM"). */
+function toAmPm(hour24: string): string {
+  const [h, m] = hour24.split(":").map(Number);
+  if (isNaN(h) || isNaN(m)) return hour24;
+  const period = h >= 12 ? "PM" : "AM";
+  const h12 = h % 12 || 12;
+  return `${h12}:${String(m).padStart(2, "0")} ${period}`;
+}
+
 export default function HourlySalesChart({ data }: HourlyDataProps) {
   const { currency } = useCurrency();
   const [selectedRange, setSelectedRange] = useState<{
@@ -286,13 +295,13 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
           className="overflow-x-auto pb-2 scrollbar-hide"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          <div style={{ minWidth: Math.max(filteredData.length * 60, 600) }}>
+          <div style={{ minWidth: Math.max(filteredData.length * 95, 600) }}>
             <ResponsiveContainer width="100%" height={280}>
               <AreaChart
                 data={filteredData}
                 margin={{
                   top: 10,
-                  right: 10,
+                  right: 34,
                   left: 10,
                   bottom: 0,
                 }}
@@ -320,12 +329,35 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                   dataKey="hour"
                   axisLine={false}
                   tickLine={false}
-                  tick={{
-                    fill: "#9ca3af",
-                    fontSize: 11,
-                  }}
                   dy={8}
                   interval="preserveStartEnd"
+                  tick={({
+                    x,
+                    y,
+                    payload,
+                  }: {
+                    x: number | string;
+                    y: number | string;
+                    payload: { value: string };
+                  }) => {
+                    const ampm = toAmPm(payload.value);
+                    const yNum = Number(y);
+                    return (
+                      <text
+                        x={x}
+                        y={yNum + 8}
+                        textAnchor="middle"
+                        fill="#9ca3af"
+                        fontSize={11}
+                      >
+                        {payload.value}
+                        <tspan fontSize={9} fill="#b0b7c3">
+                          {" "}
+                          [{ampm}]
+                        </tspan>
+                      </text>
+                    );
+                  }}
                 />
 
                 <YAxis
