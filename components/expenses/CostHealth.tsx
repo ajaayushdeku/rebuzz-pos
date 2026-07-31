@@ -329,9 +329,15 @@ export default function CostHealth() {
 
         <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mt-3">
           {!hasData && (
-            <div className="flex flex-col items-center justify-center py-8">
-              <p className="text-sm text-gray-400">
-                No spend data for this period
+            <div className="flex flex-col items-center justify-center py-10">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                <PieChart size={24} className="text-gray-500" />
+              </div>
+              <p className="text-sm font-medium text-gray-500">
+                No spend overview data
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                Has no spend data for this period
               </p>
             </div>
           )}

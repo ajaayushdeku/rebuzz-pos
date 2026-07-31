@@ -4,7 +4,14 @@ import { useState, useMemo, createElement } from "react";
 
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { Pencil, Trash2, Search, AlertTriangle, Loader2 } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  Search,
+  AlertTriangle,
+  Loader2,
+  Receipt,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -136,9 +143,17 @@ function TransactionModal({
 
         <div className="space-y-2">
           {filtered.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-6">
-              No transactions found
-            </p>
+            <div className="flex flex-col items-center justify-center py-10">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                <Receipt size={24} className="text-gray-500" />
+              </div>
+              <p className="text-sm font-medium text-gray-500">
+                No {type}s yet
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                All {type} transaction will appear here
+              </p>
+            </div>
           ) : (
             filtered.map((t) => (
               <div
@@ -300,9 +315,19 @@ function SummaryTable({ type }: { type: TransactionType }) {
               <tr>
                 <td
                   colSpan={3}
-                  className="text-center py-12 text-sm text-gray-400"
+                  className="text-center py-2 text-sm text-gray-400"
                 >
-                  No {type}s yet
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                      <Receipt size={24} className="text-gray-500" />
+                    </div>
+                    <p className="text-sm font-medium text-gray-500">
+                      No {type}s yet
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      All {type} transaction will appear here
+                    </p>
+                  </div>
                 </td>
               </tr>
             ) : (
