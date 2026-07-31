@@ -7,7 +7,7 @@ import { getPurposeIcon } from "@/lib/purpose-icons";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "../ComponentHeader";
-import { Activity } from "lucide-react";
+import { Activity, PieChart } from "lucide-react";
 import { createElement } from "react";
 
 const STATUS_STYLES: Record<
@@ -317,10 +317,15 @@ export default function CostHealth() {
 
       {/* ── Spend overview ── */}
       <div>
-        <ComponentHeader
-          title="Spend overview"
-          subHeader="How your money was split this month"
-        />
+        <div className="flex items-center gap-2.5 mb-3">
+          <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+            <PieChart size={15} className="text-blue-600" />
+          </div>
+          <ComponentHeader
+            title="Spend overview"
+            subHeader="How your money was split this month"
+          />
+        </div>
 
         <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mt-3">
           {!hasData && (
