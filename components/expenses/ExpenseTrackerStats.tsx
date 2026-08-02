@@ -30,7 +30,7 @@ export default function ExpenseTrackerStats() {
 
   const statItems = [
     {
-      label: "Expenses",
+      label: "Miscellaneous Expenses",
       value: totalExpense,
       icon: TrendingDown,
       iconColor: "text-red-600",
@@ -40,7 +40,7 @@ export default function ExpenseTrackerStats() {
       prefix: "",
     },
     {
-      label: "Income",
+      label: "Miscellaneous Income",
       value: totalIncome,
       icon: TrendingUp,
       iconColor: "text-emerald-600",

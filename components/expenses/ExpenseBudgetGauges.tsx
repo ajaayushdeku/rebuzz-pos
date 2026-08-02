@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   DollarSign,
   Clock,
@@ -10,6 +10,8 @@ import {
   AlertTriangle,
   Gauge,
   Info,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
@@ -45,7 +47,7 @@ function RadialGauge({
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <p className="text-xs font-semibold text-gray-700">{label}</p>
+      <p className="text-sm font-semibold text-gray-700">{label}</p>
 
       <div className="relative w-24 h-24 flex items-center justify-center">
         <svg width="96" height="96" viewBox="0 0 96 96">
@@ -77,10 +79,10 @@ function RadialGauge({
       </div>
 
       <div className="text-center">
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+        <p className="text-[10px] text-gray-300  uppercase tracking-widest">
           Actual / Budget
         </p>
-        <p className="text-xs text-gray-600 mt-0.5">
+        <p className="text-xs text-gray-500  font-bold text-gray-400 mt-0.5">
           {fmtK(actual)} / {fmtK(budget)}
         </p>
       </div>
@@ -153,6 +155,13 @@ export default function ExpenseBudgetGauges() {
     formatCurrencySymbol(v, currency.symbol, currency.locale);
 
   const underBudget = variance >= 0;
+
+  // Visible gauge count — initially 5 (matches the largest grid column count),
+  // expand/collapse in batches of 5.
+  const [visibleCount, setVisibleCount] = useState(5);
+  const visibleGauges = gauges.slice(0, visibleCount);
+  const canLoadMore = visibleCount < gauges.length;
+  const canHide = visibleCount > 5;
 
   const stats = [
     {
@@ -234,17 +243,50 @@ export default function ExpenseBudgetGauges() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
-            {gauges.map((g) => (
-              <RadialGauge
-                key={g.category}
-                label={g.category}
-                pct={g.pct}
-                actual={g.actual}
-                budget={g.budget}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
+              {visibleGauges.map((g) => (
+                <RadialGauge
+                  key={g.category}
+                  label={g.category}
+                  pct={g.pct}
+                  actual={g.actual}
+                  budget={g.budget}
+                />
+              ))}
+            </div>
+
+            {/* Load More / Hide buttons */}
+            {gauges.length > 5 && (
+              <div className="flex items-center justify-center gap-3 mt-5">
+                {canLoadMore && (
+                  <button
+                    onClick={() =>
+                      setVisibleCount((prev) =>
+                        Math.min(prev + 5, gauges.length),
+                      )
+                    }
+                    className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors"
+                  >
+                    <ChevronDown size={14} /> Load More
+                    <span className="text-xs text-blue-400">
+                      ( {gauges.length - visibleCount} more )
+                    </span>
+                  </button>
+                )}
+                {canHide && (
+                  <button
+                    onClick={() =>
+                      setVisibleCount((prev) => Math.max(prev - 5, 5))
+                    }
+                    className="px-4 py-2 rounded-lg border border-gray-200 bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed flex flex-row items-center gap-1"
+                  >
+                    <ChevronUp size={14} /> Hide
+                  </button>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
 

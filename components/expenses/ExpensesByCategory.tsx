@@ -204,7 +204,7 @@ export default function ExpensesByCategory() {
                   />
                 </div>
                 <span className="text-xs font-semibold text-gray-700 w-10 text-right shrink-0">
-                  {entry.pct.toFixed(0)}%
+                  {entry.pct.toFixed(2)}%
                 </span>
                 <span className="text-xs text-gray-400 w-24 text-right shrink-0">
                   {formatCurrencySymbol(

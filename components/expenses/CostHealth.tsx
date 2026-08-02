@@ -411,7 +411,7 @@ export default function CostHealth() {
   const canHide = visibleCount > 4;
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 mt-10">
       {/* ======================================================
           COST HEALTH
       ====================================================== */}
@@ -553,7 +553,9 @@ export default function CostHealth() {
                 <div>
                   <p className="text-gray-500 font-medium mb-2 flex flex-row items-end gap-2">
                     <p className="text-sm "> Net profit</p>
-                    <p className="text-xs text-gray-400">(Income − expenses)</p>
+                    <p className="text-xs text-gray-400">
+                      (Miscellaneous Income − Miscellaneous Expenses)
+                    </p>
                   </p>
                   <p
                     className={`text-3xl font-bold tracking-tight ${

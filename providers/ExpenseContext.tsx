@@ -103,11 +103,12 @@ export const PURPOSE_COLORS: Record<string, string> = {
   "Gift Received": "#a855f7",
 };
 
-// Resolve the color for a purpose: try icon value first, then name, then fallback
+// Resolve the color for a purpose: purpose name first so that purposes sharing
+// the same icon still get distinct colors. Falls back to icon, then gray.
 export function getPurposeColor(icon: string, name: string): string {
+  if (PURPOSE_COLORS[name]) return PURPOSE_COLORS[name];
   const iconKey = (icon || "").toLowerCase();
   if (PURPOSE_COLORS[iconKey]) return PURPOSE_COLORS[iconKey];
-  if (PURPOSE_COLORS[name]) return PURPOSE_COLORS[name];
   return "#6b7280";
 }
 
@@ -212,6 +213,14 @@ export function ExpenseTrackerProvider({ children }: { children: ReactNode }) {
   const incomePurposes = allPurposes.filter(
     (p) => p.appliesTo === "income" || p.appliesTo === "both",
   );
+
+  // Assign a unique color to every purpose (keyed by name) so that purposes
+  // sharing the same icon still get distinct colors in charts/tables.
+  useEffect(() => {
+    for (const p of allPurposes) {
+      getOrAssignColor(p.name);
+    }
+  }, [allPurposes]);
 
   // ── Transactions ──────────────────────────────────────────────────────
   const {

@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import axios from "axios";
 import { authHeaders } from "@/services/authServices/session";
@@ -29,65 +28,42 @@ export async function GET() {
     const yearStart = monthRanges[0].start;
     const yearEnd = monthRanges[monthRanges.length - 1].end;
 
-    // ── Gross revenue from compare-sales-by-month ─────────────────────────
+    // ── Gross revenue + net profit from compare-sales-by-month ───────────
+    // This endpoint returns both `totalRevenue` (gross) and `totalNetProfit`
+    // (net) per month in a single call, so we no longer need the 12 sequential
+    // salesByItem requests. Using one source for both metrics also guarantees
+    // net profit can never exceed gross revenue.
     const compareRes = await axios.get(
       `${BASE}/business/report/compare-sales-by-month?startDate=${yearStart}&endDate=${yearEnd}`,
       { headers },
     );
 
-    const monthlyRevenue: { monthStart: string; totalRevenue: number }[] =
-      compareRes.data?.data ?? [];
+    const monthlyData: {
+      monthStart: string;
+      totalRevenue: number;
+      totalNetProfit: number;
+    }[] = compareRes.data?.data ?? [];
 
-    console.log("Monthly Sales:", monthlyRevenue);
-
-    const revenueMap = new Map<string, number>();
-    for (const m of monthlyRevenue) {
+    const dataMap = new Map<
+      string,
+      { grossRevenue: number; netProfit: number }
+    >();
+    for (const m of monthlyData) {
       const label = new Date(m.monthStart + "T00:00:00").toLocaleDateString(
         "en-US",
         { month: "short" },
       );
-      revenueMap.set(label, m.totalRevenue);
-    }
-
-    // ── Net profit: one salesByItem call per month sequentially ──────────
-    const netProfitMap = new Map<string, number>();
-
-    for (const { label, start, end } of monthRanges) {
-      try {
-        const res = await axios.get(
-          `${BASE}/business/report/salesByItem?startDate=${start}&endDate=${end}`,
-          { headers },
-        );
-
-        // console.log(
-        //   `${BASE}/business/report/salesByItem?startDate=${start}&endDate=${end}`,
-        // );
-
-        const items: { netProfit?: number }[] = res.data?.data ?? [];
-        const totalDiscount: number = res.data?.totalDiscount ?? 0;
-        const totalRedeemPoint: number = res.data?.totalRedeemPoint ?? 0;
-
-        const rawNetProfit = items.reduce(
-          (sum, item) => sum + (item.netProfit ?? 0),
-          0,
-        );
-        const netProfit =
-          Math.round((rawNetProfit - totalDiscount - totalRedeemPoint) * 100) /
-          100;
-
-        netProfitMap.set(label, netProfit);
-      } catch {
-        netProfitMap.set(label, 0);
-      }
+      dataMap.set(label, {
+        grossRevenue: m.totalRevenue ?? 0,
+        netProfit: m.totalNetProfit ?? 0,
+      });
     }
 
     const result = monthRanges.map(({ label }) => ({
       month: label,
-      grossRevenue: revenueMap.get(label) ?? 0,
-      netProfit: netProfitMap.get(label) ?? 0,
+      grossRevenue: dataMap.get(label)?.grossRevenue ?? 0,
+      netProfit: dataMap.get(label)?.netProfit ?? 0,
     }));
-
-    // console.log("Profit Trend Result:", result);
 
     return NextResponse.json({ data: result });
   } catch (error) {
