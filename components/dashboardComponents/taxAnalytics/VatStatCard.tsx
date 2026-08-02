@@ -4,6 +4,7 @@ import MiniTrendChart, { VatStat } from "./MiniTrendChart";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { ArrowUp, ArrowDown, Info } from "lucide-react";
+import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 // import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 
 interface VatStatCardProps {
@@ -26,6 +27,7 @@ export default function VatStatCard({
       className=" group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 
       "
     >
+      <LockDimFeactureOverlay component_name="VAT Stat Cards" />
       {/* Hover info — slides up from the bottom on hover (hidden when locked) */}
       {!locked && stat.description && (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 p-3">

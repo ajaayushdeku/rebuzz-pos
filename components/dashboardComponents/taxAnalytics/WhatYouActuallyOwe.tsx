@@ -4,6 +4,7 @@ import { Calendar, ArrowRight } from "lucide-react";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 
 export interface WhatYouOweData {
   collected: number;
@@ -36,6 +37,8 @@ export default function WhatYouActuallyOwe({ data }: WhatYouActuallyOweProps) {
         <div className="absolute -top-20 -left-10 h-48 w-48 rounded-full bg-emerald-50 blur-3xl opacity-70" />
 
         <div className="relative p-5">
+          <LockDimFeactureOverlay component_name="What You Actually Owe" />
+
           {/* Card header */}
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-2.5">

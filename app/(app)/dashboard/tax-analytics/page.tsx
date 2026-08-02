@@ -34,10 +34,9 @@ import TaxRateBreakdown from "@/components/dashboardComponents/taxAnalytics/TaxR
 function getDefaultDateRange(): DateRangeValue {
   const today = new Date();
   const end = today.toISOString().split("T")[0];
-  const start = new Date(today.getFullYear(), today.getMonth(), 1)
-    .toISOString()
-    .split("T")[0];
-  return { startDate: start, endDate: end };
+  const start = new Date(today);
+  start.setDate(today.getDate() - 29);
+  return { startDate: start.toISOString().split("T")[0], endDate: end };
 }
 
 export default function TaxAnalyticsPage() {

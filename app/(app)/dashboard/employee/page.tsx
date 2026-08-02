@@ -12,7 +12,7 @@ import {
   StaffRevenueSkeleton,
   LatestShiftsSkeleton,
 } from "@/components/dashboardComponents/staffDash/StaffSkeletons";
-import { CalendarDateFilter } from "@/components/dashboardComponents/staffDash/CalendarDateFilter";
+import EmployeeDateFilter from "@/components/dashboardComponents/staffDash/EmployeeDateFilter";
 import {
   ShiftAnalysisWrapper,
   StaffSalesChartWrapper,
@@ -53,10 +53,10 @@ const Page = async ({
           </p>
         </div>
 
-        {/* ── Calendar + Quick date filter ── */}
+        {/* ── Date range filter ── */}
         <div className="flex flex-row sm:items-center justify-between gap-3 ">
           <div className="self-end">
-            <CalendarDateFilter />
+            <EmployeeDateFilter />
           </div>
 
           <Button

@@ -1,11 +1,11 @@
 "use client";
 
-import { CalendarDateFilter } from "@/components/dashboardComponents/staffDash/CalendarDateFilter";
+import CustomerDateFilter from "./CustomerDateFilter";
 
 export default function CustomerHeader() {
   return (
     <div className="flex items-center gap-2">
-      <CalendarDateFilter />
+      <CustomerDateFilter />
     </div>
   );
 }

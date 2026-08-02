@@ -198,8 +198,14 @@ export default function MonthlyExpenseTrend() {
           Loading trend data…
         </div>
       ) : categories.length === 0 ? (
-        <div className="py-16 text-center text-sm text-gray-400">
-          No expenses recorded in the last 6 months.
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+            <ChartColumnStacked size={24} className="text-gray-500" />
+          </div>
+          <p className="text-sm font-medium text-gray-500">No expense data</p>
+          <p className="text-xs text-gray-400 mt-1">
+            No expenses recorded in the last 6 months.
+          </p>
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={300}>

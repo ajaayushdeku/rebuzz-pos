@@ -90,7 +90,7 @@ export type EmployeeData = {
 export function getDefaultDateRange() {
   const end = new Date();
   const start = new Date();
-  start.setDate(1);
+  start.setDate(end.getDate() - 29);
   return {
     startDate: start.toISOString().split("T")[0],
     endDate: end.toISOString().split("T")[0],
