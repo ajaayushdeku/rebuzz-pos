@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   BarChart,
   Bar,
@@ -17,6 +18,7 @@ import type {
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
 import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
+import { fetchTransactionsRange } from "@/services/apiExpense.client";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { ComponentHeader } from "../ComponentHeader";
@@ -99,7 +101,7 @@ const CustomTooltip = ({
 
 export default function MonthlyExpenseTrend() {
   const { currency } = useCurrency();
-  const { transactions, expensePurposes } = useTracker();
+  const { expensePurposes } = useTracker();
 
   // Build purposeId → { name, icon } lookup
   const purposeLookup = useMemo(() => {
@@ -116,23 +118,39 @@ export default function MonthlyExpenseTrend() {
   const getPurposeIcon = (purposeId: string) =>
     purposeLookup.get(purposeId)?.icon ?? "";
 
+  // Build the list of the last 6 months (including the current month)
+  const monthRange = useMemo(() => {
+    const now = new Date();
+    const months: { month: number; year: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push({ month: d.getMonth() + 1, year: d.getFullYear() });
+    }
+    return months;
+  }, []);
+
+  // Fetch all transactions for the last 6 months in parallel
+  const { data: rangeTransactions = [], isLoading } = useQuery({
+    queryKey: ["expense-transactions", "range", monthRange],
+    queryFn: () => fetchTransactionsRange(monthRange),
+    staleTime: 2 * 60 * 1000,
+  });
+
   // Stacked expense totals per category over the last 6 months.
   const { data, categories } = useMemo(() => {
-    const now = new Date();
     const rows: Record<string, number | string>[] = [];
     const byKey = new Map<string, Record<string, number | string>>();
 
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      const row = { month: MONTHS[d.getMonth()], __key: key };
+    for (const { month, year } of monthRange) {
+      const key = `${year}-${String(month).padStart(2, "0")}`;
+      const row = { month: MONTHS[month - 1], __key: key };
       byKey.set(key, row);
       rows.push(row);
     }
 
     // Track per-category total with the purposeId so we can look up icon/color
     const catTotals = new Map<string, { amount: number; purposeId: string }>();
-    for (const t of transactions) {
+    for (const t of rangeTransactions) {
       if (t.kind !== "expense") continue;
       const row = byKey.get(t.date.slice(0, 7));
       if (!row) continue;
@@ -157,7 +175,7 @@ export default function MonthlyExpenseTrend() {
       }));
 
     return { data: rows, categories: cats };
-  }, [transactions, getPurposeName, getPurposeIcon]);
+  }, [rangeTransactions, monthRange, getPurposeName, getPurposeIcon]);
 
   const fmtK = (v: number) => {
     return `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`;
@@ -175,66 +193,72 @@ export default function MonthlyExpenseTrend() {
         />
       </div>
 
-      {/* {categories.length === 0 ? (
+      {isLoading ? (
         <div className="py-16 text-center text-sm text-gray-400">
-          No expenses recorded yet.
+          Loading trend data…
         </div>
-      ) : ( */}
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart
-          data={data}
-          margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
-          barCategoryGap="25%"
-        >
-          <CartesianGrid vertical={false} stroke="#f3f4f6" />
-          <XAxis
-            dataKey="month"
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: "#9ca3af", fontSize: 11 }}
-            dy={8}
-          />
-          <YAxis
-            tickFormatter={fmtK}
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: "#9ca3af", fontSize: 11 }}
-            width={42}
-          />
-          <Tooltip
-            content={<CustomTooltip />}
-            cursor={{ fill: "rgba(0,0,0,0.03)" }}
-          />
-          <Legend
-            content={() => (
-              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 mt-3">
-                {categories.map((cat) => (
-                  <div key={cat.name} className="flex items-center gap-1.5">
-                    <span
-                      className="w-2.5 h-2.5 rounded-sm shrink-0"
-                      style={{ backgroundColor: cat.color }}
-                    />
-                    <span className="text-xs" style={{ color: cat.color }}>
-                      {cat.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          />
-
-          {categories.map((cat, i) => (
-            <Bar
-              key={cat.name}
-              dataKey={cat.name}
-              stackId="expenses"
-              fill={cat.color}
-              radius={i === categories.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+      ) : categories.length === 0 ? (
+        <div className="py-16 text-center text-sm text-gray-400">
+          No expenses recorded in the last 6 months.
+        </div>
+      ) : (
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart
+            data={data}
+            margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+            barCategoryGap="25%"
+          >
+            <CartesianGrid vertical={false} stroke="#f3f4f6" />
+            <XAxis
+              dataKey="month"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "#9ca3af", fontSize: 11 }}
+              dy={8}
             />
-          ))}
-        </BarChart>
-      </ResponsiveContainer>
-      {/* )} */}
+            <YAxis
+              tickFormatter={fmtK}
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "#9ca3af", fontSize: 11 }}
+              width={42}
+            />
+            <Tooltip
+              content={<CustomTooltip />}
+              cursor={{ fill: "rgba(0,0,0,0.03)" }}
+            />
+            <Legend
+              content={() => (
+                <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 mt-3">
+                  {categories.map((cat) => (
+                    <div key={cat.name} className="flex items-center gap-1.5">
+                      <span
+                        className="w-2.5 h-2.5 rounded-sm shrink-0"
+                        style={{ backgroundColor: cat.color }}
+                      />
+                      <span className="text-xs" style={{ color: cat.color }}>
+                        {cat.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            />
+
+            {categories.map((cat, i) => (
+              <Bar
+                key={cat.name}
+                dataKey={cat.name}
+                stackId="expenses"
+                fill={cat.color}
+                radius={
+                  i === categories.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]
+                }
+              />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
+      )}
     </div>
   );
 }

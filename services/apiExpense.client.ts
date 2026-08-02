@@ -123,6 +123,19 @@ export const fetchTransactions = async (
   };
 };
 
+/**
+ * Fetch transactions across multiple months in parallel.
+ * Returns a flat list of all transactions from the given month/year pairs.
+ */
+export const fetchTransactionsRange = async (
+  months: { month: number; year: number }[],
+): Promise<TransactionItem[]> => {
+  const results = await Promise.all(
+    months.map(({ month, year }) => fetchTransactions(month, year)),
+  );
+  return results.flatMap((r) => r.transactions);
+};
+
 export const createExpenseEntry = async (
   payload: CreateExpensePayload,
 ): Promise<void> => {

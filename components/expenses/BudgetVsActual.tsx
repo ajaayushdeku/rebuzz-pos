@@ -6,7 +6,7 @@ import { getPurposeIcon } from "@/lib/purpose-icons";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "../ComponentHeader";
-import { ChartColumnBig } from "lucide-react";
+import { ChartColumnBig, Info } from "lucide-react";
 
 function getPctStyle(pct: number): string {
   if (pct >= 100) return "bg-amber-100 text-amber-700";
@@ -96,14 +96,31 @@ export default function BudgetVsActual() {
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
       <div className="mb-2">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-            <ChartColumnBig size={15} className="text-blue-600" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+              <ChartColumnBig size={15} className="text-blue-600" />
+            </div>
+            <ComponentHeader
+              title="Budget vs Actual"
+              subHeader="Spending vs planned budget per category"
+            />
           </div>
-          <ComponentHeader
-            title="Budget vs Actual"
-            subHeader="Spending vs planned budget per category"
-          />
+
+          {/* Info tooltip */}
+          <div className="relative group shrink-0">
+            <button
+              type="button"
+              className="w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 flex items-center justify-center transition-colors"
+              aria-label="About this chart"
+            >
+              <Info size={14} />
+            </button>
+            <div className="absolute right-0 top-full mt-2 w-64 bg-gray-900 text-white text-[11px] leading-relaxed rounded-lg px-3 py-2.5 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-20">
+              This chart shows only the expense categories that have a budget
+              set. Categories without a budget are not included here.
+            </div>
+          </div>
         </div>
       </div>
 

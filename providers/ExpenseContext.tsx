@@ -19,6 +19,7 @@ import {
   type PurposeItem,
   type CreateExpensePayload,
   type CreatePurposePayload,
+  type TransactionsResponse,
 } from "@/services/apiExpense.client";
 import toast from "react-hot-toast";
 
@@ -150,6 +151,7 @@ type TrackerContextValue = {
 
   // Transactions
   transactions: Transaction[];
+  previousTransactions: Transaction[];
   summary: Summary;
   isLoading: boolean;
 
@@ -229,12 +231,25 @@ export function ExpenseTrackerProvider({ children }: { children: ReactNode }) {
     net: 0,
   };
 
+  // ── Previous month transactions (for trend comparisons) ──────────────
+  const prevMonthDate = new Date(year, month - 2, 1);
+  const prevMonth = prevMonthDate.getMonth() + 1;
+  const prevYear = prevMonthDate.getFullYear();
+
+  const { data: prevTxData } = useQuery<TransactionsResponse>({
+    queryKey: ["expense-transactions", prevMonth, prevYear],
+    queryFn: () => fetchTransactions(prevMonth, prevYear),
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const previousTransactions: Transaction[] = prevTxData?.transactions ?? [];
+
   // ── addTransaction mutation ───────────────────────────────────────────
   const addTransactionMutation = useMutation({
     mutationFn: createExpenseEntry,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["expense-transactions", month, year],
+        queryKey: ["expense-transactions"],
       });
     },
     onError: (err: Error) => {
@@ -276,7 +291,7 @@ export function ExpenseTrackerProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["expense-transactions", month, year],
+        queryKey: ["expense-transactions"],
       });
     },
     onError: (err: Error) => {
@@ -302,7 +317,7 @@ export function ExpenseTrackerProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["expense-transactions", month, year],
+        queryKey: ["expense-transactions"],
       });
     },
     onError: (err: Error) => {
@@ -455,6 +470,7 @@ export function ExpenseTrackerProvider({ children }: { children: ReactNode }) {
         allPurposes,
         isPurposesLoading,
         transactions,
+        previousTransactions,
         summary,
         isLoading: isTxLoading,
         budgets,

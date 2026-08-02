@@ -9,6 +9,7 @@ import {
   Percent,
   AlertTriangle,
   Gauge,
+  Info,
 } from "lucide-react";
 import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
@@ -188,17 +189,35 @@ export default function ExpenseBudgetGauges() {
 
   return (
     <div className="relative flex flex-col gap-4">
+      {/* Cost Health */}
       {/* Gauges card */}
       <div className=" bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
         <div className="mb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-              <Gauge size={15} className="text-blue-600" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                <Gauge size={15} className="text-blue-600" />
+              </div>
+              <ComponentHeader
+                title="Expense Budget Gauges"
+                subHeader="Current spending vs allocated budget per category"
+              />
             </div>
-            <ComponentHeader
-              title="Expense Budget Gauges"
-              subHeader="Current spending vs allocated budget per category"
-            />
+
+            {/* Info tooltip */}
+            <div className="relative group shrink-0">
+              <button
+                type="button"
+                className="w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 flex items-center justify-center transition-colors"
+                aria-label="About this chart"
+              >
+                <Info size={14} />
+              </button>
+              <div className="absolute right-0 top-full mt-2 w-64 bg-gray-900 text-white text-[11px] leading-relaxed rounded-lg px-3 py-2.5 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-20">
+                These gauges show only the expense categories that have a budget
+                set. Categories without a budget are not included here.
+              </div>
+            </div>
           </div>
         </div>
 
@@ -215,7 +234,7 @@ export default function ExpenseBudgetGauges() {
             </p>
           </div>
         ) : (
-          <div className="flex flex-wrap justify-around gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
             {gauges.map((g) => (
               <RadialGauge
                 key={g.category}
@@ -229,6 +248,7 @@ export default function ExpenseBudgetGauges() {
         )}
       </div>
 
+      {/* Spend Overview */}
       {/* 5 stat cards */}
       <div className=" grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {stats.map((stat) => (

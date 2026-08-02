@@ -1,17 +1,19 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, createElement } from "react";
 import { mockWhereMoneyGoesData } from "@/lib/mockData/mock-expense-data";
 import { Wallet, Zap } from "lucide-react";
 import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
 import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
+import { getPurposeIcon } from "@/lib/purpose-icons";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "../ComponentHeader";
 
 export default function WhereMoneyGoes() {
   const { currency } = useCurrency();
-  const { transactions, expensePurposes } = useTracker();
+  const { transactions, previousTransactions, expensePurposes, month, year } =
+    useTracker();
 
   // Build purposeId → { name, icon } lookup
   const purposeLookup = useMemo(() => {
@@ -25,7 +27,7 @@ export default function WhereMoneyGoes() {
   const getPurposeName = (purposeId: string) =>
     purposeLookup.get(purposeId)?.name ?? purposeId;
 
-  const getPurposeIcon = (purposeId: string) =>
+  const getPurposeIconStr = (purposeId: string) =>
     purposeLookup.get(purposeId)?.icon ?? "";
 
   // Top suppliers still uses mock data (no supplier data in the tracker).
@@ -34,55 +36,79 @@ export default function WhereMoneyGoes() {
   // Real spend per expense category — total for the bar, with a
   // month-over-month trend indicator.
   const categorySpend = useMemo(() => {
-    const now = new Date();
-    const thisKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const prevKey = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`;
+    const thisKey = `${year}-${String(month).padStart(2, "0")}`;
+    const prevDate = new Date(year, month - 2, 1);
+    const prevKey = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, "0")}`;
 
     const map = new Map<
       string,
-      { total: number; thisMonth: number; lastMonth: number; purposeId: string }
+      { total: number; lastMonth: number; purposeId: string }
     >();
+
+    // Current month spend
     for (const t of transactions) {
       if (t.kind !== "expense") continue;
+      if (t.date.slice(0, 7) !== thisKey) continue;
       const entry = map.get(t.purposeId) ?? {
         total: 0,
-        thisMonth: 0,
         lastMonth: 0,
         purposeId: t.purposeId,
       };
       entry.total += t.amount;
-      const key = t.date.slice(0, 7);
-      if (key === thisKey) entry.thisMonth += t.amount;
-      else if (key === prevKey) entry.lastMonth += t.amount;
       map.set(t.purposeId, entry);
     }
 
-    return [...map.entries()]
-      .sort(([, a], [, b]) => b.total - a.total)
-      .map(([, v]) => {
-        const label = getPurposeName(v.purposeId);
-        const diff = v.thisMonth - v.lastMonth;
-        const changeDir: "up" | "down" | "flat" =
-          diff > 0 ? "up" : diff < 0 ? "down" : "flat";
-        const changePct =
-          v.lastMonth > 0
-            ? Math.round((Math.abs(diff) / v.lastMonth) * 100)
-            : v.thisMonth > 0
-              ? 100
-              : 0;
-        return {
-          label,
-          amount: v.total,
-          changeDir,
-          changePct,
-          color: getPurposeColor(getPurposeIcon(v.purposeId), label),
-        };
-      });
-  }, [transactions, getPurposeName, getPurposeIcon]);
+    // Previous month spend (for the trend comparison)
+    for (const t of previousTransactions) {
+      if (t.kind !== "expense") continue;
+      if (t.date.slice(0, 7) !== prevKey) continue;
+      const entry = map.get(t.purposeId) ?? {
+        total: 0,
+        lastMonth: 0,
+        purposeId: t.purposeId,
+      };
+      entry.lastMonth += t.amount;
+      map.set(t.purposeId, entry);
+    }
 
-  // Max amount for bar scaling
-  const maxAmount = Math.max(1, ...categorySpend.map((c) => c.amount));
+    return (
+      [...map.entries()]
+        // Only show purposes that have spend in the current month
+        .filter(([, v]) => v.total > 0)
+        .sort(([, a], [, b]) => b.total - a.total)
+        .map(([, v]) => {
+          const label = getPurposeName(v.purposeId);
+          const thisMonth = v.total;
+          const diff = thisMonth - v.lastMonth;
+          const changeDir: "up" | "down" | "flat" =
+            diff > 0 ? "up" : diff < 0 ? "down" : "flat";
+          const changePct =
+            v.lastMonth > 0
+              ? Math.round((diff / v.lastMonth) * 100)
+              : thisMonth > 0
+                ? 100
+                : 0;
+          return {
+            label,
+            amount: thisMonth,
+            changeDir,
+            changePct,
+            color: getPurposeColor(getPurposeIconStr(v.purposeId), label),
+            icon: getPurposeIconStr(v.purposeId),
+          };
+        })
+    );
+  }, [
+    transactions,
+    previousTransactions,
+    month,
+    year,
+    getPurposeName,
+    getPurposeIconStr,
+  ]);
+
+  // Total current-month expense (for bar scaling)
+  const totalCurrentMonth = categorySpend.reduce((s, c) => s + c.amount, 0);
 
   const fmtRs = (v: number) => {
     return `${formatCurrencySymbol(v, currency.symbol, currency.locale)}`;
@@ -126,18 +152,27 @@ export default function WhereMoneyGoes() {
           ) : (
             <div className="space-y-4">
               {categorySpend.map((cat) => {
-                const barWidth = Math.round((cat.amount / maxAmount) * 100);
+                const barWidth =
+                  totalCurrentMonth > 0
+                    ? Math.round((cat.amount / totalCurrentMonth) * 100)
+                    : 0;
                 const isUp = cat.changeDir === "up";
                 const isFlat = cat.changeDir === "flat";
+                const Icon = getPurposeIcon(cat.icon, cat.label);
 
                 return (
                   <div key={cat.label}>
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-2">
                         <span
-                          className="w-2.5 h-2.5 rounded-full shrink-0"
-                          style={{ backgroundColor: cat.color }}
-                        />
+                          className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+                          style={{
+                            backgroundColor: `${cat.color}1a`,
+                            color: cat.color,
+                          }}
+                        >
+                          {createElement(Icon, { size: 13 })}
+                        </span>
                         <span className="text-sm text-gray-700 font-medium">
                           {cat.label}
                         </span>
@@ -149,11 +184,17 @@ export default function WhereMoneyGoes() {
                         {isFlat ? (
                           <p className="text-[11px] text-gray-400">flat</p>
                         ) : (
-                          <p
-                            className={`text-[11px] font-semibold ${isUp ? "text-red-500" : "text-green-500"}`}
-                          >
-                            {isUp ? "↑" : "↓"} {cat.changePct}%
-                          </p>
+                          <span className="flex items-end justify-end gap-1">
+                            <p
+                              className={`text-[11px] font-semibold ${isUp ? "text-red-500" : "text-green-500"}`}
+                            >
+                              {isUp ? "↑" : "↓"} {Math.abs(cat.changePct)}%
+                            </p>{" "}
+                            <p className="text-gray-500 text-[10px]">
+                              {" "}
+                              from last month
+                            </p>{" "}
+                          </span>
                         )}
                       </div>
                     </div>

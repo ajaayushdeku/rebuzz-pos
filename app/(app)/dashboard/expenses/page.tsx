@@ -42,11 +42,11 @@ function ExpenseAnalyticsPage() {
           <ExpenseAnalyticsSkeleton />
         ) : (
           <>
-            <ExpenseBudgetGauges />
-            <ExpensesByCategory />
-            <BudgetVsActual />
-            <MonthlyExpenseTrend />
             <CashFlowTrend />
+            <ExpensesByCategory />
+            <MonthlyExpenseTrend />
+            <BudgetVsActual />
+            <ExpenseBudgetGauges />
             <CostHealth />
             <WhereMoneyGoes />
             <HiddenCostLeaks />
