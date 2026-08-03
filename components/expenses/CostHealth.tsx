@@ -411,7 +411,7 @@ export default function CostHealth() {
   const canHide = visibleCount > 4;
 
   return (
-    <div className="flex flex-col gap-8 mt-10">
+    <div className="flex flex-col gap-8 mt-4">
       {/* ======================================================
           COST HEALTH
       ====================================================== */}

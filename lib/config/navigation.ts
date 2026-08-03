@@ -100,7 +100,7 @@ export const navigationConfig: NavigationItem[] = [
         href: "/dashboard/live-tables",
         icon: Utensils,
       },
-      { label: "Employee", href: "/dashboard/employee", icon: UsersRound },
+      { label: "Employees", href: "/dashboard/employee", icon: UsersRound },
       { label: "Customers", href: "/dashboard/customers", icon: Users },
     ],
   },

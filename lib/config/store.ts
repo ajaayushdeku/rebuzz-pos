@@ -6,8 +6,8 @@ export interface CurrencyConfig {
 
 export const storeConfig = {
   currency: {
-    code: "USD",
-    symbol: "$",
-    locale: "en-US",
+    code: "NPR",
+    symbol: "Rs",
+    locale: "ne-NP",
   } satisfies CurrencyConfig,
 };

@@ -28,7 +28,7 @@ export default function HiddenCostLeaks() {
   };
 
   return (
-    <div className="flex flex-col gap-5 mt-10">
+    <div className="flex flex-col gap-5 mt-4">
       {/* Section header */}
       <div className="flex items-center gap-2.5">
         <div className="w-8 h-8 rounded-xl bg-cyan-50 flex items-center justify-center shrink-0">

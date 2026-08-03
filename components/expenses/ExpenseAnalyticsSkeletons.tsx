@@ -225,11 +225,11 @@ export function ExpenseCardSkeleton({
 export function ExpenseAnalyticsSkeleton() {
   return (
     <div className="space-y-6">
-      <ExpenseBudgetGaugesSkeleton />
-      <ExpensesByCategorySkeleton />
-      <BudgetVsActualSkeleton />
-      <MonthlyExpenseTrendSkeleton />
       <CashFlowTrendSkeleton />
+      <ExpensesByCategorySkeleton />
+      <MonthlyExpenseTrendSkeleton />
+      <BudgetVsActualSkeleton />
+      <ExpenseBudgetGaugesSkeleton />
 
       {/* CostHealth — 4-up stat tiles */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 animate-pulse">

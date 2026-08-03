@@ -7,11 +7,39 @@ import MobileButton from "./MobileButton";
 import { useBusiness } from "@/hooks/useBusiness";
 import ServerEnvBadge from "@/components/ServerEnvBadge";
 import Image from "next/image";
+import { useCurrency } from "@/providers/CurrencyContext";
 // import { Button } from "../ui/button";
 // import { Badge, Bell } from "lucide-react";
 
+/** Currency code → ISO 3166-1 alpha-2 country code for the flagcdn flag. */
+const CURRENCY_FLAGS: Record<string, string> = {
+  NPR: "np",
+  USD: "us",
+  EUR: "eu",
+  GBP: "gb",
+  INR: "in",
+  AUD: "au",
+  CAD: "ca",
+  JPY: "jp",
+  CNY: "cn",
+  SGD: "sg",
+  AED: "ae",
+  SAR: "sa",
+  NZD: "nz",
+  KRW: "kr",
+  MYR: "my",
+  THB: "th",
+  PHP: "ph",
+  CHF: "ch",
+  SEK: "se",
+  HKD: "hk",
+  BRL: "br",
+};
+
 export default function Navbar() {
   const { data: businessData } = useBusiness();
+  const { currency } = useCurrency();
+  const flagCode = CURRENCY_FLAGS[currency.code] ?? "np";
 
   return (
     <nav className="w-full border-b bg-white z-200">
@@ -38,6 +66,18 @@ export default function Navbar() {
 
         <div className="flex items-center gap-3">
           {/* <ServerEnvBadge className="sm:hidden xs:hidden" /> */}
+          <span
+            title={currency.code}
+            className="w-6 h-4 rounded-xs overflow-hidden shrink-0 ring-1 ring-black/5"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`https://flagcdn.com/w40/${flagCode}.png`}
+              alt={currency.code}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          </span>
           <HelpButton />
           <User
             initialBusinessName={businessData?.businessName || "My Business"}

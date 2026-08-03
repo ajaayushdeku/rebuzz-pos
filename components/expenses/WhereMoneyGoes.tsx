@@ -115,7 +115,7 @@ export default function WhereMoneyGoes() {
   };
 
   return (
-    <div className="flex flex-col gap-2 mt-10">
+    <div className="flex flex-col gap-2 mt-4">
       {/* Section header */}
 
       <div className="mb-4">

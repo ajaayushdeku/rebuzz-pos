@@ -50,7 +50,7 @@ export const formatCurrencyChangeLater = (amount: number) => {
 export const formatCurrency = (
   amount: number,
   currency: CurrencyConfig,
-  baseCurrency: string = "USD",
+  baseCurrency: string = "NPR",
 ) => {
   const converted = convertCurrency(amount, baseCurrency, currency.code);
 

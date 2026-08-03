@@ -311,7 +311,7 @@ export default function LoyaltyPointPage() {
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
-      <div className="max-w-7xl mx-auto space-y-10">
+      <div className="w-full mx-auto space-y-10">
         {/* ── Header ─────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
           <div>
@@ -347,9 +347,14 @@ export default function LoyaltyPointPage() {
           <div className="space-y-4">
             {settings && (
               <div className="bg-blue-50 border border-blue-100 rounded-xl px-5 py-4 space-y-2">
-                <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">
-                  Current saved settings
-                </p>
+                <div className="w-full  flex items-center justify-center gap-2.5 mb-4">
+                  <p
+                    className="text-xs 
+            w-fit font-bold text-blue-700 uppercase tracking-wide"
+                  >
+                    Current saved settings
+                  </p>
+                </div>
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <p className="text-lg font-bold text-blue-800">
