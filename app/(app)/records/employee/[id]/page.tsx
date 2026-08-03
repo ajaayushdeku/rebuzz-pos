@@ -467,7 +467,11 @@ export default function StaffDetailPage() {
             </div>
           </div>
 
-          <DateRangeFilter value={dateRange} onChange={handleDateRangeChange} />
+          <DateRangeFilter
+            value={dateRange}
+            onChange={handleDateRangeChange}
+            storageKey="rebuzz-employee-detail-date-filter"
+          />
         </div>
 
         {loading ? (

@@ -339,7 +339,10 @@ export default function CreditsTable({
                 const isExpanded = expandedId === c._id;
                 return (
                   <Fragment key={c._id}>
-                    <tr className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
+                    <tr
+                      onClick={() => router.push(`/invoices/${c.invoiceNo}`)}
+                      className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
                       {/* Status */}
                       <td className="py-3.5 px-4">
                         <span

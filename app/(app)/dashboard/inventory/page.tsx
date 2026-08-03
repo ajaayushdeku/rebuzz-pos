@@ -62,7 +62,11 @@ export default function InventoryPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <DateRangeFilter value={dateRange} onChange={setDateRange} />
+            <DateRangeFilter
+              value={dateRange}
+              onChange={setDateRange}
+              storageKey="rebuzz-inventory-date-filter"
+            />
 
             <Button
               onClick={() => setModalOpen(true)}

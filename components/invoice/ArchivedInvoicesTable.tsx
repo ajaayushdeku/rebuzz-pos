@@ -248,7 +248,8 @@ export default function ArchivedInvoicesTable({
                   return (
                     <tr
                       key={inv.invoice}
-                      className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
+                      // onClick={() => router.push(`/invoices/${inv.invoice}`)}
+                      className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors cursor-pointer"
                     >
                       <td className="py-3 px-4 text-gray-400 text-xs">
                         {page * pageSize + idx + 1}

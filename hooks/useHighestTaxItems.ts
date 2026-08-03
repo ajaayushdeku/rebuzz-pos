@@ -55,14 +55,16 @@ async function fetchHighestTaxItems(
     });
   }
 
-  return Array.from(merged.entries())
-    .map(([name, { tax, count }]) => ({
-      name,
-      totalTaxAmount: Math.round(tax * 100) / 100,
-      transactionCount: count,
-    }))
-    // Only keep items that actually generated tax.
-    .filter((item) => item.totalTaxAmount > 0);
+  return (
+    Array.from(merged.entries())
+      .map(([name, { tax, count }]) => ({
+        name,
+        totalTaxAmount: Math.round(tax * 100) / 100,
+        transactionCount: count,
+      }))
+      // Only keep items that actually generated tax.
+      .filter((item) => item.totalTaxAmount > 0)
+  );
 }
 
 export function useHighestTaxItems(startDate: string, endDate: string) {

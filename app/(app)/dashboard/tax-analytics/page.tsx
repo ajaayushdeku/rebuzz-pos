@@ -57,7 +57,11 @@ export default function TaxAnalyticsPage() {
             Overview of tax collected, refunded, and categorized
           </p>
         </div>
-        <DateRangeFilter value={dateRange} onChange={setDateRange} />
+        <DateRangeFilter
+          value={dateRange}
+          onChange={setDateRange}
+          storageKey="rebuzz-tax-analytics-date-filter"
+        />
       </div>
 
       <div className="space-y-6 mt-6">

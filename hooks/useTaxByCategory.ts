@@ -98,7 +98,8 @@ async function fetchTaxByCategory(
   >();
 
   for (const item of salesItems) {
-    const tax = (item.totalRevenue ?? 0) - (item.price ?? 0) * (item.count ?? 0);
+    const tax =
+      (item.totalRevenue ?? 0) - (item.price ?? 0) * (item.count ?? 0);
 
     const product = productByName.get((item.itemName ?? "").toLowerCase());
     const categoryId = product?.categories;

@@ -109,7 +109,11 @@ export default function OrderHistoryPage() {
           </p>
         </div>
 
-        <DateRangeFilter value={dateRange} onChange={setDateRange} />
+        <DateRangeFilter
+          value={dateRange}
+          onChange={setDateRange}
+          storageKey="rebuzz-order-history-date-filter"
+        />
       </div>
 
       {/* ── Stats ── */}

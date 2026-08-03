@@ -28,6 +28,8 @@ const PRESET_RANGES = [
   { value: "year", label: "Last Year" },
 ];
 
+const STORAGE_KEY = "rebuzz-calendar-date-filter";
+
 function toDateStr(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -174,6 +176,41 @@ export function CalendarDateFilter({
     hasCustom ? currentEndDate : "",
   );
 
+  // ── Restore saved filter from localStorage on mount (if no URL params) ──
+  React.useEffect(() => {
+    if (!currentStartDate && !currentEndDate && !currentPreset) {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved) as {
+            startDate?: string;
+            endDate?: string;
+            range?: string;
+            comparisonStartDate?: string;
+            comparisonEndDate?: string;
+          };
+          if (parsed.range) {
+            const sp = new URLSearchParams(searchParams.toString());
+            sp.set("range", parsed.range);
+            if (parsed.comparisonStartDate && parsed.comparisonEndDate) {
+              sp.set("comparisonStartDate", parsed.comparisonStartDate);
+              sp.set("comparisonEndDate", parsed.comparisonEndDate);
+            }
+            router.replace(`?${sp.toString()}`);
+          } else if (parsed.startDate && parsed.endDate) {
+            const sp = new URLSearchParams(searchParams.toString());
+            sp.set("startDate", parsed.startDate);
+            sp.set("endDate", parsed.endDate);
+            router.replace(`?${sp.toString()}`);
+          }
+        }
+      } catch {
+        // Ignore malformed storage data
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Reset temp state when dialog opens
   const handleOpenChange = (isOpen: boolean) => {
     if (isOpen) {
@@ -216,6 +253,13 @@ export function CalendarDateFilter({
     if (params.comparisonStartDate && params.comparisonEndDate) {
       sp.set("comparisonStartDate", params.comparisonStartDate);
       sp.set("comparisonEndDate", params.comparisonEndDate);
+    }
+
+    // ── Persist to localStorage so it survives page refresh ──
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(params));
+    } catch {
+      // Ignore storage errors
     }
 
     router.push(`?${sp.toString()}`);

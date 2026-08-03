@@ -45,6 +45,16 @@ function parseDateStr(str: string): Date | undefined {
   return d;
 }
 
+function findMatchingPreset(startDate: string, endDate: string): string {
+  for (const { value } of PRESET_RANGES) {
+    const range = getPresetRange(value);
+    if (range.startDate === startDate && range.endDate === endDate) {
+      return value;
+    }
+  }
+  return "";
+}
+
 function getPresetRange(range: string): { startDate: string; endDate: string } {
   const today = new Date();
   const end = toDateStr(today);
@@ -112,10 +122,12 @@ export function DateRangeFilter({
   value,
   onChange,
   showPresets = true,
+  storageKey,
 }: {
   value: DateRangeValue;
   onChange: (value: DateRangeValue) => void;
   showPresets?: boolean;
+  storageKey?: string;
 }) {
   const isSingle = value.startDate === value.endDate;
   const [mode, setMode] = React.useState<DateMode>(
@@ -135,12 +147,34 @@ export function DateRangeFilter({
   const [startInput, setStartInput] = React.useState(value.startDate || "");
   const [endInput, setEndInput] = React.useState(value.endDate || "");
 
+  // ── Persist selected filter to localStorage so it survives page refresh ──
+  React.useEffect(() => {
+    if (!storageKey) return;
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved) as DateRangeValue;
+        if (parsed.startDate && parsed.endDate) {
+          onChange(parsed);
+        }
+      }
+    } catch {
+      // Ignore malformed storage data
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageKey]);
+
   React.useEffect(() => {
     if (open) {
       setTempStartDate(value.startDate ? new Date(value.startDate) : undefined);
       setTempEndDate(value.endDate ? new Date(value.endDate) : undefined);
       setStartInput(value.startDate || "");
       setEndInput(value.endDate || "");
+      // Sync the preset dropdown with the currently applied filter
+      if (value.startDate && value.endDate) {
+        const matched = findMatchingPreset(value.startDate, value.endDate);
+        setPreset(matched);
+      }
     }
   }, [open]);
 
@@ -155,6 +189,13 @@ export function DateRangeFilter({
 
   const applyFilters = (params: DateRangeValue) => {
     onChange(params);
+    if (storageKey) {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(params));
+      } catch {
+        // Ignore storage errors
+      }
+    }
     setOpen(false);
   };
 
