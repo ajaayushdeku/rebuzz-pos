@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -87,7 +87,27 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
   const [emailTarget, setEmailTarget] = useState<Invoice | null>(null);
   const [moveTarget, setMoveTarget] = useState<Invoice | null>(null);
   const [moving, setMoving] = useState(false);
+  const [statusOpen, setStatusOpen] = useState(false);
+  const statusRef = useRef<HTMLDivElement | null>(null);
   const pageSize = 10;
+
+  // Close the status dropdown on outside click / Escape
+  useEffect(() => {
+    const onClickOutside = (e: MouseEvent) => {
+      if (statusRef.current && !statusRef.current.contains(e.target as Node)) {
+        setStatusOpen(false);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setStatusOpen(false);
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onClickOutside);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
 
   const handleMoveToCredit = async () => {
     const invoiceNo = moveTarget?.invoice;
@@ -186,24 +206,54 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
               setPage(0);
             }}
             placeholder="Search invoice # or customer..."
-            className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
           />
         </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value);
-            setPage(0);
-          }}
-          className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-600 capitalize"
-        >
-          <option value="all">All Status</option>
-          {STATUS_FILTER_OPTIONS.map((s) => (
-            <option key={s} value={s} className="capitalize">
-              {s}
-            </option>
-          ))}
-        </select>
+        <div ref={statusRef} className="relative w-full sm:w-[150px]">
+          <button
+            type="button"
+            onClick={() => setStatusOpen((o) => !o)}
+            className="w-full flex items-center justify-between gap-2 pl-3 pr-2.5 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition capitalize"
+          >
+            <span>{statusFilter === "all" ? "All Status" : statusFilter}</span>
+            <ChevronDown
+              size={14}
+              className={`text-gray-400 transition-transform duration-200 ${
+                statusOpen ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          <div
+            className={`absolute z-30 mt-1.5 w-full origin-top rounded-md border border-gray-200 bg-white shadow-lg p-1 transition-all duration-200 ${
+              statusOpen
+                ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+                : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
+            }`}
+          >
+            {[
+              { value: "all", label: "All Status" },
+              ...STATUS_FILTER_OPTIONS.map((s) => ({ value: s, label: s })),
+            ].map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  setStatusFilter(opt.value);
+                  setPage(0);
+                  setStatusOpen(false);
+                }}
+                className={`w-full text-left px-3 py-1.5 text-[13px] rounded-md transition-colors cursor-pointer capitalize ${
+                  statusFilter === opt.value
+                    ? "bg-blue-50 text-blue-700 font-medium"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Table — horizontally scrollable on mobile */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, createElement } from "react";
+import { useState, useMemo, createElement, useRef } from "react";
 
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -11,6 +11,8 @@ import {
   AlertTriangle,
   Loader2,
   Receipt,
+  TrendingDown,
+  TrendingUp,
 } from "lucide-react";
 import {
   Dialog,
@@ -30,6 +32,7 @@ import {
 import { getPurposeIcon } from "@/lib/purpose-icons";
 import toast from "react-hot-toast";
 import ExpenseIncomeForm from "./ExpenseIncomeForm";
+import { ComponentHeader } from "../ComponentHeader";
 
 // Small wrapper to render a purpose icon without creating a component during render
 function PurposeIcon({
@@ -294,98 +297,92 @@ function SummaryTable({ type }: { type: TransactionType }) {
   }, [transactions, type]);
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex-1">
-      <h3 className="text-sm font-semibold text-gray-900 mb-4 capitalize">
-        {type} by Purpose
-      </h3>
-
-      <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        <table className="w-full text-sm min-w-[380px]">
-          <thead>
-            <tr className="text-xs text-gray-400 border-b border-gray-100">
-              <th className="text-left pb-3 pt-3 px-4 font-medium">Purpose</th>
-              <th className="text-center pb-3 pt-3 px-4 font-medium">
-                Transactions
-              </th>
-              <th className="text-right pb-3 pt-3 px-4 font-medium">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {grouped.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={3}
-                  className="text-center py-2 text-sm text-gray-400"
-                >
-                  <div className="flex flex-col items-center justify-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                      <Receipt size={24} className="text-gray-500" />
-                    </div>
-                    <p className="text-sm font-medium text-gray-500">
-                      No {type}s yet
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      All {type} transaction will appear here
-                    </p>
+    <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <table className="w-full text-sm min-w-[380px]">
+        <thead>
+          <tr className="text-xs text-gray-400 border-b border-gray-100">
+            <th className="text-left pb-3 pt-3 px-4 font-medium">Purpose</th>
+            <th className="text-center pb-3 pt-3 px-4 font-medium">
+              Transactions
+            </th>
+            <th className="text-right pb-3 pt-3 px-4 font-medium">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {grouped.length === 0 ? (
+            <tr>
+              <td
+                colSpan={3}
+                className="text-center py-2 text-sm text-gray-400"
+              >
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                    <Receipt size={24} className="text-gray-500" />
                   </div>
-                </td>
-              </tr>
-            ) : (
-              grouped.map(([purposeId, { count, total }]) => {
-                const purposeName = getPurposeName(purposeId);
-                return (
-                  <tr
-                    key={purposeId}
-                    onClick={() => setSelected(purposeId)}
-                    className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
-                          style={{
-                            backgroundColor:
-                              getPurposeColor(
-                                getPurposeIconStr(purposeId),
-                                purposeName,
-                              ) + "20",
-                          }}
-                        >
-                          <PurposeIcon
-                            icon={getPurposeIconStr(purposeId)}
-                            name={purposeName}
-                            color={getPurposeColor(
+                  <p className="text-sm font-medium text-gray-500">
+                    No {type}s yet
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    All {type} transaction will appear here
+                  </p>
+                </div>
+              </td>
+            </tr>
+          ) : (
+            grouped.map(([purposeId, { count, total }]) => {
+              const purposeName = getPurposeName(purposeId);
+              return (
+                <tr
+                  key={purposeId}
+                  onClick={() => setSelected(purposeId)}
+                  className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
+                >
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+                        style={{
+                          backgroundColor:
+                            getPurposeColor(
                               getPurposeIconStr(purposeId),
                               purposeName,
-                            )}
-                          />
-                        </span>
-                        <span className="text-xs font-medium text-gray-900">
-                          {purposeName}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-center text-xs text-gray-600">
-                      {count}
-                    </td>
-                    <td
-                      className={`py-3 px-4 text-right text-xs font-semibold ${
-                        type === "expense" ? "text-red-600" : "text-green-600"
-                      }`}
-                    >
-                      {formatCurrencySymbol(
-                        total,
-                        currency.symbol,
-                        currency.locale,
-                      )}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+                            ) + "20",
+                        }}
+                      >
+                        <PurposeIcon
+                          icon={getPurposeIconStr(purposeId)}
+                          name={purposeName}
+                          color={getPurposeColor(
+                            getPurposeIconStr(purposeId),
+                            purposeName,
+                          )}
+                        />
+                      </span>
+                      <span className="text-xs font-medium text-gray-900">
+                        {purposeName}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="py-3 px-4 text-center text-xs text-gray-600">
+                    {count}
+                  </td>
+                  <td
+                    className={`py-3 px-4 text-right text-xs font-semibold ${
+                      type === "expense" ? "text-red-600" : "text-green-600"
+                    }`}
+                  >
+                    {formatCurrencySymbol(
+                      total,
+                      currency.symbol,
+                      currency.locale,
+                    )}
+                  </td>
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </table>
 
       {selected && (
         <TransactionModal
@@ -402,10 +399,119 @@ function SummaryTable({ type }: { type: TransactionType }) {
 }
 
 export default function PurposeSummaryTables() {
+  const { transactions } = useTracker();
+  const [activeTab, setActiveTab] = useState<TransactionType>("expense");
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  // Each count is the number of distinct purposes, matching the table's row count
+  const counts = useMemo(() => {
+    const expense = new Set<string>();
+    const income = new Set<string>();
+    for (const t of transactions) {
+      if (t.kind === "expense") expense.add(t.purposeId);
+      else if (t.kind === "income") income.add(t.purposeId);
+    }
+    return { expense: expense.size, income: income.size };
+  }, [transactions]);
+
+  const tabs: Array<{
+    key: TransactionType;
+    label: string;
+    count: number;
+    icon: typeof TrendingDown;
+  }> = [
+    {
+      key: "expense",
+      label: "Expense Purpose",
+      count: counts.expense,
+      icon: TrendingDown,
+    },
+    {
+      key: "income",
+      label: "Income Purpose",
+      count: counts.income,
+      icon: TrendingUp,
+    },
+  ];
+
+  // Left/Right/Home/End move between tabs, per the WAI-ARIA tabs pattern.
+  const handleTabKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const current = tabs.findIndex((t) => t.key === activeTab);
+    let next: number | null = null;
+
+    if (e.key === "ArrowRight") next = (current + 1) % tabs.length;
+    if (e.key === "ArrowLeft") next = (current - 1 + tabs.length) % tabs.length;
+    if (e.key === "Home") next = 0;
+    if (e.key === "End") next = tabs.length - 1;
+    if (next === null) return;
+
+    e.preventDefault();
+    setActiveTab(tabs[next].key);
+    tabRefs.current[next]?.focus();
+  };
+
   return (
-    <div className="flex flex-col lg:flex-row gap-5">
-      <SummaryTable type="expense" />
-      <SummaryTable type="income" />
+    <div className="bg-white p-5">
+      <div className="flex flex-col sm:flex-row items-center  mb-4">
+        <ComponentHeader
+          title="Purpose Summary"
+          subHeader="View your expense and income by purpose"
+        />
+      </div>
+
+      {/* ── Tabs — the rule runs edge to edge and the pill sits on top ── */}
+      <div className="relative flex justify-center mb-4">
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
+        />
+        <div
+          role="tablist"
+          aria-label="Purpose summary"
+          onKeyDown={handleTabKeyDown}
+          className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+        >
+          {tabs.map((tab, i) => {
+            const selected = tab.key === activeTab;
+            const Icon = tab.icon;
+
+            return (
+              <button
+                key={tab.key}
+                ref={(el) => {
+                  tabRefs.current[i] = el;
+                }}
+                type="button"
+                role="tab"
+                id={`purpose-tab-${tab.key}`}
+                aria-selected={selected}
+                aria-controls="purpose-summary-panel"
+                tabIndex={selected ? 0 : -1}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex items-center gap-2 rounded-full px-4 py-1.5 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                  selected
+                    ? "bg-white font-bold text-blue-950 shadow-sm"
+                    : "font-semibold text-blue-800 hover:text-blue-950"
+                }`}
+              >
+                <Icon size={14} className="shrink-0" />
+                {tab.label}
+                <span className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 bg-[#e4f2fe] text-blue-950 ring-blue-900">
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div
+        id="purpose-summary-panel"
+        role="tabpanel"
+        aria-labelledby={`purpose-tab-${activeTab}`}
+      >
+        <SummaryTable key={activeTab} type={activeTab} />
+      </div>
     </div>
   );
 }

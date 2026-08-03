@@ -98,7 +98,7 @@ export default function BudgetForm() {
           className="border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg flex items-center gap-2"
         >
           <Wallet className="h-4 w-4" />
-          <span className="hidden md:block"> Set Budget</span>
+          <span className="hidden lg:block"> Set Budget</span>
         </Button>
       </DialogTrigger>
 

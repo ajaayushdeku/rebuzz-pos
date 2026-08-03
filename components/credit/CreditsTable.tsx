@@ -14,6 +14,7 @@ import {
   Loader2,
   Trash2,
   CreditCard,
+  History,
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -80,7 +81,7 @@ export default function CreditsTable({
   const queryClient = useQueryClient();
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [showAllPaymentHistory, setShowAllPaymentHistory] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [page, setPage] = useState(0);
   const [paymentTarget, setPaymentTarget] = useState<Credit | null>(null);
@@ -132,14 +133,6 @@ export default function CreditsTable({
     run(invoiceNo);
   };
 
-  const statusOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(credits.map((c) => (c.status ?? "").toLowerCase())),
-      ).filter(Boolean),
-    [credits],
-  );
-
   // "X of Y" per customer — ordinal of this credit among the customer's
   // UNPAID credits (due remaining). Settled credits are excluded.
   const unpaidByCustomer = useMemo(() => {
@@ -165,14 +158,14 @@ export default function CreditsTable({
   const filtered = useMemo(() => {
     return credits.filter((c) => {
       const q = search.toLowerCase();
-      const matchSearch =
-        !search || (c.user?.name ?? "").toLowerCase().includes(q);
-      const matchStatus =
-        statusFilter === "all" ||
-        (c.status ?? "").toLowerCase() === statusFilter;
-      return matchSearch && matchStatus;
+      if (!search) return true;
+      const nameMatch = (c.user?.name ?? "").toLowerCase().includes(q);
+      const invoiceMatch =
+        c.invoiceNo != null &&
+        (String(c.invoiceNo).includes(q) || `ord-${c.invoiceNo}`.includes(q));
+      return nameMatch || invoiceMatch;
     });
-  }, [credits, search, statusFilter]);
+  }, [credits, search]);
 
   const sorted = useMemo(() => {
     if (!sortConfig) return filtered;
@@ -225,26 +218,52 @@ export default function CreditsTable({
               setSearch(e.target.value);
               setPage(0);
             }}
-            placeholder="Search by customer..."
-            className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            placeholder="Search by customer or invoice #..."
+            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
           />
         </div>
         {showStatusFilter && (
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
+          <button
+            type="button"
+            role="switch"
+            aria-checked={showAllPaymentHistory}
+            onClick={() => {
+              setShowAllPaymentHistory((prev) => !prev);
               setPage(0);
             }}
-            className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-600 capitalize"
+            className="inline-flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-white transition-colors hover:bg-gray-50 cursor-pointer"
           >
-            <option value="all">All Status</option>
-            {statusOptions.map((s) => (
-              <option key={s} value={s} className="capitalize">
-                {s}
-              </option>
-            ))}
-          </select>
+            <History
+              size={14}
+              className={`transition-colors ${
+                showAllPaymentHistory ? "text-blue-600" : "text-gray-400"
+              }`}
+            />
+            <span
+              className={`text-[13px] font-medium transition-colors ${
+                showAllPaymentHistory ? "text-blue-700" : "text-gray-600"
+              }`}
+            >
+              {showAllPaymentHistory
+                ? "Hide payment history"
+                : "View payment history"}
+            </span>
+
+            {/* Toggle switch */}
+            <span
+              className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 ${
+                showAllPaymentHistory ? "bg-blue-600" : "bg-gray-300"
+              }`}
+            >
+              <span
+                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                  showAllPaymentHistory
+                    ? "translate-x-[19px]"
+                    : "translate-x-[3px]"
+                }`}
+              />
+            </span>
+          </button>
         )}
       </div>
 
@@ -336,12 +355,16 @@ export default function CreditsTable({
               paged.map((c) => {
                 const cleared = (c.dueAmount ?? 0) <= 0;
                 const ubc = unpaidByCustomer.get(c._id);
-                const isExpanded = expandedId === c._id;
+                const isExpanded =
+                  showAllPaymentHistory || expandedId === c._id;
                 return (
                   <Fragment key={c._id}>
                     <tr
-                      onClick={() => router.push(`/invoices/${c.invoiceNo}`)}
-                      className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors cursor-pointer"
+                      onClick={() =>
+                        c.status !== "archived" &&
+                        router.push(`/invoices/${c.invoiceNo}`)
+                      }
+                      className={`border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors ${c.status !== "archived" ? "cursor-pointer" : ""}`}
                     >
                       {/* Status */}
                       <td className="py-3.5 px-4">
@@ -476,6 +499,7 @@ export default function CreditsTable({
                               <DropdownMenuContent
                                 align="end"
                                 className="w-44 rounded-xl p-1.5"
+                                onClick={(e) => e.stopPropagation()}
                               >
                                 {actionsMode === "full" && (
                                   <>

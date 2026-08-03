@@ -143,7 +143,7 @@ export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
       </div>
 
       {/* Refresh & timestamp */}
-      <div className="flex items-center justify-between mt-4 pb-4 pl-2 border-b border-gray-100">
+      <div className="flex items-center justify-between mt-4 pb-4 pl-2 ">
         <div className="flex items-center gap-2 text-xs text-gray-500">
           <span>
             As of {formattedDate}, {formattedTime}

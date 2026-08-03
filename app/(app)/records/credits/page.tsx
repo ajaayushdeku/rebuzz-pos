@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Wallet, HandCoins, Users } from "lucide-react";
 
@@ -13,10 +13,12 @@ import {
   fetchCreditsByStatus,
 } from "@/services/apiCredit.client";
 
+type TabKey = "credited" | "completed" | "archived";
+
 export default function Page() {
   const { currency } = useCurrency();
-  const fmt = (v: number) =>
-    formatCurrencySymbol(v, currency.symbol, currency.locale);
+  const [activeTab, setActiveTab] = useState<TabKey>("credited");
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const {
     data: credits = [],
@@ -98,6 +100,36 @@ export default function Page() {
     },
   ];
 
+  const tabs: Array<{ key: TabKey; label: string; count: number | null }> = [
+    { key: "credited", label: "Credited", count: credits.length },
+    {
+      key: "completed",
+      label: "Completed",
+      count: completedLoading ? null : completedCredits.length,
+    },
+    {
+      key: "archived",
+      label: "Archived",
+      count: archivedLoading ? null : archivedCredits.length,
+    },
+  ];
+
+  // Left/Right/Home/End move between tabs, per the WAI-ARIA tabs pattern.
+  const handleTabKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const current = tabs.findIndex((t) => t.key === activeTab);
+    let next: number | null = null;
+
+    if (e.key === "ArrowRight") next = (current + 1) % tabs.length;
+    if (e.key === "ArrowLeft") next = (current - 1 + tabs.length) % tabs.length;
+    if (e.key === "Home") next = 0;
+    if (e.key === "End") next = tabs.length - 1;
+    if (next === null) return;
+
+    e.preventDefault();
+    setActiveTab(tabs[next].key);
+    tabRefs.current[next]?.focus();
+  };
+
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
       <div className="w-full mx-auto space-y-8">
@@ -111,7 +143,7 @@ export default function Page() {
           </div>
         </div>
 
-        {/* Stats */}
+        {/* Stats — always reflect all credits, regardless of the selected tab */}
         <div className="bg-white py-2 mb-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {statItems.map((item) => {
@@ -155,42 +187,86 @@ export default function Page() {
           </div>
         </div>
 
-        <CreditsTable credits={credits} />
-
-        {/* Divider */}
-        <hr className="border-t border-gray-200" />
-
-        {/* Completed credits — all actions except Record payment (they're paid) */}
-        <div className="pt-4">
-          <h2 className="font-semibold text-lg text-gray-800 mb-3">
-            Completed Credits
-          </h2>
-          <CreditsTable
-            credits={completedCredits}
-            actionsMode="full"
-            creditStatus="completed"
-            showStatusFilter={false}
-            isLoading={completedLoading}
-            error={completedError}
+        {/* Tabs — the rule runs edge to edge and the pill sits on top of it */}
+        <div className="relative flex justify-center mt-8">
+          <span
+            aria-hidden="true"
+            className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
           />
+          <div
+            role="tablist"
+            aria-label="Credit status"
+            onKeyDown={handleTabKeyDown}
+            className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+          >
+            {tabs.map((tab, i) => {
+              const selected = tab.key === activeTab;
+
+              return (
+                <button
+                  key={tab.key}
+                  ref={(el) => {
+                    tabRefs.current[i] = el;
+                  }}
+                  type="button"
+                  role="tab"
+                  id={`credits-tab-${tab.key}`}
+                  aria-selected={selected}
+                  aria-controls={`credits-panel-${tab.key}`}
+                  tabIndex={selected ? 0 : -1}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`flex items-center gap-2 rounded-full px-5 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                    selected
+                      ? "bg-white font-bold text-blue-950 shadow-sm"
+                      : "font-semibold text-blue-800 hover:text-blue-950"
+                  }`}
+                >
+                  {tab.label}
+                  <span
+                    className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 
+                     bg-[#e4f2fe] text-blue-950 ring-blue-900"
+                  >
+                    {tab.count === null ? "–" : tab.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Divider */}
-        <hr className="border-t border-gray-200" />
+        {/* Panels */}
+        <div
+          role="tabpanel"
+          id={`credits-panel-${activeTab}`}
+          aria-labelledby={`credits-tab-${activeTab}`}
+          tabIndex={0}
+          className="focus-visible:outline-none"
+        >
+          {activeTab === "credited" && <CreditsTable credits={credits} />}
 
-        {/* Archived credits — no Actions column */}
-        <div className="pt-4">
-          <h2 className="font-semibold text-lg text-gray-800 mb-3">
-            Archived Credits
-          </h2>
-          <CreditsTable
-            credits={archivedCredits}
-            actionsMode="none"
-            creditStatus="archived"
-            showStatusFilter={false}
-            isLoading={archivedLoading}
-            error={archivedError}
-          />
+          {/* Completed — all actions except Record payment (they're paid) */}
+          {activeTab === "completed" && (
+            <CreditsTable
+              credits={completedCredits}
+              actionsMode="full"
+              creditStatus="completed"
+              // showStatusFilter={false}
+              isLoading={completedLoading}
+              error={completedError}
+            />
+          )}
+
+          {/* Archived — no Actions column */}
+          {activeTab === "archived" && (
+            <CreditsTable
+              credits={archivedCredits}
+              actionsMode="none"
+              creditStatus="archived"
+              showStatusFilter={false}
+              isLoading={archivedLoading}
+              error={archivedError}
+            />
+          )}
         </div>
       </div>
     </div>

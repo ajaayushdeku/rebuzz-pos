@@ -63,9 +63,9 @@ const Page = async ({
             className="bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-white rounded-xl text-sm font-semibold "
             asChild
           >
-            <Link href="/settings/staffs">
+            <Link href="/settings/employees">
               <UserPlus className="h-4 w-4 mr-1.5" />
-              Manage Staff
+              Manage Employees
             </Link>
           </Button>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -33,9 +33,11 @@ import {
   type Transaction,
 } from "@/providers/ExpenseContext";
 import ExpenseIncomeForm from "./ExpenseIncomeForm";
+import { ComponentHeader } from "../ComponentHeader";
 
 type SortKey = "date" | "amount";
 type SortDir = "asc" | "desc";
+type TabKey = "expense" | "income" | "all";
 
 const SortIcon = ({
   colKey,
@@ -60,9 +62,10 @@ export default function RecentTransactions() {
   const { transactions, deleteTransaction, allPurposes } = useTracker();
   const { currency } = useCurrency();
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"all" | "expense" | "income">("all");
+  const [filter, setFilter] = useState<TabKey>("all");
   const [sort, setSort] = useState<SortKey>("date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   // Edit state
   const [editTransaction, setEditTransaction] = useState<Transaction | null>(
@@ -111,18 +114,29 @@ export default function RecentTransactions() {
     }
   };
 
+  // Search only — the tab counts come off this, so they respond to the search box
+  const searched = useMemo(() => {
+    if (!search) return transactions;
+    const q = search.toLowerCase();
+    return transactions.filter(
+      (t) =>
+        t.remark.toLowerCase().includes(q) ||
+        getPurposeName(t.purposeId).toLowerCase().includes(q),
+    );
+  }, [transactions, search, getPurposeName]);
+
+  const counts = useMemo(
+    () => ({
+      expense: searched.filter((t) => t.kind === "expense").length,
+      income: searched.filter((t) => t.kind === "income").length,
+      all: searched.length,
+    }),
+    [searched],
+  );
+
   const filtered = useMemo(() => {
-    return transactions
-      .filter((t) => {
-        const matchType = filter === "all" || t.kind === filter;
-        const matchSearch =
-          !search ||
-          t.remark.toLowerCase().includes(search.toLowerCase()) ||
-          getPurposeName(t.purposeId)
-            .toLowerCase()
-            .includes(search.toLowerCase());
-        return matchType && matchSearch;
-      })
+    return searched
+      .filter((t) => filter === "all" || t.kind === filter)
       .sort((a, b) => {
         const mul = sortDir === "asc" ? 1 : -1;
         if (sort === "date")
@@ -131,52 +145,107 @@ export default function RecentTransactions() {
           );
         return mul * (a.amount - b.amount);
       });
-  }, [transactions, filter, search, sort, sortDir]);
+  }, [searched, filter, sort, sortDir]);
+
+  const tabs: Array<{ key: TabKey; label: string; count: number }> = [
+    { key: "expense", label: "Expense", count: counts.expense },
+    { key: "income", label: "Income", count: counts.income },
+    { key: "all", label: "All", count: counts.all },
+  ];
+
+  // Left/Right/Home/End move between tabs, per the WAI-ARIA tabs pattern.
+  const handleTabKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const current = tabs.findIndex((t) => t.key === filter);
+    let next: number | null = null;
+
+    if (e.key === "ArrowRight") next = (current + 1) % tabs.length;
+    if (e.key === "ArrowLeft") next = (current - 1 + tabs.length) % tabs.length;
+    if (e.key === "Home") next = 0;
+    if (e.key === "End") next = tabs.length - 1;
+    if (next === null) return;
+
+    e.preventDefault();
+    setFilter(tabs[next].key);
+    tabRefs.current[next]?.focus();
+  };
+
+  const emptyLabel =
+    filter === "all" ? "No transaction found" : `No ${filter} found`;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-      {/* ── Header: title + filter tabs + search ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-        <h3 className="text-sm font-semibold text-gray-900">
-          Recent Transactions
-        </h3>
+    <div className="bg-white  p-5">
+      {/* ── Header: title ── */}
+      <div className="flex flex-col sm:flex-row items-center  mb-4">
+        <ComponentHeader
+          title="Recent Transactions"
+          subHeader="View your recent financial transactions"
+        />
+      </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Filter tabs */}
-          <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
-            {(["all", "expense", "income"] as const).map((f) => (
+      {/* ── Tabs — the rule runs edge to edge and the pill sits on top ── */}
+      <div className="relative flex justify-center mb-4">
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
+        />
+        <div
+          role="tablist"
+          aria-label="Transaction kind"
+          onKeyDown={handleTabKeyDown}
+          className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+        >
+          {tabs.map((tab, i) => {
+            const selected = tab.key === filter;
+
+            return (
               <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all capitalize ${
-                  filter === f
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
+                key={tab.key}
+                ref={(el) => {
+                  tabRefs.current[i] = el;
+                }}
+                type="button"
+                role="tab"
+                id={`recent-tab-${tab.key}`}
+                aria-selected={selected}
+                aria-controls="recent-transactions-panel"
+                tabIndex={selected ? 0 : -1}
+                onClick={() => setFilter(tab.key)}
+                className={`flex items-center gap-2 rounded-full px-4 py-1.5 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                  selected
+                    ? "bg-white font-bold text-blue-950 shadow-sm"
+                    : "font-semibold text-blue-800 hover:text-blue-950"
                 }`}
               >
-                {f}
+                {tab.label}
+                <span className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 bg-[#e4f2fe] text-blue-950 ring-blue-900">
+                  {tab.count}
+                </span>
               </button>
-            ))}
-          </div>
-
-          {/* Search */}
-          <div className="relative">
-            <Search
-              size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by remarks or purpose..."
-              className="w-full sm:w-64 pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-            />
-          </div>
+            );
+          })}
         </div>
       </div>
 
+      <div className="relative flex-1 my-4">
+        <Search
+          size={14}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+        />
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by remarks or purpose..."
+          className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+        />
+      </div>
+
       {/* ── Table ── */}
-      <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <div
+        id="recent-transactions-panel"
+        role="tabpanel"
+        aria-labelledby={`recent-tab-${filter}`}
+        className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+      >
         <table className="w-full text-sm min-w-[700px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
@@ -214,7 +283,7 @@ export default function RecentTransactions() {
                       <Receipt size={24} className="text-gray-500" />
                     </div>
                     <p className="text-sm font-medium text-gray-500">
-                      No transaction found
+                      {emptyLabel}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
                       All recent transaction will appear here

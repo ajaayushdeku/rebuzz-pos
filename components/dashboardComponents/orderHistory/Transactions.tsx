@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import {
   Search,
   ChevronDown,
@@ -43,6 +43,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
+type TabKey = "completed" | "refunded" | "all";
 
 // ── Refund confirmation modal ─────────────────────────────────────────────
 
@@ -143,9 +144,35 @@ export default function Transactions({
   const [search, setSearch] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [page, setPage] = useState(0);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [paymentFilter, setPaymentFilter] = useState<string>("all");
+  const [paymentOpen, setPaymentOpen] = useState(false);
+  const paymentRef = useRef<HTMLDivElement | null>(null);
   const pageSize = 10;
+
+  // Close the payment dropdown on outside click / Escape
+  useEffect(() => {
+    const onClickOutside = (e: MouseEvent) => {
+      if (
+        paymentRef.current &&
+        !paymentRef.current.contains(e.target as Node)
+      ) {
+        setPaymentOpen(false);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPaymentOpen(false);
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onClickOutside);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
+
+  // Status is now driven by the tabs instead of a select
+  const [activeTab, setActiveTab] = useState<TabKey>("completed");
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   // ── Refund handler ──────────────────────────────────────────────────────
 
@@ -185,7 +212,9 @@ export default function Transactions({
 
   // ── Filters + sort ──────────────────────────────────────────────────────
 
-  const filtered = useMemo(() => {
+  // Everything except the status tab — the tab counts are derived from this,
+  // so they stay honest while a search or payment filter is applied.
+  const scoped = useMemo(() => {
     let result = transactions;
     const q = search.toLowerCase();
     if (q) {
@@ -196,14 +225,28 @@ export default function Transactions({
           (t.customer?.name?.toLowerCase().includes(q) ?? false),
       );
     }
-    if (statusFilter !== "all") {
-      result = result.filter((t) => t.status === statusFilter);
-    }
     if (paymentFilter !== "all") {
       result = result.filter((t) => t.paymentMethod === paymentFilter);
     }
     return result;
-  }, [transactions, search, statusFilter, paymentFilter]);
+  }, [transactions, search, paymentFilter]);
+
+  const counts = useMemo(
+    () => ({
+      completed: scoped.filter((t) => t.status === "completed").length,
+      refunded: scoped.filter((t) => t.status === "refunded").length,
+      all: scoped.length,
+    }),
+    [scoped],
+  );
+
+  const filtered = useMemo(
+    () =>
+      activeTab === "all"
+        ? scoped
+        : scoped.filter((t) => t.status === activeTab),
+    [scoped, activeTab],
+  );
 
   const sorted = useMemo(() => {
     if (!sortConfig) return filtered;
@@ -237,6 +280,42 @@ export default function Transactions({
       <ArrowUpDown className="h-3 w-3 opacity-30" />
     );
 
+  // ── Tabs ────────────────────────────────────────────────────────────────
+
+  const tabs: Array<{ key: TabKey; label: string; count: number }> = [
+    { key: "completed", label: "Paid", count: counts.completed },
+    { key: "refunded", label: "Refunded", count: counts.refunded },
+    { key: "all", label: "All", count: counts.all },
+  ];
+
+  const selectTab = (key: TabKey) => {
+    setActiveTab(key);
+    setPage(0);
+  };
+
+  // Left/Right/Home/End move between tabs, per the WAI-ARIA tabs pattern.
+  const handleTabKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const current = tabs.findIndex((t) => t.key === activeTab);
+    let next: number | null = null;
+
+    if (e.key === "ArrowRight") next = (current + 1) % tabs.length;
+    if (e.key === "ArrowLeft") next = (current - 1 + tabs.length) % tabs.length;
+    if (e.key === "Home") next = 0;
+    if (e.key === "End") next = tabs.length - 1;
+    if (next === null) return;
+
+    e.preventDefault();
+    selectTab(tabs[next].key);
+    tabRefs.current[next]?.focus();
+  };
+
+  const emptyMessage =
+    activeTab === "refunded"
+      ? "No refunded transactions"
+      : activeTab === "completed"
+        ? "No completed transactions"
+        : "No transactions found";
+
   return (
     <div className="py-2">
       {/* Hide scrollbar styles */}
@@ -248,8 +327,53 @@ export default function Transactions({
           display: none;
         }
       `}</style>
-      {/* Search + Filters */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
+
+      {/* ── Tabs — the rule runs edge to edge and the pill sits on top ── */}
+      <div className="relative flex justify-center my-4">
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
+        />
+        <div
+          role="tablist"
+          aria-label="Transaction status"
+          onKeyDown={handleTabKeyDown}
+          className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+        >
+          {tabs.map((tab, i) => {
+            const selected = tab.key === activeTab;
+
+            return (
+              <button
+                key={tab.key}
+                ref={(el) => {
+                  tabRefs.current[i] = el;
+                }}
+                type="button"
+                role="tab"
+                id={`transactions-tab-${tab.key}`}
+                aria-selected={selected}
+                aria-controls="transactions-panel"
+                tabIndex={selected ? 0 : -1}
+                onClick={() => selectTab(tab.key)}
+                className={`flex items-center gap-2 rounded-full px-5 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                  selected
+                    ? "bg-white font-bold text-blue-950 shadow-sm"
+                    : "font-semibold text-blue-800 hover:text-blue-950"
+                }`}
+              >
+                {tab.label}
+                <span className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 bg-[#e4f2fe]  text-blue-950 ring-blue-900">
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Search + Filters — stay put across tabs */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mt-8 mb-4">
         <div className="relative flex-1">
           <Search
             size={14}
@@ -262,39 +386,68 @@ export default function Transactions({
               setPage(0);
             }}
             placeholder="Search by customer or order ID..."
-            className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
           />
         </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value);
-            setPage(0);
-          }}
-          className="px-3 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-600"
-        >
-          <option value="all">All Status</option>
-          <option value="completed">Completed</option>
-          <option value="refunded">Refunded</option>
-        </select>
-        <select
-          value={paymentFilter}
-          onChange={(e) => {
-            setPaymentFilter(e.target.value);
-            setPage(0);
-          }}
-          className="px-3 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-600"
-        >
-          <option value="all">All Payment</option>
-          <option value="Card">Card</option>
-          <option value="Cash">Cash</option>
-          <option value="QR">QR</option>
-        </select>
+
+        <div ref={paymentRef} className="relative w-full sm:w-[160px]">
+          <button
+            type="button"
+            onClick={() => setPaymentOpen((o) => !o)}
+            className="w-full flex items-center justify-between gap-2 pl-3 pr-2.5 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition"
+          >
+            <span>
+              {paymentFilter === "all" ? "All Payment" : paymentFilter}
+            </span>
+            <ChevronDown
+              size={14}
+              className={`text-gray-400 transition-transform duration-200 ${
+                paymentOpen ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          <div
+            className={`absolute z-30 mt-1.5 w-full origin-top rounded-md border border-gray-200 bg-white shadow-lg p-1 transition-all duration-200 ${
+              paymentOpen
+                ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+                : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
+            }`}
+          >
+            {[
+              { value: "all", label: "All Payment" },
+              { value: "Card", label: "Card" },
+              { value: "Cash", label: "Cash" },
+              { value: "QR", label: "QR" },
+            ].map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  setPaymentFilter(opt.value);
+                  setPage(0);
+                  setPaymentOpen(false);
+                }}
+                className={`w-full text-left px-3 py-1.5 text-[13px] rounded-md transition-colors cursor-pointer ${
+                  paymentFilter === opt.value
+                    ? "bg-blue-50 text-blue-700 font-medium"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Table — horizontally scrollable on mobile */}
-      {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
-      <div className="bg-white overflow-x-auto scrollbar-hide">
+      <div
+        id="transactions-panel"
+        role="tabpanel"
+        aria-labelledby={`transactions-tab-${activeTab}`}
+        className="bg-white overflow-x-auto scrollbar-hide focus-visible:outline-none"
+      >
         <table className="w-full text-sm min-w-[1000px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
@@ -358,7 +511,7 @@ export default function Transactions({
             {paged.length === 0 ? (
               <tr>
                 <td
-                  colSpan={8}
+                  colSpan={10}
                   className="text-center py-2 text-sm text-gray-400"
                 >
                   <div className="flex flex-col items-center justify-center py-12">
@@ -366,7 +519,7 @@ export default function Transactions({
                       <Receipt size={24} className="text-gray-500" />
                     </div>
                     <p className="text-sm font-medium text-gray-500">
-                      No transactions found
+                      {emptyMessage}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
                       Transactions will appear here.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Search, Plus, Percent, DollarSign } from "lucide-react";
 import {
   useDiscounts,
@@ -38,6 +38,10 @@ export default function DiscountSettingsPage() {
   const { mutate: deleteDiscount, isPending: deleting } = useDeleteDiscount();
   const [search, setSearch] = useState("");
 
+  // Which discount table is showing
+  const [activeTab, setActiveTab] = useState<DiscountType>("percentage");
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
   // Edit/Create modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Discount | null>(null);
@@ -58,7 +62,8 @@ export default function DiscountSettingsPage() {
 
   const openCreate = () => {
     setEditTarget(null);
-    setForm({ name: "", type: "percentage", rate: 0 });
+    // New discounts default to whichever table you're looking at
+    setForm({ name: "", type: activeTab, rate: 0 });
     setModalOpen(true);
   };
 
@@ -132,11 +137,49 @@ export default function DiscountSettingsPage() {
           onSuccess: () => {
             toast.success("Discount created");
             setModalOpen(false);
+            // Follow the new discount to its table
+            setActiveTab(form.type);
           },
           onError: () => toast.error("Failed to create discount"),
         },
       );
     }
+  };
+
+  const tabs: Array<{
+    key: DiscountType;
+    label: string;
+    count: number | null;
+    icon: typeof Percent;
+  }> = [
+    {
+      key: "percentage",
+      label: "Percentage",
+      count: isLoading ? null : percentageDiscounts.length,
+      icon: Percent,
+    },
+    {
+      key: "fixed",
+      label: "Fixed amount",
+      count: isLoading ? null : fixedDiscounts.length,
+      icon: DollarSign,
+    },
+  ];
+
+  // Left/Right/Home/End move between tabs, per the WAI-ARIA tabs pattern.
+  const handleTabKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const current = tabs.findIndex((t) => t.key === activeTab);
+    let next: number | null = null;
+
+    if (e.key === "ArrowRight") next = (current + 1) % tabs.length;
+    if (e.key === "ArrowLeft") next = (current - 1 + tabs.length) % tabs.length;
+    if (e.key === "Home") next = 0;
+    if (e.key === "End") next = tabs.length - 1;
+    if (next === null) return;
+
+    e.preventDefault();
+    setActiveTab(tabs[next].key);
+    tabRefs.current[next]?.focus();
   };
 
   return (
@@ -160,27 +203,78 @@ export default function DiscountSettingsPage() {
           </Button>
         </div>
 
-        {/* ── Search ──────────────────────────────────────── */}
+        {/* ── Search — stays put, filters whichever table is showing ── */}
         <div className="relative ">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
           />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search discounts..."
-            className="w-full h-9 pl-9 pr-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
           />
         </div>
 
-        {/* Discount Tables side by side */}
-        <div className="relative grid grid-cols-1 md:grid-cols-2 gap-2">
-          <div className="bg-white rounded-xl px-6 py-5">
-            <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <Percent size={14} className="text-blue-500" /> Percentage
-              Discounts
-            </h3>
+        {/* ── Tabs — the rule runs edge to edge and the pill sits on top ── */}
+        <div className="relative flex justify-center">
+          <span
+            aria-hidden="true"
+            className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
+          />
+          <div
+            role="tablist"
+            aria-label="Discount type"
+            onKeyDown={handleTabKeyDown}
+            className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+          >
+            {tabs.map((tab, i) => {
+              const selected = tab.key === activeTab;
+              const Icon = tab.icon;
+
+              return (
+                <button
+                  key={tab.key}
+                  ref={(el) => {
+                    tabRefs.current[i] = el;
+                  }}
+                  type="button"
+                  role="tab"
+                  id={`discounts-tab-${tab.key}`}
+                  aria-selected={selected}
+                  aria-controls={`discounts-panel-${tab.key}`}
+                  tabIndex={selected ? 0 : -1}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`flex items-center gap-2 rounded-full px-5 py-2  text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                    selected
+                      ? "bg-white font-bold text-blue-950 shadow-sm"
+                      : "font-semibold text-blue-800 hover:text-blue-950"
+                  }`}
+                >
+                  <Icon size={14} className="shrink-0" />
+                  {tab.label}
+                  <span
+                    className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 
+                     bg-[#e4f2fe] text-blue-950 ring-blue-900"
+                  >
+                    {tab.count === null ? "–" : tab.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── Panels ─────────────────────────────────────── */}
+        <div
+          role="tabpanel"
+          id={`discounts-panel-${activeTab}`}
+          aria-labelledby={`discounts-tab-${activeTab}`}
+          tabIndex={0}
+          className="bg-white rounded-xl px-6 py-5 focus-visible:outline-none"
+        >
+          {activeTab === "percentage" ? (
             <DiscountTable
               discounts={percentageDiscounts}
               discountType="percent"
@@ -189,16 +283,7 @@ export default function DiscountSettingsPage() {
               onDelete={openDelete}
               loading={isLoading}
             />
-          </div>
-
-          {/* Vertical divider */}
-          <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-px bg-gray-200" />
-
-          <div className="bg-white rounded-xl px-6 py-5">
-            <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <DollarSign size={14} className="text-green-500" /> Fixed Amount
-              Discounts
-            </h3>
+          ) : (
             <DiscountTable
               discounts={fixedDiscounts}
               discountType="fixed"
@@ -207,7 +292,7 @@ export default function DiscountSettingsPage() {
               onDelete={openDelete}
               loading={isLoading}
             />
-          </div>
+          )}
         </div>
 
         {/* Create/Edit modal */}

@@ -54,6 +54,7 @@ const GroupTaxTable = ({
           <table className="w-full text-sm">
             <thead>
               <tr className="text-xs text-gray-400 border-b border-gray-100">
+                <th className="text-left pb-2.5 font-medium">#</th>
                 <th className="text-left pb-2.5 font-medium">Name</th>
                 <th className="text-left pb-2.5 font-medium">Combined Rate</th>
                 <th className="text-left pb-2.5 font-medium">Includes</th>
@@ -64,7 +65,7 @@ const GroupTaxTable = ({
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="py-10 text-center">
+                  <td colSpan={6} className="py-10 text-center">
                     <div className="flex items-center justify-center gap-2 text-gray-400">
                       <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
                       <span className="text-sm">Loading group taxes...</span>
@@ -74,7 +75,7 @@ const GroupTaxTable = ({
               ) : filtered.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="text-center py-2 text-sm text-gray-400"
                   >
                     <div className="flex flex-col items-center justify-center py-12">
@@ -91,7 +92,7 @@ const GroupTaxTable = ({
                   </td>
                 </tr>
               ) : (
-                paged.map((group) => {
+                paged.map((group, idx) => {
                   const rate = getGroupRate(group.taxIds);
                   const names = group.taxIds
                     .map((id) => taxes.find((t) => t._id === id)?.name ?? "")
@@ -102,6 +103,9 @@ const GroupTaxTable = ({
                       key={group._id}
                       className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
                     >
+                      <td className="py-3 font-medium text-xs text-gray-400">
+                        {idx + 1}
+                      </td>
                       <td className="py-3 font-medium text-xs text-gray-800">
                         {group.name}
                       </td>

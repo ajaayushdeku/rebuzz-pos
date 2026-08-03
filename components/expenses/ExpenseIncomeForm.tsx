@@ -158,7 +158,7 @@ export default function ExpenseIncomeForm({
           className="bg-blue-600 hover:bg-blue-700 px-3 md:px-2 py-2.5 text-white rounded-xl text-sm font-semibold flex flex-row gap-1 items-center"
         >
           <Plus size={15} className="h-4 w-4" />
-          <span className=" hidden md:block">Add Expense</span>
+          <span className="hidden lg:block">Add Expense</span>
         </Button>
       )}
 

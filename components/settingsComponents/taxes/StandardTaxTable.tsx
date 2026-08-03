@@ -49,6 +49,7 @@ const StandardTaxTable = ({
           <table className="w-full text-sm">
             <thead>
               <tr className="text-xs text-gray-400 border-b border-gray-100">
+                <th className="text-left pb-2.5 font-medium">#</th>
                 <th className="text-left pb-2.5 font-medium">Name</th>
                 <th className="text-left pb-2.5 font-medium">Rate</th>
                 <th className="text-center pb-2.5 font-medium">Status</th>
@@ -58,7 +59,7 @@ const StandardTaxTable = ({
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="py-10 text-center">
+                  <td colSpan={5} className="py-10 text-center">
                     <div className="flex items-center justify-center gap-2 text-gray-400">
                       <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
                       <span className="text-sm">Loading taxes...</span>
@@ -68,7 +69,7 @@ const StandardTaxTable = ({
               ) : filtered.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={5}
                     className="text-center py-2 text-sm text-gray-400"
                   >
                     <div className="flex flex-col items-center justify-center py-12">
@@ -85,11 +86,14 @@ const StandardTaxTable = ({
                   </td>
                 </tr>
               ) : (
-                paged.map((tax) => (
+                paged.map((tax, idx) => (
                   <tr
                     key={tax._id}
                     className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
                   >
+                    <td className="py-3 font-medium text-xs text-gray-400">
+                      {idx + 1}
+                    </td>
                     <td className="py-3 font-medium text-xs text-gray-800">
                       {tax.name}
                     </td>

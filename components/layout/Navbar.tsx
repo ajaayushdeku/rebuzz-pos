@@ -37,7 +37,7 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-3">
-          <ServerEnvBadge className="sm:hidden" />
+          {/* <ServerEnvBadge className="sm:hidden xs:hidden" /> */}
           <HelpButton />
           <User
             initialBusinessName={businessData?.businessName || "My Business"}

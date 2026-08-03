@@ -47,6 +47,10 @@ function ExpenseRecordsPage() {
         {/* ── Records ── */}
         <ExpenseTrackerStats />
         <PurposeSummaryTables />
+
+        {/* Horizontal divider */}
+        <div className="border-t border-gray-200 my-6" />
+
         <RecentTransactions />
       </div>
     </div>

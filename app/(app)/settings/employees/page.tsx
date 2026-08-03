@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
@@ -109,7 +109,27 @@ export default function StaffManagementPage() {
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [page, setPage] = useState(0);
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [roleOpen, setRoleOpen] = useState(false);
+  const roleRef = useRef<HTMLDivElement | null>(null);
   const pageSize = 10;
+
+  // Close the role dropdown on outside click / Escape
+  useEffect(() => {
+    const onClickOutside = (e: MouseEvent) => {
+      if (roleRef.current && !roleRef.current.contains(e.target as Node)) {
+        setRoleOpen(false);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setRoleOpen(false);
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onClickOutside);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editStaff, setEditStaff] = useState<StaffMember | null>(null);
@@ -316,7 +336,7 @@ export default function StaffManagementPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2 pb-4 border-b border-gray-200">
           <div>
             <h1 className="font-bold text-xl md:text-2xl truncate">
-              Manage Staff
+              Manage Employees
             </h1>
             <p className="text-xs text-gray-400 mt-0.5">
               Manage all employees and staff members
@@ -328,7 +348,7 @@ export default function StaffManagementPage() {
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
           >
             <Plus className="h-4 w-4" />
-            Add New Staff
+            Add New Employee
           </Button>
         </div>
 
@@ -346,21 +366,59 @@ export default function StaffManagementPage() {
                 setPage(0);
               }}
               placeholder="Search by name, email or phone..."
-              className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
             />
           </div>
-          <select
-            value={roleFilter}
-            onChange={(e) => {
-              setRoleFilter(e.target.value);
-              setPage(0);
-            }}
-            className="px-3 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-600"
-          >
-            <option value="all">All Roles</option>
-            <option value="basic">Basic</option>
-            <option value="staff">Staff</option>
-          </select>
+          <div ref={roleRef} className="relative w-full sm:w-[150px]">
+            <button
+              type="button"
+              onClick={() => setRoleOpen((o) => !o)}
+              className="w-full flex items-center justify-between gap-2 pl-3 pr-2.5 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition capitalize"
+            >
+              <span>
+                {roleFilter === "all"
+                  ? "All Roles"
+                  : roleFilter.charAt(0).toUpperCase() + roleFilter.slice(1)}
+              </span>
+              <ChevronDown
+                size={14}
+                className={`text-gray-400 transition-transform duration-200 ${
+                  roleOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            <div
+              className={`absolute z-30 mt-1.5 w-full origin-top rounded-md border border-gray-200 bg-white shadow-lg p-1 transition-all duration-200 ${
+                roleOpen
+                  ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+                  : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
+              }`}
+            >
+              {[
+                { value: "all", label: "All Roles" },
+                { value: "basic", label: "Basic" },
+                { value: "staff", label: "Staff" },
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    setRoleFilter(opt.value);
+                    setPage(0);
+                    setRoleOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-1.5 text-[13px] rounded-md transition-colors cursor-pointer capitalize ${
+                    roleFilter === opt.value
+                      ? "bg-blue-50 text-blue-700 font-medium"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* â”€â”€ Staff Table â”€â”€ */}
@@ -377,7 +435,7 @@ export default function StaffManagementPage() {
                   onClick={() => toggleSort("name")}
                 >
                   <span className="flex items-center gap-1">
-                    Staff Name {SortIcon({ colKey: "name" })}
+                    Employee Name {SortIcon({ colKey: "name" })}
                   </span>
                 </th>
                 <th className="text-left pb-3 pt-3 px-4 font-medium">Email</th>

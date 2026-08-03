@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Search, Loader2, Layers, Receipt } from "lucide-react";
 import {
   useTaxes,
@@ -19,6 +19,8 @@ import GroupTaxTable from "@/components/settingsComponents/taxes/GroupTaxTable";
 import EditNormalTaxModal from "@/components/settingsComponents/taxes/EditNormalTaxModal";
 import EditGroupTaxModal from "@/components/settingsComponents/taxes/EditGroupTaxModal";
 import DeleteConfirmModal from "@/components/settingsComponents/DeleteConfirmModal";
+
+type TabKey = "standard" | "group";
 
 const Toggle = ({
   checked,
@@ -61,6 +63,10 @@ export default function TaxSettingsPage() {
     useDeleteGroupTax();
   const [search, setSearch] = useState("");
   const [togglingId, setTogglingId] = useState<string | null>(null);
+
+  // Which tax table is showing
+  const [activeTab, setActiveTab] = useState<TabKey>("standard");
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   // Edit Normal Tax modal state
   const [editNormalOpen, setEditNormalOpen] = useState(false);
@@ -262,6 +268,42 @@ export default function TaxSettingsPage() {
   const isPending =
     updatingNormal || deletingNormal || updatingGroup || deletingGroup;
 
+  const tabs: Array<{
+    key: TabKey;
+    label: string;
+    count: number | null;
+    icon: typeof Receipt;
+  }> = [
+    {
+      key: "standard",
+      label: "Standard",
+      count: isLoading ? null : taxes.length,
+      icon: Receipt,
+    },
+    {
+      key: "group",
+      label: "Group",
+      count: isLoading ? null : groupedTaxes.length,
+      icon: Layers,
+    },
+  ];
+
+  // Left/Right/Home/End move between tabs, per the WAI-ARIA tabs pattern.
+  const handleTabKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const current = tabs.findIndex((t) => t.key === activeTab);
+    let next: number | null = null;
+
+    if (e.key === "ArrowRight") next = (current + 1) % tabs.length;
+    if (e.key === "ArrowLeft") next = (current - 1 + tabs.length) % tabs.length;
+    if (e.key === "Home") next = 0;
+    if (e.key === "End") next = tabs.length - 1;
+    if (next === null) return;
+
+    e.preventDefault();
+    setActiveTab(tabs[next].key);
+    tabRefs.current[next]?.focus();
+  };
+
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -291,53 +333,98 @@ export default function TaxSettingsPage() {
           </div>
         </div>
 
-        {/* ── Search ──────────────────────────────────────── */}
+        {/* ── Search — stays put, filters whichever table is showing ── */}
         <div className="relative ">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
           />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search taxes..."
-            className="w-full h-9 pl-9 pr-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
           />
         </div>
 
-        {/* Standard taxes */}
-        <div className="bg-white rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <Receipt size={14} className="text-blue-500" /> Standard Taxes
-          </h3>
-          <StandardTaxTable
-            taxes={taxes}
-            search={search}
-            onEdit={openEditNormal}
-            onToggle={handleToggle}
-            onDelete={openDeleteNormal}
-            togglingId={togglingId}
-            loading={isLoading}
+        {/* ── Tabs — the rule runs edge to edge and the pill sits on top ── */}
+        <div className="relative flex justify-center">
+          <span
+            aria-hidden="true"
+            className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
           />
+          <div
+            role="tablist"
+            aria-label="Tax type"
+            onKeyDown={handleTabKeyDown}
+            className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+          >
+            {tabs.map((tab, i) => {
+              const selected = tab.key === activeTab;
+              const Icon = tab.icon;
+
+              return (
+                <button
+                  key={tab.key}
+                  ref={(el) => {
+                    tabRefs.current[i] = el;
+                  }}
+                  type="button"
+                  role="tab"
+                  id={`taxes-tab-${tab.key}`}
+                  aria-selected={selected}
+                  aria-controls={`taxes-panel-${tab.key}`}
+                  tabIndex={selected ? 0 : -1}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`flex items-center gap-2 rounded-full px-5 py-2  text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                    selected
+                      ? "bg-white font-bold text-blue-950 shadow-sm"
+                      : "font-semibold text-blue-800 hover:text-blue-950"
+                  }`}
+                >
+                  <Icon size={14} className="shrink-0" />
+                  {tab.label}
+                  <span
+                    className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 
+                     bg-[#e4f2fe] text-blue-950 ring-blue-900"
+                  >
+                    {tab.count === null ? "–" : tab.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Horizontal divider */}
-        <div className="border-t border-gray-200 my-6" />
-
-        {/* Group taxes */}
-        <div className="bg-white rounded-xl  p-5">
-          <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <Layers size={14} className="text-blue-500" /> Group Taxes
-          </h3>
-          <GroupTaxTable
-            groupedTaxes={groupedTaxes}
-            taxes={taxes}
-            search={search}
-            onToggle={handleToggle}
-            onDelete={openDeleteGroup}
-            togglingId={togglingId}
-            loading={isLoading}
-          />
+        {/* ── Panels ─────────────────────────────────────── */}
+        <div
+          role="tabpanel"
+          id={`taxes-panel-${activeTab}`}
+          aria-labelledby={`taxes-tab-${activeTab}`}
+          tabIndex={0}
+          className="bg-white rounded-xl p-5 focus-visible:outline-none"
+        >
+          {activeTab === "standard" ? (
+            <StandardTaxTable
+              taxes={taxes}
+              search={search}
+              onEdit={openEditNormal}
+              onToggle={handleToggle}
+              onDelete={openDeleteNormal}
+              togglingId={togglingId}
+              loading={isLoading}
+            />
+          ) : (
+            <GroupTaxTable
+              groupedTaxes={groupedTaxes}
+              taxes={taxes}
+              search={search}
+              onToggle={handleToggle}
+              onDelete={openDeleteGroup}
+              togglingId={togglingId}
+              loading={isLoading}
+            />
+          )}
         </div>
       </div>
 

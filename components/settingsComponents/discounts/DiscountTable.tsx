@@ -49,6 +49,7 @@ const DiscountTable = ({
       <table className="w-full text-sm">
         <thead>
           <tr className="text-xs text-gray-400 border-b border-gray-100">
+            <th className="text-left pb-2.5 font-medium">#</th>
             <th className="text-left pb-2.5 font-medium">Name</th>
             <th className="text-left pb-2.5 font-medium">Value</th>
             <th className="text-right pb-2.5 font-medium">Actions</th>
@@ -57,7 +58,7 @@ const DiscountTable = ({
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={3} className="py-10 text-center">
+              <td colSpan={4} className="py-10 text-center">
                 <div className="flex items-center justify-center gap-2 text-gray-400">
                   <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
                   <span className="text-sm">Loading discounts...</span>
@@ -67,7 +68,7 @@ const DiscountTable = ({
           ) : filtered.length === 0 ? (
             <tr>
               <td
-                colSpan={3}
+                colSpan={4}
                 className="text-center py-2 text-sm text-gray-400"
               >
                 <div className="flex flex-col items-center justify-center py-12">
@@ -88,11 +89,14 @@ const DiscountTable = ({
               </td>
             </tr>
           ) : (
-            paged.map((d) => (
+            paged.map((d, idx) => (
               <tr
                 key={d._id}
                 className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
               >
+                <td className="py-3 font-medium text-xs text-gray-400">
+                  {idx + 1}
+                </td>
                 <td className="py-3 font-medium text-xs text-gray-800">
                   {d.name}
                 </td>
