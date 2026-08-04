@@ -525,7 +525,7 @@ function InvoiceContent({
       {/* ───────────────── Footer ───────────────── */}
       <div className="border-b border-gray-300 my-6" />
 
-      <div className="bg-gray-50 py-4 rounded-lg text-sm">
+      <div className="bg-gray-50 py-4 px-2 rounded-lg text-sm">
         <div className="flex justify-between items-start text-sm text-black-600">
           <div className="flex flex-col gap-2">
             <p>Cashier: {billData?.generatedBy || "N/A"}</p>

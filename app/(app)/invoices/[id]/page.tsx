@@ -2,7 +2,7 @@
 
 import toast from "react-hot-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import {
@@ -16,19 +16,24 @@ import {
   FileText,
   Mail,
   Plus,
+  RotateCcw,
   Send,
   Wallet,
   Loader2,
+  Trash2,
 } from "lucide-react";
 
 import { useBusiness } from "@/hooks/useBusiness";
 import { getTicketByInvoice } from "@/services/apiTicket.client";
 import {
+  archiveCredit,
   moveInvoiceToCredit,
   sendCreditReminder,
 } from "@/services/apiCredit.client";
 import { useInvoiceCredit } from "@/components/invoice/modals/useInvoiceTicket";
 import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
+import { RefundModal } from "@/components/dashboardComponents/orderHistory/Transactions";
+import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
 
 import {
   DropdownMenu,
@@ -37,6 +42,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { useCurrency } from "@/providers/CurrencyContext";
 import InvoicePreview from "@/components/invoice/InvoicePreview";
 import RecordPaymentModal from "@/components/invoice/modals/RecordPaymentModal";
@@ -47,6 +60,14 @@ import PrintInvoiceModal from "@/components/invoice/modals/PrintInvoiceModal";
 import CustomerPreviewModal from "@/components/invoice/modals/CustomerPreviewModal";
 import CreditPaymentModal from "@/components/credit/CreditPaymentModal";
 import { formatCurrencySymbol } from "@/utils/helper";
+
+type InvoiceTypeKey = "proforma" | "invoice" | "tax";
+
+const INVOICE_TABS: Array<{ key: InvoiceTypeKey; label: string }> = [
+  { key: "proforma", label: "Proforma" },
+  { key: "invoice", label: "Regular Invoice" },
+  { key: "tax", label: "Tax Invoice" },
+];
 
 const InvoiceDetailPage = () => {
   const { id } = useParams();
@@ -71,6 +92,12 @@ const InvoiceDetailPage = () => {
   const [isReminderOpen, setIsReminderOpen] = useState(false);
   const [reminderMessage, setReminderMessage] = useState("");
   const [sendingReminder, setSendingReminder] = useState(false);
+  const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
+  const [isRefunding, setIsRefunding] = useState(false);
+  const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
+
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["ticket", id],
@@ -226,6 +253,65 @@ const InvoiceDetailPage = () => {
     router.push(`/invoices/`);
   };
 
+  const handleRefundInvoice = async () => {
+    const ticketId = invoice.invoice;
+
+    if (!ticketId) {
+      toast.error("Invoice ID is missing");
+      return;
+    }
+
+    setIsRefunding(true);
+    try {
+      const res = await fetch(`/api/tickets/${ticketId}/refund`, {
+        method: "POST",
+      });
+      const result = await res.json();
+
+      if (!res.ok || result.status !== "success") {
+        throw new Error(result.message || "Refund failed");
+      }
+
+      toast.success(
+        `Order ${invoice.ticketName || "Invoice"} refunded successfully`,
+      );
+      setIsRefundModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["ticket", id] });
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to refund transaction",
+      );
+      setIsRefundModalOpen(false);
+    } finally {
+      setIsRefunding(false);
+    }
+  };
+
+  const handleArchiveCredit = async () => {
+    if (!creditForInvoice?._id) {
+      toast.error("Credit not found for this invoice");
+      return;
+    }
+
+    setIsArchiving(true);
+    try {
+      await archiveCredit(creditForInvoice._id);
+      toast.success("Credit deleted");
+      queryClient.invalidateQueries({ queryKey: ["ticket", id] });
+      queryClient.invalidateQueries({ queryKey: ["credits"] });
+      queryClient.invalidateQueries({ queryKey: ["archived-invoices"] });
+      setIsArchiveModalOpen(false);
+      router.push("/records/credits");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to delete credit",
+      );
+      setIsArchiveModalOpen(false);
+    } finally {
+      setIsArchiving(false);
+    }
+  };
+
   const handleMoveToCredit = async () => {
     const invoiceNo = invoice?.invoice;
     if (invoiceNo == null) {
@@ -273,12 +359,49 @@ const InvoiceDetailPage = () => {
     setInvoiceType(type);
   };
 
+  const handleInvoiceTabKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const current = INVOICE_TABS.findIndex((t) => t.key === invoiceType);
+    let next: number | null = null;
+
+    if (e.key === "ArrowRight") next = (current + 1) % INVOICE_TABS.length;
+    if (e.key === "ArrowLeft")
+      next = (current - 1 + INVOICE_TABS.length) % INVOICE_TABS.length;
+    if (e.key === "Home") next = 0;
+    if (e.key === "End") next = INVOICE_TABS.length - 1;
+    if (next === null) return;
+
+    e.preventDefault();
+    setInvoiceType(INVOICE_TABS[next].key);
+    tabRefs.current[next]?.focus();
+  };
+
   // ── Derived status ────────────────────────────────────────────────────────
   const isRefunded = displayBillData?.status === "refunded";
   const isPaid = invoice.paidStatus === "paid";
   const isCredited = invoice.paidStatus === "credited";
+  const isCreditArchived = creditForInvoice?.status === "archived";
 
   const isOverdue = !isPaid && !isRefunded;
+
+  // Build a Transaction-like object for the shared RefundModal.
+  const refundTransaction: Transaction | null = isPaid
+    ? {
+        id: `ORD-${invoice.invoice}`,
+        date: new Date(invoice.createdAt).toLocaleDateString("en-US"),
+        timestamp: new Date(invoice.createdAt).toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        invoiceName: invoice.ticketName || "Invoice",
+        amount: String(invoice.grandTotal ?? 0),
+        paymentMethod:
+          (invoice.paymentMethod as Transaction["paymentMethod"]) || "Cash",
+        items: [],
+        status: "completed",
+        invoiceNo: invoice.invoice,
+      }
+    : null;
 
   // ── Credit figures (when the invoice is credited) ──────────────────────────
   const creditDue = Number(creditDetail?.credit?.dueAmount ?? 0);
@@ -329,11 +452,13 @@ const InvoiceDetailPage = () => {
               {invoice.ticketName || "Invoice"} #{invoice?.invoice}
             </h1>
             <p className="text-xs text-gray-400 mt-0.5">
-              {invoice.paidStatus === "paid"
-                ? "Paid"
-                : isCredited
-                  ? "Credited"
-                  : "Unpaid"}{" "}
+              {isCreditArchived
+                ? "Credit Archived"
+                : invoice.paidStatus === "paid"
+                  ? "Paid"
+                  : isCredited
+                    ? "Credited"
+                    : "Unpaid"}{" "}
               · Created{" "}
               {new Date(invoice.createdAt).toLocaleDateString("en-US", {
                 month: "short",
@@ -414,7 +539,7 @@ const InvoiceDetailPage = () => {
                 Print options
               </DropdownMenuItem>
 
-              {!isCredited && (
+              {!isCredited && !isCreditArchived && (
                 <>
                   <DropdownMenuSeparator className="my-1 bg-gray-100" />
 
@@ -427,12 +552,32 @@ const InvoiceDetailPage = () => {
                 </>
               )}
 
-              <DropdownMenuItem
-                onClick={handleDeleteInvoice}
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 text-sm"
-              >
-                Delete
-              </DropdownMenuItem>
+              {isPaid && (
+                <DropdownMenuItem
+                  onClick={() => setIsRefundModalOpen(true)}
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-orange-600 focus:bg-orange-50 focus:text-orange-600 text-sm"
+                >
+                  Refund
+                </DropdownMenuItem>
+              )}
+
+              {isCredited && !isCreditArchived && (
+                <DropdownMenuItem
+                  onClick={() => setIsArchiveModalOpen(true)}
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 text-sm"
+                >
+                  Delete Credited Invoice
+                </DropdownMenuItem>
+              )}
+
+              {!isPaid && !isCredited && !isCreditArchived && (
+                <DropdownMenuItem
+                  onClick={handleDeleteInvoice}
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 text-sm"
+                >
+                  Delete
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -459,7 +604,19 @@ const InvoiceDetailPage = () => {
                   Status
                 </p>
 
-                {displayBillData && displayBillData?.status === "refunded" ? (
+                {isCreditArchived ? (
+                  <span
+                    className="text-xs font-semibold px-2.5 py-1 rounded-md border border-gray-300 text-gray-700 relative overflow-hidden capitalize"
+                    style={{
+                      backgroundImage:
+                        "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(156, 163, 175, 0.2) 2px, rgba(156, 163, 175, 0.2) 4px)",
+                      backgroundColor: "rgba(156, 163, 175, 0.3)",
+                    }}
+                  >
+                    Credit Archived
+                  </span>
+                ) : displayBillData &&
+                  displayBillData?.status === "refunded" ? (
                   <span
                     className="text-xs font-semibold px-2.5 py-1 rounded-md border border-orange-300 text-orange-800 relative overflow-hidden capitalize"
                     style={{
@@ -601,7 +758,7 @@ const InvoiceDetailPage = () => {
                     GMT+5:45
                   </p>
                 </div>
-                {!isPaid && (
+                {!isPaid && !isCreditArchived && (
                   <button
                     onClick={handleEditInvoice}
                     className="text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-4 py-1.5 transition-colors shrink-0"
@@ -771,15 +928,25 @@ const InvoiceDetailPage = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-900">
-                    {displayBillData && isRefunded
-                      ? "Payment refunded"
-                      : isPaid
-                        ? "Payment completed"
-                        : "Manage payments"}
+                    {isCreditArchived
+                      ? "Credit archived"
+                      : displayBillData && isRefunded
+                        ? "Payment refunded"
+                        : isPaid
+                          ? "Payment completed"
+                          : "Manage payments"}
                   </p>
 
                   <p className="text-xs text-gray-500 mt-0.5">
-                    {displayBillData && isRefunded ? (
+                    {isCreditArchived ? (
+                      <span className="text-gray-500">
+                        Archived on{" "}
+                        {creditForInvoice?.updatedAt &&
+                          new Date(
+                            creditForInvoice.updatedAt,
+                          ).toLocaleDateString()}
+                      </span>
+                    ) : displayBillData && isRefunded ? (
                       <span className="text-orange-600">
                         Refunded on{" "}
                         {displayBillData?.updatedAt &&
@@ -847,16 +1014,19 @@ const InvoiceDetailPage = () => {
                       </svg>
                       Charge a credit card
                     </button>
-                    <button
-                      onClick={() =>
-                        isCredited
-                          ? setIsCreditPaymentOpen(true)
-                          : setIsPaymentModalOpen(true)
-                      }
-                      className="text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-1.5 transition-colors"
-                    >
-                      Record a payment
-                    </button>
+
+                    {!isCreditArchived && (
+                      <button
+                        onClick={() =>
+                          isCredited
+                            ? setIsCreditPaymentOpen(true)
+                            : setIsPaymentModalOpen(true)
+                        }
+                        className="text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-1.5 transition-colors"
+                      >
+                        Record a payment
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -882,7 +1052,7 @@ const InvoiceDetailPage = () => {
                       )}
                     </span>
                   )}
-                  {!isPaid && !isRefunded && (
+                  {!isPaid && !isRefunded && !isCreditArchived && (
                     <>
                       {" — "}
                       <button
@@ -907,6 +1077,10 @@ const InvoiceDetailPage = () => {
                   ) : invoice.paidStatus === "paid" ? (
                     <span className="text-green-700 font-bold">
                       This invoice has been fully paid
+                    </span>
+                  ) : isCreditArchived ? (
+                    <span className="text-gray-700 font-bold">
+                      This invoice&lsquo;s credit has been archived
                     </span>
                   ) : isCredited ? (
                     <span className="text-violet-700 font-bold">
@@ -971,27 +1145,40 @@ const InvoiceDetailPage = () => {
           </div>
 
           {/* ── Invoice Type Tabs ── */}
-          <div className="mb-6 mt-4">
-            <div className="flex border-b border-gray-200 gap-1">
-              {(["proforma", "invoice", "tax"] as const).map((tab) => {
-                const label =
-                  tab === "proforma"
-                    ? "Proforma"
-                    : tab === "invoice"
-                      ? "Regular Invoice"
-                      : "Tax Invoice";
-                const isActive = invoiceType === tab;
+          <div className="relative flex justify-center mt-6 mb-6">
+            <span
+              aria-hidden="true"
+              className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
+            />
+            <div
+              role="tablist"
+              aria-label="Invoice document type"
+              onKeyDown={handleInvoiceTabKeyDown}
+              className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+            >
+              {INVOICE_TABS.map((tab, i) => {
+                const selected = invoiceType === tab.key;
+
                 return (
                   <button
-                    key={tab}
-                    onClick={() => setInvoiceType(tab)}
-                    className={`px-6 py-3 text-sm font-semibold rounded-t-lg transition-all ${
-                      isActive
-                        ? "bg-white text-blue-600 border border-b-white border-gray-200 -mb-px"
-                        : "bg-gray-50 text-gray-500 hover:text-gray-700 border border-transparent"
+                    key={tab.key}
+                    ref={(el) => {
+                      tabRefs.current[i] = el;
+                    }}
+                    type="button"
+                    role="tab"
+                    id={`invoice-type-tab-${tab.key}`}
+                    aria-selected={selected}
+                    aria-controls={`invoice-type-panel-${tab.key}`}
+                    tabIndex={selected ? 0 : -1}
+                    onClick={() => setInvoiceType(tab.key)}
+                    className={`rounded-full px-5 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                      selected
+                        ? "bg-white font-bold text-blue-950 shadow-sm"
+                        : "font-semibold text-blue-800 hover:text-blue-950"
                     }`}
                   >
-                    {label}
+                    {tab.label}
                   </button>
                 );
               })}
@@ -1065,6 +1252,15 @@ const InvoiceDetailPage = () => {
         open={isEmailInvoiceOpen}
         onClose={() => setIsEmailInvoiceOpen(false)}
         invoiceNo={id as string}
+      />
+
+      {/* Refund confirmation modal */}
+      <RefundModal
+        open={isRefundModalOpen}
+        transaction={refundTransaction}
+        onClose={() => setIsRefundModalOpen(false)}
+        onConfirm={handleRefundInvoice}
+        isRefunding={isRefunding}
       />
 
       {/* Credit reminder — compose the message before sending */}
@@ -1163,6 +1359,61 @@ const InvoiceDetailPage = () => {
           router.refresh();
         }}
       />
+
+      {/* Delete Credit (archive) confirmation */}
+      <Dialog
+        open={isArchiveModalOpen}
+        onOpenChange={(o) => !o && !isArchiving && setIsArchiveModalOpen(false)}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-2">
+              <Trash2 className="h-5 w-5 text-red-600" />
+            </div>
+            <DialogTitle className="text-center text-base font-semibold">
+              Delete Credit?
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="text-center space-y-1 py-1">
+            <p className="text-sm text-gray-600">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold text-gray-900">
+                {creditForInvoice?.user?.name || "this credit"}
+              </span>
+              ?
+            </p>
+            <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mt-2">
+              This moves it to the archived list.
+            </p>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsArchiveModalOpen(false)}
+              disabled={isArchiving}
+              className="text-sm rounded-lg flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleArchiveCredit}
+              disabled={isArchiving}
+              className="bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg flex-1"
+            >
+              {isArchiving ? (
+                <span className="flex items-center gap-1.5">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Deleting...
+                </span>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <ExportPdfModal
         open={isExportPdfOpen}

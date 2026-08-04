@@ -111,11 +111,18 @@ export function useInvoiceCredit(
     enabled: enabled && invoiceNo != null,
     staleTime: 5 * 60 * 1000,
   });
+  const { data: archivedCredits } = useQuery({
+    queryKey: ["credits", "archived"],
+    queryFn: () => fetchCreditsByStatus("archived"),
+    enabled: enabled && invoiceNo != null,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const credit =
     invoiceNo != null
       ? ((currentCredits ?? []).find((c) => c.invoiceNo === invoiceNo) ??
         (completedCredits ?? []).find((c) => c.invoiceNo === invoiceNo) ??
+        (archivedCredits ?? []).find((c) => c.invoiceNo === invoiceNo) ??
         null)
       : null;
 

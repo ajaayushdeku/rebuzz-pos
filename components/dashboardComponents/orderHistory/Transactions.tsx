@@ -47,7 +47,7 @@ type TabKey = "completed" | "refunded" | "all";
 
 // ── Refund confirmation modal ─────────────────────────────────────────────
 
-const RefundModal = ({
+export const RefundModal = ({
   open,
   transaction,
   onClose,
