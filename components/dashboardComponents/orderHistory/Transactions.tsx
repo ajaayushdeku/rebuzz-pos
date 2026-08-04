@@ -622,10 +622,9 @@ export default function Transactions({
                         <button
                           onClick={() => setRefundTarget(transaction)}
                           title="Refund this transaction"
-                          className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-orange-400 hover:bg-orange-500 hover:text-white rounded-lg  transition-colors hover:cursor-pointer"
+                          className="p-1.5 text-xs flex flex-row items-center gap-2 text-gray-400 hover:text-orange-600 hover:bg-orange-100 rounded-lg transition-colors hover:cursor-pointer tracking-wide font-medium"
                         >
-                          Refund
-                          <RotateCcw size={12} />
+                          Refund <RotateCcw size={12} />
                         </button>
                       )}
                     </td>

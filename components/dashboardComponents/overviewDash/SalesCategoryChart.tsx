@@ -1,7 +1,7 @@
 "use client";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { ChevronDown, ChartPie } from "lucide-react";
+import { ChevronDown, ChartPie, ChevronUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useSalesByCategory } from "@/hooks/useSalesByCategory";
@@ -248,11 +248,13 @@ const SalesCategoryChart = ({
               ))}
             </div>
 
-            {showScrollHint && (
-              <div className="pointer-events-none absolute bottom-[-15px] left-0 right-0 flex justify-center pt-8 pb-1">
+            <div className="pointer-events-none absolute bottom-[-15px] left-0 right-0 flex justify-center pt-8 pb-1">
+              {showScrollHint ? (
                 <ChevronDown className="h-4 w-4 text-gray-400 animate-bounce" />
-              </div>
-            )}
+              ) : (
+                <ChevronUp className="h-4 w-4 text-gray-400 animate-bounce" />
+              )}
+            </div>
           </div>
         </div>
       )}

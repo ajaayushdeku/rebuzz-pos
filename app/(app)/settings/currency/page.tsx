@@ -164,6 +164,37 @@ const CURRENCIES = [
   },
 ];
 
+/**
+ * Flag rendered from flagcdn's SVG, so it stays sharp at any size / pixel density.
+ *
+ * `object-contain` (not cover) matters: Nepal is taller than it is wide and
+ * Switzerland is square, so cover would crop them. The neutral box behind the
+ * image absorbs the letterboxing that contain leaves on odd ratios.
+ */
+function Flag({
+  countryCode,
+  label,
+  className = "w-10 h-8",
+}: {
+  countryCode: string;
+  label: string;
+  className?: string;
+}) {
+  return (
+    <span
+      className={`${className} inline-flex items-center justify-center shrink-0 overflow-hidden `}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={`https://flagcdn.com/${countryCode}.svg`}
+        alt={label}
+        loading="lazy"
+        className="max-w-full max-h-full object-contain"
+      />
+    </span>
+  );
+}
+
 export default function CurrencyPage() {
   const { currency, setCurrency } = useCurrency();
   const [search, setSearch] = useState("");
@@ -175,6 +206,11 @@ export default function CurrencyPage() {
     countryCode: string;
   } | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const active = useMemo(
+    () => CURRENCIES.find((c) => c.code === currency.code),
+    [currency.code],
+  );
 
   const filtered = useMemo(
     () =>
@@ -223,20 +259,15 @@ export default function CurrencyPage() {
 
         {/* Current */}
         <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-8 flex items-center gap-3">
-          <span className="w-9 h-6 rounded-xs overflow-hidden shrink-0 ring-1 ring-black/5">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`https://flagcdn.com/w40/${CURRENCIES.find((c) => c.code === currency.code)?.countryCode ?? "np"}.png`}
-              alt={currency.code}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
-          </span>
+          <Flag
+            countryCode={active?.countryCode ?? "np"}
+            label={currency.code}
+            className="w-9 h-6"
+          />
           <div>
             <p className="text-xs text-blue-500 font-medium">Active Currency</p>
             <p className="text-sm font-semibold text-blue-800">
-              {currency.code} —{" "}
-              {CURRENCIES.find((c) => c.code === currency.code)?.name}
+              {currency.code} — {active?.name}
             </p>
           </div>
         </div>
@@ -269,15 +300,11 @@ export default function CurrencyPage() {
                     : "border-gray-100 hover:border-gray-200 hover:bg-gray-50"
                 }`}
               >
-                <span className="w-8 h-5 rounded-xs overflow-hidden shrink-0 ring-1 ring-black/5">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`https://flagcdn.com/w40/${c.countryCode}.png`}
-                    alt={c.code}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </span>
+                <Flag
+                  countryCode={c.countryCode}
+                  label={c.code}
+                  className="w-8 h-6"
+                />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-gray-800">
@@ -305,16 +332,15 @@ export default function CurrencyPage() {
       >
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <div className="mx-auto w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2 overflow-hidden">
-              {confirmTarget && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={`https://flagcdn.com/w80/${confirmTarget.countryCode}.png`}
-                  alt={confirmTarget.code}
-                  className="w-full h-full object-cover"
+            {confirmTarget && (
+              <div className="mx-auto mb-2">
+                <Flag
+                  countryCode={confirmTarget.countryCode}
+                  label={confirmTarget.code}
+                  className="w-16 h-12 rounded-lg"
                 />
-              )}
-            </div>
+              </div>
+            )}
             <DialogTitle className="text-center text-base font-semibold">
               Change Currency?
             </DialogTitle>

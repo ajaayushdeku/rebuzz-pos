@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Wallet, Trash2, Settings, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +27,10 @@ import { useCurrency } from "@/providers/CurrencyContext";
 const inputClass =
   "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white";
 
+/** Maximum allowed amount for a budget threshold (0 – 100,000,000). */
+const MAX_AMOUNT = 100_000_000;
+const AMOUNT_RANGE_MSG = `Amount must be between 0 and ${MAX_AMOUNT.toLocaleString()}`;
+
 export default function BudgetForm() {
   const { currency } = useCurrency();
   const { addBudget, updateBudget, deleteBudget, budgets, expensePurposes } =
@@ -39,6 +43,16 @@ export default function BudgetForm() {
   const [managingPurposes, setManagingPurposes] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Tracks whether the out-of-range toast has already been shown, so it
+  // only fires once per out-of-range state instead of on every keystroke.
+  const amountToastShown = useRef(false);
+
+  // True when the entered amount exceeds the allowed maximum
+  const isAmountOutOfRange =
+    amount !== "" &&
+    !isNaN(parseFloat(amount)) &&
+    parseFloat(amount) > MAX_AMOUNT;
+
   // Get the selected purpose name for display
   const selectedPurpose = expensePurposes.find(
     (p) => p._id === selectedPurposeId,
@@ -49,6 +63,7 @@ export default function BudgetForm() {
     const e: Record<string, string> = {};
     if (!selectedPurposeId) e.purpose = "Select a category";
     if (!amount || parseFloat(amount) <= 0) e.amount = "Enter a valid amount";
+    else if (parseFloat(amount) > MAX_AMOUNT) e.amount = AMOUNT_RANGE_MSG;
     // Block picking a category that another threshold already uses.
     const clash = budgets.find(
       (b) => b.purposeId === selectedPurposeId && b.id !== editingId,
@@ -170,19 +185,38 @@ export default function BudgetForm() {
                 {formatCurrencySymbolOnly(currency.symbol)}
               </span>
               <input
-                type="number"
-                min={0}
+                type="text"
+                inputMode="decimal"
                 value={amount}
                 onChange={(e) => {
-                  setAmount(e.target.value);
+                  // Allow only digits and a single decimal point — blocks
+                  // negative signs, "e", "+", and any other symbols.
+                  const raw = e.target.value;
+                  const sanitized = raw
+                    .replace(/[^0-9.]/g, "")
+                    .replace(/(\..*)\./g, "$1");
+                  setAmount(sanitized);
                   if (errors.amount) setErrors((p) => ({ ...p, amount: "" }));
+                  if (sanitized && parseFloat(sanitized) > MAX_AMOUNT) {
+                    if (!amountToastShown.current) {
+                      amountToastShown.current = true;
+                      toast.error(AMOUNT_RANGE_MSG);
+                    }
+                  } else {
+                    amountToastShown.current = false;
+                  }
                 }}
                 placeholder="0.00"
                 className={`${inputClass} pl-8 ${
-                  errors.amount ? "border-red-300" : ""
+                  errors.amount || isAmountOutOfRange ? "border-red-300" : ""
                 }`}
               />
             </div>
+            {isAmountOutOfRange && (
+              <p className="text-[10px] text-red-500 mt-1">
+                {AMOUNT_RANGE_MSG}
+              </p>
+            )}
             {errors.amount && (
               <p className="text-xs text-red-500 mt-1">{errors.amount}</p>
             )}
@@ -191,7 +225,8 @@ export default function BudgetForm() {
           <div className="flex items-center gap-2">
             <Button
               onClick={handleSubmit}
-              className="flex-1 text-sm rounded-lg py-2.5 bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={isAmountOutOfRange}
+              className="flex-1 text-sm rounded-lg py-2.5 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Wallet size={14} className="mr-1.5" />
               {editingId ? "Update Budget" : "Save Budget"}

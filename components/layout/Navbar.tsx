@@ -65,16 +65,17 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* {currency.symbol}{" "} */}
           {/* <ServerEnvBadge className="sm:hidden xs:hidden" /> */}
           <span
             title={currency.code}
-            className="w-6 h-4 rounded-xs overflow-hidden shrink-0 ring-1 ring-black/5"
+            className="w-8 h-5 inline-flex items-center justify-center shrink-0 overflow-hidden  rounded-xs bg-gray-50 ring-1 ring-black/5"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={`https://flagcdn.com/w40/${flagCode}.png`}
+              src={`https://flagcdn.com/${flagCode}.svg`}
               alt={currency.code}
-              className="w-full h-full object-cover"
+              className="max-w-full max-h-full object-contain"
               loading="lazy"
             />
           </span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Plus, Loader2, Settings } from "lucide-react";
 import toast from "react-hot-toast";
 import {
@@ -25,8 +25,17 @@ import {
 import { getPurposeIcon } from "@/lib/purpose-icons";
 import ManagePurposesModal from "./ManagePurposesModal";
 import { Button } from "../ui/button";
+import { formatCurrencySymbolOnly } from "@/utils/helper";
+import { useCurrency } from "@/providers/CurrencyContext";
+
+const inputClass =
+  "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white";
 
 const FREQUENCIES = ["daily", "weekly", "monthly", "yearly"] as const;
+
+/** Maximum allowed amount for a transaction (0 – 100,000,000). */
+const MAX_AMOUNT = 100_000_000;
+const AMOUNT_RANGE_MSG = `Amount must be between 0 and ${MAX_AMOUNT.toLocaleString()}`;
 
 type Props = {
   /** When provided, the form opens in edit mode for this transaction */
@@ -49,6 +58,7 @@ export default function ExpenseIncomeForm({
     updateTransaction,
   } = useTracker();
 
+  const { currency } = useCurrency();
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<TransactionType>("expense");
   const [managePurposeOpen, setManagePurposeOpen] = useState(false);
@@ -64,8 +74,16 @@ export default function ExpenseIncomeForm({
   const [endDate, setEndDate] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Tracks whether the out-of-range toast has already been shown, so it
+  // only fires once per out-of-range state instead of on every keystroke.
+  const amountToastShown = useRef(false);
+
   const isEditing = !!editTransaction;
   const purposes = tab === "expense" ? expensePurposes : incomePurposes;
+
+  // True when the entered amount exceeds the allowed maximum
+  const isAmountOutOfRange =
+    amount !== "" && !isNaN(Number(amount)) && Number(amount) > MAX_AMOUNT;
 
   // Initialize form from editTransaction when it changes
   const [initialized, setInitialized] = useState(false);
@@ -104,6 +122,7 @@ export default function ExpenseIncomeForm({
     if (!remark.trim()) errs.remark = "Enter a remark";
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0)
       errs.amount = "Enter a valid amount";
+    else if (Number(amount) > MAX_AMOUNT) errs.amount = AMOUNT_RANGE_MSG;
     if (!date) errs.date = "Select a date";
     if (recurring && !endDate) errs.endDate = "Select an end date";
     setErrors(errs);
@@ -281,14 +300,43 @@ export default function ExpenseIncomeForm({
               <label className="text-xs font-medium text-gray-500 block mb-1.5">
                 Amount
               </label>
-              <input
-                type="number"
-                min={0}
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="0.00"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
+                  {formatCurrencySymbolOnly(currency.symbol)}
+                </span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={amount}
+                  onChange={(e) => {
+                    // Allow only digits and a single decimal point — blocks
+                    // negative signs, "e", "+", and any other symbols.
+                    const raw = e.target.value;
+                    const sanitized = raw
+                      .replace(/[^0-9.]/g, "")
+                      .replace(/(\..*)\./g, "$1");
+                    setAmount(sanitized);
+                    if (sanitized && Number(sanitized) > MAX_AMOUNT) {
+                      if (!amountToastShown.current) {
+                        amountToastShown.current = true;
+                        toast.error(AMOUNT_RANGE_MSG);
+                      }
+                    } else {
+                      amountToastShown.current = false;
+                    }
+                  }}
+                  placeholder="0.00"
+                  className={`${inputClass} pl-8 ${
+                    errors.amount || isAmountOutOfRange ? "border-red-300" : ""
+                  }`}
+                />
+              </div>
+
+              {isAmountOutOfRange && (
+                <p className="text-[10px] text-red-500 mt-1">
+                  {AMOUNT_RANGE_MSG}
+                </p>
+              )}
               {errors.amount && (
                 <p className="text-xs text-red-500 mt-1">{errors.amount}</p>
               )}
@@ -380,8 +428,8 @@ export default function ExpenseIncomeForm({
             </button>
             <button
               onClick={handleSubmit}
-              disabled={saving}
-              className={`flex-1 py-2.5 text-sm text-white rounded-xl transition-colors font-semibold flex items-center justify-center gap-1.5 disabled:opacity-60 ${
+              disabled={saving || isAmountOutOfRange}
+              className={`flex-1 py-2.5 text-sm text-white rounded-xl transition-colors font-semibold flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed ${
                 tab === "expense"
                   ? "bg-red-500 hover:bg-red-600"
                   : "bg-green-500 hover:bg-green-600"

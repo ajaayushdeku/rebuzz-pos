@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import type {
   NameType,
@@ -12,7 +12,7 @@ import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
 import { ComponentHeader } from "../ComponentHeader";
-import { ChartPie } from "lucide-react";
+import { ChartPie, ChevronDown, ChevronUp } from "lucide-react";
 
 interface SliceData {
   purpose: string;
@@ -54,6 +54,18 @@ const CustomTooltip = ({
 export default function ExpensesByCategory() {
   const { transactions, expensePurposes } = useTracker();
   const { currency } = useCurrency();
+
+  // ── Legend scroll-aware arrow ──────────────────────────────────────────
+  const legendRef = useRef<HTMLDivElement>(null);
+  const [canScrollMore, setCanScrollMore] = useState(false);
+
+  const updateLegendScroll = useCallback(() => {
+    const el = legendRef.current;
+    if (!el) return;
+    const hasOverflow = el.scrollHeight > el.clientHeight;
+    const atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+    setCanScrollMore(hasOverflow && !atEnd);
+  }, []);
 
   // Build purposeId → { name, icon } lookup
   const purposeLookup = useMemo(() => {
@@ -98,8 +110,24 @@ export default function ExpensesByCategory() {
       });
   }, [transactions, totalExpense, getPurposeName, getPurposeIcon]);
 
+  useEffect(() => {
+    updateLegendScroll();
+    window.addEventListener("resize", updateLegendScroll);
+    return () => window.removeEventListener("resize", updateLegendScroll);
+  }, [updateLegendScroll, expenseByPurpose]);
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      {/* Hide scrollbar styles */}
+      <style jsx global>{`
+        .scrollbar-hide {
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
+
       <div className="mb-6">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
@@ -123,7 +151,7 @@ export default function ExpensesByCategory() {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col sm:flex-row items-start gap-6 px-6">
+        <div className="flex flex-col sm:flex-row items-start gap-16 px-6">
           {/* ── Donut on the left ── */}
           <div className="shrink-0 w-full sm:w-48 flex justify-center">
             <ResponsiveContainer width={200} height={200}>
@@ -184,37 +212,54 @@ export default function ExpensesByCategory() {
           </div>
 
           {/* ── Legend with progress bars on the right ── */}
-          <div className="flex-1 w-full space-y-2 max-h-56 overflow-y-auto pr-1">
-            {expenseByPurpose.map((entry) => (
-              <div key={entry.purpose} className="flex items-center gap-2 py-1">
-                <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
-                  style={{ backgroundColor: entry.color }}
-                />
-                <span className="text-xs text-gray-600 w-20 truncate shrink-0">
-                  {entry.purpose}
-                </span>
-                <div className="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-700 ease-out"
-                    style={{
-                      width: `${entry.pct}%`,
-                      background: `linear-gradient(90deg, ${entry.color}, ${entry.color}dd)`,
-                    }}
+          <div className="flex-1 w-full">
+            <div
+              ref={legendRef}
+              onScroll={updateLegendScroll}
+              className="space-y-2 max-h-56 overflow-y-auto pr-1 scrollbar-hide"
+            >
+              {expenseByPurpose.map((entry) => (
+                <div
+                  key={entry.purpose}
+                  className="flex items-center gap-2 py-1"
+                >
+                  <span
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: entry.color }}
                   />
+                  <span className="text-xs text-gray-600 w-20 truncate shrink-0">
+                    {entry.purpose}
+                  </span>
+                  <div className="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-700 ease-out"
+                      style={{
+                        width: `${entry.pct}%`,
+                        background: `linear-gradient(90deg, ${entry.color}, ${entry.color}dd)`,
+                      }}
+                    />
+                  </div>
+                  <span className="text-xs font-semibold text-gray-700 w-10 text-right shrink-0">
+                    {entry.pct.toFixed(2)}%
+                  </span>
+                  <span className="text-xs text-gray-400 w-24 text-right shrink-0">
+                    {formatCurrencySymbol(
+                      entry.amount,
+                      currency.symbol,
+                      currency.locale,
+                    )}
+                  </span>
                 </div>
-                <span className="text-xs font-semibold text-gray-700 w-10 text-right shrink-0">
-                  {entry.pct.toFixed(2)}%
-                </span>
-                <span className="text-xs text-gray-400 w-24 text-right shrink-0">
-                  {formatCurrencySymbol(
-                    entry.amount,
-                    currency.symbol,
-                    currency.locale,
-                  )}
-                </span>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            <div className="flex justify-center pt-1.5 animate-bounce">
+              {canScrollMore ? (
+                <ChevronDown size={14} className="text-gray-400" />
+              ) : (
+                <ChevronUp size={14} className="text-gray-400" />
+              )}
+            </div>
           </div>
         </div>
       )}
