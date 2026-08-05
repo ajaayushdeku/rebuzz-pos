@@ -6,6 +6,7 @@ import {
   Wallet,
   TrendingUp,
   Package,
+  Layers,
   DollarSign,
   LineChart,
   ShoppingCart,
@@ -42,6 +43,7 @@ export default function InventoryValueSummary({
   const totalCost = data?.totalCostPrice ?? 0;
   const potentialMargin = totalSelling - totalCost;
   const productCount = data?.productCount ?? 0;
+  const variantCount = data?.variantCount ?? 0;
 
   // Date-ranged revenue, net profit & order count summed across all products.
   const { totalRevenue, totalNetProfit, totalOrderCount } = useMemo(() => {
@@ -117,10 +119,20 @@ export default function InventoryValueSummary({
       ranged: false,
     },
     {
+      // Parent products only — a product with variants still counts once.
       label: "Total Products",
-      value: String(productCount),
+      value: productCount.toLocaleString(),
       icon: <Package size={16} className="text-gray-600" />,
       iconBg: "bg-gray-100",
+      loading: isLoading,
+      ranged: false,
+    },
+    {
+      // Variants across every product; products without variants contribute 0.
+      label: "Total Product Variants",
+      value: variantCount.toLocaleString(),
+      icon: <Layers size={16} className="text-indigo-600" />,
+      iconBg: "bg-indigo-50",
       loading: isLoading,
       ranged: false,
     },
@@ -135,11 +147,13 @@ export default function InventoryValueSummary({
     >
       <div className="flex items-center gap-2 mb-2">
         <div
-          className={`w-7 h-7 rounded-lg ${card.iconBg} flex items-center justify-center`}
+          className={`w-7 h-7 rounded-lg ${card.iconBg} flex items-center justify-center shrink-0`}
         >
           {card.icon}
         </div>
-        <span className="text-xs text-gray-400 font-medium">{card.label}</span>
+        <span className="text-xs text-gray-400 font-medium truncate">
+          {card.label}
+        </span>
         {card.ranged && (
           <span className="ml-auto text-[9px] uppercase tracking-wide text-gray-700 font-semibold">
             Range
@@ -179,7 +193,7 @@ export default function InventoryValueSummary({
             <p className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold mb-2">
               Current stock (all products)
             </p>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
               {staticCards.map(renderCard)}
             </div>
           </div>

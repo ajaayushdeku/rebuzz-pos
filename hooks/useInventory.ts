@@ -9,6 +9,9 @@ import { InventoryItem, MergedSalesItem } from "@/services/apiInventory";
 export const INVENTORY_KEY = ["inventory"] as const;
 const SALES_KEY = ["salesByItem"] as const;
 
+/** Shared by every query here so freshness behaviour can't drift apart. */
+const STALE_TIME = 5 * 1000;
+
 // ── Inventory fetcher ─────────────────────────────────────────────────────
 
 async function fetchInventoryClient(): Promise<InventoryItem[]> {
@@ -120,42 +123,50 @@ async function fetchSalesByItemClient(
 export interface ProductTotals {
   totalSellingPrice: number;
   totalCostPrice: number;
+  /** Parent products — a product with variants still counts once. */
   productCount: number;
+  /** Variants across all products; products without variants contribute 0. */
+  variantCount: number;
 }
 
-// Stock-weighted selling/cost value across EVERY product — unlike the
-// inventory query, this is not filtered by costPrice, so it reflects the whole
-// catalog. Each product's price and cost are multiplied by its stock on hand.
-async function fetchProductTotals(): Promise<ProductTotals> {
-  const res = await fetch("/api/products");
-  if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
-  const json = await res.json();
-  const raw: any[] = json?.data?.products ?? [];
-
+/**
+ * Stock-weighted selling/cost value plus product and variant counts, derived
+ * from the inventory list rather than a second fetch of the same endpoint.
+ *
+ * Deriving matters for freshness: totals used to live under their own query
+ * key with their own request, so an optimistic stock edit updated the product
+ * grid instantly while these cards kept showing pre-edit numbers until an
+ * unrelated refetch happened. Sharing one cache entry means any update to the
+ * inventory — optimistic or fetched — recomputes the totals in the same render.
+ *
+ * A product WITH variants carries its price and stock on the variants (the
+ * base row reads 0), so value comes from the variants while the parent is
+ * still counted exactly once.
+ */
+export function computeProductTotals(items: InventoryItem[]): ProductTotals {
   let totalSellingPrice = 0;
   let totalCostPrice = 0;
   let productCount = 0;
-  for (const p of raw) {
-    const variantItems = p?.variants?.variantItems;
-    const hasVariants = Array.isArray(variantItems) && variantItems.length > 0;
+  let variantCount = 0;
+
+  for (const p of items) {
+    const hasVariants = Array.isArray(p.variants) && p.variants.length > 0;
 
     if (hasVariants) {
-      // A product WITH variants carries its price/stock on the variants, not
-      // the base (base price/stock are 0). Value & count come from variants.
-      for (const v of variantItems) {
-        const price = typeof v?.price === "number" ? v.price : 0;
-        const costPrice = typeof v?.costPrice === "number" ? v.costPrice : 0;
-        const stock = typeof v?.inStock === "number" ? v.inStock : 0;
-        totalSellingPrice += price * stock;
-        totalCostPrice += costPrice * stock;
+      for (const v of p.variants!) {
+        const stock = typeof v.inStock === "number" ? v.inStock : 0;
+        totalSellingPrice +=
+          (typeof v.price === "number" ? v.price : 0) * stock;
+        totalCostPrice +=
+          (typeof v.costPrice === "number" ? v.costPrice : 0) * stock;
       }
-      productCount += variantItems.length;
+      productCount += 1; // the parent, counted once
+      variantCount += p.variants!.length;
     } else {
-      const price = typeof p?.price === "number" ? p.price : 0;
-      const costPrice = typeof p?.costPrice === "number" ? p.costPrice : 0;
-      const stock = typeof p?.inStock === "number" ? p.inStock : 0;
-      totalSellingPrice += price * stock;
-      totalCostPrice += costPrice * stock;
+      const stock = typeof p.inStock === "number" ? p.inStock : 0;
+      totalSellingPrice += (typeof p.price === "number" ? p.price : 0) * stock;
+      totalCostPrice +=
+        (typeof p.costPrice === "number" ? p.costPrice : 0) * stock;
       productCount += 1;
     }
   }
@@ -164,18 +175,24 @@ async function fetchProductTotals(): Promise<ProductTotals> {
     totalSellingPrice: Math.round(totalSellingPrice * 100) / 100,
     totalCostPrice: Math.round(totalCostPrice * 100) / 100,
     productCount,
+    variantCount,
   };
 }
 
 // ── Hooks ─────────────────────────────────────────────────────────────────
 
+/**
+ * Totals ride on the inventory cache entry — same key, same request — and are
+ * computed by `select`, so there's one `/api/products` call instead of two and
+ * the numbers move the moment the inventory does.
+ */
 export function useProductTotalsQuery() {
   return useQuery({
-    queryKey: ["product-totals"],
-    queryFn: fetchProductTotals,
-    // Keep data fresh — don't let stale caches persist for a minute.
-    staleTime: 5 * 1000,
+    queryKey: INVENTORY_KEY,
+    queryFn: fetchInventoryClient,
+    staleTime: STALE_TIME,
     refetchOnWindowFocus: true,
+    select: computeProductTotals,
   });
 }
 
@@ -183,7 +200,7 @@ export function useInventoryQuery() {
   return useQuery({
     queryKey: INVENTORY_KEY,
     queryFn: fetchInventoryClient,
-    staleTime: 5 * 1000,
+    staleTime: STALE_TIME,
     refetchOnWindowFocus: true,
   });
 }
@@ -193,7 +210,7 @@ export function useSalesByItemQuery(startDate?: string, endDate?: string) {
     // Distinct cache entry per range; no args → all-time (used by the charts).
     queryKey: [...SALES_KEY, startDate ?? null, endDate ?? null],
     queryFn: () => fetchSalesByItemClient(startDate, endDate),
-    staleTime: 5 * 1000,
+    staleTime: STALE_TIME,
     refetchOnWindowFocus: true,
   });
 }
@@ -207,8 +224,18 @@ export function useInventorySuspenseQuery() {
   return useSuspenseQuery({
     queryKey: INVENTORY_KEY,
     queryFn: fetchInventoryClient,
-    staleTime: 5 * 1000,
+    staleTime: STALE_TIME,
     refetchOnWindowFocus: true,
+  });
+}
+
+export function useProductTotalsSuspenseQuery() {
+  return useSuspenseQuery({
+    queryKey: INVENTORY_KEY,
+    queryFn: fetchInventoryClient,
+    staleTime: STALE_TIME,
+    refetchOnWindowFocus: true,
+    select: computeProductTotals,
   });
 }
 
@@ -219,13 +246,14 @@ export function useSalesByItemSuspenseQuery(
   return useSuspenseQuery({
     queryKey: [...SALES_KEY, startDate ?? null, endDate ?? null],
     queryFn: () => fetchSalesByItemClient(startDate, endDate),
-    staleTime: 5 * 1000,
+    staleTime: STALE_TIME,
     refetchOnWindowFocus: true,
   });
 }
 
 export function useInvalidateInventory() {
   const queryClient = useQueryClient();
+  // One key now covers the product grid, the alerts and the valuation cards.
   return () => queryClient.invalidateQueries({ queryKey: INVENTORY_KEY });
 }
 
@@ -233,6 +261,9 @@ export function useInvalidateInventory() {
  * Provides functions to optimistically update the inventory cache and
  * rollback on error. This makes bulk (and individual) stock edits feel
  * instant in the UI instead of waiting for the refetch.
+ *
+ * Because the valuation totals are derived from this same cache entry, they
+ * update in the same render as the product rows.
  */
 export function useOptimisticInventory() {
   const queryClient = useQueryClient();
