@@ -42,7 +42,7 @@ export const formatCurrencySymbol = (
 ) => {
   const abs = Math.abs(amount);
   const isIndian = isIndianGroupingLocale(locale);
-  const threshold = isIndian ? 1_00_00_000 : 1_000_000;
+  const threshold = isIndian ? 1_00_00_00_000 : 1_000_000_000;
 
   // Very large values — use compact notation so they fit in the UI
   if (abs >= threshold) {
