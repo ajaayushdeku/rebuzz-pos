@@ -2,41 +2,65 @@
 
 import { useState } from "react";
 import { Flame, TrendingDown, ChevronDown, ChevronUp } from "lucide-react";
-import { MergedSalesItem } from "@/services/apiInventory";
+import { InventoryItem, MergedSalesItem } from "@/services/apiInventory";
 import { ComponentHeader } from "@/components/ComponentHeader";
-import { classifySalesVelocity } from "@/lib/salesVelocity";
+import { classifySalesVelocity, type VelocityBasis } from "@/lib/salesVelocity";
 
 type MovingItem = {
   name: string;
   category: string;
   sold: number;
+  /** sold ÷ opening stock, 0–1, or null when the product isn't stock-tracked */
+  sellThrough: number | null;
+  openingStock: number | null;
 };
 
 const INITIAL_SHOW = 3;
 
-const toRow = (item: MergedSalesItem): MovingItem => ({
-  name: item.name,
-  category: item.category,
-  sold: item.count,
-});
-
 /**
  * Fast and slow come from the shared velocity classifier, so these panels, the
- * movement analysis and the chart colours can't disagree. Normal movers are
- * deliberately shown in neither panel.
+ * movement analysis and the chart colours can't disagree.
+ *
+ * When inventory is supplied the ranking is by sell-through — sold ÷ (stock on
+ * hand + sold) — so a product that shifted 350 units out of an opening 850 is
+ * ranked ahead of one that shifted 350 out of 2,350. Without inventory it
+ * falls back to share of total units sold.
  */
 const classify = (
-  items: MergedSalesItem[],
+  sales: MergedSalesItem[],
+  inventory?: InventoryItem[],
 ): {
   fast: MovingItem[];
   slow: MovingItem[];
+  basis: VelocityBasis;
 } => {
-  const { fast, slow } = classifySalesVelocity(items);
+  const { fast, slow, metrics, basis } = classifySalesVelocity(
+    sales,
+    inventory,
+  );
+
+  const toRow = (item: MergedSalesItem): MovingItem => {
+    const m = metrics.get(item.name);
+    return {
+      name: item.name,
+      category: item.category,
+      sold: item.count,
+      sellThrough: m?.sellThrough ?? null,
+      openingStock: m?.openingStock ?? null,
+    };
+  };
+
+  const fastItems = fast.map(toRow).filter((item) => item.sellThrough !== null);
+  const slowItems = slow
+    .map(toRow)
+    .filter((item) => item.sellThrough !== null)
+    .sort((a, b) => a.sellThrough! - b.sellThrough!);
 
   return {
-    fast: fast.map(toRow),
+    fast: fastItems.sort((a, b) => b.sellThrough! - a.sellThrough!),
     // Weakest first, so the most urgent slow mover is on the opening page.
-    slow: [...slow].reverse().map(toRow),
+    slow: slowItems,
+    basis,
   };
 };
 
@@ -73,6 +97,12 @@ const ItemRow = ({
           <p className="text-sm font-bold text-gray-900">
             {item.sold.toLocaleString()} sold
           </p>
+          {item.sellThrough !== null && (
+            <p className="text-[11px] text-gray-400">
+              {Math.round(item.sellThrough * 100)}% of{" "}
+              {item.openingStock?.toLocaleString()} stock
+            </p>
+          )}
         </div>
         {isFast ? (
           <svg
@@ -109,9 +139,11 @@ const ItemRow = ({
 const Panel = ({
   type,
   items,
+  basis,
 }: {
   type: "fast" | "slow";
   items: MovingItem[];
+  basis: VelocityBasis;
 }) => {
   const isFast = type === "fast";
   const totalPages = Math.ceil(items.length / INITIAL_SHOW);
@@ -144,6 +176,13 @@ const Panel = ({
           titleColor={`${isFast ? "text-green-700" : "text-amber-600"}`}
         />
       </div>
+
+      {/* <p className="text-[11px] text-gray-400 -mt-2">
+        {basis === "sell-through"
+          ? "Ranked by sell-through — units sold ÷ opening stock"
+          : "Ranked by share of total units sold"}
+      </p> */}
+
       <div className="space-y-2">
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
@@ -193,13 +232,20 @@ const Panel = ({
   );
 };
 
-const FastSlowMovingItems = ({ items }: { items: MergedSalesItem[] }) => {
-  const { fast, slow } = classify(items);
+const FastSlowMovingItems = ({
+  items,
+  inventory,
+}: {
+  items: MergedSalesItem[];
+  /** Optional. Supplied, ranking switches from units sold to sell-through. */
+  inventory?: InventoryItem[];
+}) => {
+  const { fast, slow, basis } = classify(items, inventory);
 
   return (
     <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4">
-      <Panel type="fast" items={fast} />
-      <Panel type="slow" items={slow} />
+      <Panel type="fast" items={fast} basis={basis} />
+      <Panel type="slow" items={slow} basis={basis} />
     </div>
   );
 };

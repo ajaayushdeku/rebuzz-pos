@@ -58,7 +58,9 @@ export const ProductCardGridWrapper = ({
 
 export const FastSlowMovingItemsWrapper = () => {
   const { data: sales } = useSalesByItemSuspenseQuery();
-  return <FastSlowMovingItems items={sales} />;
+  const { data: inventory } = useInventorySuspenseQuery();
+
+  return <FastSlowMovingItems items={sales} inventory={inventory} />;
 };
 
 export const AIMenuSuggestionsWrapper = () => {

@@ -111,10 +111,16 @@ export default function InventoryPage() {
           </Suspense>
         </ChartErrorBoundary>
 
-        <div className="flex flex-col lg:flex-row gap-6 ">
+        <ChartErrorBoundary>
+          <Suspense fallback={<StockMovementChartSkeleton />}>
+            <StockMovementChartWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+
+        <div className="flex flex-col-reverse lg:flex-row gap-6 ">
           <ChartErrorBoundary>
-            <Suspense fallback={<StockMovementChartSkeleton />}>
-              <StockMovementChartWrapper />
+            <Suspense fallback={<PredictiveRestockingSkeleton />}>
+              <PredictiveRestockingSuggestionsWrapper />
             </Suspense>
           </ChartErrorBoundary>
 
@@ -124,12 +130,6 @@ export default function InventoryPage() {
             </Suspense>
           </ChartErrorBoundary>
         </div>
-
-        <ChartErrorBoundary>
-          <Suspense fallback={<PredictiveRestockingSkeleton />}>
-            <PredictiveRestockingSuggestionsWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
 
         {/* Static suggestions — no data fetch. */}
         <AIMenuSuggestionsWrapper />

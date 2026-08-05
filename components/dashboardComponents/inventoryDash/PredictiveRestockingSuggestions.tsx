@@ -120,7 +120,7 @@ export default function PredictiveRestockingSuggestions({
       ) : (
         // <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
         <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          <table className="w-full text-sm min-w-[700px]">
+          <table className="w-full text-sm min-w-[300px]">
             <thead>
               <tr className="text-xs text-gray-400 border-b border-gray-100">
                 <th className="text-left pb-3 pt-3 px-4 font-medium w-12">

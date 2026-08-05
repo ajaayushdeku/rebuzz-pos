@@ -32,7 +32,7 @@ export default function StockMovementChart({
   const [page, setPage] = useState(0);
 
   // Velocity comes from the whole catalogue, not just the bars on screen, so
-  // the colours agree with the movement analysis and the fast/slow panels.
+  // the colours agree with the movement analysis
   const { ranked, byName } = classifySalesVelocity(items);
 
   // Show ALL products with pagination instead of slicing to a fixed max.

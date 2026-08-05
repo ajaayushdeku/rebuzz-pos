@@ -1,6 +1,18 @@
-import { MergedSalesItem } from "@/services/apiInventory";
+import { InventoryItem, MergedSalesItem } from "@/services/apiInventory";
 
 export type Velocity = "fast" | "normal" | "slow";
+
+/** Which metric drove the ranking. */
+export type VelocityBasis = "sell-through" | "units";
+
+export interface ItemMetrics {
+  /** Units on hand right now, or null when the product isn't stock-tracked. */
+  onHand: number | null;
+  /** onHand + sold — the stock the period started with, assuming no restock. */
+  openingStock: number | null;
+  /** sold ÷ openingStock, 0–1, or null when stock is unknown. */
+  sellThrough: number | null;
+}
 
 export interface VelocityResult {
   fast: MergedSalesItem[];
@@ -8,10 +20,15 @@ export interface VelocityResult {
   slow: MergedSalesItem[];
   /** Every item keyed by name → its class, for per-item lookups (bar colours). */
   byName: Map<string, Velocity>;
-  /** Items ranked by units sold, descending. Sorted here, not trusted from the API. */
+  /** Stock-derived figures keyed by name; empty in units mode. */
+  metrics: Map<string, ItemMetrics>;
+  /** Items ranked best-first on whichever basis was used. */
   ranked: MergedSalesItem[];
+  basis: VelocityBasis;
   totalUnits: number;
   medianUnits: number;
+  /** Median sell-through in sell-through mode, else null. */
+  medianSellThrough: number | null;
 }
 
 /**
@@ -24,6 +41,14 @@ const FAST_CUMULATIVE_SHARE = 0.8;
 /** Items sitting in the final 5% of cumulative units are the slow tail. */
 const SLOW_CUMULATIVE_SHARE = 0.95;
 
+/** Sell-through thresholds, as multiples of the median rate. */
+const FAST_RATE_MULTIPLE = 1.5;
+const SLOW_RATE_MULTIPLE = 0.5;
+
+/** Sell-through mode needs enough stock-tracked products to be meaningful. */
+const MIN_STOCK_ITEMS = 3;
+const MIN_STOCK_COVERAGE = 0.5;
+
 const median = (nums: number[]): number => {
   if (nums.length === 0) return 0;
   const sorted = [...nums].sort((a, b) => a - b);
@@ -33,69 +58,167 @@ const median = (nums: number[]): number => {
     : (sorted[mid - 1] + sorted[mid]) / 2;
 };
 
-/**
- * Classifies products by share of total units sold, not by ratio to the single
- * top seller.
- *
- * Ranking against the top seller breaks on skewed catalogues: one runaway
- * product pushes the threshold so high that genuinely strong sellers fall
- * below it — with real data, a product selling 116 units was classed slow
- * because the bestseller sold 390. Cumulative share can't do that: it asks
- * "which products account for most of what we actually sell", so the number of
- * fast movers follows the shape of the data.
- *
- *   fast   → within the first 80% of cumulative units AND above the median
- *   slow   → within the last 5% of cumulative units AND at or below the median
- *   normal → everything between
- *
- * The median guards stop a lopsided catalogue from mislabelling: a product can
- * never be "slow" while outselling half the range, and when every product
- * sells about the same, nothing is flagged either way.
- *
- * This is the single source of truth for velocity across the inventory
- * dashboard, so the panels, the movement analysis and the chart colours can't
- * drift apart.
- */
-export function classifySalesVelocity(
-  items: MergedSalesItem[],
-): VelocityResult {
-  const byName = new Map<string, Velocity>();
+const normalizeName = (name: string) => name.trim().toLowerCase();
 
-  if (items.length === 0) {
-    return {
-      fast: [],
-      normal: [],
-      slow: [],
-      byName,
-      ranked: [],
-      totalUnits: 0,
-      medianUnits: 0,
-    };
+/**
+ * Units on hand for a product.
+ *
+ * Products with variants carry stock on the variants (the base row reads 0),
+ * so those are summed. Products with `usesStocks` off aren't tracked at all
+ * and return null rather than a misleading zero.
+ */
+function stockOnHand(product: InventoryItem): number | null {
+  if (!product.usesStocks) return null;
+
+  if (Array.isArray(product.variants) && product.variants.length > 0) {
+    return product.variants.reduce(
+      (sum, v) => sum + (typeof v.inStock === "number" ? v.inStock : 0),
+      0,
+    );
   }
 
-  // Sort locally — never rely on the order the API happened to return.
-  const ranked = [...items].sort((a, b) => b.count - a.count);
-  const totalUnits = ranked.reduce((sum, i) => sum + i.count, 0);
+  return typeof product.inStock === "number" ? product.inStock : null;
+}
+
+/**
+ * Classifies products by how fast they move.
+ *
+ * **With inventory** the basis is *sell-through*: `sold ÷ (onHand + sold)`.
+ * This is what "fast moving" usually means to someone ordering stock — 350
+ * sold out of 2,350 is a slow product sitting on a mountain of inventory,
+ * while 350 sold out of 850 is one that needs reordering. Raw units can't
+ * distinguish the two.
+ *
+ * **Without inventory** it falls back to share of total units sold, using
+ * cumulative share (ABC analysis) rather than ratio-to-top-seller, since one
+ * runaway product otherwise pushes the threshold above every other seller.
+ *
+ *   sell-through mode: fast ≥ 1.5× median rate, slow ≤ 0.5× median rate
+ *   units mode:        fast within first 80% of cumulative units AND above
+ *                      the median; slow within the last 5% AND at or below it
+ *
+ * Both are dynamic — the number of fast movers follows the data, and no rule
+ * can collapse to "the single top seller".
+ *
+ * IMPORTANT: opening stock is inferred as `onHand + sold`, which is only
+ * correct if nothing was restocked during the period. Any purchase, transfer
+ * or stock correction inflates it and understates sell-through. It also
+ * assumes `onHand` is current — pairing a stale date range with today's stock
+ * gives meaningless rates. Treat it as an indicator, not an audit.
+ */
+export function classifySalesVelocity(
+  sales: MergedSalesItem[],
+  inventory?: InventoryItem[],
+): VelocityResult {
+  const byName = new Map<string, Velocity>();
+  const metrics = new Map<string, ItemMetrics>();
+
+  const empty: VelocityResult = {
+    fast: [],
+    normal: [],
+    slow: [],
+    byName,
+    metrics,
+    ranked: [],
+    basis: "units",
+    totalUnits: 0,
+    medianUnits: 0,
+    medianSellThrough: null,
+  };
+
+  if (sales.length === 0) return empty;
+
+  const totalUnits = sales.reduce((sum, i) => sum + i.count, 0);
+  const medianUnits = median(sales.map((i) => i.count));
 
   // Nothing sold in this range — every product is slow by definition.
   if (totalUnits <= 0) {
+    const ranked = [...sales].sort((a, b) => b.count - a.count);
     for (const item of ranked) byName.set(item.name, "slow");
-    return {
-      fast: [],
-      normal: [],
-      slow: ranked,
-      byName,
-      ranked,
-      totalUnits: 0,
-      medianUnits: 0,
-    };
+    return { ...empty, slow: ranked, ranked, totalUnits: 0, medianUnits };
   }
 
-  const medianUnits = median(ranked.map((i) => i.count));
+  // ── Stock lookup ────────────────────────────────────────────────────────
+  const stockByName = new Map<string, number | null>();
+  for (const product of inventory ?? []) {
+    stockByName.set(normalizeName(product.name), stockOnHand(product));
+  }
+
+  let stockedCount = 0;
+  for (const item of sales) {
+    const onHand = stockByName.get(normalizeName(item.name)) ?? null;
+    const openingStock = onHand === null ? null : onHand + item.count;
+    const sellThrough =
+      openingStock !== null && openingStock > 0
+        ? item.count / openingStock
+        : null;
+
+    metrics.set(item.name, { onHand, openingStock, sellThrough });
+    if (sellThrough !== null) stockedCount += 1;
+  }
+
+  const rates = sales
+    .map((i) => metrics.get(i.name)?.sellThrough)
+    .filter((r): r is number => r !== null && r !== undefined);
+
+  const medianSellThrough = median(rates);
+
+  const useSellThrough =
+    stockedCount >= MIN_STOCK_ITEMS &&
+    stockedCount / sales.length >= MIN_STOCK_COVERAGE &&
+    medianSellThrough > 0;
 
   const fast: MergedSalesItem[] = [];
   const normal: MergedSalesItem[] = [];
   const slow: MergedSalesItem[] = [];
+
+  if (useSellThrough) {
+    const fastCut = medianSellThrough * FAST_RATE_MULTIPLE;
+    const slowCut = medianSellThrough * SLOW_RATE_MULTIPLE;
+
+    // Best sell-through first; untracked products sink to the bottom.
+    const ranked = [...sales].sort(
+      (a, b) =>
+        (metrics.get(b.name)?.sellThrough ?? -1) -
+        (metrics.get(a.name)?.sellThrough ?? -1),
+    );
+
+    for (const item of ranked) {
+      const rate = metrics.get(item.name)?.sellThrough ?? null;
+
+      // Untracked products can't be ranked on this basis — they sit in
+      // neither panel rather than being guessed at.
+      if (rate === null) {
+        normal.push(item);
+        byName.set(item.name, "normal");
+      } else if (item.count > 0 && rate >= fastCut) {
+        fast.push(item);
+        byName.set(item.name, "fast");
+      } else if (rate <= slowCut) {
+        slow.push(item);
+        byName.set(item.name, "slow");
+      } else {
+        normal.push(item);
+        byName.set(item.name, "normal");
+      }
+    }
+
+    return {
+      fast,
+      normal,
+      slow,
+      byName,
+      metrics,
+      ranked,
+      basis: "sell-through",
+      totalUnits,
+      medianUnits,
+      medianSellThrough,
+    };
+  }
+
+  // ── Fallback: share of total units sold ─────────────────────────────────
+  const ranked = [...sales].sort((a, b) => b.count - a.count);
   let cumulative = 0;
 
   for (const item of ranked) {
@@ -121,7 +244,18 @@ export function classifySalesVelocity(
     }
   }
 
-  return { fast, normal, slow, byName, ranked, totalUnits, medianUnits };
+  return {
+    fast,
+    normal,
+    slow,
+    byName,
+    metrics,
+    ranked,
+    basis: "units",
+    totalUnits,
+    medianUnits,
+    medianSellThrough: null,
+  };
 }
 
 /**
