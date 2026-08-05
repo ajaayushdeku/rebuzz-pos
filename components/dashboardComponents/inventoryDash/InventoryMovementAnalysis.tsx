@@ -1,70 +1,64 @@
 import { TrendingUp, TrendingDown, Minus, Activity } from "lucide-react";
 import { MergedSalesItem } from "@/services/apiInventory";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  classifySalesVelocity,
+  itemsWithCost,
+  marginOverCost,
+  unitShare,
+} from "@/lib/salesVelocity";
 
-const classifyItems = (items: MergedSalesItem[]) => {
-  if (items.length === 0) return { fast: [], normal: [], slow: [] };
+/** Names are truncated so one long list can't push the card out of shape. */
+const MAX_NAMES = 6;
 
-  const max = items[0].count; // already sorted desc
-  const fast: string[] = [];
-  const normal: string[] = [];
-  const slow: string[] = [];
-
-  items.forEach((item) => {
-    const ratio = item.count / max;
-    if (ratio >= 0.6) fast.push(item.name);
-    else if (ratio >= 0.25) normal.push(item.name);
-    else slow.push(item.name);
-  });
-
-  return { fast, normal, slow };
-};
-
-const getTrend = (items: MergedSalesItem[], keys: string[]): number => {
-  const subset = items.filter((i) => keys.includes(i.name));
-  const totalRevenue = subset.reduce((s, i) => s + i.totalRevenue, 0);
-  const totalCost = subset.reduce(
-    (s, i) => s + (i.totalRevenue - i.netProfit),
-    0,
-  );
-  if (totalCost === 0) return 0;
-  return Math.round(((totalRevenue - totalCost) / totalCost) * 100);
+const nameList = (items: MergedSalesItem[]): string => {
+  if (items.length === 0) return "—";
+  const shown = items.slice(0, MAX_NAMES).map((i) => i.name);
+  const rest = items.length - shown.length;
+  return rest > 0 ? `${shown.join(", ")} +${rest} more` : shown.join(", ");
 };
 
 const InventoryMovementAnalysis = ({ items }: { items: MergedSalesItem[] }) => {
-  const { fast, normal, slow } = classifyItems(items);
-  const fastTrend = getTrend(items, fast);
-  const slowTrend = getTrend(items, slow);
+  const { fast, normal, slow, totalUnits } = classifySalesVelocity(items);
+
+  // Margin over cost, not a period-on-period trend — the API gives one
+  // snapshot per range, so there's no earlier period to compare against.
+  const fastMargin = marginOverCost(fast);
+  const normalMargin = marginOverCost(normal);
+  const slowMargin = marginOverCost(slow);
+
+  const marginBadge = (margin: number | null) =>
+    margin === null ? "—" : `${margin > 0 ? "+" : ""}${margin}% margin`;
 
   const categories = [
     {
       label: "Fast Moving",
       color: "text-green-600",
-      badge: fastTrend >= 0 ? `+${fastTrend}%` : `${fastTrend}%`,
+      badge: marginBadge(fastMargin),
       badgeColor: "bg-green-500 text-white",
       icon: TrendingUp,
-      names: fast,
-      note: fast.join(", ") || "—",
+      items: fast,
+      note: nameList(fast),
     },
     {
       label: "Normal Velocity",
       color: "text-blue-600",
-      badge: "Stable",
+      badge: marginBadge(normalMargin),
       badgeColor: "bg-blue-500 text-white",
       icon: Minus,
-      names: normal,
-      note: normal.join(", ") || "—",
+      items: normal,
+      note: nameList(normal),
     },
     {
       label: "Slow Moving",
       color: "text-amber-600",
-      badge: slowTrend >= 0 ? `+${slowTrend}%` : `${slowTrend}%`,
+      badge: marginBadge(slowMargin),
       badgeColor: "bg-amber-100 text-amber-700 border border-amber-300",
       icon: TrendingDown,
-      names: slow,
+      items: slow,
       note:
         slow.length > 0
-          ? `${slow.join(", ")} (low velocity)`
+          ? `${nameList(slow)} (low velocity)`
           : "None identified",
     },
   ];
@@ -99,7 +93,15 @@ const InventoryMovementAnalysis = ({ items }: { items: MergedSalesItem[] }) => {
       ) : (
         <div className="space-y-4">
           {categories.map(
-            ({ label, color, badge, badgeColor, icon: Icon, note }) => (
+            ({
+              label,
+              color,
+              badge,
+              badgeColor,
+              icon: Icon,
+              items: group,
+              note,
+            }) => (
               <div
                 key={label}
                 className="border-b border-gray-100 pb-4 last:border-0 last:pb-0"
@@ -110,9 +112,18 @@ const InventoryMovementAnalysis = ({ items }: { items: MergedSalesItem[] }) => {
                     <span className={`text-sm font-semibold ${color}`}>
                       {label}
                     </span>
+                    <span className="text-[11px] text-gray-400">
+                      {group.length} {group.length === 1 ? "item" : "items"} ·{" "}
+                      {unitShare(group, totalUnits)}% of units
+                    </span>
                   </div>
                   <span
                     className={`text-xs font-bold px-2 py-0.5 rounded-full ${badgeColor}`}
+                    title={
+                      itemsWithCost(group) > 0
+                        ? `Profit margin over cost, based on ${itemsWithCost(group)} of ${group.length} items with a recorded cost price`
+                        : "No cost price recorded for these items"
+                    }
                   >
                     {badge}
                   </span>

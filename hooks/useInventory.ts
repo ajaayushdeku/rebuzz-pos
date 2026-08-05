@@ -81,8 +81,6 @@ async function fetchSalesByItemClient(
   const json = await res.json();
   const rawItems: any[] = json?.data ?? [];
 
-  console.log("Sales by items:", rawItems);
-
   if (rawItems.length === 0) return [];
 
   // Merge duplicates — same product sold at different prices
@@ -175,8 +173,9 @@ export function useProductTotalsQuery() {
   return useQuery({
     queryKey: ["product-totals"],
     queryFn: fetchProductTotals,
-    staleTime: 60 * 1000,
-    refetchOnWindowFocus: false,
+    // Keep data fresh — don't let stale caches persist for a minute.
+    staleTime: 5 * 1000,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -184,8 +183,8 @@ export function useInventoryQuery() {
   return useQuery({
     queryKey: INVENTORY_KEY,
     queryFn: fetchInventoryClient,
-    staleTime: 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 5 * 1000,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -194,8 +193,8 @@ export function useSalesByItemQuery(startDate?: string, endDate?: string) {
     // Distinct cache entry per range; no args → all-time (used by the charts).
     queryKey: [...SALES_KEY, startDate ?? null, endDate ?? null],
     queryFn: () => fetchSalesByItemClient(startDate, endDate),
-    staleTime: 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 5 * 1000,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -208,8 +207,8 @@ export function useInventorySuspenseQuery() {
   return useSuspenseQuery({
     queryKey: INVENTORY_KEY,
     queryFn: fetchInventoryClient,
-    staleTime: 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 5 * 1000,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -220,8 +219,8 @@ export function useSalesByItemSuspenseQuery(
   return useSuspenseQuery({
     queryKey: [...SALES_KEY, startDate ?? null, endDate ?? null],
     queryFn: () => fetchSalesByItemClient(startDate, endDate),
-    staleTime: 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 5 * 1000,
+    refetchOnWindowFocus: true,
   });
 }
 

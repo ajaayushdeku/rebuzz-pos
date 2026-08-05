@@ -4,57 +4,39 @@ import { useState } from "react";
 import { Flame, TrendingDown, ChevronDown, ChevronUp } from "lucide-react";
 import { MergedSalesItem } from "@/services/apiInventory";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { classifySalesVelocity } from "@/lib/salesVelocity";
 
 type MovingItem = {
   name: string;
   category: string;
   sold: number;
-  changePct: number;
-  changeDir: "up" | "down";
 };
 
 const INITIAL_SHOW = 3;
 
-/** Per-item profit margin over cost (%), used as the change indicator. */
-const marginPct = (item: MergedSalesItem): number => {
-  const cost = item.totalRevenue - item.netProfit;
-  if (cost <= 0) return 0;
-  return Math.round((item.netProfit / cost) * 100);
-};
+const toRow = (item: MergedSalesItem): MovingItem => ({
+  name: item.name,
+  category: item.category,
+  sold: item.count,
+});
 
-// Same classification approach as InventoryMovementAnalysis: rank by units sold
-// relative to the top seller (items arrive already sorted desc by count).
+/**
+ * Fast and slow come from the shared velocity classifier, so these panels, the
+ * movement analysis and the chart colours can't disagree. Normal movers are
+ * deliberately shown in neither panel.
+ */
 const classify = (
   items: MergedSalesItem[],
 ): {
   fast: MovingItem[];
   slow: MovingItem[];
 } => {
-  if (items.length === 0) return { fast: [], slow: [] };
-
-  const max = items[0].count || 1;
-  const fast: MovingItem[] = [];
-  const slow: MovingItem[] = [];
-
-  for (const item of items) {
-    const ratio = item.count / max;
-    const row: MovingItem = {
-      name: item.name,
-      category: item.category,
-      sold: item.count,
-      changePct: Math.abs(marginPct(item)),
-      changeDir: "up",
-    };
-    if (ratio >= 0.6) {
-      fast.push(row);
-    } else if (ratio < 0.25) {
-      slow.push({ ...row, changeDir: "down" });
-    }
-  }
+  const { fast, slow } = classifySalesVelocity(items);
 
   return {
-    fast: fast,
-    slow: slow.reverse(),
+    fast: fast.map(toRow),
+    // Weakest first, so the most urgent slow mover is on the opening page.
+    slow: [...slow].reverse().map(toRow),
   };
 };
 
@@ -67,7 +49,6 @@ const ItemRow = ({
 }) => {
   const isFast = type === "fast";
   const barColor = isFast ? "bg-green-500" : "bg-amber-400";
-  const pctColor = isFast ? "text-green-500" : "text-red-500";
   const arrowColor = isFast ? "text-green-400" : "text-amber-500";
 
   return (
@@ -89,13 +70,11 @@ const ItemRow = ({
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <div className="text-right">
-          <p className="text-sm font-bold text-gray-900">{item.sold} sold</p>
-          <p className={`text-[11px] font-semibold ${pctColor}`}>
-            {item.changeDir === "up" ? "+" : "-"}
-            {item.changePct}%
+          <p className="text-sm font-bold text-gray-900">
+            {item.sold.toLocaleString()} sold
           </p>
         </div>
-        {item.changeDir === "up" ? (
+        {isFast ? (
           <svg
             className={`w-4 h-4 ${arrowColor}`}
             viewBox="0 0 24 24"

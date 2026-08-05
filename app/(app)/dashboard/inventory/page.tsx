@@ -111,9 +111,6 @@ export default function InventoryPage() {
           </Suspense>
         </ChartErrorBoundary>
 
-        {/* Static suggestions — no data fetch. */}
-        <AIMenuSuggestionsWrapper />
-
         <div className="flex flex-col lg:flex-row gap-6 ">
           <ChartErrorBoundary>
             <Suspense fallback={<StockMovementChartSkeleton />}>
@@ -133,6 +130,9 @@ export default function InventoryPage() {
             <PredictiveRestockingSuggestionsWrapper />
           </Suspense>
         </ChartErrorBoundary>
+
+        {/* Static suggestions — no data fetch. */}
+        <AIMenuSuggestionsWrapper />
       </div>
     </div>
   );
