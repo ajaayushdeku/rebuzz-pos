@@ -659,9 +659,19 @@ export default function CreditsTable({
         open={!!paymentTarget}
         onClose={() => setPaymentTarget(null)}
         credit={paymentTarget}
-        onSuccess={() =>
-          queryClient.invalidateQueries({ queryKey: ["credits"] })
-        }
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ["credits"] });
+          // Invalidate the payment history query so the expanded row
+          // refreshes immediately without needing a page reload.
+          if (paymentTarget?._id) {
+            queryClient.invalidateQueries({
+              queryKey: ["credit-payment-history", paymentTarget._id],
+            });
+            queryClient.invalidateQueries({
+              queryKey: ["credit-detail-by-id", paymentTarget._id],
+            });
+          }
+        }}
       />
 
       {/* Resend invoice (email) / Export PDF / Print — reuse invoice modals.
