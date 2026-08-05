@@ -78,7 +78,9 @@ async function fetchSalesByItemClient(
   if (endDate) params.set("endDate", endDate);
   const qs = params.toString();
 
-  const res = await fetch(`/api/report/salesByItem${qs ? `?${qs}` : ""}`);
+  const res = await fetch(`/api/report/salesByItem${qs ? `?${qs}` : ""}`, {
+    cache: "no-store",
+  });
 
   if (!res.ok) throw new Error(`Failed to fetch sales: ${res.status}`);
   const json = await res.json();

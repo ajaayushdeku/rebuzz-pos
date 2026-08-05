@@ -28,7 +28,7 @@ export const GET = async (req: NextRequest) => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        next: { revalidate: 300 },
+        cache: "no-store",
       },
     );
 
