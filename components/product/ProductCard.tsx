@@ -6,6 +6,8 @@ import { createPortal } from "react-dom";
 import {
   getBarPercent,
   getStockStatus,
+  getThresholdPercent,
+  MAX_STOCK,
   InventoryItem,
 } from "@/lib/mockData/mock-inventory-data";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -25,6 +27,13 @@ import {
 import { useCategories } from "@/hooks/useCategories";
 import { normalizeColor } from "@/services/category.client";
 
+/**
+ * Per-status presentation.
+ *
+ * `card` tints the whole card, so a shelf that's run low is visible while
+ * scanning the grid rather than only once you read the bar. `count` colours
+ * the big number to match, and `bar` fills the track.
+ */
 const statusConfig = {
   healthy: {
     bar: "bg-emerald-500",
@@ -32,7 +41,8 @@ const statusConfig = {
     label: "In Stock",
     icon: "✅",
     text: "text-emerald-600",
-    fill: "rgba(16,185,129,0.10)",
+    card: "border-gray-200 bg-white hover:border-gray-300",
+    count: "text-gray-900",
   },
 
   warning: {
@@ -40,8 +50,9 @@ const statusConfig = {
     badge: "bg-amber-100 text-amber-700",
     label: "Low Stock",
     icon: "⚠️",
-    text: "text-amber-500",
-    fill: "rgba(245,158,11,0.14)",
+    text: "text-amber-600",
+    card: "border-amber-300 bg-amber-50/50 hover:border-amber-400",
+    count: "text-amber-600",
   },
 
   critical: {
@@ -49,18 +60,36 @@ const statusConfig = {
     badge: "bg-red-100 text-red-600",
     label: "Critical",
     icon: "🔴",
-    text: "text-red-500",
-    fill: "rgba(239,68,68,0.12)",
+    text: "text-red-600",
+    card: "border-red-300 bg-red-50/50 hover:border-red-400",
+    count: "text-red-600",
   },
 
   out: {
-    bar: "bg-red-700",
-    badge: "bg-red-200 text-red-800",
+    bar: "bg-gray-900",
+    badge: "bg-yellow-300 text-gray-900",
     label: "Out of Stock",
     icon: "🚫",
-    text: "text-red-700",
-    fill: "rgba(185,28,28,0.15)",
+    text: "text-yellow-900",
+    card: "border-yellow-400 bg-yellow-50/70 hover:border-yellow-500",
+    count: "text-gray-900",
   },
+
+  overstock: {
+    bar: "bg-indigo-500",
+    badge: "bg-indigo-100 text-indigo-700",
+    label: "Overstocked",
+    icon: "📦",
+    text: "text-indigo-600",
+    card: "border-indigo-300 bg-indigo-50/50 hover:border-indigo-400",
+    count: "text-indigo-600",
+  },
+};
+
+/** Hazard tape for an empty shelf — the whole track, since there's no fill. */
+const HAZARD_STRIPES: React.CSSProperties = {
+  backgroundImage:
+    "repeating-linear-gradient(45deg, #FACC15 0 8px, #111827 8px 16px)",
 };
 
 export default function ProductCard({
@@ -68,6 +97,7 @@ export default function ProductCard({
   revenue,
   netProfit,
   orderCount,
+  sharedVariants = 0,
 }: {
   item: InventoryItem;
   /** Date-ranged revenue for this product (undefined = no sales data). */
@@ -76,16 +106,28 @@ export default function ProductCard({
   netProfit?: number;
   /** Date-ranged item order count for this product. */
   orderCount?: number;
+  /**
+   * When > 0, these figures are the parent product's and cover this many
+   * variants — salesByItem didn't break them out per variant.
+   */
+  sharedVariants?: number;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [imgError, setImgError] = useState(false);
   const status = getStockStatus(item);
   const barPct = getBarPercent(item);
+  const thresholdPct = getThresholdPercent(item);
   const cfg = statusConfig[status];
   const { currency } = useCurrency();
   const { data: business } = useBusiness();
   const { data: categories = [] } = useCategories();
+
+  const isOut = status === "out";
+  // Untracked products shouldn't be tinted — there's no stock story to tell.
+  const cardTone = item.usesStocks
+    ? cfg.card
+    : "border-gray-200 bg-white hover:border-gray-300";
 
   // Resolve the category id stored on the product to its name + colour.
   const category = useMemo(
@@ -119,8 +161,26 @@ export default function ProductCard({
   const showNext = () =>
     setLightboxIndex((i) => (i === null ? 0 : (i + 1) % gallery.length));
 
+  /** The line under the bar, phrased for the state it's describing. */
+  const thresholdNote = () => {
+    switch (status) {
+      case "out":
+        return "Out of stock · restock now";
+      case "critical":
+        return `Below threshold · min ${item.lowStock}`;
+      case "warning":
+        return `Near threshold · min ${item.lowStock}`;
+      case "overstock":
+        return `Above max ${MAX_STOCK.toLocaleString()} · overstocked`;
+      default:
+        return `Threshold ${item.lowStock} · max ${MAX_STOCK.toLocaleString()}`;
+    }
+  };
+
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs hover:shadow-md hover:border-gray-300 transition-all duration-200 flex flex-col">
+    <div
+      className={`relative overflow-hidden rounded-2xl border shadow-xs hover:shadow-md transition-all duration-200 flex flex-col ${cardTone}`}
+    >
       <div className="flex flex-col flex-1">
         {/* ── Image (top) ── */}
         <button
@@ -215,31 +275,53 @@ export default function ProductCard({
             {item.usesStocks ? (
               <>
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-3xl font-bold text-gray-900 tabular-nums">
+                  <span
+                    className={`text-3xl font-bold tabular-nums ${cfg.count}`}
+                  >
                     {item.inStock.toLocaleString()}
                   </span>
                   <span className="text-[11px] text-gray-500">
                     units in stock
                   </span>
-                  {status === "critical" && (
-                    <AlertCircle size={13} className="text-red-400 ml-auto" />
+                  {(status === "critical" || isOut) && (
+                    <AlertCircle
+                      size={13}
+                      className={`ml-auto ${isOut ? "text-yellow-700" : "text-red-400"}`}
+                    />
                   )}
                 </div>
 
-                <div className="mt-2 w-full h-4 rounded-full bg-gray-200/70 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-700 ease-out ${cfg.bar}`}
-                    style={{ width: `${barPct}%` }}
-                  />
+                {/* Bar fills with how much stock there IS. An empty shelf gets
+                    hazard tape across the whole track, since 0% would show
+                    nothing at all. */}
+                <div
+                  className={`relative mt-2 w-full h-4 rounded-full overflow-hidden ${
+                    isOut ? "ring-1 ring-yellow-500/60" : "bg-gray-300/70"
+                  }`}
+                  style={isOut ? HAZARD_STRIPES : undefined}
+                  role="img"
+                  aria-label={`${item.inStock} of ${MAX_STOCK} units — ${cfg.label}`}
+                >
+                  {!isOut && (
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 ease-out ${cfg.bar}`}
+                      style={{ width: `${barPct}%` }}
+                    />
+                  )}
+
+                  {/* Low-stock marker, so the threshold is visible on the bar */}
+                  {!isOut && thresholdPct > 0 && thresholdPct < 100 && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute top-0 h-full w-px bg-gray-500/40"
+                      style={{ left: `${thresholdPct}%` }}
+                    />
+                  )}
                 </div>
 
                 <div className="my-1.5 flex items-center justify-between text-[10px]">
                   <span className={`font-medium ${cfg.text}`}>
-                    {status === "critical"
-                      ? `Below threshold · min ${item.lowStock}`
-                      : status === "warning"
-                        ? `Near threshold  · min ${item.lowStock}`
-                        : `Threshold ${item.lowStock} · max 1,000`}
+                    {thresholdNote()}
                   </span>
                   {item.orderedCount > 0 && (
                     <span className="flex items-center gap-0.5 text-blue-500 font-medium shrink-0">
@@ -256,36 +338,46 @@ export default function ProductCard({
 
           {/* Sales row */}
           {hasSales && (
-            <div className="pt-3 border-t border-gray-100 grid grid-cols-3 gap-2 mb-3">
-              <div className="min-w-0">
-                <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
-                  Revenue
+            <div className="pt-3 border-t border-gray-100 mb-3">
+              {sharedVariants > 0 && (
+                <p className="text-[10px] text-amber-600 mb-1.5">
+                  Combined across all {sharedVariants} variants
                 </p>
-                <p className="text-xs font-semibold text-blue-500 truncate">
-                  {fmt(revenue ?? 0)}
-                </p>
-              </div>
+              )}
 
-              <div className="min-w-0 text-center">
-                <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
-                  Orders
-                </p>
-                <p className="text-xs font-semibold text-violet-700 truncate">
-                  {(orderCount ?? 0).toLocaleString()}
-                </p>
-              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="min-w-0">
+                  <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
+                    Revenue
+                  </p>
+                  <p className="text-xs font-semibold text-blue-500 truncate">
+                    {fmt(revenue ?? 0)}
+                  </p>
+                </div>
 
-              <div className="min-w-0 text-right">
-                <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
-                  Net Profit
-                </p>
-                <p
-                  className={`text-xs font-semibold truncate ${
-                    (netProfit ?? 0) >= 0 ? "text-emerald-600" : "text-red-500"
-                  }`}
-                >
-                  {fmt(netProfit ?? 0)}
-                </p>
+                <div className="min-w-0 text-center">
+                  <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
+                    Orders
+                  </p>
+                  <p className="text-xs font-semibold text-violet-700 truncate">
+                    {(orderCount ?? 0).toLocaleString()}
+                  </p>
+                </div>
+
+                <div className="min-w-0 text-right">
+                  <p className="text-[10px] text-gray-500 uppercase tracking-wide font-medium">
+                    Net Profit
+                  </p>
+                  <p
+                    className={`text-xs font-semibold truncate ${
+                      (netProfit ?? 0) >= 0
+                        ? "text-emerald-600"
+                        : "text-red-500"
+                    }`}
+                  >
+                    {fmt(netProfit ?? 0)}
+                  </p>
+                </div>
               </div>
             </div>
           )}

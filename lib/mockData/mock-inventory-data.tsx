@@ -1,34 +1,12 @@
-// export type StockStatus = "healthy" | "warning" | "critical" | "overstock";
+export type StockStatus =
+  | "healthy"
+  | "warning"
+  | "critical"
+  | "out"
+  | "overstock";
 
-// export type InventoryItem = {
-//   id: string;
-//   name: string;
-//   unit: string; // soldBy → "each" | "volume"
-//   inStock: number; // current stock
-//   lowStock: number; // threshold
-//   usesStocks: boolean;
-//   isTaxable: boolean;
-//   isAvailable: boolean;
-//   orderedCount: number;
-//   costPrice: number;
-//   price: number;
-// };
-
-// // Derive status from thresholds — no maxStock needed
-// export function getStockStatus(item: InventoryItem): StockStatus {
-//   if (!item.usesStocks) return "healthy";
-//   if (item.inStock <= item.lowStock) return "critical";
-//   if (item.inStock <= item.lowStock * 2) return "warning";
-//   return "healthy";
-// }
-
-// // Bar fills relative to lowStock * 4 as soft upper reference
-// export function getBarPercent(item: InventoryItem): number {
-//   if (!item.usesStocks || item.lowStock === 0) return 100;
-//   return Math.min((item.inStock / (item.lowStock * 4)) * 100, 100);
-// }
-
-export type StockStatus = "healthy" | "warning" | "critical" | "out";
+/** Soft ceiling a product's stock is measured against. */
+export const MAX_STOCK = 5000;
 
 export type InventoryItem = {
   id: string;
@@ -60,34 +38,49 @@ export type InventoryItem = {
 };
 
 // ── Status Logic ─────────────────────────────────────────────
+
+/**
+ * Severity first: an empty shelf outranks everything, then a shelf over the
+ * ceiling, then the low-stock thresholds.
+ *
+ *   out       → nothing left
+ *   overstock → at or above MAX_STOCK, capital sitting still
+ *   critical  → at or below the product's own lowStock threshold
+ *   warning   → within twice that threshold, approaching it
+ *   healthy   → everything else
+ */
 export function getStockStatus(item: InventoryItem): StockStatus {
   if (!item.usesStocks) return "healthy";
 
   if (item.inStock <= 0) return "out";
+  if (item.inStock >= MAX_STOCK) return "overstock";
 
-  if (item.inStock <= item.lowStock) {
-    return "critical";
-  }
-
-  if (item.inStock <= item.lowStock * 2) {
-    return "warning";
-  }
+  if (item.inStock <= item.lowStock) return "critical";
+  if (item.inStock <= item.lowStock * 2) return "warning";
 
   return "healthy";
 }
 
+/**
+ * How full the bar is — how much stock there IS, as a share of MAX_STOCK.
+ *
+ * This used to compute depletion (`(MAX_STOCK - inStock) / MAX_STOCK`), which
+ * ran backwards: 6 units drew a 99.4% bar while 1,000 units drew none, so the
+ * emptiest products looked the fullest.
+ */
 export function getBarPercent(item: InventoryItem): number {
   if (!item.usesStocks) return 0;
 
-  // reference stock level
-  const reference = 1000;
+  const pct = (item.inStock / MAX_STOCK) * 100;
+  return Math.min(Math.max(pct, 0), 100);
+}
 
-  if (reference <= 0) return 0;
+/** Where the low-stock threshold sits along the bar, as a percentage. */
+export function getThresholdPercent(item: InventoryItem): number {
+  if (!item.usesStocks || item.lowStock <= 0) return 0;
 
-  // depletion percentage
-  const depletion = ((reference - item.inStock) / reference) * 100;
-
-  return Math.min(Math.max(depletion, 0), 100);
+  const pct = (item.lowStock / MAX_STOCK) * 100;
+  return Math.min(Math.max(pct, 0), 100);
 }
 
 export const mockInventoryItems: InventoryItem[] = [

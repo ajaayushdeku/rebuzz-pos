@@ -640,7 +640,7 @@ export default function ProductFormModal({
             <div className="space-y-3">
               <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                 ⓘ In the inventory page, the maximum stock threshold for all
-                products is set to 1,000 units.
+                products is set to 5,000 units.
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
