@@ -95,6 +95,22 @@ export async function fetchInventoryProducts(): Promise<InventoryItem[]> {
                 (s: unknown): s is string => typeof s === "string",
               )
             : undefined,
+          variants:
+            Array.isArray(p.variants?.variantItems) &&
+            p.variants.variantItems.length > 0
+              ? p.variants.variantItems.map((v: Record<string, unknown>) => ({
+                  id: String(v._id ?? ""),
+                  optionValues: Array.isArray(v.optionValues)
+                    ? (v.optionValues as string[])
+                    : [],
+                  price: typeof v.price === "number" ? v.price : 0,
+                  costPrice: typeof v.costPrice === "number" ? v.costPrice : 0,
+                  inStock: typeof v.inStock === "number" ? v.inStock : 0,
+                  lowStock: typeof v.lowStock === "number" ? v.lowStock : 0,
+                  isAvailable:
+                    v.isAvailable !== undefined ? Boolean(v.isAvailable) : true,
+                }))
+              : undefined,
         }),
       )
   );

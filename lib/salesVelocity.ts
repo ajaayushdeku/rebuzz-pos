@@ -63,21 +63,150 @@ const normalizeName = (name: string) => name.trim().toLowerCase();
 /**
  * Units on hand for a product.
  *
- * Products with variants carry stock on the variants (the base row reads 0),
- * so those are summed. Products with `usesStocks` off aren't tracked at all
- * and return null rather than a misleading zero.
+ * Order matters here. A product whose stock lives on its variants normally has
+ * `usesStocks` FALSE on the parent row — there's nothing to track there, and
+ * the base `inStock` reads 0. Testing that flag before looking at the variants
+ * returns null for every such product, which drops it out of both panels.
+ * Variants are checked first; the flag only governs products that have none.
+ *
+ * Returns null only when a product genuinely isn't tracked, so callers can
+ * tell "not tracked" apart from "tracked, none left".
  */
 function stockOnHand(product: InventoryItem): number | null {
-  if (!product.usesStocks) return null;
+  const variants = product.variants ?? [];
 
-  if (Array.isArray(product.variants) && product.variants.length > 0) {
-    return product.variants.reduce(
-      (sum, v) => sum + (typeof v.inStock === "number" ? v.inStock : 0),
-      0,
-    );
+  if (variants.length > 0) {
+    // Stock lives on the variants regardless of the parent's flag.
+    const tracked = variants.filter((v) => typeof v.inStock === "number");
+    if (tracked.length === 0) return null;
+    return tracked.reduce((sum, v) => sum + v.inStock, 0);
   }
 
+  if (!product.usesStocks) return null;
   return typeof product.inStock === "number" ? product.inStock : null;
+}
+
+interface VariantEntry {
+  /** Option values reduced to sorted alphanumeric tokens, e.g. "buff". */
+  tokens: string;
+  stock: number | null;
+}
+
+interface ParentEntry {
+  key: string;
+  /** Sum across variants, or the product's own stock when it has none. */
+  stock: number | null;
+  variants: VariantEntry[];
+}
+
+interface StockIndex {
+  /** Exact normalized name → stock. Parent names and expanded variant names. */
+  exact: Map<string, number | null>;
+  /** Parent products, longest name first, for prefix + option matching. */
+  parents: ParentEntry[];
+}
+
+/**
+ * Reduces a label to sorted alphanumeric tokens, so "Buff", " buff " and
+ * "(BUFF)" all compare equal, and "Large · Red" matches "Red Large".
+ */
+function optionTokens(value: string): string {
+  return value
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean)
+    .sort()
+    .join(" ");
+}
+
+/**
+ * Maps every name a sales row might use → the stock behind it.
+ *
+ * Each variant carries its own stock, so a sales row naming a variant must
+ * resolve to THAT variant, not to the product total. Summing would give every
+ * variant of a product the same opening stock and understate each one's
+ * sell-through — Buff and Veg momo would look identically fast.
+ *
+ * salesByItem doesn't document how it names a variant sale, so rather than
+ * assume a separator the index keeps each variant's option values as tokens
+ * and matches whatever follows the parent name against them.
+ */
+function buildStockIndex(inventory: InventoryItem[]): StockIndex {
+  const exact = new Map<string, number | null>();
+  const parents: ParentEntry[] = [];
+
+  for (const product of inventory) {
+    const parentKey = normalizeName(product.name);
+    const variants: VariantEntry[] = [];
+
+    for (const v of product.variants ?? []) {
+      if (v.optionValues.length === 0) continue;
+
+      const stock = typeof v.inStock === "number" ? v.inStock : null;
+      const options = v.optionValues.join(" · ");
+
+      variants.push({ tokens: optionTokens(options), stock });
+
+      const variantKey = normalizeName(`${product.name} · ${options}`);
+      if (variantKey !== parentKey) exact.set(variantKey, stock);
+    }
+
+    // Written last so no variant key can shadow it. A row named exactly the
+    // parent means the whole product, so it gets the total.
+    const stock = stockOnHand(product);
+    exact.set(parentKey, stock);
+    parents.push({ key: parentKey, stock, variants });
+  }
+
+  // Longest first so "Momo Special" wins over "Momo" for "momo special buff".
+  parents.sort((a, b) => b.key.length - a.key.length);
+
+  return { exact, parents };
+}
+
+type StockMatch =
+  | { stock: number | null; matched: true }
+  | { stock: null; matched: false; reason: "no-product" | "unknown-variant" };
+
+/**
+ * Stock for a sales row name.
+ *
+ * 1. Exact match — the parent name, or an expanded name in our own format.
+ * 2. Longest parent name prefixing it at a word boundary. Whatever follows is
+ *    tokenised and matched against that product's variants, so "Momo - Buff",
+ *    "Momo (Buff)" and "Momo Buff" all land on the Buff variant's own stock.
+ *    Nothing after the parent name means the product as a whole.
+ *
+ * A trailing label that matches no variant returns unmatched rather than
+ * falling back to the product total — a wrong number here is worse than none,
+ * since it silently inflates that row's opening stock.
+ *
+ * The boundary check is what stops "Coke" from claiming "Coke Zero".
+ */
+function resolveStock(name: string, index: StockIndex): StockMatch {
+  const key = normalizeName(name);
+
+  if (index.exact.has(key)) {
+    return { stock: index.exact.get(key) ?? null, matched: true };
+  }
+
+  for (const parent of index.parents) {
+    if (!key.startsWith(parent.key)) continue;
+
+    const boundary = key.charAt(parent.key.length);
+    // "" means an exact tail; anything non-alphanumeric is a separator.
+    if (boundary !== "" && /[a-z0-9]/.test(boundary)) continue;
+
+    const remainder = optionTokens(key.slice(parent.key.length));
+    if (!remainder) return { stock: parent.stock, matched: true };
+
+    const variant = parent.variants.find((v) => v.tokens === remainder);
+    if (variant) return { stock: variant.stock, matched: true };
+
+    return { stock: null, matched: false, reason: "unknown-variant" };
+  }
+
+  return { stock: null, matched: false, reason: "no-product" };
 }
 
 /**
@@ -99,6 +228,10 @@ function stockOnHand(product: InventoryItem): number | null {
  *
  * Both are dynamic — the number of fast movers follows the data, and no rule
  * can collapse to "the single top seller".
+ *
+ * Variant products are ranked as one product, because that's how the sales API
+ * reports them: all variants of a product share a name and are merged before
+ * they arrive here, so their units and their stock are both summed.
  *
  * IMPORTANT: opening stock is inferred as `onHand + sold`, which is only
  * correct if nothing was restocked during the period. Any purchase, transfer
@@ -139,14 +272,17 @@ export function classifySalesVelocity(
   }
 
   // ── Stock lookup ────────────────────────────────────────────────────────
-  const stockByName = new Map<string, number | null>();
-  for (const product of inventory ?? []) {
-    stockByName.set(normalizeName(product.name), stockOnHand(product));
-  }
+  const stockIndex = buildStockIndex(inventory ?? []);
+  const unmatched: string[] = [];
 
   let stockedCount = 0;
   for (const item of sales) {
-    const onHand = stockByName.get(normalizeName(item.name)) ?? null;
+    const match = resolveStock(item.name, stockIndex);
+    const onHand = match.stock;
+    if (!match.matched && stockIndex.parents.length > 0) {
+      unmatched.push(`${item.name} (${match.reason})`);
+    }
+
     const openingStock = onHand === null ? null : onHand + item.count;
     const sellThrough =
       openingStock !== null && openingStock > 0
@@ -155,6 +291,15 @@ export function classifySalesVelocity(
 
     metrics.set(item.name, { onHand, openingStock, sellThrough });
     if (sellThrough !== null) stockedCount += 1;
+  }
+
+  // Names that resolved to no product at all are the actionable signal: a
+  // custom one-off line, or a naming format this index doesn't know about.
+  if (process.env.NODE_ENV !== "production" && unmatched.length > 0) {
+    console.warn(
+      `[salesVelocity] ${unmatched.length} sold item(s) matched no product — ` +
+        `they can't be ranked by sell-through: ${unmatched.join(", ")}`,
+    );
   }
 
   const rates = sales

@@ -39,6 +39,8 @@ const classify = (
     inventory,
   );
 
+  console.log("Metrics:", metrics);
+
   const toRow = (item: MergedSalesItem): MovingItem => {
     const m = metrics.get(item.name);
     return {
@@ -50,16 +52,29 @@ const classify = (
     };
   };
 
-  const fastItems = fast.map(toRow).filter((item) => item.sellThrough !== null);
-  const slowItems = slow
-    .map(toRow)
-    .filter((item) => item.sellThrough !== null)
-    .sort((a, b) => a.sellThrough! - b.sellThrough!);
+  // Only sell-through mode requires a rate — units mode ranked by quantity,
+  // so dropping rate-less rows there would empty the panels.
+  const rankedByRate = basis === "sell-through";
+  const keep = (item: MovingItem) =>
+    rankedByRate ? item.sellThrough !== null : true;
+
+  const byRateDesc = (a: MovingItem, b: MovingItem) =>
+    (b.sellThrough ?? 0) - (a.sellThrough ?? 0);
+  const byRateAsc = (a: MovingItem, b: MovingItem) =>
+    (a.sellThrough ?? 0) - (b.sellThrough ?? 0);
+  const bySoldDesc = (a: MovingItem, b: MovingItem) => b.sold - a.sold;
+  const bySoldAsc = (a: MovingItem, b: MovingItem) => a.sold - b.sold;
 
   return {
-    fast: fastItems.sort((a, b) => b.sellThrough! - a.sellThrough!),
+    fast: fast
+      .map(toRow)
+      .filter(keep)
+      .sort(rankedByRate ? byRateDesc : bySoldDesc),
     // Weakest first, so the most urgent slow mover is on the opening page.
-    slow: slowItems,
+    slow: slow
+      .map(toRow)
+      .filter(keep)
+      .sort(rankedByRate ? byRateAsc : bySoldAsc),
     basis,
   };
 };
@@ -99,7 +114,7 @@ const ItemRow = ({
           </p>
           {item.sellThrough !== null && (
             <p className="text-[11px] text-gray-400">
-              {Math.round(item.sellThrough * 100)}% of{" "}
+              {(item.sellThrough * 100).toFixed(2)}% of{" "}
               {item.openingStock?.toLocaleString()} stock
             </p>
           )}
@@ -241,6 +256,12 @@ const FastSlowMovingItems = ({
   inventory?: InventoryItem[];
 }) => {
   const { fast, slow, basis } = classify(items, inventory);
+
+  console.log("Sales:", items);
+
+  console.log("Fast:", fast);
+  console.log("Slow:", slow);
+  console.log("Basis:", basis);
 
   return (
     <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4">
