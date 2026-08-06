@@ -13,7 +13,6 @@ import {
   PlusCircle,
   Wallet,
   RotateCcw,
-  Banknote,
   HandCoins,
   CalendarDays,
   ChevronDown,
@@ -25,6 +24,18 @@ import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import { getPurposeColor } from "@/providers/ExpenseContext";
 import { getPurposeIcon } from "@/lib/purpose-icons";
+
+interface NodeBox {
+  y: number;
+  h: number;
+}
+
+interface LinkBox {
+  sTop: number;
+  sBottom: number;
+  tTop: number;
+  tBottom: number;
+}
 
 interface FlowNode {
   id: string;
@@ -214,16 +225,23 @@ const NODE_IDS = {
   misc: "misc",
   totalIncome: "total-income",
   refunds: "refunds",
-  netRevenue: "net-revenue",
   profit: "profit",
   deficit: "deficit",
 } as const;
 
+/**
+ * Three stages: income sources feed Total Income, which splits straight into
+ * everything the money became.
+ *
+ *   Gross Revenue ┐
+ *                 ├→ Total Income ┬→ Net Profit
+ *   Misc. Income ─┘               ├→ each expense purpose
+ *                                 └→ Refunds
+ */
 const DEPTH = {
   source: 0,
   totalIncome: 1,
-  split: 2,
-  outcome: 3,
+  outcome: 2,
 } as const;
 
 const MAX_DEPTH = DEPTH.outcome;
@@ -233,8 +251,6 @@ const PALETTE = {
   incomeText: "#14532D",
   totalFill: "#15734A",
   totalText: "#FFFFFF",
-  netRevenueFill: "#4E9E7A",
-  netRevenueText: "#FFFFFF",
   refundsFill: "#F0952E",
   refundsText: "#FFFFFF",
   profitFill: "#4A7EBB",
@@ -243,25 +259,42 @@ const PALETTE = {
   deficitText: "#FFFFFF",
 };
 
-const CHART_MARGIN = { top: 26, right: 172, left: 14, bottom: 26 };
+const CHART_MARGIN = { top: 20, right: 172, left: 14, bottom: 20 };
 const NODE_WIDTH = 22;
+const MIN_NODE_HEIGHT = 20;
+const MAX_NODE_HEIGHT = 120;
+
+/** Never let a column's nodes press against the top or bottom of the plot. */
+const STAGE_PADDING = 10;
+/** Floor and ceiling for the gap between neighbours in a column. */
+const MIN_NODE_GAP = 20;
+const MAX_NODE_GAP = 80;
 
 interface FlowStages {
   grossRevenue: number;
   miscIncome: number;
   totalIncome: number;
   refunds: number;
+  /** Income after refunds — the pot expenses and profit come out of. */
   netRevenue: number;
   expenses: number;
   netProfit: number;
   refundsCapped: boolean;
 }
 
+/**
+ * Each figure is derived from the one before it, so the diagram balances by
+ * construction:
+ *
+ *   grossRevenue + miscIncome           = totalIncome
+ *   totalIncome − refunds − expenses    = netProfit
+ */
 function computeStages(data: SankeyData): FlowStages {
   const grossRevenue = Math.max(0, data.grossRevenue);
   const miscIncome = Math.max(0, data.miscIncome);
   const totalIncome = grossRevenue + miscIncome;
 
+  // Refunds can't exceed what came in — that would leave nothing drawable.
   const rawRefunds = Math.max(0, data.refunds);
   const refunds = Math.min(rawRefunds, totalIncome);
   const netRevenue = totalIncome - refunds;
@@ -284,7 +317,6 @@ function computeStages(data: SankeyData): FlowStages {
 function buildGraph(
   s: FlowStages,
   expensesByPurpose: ExpenseByPurpose[],
-  fmt: (v: number) => string,
 ): { nodes: FlowNode[]; links: SankeyLink[] } {
   const nodes: FlowNode[] = [];
   const links: SankeyLink[] = [];
@@ -292,6 +324,7 @@ function buildGraph(
   const pct = (v: number) =>
     s.totalIncome > 0 ? `${((v / s.totalIncome) * 100).toFixed(1)}%` : "—";
 
+  // ── Stage 1 — income sources ──
   if (s.grossRevenue > 0) {
     nodes.push({
       id: NODE_IDS.gross,
@@ -328,6 +361,7 @@ function buildGraph(
     });
   }
 
+  // ── Stage 2 — total income ──
   nodes.push({
     id: NODE_IDS.totalIncome,
     name: "Total Income",
@@ -339,43 +373,9 @@ function buildGraph(
     share: pct(s.totalIncome),
   });
 
-  if (s.refunds > 0) {
-    nodes.push({
-      id: NODE_IDS.refunds,
-      name: "Refunds",
-      color: PALETTE.refundsFill,
-      onFill: PALETTE.refundsText,
-      depth: DEPTH.split,
-      icon: RotateCcw,
-      displayValue: s.refunds,
-      share: pct(s.refunds),
-    });
-    links.push({
-      source: NODE_IDS.totalIncome,
-      target: NODE_IDS.refunds,
-      value: s.refunds,
-    });
-  }
-
-  if (s.netRevenue > 0) {
-    nodes.push({
-      id: NODE_IDS.netRevenue,
-      name: "Net Revenue",
-      color: PALETTE.netRevenueFill,
-      onFill: PALETTE.netRevenueText,
-      depth: DEPTH.split,
-      icon: Banknote,
-      displayValue: s.netRevenue,
-      share: pct(s.netRevenue),
-      caption: s.refunds > 0 ? `after ${fmt(s.refunds)} refunds` : undefined,
-    });
-    links.push({
-      source: NODE_IDS.totalIncome,
-      target: NODE_IDS.netRevenue,
-      value: s.netRevenue,
-    });
-  }
-
+  // ── Stage 3 — where the income ended up ──
+  // Push order sets the column top-to-bottom: profit, purposes by size,
+  // then refunds.
   if (s.netProfit > 0) {
     nodes.push({
       id: NODE_IDS.profit,
@@ -388,7 +388,7 @@ function buildGraph(
       share: pct(s.netProfit),
     });
     links.push({
-      source: NODE_IDS.netRevenue,
+      source: NODE_IDS.totalIncome,
       target: NODE_IDS.profit,
       value: s.netProfit,
     });
@@ -407,27 +407,50 @@ function buildGraph(
     });
   }
 
+  if (s.refunds > 0) {
+    nodes.push({
+      id: NODE_IDS.refunds,
+      name: "Refunds",
+      color: PALETTE.refundsFill,
+      onFill: PALETTE.refundsText,
+      depth: DEPTH.outcome,
+      icon: RotateCcw,
+      displayValue: s.refunds,
+      share: pct(s.refunds),
+    });
+    links.push({
+      source: NODE_IDS.totalIncome,
+      target: NODE_IDS.refunds,
+      value: s.refunds,
+    });
+  }
+
+  // ── Expense links ──
   if (s.netProfit >= 0) {
     for (const e of expensesByPurpose) {
       links.push({
-        source: NODE_IDS.netRevenue,
+        source: NODE_IDS.totalIncome,
         target: `exp-${e.purposeId}`,
         value: e.amount,
       });
     }
   } else {
+    // Loss: expenses outran what was left after refunds. The shortfall enters
+    // as its own source rather than distorting any input. Nothing in the data
+    // says which purpose went unfunded, so every purpose draws the same
+    // proportion from income and the rest from the deficit.
     const shortfall = Math.abs(s.netProfit);
-    const revenueShare = s.expenses > 0 ? s.netRevenue / s.expenses : 0;
+    const incomeShare = s.expenses > 0 ? s.netRevenue / s.expenses : 0;
 
     for (const e of expensesByPurpose) {
-      const fromRevenue = e.amount * revenueShare;
-      const fromDeficit = e.amount - fromRevenue;
+      const fromIncome = e.amount * incomeShare;
+      const fromDeficit = e.amount - fromIncome;
 
-      if (fromRevenue > 0) {
+      if (fromIncome > 0) {
         links.push({
-          source: NODE_IDS.netRevenue,
+          source: NODE_IDS.totalIncome,
           target: `exp-${e.purposeId}`,
-          value: fromRevenue,
+          value: fromIncome,
         });
       }
       if (fromDeficit > 0) {
@@ -439,27 +462,171 @@ function buildGraph(
       }
     }
 
+    // Sits beside Total Income — it feeds the outcome column the same way.
     nodes.push({
       id: NODE_IDS.deficit,
       name: "Deficit",
       color: PALETTE.deficitFill,
       onFill: PALETTE.deficitText,
-      depth: DEPTH.split,
+      depth: DEPTH.totalIncome,
       displayValue: shortfall,
       share: pct(shortfall),
-      caption: "not covered by net revenue",
+      caption: "not covered by income",
     });
   }
 
   return { nodes, links };
 }
 
+// ── Layout ─────────────────────────────────────────────────────────────────
+
+/**
+ * Positions every node and every ribbon end in one pass.
+ *
+ * Recharts sizes a Sankey node in proportion to its value and places links
+ * against that geometry. Clamping the drawn rect breaks the contract — the
+ * rect moves but the link endpoints don't — so both have to come from the
+ * same numbers instead.
+ *
+ * Vertical rule, per column: nodes are sized, then centred as one block with
+ * symmetric padding. The gap is uniform and derived from the room left over,
+ * capped at MAX_NODE_GAP so a two-node column doesn't fling its nodes to
+ * opposite ends. If even MIN_NODE_GAP won't fit, heights shrink together —
+ * that floor is what makes overlap impossible at any node count.
+ *
+ * Horizontal position is decided in the node renderer, from the same `depth`
+ * field — see the note on columnX.
+ */
+function computeLayout(
+  nodes: FlowNode[],
+  links: SankeyLink[],
+  plotTop: number,
+  plotHeight: number,
+): { nodePos: Map<string, NodeBox>; linkPos: LinkBox[] } {
+  const nodePos = new Map<string, NodeBox>();
+
+  // ── Group by column, preserving the order nodes were built in ──
+  const columns = new Map<number, FlowNode[]>();
+  for (const node of nodes) {
+    const col = columns.get(node.depth) ?? [];
+    col.push(node);
+    columns.set(node.depth, col);
+  }
+
+  const maxValue = Math.max(...nodes.map((n) => n.displayValue ?? 0), 1);
+  // Room the collection may occupy once padding is reserved at both ends.
+  const available = Math.max(1, plotHeight - STAGE_PADDING * 2);
+
+  for (const col of columns.values()) {
+    // Height still reads as value — just bounded, so a tiny expense stays
+    // visible and a huge one doesn't swallow the column.
+    let heights = col.map((n) => {
+      const raw = ((n.displayValue ?? 0) / maxValue) * MAX_NODE_HEIGHT;
+      return Math.min(MAX_NODE_HEIGHT, Math.max(MIN_NODE_HEIGHT, raw));
+    });
+
+    const count = col.length;
+
+    if (count === 1) {
+      // A lone node sits in the vertical middle of the plot.
+      const h = Math.min(heights[0], available);
+      nodePos.set(col[0].id, { y: plotTop + (plotHeight - h) / 2, h });
+      continue;
+    }
+
+    let used = heights.reduce((a, b) => a + b, 0);
+    let gap: number;
+
+    if (used + (count - 1) * MIN_NODE_GAP > available) {
+      // Doesn't fit even at the tightest spacing — shrink the whole column
+      // proportionally and hold the gap at its floor.
+      const room = Math.max(1, available - (count - 1) * MIN_NODE_GAP);
+      const scale = room / used;
+      heights = heights.map((h) => Math.max(4, h * scale));
+      used = heights.reduce((a, b) => a + b, 0);
+      gap = MIN_NODE_GAP;
+    } else {
+      // Spread into the space left over, but don't let two nodes drift to
+      // opposite ends of a tall chart.
+      gap = Math.min(MAX_NODE_GAP, (available - used) / (count - 1));
+    }
+
+    // Centre the whole collection; padding falls out of the centring.
+    const blockHeight = used + gap * (count - 1);
+    let y = plotTop + (plotHeight - blockHeight) / 2;
+
+    col.forEach((node, i) => {
+      nodePos.set(node.id, { y, h: heights[i] });
+      y += heights[i] + gap;
+    });
+  }
+
+  // ── Ribbon ends: each link takes a slice of its node's face ──
+  const linkPos: LinkBox[] = links.map(() => ({
+    sTop: 0,
+    sBottom: 0,
+    tTop: 0,
+    tBottom: 0,
+  }));
+
+  const outgoing = new Map<string, number[]>();
+  const incoming = new Map<string, number[]>();
+  links.forEach((link, i) => {
+    outgoing.set(link.source, [...(outgoing.get(link.source) ?? []), i]);
+    incoming.set(link.target, [...(incoming.get(link.target) ?? []), i]);
+  });
+
+  // Order slices by where the other end sits, so ribbons don't cross.
+  for (const [nodeId, indices] of outgoing) {
+    const box = nodePos.get(nodeId);
+    if (!box) continue;
+
+    const ordered = [...indices].sort(
+      (a, b) =>
+        (nodePos.get(links[a].target)?.y ?? 0) -
+        (nodePos.get(links[b].target)?.y ?? 0),
+    );
+    const total = indices.reduce((s, i) => s + links[i].value, 0) || 1;
+
+    let offset = 0;
+    for (const i of ordered) {
+      const thickness = (links[i].value / total) * box.h;
+      linkPos[i].sTop = box.y + offset;
+      linkPos[i].sBottom = box.y + offset + thickness;
+      offset += thickness;
+    }
+  }
+
+  for (const [nodeId, indices] of incoming) {
+    const box = nodePos.get(nodeId);
+    if (!box) continue;
+
+    const ordered = [...indices].sort(
+      (a, b) =>
+        (nodePos.get(links[a].source)?.y ?? 0) -
+        (nodePos.get(links[b].source)?.y ?? 0),
+    );
+    const total = indices.reduce((s, i) => s + links[i].value, 0) || 1;
+
+    let offset = 0;
+    for (const i of ordered) {
+      const thickness = (links[i].value / total) * box.h;
+      linkPos[i].tTop = box.y + offset;
+      linkPos[i].tBottom = box.y + offset + thickness;
+      offset += thickness;
+    }
+  }
+
+  return { nodePos, linkPos };
+}
+
 // ── Rendering ──────────────────────────────────────────────────────────────
 
+/** Our custom node fields survive into the objects recharts hands back. */
 interface LinkPayload {
   value?: number;
-  source?: { color?: string };
-  target?: { color?: string };
+  source?: { color?: string; depth?: number };
+  target?: { color?: string; depth?: number };
 }
 
 interface SankeyLinkRenderProps {
@@ -556,12 +723,21 @@ function FilterDropdown({
   );
 }
 
+// ── Component ──────────────────────────────────────────────────────────────
+
 export default function RevenueFlowSankey() {
   const { currency } = useCurrency();
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
   const [data, setData] = useState<SankeyData>(EMPTY_DATA);
+
+  // Recharts' own X is unusable here: it aligns nodes by walking the link
+  // graph, so a node with no incoming links (Deficit) lands in the first
+  // column no matter what its depth says. Measure the plot and place the
+  // columns ourselves.
+  const chartRef = useRef<HTMLDivElement | null>(null);
+  const [chartWidth, setChartWidth] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -578,11 +754,24 @@ export default function RevenueFlowSankey() {
     };
   }, [month, year]);
 
+  useEffect(() => {
+    const el = chartRef.current;
+    if (!el) return;
+
+    setChartWidth(el.getBoundingClientRect().width);
+
+    const observer = new ResizeObserver(([entry]) => {
+      setChartWidth(entry.contentRect.width);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [data.isLoading, data.isError]);
+
   const fmt = (v: number) =>
     formatCurrencySymbol(v, currency.symbol, currency.locale);
 
   const stages = computeStages(data);
-  const { nodes, links } = buildGraph(stages, data.expensesByPurpose, fmt);
+  const { nodes, links } = buildGraph(stages, data.expensesByPurpose);
 
   if (
     process.env.NODE_ENV !== "production" &&
@@ -606,11 +795,33 @@ export default function RevenueFlowSankey() {
     })),
   };
 
+  // The outcome column is the tallest: Net Profit, one node per expense
+  // purpose, and Refunds. The chart has to grow with it.
   const lastColumnCount = Math.max(
-    data.expensesByPurpose.length + (stages.netProfit > 0 ? 1 : 0),
+    data.expensesByPurpose.length +
+      (stages.netProfit > 0 ? 1 : 0) +
+      (stages.refunds > 0 ? 1 : 0),
     2,
   );
-  const chartHeight = Math.max(600, lastColumnCount * 74 + 100);
+  const chartHeight = Math.max(400, lastColumnCount * 50 + 70);
+
+  // One layout drives both renderers below.
+  const plotTop = CHART_MARGIN.top;
+  const plotHeight = chartHeight - CHART_MARGIN.top - CHART_MARGIN.bottom;
+  const { nodePos, linkPos } = computeLayout(nodes, links, plotTop, plotHeight);
+
+  const plotWidth = Math.max(
+    1,
+    chartWidth - CHART_MARGIN.left - CHART_MARGIN.right,
+  );
+
+  /** Left edge of a column, from the node's declared depth. */
+  const columnX = (depth: number) =>
+    CHART_MARGIN.left +
+    (MAX_DEPTH > 0 ? (depth / MAX_DEPTH) * (plotWidth - NODE_WIDTH) : 0);
+
+  // Before the first measurement, fall back to recharts' geometry for a frame.
+  const ownX = chartWidth > 0;
 
   const currentYear = now.getFullYear();
   const years = Array.from({ length: 7 }, (_, i) => currentYear - 5 + i);
@@ -625,7 +836,7 @@ export default function RevenueFlowSankey() {
             </div>
             <ComponentHeader
               title="Revenue Flow (Sankey Diagram)"
-              subHeader="Income sources → Total Income → Refunds / Net Revenue → Expenses / Net Profit"
+              subHeader="Income sources → Total Income → Expenses / Refunds / Net Profit"
             />
           </div>
 
@@ -652,178 +863,199 @@ export default function RevenueFlowSankey() {
       </div>
 
       {data.isLoading ? (
-        <div className="h-[600px] flex items-center justify-center text-sm text-gray-400">
+        <div
+          className="flex items-center justify-center text-sm text-gray-400"
+          style={{ height: chartHeight }}
+        >
           Loading revenue flow…
         </div>
       ) : data.isError || stages.totalIncome <= 0 ? (
-        <div className="h-[600px] flex flex-col items-center justify-center text-sm text-gray-400">
+        <div
+          className="flex flex-col items-center justify-center text-sm text-gray-400"
+          style={{ height: chartHeight }}
+        >
           <Waypoints size={28} className="text-gray-300 mb-2" />
           {data.isError
             ? "Failed to load revenue flow data"
             : " No revenue data for this month yet."}
         </div>
       ) : (
-        <>
-          <div className="overflow-x-auto">
-            <div style={{ height: chartHeight, minWidth: 640 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <Sankey
-                  data={sankeyData}
-                  nodePadding={30}
-                  nodeWidth={NODE_WIDTH}
-                  margin={CHART_MARGIN}
-                  linkCurvature={0.5}
-                  iterations={64}
-                  node={(props: SankeyNodeProps) => {
-                    const { x, y, width, height, payload } = props;
-                    const node = payload as unknown as FlowNode;
+        <div className="overflow-x-auto">
+          <div ref={chartRef} style={{ height: chartHeight, minWidth: 440 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <Sankey
+                data={sankeyData}
+                nodePadding={20}
+                nodeWidth={NODE_WIDTH}
+                margin={CHART_MARGIN}
+                linkCurvature={0.5}
+                iterations={64}
+                node={(props: SankeyNodeProps) => {
+                  const { x: rechartsX, width: rechartsWidth, payload } = props;
+                  const node = payload as unknown as FlowNode;
 
-                    const rectH = Math.max(height, 15);
-                    const midY = y + rectH / 2;
+                  const box = nodePos.get(node.id);
+                  if (!box) return <g />;
 
-                    const Icon = node.icon;
-                    const iconSize = Math.min(16, Math.max(10, rectH * 0.28));
-                    const iconX = x + (width - iconSize) / 2;
+                  // Both axes derive from `node.depth`, so no node can be
+                  // placed in a column it doesn't belong to.
+                  const x = ownX ? columnX(node.depth) : rechartsX;
+                  const width = ownX ? NODE_WIDTH : rechartsWidth;
 
-                    const halo = {
-                      stroke: "#ffffff",
-                      strokeWidth: 3,
-                      paintOrder: "stroke" as const,
-                      strokeLinejoin: "round" as const,
-                    };
+                  const { y, h } = box;
+                  const midY = y + h / 2;
 
-                    return (
-                      <g>
-                        <rect
-                          x={x}
-                          y={y}
-                          width={width}
-                          height={rectH}
-                          rx={7}
-                          ry={7}
-                          fill={node.color}
-                        />
+                  const Icon = node.icon;
+                  const iconSize = Math.min(16, Math.max(9, h * 0.6));
+                  const showIcon = Boolean(Icon) && h >= 20;
 
-                        {Icon && (
-                          <g
-                            transform={`translate(${iconX}, ${midY - iconSize / 2})`}
-                          >
-                            <Icon
-                              size={iconSize}
-                              color="#f9f9f9"
-                              strokeWidth={2.5}
-                              opacity={0.9}
-                            />
-                          </g>
-                        )}
+                  const labelX = x + width + 14;
 
-                        <text
-                          x={x + width + 55}
-                          y={midY - 6}
-                          fill="#374151"
-                          fontSize={10}
-                          fontWeight={600}
-                          {...halo}
+                  const halo = {
+                    stroke: "#ffffff",
+                    strokeWidth: 3,
+                    paintOrder: "stroke" as const,
+                    strokeLinejoin: "round" as const,
+                  };
+
+                  return (
+                    <g>
+                      <rect
+                        x={x}
+                        y={y}
+                        width={width}
+                        height={h}
+                        rx={7}
+                        ry={7}
+                        fill={node.color}
+                      />
+
+                      {showIcon && Icon && (
+                        <g
+                          transform={`translate(${x + (width - iconSize) / 2}, ${
+                            midY - iconSize / 2
+                          })`}
                         >
-                          {node.name}
-                        </text>
-                        <text
-                          x={x + width + 14}
-                          y={midY + 6}
-                          fill="#111827"
-                          fontSize={10}
-                          fontWeight={700}
-                          style={{ fontVariantNumeric: "tabular-nums" }}
-                          {...halo}
-                        >
-                          {fmt(node.displayValue ?? node.value ?? 0)}
-                        </text>
+                          <Icon
+                            size={iconSize}
+                            color="#ffffff"
+                            strokeWidth={2.5}
+                            opacity={0.95}
+                          />
+                        </g>
+                      )}
+
+                      {/* Name + share on one line, amount beneath it */}
+                      <text
+                        x={labelX}
+                        y={midY - 4}
+                        fill="#374151"
+                        fontSize={11}
+                        fontWeight={600}
+                        {...halo}
+                      >
+                        {node.name}
                         {node.share && (
-                          <text
-                            x={x + width + 14}
-                            y={midY - 6}
+                          <tspan
                             fill="#94A3B8"
-                            fontSize={10}
+                            fontWeight={500}
                             style={{ fontVariantNumeric: "tabular-nums" }}
-                            {...halo}
                           >
-                            [{node.share}]
-                          </text>
+                            {"  "}
+                            {node.share}
+                          </tspan>
                         )}
-                      </g>
-                    );
+                      </text>
+
+                      <text
+                        x={labelX}
+                        y={midY + 11}
+                        fill="#111827"
+                        fontSize={11.5}
+                        fontWeight={700}
+                        style={{ fontVariantNumeric: "tabular-nums" }}
+                        {...halo}
+                      >
+                        {fmt(node.displayValue ?? node.value ?? 0)}
+                      </text>
+                    </g>
+                  );
+                }}
+                link={(linkProps: SankeyLinkRenderProps) => {
+                  const { index, payload } = linkProps;
+
+                  const box = linkPos[index];
+                  if (!box) return <g />;
+
+                  const { sTop, sBottom, tTop, tBottom } = box;
+                  const { source, target } = (payload ?? {}) as LinkPayload;
+
+                  // A ribbon leaves the right edge of its source column and
+                  // meets the left edge of its target column — both derived
+                  // from depth, like the nodes.
+                  const sourceX = ownX
+                    ? columnX(source?.depth ?? 0) + NODE_WIDTH
+                    : linkProps.sourceX;
+                  const targetX = ownX
+                    ? columnX(target?.depth ?? MAX_DEPTH)
+                    : linkProps.targetX;
+
+                  // linkCurvature 0.5 puts both control points at the midpoint.
+                  const midX = (sourceX + targetX) / 2;
+                  const sourceControlX = ownX ? midX : linkProps.sourceControlX;
+                  const targetControlX = ownX ? midX : linkProps.targetControlX;
+
+                  const d = [
+                    `M${sourceX},${sTop}`,
+                    `C${sourceControlX},${sTop} ${targetControlX},${tTop} ${targetX},${tTop}`,
+                    `L${targetX},${tBottom}`,
+                    `C${targetControlX},${tBottom} ${sourceControlX},${sBottom} ${sourceX},${sBottom}`,
+                    "Z",
+                  ].join(" ");
+
+                  const gradientId = `flow-grad-${index}`;
+                  const from = source?.color ?? "#cbd5e1";
+                  const to = target?.color ?? "#cbd5e1";
+
+                  return (
+                    <g key={`link-${index}`}>
+                      <defs>
+                        <linearGradient
+                          id={gradientId}
+                          x1={sourceX}
+                          x2={targetX}
+                          y1={0}
+                          y2={0}
+                          gradientUnits="userSpaceOnUse"
+                        >
+                          <stop offset="0%" stopColor={from} />
+                          <stop offset="100%" stopColor={to} />
+                        </linearGradient>
+                      </defs>
+                      <path
+                        d={d}
+                        fill={`url(#${gradientId})`}
+                        fillOpacity={0.45}
+                        stroke="none"
+                      />
+                    </g>
+                  );
+                }}
+              >
+                <Tooltip
+                  cursor={false}
+                  contentStyle={{
+                    fontSize: 12,
+                    borderRadius: 10,
+                    border: "1px solid #e2e8f0",
+                    boxShadow: "0 4px 16px -6px rgba(15,23,42,0.25)",
                   }}
-                  link={(linkProps: SankeyLinkRenderProps) => {
-                    const {
-                      sourceX,
-                      sourceY,
-                      sourceControlX,
-                      targetX,
-                      targetY,
-                      targetControlX,
-                      linkWidth,
-                      index,
-                      payload,
-                    } = linkProps;
-
-                    const sTop = sourceY - linkWidth / 2;
-                    const sBottom = sourceY + linkWidth / 2;
-                    const tTop = targetY - linkWidth / 2;
-                    const tBottom = targetY + linkWidth / 2;
-
-                    const d = [
-                      `M${sourceX},${sTop}`,
-                      `C${sourceControlX},${sTop} ${targetControlX},${tTop} ${targetX},${tTop}`,
-                      `L${targetX},${tBottom}`,
-                      `C${targetControlX},${tBottom} ${sourceControlX},${sBottom} ${sourceX},${sBottom}`,
-                      "Z",
-                    ].join(" ");
-
-                    const gradientId = `flow-grad-${index}`;
-                    const { source, target } = payload as LinkPayload;
-                    const from = source?.color ?? "#cbd5e1";
-                    const to = target?.color ?? "#cbd5e1";
-
-                    return (
-                      <g key={`link-${index}`}>
-                        <defs>
-                          <linearGradient
-                            id={gradientId}
-                            x1={sourceX}
-                            x2={targetX}
-                            y1={0}
-                            y2={0}
-                            gradientUnits="userSpaceOnUse"
-                          >
-                            <stop offset="0%" stopColor={from} />
-                            <stop offset="100%" stopColor={to} />
-                          </linearGradient>
-                        </defs>
-                        <path
-                          d={d}
-                          fill={`url(#${gradientId})`}
-                          fillOpacity={0.42}
-                          stroke="none"
-                        />
-                      </g>
-                    );
-                  }}
-                >
-                  <Tooltip
-                    cursor={false}
-                    contentStyle={{
-                      fontSize: 12,
-                      borderRadius: 10,
-                      border: "1px solid #e2e8f0",
-                      boxShadow: "0 4px 16px -6px rgba(15,23,42,0.25)",
-                    }}
-                    formatter={(value) => fmt(Number(value ?? 0))}
-                  />
-                </Sankey>
-              </ResponsiveContainer>
-            </div>
+                  formatter={(value) => fmt(Number(value ?? 0))}
+                />
+              </Sankey>
+            </ResponsiveContainer>
           </div>
-        </>
+        </div>
       )}
     </div>
   );

@@ -13,7 +13,7 @@ import TableDetail from "@/components/dashboardComponents/liveTables/TableDetail
 type Tab = "floor" | "grid";
 
 export default function LiveTablesPage() {
-  const [tab, setTab] = useState<Tab>("floor");
+  const [tab, setTab] = useState<Tab>("grid");
   const [selectedTable, setSelectedTable] = useState<LiveTable | null>(null);
 
   const { data: tables = [], isLoading, isError } = useLiveTables();
@@ -55,8 +55,8 @@ export default function LiveTablesPage() {
           {/* View toggle */}
           <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 w-fit">
             {[
-              { id: "floor", label: "Floor Plan", icon: Map },
               { id: "grid", label: "Grid View", icon: LayoutGrid },
+              { id: "floor", label: "Floor Plan", icon: Map },
             ].map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
