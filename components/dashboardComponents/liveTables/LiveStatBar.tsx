@@ -1,29 +1,25 @@
 "use client";
 
-import { Gauge, Users, DoorOpen, TrendingUp } from "lucide-react";
+import { Gauge, DoorOpen, TrendingUp } from "lucide-react";
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 
 interface LiveStatBarProps {
   occupancyPct: number;
-  coveredSeats: number;
-  totalCapacity: number;
   openTables: number;
   liveSales: number;
 }
 
 export default function LiveStatBar({
   occupancyPct,
-  coveredSeats,
-  totalCapacity,
   openTables,
   liveSales,
 }: LiveStatBarProps) {
   const { currency } = useCurrency();
 
   return (
-    <div className="grid grid-cols-4 md:grid-cols-4 sm:grid-cols-2 gap-3 sm:gap-4">
+    <div className="grid grid-cols-3 md:grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-4">
       {/* Occupancy */}
       <StatBox
         label="Occupancy"
@@ -37,18 +33,6 @@ export default function LiveStatBar({
             style={{ width: `${occupancyPct}%` }}
           />
         </div>
-      </StatBox>
-
-      {/* Covers seated */}
-      <StatBox
-        label="Covers Seated"
-        value={coveredSeats.toLocaleString()}
-        icon={<Users size={14} className="text-violet-500 sm:size-[16px]" />}
-        iconBg="bg-violet-50"
-      >
-        <p className="text-[11px] sm:text-xs text-gray-400">
-          of {totalCapacity} seats
-        </p>
       </StatBox>
 
       {/* Open tables */}

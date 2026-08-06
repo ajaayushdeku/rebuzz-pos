@@ -104,9 +104,10 @@ function TableNode({
         // Status mode shows the label via the dedicated status span below.
         return null;
       case "covers":
-        return table.status === "open" || table.status === "cleaning"
-          ? "—"
-          : `${table.covers}`;
+        // return table.status === "open" || table.status === "cleaning"
+        //   ? "—"
+        //   : `${table.capacity}`;
+        return `${table.capacity}`;
       case "total": {
         const amount = ticket?.grandTotal ?? table.bill;
         return amount != null
@@ -163,29 +164,6 @@ function TableNode({
       onPointerMove={editing ? onDragMove : undefined}
       onPointerUp={editing ? onDragEnd : undefined}
     >
-      {/* Cover count badge */}
-      {table.covers > 0 && (
-        <div
-          style={{
-            position: "absolute",
-            top: -8,
-            right: -8,
-            width: 18,
-            height: 18,
-            borderRadius: "50%",
-            backgroundColor: color,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 10,
-            fontWeight: 700,
-            color: "white",
-          }}
-        >
-          {table.covers}
-        </div>
-      )}
-
       {/* Alert A badge */}
       {table.hasAlert && (
         <div

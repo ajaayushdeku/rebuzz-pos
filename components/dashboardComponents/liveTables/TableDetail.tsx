@@ -146,8 +146,8 @@ export default function TableDetail({ table }: TableDetailProps) {
             {
               icon: <Users size={18} className="text-violet-500" />,
               bg: "bg-violet-50",
-              label: "Covers",
-              value: `${table.covers} / ${table.capacity}`,
+              label: "Seats",
+              value: `${table.capacity}`,
             },
             {
               icon: <Sparkles size={18} className="text-amber-500" />,

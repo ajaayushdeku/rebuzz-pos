@@ -17,6 +17,7 @@ import {
   CalendarDays,
   ChevronDown,
   type LucideIcon,
+  Loader2,
 } from "lucide-react";
 
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -864,10 +865,11 @@ export default function RevenueFlowSankey() {
 
       {data.isLoading ? (
         <div
-          className="flex items-center justify-center text-sm text-gray-400"
+          className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 flex flex-col items-center justify-center gap-3 text-gray-400"
           style={{ height: chartHeight }}
         >
-          Loading revenue flow…
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <p className="text-sm"> Loading revenue flow…</p>
         </div>
       ) : data.isError || stages.totalIncome <= 0 ? (
         <div

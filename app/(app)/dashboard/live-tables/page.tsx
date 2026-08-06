@@ -1,29 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import { LayoutGrid, Map, Loader2, Utensils } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { LayoutGrid, Map, Loader2, Utensils, Plus } from "lucide-react";
 
 import type { LiveTable } from "@/lib/mockData/mock-live-tables";
 import { useLiveTables, useTableLiveSales } from "@/hooks/useLiveTables";
+import { LIVE_TABLES_KEY } from "@/hooks/useLiveTables";
 import LiveStatBar from "@/components/dashboardComponents/liveTables/LiveStatBar";
 import FloorPlanView from "@/components/dashboardComponents/liveTables/FloorPlanVIew";
 import GridView from "@/components/dashboardComponents/liveTables/GridView";
 import TableDetail from "@/components/dashboardComponents/liveTables/TableDetail";
+import AddTableModal from "@/components/dashboardComponents/liveTables/AddTableModal";
 
 type Tab = "floor" | "grid";
 
 export default function LiveTablesPage() {
   const [tab, setTab] = useState<Tab>("grid");
   const [selectedTable, setSelectedTable] = useState<LiveTable | null>(null);
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [editingTable, setEditingTable] = useState<LiveTable | null>(null);
 
+  const queryClient = useQueryClient();
   const { data: tables = [], isLoading, isError } = useLiveTables();
   const { data: liveSales = 0 } = useTableLiveSales();
+
+  const handleTableCreated = () => {
+    queryClient.invalidateQueries({ queryKey: LIVE_TABLES_KEY });
+  };
+
+  const handleEditTable = (table: LiveTable) => {
+    setEditingTable(table);
+    setAddModalOpen(true);
+  };
 
   const indoorTables = tables.filter((t) => t.zone === "indoor");
   const outdoorTables = tables.filter((t) => t.zone === "outdoor");
   const openTables = tables.filter((t) => t.status === "open").length;
-  const coveredSeats = tables.reduce((s, t) => s + t.covers, 0);
-  const totalCapacity = indoorTables.reduce((s, t) => s + t.capacity, 0);
   const occupancyPct = indoorTables.length
     ? Math.round(
         (indoorTables.filter(
@@ -103,8 +116,6 @@ export default function LiveTablesPage() {
               {tab === "floor" && (
                 <LiveStatBar
                   occupancyPct={occupancyPct}
-                  coveredSeats={coveredSeats}
-                  totalCapacity={totalCapacity}
                   openTables={openTables}
                   liveSales={liveSales}
                 />
@@ -123,6 +134,9 @@ export default function LiveTablesPage() {
                   tables={tables}
                   selectedTableId={selectedTable?.id ?? null}
                   onSelectTable={setSelectedTable}
+                  onEditTable={handleEditTable}
+                  onTableDeleted={handleTableCreated}
+                  onTableChanged={handleTableCreated}
                 />
               )}
 
@@ -132,6 +146,30 @@ export default function LiveTablesPage() {
           )}
         </div>
       </div>
+
+      {/* ── Add Table (fixed bottom-right) ── */}
+      <button
+        type="button"
+        onClick={() => {
+          setEditingTable(null);
+          setAddModalOpen(true);
+        }}
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-5 py-3 rounded-full bg-blue-600 text-white text-sm font-semibold shadow-lg shadow-blue-600/30 hover:bg-blue-700 hover:shadow-blue-700/30 transition-all"
+      >
+        <Plus size={18} />
+        Add Table
+      </button>
+
+      <AddTableModal
+        key={editingTable?._id ?? "new"}
+        open={addModalOpen}
+        onClose={() => {
+          setAddModalOpen(false);
+          setEditingTable(null);
+        }}
+        onCreated={handleTableCreated}
+        editingTable={editingTable}
+      />
     </div>
   );
 }

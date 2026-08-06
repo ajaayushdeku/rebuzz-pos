@@ -32,12 +32,11 @@ const OUTDOOR_HINT =
  * Map one API table to the richer presentation shape the UI renders.
  *
  * The API only returns name/seats/notes/status/currentTicket, so the
- * presentation-only fields (covers, bill, server, seated time, floor position…)
+ * presentation-only fields (bill, server, seated time, floor position…)
  * are derived or defaulted here:
  *  - status: "occupied" → "seated", "free" → "open"
  *  - zone: outdoor when notes match an outdoor keyword (see OUTDOOR_HINT),
  *          otherwise indoor
- *  - covers: full seats when occupied, else 0 (the API has no live cover count)
  *  - x/y: assigned in a second pass by {@link assignFloorPositions}
  */
 function mapOne(raw: RawApiTable, index: number): LiveTable {
@@ -67,7 +66,6 @@ function mapOne(raw: RawApiTable, index: number): LiveTable {
     // Shape by seat count: ≤4 square, 5–8 rectangle, >8 round.
     shape: raw.seats > 8 ? "round" : raw.seats > 4 ? "rectangle" : "square",
     capacity: raw.seats,
-    covers: occupied ? raw.seats : 0,
     server: null,
     seatedMinutes: null,
     bill: null,

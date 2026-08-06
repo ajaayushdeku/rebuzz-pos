@@ -1,7 +1,11 @@
 // ── Types ─────────────────────────────────────────────────────────────────
 
 export type TableStatus =
-  "seated" | "open" | "reserved" | "cleaning" | "paying";
+  | "seated"
+  | "open"
+  | "reserved"
+  | "cleaning"
+  | "paying";
 
 export type TableShape = "square" | "round" | "rectangle";
 export type TableZone = "indoor" | "outdoor";
@@ -40,7 +44,6 @@ export type LiveTable = {
   zone: TableZone;
   shape: TableShape;
   capacity: number;
-  covers: number;
   server: string | null;
   seatedMinutes: number | null;
   bill: number | null;
@@ -74,7 +77,6 @@ export const MOCK_TABLES: LiveTable[] = [
     zone: "indoor",
     shape: "square",
     capacity: 2,
-    covers: 2,
     server: "Emma",
     seatedMinutes: 45,
     bill: 45.5,
@@ -101,7 +103,6 @@ export const MOCK_TABLES: LiveTable[] = [
     zone: "indoor",
     shape: "square",
     capacity: 2,
-    covers: 0,
     server: null,
     seatedMinutes: null,
     bill: null,
@@ -124,7 +125,6 @@ export const MOCK_TABLES: LiveTable[] = [
     zone: "indoor",
     shape: "square",
     capacity: 2,
-    covers: 2,
     server: "Liam",
     seatedMinutes: 76,
     bill: 12.0,
@@ -153,7 +153,6 @@ export const MOCK_TABLES: LiveTable[] = [
     zone: "indoor",
     shape: "square",
     capacity: 2,
-    covers: 0,
     server: null,
     seatedMinutes: null,
     bill: null,
@@ -176,7 +175,6 @@ export const MOCK_TABLES: LiveTable[] = [
     zone: "indoor",
     shape: "square",
     capacity: 4,
-    covers: 3,
     server: "Emma",
     seatedMinutes: 36,
     bill: 88.0,
@@ -199,7 +197,6 @@ export const MOCK_TABLES: LiveTable[] = [
     zone: "indoor",
     shape: "square",
     capacity: 4,
-    covers: 4,
     server: "Sophia",
     seatedMinutes: 89,
     bill: 110.0,
@@ -222,7 +219,6 @@ export const MOCK_TABLES: LiveTable[] = [
     zone: "indoor",
     shape: "square",
     capacity: 4,
-    covers: 0,
     server: null,
     seatedMinutes: null,
     bill: null,
@@ -245,7 +241,6 @@ export const MOCK_TABLES: LiveTable[] = [
     zone: "indoor",
     shape: "square",
     capacity: 4,
-    covers: 2,
     server: "James",
     seatedMinutes: 29,
     bill: 34.0,
@@ -268,7 +263,6 @@ export const MOCK_TABLES: LiveTable[] = [
     zone: "indoor",
     shape: "square",
     capacity: 4,
-    covers: 0,
     server: null,
     seatedMinutes: null,
     bill: null,
@@ -291,7 +285,6 @@ export const MOCK_TABLES: LiveTable[] = [
     zone: "indoor",
     shape: "round",
     capacity: 8,
-    covers: 6,
     server: "James",
     seatedMinutes: 52,
     bill: 240.0,
@@ -317,7 +310,6 @@ export const MOCK_TABLES: LiveTable[] = [
     zone: "indoor",
     shape: "square",
     capacity: 6,
-    covers: 5,
     server: "James",
     seatedMinutes: 44,
     bill: 85.0,
@@ -340,7 +332,6 @@ export const MOCK_TABLES: LiveTable[] = [
     zone: "indoor",
     shape: "square",
     capacity: 4,
-    covers: 0,
     server: null,
     seatedMinutes: null,
     bill: null,
@@ -364,7 +355,6 @@ export const MOCK_TABLES: LiveTable[] = [
     zone: "outdoor",
     shape: "square",
     capacity: 4,
-    covers: 2,
     server: "Aisha",
     seatedMinutes: 20,
     bill: 32.0,
@@ -387,7 +377,6 @@ export const MOCK_TABLES: LiveTable[] = [
     zone: "outdoor",
     shape: "square",
     capacity: 2,
-    covers: 0,
     server: null,
     seatedMinutes: null,
     bill: null,
@@ -410,7 +399,6 @@ export const MOCK_TABLES: LiveTable[] = [
     zone: "outdoor",
     shape: "round",
     capacity: 6,
-    covers: 0,
     server: null,
     seatedMinutes: null,
     bill: null,
@@ -434,7 +422,6 @@ export const MOCK_TABLES: LiveTable[] = [
     zone: "outdoor",
     shape: "square",
     capacity: 4,
-    covers: 0,
     server: null,
     seatedMinutes: null,
     bill: null,
