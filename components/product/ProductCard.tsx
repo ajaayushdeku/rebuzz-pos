@@ -271,7 +271,7 @@ export default function ProductCard({
           </div>
 
           {/* Stock — same reserved height whether or not stock is tracked */}
-          <div className="min-h-[14px] flex flex-col justify-end">
+          <div className="min-h-[14px] flex flex-col justify-end mb-2">
             {item.usesStocks ? (
               <>
                 <div className="flex items-baseline gap-1.5">
@@ -337,13 +337,17 @@ export default function ProductCard({
           </div>
 
           {/* Sales row */}
-          {hasSales && (
-            <div className="pt-3 border-t border-gray-100 mb-3">
-              {sharedVariants > 0 && (
+          {hasSales ? (
+            <div className="pt-2 border-t border-gray-400 mb-3 flex flex-col gap-1">
+              {/* {sharedVariants > 0 && (
                 <p className="text-[10px] text-amber-600 mb-1.5">
                   Combined across all {sharedVariants} variants
                 </p>
-              )}
+              )} */}
+
+              <span className="ml-auto text-[9px] uppercase tracking-wide text-gray-700 font-semibold items-center">
+                Date Range
+              </span>
 
               <div className="grid grid-cols-3 gap-2">
                 <div className="min-w-0">
@@ -380,11 +384,19 @@ export default function ProductCard({
                 </div>
               </div>
             </div>
+          ) : (
+            <div className="pt-3 border-t border-gray-200 mb-3 flex flex-col gap-1">
+              <span className="ml-auto text-[9px] uppercase tracking-wide text-gray-700 font-semibold items-center">
+                No sales data for this product in the selected date range.
+              </span>
+            </div>
           )}
 
           {/* Expanded View */}
           {isExpanded && (
-            <div className="pt-3 border-t border-gray-100">
+            <div
+              className={`pt-3 border-t ${hasSales ? " border-gray-400" : "border-gray-200"}`}
+            >
               <div className="grid grid-cols-2 justigy-between gap-3.5">
                 <>
                   <div className="min-w-0">

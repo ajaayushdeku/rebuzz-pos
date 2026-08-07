@@ -12,6 +12,7 @@ import {
 
 import { InventoryItem } from "@/lib/mockData/mock-inventory-data";
 import { useSalesByItemQuery } from "@/hooks/useInventory";
+import { nameTokens } from "@/lib/salesVelocity";
 import ProductCard from "@/components/product/ProductCard";
 import { useCategories } from "@/hooks/useCategories";
 import { normalizeColor } from "@/services/category.client";
@@ -78,6 +79,12 @@ const SALES_SORT_KEYS: SalesSortKey[] = [
   "profit-asc",
 ];
 
+type SaleFigures = {
+  revenue: number;
+  netProfit: number;
+  orderCount: number;
+};
+
 /** Skeleton card shown while loading more items */
 function SkeletonCard() {
   return (
@@ -133,14 +140,17 @@ const ProductCardGrid = ({
   );
 
   // Per-product revenue, net profit & order count for the selected range.
+  //
+  // Keyed by name *tokens* rather than the raw name. salesByItem names variant
+  // rows with bracket notation — "Jelly [s,m,l]", "EGG [Soft Boil]" — but the
+  // spacing isn't consistent: one row arrives as "Jelly [red, blue ,pink]"
+  // while joining optionValues here produces "Jelly [red,blue,pink]". An exact
+  // compare misses that row; sorted alphanumeric words match it.
   const { data: sales } = useSalesByItemQuery(startDate, endDate);
   const salesMap = useMemo(() => {
-    const map = new Map<
-      string,
-      { revenue: number; netProfit: number; orderCount: number }
-    >();
+    const map = new Map<string, SaleFigures>();
     for (const s of sales ?? []) {
-      map.set(s.name.toLowerCase(), {
+      map.set(nameTokens(s.name), {
         revenue: s.totalRevenue ?? 0,
         netProfit: s.netProfit ?? 0,
         orderCount: s.count ?? 0,
@@ -163,7 +173,7 @@ const ProductCardGrid = ({
             id: v.id,
             name:
               v.optionValues.length > 0
-                ? `${item.name} · ${v.optionValues.join(" · ")}`
+                ? `${item.name} [${v.optionValues.join(",")}]`
                 : item.name,
             price: v.price,
             costPrice: v.costPrice,
@@ -180,6 +190,39 @@ const ProductCardGrid = ({
     }
     return out;
   }, [items]);
+
+  // Variant card id → its parent, so a card can fall back to the product-level
+  // sales row when the API doesn't break sales out by variant.
+  const parentByCardId = useMemo(() => {
+    const map = new Map<string, { name: string; variantCount: number }>();
+    for (const item of items) {
+      const variants = item.variants ?? [];
+      if (variants.length === 0) continue;
+      for (const v of variants) {
+        map.set(v.id, { name: item.name, variantCount: variants.length });
+      }
+    }
+    return map;
+  }, [items]);
+
+  // Sales for a card: its own row when one exists, otherwise the parent's —
+  // flagged, because those totals cover every variant and printing them
+  // unlabelled on each card would read as if each variant earned that much.
+  const salesFor = useCallback(
+    (item: InventoryItem): { sale?: SaleFigures; sharedVariants: number } => {
+      const own = salesMap.get(nameTokens(item.name));
+      if (own) return { sale: own, sharedVariants: 0 };
+
+      const parent = parentByCardId.get(item.id);
+      if (!parent) return { sharedVariants: 0 };
+
+      const parentSale = salesMap.get(nameTokens(parent.name));
+      return parentSale
+        ? { sale: parentSale, sharedVariants: parent.variantCount }
+        : { sharedVariants: 0 };
+    },
+    [salesMap, parentByCardId],
+  );
 
   // Counts per stock-tracking tab (over the fully expanded list).
   const stockCounts = useMemo(() => {
@@ -223,11 +266,13 @@ const ProductCardGrid = ({
 
     // 4. Sorting
     if ((SALES_SORT_KEYS as string[]).includes(sortBy)) {
+      // Goes through the same resolver as the cards, so variants sort by their
+      // real figures instead of all reading as zero.
       const metric = (item: InventoryItem) => {
-        const s = salesMap.get(item.name.toLowerCase());
+        const { sale } = salesFor(item);
         return sortBy.startsWith("revenue")
-          ? (s?.revenue ?? 0)
-          : (s?.netProfit ?? 0);
+          ? (sale?.revenue ?? 0)
+          : (sale?.netProfit ?? 0);
       };
 
       const dir = sortBy.endsWith("-asc") ? 1 : -1;
@@ -242,7 +287,7 @@ const ProductCardGrid = ({
     selectedCategory,
     categories,
     sortBy,
-    salesMap,
+    salesFor,
     stockTab,
   ]);
 
@@ -424,7 +469,7 @@ const ProductCardGrid = ({
       {/* Product Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-3">
         {visibleItems.map((item, idx) => {
-          const sale = salesMap.get(item.name.toLowerCase());
+          const { sale, sharedVariants } = salesFor(item);
           return (
             <div
               key={item.id}
@@ -439,6 +484,7 @@ const ProductCardGrid = ({
                 revenue={sale?.revenue}
                 netProfit={sale?.netProfit}
                 orderCount={sale?.orderCount}
+                sharedVariants={sharedVariants}
               />
             </div>
           );

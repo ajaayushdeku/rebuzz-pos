@@ -109,8 +109,11 @@ interface StockIndex {
 /**
  * Reduces a label to sorted alphanumeric tokens, so "Buff", " buff " and
  * "(BUFF)" all compare equal, and "Large · Red" matches "Red Large".
+ *
+ * Exported because the product grid needs the same rule to line sales rows up
+ * with variant cards — one definition of "same name" for the whole dashboard.
  */
-function optionTokens(value: string): string {
+export function nameTokens(value: string): string {
   return value
     .toLowerCase()
     .split(/[^a-z0-9]+/)
@@ -145,7 +148,7 @@ function buildStockIndex(inventory: InventoryItem[]): StockIndex {
       const stock = typeof v.inStock === "number" ? v.inStock : null;
       const options = v.optionValues.join(" · ");
 
-      variants.push({ tokens: optionTokens(options), stock });
+      variants.push({ tokens: nameTokens(options), stock });
 
       const variantKey = normalizeName(`${product.name} · ${options}`);
       if (variantKey !== parentKey) exact.set(variantKey, stock);
@@ -197,7 +200,7 @@ function resolveStock(name: string, index: StockIndex): StockMatch {
     // "" means an exact tail; anything non-alphanumeric is a separator.
     if (boundary !== "" && /[a-z0-9]/.test(boundary)) continue;
 
-    const remainder = optionTokens(key.slice(parent.key.length));
+    const remainder = nameTokens(key.slice(parent.key.length));
     if (!remainder) return { stock: parent.stock, matched: true };
 
     const variant = parent.variants.find((v) => v.tokens === remainder);

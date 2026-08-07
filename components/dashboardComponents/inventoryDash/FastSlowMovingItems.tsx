@@ -257,12 +257,6 @@ const FastSlowMovingItems = ({
 }) => {
   const { fast, slow, basis } = classify(items, inventory);
 
-  console.log("Sales:", items);
-
-  console.log("Fast:", fast);
-  console.log("Slow:", slow);
-  console.log("Basis:", basis);
-
   return (
     <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4">
       <Panel type="fast" items={fast} basis={basis} />
