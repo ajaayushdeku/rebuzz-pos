@@ -503,7 +503,7 @@ function InvoiceContent({
           </div>
         )}
 
-        {isTaxInvoice && taxAmount > 0 && (
+        {isTaxInvoice && (
           <div className="flex justify-between">
             <p className="text-gray-600">Tax</p>
             <p className="font-medium">
