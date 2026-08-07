@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
 import { cn } from "@/lib/utils";
 import { InvoiceItem, InvoiceItemsSelectorProps } from "@/lib/types/invoice";
@@ -189,14 +189,14 @@ export default function InvoiceItemsSelector({
 
   return (
     <>
-      {items.map((item, idx) => (
-        <>
-          <TableRow
-            key={`row-${idx}`}
-            className="border-b-0 w-full bg-blue-50/10 hover:bg-blue-50/50"
-          >
+      {items.map((item) => (
+        // Keyed Fragment — the bare <> here meant every item pair was an
+        // unkeyed array element, which React warns about and which makes rows
+        // remount on reorder.
+        <Fragment key={item.id}>
+          <TableRow className="border-b-0  w-full hover:bg-gray-50/70 transition-colors">
             <TableCell className="w-6 px-1">
-              <GripVertical className="h-4 w-4 text-gray-400 cursor-grab" />
+              <GripVertical className="h-4 w-4 text-gray-300 cursor-grab" />
             </TableCell>
 
             {/* Product selector */}
@@ -213,7 +213,7 @@ export default function InvoiceItemsSelector({
                     <Button
                       variant="outline"
                       size="icon"
-                      className="h-8 w-8 shrink-0 border-gray-300"
+                      className="h-8 w-8 shrink-0 border-gray-200"
                     >
                       <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
                     </Button>
@@ -324,14 +324,14 @@ export default function InvoiceItemsSelector({
                   updateItem(item.id, "quantity", Number(e.target.value))
                 }
                 className={cn(
-                  "text-right h-8 text-xs px-1.5",
+                  "text-right h-8 text-xs px-1.5 tabular-nums",
                   stockErrors[item.id] &&
                     "border-red-400 focus-visible:ring-red-400",
                 )}
               />
               {stockErrors[item.id] && (
                 <span className="absolute -top-2 -right-1 text-[8px] font-medium text-red-600 bg-red-50 px-1 py-0.5 rounded-full border border-red-200 whitespace-nowrap">
-                  Over stock
+                  Stock Exceeded
                 </span>
               )}
             </TableCell>
@@ -344,12 +344,12 @@ export default function InvoiceItemsSelector({
                 onChange={(e) =>
                   updateItem(item.id, "price", Number(e.target.value))
                 }
-                className="text-right h-8 text-xs px-1.5 no-spinner"
+                className="text-right h-8 text-xs px-1.5 no-spinner tabular-nums"
               />
             </TableCell>
 
             {/* Row total */}
-            <TableCell className="min-w-[60px] text-center font-medium text-xs">
+            <TableCell className="min-w-[60px] text-right font-semibold text-xs text-gray-800 tabular-nums">
               {formatCurrencySymbolOnly(currency.symbol)}{" "}
               {(() => {
                 const rowSubtotal = item.quantity * item.price;
@@ -373,7 +373,7 @@ export default function InvoiceItemsSelector({
                 <button
                   type="button"
                   onClick={() => setDiscountModalItemId(item.id)}
-                  className="w-6 h-6 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center transition-colors"
+                  className="w-6 h-6 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center transition-colors"
                   title="Add discount"
                 >
                   <Plus className="w-3 h-3" />
@@ -417,16 +417,13 @@ export default function InvoiceItemsSelector({
                   onItemsChange(items.filter((i) => i.id !== item.id))
                 }
               >
-                <Trash2 className="h-3.5 w-3.5 text-blue-500 hover:text-red-500" />
+                <Trash2 className="h-3.5 w-3.5 text-gray-400 hover:text-red-500" />
               </Button>
             </TableCell>
           </TableRow>
 
           {/* ── Pills row — discount + tax badges ── */}
-          <TableRow
-            key={`pills-${idx}`}
-            className="bg-blue-50/10 hover:bg-blue-50/50"
-          >
+          <TableRow className="border-b border-gray-100 hover:bg-gray-50/70 transition-colors">
             {/* Skip grip + product columns */}
             <TableCell className="w-6 px-1 pb-2 pt-0" />
             <TableCell colSpan={7} className="pb-3 pt-0">
@@ -494,7 +491,7 @@ export default function InvoiceItemsSelector({
                             ({d.rate}%) :
                           </span>
                           <span className="text-[11px] font-medium leading-none">
-                            -$
+                            -{formatCurrencySymbolOnly(currency.symbol)}
                             {(
                               (item.quantity * item.price * d.rate) /
                               100
@@ -507,7 +504,8 @@ export default function InvoiceItemsSelector({
                             {d.rate} off :
                           </span>
                           <span className="text-[11px] font-medium leading-none">
-                            -${(d.rate * item.quantity).toFixed(2)}
+                            -{formatCurrencySymbolOnly(currency.symbol)}
+                            {(d.rate * item.quantity).toFixed(2)}
                           </span>
                         </>
                       )}
@@ -587,14 +585,14 @@ export default function InvoiceItemsSelector({
             </TableCell>
             <TableCell className="w-8 pb-2 pt-0" />
           </TableRow>
-        </>
+        </Fragment>
       ))}
 
-      <TableRow className="bg-blue-50/10 hover:bg-blue-50/50">
-        <TableCell colSpan={10}>
+      <TableRow className="hover:bg-gray-50/70 transition-colors">
+        <TableCell colSpan={10} className="p-0">
           <button
             onClick={addItem}
-            className="flex items-center gap-2 text-blue-600 font-semibold text-sm hover:text-blue-700 transition-colors px-4 py-2"
+            className="flex w-full items-center gap-2 text-blue-600 font-semibold text-sm hover:text-blue-700 transition-colors px-4 py-3"
           >
             <CirclePlus className="h-4 w-4" />
             Add an item

@@ -60,9 +60,14 @@ export default function CreditPaymentHistory({
     );
   }
 
-  if (payments.length === 0) {
+  // Only show payments where an actual amount was paid.
+  const paidPayments = payments.filter((p) => (p.paymentAmount ?? 0) > 0);
+
+  if (paidPayments.length === 0) {
     return (
-      <div className="py-4 text-xs text-gray-400">No payments recorded yet.</div>
+      <div className="py-4 text-xs text-gray-400">
+        No payments recorded yet.
+      </div>
     );
   }
 
@@ -84,11 +89,8 @@ export default function CreditPaymentHistory({
             </tr>
           </thead>
           <tbody>
-            {payments.map((p) => (
-              <tr
-                key={p._id}
-                className="border-b border-gray-50 last:border-0"
-              >
+            {paidPayments.map((p) => (
+              <tr key={p._id} className="border-b border-gray-50 last:border-0">
                 <td className="py-2 px-3 text-gray-600">
                   {fmtDate(p.paymentDate)}
                 </td>

@@ -97,7 +97,6 @@ export default function ProductCard({
   revenue,
   netProfit,
   orderCount,
-  sharedVariants = 0,
 }: {
   item: InventoryItem;
   /** Date-ranged revenue for this product (undefined = no sales data). */

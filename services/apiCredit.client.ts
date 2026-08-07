@@ -158,8 +158,7 @@ async function fetchCustomerNameMap(): Promise<Map<string, string>> {
     const res = await fetch("/api/customers", { cache: "no-store" });
     if (!res.ok) return new Map();
     const json = await res.json();
-    const users: Array<{ _id: string; name: string }> =
-      json?.data?.users ?? [];
+    const users: Array<{ _id: string; name: string }> = json?.data?.users ?? [];
     return new Map(users.map((u) => [u._id, u.name]));
   } catch {
     return new Map();
@@ -231,6 +230,44 @@ export async function archiveCredit(creditId: string): Promise<void> {
   }
 }
 
+/** Update credit items. */
+export async function updateCreditItems(
+  creditId: string,
+  payload: {
+    items: Array<{
+      id: string;
+      name: string;
+      quantity: number;
+      unitPrice: number;
+      variantItems?: {
+        _id: string;
+        name: string;
+        unitPrice: number;
+        quantity: number;
+        costPrice: number;
+      };
+    }>;
+    taxId: string;
+    isExclusiveTaxEnabled: boolean;
+    isAddonTaxEnabled: boolean;
+  },
+): Promise<void> {
+  const res = await fetch(`/api/credit/${creditId}/items`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(
+      (data as { data?: { message?: string }; message?: string })?.data
+        ?.message ||
+        (data as { message?: string }).message ||
+        "Failed to update credit items",
+    );
+  }
+}
+
 /** Fetch the payment history for a single credit. */
 export async function fetchCreditPaymentHistory(
   creditId: string,
@@ -247,6 +284,25 @@ export async function fetchCreditPaymentHistory(
   }
   const json = await res.json();
   return json?.data?.creditPayment ?? [];
+}
+
+/** Delete a single payment from a credit's payment history. */
+export async function deleteCreditPayment(
+  creditId: string,
+  paymentId: string,
+): Promise<void> {
+  const res = await fetch(`/api/credit/${creditId}/payments/${paymentId}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(
+      (data as { data?: { message?: string }; message?: string })?.data
+        ?.message ||
+        (data as { message?: string }).message ||
+        "Failed to delete payment",
+    );
+  }
 }
 
 /** Local timestamp "YYYY-MM-DD HH:mm:ss.SSS" — the format the credit API expects. */

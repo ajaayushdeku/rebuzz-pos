@@ -4,11 +4,9 @@ import toast from "react-hot-toast";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
-import { useBusiness } from "@/hooks/useBusiness";
 import { useDiscounts } from "@/hooks/useDiscounts";
 import { useCreateTicket } from "@/hooks/useTickets";
 import { useProductsList } from "@/hooks/useProductsList";
-import { useCustomersList } from "@/hooks/useCustomersList";
 
 import { Table, TableBody } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
@@ -44,10 +42,7 @@ export default function Page() {
   const queryClient = useQueryClient();
 
   const { mutate: saveTicket, isPending } = useCreateTicket();
-  const { data: customers = [], isLoading: loadingCustomers } =
-    useCustomersList();
   const { data: products = [], isLoading: loadingProducts } = useProductsList();
-  const { data: business } = useBusiness();
   const { data: masterDiscounts = [] } = useDiscounts();
   const { data: taxData } = useTaxes();
 
@@ -56,6 +51,9 @@ export default function Page() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null,
   );
+  // The picker starts open on a new invoice (no customer yet), matching the
+  // edit form behavior.
+  const [showCustomerPicker, setShowCustomerPicker] = useState(true);
   const [invoiceTitle, setInvoiceTitle] = useState("");
   const [invoiceNumber] = useState("");
   const [notes, setNotes] = useState("");
@@ -66,7 +64,6 @@ export default function Page() {
 
   // ── Ensure "Custom" product exists ──────────────────────────────────────
   const customProductIdRef = useRef<string | null>(null);
-  const [customProductId, setCustomProductId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!products.length || loadingProducts) return;
@@ -78,7 +75,6 @@ export default function Page() {
       );
       if (existingCustom) {
         customProductIdRef.current = existingCustom.id;
-        setCustomProductId(existingCustom.id);
         return;
       }
 
@@ -86,7 +82,6 @@ export default function Page() {
       try {
         const newCustom = await createProduct({ name: CUSTOM_PRODUCT_NAME });
         customProductIdRef.current = newCustom.id;
-        setCustomProductId(newCustom.id);
         // Invalidate products list so future renders pick it up
         queryClient.invalidateQueries({ queryKey: ["products"] });
         queryClient.invalidateQueries({ queryKey: ["products-list"] });
@@ -290,15 +285,15 @@ export default function Page() {
   };
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="min-h-screen bg-50 p-6 md:p-8">
+      {/* ── Page header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          {" "}
           <h1 className="md:text-3xl text-2xl font-bold text-gray-900">
             New Invoice
           </h1>
           <p className="text-sm text-gray-400 mt-0.5">
-            Create A new invoice for your customer
+            Create a new invoice for your customer
           </p>
         </div>
 
@@ -311,38 +306,69 @@ export default function Page() {
         </Button>
       </div>
 
-      <div className="py-3 px-6 border rounded-lg mb-5">
-        <div>
-          <h2 className="font-bold text-lg">
-            {business?.businessName || "My Business"}
-          </h2>
-          <p className="text-sm text-gray-500">{business?.address}</p>
-          <p>{business?.panNumber}</p>
-        </div>
-      </div>
+      <div className="border-gray-200 border shadow-sm rounded-xl bg-white overflow-hidden">
+        {/* ── Bill to + Invoice title ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 px-5 pt-5 border-b border-gray-100 pb-8">
+          {/* Customer */}
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+              Bill to
+            </p>
+            <p className="text-lg font-bold text-gray-900 truncate">
+              {selectedCustomer?.name || "No customer selected"}
+            </p>
+            {(selectedCustomer?.email || selectedCustomer?.phone) && (
+              <p className="text-xs text-gray-500 mt-0.5 truncate">
+                {[selectedCustomer?.email, selectedCustomer?.phone]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            )}
 
-      <div className="border-gray-200 border shadow-sm rounded-xl bg-white">
-        <div className="flex flex-col sm:flex-row justify-between gap-4 p-4 border-b border-gray-100">
-          <CustomerSelector
-            value={selectedCustomer}
-            onCustomerSelect={setSelectedCustomer}
-          />
-          <form>
-            <div className="flex items-center gap-3 self-start pt-1">
-              <Label className="text-[16px] font-semibold text-blue-600 whitespace-nowrap">
-                Invoice Title
-              </Label>
-              <Input
-                className="hover:bg-blue-100 font-semibold px-6"
-                id="invoiceTitle"
-                placeholder="Invoice"
-                value={invoiceTitle}
-                onChange={(e) => setInvoiceTitle(e.target.value)}
-              />
-            </div>
-          </form>
+            <button
+              type="button"
+              onClick={() => setShowCustomerPicker((v) => !v)}
+              className="mt-2 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+            >
+              {showCustomerPicker
+                ? "Cancel"
+                : selectedCustomer
+                  ? "Choose a different customer"
+                  : "Choose a customer"}
+            </button>
+
+            {showCustomerPicker && (
+              <div className="mt-3">
+                <CustomerSelector
+                  value={selectedCustomer}
+                  onCustomerSelect={(c) => {
+                    setSelectedCustomer(c);
+                    setShowCustomerPicker(false);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Invoice title */}
+          <div className="sm:justify-self-end w-full sm:max-w-xs">
+            <Label
+              htmlFor="invoiceTitle"
+              className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1 block"
+            >
+              Invoice Title
+            </Label>
+            <Input
+              className="hover:bg-blue-50 font-semibold px-3 h-9 text-sm w-full"
+              id="invoiceTitle"
+              placeholder="Invoice"
+              value={invoiceTitle}
+              onChange={(e) => setInvoiceTitle(e.target.value)}
+            />
+          </div>
         </div>
 
+        {/* ── Items table ── */}
         <div className="overflow-x-auto">
           <Table>
             <AddInvoiceHeader />
@@ -368,6 +394,7 @@ export default function Page() {
           </Table>
         </div>
 
+        {/* ── Discount ── */}
         <InvoiceDiscountCreate
           subtotal={itemsSubtotal}
           discountAmount={globalDiscountValue}
@@ -377,6 +404,7 @@ export default function Page() {
           onDiscountRemove={handleDiscountRemove}
         />
 
+        {/* ── Tax ── */}
         <InvoiceTaxCreate
           subtotal={afterDiscountTotal}
           taxAmount={totalTaxValue}
@@ -387,11 +415,14 @@ export default function Page() {
           }}
         />
 
-        <div className="flex flex-col justify-start py-3 px-3 mb-4">
-          <h2 className="font-semibold text-gray-400 px-2">Notes/Terms</h2>
+        {/* ── Notes ── */}
+        <div className="px-5 py-4 border-t border-gray-100">
+          <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">
+            Notes / Terms
+          </label>
           <input
-            className="focus:outline-none p-2"
-            placeholder="Enter notes or terms of service"
+            className="w-full focus:outline-none text-sm text-gray-700 placeholder:text-gray-300 p-2 rounded-lg border border-transparent focus:border-gray-200 hover:border-gray-200 transition"
+            placeholder="Enter notes or terms of service..."
             type="text"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}

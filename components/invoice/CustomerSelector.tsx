@@ -50,7 +50,7 @@ const CustomerSelector = ({
             ) : hasSelectedCustomer ? (
               <div className="text-center">
                 <p className="font-semibold text-gray-900">{value.name}</p>
-                <p className="text-sm text-gray-500 font-normal">
+                <p className="text-xs text-gray-500 font-normal">
                   {value.email}
                 </p>
               </div>

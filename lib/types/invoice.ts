@@ -61,6 +61,14 @@ export interface InvoiceItem {
   discounts: string[];
   taxes: string[];
   isTaxable: boolean;
+  /** Optional variant info preserved for credit-invoice items. */
+  variantItems?: {
+    _id: string;
+    name: string;
+    unitPrice: number;
+    quantity: number;
+    costPrice: number;
+  };
 }
 // export interface Discount {
 //   id: string;

@@ -27,6 +27,7 @@ import { useBusiness } from "@/hooks/useBusiness";
 import { getTicketByInvoice } from "@/services/apiTicket.client";
 import {
   archiveCredit,
+  deleteCreditPayment,
   moveInvoiceToCredit,
   sendCreditReminder,
 } from "@/services/apiCredit.client";
@@ -96,6 +97,15 @@ const InvoiceDetailPage = () => {
   const [isRefunding, setIsRefunding] = useState(false);
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
+  const [deletingPaymentId, setDeletingPaymentId] = useState<string | null>(
+    null,
+  );
+  const [paymentToRemove, setPaymentToRemove] = useState<{
+    _id: string;
+    paymentAmount?: number;
+    paymentMethod?: string;
+    paymentDate?: string;
+  } | null>(null);
 
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
@@ -284,6 +294,35 @@ const InvoiceDetailPage = () => {
       setIsRefundModalOpen(false);
     } finally {
       setIsRefunding(false);
+    }
+  };
+
+  const handleRemovePayment = async (paymentId: string) => {
+    if (!creditForInvoice?._id) {
+      toast.error("Credit not found for this invoice");
+      return;
+    }
+    setPaymentToRemove(null);
+    setDeletingPaymentId(paymentId);
+    try {
+      await deleteCreditPayment(creditForInvoice._id, paymentId);
+      toast.success("Payment removed");
+      queryClient.invalidateQueries({ queryKey: ["ticket", id] });
+      queryClient.invalidateQueries({ queryKey: ["credits"] });
+      queryClient.invalidateQueries({ queryKey: ["credits", "completed"] });
+      queryClient.invalidateQueries({
+        queryKey: ["credit-detail-by-id", creditForInvoice._id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["credit-payment-history", creditForInvoice._id],
+      });
+      router.refresh();
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to remove payment",
+      );
+    } finally {
+      setDeletingPaymentId(null);
     }
   };
 
@@ -507,7 +546,7 @@ const InvoiceDetailPage = () => {
               align="end"
               className="w-45 rounded-xl p-1 shadow-lg border-gray-200"
             >
-              {!isPaid && !isCredited && (
+              {(!!creditForInvoice || !isPaid) && (
                 <DropdownMenuItem
                   onClick={handleEditInvoice}
                   className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
@@ -758,7 +797,7 @@ const InvoiceDetailPage = () => {
                     GMT+5:45
                   </p>
                 </div>
-                {!isPaid && !isCreditArchived && (
+                {(!!creditForInvoice || !isPaid) && !isCreditArchived && (
                   <button
                     onClick={handleEditInvoice}
                     className="text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-4 py-1.5 transition-colors shrink-0"
@@ -1119,22 +1158,37 @@ const InvoiceDetailPage = () => {
                           >
                             Send a receipt
                           </button>
-                          <span className="text-gray-300">·</span>
-                          <button
-                            className="opacity-40 cursor-not-allowed pointer-events-none"
-                            disabled
-                          >
-                            Edit payment
-                          </button>
 
-                          <span className="text-gray-300">·</span>
+                          {!isCreditArchived && (
+                            <>
+                              <span className="text-gray-300">·</span>
+                              <button
+                                className="opacity-40 cursor-not-allowed pointer-events-none"
+                                disabled
+                              >
+                                Edit payment
+                              </button>
 
-                          <button
-                            className="opacity-40 cursor-not-allowed pointer-events-none"
-                            disabled
-                          >
-                            Remove payment
-                          </button>
+                              <span className="text-gray-300">·</span>
+
+                              <button
+                                onClick={() =>
+                                  setPaymentToRemove({
+                                    _id: p._id,
+                                    paymentAmount: p.paymentAmount,
+                                    paymentMethod: p.paymentMethod,
+                                    paymentDate: p.paymentDate,
+                                  })
+                                }
+                                disabled={deletingPaymentId === p._id}
+                                className="hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {deletingPaymentId === p._id
+                                  ? "Removing..."
+                                  : "Remove payment"}
+                              </button>
+                            </>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -1409,6 +1463,70 @@ const InvoiceDetailPage = () => {
                 </span>
               ) : (
                 "Delete"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Remove Payment Confirmation Modal */}
+      <Dialog
+        open={!!paymentToRemove}
+        onOpenChange={(o) => !o && setPaymentToRemove(null)}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-2">
+              <Trash2 className="h-5 w-5 text-red-600" />
+            </div>
+            <DialogTitle className="text-center text-base font-semibold">
+              Remove Payment?
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="text-center space-y-1 py-1">
+            <p className="text-sm text-gray-600">
+              Are you sure you want to remove this payment of{" "}
+              <span className="font-semibold text-gray-900">
+                {paymentToRemove?.paymentAmount != null
+                  ? formatCurrencySymbol(
+                      paymentToRemove.paymentAmount,
+                      currency.symbol,
+                      currency.locale,
+                    )
+                  : ""}
+              </span>
+              ?
+            </p>
+            <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mt-2">
+              This action cannot be undone. The payment will be permanently
+              removed from the invoice.
+            </p>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setPaymentToRemove(null)}
+              disabled={deletingPaymentId === paymentToRemove?._id}
+              className="text-sm rounded-lg flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() =>
+                paymentToRemove && handleRemovePayment(paymentToRemove._id)
+              }
+              disabled={deletingPaymentId === paymentToRemove?._id}
+              className="bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg flex-1"
+            >
+              {deletingPaymentId === paymentToRemove?._id ? (
+                <span className="flex items-center justify-center gap-1.5">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Removing...
+                </span>
+              ) : (
+                "Remove Payment"
               )}
             </Button>
           </DialogFooter>

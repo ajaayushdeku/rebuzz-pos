@@ -185,8 +185,8 @@ const Panel = ({
           title={`${isFast ? "Fast Moving Items" : "Slow Moving Items"}`}
           subHeader={`${
             isFast
-              ? "Your bestsellers — keep stocked and consider expanding"
-              : "These need attention — consider a promo or recipe change"
+              ? "Your bestsellers [based on Past 30 Days] — keep stocked and consider expanding"
+              : "These need attention [based on Past 30 Days] — consider a promo or recipe change"
           }`}
           titleColor={`${isFast ? "text-green-700" : "text-amber-600"}`}
         />

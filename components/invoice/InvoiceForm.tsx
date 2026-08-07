@@ -8,6 +8,11 @@ import { useProductsList } from "@/hooks/useProductsList";
 import { Customer } from "@/lib/types/customer";
 import { InvoiceItem } from "@/lib/types/invoice";
 import { CreateTicketInput } from "@/lib/types/ticket";
+import {
+  updateCreditItems,
+  type CreditItem,
+  type CreditPayment,
+} from "@/services/apiCredit.client";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -23,11 +28,18 @@ import AddInvoiceHeader from "./AddInvoiceHeader";
 import InvoiceItemsSelector from "./InvoiceItemsSelector";
 import InvoiceDiscountCreate from "./InvoiceDiscountCreate";
 import InvoiceTaxCreate from "./InvoiceTaxCreate";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 interface InvoiceFormProps {
   initialData?: any;
   isEditMode?: boolean;
   invoiceNumber?: string;
+  // ── Credit-invoice support ──
+  isCreditInvoice?: boolean;
+  creditId?: string;
+  creditItems?: CreditItem[];
+  creditPaymentHistory?: CreditPayment[];
 }
 
 const DEFAULT_ITEM: Omit<InvoiceItem, "id"> = {
@@ -56,19 +68,52 @@ function mapInitialItem(item: any): InvoiceItem {
   };
 }
 
+// ── Helper: map a credit item (from the credit detail API) to InvoiceItem ──
+function mapCreditItem(item: CreditItem): InvoiceItem {
+  return {
+    id: item._id ?? crypto.randomUUID(),
+    productId: item.product ?? "",
+    name: item.productName ?? "",
+    description: "",
+    quantity: item.quantity ?? 1,
+    price: item.unitPrice ?? 0,
+    discounts: (item.discounts ?? []).map((d: any) => d?._id ?? d),
+    taxes: [],
+    isTaxable: item.isTaxable ?? false,
+    // Preserve variant info when present so it round-trips to the credit API.
+    variantItems: (item as any).variantItems
+      ? {
+          _id: (item as any).variantItems._id,
+          name: (item as any).variantItems.name,
+          unitPrice: (item as any).variantItems.unitPrice,
+          quantity: (item as any).variantItems.quantity,
+          costPrice: (item as any).variantItems.costPrice,
+        }
+      : undefined,
+  };
+}
+
 export default function InvoiceForm({
   initialData,
   isEditMode,
   invoiceNumber,
+  isCreditInvoice = false,
+  creditId,
+  creditItems = [],
+  creditPaymentHistory = [],
 }: InvoiceFormProps) {
   const router = useRouter();
+  const { currency } = useCurrency();
   const { mutate: saveTicket, isPending: isCreating } = useCreateTicket();
   const { mutate: updateTicket, isPending: isUpdating } = useUpdateTicket();
   const { data: products = [] } = useProductsList();
   const { data: masterDiscounts = [] } = useDiscounts();
   const { data: taxData } = useTaxes();
 
-  const isPending = isCreating || isUpdating;
+  // `updateCreditItems` is a plain promise with no pending flag of its own, so
+  // without this the Save button stays live and a credit can be submitted twice.
+  const [isSavingCredit, setIsSavingCredit] = useState(false);
+  const isPending = isCreating || isUpdating || isSavingCredit;
 
   const tickets = initialData?.Tickets;
 
@@ -87,6 +132,9 @@ export default function InvoiceForm({
       : null,
   );
 
+  // UI only — the picker starts open when there's no customer yet.
+  const [showCustomerPicker, setShowCustomerPicker] = useState(() => !tickets);
+
   // Invoice title is separate from customer name
   const [invoiceTitle, setInvoiceTitle] = useState(tickets?.ticketName ?? "");
 
@@ -94,8 +142,12 @@ export default function InvoiceForm({
     initialData?.ticket?.note?.split("|Invoice:")[0]?.trim() ?? "",
   );
 
-  // Map items from backend shape, preserving isTaxable per item
+  // Map items from backend shape, preserving isTaxable per item.
+  // For credit invoices, load the credit's items instead.
   const [items, setItems] = useState<InvoiceItem[]>(() => {
+    if (isCreditInvoice && creditItems.length > 0) {
+      return creditItems.map(mapCreditItem);
+    }
     const rawItems = tickets?.items?.[0]?.item;
     if (rawItems?.length) return rawItems.map(mapInitialItem);
     return [{ id: crypto.randomUUID(), ...DEFAULT_ITEM }];
@@ -165,6 +217,32 @@ export default function InvoiceForm({
   const totalTaxValue = (taxableSubtotal * activeTaxRate) / 100;
   const finalTotal = afterDiscountTotal + totalTaxValue;
 
+  // ── Credit payment totals (credit invoices only) ─────────────────────────
+  // Only payments with an actual amount paid count toward the deduction.
+  const paidPayments = creditPaymentHistory.filter(
+    (p) => (p.paymentAmount ?? 0) > 0,
+  );
+  const totalPaid = paidPayments.reduce(
+    (sum, p) => sum + (p.paymentAmount ?? 0),
+    0,
+  );
+  // New grand total on the form — the tax grand total minus what's already paid.
+  const amountDueAfterPayments = Math.max(0, finalTotal - totalPaid);
+
+  const formatPaymentDate = (raw: string) => {
+    const d = new Date(raw.replace(" ", "T"));
+    return isNaN(d.getTime())
+      ? raw
+      : d.toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        });
+  };
+
+  // Payments only render once there's something to deduct.
+  const showPaymentHistory = isCreditInvoice && paidPayments.length > 0;
+
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   const handleItemDiscountAdd = (itemId: string, discountId: string) => {
@@ -220,6 +298,55 @@ export default function InvoiceForm({
       (item) => item.name && item.quantity > 0,
     );
 
+    // ── Credit invoice: use the credit items API ────────────────────────────
+    if (isCreditInvoice) {
+      if (!creditId) {
+        toast.error("Credit not found for this invoice");
+        return;
+      }
+
+      const creditPayload = {
+        items: filteredItems.map((item) => ({
+          id: item.productId || item.id,
+          name: item.name,
+          quantity: item.quantity,
+          unitPrice: item.price,
+          isTaxable: item.isTaxable ?? false,
+          ...(item.variantItems
+            ? {
+                variantItems: {
+                  _id: item.variantItems._id,
+                  name: item.variantItems.name,
+                  unitPrice: item.variantItems.unitPrice,
+                  quantity: item.variantItems.quantity,
+                  costPrice: item.variantItems.costPrice,
+                },
+              }
+            : {}),
+        })),
+        taxId: activeTaxId ?? "",
+        isExclusiveTaxEnabled: !!activeTaxId,
+        isAddonTaxEnabled: false,
+      };
+
+      setIsSavingCredit(true);
+      updateCreditItems(creditId, creditPayload)
+        .then(() => {
+          toast.success("Credit invoice updated");
+          router.push(`/invoices/${invoiceNumber}`);
+        })
+        .catch((err) => {
+          toast.error(
+            err instanceof Error
+              ? err.message
+              : "Failed to update credit invoice",
+          );
+        })
+        .finally(() => setIsSavingCredit(false));
+      return;
+    }
+
+    // ── Normal invoice: existing behavior unchanged ─────────────────────────
     // ── Shared item payload shape ────────────────────────────────────────────
     const mappedItems = filteredItems.map((item) => ({
       id: item.productId, // used by create
@@ -282,22 +409,30 @@ export default function InvoiceForm({
   };
 
   return (
-    <div className="min-h-screen bg-50 p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="min-h-screen bg-50 p-6 md:p-8">
+      {/* ── Page header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="md:text-3xl text-2xl font-bold text-gray-900">
             {isEditMode ? `Edit Invoice #${invoiceNumber}` : "New Invoice"}
           </h1>
-          {isEditMode && tickets?.createdAt && (
-            <p className="text-sm text-gray-400 mt-0.5">
-              Created at{" "}
-              {new Date(tickets.createdAt).toLocaleDateString(undefined, {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })}
-            </p>
-          )}
+          <div className="flex items-center gap-2 mt-1">
+            {isCreditInvoice && (
+              <span className="text-[10px] font-bold uppercase tracking-wide text-violet-700 bg-violet-50 border border-violet-200 px-2 py-0.5 rounded-full">
+                Credit
+              </span>
+            )}
+            {isEditMode && tickets?.createdAt && (
+              <p className="text-sm text-gray-400">
+                Created at{" "}
+                {new Date(tickets.createdAt).toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -325,24 +460,71 @@ export default function InvoiceForm({
         </div>
       </div>
 
-      <div className="border-gray-200 border shadow-sm rounded-xl bg-white">
-        {/* ── Customer + Invoice title ── */}
-        <div className="flex flex-col sm:flex-row justify-between gap-4 p-4 border-b border-gray-100">
-          <CustomerSelector
-            value={selectedCustomer}
-            onCustomerSelect={setSelectedCustomer}
-          />
-          <div className="flex items-center gap-3 self-start pt-1">
-            <Label className="text-sm font-semibold text-blue-600 whitespace-nowrap">
+      <div className="border-gray-200 border shadow-sm rounded-xl bg-white overflow-hidden">
+        {/* ── Bill to + Invoice title ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 px-5 pt-5 border-b border-gray-100 pb-8">
+          {/* Customer */}
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+              Bill to
+            </p>
+            <p className="text-lg font-bold text-gray-900 truncate">
+              {selectedCustomer?.name || "No customer selected"}
+            </p>
+            {(selectedCustomer?.email || selectedCustomer?.phone) && (
+              <p className="text-xs text-gray-500 mt-0.5 truncate">
+                {[selectedCustomer?.email, selectedCustomer?.phone]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setShowCustomerPicker((v) => !v)}
+              className="mt-2 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+            >
+              {showCustomerPicker
+                ? "Cancel"
+                : selectedCustomer
+                  ? "Choose a different customer"
+                  : "Choose a customer"}
+            </button>
+
+            {/* Existing selector — unchanged, just revealed on demand */}
+            {showCustomerPicker && (
+              <div className="mt-3">
+                <CustomerSelector
+                  value={selectedCustomer}
+                  onCustomerSelect={(c) => {
+                    setSelectedCustomer(c);
+                    setShowCustomerPicker(false);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Invoice title */}
+          <div className="sm:justify-self-end w-full sm:max-w-xs">
+            <Label
+              htmlFor="invoiceTitle"
+              className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1 block"
+            >
               Invoice Title
             </Label>
             <Input
-              className="hover:bg-blue-50 font-semibold px-4 min-w-48"
+              className="hover:bg-blue-50 font-semibold px-3 h-9 text-sm w-full"
               id="invoiceTitle"
               placeholder="Invoice"
               value={invoiceTitle}
               onChange={(e) => setInvoiceTitle(e.target.value)}
             />
+            {invoiceNumber && (
+              <p className="text-[11px] text-gray-400 mt-1 sm:text-right">
+                Invoice #{invoiceNumber}
+              </p>
+            )}
           </div>
         </div>
 
@@ -393,9 +575,51 @@ export default function InvoiceForm({
           }}
         />
 
+        {/* ── Payments received (credit invoices) ──
+            Sits directly under the Grand Total and shares its right-aligned
+            column, so payments read as a continuation of the totals rather
+            than a separate panel. */}
+        {showPaymentHistory && (
+          <div className="px-5 py-4 border-t border-gray-100">
+            <div className="flex justify-end">
+              <div className="space-y-1.5 min-w-[320px] max-w-full">
+                {paidPayments.map((p) => (
+                  <div
+                    key={p._id}
+                    className="flex justify-between gap-8 text-xs text-gray-600 font-semibold  "
+                  >
+                    <span>
+                      Payment on {formatPaymentDate(p.paymentDate)} using{" "}
+                      {p.paymentMethod || "cash"}:
+                    </span>
+                    <span className="font-medium text-gray-800 tabular-nums shrink-0">
+                      {formatCurrencySymbol(
+                        p.paymentAmount ?? 0,
+                        currency.symbol,
+                        currency.locale,
+                      )}
+                    </span>
+                  </div>
+                ))}
+
+                <div className="flex justify-between gap-8 text-sm font-bold text-blue-600 border-t border-gray-100 pt-2 mt-1">
+                  <span>Amount Due ({currency.code || "NPR"})</span>
+                  <span className="tabular-nums shrink-0">
+                    {formatCurrencySymbol(
+                      amountDueAfterPayments,
+                      currency.symbol,
+                      currency.locale,
+                    )}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ── Notes ── */}
-        <div className="px-4 py-4 border-t border-gray-100">
-          <label className="text-xs font-semibold text-gray-400 uppercase tracking-wide block mb-1.5">
+        <div className="px-5 py-4 border-t border-gray-100">
+          <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">
             Notes / Terms
           </label>
           <input
