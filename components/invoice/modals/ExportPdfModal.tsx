@@ -23,7 +23,7 @@ export default function ExportPdfModal({
   onClose,
   invoiceNo,
 }: ExportPdfModalProps) {
-  const { invoice, customerProfile, business, billData, payments } =
+  const { invoice, customerProfile, business, billData, payments, credit } =
     useInvoiceDocumentData(invoiceNo, open);
 
   const proformaRef = useRef<HTMLDivElement | null>(null);
@@ -72,12 +72,30 @@ export default function ExportPdfModal({
 
       let heightLeft = imgHeight;
       let position = 0;
-      pdf.addImage(dataUrl, "JPEG", 0, position, imgWidth, imgHeight, undefined, "FAST");
+      pdf.addImage(
+        dataUrl,
+        "JPEG",
+        0,
+        position,
+        imgWidth,
+        imgHeight,
+        undefined,
+        "FAST",
+      );
       heightLeft -= pageHeight;
       while (heightLeft > 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
-        pdf.addImage(dataUrl, "JPEG", 0, position, imgWidth, imgHeight, undefined, "FAST");
+        pdf.addImage(
+          dataUrl,
+          "JPEG",
+          0,
+          position,
+          imgWidth,
+          imgHeight,
+          undefined,
+          "FAST",
+        );
         heightLeft -= pageHeight;
       }
       pdf.save(`Invoice-${invoice.invoice}-${suffix}.pdf`);
@@ -106,6 +124,7 @@ export default function ExportPdfModal({
               businessProfile={business}
               billData={billData}
               payments={payments}
+              credit={credit}
             />
           ))}
         </div>

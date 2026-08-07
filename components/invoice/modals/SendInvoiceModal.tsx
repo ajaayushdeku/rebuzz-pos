@@ -36,7 +36,7 @@ export default function SendInvoiceModal({
   onClose,
   invoiceNo,
 }: SendInvoiceModalProps) {
-  const { invoice, customerProfile, business, billData, payments } =
+  const { invoice, customerProfile, business, billData, payments, credit } =
     useInvoiceDocumentData(invoiceNo, open);
 
   const proformaRef = useRef<HTMLDivElement | null>(null);
@@ -207,6 +207,7 @@ export default function SendInvoiceModal({
               businessProfile={business}
               billData={billData}
               payments={payments}
+              credit={credit}
             />
           ))}
         </div>

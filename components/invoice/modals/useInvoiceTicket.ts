@@ -208,6 +208,13 @@ export function useInvoiceDocumentData(
     business,
     billData,
     payments,
+    credit: credit
+      ? {
+          total: credit.total,
+          grandTotal: credit.grandTotal,
+          taxamt: credit.taxamt,
+        }
+      : null,
     isLoading,
   };
 }

@@ -1254,6 +1254,15 @@ const InvoiceDetailPage = () => {
               businessProfile={business}
               billData={displayBillData}
               payments={creditDetail?.paymentHistory}
+              credit={
+                creditForInvoice
+                  ? {
+                      total: creditForInvoice.total,
+                      grandTotal: creditForInvoice.grandTotal,
+                      taxamt: creditForInvoice.taxamt,
+                    }
+                  : null
+              }
               // withControls={true}
             />
           </div>
@@ -1272,6 +1281,15 @@ const InvoiceDetailPage = () => {
               businessProfile={business}
               billData={displayBillData}
               payments={creditDetail?.paymentHistory}
+              credit={
+                creditForInvoice
+                  ? {
+                      total: creditForInvoice.total,
+                      grandTotal: creditForInvoice.grandTotal,
+                      taxamt: creditForInvoice.taxamt,
+                    }
+                  : null
+              }
               // withControls={true}
             />
           </div>
@@ -1288,6 +1306,15 @@ const InvoiceDetailPage = () => {
               businessProfile={business}
               billData={displayBillData}
               payments={creditDetail?.paymentHistory}
+              credit={
+                creditForInvoice
+                  ? {
+                      total: creditForInvoice.total,
+                      grandTotal: creditForInvoice.grandTotal,
+                      taxamt: creditForInvoice.taxamt,
+                    }
+                  : null
+              }
               // withControls={true}
             />
           </div>

@@ -63,6 +63,14 @@ interface InvoicePreviewProps {
   /** Credit payment history — when provided (credited invoices), a
    *  "Payments received" section is rendered after the totals. */
   payments?: CreditPayment[] | null;
+  /** Credit details — when provided (credited invoices), uses credit.total,
+   *  credit.grandTotal, and credit.taxamt instead of invoice values for accurate
+   *  financial data. */
+  credit?: {
+    total: number;
+    grandTotal: number;
+    taxamt: number;
+  } | null;
   /** Renders the interactive preview chrome with a Desktop/Mobile toggle.
    *  Off by default so PDF/print/public rendering keep the raw document only. */
   withControls?: boolean;
@@ -77,6 +85,7 @@ function InvoiceContent({
   businessProfile,
   billData,
   payments,
+  credit,
   isMobile,
 }: {
   type: InvoiceType;
@@ -85,6 +94,11 @@ function InvoiceContent({
   businessProfile?: BusinessProfile | null;
   billData?: Transaction | null;
   payments?: CreditPayment[] | null;
+  credit?: {
+    total: number;
+    grandTotal: number;
+    taxamt: number;
+  } | null;
   isMobile: boolean;
 }) {
   const { currency } = useCurrency();
@@ -97,7 +111,12 @@ function InvoiceContent({
     (sum, p) => sum + (p.paymentAmount ?? 0),
     0,
   );
-  const amountDue = Math.max(0, Number(invoice.grandTotal ?? 0) - totalPaid);
+
+  // For credited invoices, use credit data for totals and tax
+  const displayTotal = credit?.total ?? invoice.total;
+  const displayGrandTotal = credit?.grandTotal ?? invoice.grandTotal;
+
+  const amountDue = Math.max(0, Number(displayGrandTotal ?? 0) - totalPaid);
   const formatPaymentDate = (raw: string) => {
     const d = new Date(raw.replace(" ", "T"));
     return isNaN(d.getTime())
@@ -149,16 +168,24 @@ function InvoiceContent({
 
   const calculatedTaxAmount = invoice.items.reduce((groupSum, group) => {
     const itemTax = group.item.reduce(
-      (sum, product) =>
-        sum + (product.taxApplied ? product.taxAmount * product.quantity : 0),
+      (sum, product) => sum + product.taxAmount * product.quantity,
       0,
     );
     return groupSum + itemTax;
   }, 0);
 
+  // const calculatedTaxAmount = invoice.items.reduce((groupSum, group) => {
+  //   const itemTax = group.item.reduce(
+  //     (sum, product) =>
+  //       sum + (product.taxApplied ? product.taxAmount * product.quantity : 0),
+  //     0,
+  //   );
+  //   return groupSum + itemTax;
+  // }, 0);
+
   const discountAmount = billData?.discount ?? invoice.discount ?? 0;
   const loyaltyRedeemedAmount = billData?.discountByPoints ?? 0;
-  const taxAmount = calculatedTaxAmount;
+  const taxAmount = credit?.taxamt ?? invoice.taxamt ?? calculatedTaxAmount;
 
   const isProforma = type === "proforma";
   const isTaxInvoice = type === "tax";
@@ -261,7 +288,7 @@ function InvoiceContent({
               <span>Subtotal</span>
               <span>
                 {currency.symbol}
-                {Number(invoice.total).toFixed(2)}
+                {Number(displayTotal).toFixed(2)}
               </span>
             </div>
             {discountAmount > 0 && (
@@ -297,7 +324,7 @@ function InvoiceContent({
               </span>
               <span className="text-xs font-bold text-gray-900">
                 {currency.symbol}
-                {Number(invoice.grandTotal).toFixed(2)}
+                {Number(displayGrandTotal).toFixed(2)}
               </span>
             </div>
           </div>
@@ -456,7 +483,7 @@ function InvoiceContent({
         <div className="flex justify-between">
           <p className="text-gray-600">Subtotal</p>
           <p className="font-medium">
-            {currency.symbol} {Number(invoice.total).toFixed(2)}
+            {currency.symbol} {Number(displayTotal).toFixed(2)}
           </p>
         </div>
 
@@ -490,7 +517,7 @@ function InvoiceContent({
             {billData ? "Grand Total" : "Total Payable"}
           </p>
           <p className="font-bold text-base">
-            {currency.symbol} {Number(invoice.grandTotal).toFixed(2)}
+            {currency.symbol} {Number(displayGrandTotal).toFixed(2)}
           </p>
         </div>
       </div>
@@ -595,6 +622,7 @@ export default function InvoicePreview({
   businessProfile,
   billData,
   payments,
+  credit,
   withControls = false,
 }: InvoicePreviewProps) {
   const router = useRouter();
@@ -615,6 +643,7 @@ export default function InvoicePreview({
       businessProfile={businessProfile}
       billData={billData}
       payments={payments}
+      credit={credit}
       isMobile={withControls ? isMobile : false}
     />
   );
@@ -628,6 +657,7 @@ export default function InvoicePreview({
       businessProfile={businessProfile}
       billData={billData}
       payments={payments}
+      credit={credit}
       isMobile={false}
     />
   );

@@ -35,7 +35,7 @@ export default function PrintInvoiceModal({
   onClose,
   invoiceNo,
 }: PrintInvoiceModalProps) {
-  const { invoice, customerProfile, business, billData, payments } =
+  const { invoice, customerProfile, business, billData, payments, credit } =
     useInvoiceDocumentData(invoiceNo, open);
 
   const [mounted, setMounted] = useState(false);
@@ -83,6 +83,7 @@ export default function PrintInvoiceModal({
             businessProfile={business}
             billData={billData}
             payments={payments}
+            credit={credit}
           />
         </div>
       )}
