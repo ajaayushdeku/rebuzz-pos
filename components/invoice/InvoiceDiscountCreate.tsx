@@ -166,7 +166,7 @@ function DiscountRow({
     <div className="flex justify-end">
       <div className="flex items-center gap-5 min-w-[420px] max-w-full">
         <span
-          className="w-28 shrink-0 text-sm text-gray-600 truncate text-right"
+          className="w-28 shrink-0  text-[13px] font-semibold  tracking-wider text-gray-600 truncate text-right"
           title={label}
         >
           {label}
@@ -178,7 +178,7 @@ function DiscountRow({
           value={value}
           disabled={!editable}
           onChange={(e) => onValueChange(Number(e.target.value))}
-          className="h-8 w-24 rounded-lg border border-gray-200 px-2 text-sm text-right tabular-nums focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+          className="h-8 w-24 rounded-lg border border-gray-200 px-2  text-[13px] font-semibold  tracking-wider text-right tabular-nums focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
         />
 
         <TypeDropdown
@@ -188,7 +188,7 @@ function DiscountRow({
           onChange={onTypeChange}
         />
 
-        <span className="min-w-[96px] text-right text-sm font-medium text-gray-800 tabular-nums">
+        <span className="min-w-[96px] text-right font-medium text-gray-800 tabular-nums  text-[13px] font-semibold tracking-wider">
           {amount}
         </span>
 
@@ -257,7 +257,7 @@ export default function InvoiceDiscountCreate({
             title="Select from discount collection"
           >
             <Tags className="w-3.5 h-3.5" />
-            Select from discount collection
+            Select from collection
           </button>
         )}
 
@@ -338,22 +338,30 @@ export default function InvoiceDiscountCreate({
       <div className="flex justify-end border-t border-gray-100 pt-3">
         <div className="text-right space-y-1.5 min-w-52">
           <div className="flex justify-between gap-12 text-sm text-gray-500">
-            <span>Subtotal</span>
-            <span className="font-medium text-gray-800 tabular-nums">
+            <span className="text-[13px] font-semibold  tracking-wider text-gray-400">
+              Subtotal
+            </span>
+            <span className="font-medium text-gray-800 tabular-nums  text-[13px] font-semibold  tracking-wider">
               {fmt(subtotal)}
             </span>
           </div>
 
           {discountAmount > 0 && (
             <div className="flex justify-between gap-12 text-sm text-blue-500 font-medium">
-              <span>Discount</span>
-              <span className="tabular-nums">- {fmt(discountAmount)}</span>
+              <span className=" text-[13px] font-semibold  tracking-wider ">
+                Discount
+              </span>
+              <span className="tabular-nums  text-[13px] font-semibold  tracking-wider">
+                - {fmt(discountAmount)}
+              </span>
             </div>
           )}
 
           <div className="flex justify-between gap-12 text-sm font-semibold text-gray-700 border-t border-gray-100 pt-1.5">
-            <span>After Discount</span>
-            <span className="tabular-nums">
+            <span className=" text-[13px] font-semibold  tracking-wider ">
+              After Discount
+            </span>
+            <span className="tabular-nums  text-[13px] font-semibold  tracking-wider">
               {fmt(Math.max(0, subtotal - discountAmount))}
             </span>
           </div>

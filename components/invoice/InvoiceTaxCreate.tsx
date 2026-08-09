@@ -231,12 +231,14 @@ export default function InvoiceTaxCreate({
           {activeNormalTaxes.map((tax) => (
             <div
               key={tax._id}
-              className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium px-3 py-1.5 rounded-full"
+              className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium px-3 py-1.5 rounded-full"
             >
-              <span>
+              <span className="tabular-nums  text-[11px] font-semibold  tracking-wider">
                 {tax.name} ({tax.rate}%)
               </span>
-              <span className="text-blue-400">Active</span>
+              <span className="text-blue-400 text-[11px] font-semibold  tracking-wider">
+                Active
+              </span>
             </div>
           ))}
           {activeGroupTaxes.map((group) => {
@@ -247,13 +249,15 @@ export default function InvoiceTaxCreate({
             return (
               <div
                 key={group._id}
-                className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium px-3 py-1.5 rounded-full"
+                className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium px-3 py-1.5 rounded-full"
               >
                 <Layers size={11} />
-                <span>
+                <span className="tabular-nums  text-[11px] font-semibold  tracking-wider">
                   {group.name} ({rate}%)
                 </span>
-                <span className="text-blue-400">Active</span>
+                <span className="text-blue-400 text-[11px] font-semibold  tracking-wider">
+                  Active
+                </span>
               </div>
             );
           })}
@@ -264,22 +268,32 @@ export default function InvoiceTaxCreate({
       <div className="flex justify-end border-t border-gray-100 pt-3">
         <div className="text-right space-y-1.5 min-w-52">
           <div className="flex justify-between gap-12 text-sm text-gray-500">
-            <span>After Discount</span>
-            <span className="font-medium text-gray-800 tabular-nums">
+            <span className="text-[13px] font-semibold  tracking-wider">
+              After Discount
+            </span>
+            <span className="font-medium text-gray-800 tabular-nums text-[13px] font-semibold  tracking-wider">
               {fmt(subtotal)}
             </span>
           </div>
 
           {taxAmount > 0 && (
             <div className="flex justify-between gap-12 text-sm text-red-600">
-              <span>Tax</span>
-              <span className="tabular-nums">+ {fmt(taxAmount)}</span>
+              <span className="text-[13px] font-semibold  tracking-wider">
+                Tax
+              </span>
+              <span className="tabular-nums text-[13px] font-semibold  tracking-wider">
+                + {fmt(taxAmount)}
+              </span>
             </div>
           )}
 
           <div className="flex justify-between gap-12 text-sm font-bold text-blue-600 border-t border-gray-100 pt-2">
-            <span>Grand Total</span>
-            <span className="tabular-nums">{fmt(finalTotal)}</span>
+            <span className="text-[13px] font-semibold  tracking-wider">
+              Grand Total
+            </span>
+            <span className="tabular-nums text-[13px] font-semibold  tracking-wider">
+              {fmt(finalTotal)}
+            </span>
           </div>
         </div>
       </div>

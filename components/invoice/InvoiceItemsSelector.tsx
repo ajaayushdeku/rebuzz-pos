@@ -324,7 +324,7 @@ export default function InvoiceItemsSelector({
                   updateItem(item.id, "quantity", Number(e.target.value))
                 }
                 className={cn(
-                  "text-right h-8 text-xs px-1.5 tabular-nums",
+                  "text-right h-8 text-[13px] font-semibold  tracking-wider px-1.5 tabular-nums",
                   stockErrors[item.id] &&
                     "border-red-400 focus-visible:ring-red-400",
                 )}
@@ -344,7 +344,7 @@ export default function InvoiceItemsSelector({
                 onChange={(e) =>
                   updateItem(item.id, "price", Number(e.target.value))
                 }
-                className="text-right h-8 text-xs px-1.5 no-spinner tabular-nums"
+                className="text-right h-8 text-[13px] font-semibold  tracking-wider px-1.5 no-spinner tabular-nums"
               />
             </TableCell>
 
