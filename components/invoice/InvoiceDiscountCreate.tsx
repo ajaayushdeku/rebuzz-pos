@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Plus, Trash2, ChevronDown } from "lucide-react";
+import { Plus, Trash2, ChevronDown, Tags } from "lucide-react";
 import { CreateDiscountDialog } from "./CreateDiscount";
 import DiscountPickerModal from "./DiscountPickerModal";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -241,28 +241,28 @@ export default function InvoiceDiscountCreate({
         <button
           type="button"
           onClick={() => setShowInlineForm((v) => !v)}
-          className="h-8 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors"
+          className="h-8 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer"
           title="Add discount"
         >
           <Plus className="w-3.5 h-3.5" />
           Add a discount
         </button>
 
-        {/* Select pre-defined discount — only when inline form is open */}
+        {/* Select from discount collection — only when inline form is open */}
         {showInlineForm && (
           <button
             type="button"
             onClick={() => setModalOpen(true)}
-            className="h-8 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors"
-            title="Select pre-defined discount"
+            className="h-8 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer"
+            title="Select from discount collection"
           >
-            <Plus className="w-3.5 h-3.5" />
-            Select pre-defined discount
+            <Tags className="w-3.5 h-3.5" />
+            Select from discount collection
           </button>
         )}
 
         {/* Create New Discount — only when inline form is open */}
-        {showInlineForm && <CreateDiscountDialog />}
+        {/* {showInlineForm && <CreateDiscountDialog />} */}
 
         {!hasAnyDiscount && !showInlineForm && (
           <span className="text-xs text-gray-400">No discount applied</span>
@@ -374,7 +374,7 @@ export default function InvoiceDiscountCreate({
           toAdd.forEach(onDiscountSelect);
           toRemove.forEach(onDiscountRemove);
         }}
-        title="Apply Invoice Discounts"
+        title="Apply Discounts"
       />
     </div>
   );

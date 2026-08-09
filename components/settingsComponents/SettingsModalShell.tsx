@@ -65,7 +65,7 @@ export default function SettingsModalShell({
             type="button"
             onClick={() => onOpenChange(false)}
             aria-label="Close"
-            className="absolute right-0 top-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200 hover:text-gray-700 cursor-pointer text-sm"
+            className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center font-bold rounded-full text-gray-500 transition hover:text-red-500 hover:text-lg cursor-pointer text-sm"
           >
             ✕
           </button>

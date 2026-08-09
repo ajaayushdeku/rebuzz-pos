@@ -15,10 +15,10 @@ export default function AddInvoiceHeader() {
         <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 min-w-[100px]">
           Description
         </TableHead>
-        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-right min-w-[65px] w-[75px]">
+        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-center min-w-[65px] w-[75px]">
           Qty
         </TableHead>
-        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-right min-w-[70px] w-[85px]">
+        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-center min-w-[70px] w-[85px]">
           Price
         </TableHead>
         <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-right min-w-[60px]">

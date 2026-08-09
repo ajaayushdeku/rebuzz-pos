@@ -17,6 +17,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { Save } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -508,11 +509,22 @@ export default function InvoiceForm({
             disabled={isPending}
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
           >
-            {isPending
-              ? "Saving..."
-              : isEditMode
-                ? "Update Invoice"
-                : "Save and Continue"}
+            {isPending ? (
+              <>
+                <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                {isEditMode ? "Updating..." : "Saving..."}
+              </>
+            ) : isEditMode ? (
+              <>
+                <Save className="h-4 w-4" />
+                Update Invoice
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4" />
+                Save and Continue
+              </>
+            )}
           </Button>
         </div>
       </div>

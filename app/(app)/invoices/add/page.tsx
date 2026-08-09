@@ -3,6 +3,7 @@
 import toast from "react-hot-toast";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { Save } from "lucide-react";
 
 import { useDiscounts } from "@/hooks/useDiscounts";
 import { useCreateTicket } from "@/hooks/useTickets";
@@ -388,7 +389,17 @@ export default function Page() {
           disabled={isPending}
           className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
         >
-          {isPending ? "Saving..." : "Save and Continue"}
+          {isPending ? (
+            <>
+              <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Save className="h-4 w-4" />
+              Save and Continue
+            </>
+          )}
         </Button>
       </div>
 

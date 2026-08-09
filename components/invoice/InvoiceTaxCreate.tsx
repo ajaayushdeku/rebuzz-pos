@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Layers, Loader2, Plus } from "lucide-react";
+import { Layers, Loader2, Tags, BadgePercent } from "lucide-react";
 import { CreateTaxDialog } from "./CreateTaxRate";
 import { useTaxes, useUpdateTaxSettings, useToggleTax } from "@/hooks/useTaxes";
 import TaxPickerModal from "./TaxPickerModal";
@@ -209,16 +209,16 @@ export default function InvoiceTaxCreate({
           <button
             type="button"
             onClick={() => setTaxModalOpen(true)}
-            className="h-8 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors"
+            className="h-8 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer"
             title="Select tax"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Tags className="w-3.5 h-3.5" />
             {hasActiveTax ? "Change tax" : "Select a tax"}
           </button>
         )}
 
         {/* Create Tax — only when tax mode is enabled */}
-        {isTaxEnabled && <CreateTaxDialog />}
+        {/* {isTaxEnabled && <CreateTaxDialog />} */}
 
         {isTaxEnabled && !hasActiveTax && (
           <span className="text-xs text-gray-400">No tax applied</span>

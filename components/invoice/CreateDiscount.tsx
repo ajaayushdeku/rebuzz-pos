@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Percent, Loader2 } from "lucide-react";
+import { Percent, Loader2, BadgePercent } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCreateDiscount } from "@/hooks/useDiscounts";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -23,8 +23,7 @@ export const CreateDiscountDialog = () => {
     rate: 0,
   });
 
-  const reset = () =>
-    setFormData({ name: "", type: "percentage", rate: 0 });
+  const reset = () => setFormData({ name: "", type: "percentage", rate: 0 });
 
   const handleOpenChange = (o: boolean) => {
     setOpen(o);
@@ -58,9 +57,9 @@ export const CreateDiscountDialog = () => {
       <Button
         variant="outline"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 border-dashed border-blue-400 text-blue-600 hover:bg-blue-50"
+        className="flex items-center gap-2 border-dashed text-sm border-blue-400 text-blue-600 hover:bg-blue-50"
       >
-        <Plus className="h-4 w-4" />
+        <BadgePercent className="h-4 w-4" />
         Create New Discount
       </Button>
 
@@ -82,7 +81,9 @@ export const CreateDiscountDialog = () => {
             <button
               type="button"
               onClick={handleSave}
-              disabled={isPending || !formData.name.trim() || formData.rate <= 0}
+              disabled={
+                isPending || !formData.name.trim() || formData.rate <= 0
+              }
               className={modalPrimaryBtn}
             >
               {isPending ? (

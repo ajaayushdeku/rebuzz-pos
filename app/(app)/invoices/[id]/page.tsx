@@ -97,6 +97,8 @@ const InvoiceDetailPage = () => {
   const [isRefunding, setIsRefunding] = useState(false);
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [deletingPaymentId, setDeletingPaymentId] = useState<string | null>(
     null,
   );
@@ -243,24 +245,26 @@ const InvoiceDetailPage = () => {
       return;
     }
 
-    const sendPromise = fetch(`/api/tickets/${ticketId}/delete`, {
-      method: "DELETE",
-    }).then(async (res) => {
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/tickets/${ticketId}/delete`, {
+        method: "DELETE",
+      });
       const data = await res.json();
       if (!res.ok || data.status === "fail") {
-        throw new Error(data.message || "Failed to send");
+        throw new Error(data.message || "Failed to delete invoice");
       }
-      return data;
-    });
-
-    toast.promise(sendPromise, {
-      loading: "Deleting invoice ...",
-      success: () => {
-        return "Invoice deleted successfully!";
-      },
-      error: (err) => `${err.message}`,
-    });
-    router.push(`/invoices/`);
+      toast.success("Invoice deleted successfully!");
+      setIsDeleteModalOpen(false);
+      router.push(`/invoices/`);
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to delete invoice",
+      );
+      setIsDeleteModalOpen(false);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleRefundInvoice = async () => {
@@ -611,7 +615,7 @@ const InvoiceDetailPage = () => {
 
               {!isPaid && !isCredited && !isCreditArchived && (
                 <DropdownMenuItem
-                  onClick={handleDeleteInvoice}
+                  onClick={() => setIsDeleteModalOpen(true)}
                   className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 text-sm"
                 >
                   Delete
@@ -1577,6 +1581,61 @@ const InvoiceDetailPage = () => {
         onClose={() => setIsCustomerPreviewOpen(false)}
         invoiceNo={id as string}
       />
+
+      {/* Delete Invoice Confirmation Modal */}
+      <Dialog
+        open={isDeleteModalOpen}
+        onOpenChange={(o) => !o && !isDeleting && setIsDeleteModalOpen(false)}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-2">
+              <Trash2 className="h-5 w-5 text-red-600" />
+            </div>
+            <DialogTitle className="text-center text-base font-semibold">
+              Delete Invoice?
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="text-center space-y-1 py-1">
+            <p className="text-sm text-gray-600">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold text-gray-900">
+                ORD-{invoice?.invoice}
+              </span>
+              ?
+            </p>
+            <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mt-2">
+              This action cannot be undone.
+            </p>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteModalOpen(false)}
+              disabled={isDeleting}
+              className="text-sm rounded-lg flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteInvoice}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg flex-1"
+            >
+              {isDeleting ? (
+                <span className="flex items-center gap-1.5">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Deleting...
+                </span>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Move to Credit Confirmation Modal */}
       {isMoveToCreditOpen && (

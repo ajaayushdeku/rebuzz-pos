@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Percent, Check, Search, Loader2 } from "lucide-react";
+import {
+  Percent,
+  Check,
+  Search,
+  Loader2,
+  ReceiptPoundSterling,
+  Receipt,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCreateTax, useCreateGroupTax, useTaxes } from "@/hooks/useTaxes";
 import SettingsModalShell, {
@@ -102,9 +109,9 @@ export const CreateTaxDialog = () => {
       <Button
         variant="outline"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 border-dashed border-blue-400 text-blue-600 hover:bg-blue-50"
+        className="flex text-sm items-center gap-2 border-dashed border-blue-400 text-blue-600 hover:bg-blue-50"
       >
-        <Plus className="h-4 w-4" />
+        <Receipt className="h-4 w-4" />
         Create Tax
       </Button>
 
