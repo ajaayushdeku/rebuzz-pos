@@ -431,10 +431,10 @@ export default function InvoiceItemsSelector({
                 {/* Stock error badge */}
                 {stockErrors[item.id] && (
                   <Badge className="flex items-center gap-1 bg-red-100 text-red-700 hover:bg-red-200 text-xs border border-red-200">
-                    <span className="text-[11px] font-semibold leading-none">
+                    <span className="text-[11px] font-semibold  tracking-wider leading-none">
                       Stock Exceeded
                     </span>
-                    <span className="text-[11px] leading-none">
+                    <span className="text-[11px]  font-semibold  tracking-wider leading-none">
                       {(() => {
                         const product = products.find(
                           (p) => p.id === item.productId,
@@ -461,10 +461,10 @@ export default function InvoiceItemsSelector({
                     ) {
                       return (
                         <Badge className="flex items-center gap-1 bg-amber-100 text-amber-700 hover:bg-amber-200 text-xs border border-amber-200">
-                          <span className="text-[11px] font-semibold leading-none">
+                          <span className="text-[11px]  font-semibold  tracking-widerleading-none">
                             Low Stock
                           </span>
-                          <span className="text-[11px] leading-none">
+                          <span className="text-[11px]  font-semibold  tracking-wider leading-none">
                             ({product.inStock} left)
                           </span>
                         </Badge>
@@ -482,15 +482,15 @@ export default function InvoiceItemsSelector({
                       key={dId}
                       className="flex items-center gap-1 bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs"
                     >
-                      <span className="text-[11px] font-semibold leading-none">
+                      <span className="text-[11px] tracking-wider font-semibold leading-none">
                         {d.name}
                       </span>
                       {d.type === "percentage" ? (
                         <>
-                          <span className="text-[11px] text-blue-500 leading-none">
+                          <span className="text-[11px] font-semibold  tracking-wider text-blue-500 leading-none">
                             ({d.rate}%) :
                           </span>
-                          <span className="text-[11px] font-medium leading-none">
+                          <span className="text-[11px] font-semibold  tracking-wider font-medium leading-none">
                             -{formatCurrencySymbolOnly(currency.symbol)}
                             {(
                               (item.quantity * item.price * d.rate) /
@@ -500,10 +500,10 @@ export default function InvoiceItemsSelector({
                         </>
                       ) : (
                         <>
-                          <span className="text-[11px] text-blue-500 leading-none">
+                          <span className="text-[11px] font-semibold  tracking-wider text-blue-500 leading-none">
                             {d.rate} off :
                           </span>
-                          <span className="text-[11px] font-medium leading-none">
+                          <span className="text-[11px] font-semibold  tracking-wider font-medium leading-none">
                             -{formatCurrencySymbolOnly(currency.symbol)}
                             {(d.rate * item.quantity).toFixed(2)}
                           </span>
@@ -527,13 +527,13 @@ export default function InvoiceItemsSelector({
                 {/* Tax pill — only when product isTaxable AND global tax active */}
                 {item.isTaxable && activeTax && (
                   <Badge className="flex items-center gap-1 bg-green-100 text-green-700 border border-green-200 text-xs">
-                    <span className="text-[11px] font-semibold  leading-none">
+                    <span className="text-[11px] font-semibold  tracking-wider leading-none">
                       {activeTax.name}
                     </span>
-                    <span className="text-[11px] text-green-500  leading-none">
+                    <span className="text-[11px] text-green-500  tracking-wider leading-none">
                       ({activeTax.rate}%) :
                     </span>
-                    <span className="text-[11px] font-medium  leading-none">
+                    <span className="text-[11px] font-medium  tracking-wider  leading-none">
                       + {formatCurrencySymbolOnly(currency.symbol)}{" "}
                       {(() => {
                         const rowTotal = item.quantity * item.price;
