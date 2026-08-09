@@ -16,7 +16,7 @@ export const DELETE = async (
   }
 
   try {
-    const res = await fetch(`${BASE}/business/ticke/${invoice}`, {
+    const res = await fetch(`${BASE}/business/ticket/${invoice}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,

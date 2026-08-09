@@ -194,8 +194,6 @@ export default function InvoiceTaxCreate({
 
       {/* ── Controls: create + enable switch + picker ── */}
       <div className="flex flex-wrap items-center gap-2">
-        <CreateTaxDialog />
-
         <div className="flex items-center gap-2 h-8 rounded-lg border border-gray-200 px-3">
           <span className="text-xs font-medium text-gray-600">Enable Tax</span>
           <Toggle
@@ -218,6 +216,9 @@ export default function InvoiceTaxCreate({
             {hasActiveTax ? "Change tax" : "Select a tax"}
           </button>
         )}
+
+        {/* Create Tax — only when tax mode is enabled */}
+        {isTaxEnabled && <CreateTaxDialog />}
 
         {isTaxEnabled && !hasActiveTax && (
           <span className="text-xs text-gray-400">No tax applied</span>

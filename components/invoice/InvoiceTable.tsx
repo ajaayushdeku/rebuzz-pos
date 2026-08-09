@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -22,6 +22,7 @@ import {
   FileText,
 } from "lucide-react";
 import { Invoice } from "@/lib/types/invoice";
+import { LoyaltyTier } from "@/lib/types/customer";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatDatetime } from "@/utils/helper";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,8 @@ import EmailInvoiceModal from "@/components/invoice/modals/EmailInvoiceModal";
 import toast from "react-hot-toast";
 import { parseNepalDateTime } from "../dashboardComponents/staffDash/staffDetail/staffDetailHelpers";
 import { moveInvoiceToCredit } from "@/services/apiCredit.client";
+import { getTicketByInvoice } from "@/services/apiTicket.client";
+import { useDuplicateInvoiceStore } from "@/stores/useDuplicateInvoiceStore";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -88,6 +91,7 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
   const [moveTarget, setMoveTarget] = useState<Invoice | null>(null);
   const [moving, setMoving] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
+  const setDuplicate = useDuplicateInvoiceStore((s) => s.setDuplicate);
   const statusRef = useRef<HTMLDivElement | null>(null);
   const pageSize = 10;
 
@@ -334,9 +338,13 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                       <span className="font-medium text-xs text-gray-900 block">
                         ORD-{inv.invoice}
                       </span>
-                      {invoiceDate && (
+                      {inv.created_at && (
                         <span className="text-[11px] text-gray-400">
-                          {timeAgo(invoiceDate)}
+                          {timeAgo(
+                            inv.created_at
+                              ? new Date(inv.created_at)
+                              : new Date(),
+                          )}
                         </span>
                       )}
                     </td>
@@ -360,18 +368,28 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                       {invoiceDate ? (
                         <div>
                           <span className="font-medium text-gray-800 text-xs block">
-                            {invoiceDate.toLocaleTimeString("en-US", {
+                            {/* {invoiceDate.toLocaleTimeString("en-US", {
                               hour: "2-digit",
                               minute: "2-digit",
                               hour12: false,
-                            })}
-                            <span className="text-[10px] font-normal text-gray-400">
-                              {"  "}[{" "}
-                              {invoiceDate.toLocaleTimeString("en-US", {
+                            })}{" "} */}
+                            {new Date(inv.created_at).toLocaleString(
+                              undefined,
+                              {
                                 hour: "2-digit",
                                 minute: "2-digit",
-                                hour12: true,
-                              })}{" "}
+                                hour12: false,
+                              },
+                            )}{" "}
+                            <span className="text-[10px] font-normal text-gray-400">
+                              {"  "}[{" "}
+                              {new Date(inv.created_at).toLocaleString(
+                                undefined,
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )}{" "}
                               ]
                             </span>
                           </span>
@@ -416,7 +434,7 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                             className="w-48 rounded-xl p-1.5"
                           >
                             <DropdownMenuItem
-                              className="rounded-lg"
+                              className="rounded-lg cursor-pointer"
                               onSelect={() =>
                                 router.push(`/invoices/${inv.invoice}`)
                               }
@@ -425,7 +443,7 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                               View
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              className="rounded-lg"
+                              className="rounded-lg cursor-pointer"
                               onSelect={() =>
                                 router.push(`/invoices/${inv.invoice}/edit`)
                               }
@@ -434,8 +452,139 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                               Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              disabled
-                              className="rounded-lg opacity-50 cursor-not-allowed"
+                              className="rounded-lg cursor-pointer"
+                              onSelect={async () => {
+                                try {
+                                  const res = await getTicketByInvoice(
+                                    String(inv.invoice),
+                                  );
+                                  const ticket = res?.data?.Tickets;
+                                  if (!ticket) {
+                                    toast.error(
+                                      "Could not load invoice details for duplication",
+                                    );
+                                    return;
+                                  }
+
+                                  // ── Look up customer by phone/email ──
+                                  let customer = null;
+                                  const identifier =
+                                    ticket.phoneNumber || ticket.customerEmail;
+                                  if (identifier) {
+                                    const query = ticket.phoneNumber
+                                      ? `phone=${ticket.phoneNumber}`
+                                      : `email=${ticket.customerEmail}`;
+                                    try {
+                                      const custRes = await fetch(
+                                        `/api/customers/lookup?${query}`,
+                                      );
+                                      const custData = await custRes.json();
+                                      const raw = custData?.data?.users?.[0];
+                                      if (raw) {
+                                        customer = {
+                                          id: raw._id,
+                                          name: raw.name,
+                                          email: raw.email,
+                                          phone: raw.phone,
+                                          loyaltyPoint: raw.loyaltyPoint ?? 0,
+                                          loyaltyStatus:
+                                            "Bronze" as LoyaltyTier,
+                                          customerPan: raw.customerPan ?? null,
+                                          image: raw.image ?? null,
+                                        };
+                                      }
+                                    } catch {
+                                      // fallback: build a partial customer
+                                    }
+                                  }
+
+                                  // If lookup failed, build a minimal customer
+                                  if (!customer) {
+                                    customer = {
+                                      id: "",
+                                      name:
+                                        ticket.customerName ??
+                                        ticket.ticketName ??
+                                        "",
+                                      email: ticket.customerEmail ?? "",
+                                      phone: ticket.phoneNumber ?? "",
+                                      loyaltyPoint: 0,
+                                      loyaltyStatus: "Bronze" as LoyaltyTier,
+                                      customerPan: null,
+                                      image: null,
+                                    };
+                                  }
+
+                                  // ── Map items ──
+                                  const rawItems =
+                                    ticket.items?.[0]?.item ?? [];
+                                  const mappedItems = rawItems.map(
+                                    (item: Record<string, unknown>) => ({
+                                      id: crypto.randomUUID(),
+                                      productId: (item.product as string) ?? "",
+                                      name: (item.productName as string) ?? "",
+                                      description:
+                                        (item.description as string) ?? "",
+                                      quantity: (item.quantity as number) ?? 1,
+                                      price: (item.unitPrice as number) ?? 0,
+                                      discounts: (
+                                        (item.discounts as Array<
+                                          Record<string, unknown>
+                                        >) ?? []
+                                      ).map((d) => (d._id ?? d) as string),
+                                      taxes: [],
+                                      isTaxable:
+                                        (item.isTaxable as boolean) ?? false,
+                                    }),
+                                  );
+
+                                  // If there are no items, add a blank one
+                                  if (mappedItems.length === 0) {
+                                    mappedItems.push({
+                                      id: crypto.randomUUID(),
+                                      productId: "",
+                                      name: "",
+                                      description: "",
+                                      quantity: 1,
+                                      price: 0,
+                                      discounts: [],
+                                      taxes: [],
+                                      isTaxable: false,
+                                    });
+                                  }
+
+                                  // ── Notes (strip any appended invoice ref) ──
+                                  const notes = ticket.note
+                                    ? (ticket.note
+                                        .split("|Invoice:")[0]
+                                        ?.trim() ?? "")
+                                    : "";
+
+                                  // ── Preserve discount amount ──
+                                  const discountAmount = ticket.discount ?? 0;
+
+                                  // ── Invoice title with " COPY" appended ──
+                                  const invoiceTitle = ticket.ticketName
+                                    ? `${ticket.ticketName} COPY`
+                                    : "";
+
+                                  setDuplicate({
+                                    customer,
+                                    invoiceTitle,
+                                    items: mappedItems,
+                                    notes,
+                                    discountAmount,
+                                  });
+
+                                  router.push("/invoices/add");
+                                } catch (err) {
+                                  toast.error(
+                                    err instanceof Error
+                                      ? err.message
+                                      : "Failed to duplicate invoice",
+                                  );
+                                }
+                              }}
                             >
                               Duplicate
                             </DropdownMenuItem>
@@ -443,14 +592,14 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                             <DropdownMenuSeparator />
 
                             <DropdownMenuItem
-                              className="rounded-lg"
+                              className="rounded-lg cursor-pointer"
                               onSelect={() => setPaymentTarget(inv)}
                             >
                               {/* <Wallet className="h-4 w-4" /> */}
                               Record payment
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              className="rounded-lg"
+                              className="rounded-lg cursor-pointer"
                               onSelect={() => setEmailTarget(inv)}
                             >
                               {/* <Send className="h-4 w-4" /> */}
@@ -460,14 +609,14 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                             <DropdownMenuSeparator />
 
                             <DropdownMenuItem
-                              className="rounded-lg"
+                              className="rounded-lg cursor-pointer"
                               onSelect={() => setExportTarget(inv)}
                             >
                               {/* <FileText className="h-4 w-4" /> */}
                               Export as PDF
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              className="rounded-lg"
+                              className="rounded-lg cursor-pointer"
                               onSelect={() => setPrintTarget(inv)}
                             >
                               {/* <Printer className="h-4 w-4" /> */}
@@ -477,14 +626,14 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
                             <DropdownMenuSeparator />
 
                             <DropdownMenuItem
-                              className="rounded-lg"
+                              className="rounded-lg cursor-pointer"
                               onSelect={() => setMoveTarget(inv)}
                             >
                               Move to credit
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
-                              className="rounded-lg text-red-600 focus:bg-red-50 focus:text-red-600"
+                              className="rounded-lg text-red-600 focus:bg-red-50 focus:text-red-600 cursor-pointer"
                               onSelect={() => setDeleteTarget(inv)}
                             >
                               {/* <Trash2 className="h-4 w-4 text-red-600" /> */}

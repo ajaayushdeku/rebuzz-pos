@@ -53,6 +53,12 @@ const DEFAULT_ITEM: Omit<InvoiceItem, "id"> = {
   isTaxable: false,
 };
 
+interface CustomDiscount {
+  id: string;
+  type: "fixed" | "percentage";
+  value: number;
+}
+
 // ── Helper: map raw backend item to InvoiceItem ───────────────────────────
 function mapInitialItem(item: any): InvoiceItem {
   return {
@@ -154,6 +160,26 @@ export default function InvoiceForm({
   });
 
   const [selectedDiscountIds, setSelectedDiscountIds] = useState<string[]>([]);
+  const [customDiscounts, setCustomDiscounts] = useState<CustomDiscount[]>(
+    () => {
+      // In edit mode, if the invoice has a stored discount amount and no
+      // pre-defined discount ids, pre-fill a fixed-type custom discount.
+      if (
+        isEditMode &&
+        !tickets?.discounts?.length &&
+        (tickets?.discount ?? 0) > 0
+      ) {
+        return [
+          {
+            id: crypto.randomUUID(),
+            type: "fixed" as const,
+            value: tickets?.discount ?? 0,
+          },
+        ];
+      }
+      return [];
+    },
+  );
 
   // Active tax — surfaced from InvoiceTaxCreate
   const [activeTaxId, setActiveTaxId] = useState<string | null>(null);
@@ -190,25 +216,35 @@ export default function InvoiceForm({
     return sum + Math.max(0, rowRawTotal - rowDiscount);
   }, 0);
 
+  const masterDiscountValue = selectedDiscountIds.reduce((sum, id) => {
+    const d = masterDiscounts.find((m) => m._id === id);
+    if (!d) return sum;
+    return (
+      sum + (d.type === "percentage" ? (itemsSubtotal * d.rate) / 100 : d.rate)
+    );
+  }, 0);
+
+  const customDiscountValue = customDiscounts.reduce((sum, d) => {
+    if (d.type === "percentage") {
+      return sum + (itemsSubtotal * d.value) / 100;
+    }
+    return sum + d.value;
+  }, 0);
+
+  const hasAnyDiscount =
+    selectedDiscountIds.length > 0 || customDiscounts.length > 0;
+
   // Replace initialDiscountAmount:
   const initialDiscountAmount =
-    isEditMode && selectedDiscountIds.length === 0
+    isEditMode && !hasAnyDiscount
       ? (tickets?.discount ?? 0) // ← Tickets.discount, not ticket.discount
       : 0;
 
-  const globalDiscountValue =
-    selectedDiscountIds.length > 0
-      ? selectedDiscountIds.reduce((sum, id) => {
-          const d = masterDiscounts.find((m) => m._id === id);
-          if (!d) return sum;
-          return (
-            sum +
-            (d.type === "percentage" ? (itemsSubtotal * d.rate) / 100 : d.rate)
-          );
-        }, 0)
-      : isEditMode
-        ? (tickets?.discount ?? 0) // ← use stored discount amount in edit mode
-        : 0;
+  const globalDiscountValue = hasAnyDiscount
+    ? masterDiscountValue + customDiscountValue
+    : isEditMode
+      ? (tickets?.discount ?? 0) // ← use stored discount amount in edit mode
+      : 0;
 
   const afterDiscountTotal = Math.max(0, itemsSubtotal - globalDiscountValue);
 
@@ -277,6 +313,27 @@ export default function InvoiceForm({
 
   const handleDiscountRemove = (id: string) => {
     setSelectedDiscountIds((prev) => prev.filter((d) => d !== id));
+  };
+
+  const handleCustomDiscountAdd = () => {
+    setCustomDiscounts((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), type: "fixed", value: 0 },
+    ]);
+  };
+
+  const handleCustomDiscountUpdate = (
+    id: string,
+    field: "type" | "value",
+    value: string | number,
+  ) => {
+    setCustomDiscounts((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, [field]: value } : d)),
+    );
+  };
+
+  const handleCustomDiscountRemove = (id: string) => {
+    setCustomDiscounts((prev) => prev.filter((d) => d.id !== id));
   };
 
   // ── Submit ─────────────────────────────────────────────────────────────────
@@ -555,6 +612,7 @@ export default function InvoiceForm({
         </div>
 
         {/* ── Discount ── */}
+
         <InvoiceDiscountCreate
           subtotal={itemsSubtotal}
           discountAmount={globalDiscountValue}
@@ -562,6 +620,10 @@ export default function InvoiceForm({
           selectedDiscountIds={selectedDiscountIds}
           onDiscountSelect={handleDiscountSelect}
           onDiscountRemove={handleDiscountRemove}
+          customDiscounts={customDiscounts}
+          onCustomDiscountAdd={handleCustomDiscountAdd}
+          onCustomDiscountUpdate={handleCustomDiscountUpdate}
+          onCustomDiscountRemove={handleCustomDiscountRemove}
         />
 
         {/* ── Tax ── */}

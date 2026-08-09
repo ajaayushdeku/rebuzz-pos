@@ -1,22 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { ChevronDown } from "lucide-react";
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import {
   fetchLoyaltyPointSettings,
   LoyaltyPointSettings,
 } from "@/services/apiLoyaltyPoint";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useInvoiceTicket } from "./useInvoiceTicket";
 import { formatCurrencySymbol } from "@/utils/helper";
 
@@ -57,6 +51,26 @@ export default function RecordPaymentModal({
     discount: 0,
     method: "cash",
   });
+  const [methodOpen, setMethodOpen] = useState(false);
+  const methodRef = useRef<HTMLDivElement | null>(null);
+
+  // Close the payment method dropdown on outside click / Escape
+  useEffect(() => {
+    const onClickOutside = (e: MouseEvent) => {
+      if (methodRef.current && !methodRef.current.contains(e.target as Node)) {
+        setMethodOpen(false);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMethodOpen(false);
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onClickOutside);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
 
   // Reset form & load loyalty settings whenever the modal opens for an invoice.
   useEffect(() => {
@@ -289,7 +303,7 @@ export default function RecordPaymentModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Header ── */}
-        <div className="sticky top-0 z-20 flex items-center justify-between border-b border-gray-100 bg-white/95 backdrop-blur px-5 py-3.5">
+        <div className="relative sticky top-0 z-20 flex items-center justify-between border-b border-gray-100 bg-white/95 backdrop-blur px-5 py-3.5">
           <div>
             <h2 className="text-lg font-bold text-gray-800">Record Payment</h2>
             <p className="text-xs text-gray-500 mt-0.5">
@@ -298,7 +312,7 @@ export default function RecordPaymentModal({
           </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200 hover:text-gray-700 cursor-pointer text-sm"
+            className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center font-bold rounded-full  text-gray-500 transition  hover:text-red-500 hover:text-lg cursor-pointer text-sm "
           >
             ✕
           </button>
@@ -326,36 +340,54 @@ export default function RecordPaymentModal({
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-widest block mb-2">
                   Payment Method
                 </label>
-                <Select
-                  value={paymentData.method}
-                  onValueChange={(value) =>
-                    setPaymentData({ ...paymentData, method: value })
-                  }
-                >
-                  <SelectTrigger className="w-full h-10 rounded-xl border-gray-200 bg-white font-medium capitalize text-sm">
-                    <SelectValue placeholder="Select method" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border-gray-200 shadow-xl">
-                    <SelectItem
-                      value="cash"
-                      className="py-2.5 cursor-pointer font-medium text-sm"
-                    >
-                      Cash
-                    </SelectItem>
-                    <SelectItem
-                      value="card"
-                      className="py-2.5 cursor-pointer font-medium text-sm"
-                    >
-                      Credit Card
-                    </SelectItem>
-                    <SelectItem
-                      value="qr"
-                      className="py-2.5 cursor-pointer font-medium text-sm"
-                    >
-                      QR / Digital Wallet
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                <div ref={methodRef} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setMethodOpen((o) => !o)}
+                    className="w-full flex items-center justify-between gap-2 pl-3 pr-2.5 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition capitalize"
+                  >
+                    <span>
+                      {paymentData.method === "cash"
+                        ? "Cash"
+                        : "QR / Digital Wallet"}
+                    </span>
+                    <ChevronDown
+                      size={14}
+                      className={`text-gray-400 transition-transform duration-200 ${
+                        methodOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  <div
+                    className={`absolute z-30 mt-1.5 w-full origin-top rounded-md border border-gray-200 bg-white shadow-lg p-1 transition-all duration-200 ${
+                      methodOpen
+                        ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+                        : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
+                    }`}
+                  >
+                    {[
+                      { value: "cash", label: "Cash" },
+                      { value: "qr", label: "QR / Digital Wallet" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => {
+                          setPaymentData({ ...paymentData, method: opt.value });
+                          setMethodOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-1.5 text-[13px] rounded-md transition-colors cursor-pointer capitalize ${
+                          paymentData.method === opt.value
+                            ? "bg-blue-50 text-blue-700 font-medium"
+                            : "text-gray-600 hover:bg-gray-100"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Summary */}

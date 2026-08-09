@@ -97,7 +97,7 @@ export default function PrintInvoiceModal({
           onClick={(e) => e.stopPropagation()}
         >
           {/* ── Header ── */}
-          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3.5">
+          <div className="relative flex items-center justify-between border-b border-gray-100 px-5 py-3.5">
             <div>
               <h2 className="text-lg font-bold text-gray-800">Print Invoice</h2>
               <p className="text-xs text-gray-500 mt-0.5">
@@ -106,7 +106,7 @@ export default function PrintInvoiceModal({
             </div>
             <button
               onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200 hover:text-gray-700 cursor-pointer text-sm"
+              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center font-bold rounded-full  text-gray-500 transition  hover:text-red-500 hover:text-lg cursor-pointer text-sm "
             >
               ✕
             </button>

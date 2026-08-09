@@ -369,14 +369,14 @@ export default function RecentTransactions() {
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => setEditTransaction(t)}
-                          className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                           title="Edit transaction"
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
                         <button
                           onClick={() => setDeleteTarget(t)}
-                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                           title="Delete transaction"
                         >
                           <Trash2 className="h-3.5 w-3.5" />

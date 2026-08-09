@@ -23,6 +23,7 @@ import AddInvoiceHeader from "@/components/invoice/AddInvoiceHeader";
 import InvoiceItemsSelector from "@/components/invoice/InvoiceItemsSelector";
 import InvoiceDiscountCreate from "@/components/invoice/InvoiceDiscountCreate";
 import InvoiceTaxCreate from "@/components/invoice/InvoiceTaxCreate";
+import { useDuplicateInvoiceStore } from "@/stores/useDuplicateInvoiceStore";
 
 const DEFAULT_ITEM: Omit<InvoiceItem, "id"> = {
   productId: "",
@@ -37,6 +38,12 @@ const DEFAULT_ITEM: Omit<InvoiceItem, "id"> = {
 
 const CUSTOM_PRODUCT_NAME = "Custom";
 
+interface CustomDiscount {
+  id: string;
+  type: "fixed" | "percentage";
+  value: number;
+}
+
 export default function Page() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -48,19 +55,42 @@ export default function Page() {
 
   // console.log("Taxes:", taxData);
 
+  const {
+    hasDuplicate,
+    customer: dupCustomer,
+    invoiceTitle: dupTitle,
+    items: dupItems,
+    notes: dupNotes,
+    discountAmount: dupDiscountAmount,
+    clearDuplicate,
+  } = useDuplicateInvoiceStore();
+
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
-    null,
+    dupCustomer,
   );
   // The picker starts open on a new invoice (no customer yet), matching the
-  // edit form behavior.
-  const [showCustomerPicker, setShowCustomerPicker] = useState(true);
-  const [invoiceTitle, setInvoiceTitle] = useState("");
+  // edit form behavior. When duplicating, it stays closed since the customer
+  // is already selected.
+  const [showCustomerPicker, setShowCustomerPicker] = useState(!hasDuplicate);
+  const [invoiceTitle, setInvoiceTitle] = useState(dupTitle ?? "");
   const [invoiceNumber] = useState("");
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState(dupNotes ?? "");
 
-  const [items, setItems] = useState<InvoiceItem[]>([
-    { id: crypto.randomUUID(), ...DEFAULT_ITEM },
-  ]);
+  const [items, setItems] = useState<InvoiceItem[]>(() => {
+    if (hasDuplicate && dupItems.length > 0) {
+      return dupItems;
+    }
+    return [{ id: crypto.randomUUID(), ...DEFAULT_ITEM }];
+  });
+
+  // Once the duplicated data has been consumed to seed the form, clear the
+  // store so a later manual visit to /invoices/add starts fresh.
+  useEffect(() => {
+    if (hasDuplicate) {
+      clearDuplicate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Ensure "Custom" product exists ──────────────────────────────────────
   const customProductIdRef = useRef<string | null>(null);
@@ -95,6 +125,23 @@ export default function Page() {
 
   // Global discounts
   const [selectedDiscountIds, setSelectedDiscountIds] = useState<string[]>([]);
+  const [customDiscounts, setCustomDiscounts] = useState<CustomDiscount[]>(
+    () => {
+      // When duplicating and the original invoice had a discount amount
+      // (no pre-defined discount ids stored), pre-fill a fixed-type custom
+      // discount with that amount.
+      if (hasDuplicate && dupDiscountAmount > 0) {
+        return [
+          {
+            id: crypto.randomUUID(),
+            type: "fixed" as const,
+            value: dupDiscountAmount,
+          },
+        ];
+      }
+      return [];
+    },
+  );
 
   // Active tax — managed by InvoiceTaxCreate, surfaced here for payload
   const [activeTaxId, setActiveTaxId] = useState<string | null>(null);
@@ -124,13 +171,31 @@ export default function Page() {
   }, 0);
 
   // 2. Global discounts applied on itemsSubtotal
-  const globalDiscountValue = selectedDiscountIds.reduce((sum, id) => {
+  //    When duplicating, the original invoice stored a discount amount rather
+  //    than a discount id, so fall back to that preserved amount.
+  const masterDiscountValue = selectedDiscountIds.reduce((sum, id) => {
     const d = masterDiscounts.find((m) => m._id === id);
     if (!d) return sum;
     return (
       sum + (d.type === "percentage" ? (itemsSubtotal * d.rate) / 100 : d.rate)
     );
   }, 0);
+
+  const customDiscountValue = customDiscounts.reduce((sum, d) => {
+    if (d.type === "percentage") {
+      return sum + (itemsSubtotal * d.value) / 100;
+    }
+    return sum + d.value;
+  }, 0);
+
+  const hasAnyDiscount =
+    selectedDiscountIds.length > 0 || customDiscounts.length > 0;
+
+  const globalDiscountValue = hasAnyDiscount
+    ? masterDiscountValue + customDiscountValue
+    : hasDuplicate
+      ? dupDiscountAmount
+      : 0;
 
   // 3. Taxes applied after discounts ←
   const afterDiscountTotal = Math.max(0, itemsSubtotal - globalDiscountValue);
@@ -196,6 +261,27 @@ export default function Page() {
 
   const handleDiscountRemove = (id: string) => {
     setSelectedDiscountIds((prev) => prev.filter((d) => d !== id));
+  };
+
+  const handleCustomDiscountAdd = () => {
+    setCustomDiscounts((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), type: "fixed", value: 0 },
+    ]);
+  };
+
+  const handleCustomDiscountUpdate = (
+    id: string,
+    field: "type" | "value",
+    value: string | number,
+  ) => {
+    setCustomDiscounts((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, [field]: value } : d)),
+    );
+  };
+
+  const handleCustomDiscountRemove = (id: string) => {
+    setCustomDiscounts((prev) => prev.filter((d) => d.id !== id));
   };
 
   const handleSave = async () => {
@@ -402,6 +488,10 @@ export default function Page() {
           selectedDiscountIds={selectedDiscountIds}
           onDiscountSelect={handleDiscountSelect}
           onDiscountRemove={handleDiscountRemove}
+          customDiscounts={customDiscounts}
+          onCustomDiscountAdd={handleCustomDiscountAdd}
+          onCustomDiscountUpdate={handleCustomDiscountUpdate}
+          onCustomDiscountRemove={handleCustomDiscountRemove}
         />
 
         {/* ── Tax ── */}

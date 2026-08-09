@@ -408,6 +408,7 @@ export default function CreditsTable({
                       <td className="py-3.5 px-4">
                         {(() => {
                           const d = parseNepalDateTime(c.creationDate);
+                          console.log("invoiceDate", d, c.creationDate);
                           return d ? (
                             <div>
                               <span className="font-medium text-gray-800 text-xs block">
@@ -505,7 +506,7 @@ export default function CreditsTable({
                                   <>
                                     {/* View */}
                                     <DropdownMenuItem
-                                      className="rounded-lg"
+                                      className="rounded-lg cursor-pointer"
                                       onSelect={() =>
                                         withInvoiceNo(c, (inv) =>
                                           router.push(`/invoices/${inv}`),
@@ -517,7 +518,7 @@ export default function CreditsTable({
 
                                     {/* View payment history */}
                                     <DropdownMenuItem
-                                      className="rounded-lg"
+                                      className="rounded-lg cursor-pointer"
                                       onSelect={() =>
                                         setExpandedId((prev) =>
                                           prev === c._id ? null : c._id,
@@ -529,11 +530,27 @@ export default function CreditsTable({
                                         : "View payment history"}
                                     </DropdownMenuItem>
 
+                                    {/* Edit Credited Invoice */}
+                                    {!cleared && (
+                                      <DropdownMenuItem
+                                        className="rounded-lg cursor-pointer"
+                                        onSelect={() =>
+                                          withInvoiceNo(c, (inv) =>
+                                            router.push(
+                                              `/invoices/${inv}/edit`,
+                                            ),
+                                          )
+                                        }
+                                      >
+                                        Edit
+                                      </DropdownMenuItem>
+                                    )}
+
                                     {!cleared && (
                                       <>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuItem
-                                          className="rounded-lg"
+                                          className="rounded-lg cursor-pointer"
                                           onSelect={() => setPaymentTarget(c)}
                                         >
                                           Record payment
@@ -543,7 +560,7 @@ export default function CreditsTable({
 
                                     {/* Resend invoice */}
                                     <DropdownMenuItem
-                                      className="rounded-lg"
+                                      className="rounded-lg cursor-pointer"
                                       onSelect={() =>
                                         withInvoiceNo(c, (inv) =>
                                           setEmailTarget({
@@ -560,7 +577,7 @@ export default function CreditsTable({
 
                                     {/* Export as PDF */}
                                     <DropdownMenuItem
-                                      className="rounded-lg"
+                                      className="rounded-lg cursor-pointer"
                                       onSelect={() =>
                                         withInvoiceNo(c, (inv) =>
                                           setExportTarget({
@@ -575,7 +592,7 @@ export default function CreditsTable({
 
                                     {/* Print */}
                                     <DropdownMenuItem
-                                      className="rounded-lg"
+                                      className="rounded-lg cursor-pointer"
                                       onSelect={() =>
                                         withInvoiceNo(c, (inv) =>
                                           setPrintTarget({
@@ -594,7 +611,7 @@ export default function CreditsTable({
 
                                 {/* Delete */}
                                 <DropdownMenuItem
-                                  className="rounded-lg text-red-600 focus:text-red-600 focus:bg-red-50"
+                                  className="rounded-lg text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
                                   onSelect={() => setArchiveTarget(c)}
                                 >
                                   Delete

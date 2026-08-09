@@ -63,7 +63,7 @@ export default function CustomerPreviewModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Header ── */}
-        <div className="flex items-center justify-between border-b border-indigo-100 px-6 py-3.5">
+        <div className="relative flex items-center justify-between border-b border-indigo-100 px-6 py-3.5">
           <div>
             <h2 className="text-lg font-bold text-gray-800">
               Customer Preview
@@ -74,7 +74,7 @@ export default function CustomerPreviewModal({
           </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200 hover:text-gray-700 cursor-pointer text-sm"
+            className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center font-bold rounded-full  text-gray-500 transition  hover:text-red-500 hover:text-lg cursor-pointer text-sm "
           >
             ✕
           </button>
@@ -109,14 +109,14 @@ export default function CustomerPreviewModal({
                   <div className="mt-2.5 flex flex-col gap-1.5">
                     <button
                       onClick={() => handleOpen(item.type)}
-                      className="flex items-center justify-center gap-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-semibold px-2 py-1.5 transition-colors"
+                      className="flex items-center justify-center gap-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-semibold px-2 py-1.5 transition-colors cursor-pointer"
                     >
                       <ExternalLink size={12} />
                       Open
                     </button>
                     <button
                       onClick={() => handleCopy(item.type, item.label)}
-                      className="flex items-center justify-center gap-1 rounded-lg border border-blue-200 text-blue-700 hover:bg-blue-50 text-[11px] font-semibold px-2 py-1.5 transition-colors"
+                      className="flex items-center justify-center gap-1 rounded-lg border border-blue-200 text-blue-700 hover:bg-blue-50 text-[11px] font-semibold px-2 py-1.5 transition-colors cursor-pointer"
                     >
                       <Copy size={12} />
                       Copy link
