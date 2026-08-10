@@ -11,8 +11,15 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Plus,
+  Layers,
 } from "lucide-react";
 import { Product } from "@/lib/types/product";
+import ProductVariantsEditor, {
+  buildVariantRows,
+  rowKey,
+  type VariantOption,
+  type VariantRow,
+} from "@/components/product/ProductVariantsEditor";
 import { useCreateProduct, useUpdateProduct } from "@/hooks/useProducts";
 import { useCategories, useCreateCategory } from "@/hooks/useCategories";
 import { useDiscounts } from "@/hooks/useDiscounts";
@@ -29,7 +36,7 @@ const DOMAIN = {
   price: { rail: "bg-emerald-500", label: "text-emerald-700" },
   cost: { rail: "bg-amber-500", label: "text-amber-700" },
   stock: { rail: "bg-blue-500", label: "text-blue-700" },
-  discount: { rail: "bg-blue-500", label: "text-blue-700" },
+  discount: { rail: "bg-violet-500", label: "text-violet-700" },
 } as const;
 
 type ProductFormData = {
@@ -195,6 +202,14 @@ export default function ProductFormModal({
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
 
+  // ── Variants ──
+  const [hasVariants, setHasVariants] = useState(false);
+  const [options, setOptions] = useState<VariantOption[]>([]);
+  const [variantRows, setVariantRows] = useState<VariantRow[]>([]);
+  const [variantErrors, setVariantErrors] = useState<Record<string, string>>(
+    {},
+  );
+
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -240,11 +255,38 @@ export default function ProductFormModal({
       setErrors({});
       setImageFile(null);
       setImagePreview(product.image ?? null);
+
+      // Rebuild the editor from the option groups and their saved rows.
+      const loadedOptions: VariantOption[] = (product.options ?? []).map(
+        (o) => ({ id: o.id, title: o.title, values: o.values ?? [] }),
+      );
+      const loadedRows: VariantRow[] = (product.variants ?? []).map((v) => ({
+        key: rowKey(v.optionValues),
+        id: v.id,
+        optionValues: v.optionValues,
+        isAvailable: v.isAvailable ?? true,
+        costPrice: v.costPrice ?? 0,
+        price: v.price ?? 0,
+        inStock: v.inStock ?? 0,
+        lowStock: v.lowStock ?? 0,
+      }));
+      setHasVariants(loadedRows.length > 0);
+      setOptions(loadedOptions);
+      setVariantRows(
+        loadedOptions.length > 0
+          ? buildVariantRows(loadedOptions, loadedRows)
+          : loadedRows,
+      );
+      setVariantErrors({});
     } else if (!product && open) {
       setForm({ ...INITIAL_FORM, name: initialName ?? "" });
       setErrors({});
       setImageFile(null);
       setImagePreview(null);
+      setHasVariants(false);
+      setOptions([]);
+      setVariantRows([]);
+      setVariantErrors({});
     }
   }, [product, open]);
 
@@ -274,6 +316,10 @@ export default function ProductFormModal({
     setNewCategoryColor("#60a5fa");
     setImageFile(null);
     setImagePreview(null);
+    setHasVariants(false);
+    setOptions([]);
+    setVariantRows([]);
+    setVariantErrors({});
     if (imageInputRef.current) imageInputRef.current.value = "";
   };
 
@@ -288,14 +334,43 @@ export default function ProductFormModal({
     if (!form.name.trim()) e.name = "Product name is required.";
     if (form.price < 0) e.price = "Price cannot be negative.";
     if (form.costPrice < 0) e.costPrice = "Cost price cannot be negative.";
-    if (form.usesStocks) {
+    // Stock lives on the variants when there are any, so the parent's own
+    // stock fields aren't in play.
+    if (form.usesStocks && !hasVariants) {
       if (form.inStock < 0) e.inStock = "In stock cannot be negative.";
       if (form.lowStock < 0) e.lowStock = "Low stock cannot be negative.";
       if (form.lowStock > form.inStock)
         e.lowStock = "Low stock cannot exceed in stock.";
     }
+
+    const ve: Record<string, string> = {};
+    if (hasVariants) {
+      const named = options.filter((o) => o.title.trim() && o.values.length);
+      if (named.length === 0) {
+        e.name = e.name ?? undefined;
+        toast.error("Give each option a name and at least one value");
+        setErrors(e);
+        setVariantErrors({});
+        return false;
+      }
+
+      for (const row of variantRows) {
+        if (row.price < 0 || row.costPrice < 0) {
+          ve[row.key] = "Price and cost cannot be negative.";
+        } else if (form.usesStocks) {
+          // Stock is only in play while the product tracks it.
+          if (row.inStock < 0 || row.lowStock < 0) {
+            ve[row.key] = "Stock values cannot be negative.";
+          } else if (row.lowStock > row.inStock) {
+            ve[row.key] = "Low stock cannot exceed in stock.";
+          }
+        }
+      }
+    }
+
     setErrors(e);
-    return Object.keys(e).length === 0;
+    setVariantErrors(ve);
+    return Object.keys(e).length === 0 && Object.keys(ve).length === 0;
   };
 
   const handleSave = async () => {
@@ -316,24 +391,76 @@ export default function ProductFormModal({
       }
     }
 
+    /**
+     * Variants go over the wire as flat multipart keys, exactly as the API
+     * expects them:
+     *
+     *   options[0][title]                  Size
+     *   options[0][values][0]              small
+     *   variantItems[0][optionValues][0]   small
+     *   variantItems[0][optionValues][1]   cherry
+     *   variantItems[0][price]             80
+     *
+     * Building the flat keys here rather than a nested object matters: the
+     * request carries an image File, so it's FormData, and a nested object
+     * appended to FormData stringifies to "[object Object]".
+     */
+    const variantFields: Record<string, string> = {};
+
+    if (hasVariants) {
+      options
+        .filter((o) => o.title.trim() && o.values.length > 0)
+        .forEach((option, i) => {
+          variantFields[`options[${i}][title]`] = option.title.trim();
+          option.values.forEach((value, j) => {
+            variantFields[`options[${i}][values][${j}]`] = value;
+          });
+        });
+
+      variantRows.forEach((row, i) => {
+        row.optionValues.forEach((value, j) => {
+          variantFields[`variantItems[${i}][optionValues][${j}]`] = value;
+        });
+        variantFields[`variantItems[${i}][isAvailable]`] = String(
+          row.isAvailable,
+        );
+        variantFields[`variantItems[${i}][price]`] = String(row.price);
+        variantFields[`variantItems[${i}][costPrice]`] = String(row.costPrice);
+
+        // Stock only while the product tracks it.
+        if (form.usesStocks) {
+          variantFields[`variantItems[${i}][inStock]`] = String(row.inStock);
+          variantFields[`variantItems[${i}][lowStock]`] = String(row.lowStock);
+        }
+      });
+    }
+
+    // With variants, price, cost and stock live on the rows — the parent
+    // reports zeros, which is what the API's own payload sends.
+    const parentPrice = hasVariants ? 0 : form.price;
+    const parentCostPrice = hasVariants ? 0 : form.costPrice;
+    const parentInStock = hasVariants ? 0 : form.inStock;
+    const parentLowStock = hasVariants ? 0 : form.lowStock;
+
     if (isEditMode && product) {
       await updateMutation.mutateAsync(
         {
           productId: product.id,
           fields: {
             name: form.name,
-            price: form.price,
-            costPrice: form.costPrice,
+            price: parentPrice,
+            costPrice: parentCostPrice,
             description: form.description,
             isTaxable: form.isTaxable,
             usesStocks: form.usesStocks,
-            inStock: form.inStock,
-            lowStock: form.lowStock,
+            inStock: parentInStock,
+            lowStock: parentLowStock,
             soldBy: "each",
             categories: categoryId,
             image: imageFile,
             discounts: form.discounts,
             discountType: "applyEverytime",
+            ...variantFields,
           },
         },
         {
@@ -350,8 +477,8 @@ export default function ProductFormModal({
     } else {
       const payload: Record<string, unknown> = {
         name: form.name,
-        price: form.price,
-        costPrice: form.costPrice,
+        price: parentPrice,
+        costPrice: parentCostPrice,
         description: form.description,
         isTaxable: form.isTaxable,
         usesStocks: form.usesStocks,
@@ -361,10 +488,13 @@ export default function ProductFormModal({
         discounts: form.discounts,
         discountType: "applyEverytime",
       };
+      // The parent's own counters are sent as 0 alongside variants, matching
+      // the API payload.
       if (form.usesStocks) {
-        payload.inStock = form.inStock;
-        payload.lowStock = form.lowStock;
+        payload.inStock = parentInStock;
+        payload.lowStock = parentLowStock;
       }
+      Object.assign(payload, variantFields);
 
       await createMutation.mutateAsync(payload, {
         onSuccess: (result) => {
@@ -419,11 +549,11 @@ export default function ProductFormModal({
           <div className="min-w-0">
             <h2
               id="product-form-title"
-              className="text-lg font-semibold tracking-tight text-slate-900"
+              className="text-lg font-bold text-slate-800"
             >
               {isEditMode ? "Update product" : "Create product"}
             </h2>
-            <p className="mt-0.5 text-[13px] text-slate-500">
+            <p className="text-xs text-slate-500 mt-0.5">
               {isEditMode
                 ? "Change this product's details, pricing and stock."
                 : "Add a product with its pricing, image and stock."}
@@ -623,7 +753,7 @@ export default function ProductFormModal({
           <Section
             title="Pricing"
             note={
-              marginPct !== null ? (
+              !hasVariants && marginPct !== null ? (
                 <span
                   className={`inline-flex items-center gap-1 font-medium tabular-nums ${
                     margin >= 0 ? "text-emerald-600" : "text-rose-600"
@@ -640,7 +770,18 @@ export default function ProductFormModal({
               ) : undefined
             }
           >
-            <div className="grid grid-cols-2 gap-3">
+            {hasVariants && (
+              <p className="rounded-lg bg-violet-50 px-3 py-2 text-[11px] leading-relaxed text-violet-700">
+                Each variant carries its own price and cost, so these are set
+                per row below.
+              </p>
+            )}
+
+            <div
+              className={`grid grid-cols-2 gap-3 ${
+                hasVariants ? "pointer-events-none opacity-50" : ""
+              }`}
+            >
               <Field label="Selling price" domain="price" error={errors.price}>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-slate-400">
@@ -708,7 +849,7 @@ export default function ProductFormModal({
                       }
                       className={`flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-[13px] transition ${
                         isSelected
-                          ? "border-violet-300 bg-blue-50/60"
+                          ? "border-violet-300 bg-violet-50/60"
                           : "border-slate-100 hover:border-slate-200 hover:bg-slate-50"
                       }`}
                     >
@@ -732,12 +873,12 @@ export default function ProductFormModal({
                       <span
                         className={`flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border-2 ${
                           isSelected
-                            ? "border-blue-500 bg-blue-500"
+                            ? "border-violet-500 bg-violet-500"
                             : "border-slate-300"
                         }`}
                       >
                         {isSelected && (
-                          <Check className="h-2.5 w-2.5 font-bold text-white" />
+                          <Check className="h-2.5 w-2.5 text-white" />
                         )}
                       </span>
                     </button>
@@ -797,7 +938,15 @@ export default function ProductFormModal({
 
               {/* Stock fields live inside the same card, so turning the toggle
                   on extends it rather than opening a detached block. */}
-              {form.usesStocks && (
+              {form.usesStocks && hasVariants && (
+                <div className="px-4 py-3">
+                  <p className="rounded-lg bg-violet-50 px-3 py-2 text-[11px] leading-relaxed text-violet-700">
+                    Stock is counted per variant, in the section below.
+                  </p>
+                </div>
+              )}
+
+              {form.usesStocks && !hasVariants && (
                 <div className="space-y-3 px-4 py-4">
                   <div className="grid grid-cols-2 gap-3">
                     <Field
@@ -879,9 +1028,68 @@ export default function ProductFormModal({
                   </div>
 
                   <p className="rounded-lg bg-slate-50 px-3 py-2 text-[11px] leading-relaxed text-slate-500">
-                    ⓘ The inventory page charts stock against a 5,000-unit
-                    scale. You can still hold more than that.
+                    The inventory page charts stock against a 5,000-unit scale.
+                    You can still hold more than that.
                   </p>
+                </div>
+              )}
+            </div>
+          </Section>
+          {/* ── Variants ── */}
+          <Section
+            title="Variants"
+            note={
+              hasVariants && variantRows.length > 0
+                ? `${variantRows.length} combination${variantRows.length > 1 ? "s" : ""}`
+                : undefined
+            }
+          >
+            <div className="rounded-xl border border-slate-200">
+              <div className="flex items-center justify-between gap-4 px-4 py-3">
+                <div className="flex items-start gap-2.5">
+                  <span
+                    className="mt-1 h-3.5 w-1 shrink-0 rounded-full bg-violet-500"
+                    aria-hidden="true"
+                  />
+                  <div>
+                    <p className="text-[13px] font-medium text-slate-800">
+                      Sell in variants
+                    </p>
+                    <p className="text-[11px] text-slate-400">
+                      For different sizes, colours or other options
+                    </p>
+                  </div>
+                </div>
+                <Toggle
+                  checked={hasVariants}
+                  onChange={(v) => {
+                    setHasVariants(v);
+                    if (v && options.length === 0) {
+                      // Start with one empty option so there's somewhere to type.
+                      const first = {
+                        id: crypto.randomUUID(),
+                        title: "",
+                        values: [],
+                      };
+                      setOptions([first]);
+                      setVariantRows([]);
+                    }
+                    if (!v) setVariantErrors({});
+                  }}
+                />
+              </div>
+
+              {hasVariants && (
+                <div className="border-t border-slate-100 p-4">
+                  <ProductVariantsEditor
+                    options={options}
+                    rows={variantRows}
+                    currencySymbol={symbol}
+                    showStock={form.usesStocks}
+                    errors={variantErrors}
+                    onOptionsChange={setOptions}
+                    onRowsChange={setVariantRows}
+                  />
                 </div>
               )}
             </div>

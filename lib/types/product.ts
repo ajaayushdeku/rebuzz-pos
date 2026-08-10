@@ -9,6 +9,12 @@ export interface ProductVariant {
   isAvailable?: boolean;
 }
 
+export interface ProductOption {
+  id: string;
+  title: string;
+  values: string[];
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -25,6 +31,8 @@ export interface Product {
   soldBy?: "each" | "volume" | "";
   /** Present when the product is sold in variances (e.g. Momo → buff/chicken/veg). */
   variants?: ProductVariant[];
+  /** Present when the product is sold in variances (e.g. Momo → buff/chicken/veg). */
+  options?: ProductOption[];
 }
 
 export type RawProduct = {
@@ -102,6 +110,11 @@ export function mapRawProductToProduct(raw: RawProduct): Product {
       inStock: v.inStock ?? 0,
       lowStock: v.lowStock ?? 0,
       isAvailable: v.isAvailable ?? true,
+    })),
+    options: raw.variants?.options?.map((o) => ({
+      id: o._id,
+      title: o.title,
+      values: o.values ?? [],
     })),
   };
 }

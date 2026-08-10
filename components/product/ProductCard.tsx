@@ -384,8 +384,8 @@ export default function ProductCard({
               </div>
             </div>
           ) : (
-            <div className="pt-3 border-t border-gray-200 mb-3 flex flex-col gap-1">
-              <span className="ml-auto text-[9px] uppercase tracking-wide text-gray-700 font-semibold items-center">
+            <div className="pt-3 border-t border-gray-200 mb-3 flex flex-col items-center gap-1">
+              <span className="text-[9px] uppercase tracking-wide text-gray-700 font-semibold  text-center">
                 No sales data for this product in the selected date range.
               </span>
             </div>

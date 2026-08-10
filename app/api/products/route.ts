@@ -74,6 +74,16 @@ export const POST = async (request: Request) => {
       formData.append("lowStock", str("lowStock", "0"));
     }
 
+    // Forward variant option/item fields (e.g. options[0][title], variantItems[0][price])
+    for (const [key, value] of incoming.entries()) {
+      if (
+        (key.startsWith("options[") || key.startsWith("variantItems[")) &&
+        typeof value === "string"
+      ) {
+        formData.append(key, value);
+      }
+    }
+
     const image = incoming.get("image");
     if (image instanceof File && image.size > 0) {
       formData.append("image", image, image.name || "product_image.jpg");

@@ -1,20 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { Percent, Loader2, BadgePercent } from "lucide-react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { Percent, Loader2, BadgePercent, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCreateDiscount } from "@/hooks/useDiscounts";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbolOnly } from "@/utils/helper";
-import SettingsModalShell, {
-  modalCancelBtn,
-  modalPrimaryBtn,
-  modalInputClass as inputClass,
-} from "@/components/settingsComponents/SettingsModalShell";
 
 export const CreateDiscountDialog = () => {
   const { currency } = useCurrency();
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { mutate: createDiscount, isPending } = useCreateDiscount();
 
   const [formData, setFormData] = useState({
@@ -22,6 +19,8 @@ export const CreateDiscountDialog = () => {
     type: "percentage" as "percentage" | "fixed",
     rate: 0,
   });
+
+  useEffect(() => setMounted(true), []);
 
   const reset = () => setFormData({ name: "", type: "percentage", rate: 0 });
 
@@ -52,6 +51,20 @@ export const CreateDiscountDialog = () => {
     });
   };
 
+  // Escape closes
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") handleOpenChange(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  const inputClass =
+    "w-full h-9 rounded-lg border border-slate-200 px-3 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+
   return (
     <>
       <Button
@@ -63,123 +76,164 @@ export const CreateDiscountDialog = () => {
         Create New Discount
       </Button>
 
-      <SettingsModalShell
-        open={open}
-        onOpenChange={handleOpenChange}
-        title="Create New Discount"
-        description="Set how much comes off and how it's calculated"
-        footer={
-          <>
-            <button
-              type="button"
-              onClick={() => handleOpenChange(false)}
-              disabled={isPending}
-              className={modalCancelBtn}
+      {open &&
+        mounted &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 "
+            onClick={() => !isPending && handleOpenChange(false)}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="create-discount-title"
+              className="relative flex w-full max-w-xl max-h-[85vh] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl animate-in fade-in-0 zoom-in-95 duration-200"
+              onClick={(e) => e.stopPropagation()}
             >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={
-                isPending || !formData.name.trim() || formData.rate <= 0
-              }
-              className={modalPrimaryBtn}
-            >
-              {isPending ? (
-                <>
-                  <Loader2 size={13} className="animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                "Create Discount"
-              )}
-            </button>
-          </>
-        }
-      >
-        <div className="space-y-5">
-          {/* ── Details ── */}
-          <div>
-            <div className="mb-3">
-              <h3 className="text-sm font-semibold text-gray-800">Details</h3>
-              <p className="text-xs text-gray-500">
-                A clear name helps staff pick the right discount
-              </p>
-            </div>
+              {/* ── Header ── */}
+              <header className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
+                <div className="min-w-0">
+                  <h2
+                    id="create-discount-title"
+                    className="text-lg font-bold text-slate-800"
+                  >
+                    Create New Discount
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Set how much comes off and how it is calculated
+                  </p>
+                </div>
 
-            <label className="text-xs font-medium text-gray-500 block mb-1.5">
-              Discount Name
-            </label>
-            <input
-              placeholder="e.g. Seasonal Sale"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              className={inputClass}
-            />
-          </div>
-
-          {/* ── Amount ── */}
-          <div>
-            <div className="mb-3">
-              <h3 className="text-sm font-semibold text-gray-800">Amount</h3>
-              <p className="text-xs text-gray-500">
-                Choose a percentage of the total or a fixed amount
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-medium text-gray-500 block mb-1.5">
-                  Type
-                </label>
-                <select
-                  value={formData.type}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      type: e.target.value as "percentage" | "fixed",
-                    })
-                  }
-                  className={`${inputClass} appearance-none`}
+                <button
+                  type="button"
+                  onClick={() => handleOpenChange(false)}
+                  disabled={isPending}
+                  aria-label="Close"
+                  className="-mr-1 -mt-1 shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 disabled:opacity-40"
                 >
-                  <option value="percentage">Percentage (%)</option>
-                  <option value="fixed">Fixed Amount</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-xs font-medium text-gray-500 block mb-1.5">
-                  Value
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    {formData.type === "percentage" ? (
-                      <Percent size={11} />
-                    ) : (
-                      formatCurrencySymbolOnly(currency.symbol)
-                    )}
-                  </span>
+                  <X className="h-4 w-4" />
+                </button>
+              </header>
+
+              {/* ── Body ── */}
+              <div className="flex-1 overflow-y-auto px-7 py-5 space-y-6">
+                {/* ── Details ── */}
+                <div>
+                  <div className="mb-3">
+                    <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+                      Details
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      A clear name helps staff pick the right discount
+                    </p>
+                  </div>
+
+                  <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
+                    Discount Name
+                  </label>
                   <input
-                    type="number"
-                    min={0}
-                    value={formData.rate}
+                    placeholder="e.g. Seasonal Sale"
+                    value={formData.name}
                     onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        rate: Number(e.target.value),
-                      })
+                      setFormData({ ...formData, name: e.target.value })
                     }
-                    className={`${inputClass} pl-7`}
-                    placeholder="0"
+                    className={inputClass}
                   />
                 </div>
+
+                {/* ── Amount ── */}
+                <div>
+                  <div className="mb-3">
+                    <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+                      Amount
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Choose a percentage of the total or a fixed amount
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
+                        Type
+                      </label>
+                      <select
+                        value={formData.type}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            type: e.target.value as "percentage" | "fixed",
+                          })
+                        }
+                        className={`${inputClass} appearance-none`}
+                      >
+                        <option value="percentage">Percentage (%)</option>
+                        <option value="fixed">Fixed Amount</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
+                        Value
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                          {formData.type === "percentage" ? (
+                            <Percent size={11} />
+                          ) : (
+                            formatCurrencySymbolOnly(currency.symbol)
+                          )}
+                        </span>
+                        <input
+                          type="number"
+                          min={0}
+                          value={formData.rate}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              rate: Number(e.target.value),
+                            })
+                          }
+                          className={`${inputClass} pl-7`}
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
+
+              {/* ── Footer ── */}
+              <footer className="flex items-center justify-end gap-2 border-t border-slate-100 px-6 py-4">
+                <button
+                  type="button"
+                  onClick={() => handleOpenChange(false)}
+                  disabled={isPending}
+                  className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={
+                    isPending || !formData.name.trim() || formData.rate <= 0
+                  }
+                  className="rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                >
+                  {isPending ? (
+                    <>
+                      <Loader2 size={13} className="animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    "Create Discount"
+                  )}
+                </button>
+              </footer>
             </div>
-          </div>
-        </div>
-      </SettingsModalShell>
+          </div>,
+          document.body,
+        )}
     </>
   );
 };

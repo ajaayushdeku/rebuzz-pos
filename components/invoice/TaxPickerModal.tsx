@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Search, Loader2, Layers } from "lucide-react";
+import { Search, Loader2, Layers, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tax, GroupedTax } from "@/services/apiTaxes.client";
 import { CreateTaxDialog } from "./CreateTaxRate";
@@ -120,31 +120,31 @@ export default function TaxPickerModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 "
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Select Tax"
-        className="relative w-full max-w-lg px-2 py-1 rounded-2xl bg-white shadow-2xl overflow-hidden animate-in fade-in-0 slide-in-from-bottom-6 duration-300"
+        className="relative flex w-full max-w-2xl max-h-[85vh] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl animate-in fade-in-0 zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="relative sticky top-0 z-20 flex items-center justify-between border-b border-gray-100 bg-white/95 backdrop-blur px-5 py-3.5">
-          <div>
-            <h2 className="text-lg font-bold text-gray-800">Select Tax</h2>
-            <p className="text-xs text-gray-500 mt-0.5">
+        <header className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
+          <div className="min-w-0">
+            <h2 className="text-lg font-bold text-slate-800">Select Tax</h2>
+            <p className="text-xs text-slate-500 mt-0.5">
               Choose a tax to apply to this invoice.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center font-bold rounded-full text-gray-500 transition hover:text-red-500 hover:text-lg cursor-pointer text-sm"
+            className="-mr-1 -mt-1 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors shrink-0"
           >
-            ✕
+            <X className="h-4 w-4" />
           </button>
-        </div>
+        </header>
 
         {/* Body */}
         <div className="px-5 py-4 space-y-3">

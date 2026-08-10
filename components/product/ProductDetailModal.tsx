@@ -236,11 +236,11 @@ export default function ProductDetailModal({
           <div className="min-w-0">
             <h2
               id="product-detail-title"
-              className="text-lg font-semibold tracking-tight text-slate-900 truncate"
+              className="text-lg font-bold text-slate-800"
             >
               {product.name}
             </h2>
-            <p className="mt-0.5 text-[13px] text-slate-500 line-clamp-2">
+            <p className="text-xs text-slate-500 mt-0.5">
               {product.description || "Product details"}
             </p>
           </div>
@@ -529,7 +529,7 @@ export default function ProductDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-[13px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+            className="w-fit px-4 py-2 bg-white text-gray-700 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-xs cursor-pointer border border-gray-300 hover:text-white hover:border-red-500 hover:shadow-lg"
           >
             Done
           </button>

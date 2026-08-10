@@ -1,26 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import {
-  Percent,
-  Check,
-  Search,
-  Loader2,
-  ReceiptPoundSterling,
-  Receipt,
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { Percent, Check, Search, Loader2, Receipt, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCreateTax, useCreateGroupTax, useTaxes } from "@/hooks/useTaxes";
-import SettingsModalShell, {
-  modalCancelBtn,
-  modalPrimaryBtn,
-  modalInputClass as inputClass,
-} from "@/components/settingsComponents/SettingsModalShell";
 
 type Tab = "normal" | "group";
 
 export const CreateTaxDialog = () => {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [tab, setTab] = useState<Tab>("normal");
 
   // Normal tax form
@@ -35,6 +25,8 @@ export const CreateTaxDialog = () => {
   const [groupName, setGroupName] = useState("");
   const [groupSearch, setGroupSearch] = useState("");
   const [selectedTaxIds, setSelectedTaxIds] = useState<string[]>([]);
+
+  useEffect(() => setMounted(true), []);
 
   const filteredTaxes = taxes.filter((t) =>
     t.name.toLowerCase().includes(groupSearch.toLowerCase()),
@@ -104,6 +96,20 @@ export const CreateTaxDialog = () => {
     if (!o) reset();
   };
 
+  // Escape closes
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") handleOpenChange(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  const inputClass =
+    "w-full h-9 rounded-lg border border-slate-200 px-3 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+
   return (
     <>
       <Button
@@ -115,249 +121,298 @@ export const CreateTaxDialog = () => {
         Create Tax
       </Button>
 
-      <SettingsModalShell
-        open={open}
-        onOpenChange={handleOpenChange}
-        title="Create Tax"
-        description="Add a single tax rate, or combine existing taxes into a group"
-        footer={
-          <>
-            <button
-              type="button"
-              onClick={() => handleOpenChange(false)}
-              disabled={isPending}
-              className={modalCancelBtn}
+      {open &&
+        mounted &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 "
+            onClick={() => !isPending && handleOpenChange(false)}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="create-tax-title"
+              className="relative flex w-full max-w-xl max-h-[85vh] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl animate-in fade-in-0 zoom-in-95 duration-200"
+              onClick={(e) => e.stopPropagation()}
             >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={tab === "normal" ? handleSaveNormal : handleSaveGroup}
-              disabled={
-                isPending ||
-                (tab === "normal" &&
-                  (!normalForm.name.trim() || normalForm.rate <= 0)) ||
-                (tab === "group" &&
-                  (!groupName.trim() || selectedTaxIds.length === 0))
-              }
-              className={modalPrimaryBtn}
-            >
-              {isPending ? (
-                <>
-                  <Loader2 size={13} className="animate-spin" />
-                  Creating...
-                </>
-              ) : tab === "normal" ? (
-                "Create Tax"
-              ) : (
-                "Create Group"
-              )}
-            </button>
-          </>
-        }
-      >
-        <div className="space-y-5">
-          {/* ── Tax type ── */}
-          <div>
-            <div className="mb-3">
-              <h3 className="text-sm font-semibold text-gray-800">Tax Type</h3>
-              <p className="text-xs text-gray-500">
-                Pick what kind of tax you want to create
-              </p>
-            </div>
-            <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
-              {(["normal", "group"] as Tab[]).map((t) => (
+              {/* ── Header ── */}
+              <header className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
+                <div className="min-w-0">
+                  <h2
+                    id="create-tax-title"
+                    className="text-lg font-bold text-slate-800"
+                  >
+                    Create Tax
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Add a single tax rate, or combine existing taxes into a
+                    group
+                  </p>
+                </div>
+
                 <button
-                  key={t}
                   type="button"
-                  onClick={() => setTab(t)}
-                  className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                    tab === t
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
+                  onClick={() => handleOpenChange(false)}
+                  disabled={isPending}
+                  aria-label="Close"
+                  className="-mr-1 -mt-1 shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 disabled:opacity-40"
                 >
-                  {t === "normal" ? "Normal Tax" : "Group Tax"}
+                  <X className="h-4 w-4" />
                 </button>
-              ))}
-            </div>
-          </div>
+              </header>
 
-          {/* ── Normal tax form ── */}
-          {tab === "normal" && (
-            <>
-              <div>
-                <div className="mb-3">
-                  <h3 className="text-sm font-semibold text-gray-800">
-                    Details
-                  </h3>
-                  <p className="text-xs text-gray-500">
-                    How this tax appears on invoices
-                  </p>
-                </div>
-                <label className="text-xs font-medium text-gray-500 block mb-1.5">
-                  Tax Name
-                </label>
-                <input
-                  placeholder="e.g. VAT, Service Tax"
-                  value={normalForm.name}
-                  onChange={(e) =>
-                    setNormalForm({ ...normalForm, name: e.target.value })
-                  }
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <div className="mb-3">
-                  <h3 className="text-sm font-semibold text-gray-800">Rate</h3>
-                  <p className="text-xs text-gray-500">
-                    Percentage added to the taxable amount
-                  </p>
-                </div>
-                <label className="text-xs font-medium text-gray-500 block mb-1.5">
-                  Rate (%)
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    <Percent className="h-3.5 w-3.5" />
-                  </span>
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={normalForm.rate}
-                    onChange={(e) =>
-                      setNormalForm({
-                        ...normalForm,
-                        rate: Number(e.target.value),
-                      })
-                    }
-                    className={`${inputClass} pl-8`}
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* ── Group tax form ── */}
-          {tab === "group" && (
-            <>
-              <div>
-                <div className="mb-3">
-                  <h3 className="text-sm font-semibold text-gray-800">
-                    Details
-                  </h3>
-                  <p className="text-xs text-gray-500">
-                    How this group appears when applied to a product
-                  </p>
-                </div>
-                <label className="text-xs font-medium text-gray-500 block mb-1.5">
-                  Group Tax Name
-                </label>
-                <input
-                  placeholder="e.g. Total Tax"
-                  value={groupName}
-                  onChange={(e) => setGroupName(e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <div className="mb-3">
-                  <h3 className="text-sm font-semibold text-gray-800">
-                    Select Taxes to Group
-                  </h3>
-                  <p className="text-xs text-gray-500">
-                    Their rates are added together to form the group rate
-                  </p>
-                </div>
-
-                <div className="relative mb-2">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                  <input
-                    value={groupSearch}
-                    onChange={(e) => setGroupSearch(e.target.value)}
-                    placeholder="Search taxes..."
-                    className={`${inputClass} pl-8`}
-                  />
-                </div>
-
-                <div className="max-h-44 overflow-y-auto space-y-1.5">
-                  {taxes.length === 0 ? (
-                    <p className="text-xs text-gray-400 text-center py-6">
-                      No normal taxes available. Create one first.
-                    </p>
-                  ) : filteredTaxes.length === 0 ? (
-                    <p className="text-xs text-gray-400 text-center py-6">
-                      No taxes match your search.
-                    </p>
-                  ) : (
-                    filteredTaxes.map((tax) => {
-                      const isSelected = selectedTaxIds.includes(tax._id);
-                      return (
-                        <button
-                          key={tax._id}
-                          type="button"
-                          onClick={() => toggleTaxId(tax._id)}
-                          className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-sm transition ${
-                            isSelected
-                              ? "border-blue-500 bg-blue-50 text-blue-700"
-                              : "border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700"
-                          }`}
-                        >
-                          <div className="text-left">
-                            <p className="font-semibold text-xs">{tax.name}</p>
-                            <p className="text-[11px] text-gray-400">
-                              {tax.rate}%
-                            </p>
-                          </div>
-                          <div
-                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                              isSelected
-                                ? "border-blue-500 bg-blue-500"
-                                : "border-gray-300"
-                            }`}
-                          >
-                            {isSelected && (
-                              <Check className="h-2.5 w-2.5 text-white" />
-                            )}
-                          </div>
-                        </button>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-
-              {/* Live rate preview */}
-              {selectedTaxIds.length > 0 && (
-                <div className="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-indigo-50 px-4 py-3 shadow-sm">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold text-blue-700">
-                        Combined Rate
-                      </p>
-                      <p className="text-[11px] text-blue-400 mt-0.5 truncate">
-                        {selectedTaxIds
-                          .map((id) => {
-                            const t = taxes.find((x) => x._id === id);
-                            return t ? `${t.name} (${t.rate}%)` : "";
-                          })
-                          .join(" + ")}
-                      </p>
-                    </div>
-                    <p className="text-xl font-bold text-blue-700 shrink-0">
-                      {totalGroupRate}%
+              {/* ── Body ── */}
+              <div className="flex-1 overflow-y-auto px-7 py-5 space-y-6">
+                {/* ── Tax type ── */}
+                <div>
+                  <div className="mb-3">
+                    <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+                      Tax Type
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Pick what kind of tax you want to create
                     </p>
                   </div>
+                  <div className="flex gap-1 bg-slate-100 rounded-lg p-1">
+                    {(["normal", "group"] as Tab[]).map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setTab(t)}
+                        className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                          tab === t
+                            ? "bg-white text-slate-900 shadow-sm"
+                            : "text-slate-500 hover:text-slate-700"
+                        }`}
+                      >
+                        {t === "normal" ? "Normal Tax" : "Group Tax"}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              )}
-            </>
-          )}
-        </div>
-      </SettingsModalShell>
+
+                {/* ── Normal tax form ── */}
+                {tab === "normal" && (
+                  <>
+                    <div>
+                      <div className="mb-3">
+                        <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+                          Details
+                        </h3>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          How this tax appears on invoices
+                        </p>
+                      </div>
+                      <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
+                        Tax Name
+                      </label>
+                      <input
+                        placeholder="e.g. VAT, Service Tax"
+                        value={normalForm.name}
+                        onChange={(e) =>
+                          setNormalForm({
+                            ...normalForm,
+                            name: e.target.value,
+                          })
+                        }
+                        className={inputClass}
+                      />
+                    </div>
+
+                    <div>
+                      <div className="mb-3">
+                        <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+                          Rate
+                        </h3>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Percentage added to the taxable amount
+                        </p>
+                      </div>
+                      <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
+                        Rate (%)
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                          <Percent className="h-3.5 w-3.5" />
+                        </span>
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={normalForm.rate}
+                          onChange={(e) =>
+                            setNormalForm({
+                              ...normalForm,
+                              rate: Number(e.target.value),
+                            })
+                          }
+                          className={`${inputClass} pl-8`}
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* ── Group tax form ── */}
+                {tab === "group" && (
+                  <>
+                    <div>
+                      <div className="mb-3">
+                        <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+                          Details
+                        </h3>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          How this group appears when applied to a product
+                        </p>
+                      </div>
+                      <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
+                        Group Tax Name
+                      </label>
+                      <input
+                        placeholder="e.g. Total Tax"
+                        value={groupName}
+                        onChange={(e) => setGroupName(e.target.value)}
+                        className={inputClass}
+                      />
+                    </div>
+
+                    <div>
+                      <div className="mb-3">
+                        <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+                          Select Taxes to Group
+                        </h3>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Their rates are added together to form the group rate
+                        </p>
+                      </div>
+
+                      <div className="relative mb-2">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                        <input
+                          value={groupSearch}
+                          onChange={(e) => setGroupSearch(e.target.value)}
+                          placeholder="Search taxes..."
+                          className={`${inputClass} pl-8`}
+                        />
+                      </div>
+
+                      <div className="max-h-44 overflow-y-auto space-y-1.5">
+                        {taxes.length === 0 ? (
+                          <p className="text-xs text-slate-400 text-center py-6">
+                            No normal taxes available. Create one first.
+                          </p>
+                        ) : filteredTaxes.length === 0 ? (
+                          <p className="text-xs text-slate-400 text-center py-6">
+                            No taxes match your search.
+                          </p>
+                        ) : (
+                          filteredTaxes.map((tax) => {
+                            const isSelected = selectedTaxIds.includes(tax._id);
+                            return (
+                              <button
+                                key={tax._id}
+                                type="button"
+                                onClick={() => toggleTaxId(tax._id)}
+                                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-sm transition ${
+                                  isSelected
+                                    ? "border-blue-500 bg-blue-50 text-blue-700"
+                                    : "border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700"
+                                }`}
+                              >
+                                <div className="text-left">
+                                  <p className="font-semibold text-xs">
+                                    {tax.name}
+                                  </p>
+                                  <p className="text-[11px] text-slate-400">
+                                    {tax.rate}%
+                                  </p>
+                                </div>
+                                <div
+                                  className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                                    isSelected
+                                      ? "border-blue-500 bg-blue-500"
+                                      : "border-slate-300"
+                                  }`}
+                                >
+                                  {isSelected && (
+                                    <Check className="h-2.5 w-2.5 text-white" />
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Live rate preview */}
+                    {selectedTaxIds.length > 0 && (
+                      <div className="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-indigo-50 px-4 py-3 shadow-sm">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold text-blue-700">
+                              Combined Rate
+                            </p>
+                            <p className="text-[11px] text-blue-400 mt-0.5 truncate">
+                              {selectedTaxIds
+                                .map((id) => {
+                                  const t = taxes.find((x) => x._id === id);
+                                  return t ? `${t.name} (${t.rate}%)` : "";
+                                })
+                                .join(" + ")}
+                            </p>
+                          </div>
+                          <p className="text-xl font-bold text-blue-700 shrink-0">
+                            {totalGroupRate}%
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* ── Footer ── */}
+              <footer className="flex items-center justify-end gap-2 border-t border-slate-100 px-6 py-4">
+                <button
+                  type="button"
+                  onClick={() => handleOpenChange(false)}
+                  disabled={isPending}
+                  className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={
+                    tab === "normal" ? handleSaveNormal : handleSaveGroup
+                  }
+                  disabled={
+                    isPending ||
+                    (tab === "normal" &&
+                      (!normalForm.name.trim() || normalForm.rate <= 0)) ||
+                    (tab === "group" &&
+                      (!groupName.trim() || selectedTaxIds.length === 0))
+                  }
+                  className="rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                >
+                  {isPending ? (
+                    <>
+                      <Loader2 size={13} className="animate-spin" />
+                      Creating...
+                    </>
+                  ) : tab === "normal" ? (
+                    "Create Tax"
+                  ) : (
+                    "Create Group"
+                  )}
+                </button>
+              </footer>
+            </div>
+          </div>,
+          document.body,
+        )}
     </>
   );
 };

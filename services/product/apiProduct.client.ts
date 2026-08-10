@@ -55,6 +55,31 @@ export async function createProduct(
     formData.append("image", productData.image);
   }
 
+  // Forward any additional fields (e.g. variant options/items) as-is
+  const knownKeys = new Set([
+    "name",
+    "price",
+    "costPrice",
+    "description",
+    "isTaxable",
+    "usesStocks",
+    "soldBy",
+    "showInOrdering",
+    "isAiImageEnabled",
+    "isUnsplashImageEnabled",
+    "discountType",
+    "categories",
+    "discounts",
+    "inStock",
+    "lowStock",
+    "image",
+  ]);
+  Object.entries(productData).forEach(([key, value]) => {
+    if (!knownKeys.has(key) && value !== undefined && value !== null) {
+      formData.append(key, String(value));
+    }
+  });
+
   const res = await fetch("/api/products", {
     method: "POST",
     body: formData,
@@ -83,7 +108,8 @@ export async function updateProduct(
     image: File | null;
     discounts: string[];
     discountType: string;
-  }>,
+  }> &
+    Record<string, unknown>,
 ): Promise<Product> {
   const formData = new FormData();
 
@@ -113,6 +139,29 @@ export async function updateProduct(
   if (fields.discounts !== undefined) {
     fields.discounts.forEach((id: string) => formData.append("discounts", id));
   }
+
+  // Forward any additional fields (e.g. variant options/items) as-is
+  const knownKeys = new Set([
+    "name",
+    "price",
+    "costPrice",
+    "description",
+    "categories",
+    "sku",
+    "isTaxable",
+    "usesStocks",
+    "lowStock",
+    "soldBy",
+    "inStock",
+    "image",
+    "discounts",
+    "discountType",
+  ]);
+  Object.entries(fields).forEach(([key, value]) => {
+    if (!knownKeys.has(key) && value !== undefined && value !== null) {
+      formData.append(key, String(value));
+    }
+  });
 
   const res = await fetch(`/api/products/${productId}`, {
     method: "PUT",
