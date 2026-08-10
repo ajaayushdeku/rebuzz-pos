@@ -51,6 +51,14 @@ export const POST = async (request: Request) => {
     );
     formData.append("discountType", str("discountType", "applyEverytime"));
 
+    // Multiple `discounts` fields — append each one separately
+    const allDiscounts = incoming.getAll("discounts");
+    allDiscounts.forEach((d) => {
+      if (typeof d === "string" && d.trim()) {
+        formData.append("discounts", d.trim());
+      }
+    });
+
     const soldBy = str("soldBy");
     if (soldBy) {
       formData.append("soldBy", soldBy);

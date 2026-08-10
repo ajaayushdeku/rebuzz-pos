@@ -34,7 +34,7 @@ export default function SettingsModalShell({
   description,
   children,
   footer,
-  widthClass = "sm:max-w-md",
+  widthClass = "md:max-w-lg",
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;

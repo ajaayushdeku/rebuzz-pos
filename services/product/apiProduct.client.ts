@@ -38,6 +38,15 @@ export async function createProduct(
   append("isUnsplashImageEnabled", productData.isUnsplashImageEnabled);
   append("discountType", productData.discountType);
   append("categories", productData.categories);
+  // Append each discount as its own form field entry (matches backend expectation)
+  if (productData.discounts !== undefined) {
+    const discounts = Array.isArray(productData.discounts)
+      ? productData.discounts
+      : String(productData.discounts).split(",").filter(Boolean);
+    discounts.forEach((id: unknown) =>
+      formData.append("discounts", String(id)),
+    );
+  }
   if (productData.usesStocks) {
     append("inStock", productData.inStock);
     append("lowStock", productData.lowStock);
@@ -72,11 +81,15 @@ export async function updateProduct(
     soldBy: string;
     inStock: number;
     image: File | null;
+    discounts: string[];
+    discountType: string;
   }>,
 ): Promise<Product> {
   const formData = new FormData();
 
   if (fields.name !== undefined) formData.append("name", fields.name);
+  if (fields.discountType !== undefined)
+    formData.append("discountType", fields.discountType);
   if (fields.price !== undefined)
     formData.append("price", String(fields.price));
   if (fields.costPrice !== undefined)
@@ -96,6 +109,10 @@ export async function updateProduct(
   if (fields.lowStock !== undefined)
     formData.append("lowStock", String(fields.lowStock));
   if (fields.image instanceof File) formData.append("image", fields.image);
+  // Append each discount as its own form field entry (matches backend expectation)
+  if (fields.discounts !== undefined) {
+    fields.discounts.forEach((id: string) => formData.append("discounts", id));
+  }
 
   const res = await fetch(`/api/products/${productId}`, {
     method: "PUT",

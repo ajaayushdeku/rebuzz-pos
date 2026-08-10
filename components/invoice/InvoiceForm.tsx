@@ -541,7 +541,7 @@ export default function InvoiceForm({
               {selectedCustomer?.name || "No customer selected"}
             </p>
             {(selectedCustomer?.email || selectedCustomer?.phone) && (
-              <p className="text-xs text-gray-500 mt-0.5 truncate">
+              <p className="text-xs text-gray-500  tracking-wider  mt-0.5 truncate">
                 {[selectedCustomer?.email, selectedCustomer?.phone]
                   .filter(Boolean)
                   .join(" · ")}
@@ -624,7 +624,6 @@ export default function InvoiceForm({
         </div>
 
         {/* ── Discount ── */}
-
         <InvoiceDiscountCreate
           subtotal={itemsSubtotal}
           discountAmount={globalDiscountValue}

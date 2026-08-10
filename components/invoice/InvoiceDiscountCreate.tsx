@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Plus, Trash2, ChevronDown, Tags } from "lucide-react";
+import { Plus, Trash2, ChevronDown, Tags, Cross } from "lucide-react";
 import { CreateDiscountDialog } from "./CreateDiscount";
 import DiscountPickerModal from "./DiscountPickerModal";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -221,6 +221,7 @@ export default function InvoiceDiscountCreate({
   const { currency } = useCurrency();
   const [modalOpen, setModalOpen] = useState(false);
   const [showInlineForm, setShowInlineForm] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const getDiscount = (id: string) => masterDiscounts.find((d) => d._id === id);
 
   const fmt = (v: number) =>
@@ -230,134 +231,163 @@ export default function InvoiceDiscountCreate({
     selectedDiscountIds.length > 0 || customDiscounts.length > 0;
 
   return (
-    <div className="px-5 py-4 space-y-3">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
-        Discount
-      </p>
-
-      {/* Controls */}
-      <div className="flex flex-wrap items-center gap-2">
-        {/* + button opens inline form */}
+    <div className="px-5 py-4 space-y-3 border-t border-gray-100">
+      {/* Collapsible Header */}
+      <div className="flex items-center gap-2">
         <button
           type="button"
-          onClick={() => setShowInlineForm((v) => !v)}
-          className="h-8 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer"
-          title="Add discount"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
         >
-          <Plus className="w-3.5 h-3.5" />
-          Add a discount
+          <ChevronDown
+            className={`w-3.5 h-3.5 transition-transform duration-200 ${
+              isCollapsed ? "" : "rotate-180"
+            }`}
+          />
+          <span>Discount</span>
         </button>
-
-        {/* Select from discount collection — only when inline form is open */}
-        {showInlineForm && (
-          <button
-            type="button"
-            onClick={() => setModalOpen(true)}
-            className="h-8 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer"
-            title="Select from discount collection"
-          >
-            <Tags className="w-3.5 h-3.5" />
-            Select from collection
-          </button>
-        )}
-
-        {/* Create New Discount — only when inline form is open */}
-        {/* {showInlineForm && <CreateDiscountDialog />} */}
-
-        {!hasAnyDiscount && !showInlineForm && (
-          <span className="text-xs text-gray-400">No discount applied</span>
-        )}
       </div>
 
-      {/* ── Discount rows ──
-          Pre-defined and custom discounts share one row layout so the section
-          reads as a single list. Rows stay visible once something is applied,
-          even after the add controls are collapsed. */}
-      {(showInlineForm || hasAnyDiscount) && (
-        <div className="flex flex-col items-end gap-2">
-          {/* Pre-defined discounts — labelled with the discount's own name */}
-          {selectedDiscountIds.map((id) => {
-            const d = getDiscount(id);
-            if (!d) return null;
-            const amount =
-              d.type === "percentage" ? (subtotal * d.rate) / 100 : d.rate;
-
-            return (
-              <DiscountRow
-                key={id}
-                label={d.name}
-                value={d.rate}
-                type={d.type}
-                amount={fmt(amount)}
-                currencySymbol={currency.symbol}
-                editable={!!onDiscountOverride}
-                onValueChange={(v) => onDiscountOverride?.(id, "value", v)}
-                onTypeChange={(t) => onDiscountOverride?.(id, "type", t)}
-                onRemove={() => onDiscountRemove(id)}
-              />
-            );
-          })}
-
-          {/* Custom discounts */}
-          {customDiscounts.map((d) => {
-            const amount =
-              d.type === "percentage" ? (subtotal * d.value) / 100 : d.value;
-
-            return (
-              <DiscountRow
-                key={d.id}
-                label="Discount"
-                value={d.value}
-                type={d.type}
-                amount={fmt(amount)}
-                currencySymbol={currency.symbol}
-                editable
-                onValueChange={(v) => onCustomDiscountUpdate(d.id, "value", v)}
-                onTypeChange={(t) => onCustomDiscountUpdate(d.id, "type", t)}
-                onRemove={() => onCustomDiscountRemove(d.id)}
-              />
-            );
-          })}
-
-          {/* Add custom discount — only when no custom form is open (max 1 at a time) */}
-          {showInlineForm && customDiscounts.length === 0 && (
+      {!isCollapsed && (
+        <>
+          {/* Controls */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* + button opens inline form */}
             <button
               type="button"
-              onClick={onCustomDiscountAdd}
-              className="h-8 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 text-xs font-semibold text-gray-500 hover:border-gray-400 hover:bg-gray-50 transition-colors"
-              title="Add custom discount"
+              onClick={() => setShowInlineForm((v) => !v)}
+              className="h-8 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer"
+              title="Add discount"
             >
-              <Plus className="w-3.5 h-3.5" />
-              Add custom discount
+              {showInlineForm ? (
+                <Cross className="w-3.5 h-3.5 rotate-45" />
+              ) : (
+                <Plus className="w-3.5 h-3.5" />
+              )}
+              {showInlineForm ? "Close" : "Add discount"}
             </button>
+
+            {/* Select from discount collection — only when inline form is open */}
+            {showInlineForm && (
+              <button
+                type="button"
+                onClick={() => setModalOpen(true)}
+                className="h-8 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer"
+                title="Select from discount collection"
+              >
+                <Tags className="w-3.5 h-3.5" />
+                Select from collection
+              </button>
+            )}
+
+            {/* Create New Discount — only when inline form is open */}
+            {/* {showInlineForm && <CreateDiscountDialog />} */}
+
+            {!hasAnyDiscount && !showInlineForm && (
+              <span className="text-xs text-gray-400">No discount applied</span>
+            )}
+          </div>
+
+          {/* ── Discount rows ──
+              Pre-defined and custom discounts share one row layout so the section
+              reads as a single list. Rows stay visible once something is applied,
+              even after the add controls are collapsed. */}
+          {(showInlineForm || hasAnyDiscount) && (
+            <div className="flex flex-col items-end gap-2">
+              {/* Pre-defined discounts — labelled with the discount's own name */}
+              {selectedDiscountIds.map((id) => {
+                const d = getDiscount(id);
+                if (!d) return null;
+                const amount =
+                  d.type === "percentage" ? (subtotal * d.rate) / 100 : d.rate;
+
+                return (
+                  <DiscountRow
+                    key={id}
+                    label={d.name}
+                    value={d.rate}
+                    type={d.type}
+                    amount={fmt(amount)}
+                    currencySymbol={currency.symbol}
+                    editable={!!onDiscountOverride}
+                    onValueChange={(v) => onDiscountOverride?.(id, "value", v)}
+                    onTypeChange={(t) => onDiscountOverride?.(id, "type", t)}
+                    onRemove={() => onDiscountRemove(id)}
+                  />
+                );
+              })}
+
+              {/* Custom discounts */}
+              {customDiscounts.map((d) => {
+                const amount =
+                  d.type === "percentage"
+                    ? (subtotal * d.value) / 100
+                    : d.value;
+
+                return (
+                  <DiscountRow
+                    key={d.id}
+                    label="Discount"
+                    value={d.value}
+                    type={d.type}
+                    amount={fmt(amount)}
+                    currencySymbol={currency.symbol}
+                    editable
+                    onValueChange={(v) =>
+                      onCustomDiscountUpdate(d.id, "value", v)
+                    }
+                    onTypeChange={(t) =>
+                      onCustomDiscountUpdate(d.id, "type", t)
+                    }
+                    onRemove={() => onCustomDiscountRemove(d.id)}
+                  />
+                );
+              })}
+
+              {/* Add custom discount — only when no custom form is open (max 1 at a time) */}
+              {showInlineForm && customDiscounts.length === 0 && (
+                <button
+                  type="button"
+                  onClick={onCustomDiscountAdd}
+                  className="h-8 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 text-xs font-semibold text-gray-500 hover:border-gray-400 hover:bg-gray-50 transition-colors"
+                  title="Add custom discount"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Add custom discount
+                </button>
+              )}
+            </div>
           )}
-        </div>
+        </>
       )}
 
       {/* Subtotal + discount summary */}
+
       <div className="flex justify-end border-t border-gray-100 pt-3">
         <div className="text-right space-y-1.5 min-w-52">
-          <div className="flex justify-between gap-12 text-sm text-gray-500">
-            <span className="text-[13px] font-semibold  tracking-wider text-gray-400">
-              Subtotal
-            </span>
-            <span className="font-medium text-gray-800 tabular-nums  text-[13px] font-semibold  tracking-wider">
-              {fmt(subtotal)}
-            </span>
-          </div>
-
-          {discountAmount > 0 && (
-            <div className="flex justify-between gap-12 text-sm text-blue-500 font-medium">
-              <span className=" text-[13px] font-semibold  tracking-wider ">
-                Discount
+          <div className="space-y-1.5  border-b border-gray-100 pb-1.5">
+            <div className="flex justify-between gap-12 text-sm text-gray-500">
+              <span className="text-[13px] font-semibold  tracking-wider text-gray-400">
+                Subtotal
               </span>
-              <span className="tabular-nums  text-[13px] font-semibold  tracking-wider">
-                - {fmt(discountAmount)}
+              <span className="font-medium text-gray-800 tabular-nums  text-[13px] font-semibold  tracking-wider">
+                {fmt(subtotal)}
               </span>
             </div>
-          )}
 
-          <div className="flex justify-between gap-12 text-sm font-semibold text-gray-700 border-t border-gray-100 pt-1.5">
+            {discountAmount > 0 && (
+              <div className="flex justify-between gap-12 text-sm text-blue-500 font-medium">
+                <span className=" text-[13px] font-semibold  tracking-wider ">
+                  Discount
+                </span>
+                <span className="tabular-nums  text-[13px] font-semibold  tracking-wider">
+                  - {fmt(discountAmount)}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-between gap-12 text-sm font-semibold text-gray-700">
             <span className=" text-[13px] font-semibold  tracking-wider ">
               After Discount
             </span>

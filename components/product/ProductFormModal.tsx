@@ -1,18 +1,36 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Label } from "@/components/ui/label";
-import { Upload, ImageIcon, X, Loader2 } from "lucide-react";
-import SettingsModalShell, {
-  modalCancelBtn,
-  modalPrimaryBtn,
-} from "@/components/settingsComponents/SettingsModalShell";
+import { createPortal } from "react-dom";
+import {
+  Upload,
+  ImageIcon,
+  X,
+  Loader2,
+  Check,
+  ArrowUpRight,
+  ArrowDownRight,
+  Plus,
+} from "lucide-react";
 import { Product } from "@/lib/types/product";
 import { useCreateProduct, useUpdateProduct } from "@/hooks/useProducts";
 import { useCategories, useCreateCategory } from "@/hooks/useCategories";
+import { useDiscounts } from "@/hooks/useDiscounts";
+import { CreateDiscountDialog } from "@/components/invoice/CreateDiscount";
 import toast from "react-hot-toast";
 import { formatCurrencySymbolOnly } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
+
+/**
+ * Same colour code as the product detail modal: each data domain owns one hue,
+ * used only on labels, icons and rails — never as a fill.
+ */
+const DOMAIN = {
+  price: { rail: "bg-emerald-500", label: "text-emerald-700" },
+  cost: { rail: "bg-amber-500", label: "text-amber-700" },
+  stock: { rail: "bg-blue-500", label: "text-blue-700" },
+  discount: { rail: "bg-blue-500", label: "text-blue-700" },
+} as const;
 
 type ProductFormData = {
   name: string;
@@ -24,6 +42,7 @@ type ProductFormData = {
   inStock: number;
   lowStock: number;
   categoryId: string;
+  discounts: string[];
 };
 
 type FormErrors = Partial<Record<keyof ProductFormData, string>>;
@@ -38,6 +57,7 @@ const INITIAL_FORM: ProductFormData = {
   inStock: 0,
   lowStock: 0,
   categoryId: "",
+  discounts: [],
 };
 
 // ── Reusable toggle ──
@@ -53,7 +73,7 @@ function Toggle({
       type="button"
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
-        checked ? "bg-blue-600" : "bg-gray-200"
+        checked ? "bg-blue-600" : "bg-slate-200"
       }`}
     >
       <span
@@ -65,29 +85,77 @@ function Toggle({
   );
 }
 
-// ── Section card ──
+/** Section heading — an eyebrow with an optional right-hand note. */
 function Section({
   title,
+  note,
   children,
 }: {
   title: string;
+  note?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-3">
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-        {title}
-      </p>
+    <section className="space-y-3">
+      <div className="flex items-baseline justify-between">
+        <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+          {title}
+        </h3>
+        {note && <span className="text-[11px] text-slate-400">{note}</span>}
+      </div>
       {children}
+    </section>
+  );
+}
+
+/** Label + control + error, with an optional domain rail on the label. */
+function Field({
+  label,
+  domain,
+  required,
+  error,
+  hint,
+  children,
+}: {
+  label: string;
+  domain?: keyof typeof DOMAIN;
+  required?: boolean;
+  error?: string;
+  hint?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <div className="mb-1.5 flex items-center gap-1.5">
+        {domain && (
+          <span
+            className={`h-3 w-[3px] rounded-full ${DOMAIN[domain].rail}`}
+            aria-hidden="true"
+          />
+        )}
+        <label
+          className={`text-[11px] font-medium uppercase tracking-[0.06em] ${
+            domain ? DOMAIN[domain].label : "text-slate-400"
+          }`}
+        >
+          {label}
+          {required && <span className="text-rose-500"> *</span>}
+        </label>
+      </div>
+      {children}
+      {error ? (
+        <p className="mt-1 text-[11px] text-rose-600">{error}</p>
+      ) : hint ? (
+        <p className="mt-1 text-[11px] text-slate-400">{hint}</p>
+      ) : null}
     </div>
   );
 }
 
-const inputClass =
-  "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
-
-const inputErrorClass =
-  "w-full border border-red-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition";
+const inputBase =
+  "w-full h-9 rounded-lg border px-3 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:border-transparent transition";
+const inputClass = `${inputBase} border-slate-200 focus:ring-blue-500`;
+const inputErrorClass = `${inputBase} border-rose-300 focus:ring-rose-400`;
 
 interface ProductFormModalProps {
   open: boolean;
@@ -117,6 +185,7 @@ export default function ProductFormModal({
   const updateMutation = useUpdateProduct();
   const { data: categories = [] } = useCategories();
   const createCategoryMutation = useCreateCategory();
+  const { data: discounts = [] } = useDiscounts();
 
   const [form, setForm] = useState<ProductFormData>(INITIAL_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -124,10 +193,13 @@ export default function ProductFormModal({
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryColor, setNewCategoryColor] = useState("#60a5fa");
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => setMounted(true), []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -163,6 +235,7 @@ export default function ProductFormModal({
         inStock: product.inStock ?? 0,
         lowStock: product.lowStock ?? 0,
         categoryId: product.categories ?? "",
+        discounts: product.discounts ?? [],
       });
       setErrors({});
       setImageFile(null);
@@ -174,6 +247,16 @@ export default function ProductFormModal({
       setImagePreview(null);
     }
   }, [product, open]);
+
+  // Stop the page behind the overlay from scrolling with it.
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
 
   const set = <K extends keyof ProductFormData>(
     key: K,
@@ -192,6 +275,11 @@ export default function ProductFormModal({
     setImageFile(null);
     setImagePreview(null);
     if (imageInputRef.current) imageInputRef.current.value = "";
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
   };
 
   // ── Validation ──
@@ -244,6 +332,8 @@ export default function ProductFormModal({
             soldBy: "each",
             categories: categoryId,
             image: imageFile,
+            discounts: form.discounts,
+            discountType: "applyEverytime",
           },
         },
         {
@@ -268,6 +358,8 @@ export default function ProductFormModal({
         soldBy: "each",
         categories: categoryId,
         image: imageFile,
+        discounts: form.discounts,
+        discountType: "applyEverytime",
       };
       if (form.usesStocks) {
         payload.inStock = form.inStock;
@@ -290,31 +382,519 @@ export default function ProductFormModal({
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  return (
-    <SettingsModalShell
-      open={open}
-      onOpenChange={(o) => {
-        if (!o) {
-          resetForm();
-          onClose();
-        }
-      }}
-      title={isEditMode ? "Update Product" : "Create New Product"}
-      description={
-        isEditMode
-          ? "Update this product's details, pricing and stock"
-          : "Add a product with its pricing, image and stock"
-      }
-      footer={
-        <>
+  // Escape closes — but never mid-save, which would strand the mutation.
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !isPending) handleClose();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, isPending]);
+
+  if (!open || !mounted) return null;
+
+  const symbol = formatCurrencySymbolOnly(currency.symbol);
+
+  // Live margin — both figures are on screen, so show what they add up to.
+  const margin = form.price - form.costPrice;
+  const marginPct =
+    form.costPrice > 0 ? Math.round((margin / form.costPrice) * 100) : null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 "
+      onClick={() => !isPending && handleClose()}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="product-form-title"
+        className="relative flex w-full max-w-2xl max-h-[90vh] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl animate-in fade-in-0 zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* ── Header ── */}
+        <header className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
+          <div className="min-w-0">
+            <h2
+              id="product-form-title"
+              className="text-lg font-semibold tracking-tight text-slate-900"
+            >
+              {isEditMode ? "Update product" : "Create product"}
+            </h2>
+            <p className="mt-0.5 text-[13px] text-slate-500">
+              {isEditMode
+                ? "Change this product's details, pricing and stock."
+                : "Add a product with its pricing, image and stock."}
+            </p>
+          </div>
+
           <button
             type="button"
-            onClick={() => {
-              resetForm();
-              onClose();
-            }}
+            onClick={handleClose}
             disabled={isPending}
-            className={modalCancelBtn}
+            aria-label="Close"
+            className="-mr-1 -mt-1 shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 disabled:opacity-40"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </header>
+
+        {/* ── Body ── */}
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-7">
+          {/* ── Image ── */}
+          <Section title="Image">
+            <div className="flex items-center gap-4">
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                {imagePreview ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={imagePreview}
+                    alt="Product"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <ImageIcon size={22} className="text-slate-300" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => imageInputRef.current?.click()}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                  >
+                    <Upload size={13} />
+                    {imagePreview ? "Change image" : "Upload image"}
+                  </button>
+                  {imageFile && (
+                    <button
+                      type="button"
+                      onClick={clearImage}
+                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold text-rose-500 transition hover:bg-rose-50"
+                    >
+                      <X size={13} />
+                      Remove
+                    </button>
+                  )}
+                </div>
+                <p className="mt-1.5 text-[11px] text-slate-400">
+                  PNG or JPG, up to 5MB.
+                </p>
+              </div>
+            </div>
+          </Section>
+
+          {/* ── Details ── */}
+          <Section title="Details">
+            <div className="space-y-3">
+              <Field label="Product name" required error={errors.name}>
+                <input
+                  value={form.name}
+                  onChange={(e) => set("name", e.target.value)}
+                  placeholder="e.g. Popcorn"
+                  className={errors.name ? inputErrorClass : inputClass}
+                />
+              </Field>
+
+              <Field label="Category">
+                {showNewCategory ? (
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        placeholder="Category name"
+                        className={`${inputClass} flex-1`}
+                      />
+                      <input
+                        type="color"
+                        value={newCategoryColor}
+                        onChange={(e) => setNewCategoryColor(e.target.value)}
+                        className="h-9 w-9 shrink-0 cursor-pointer rounded-lg border border-slate-200"
+                      />
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowNewCategory(false);
+                          setNewCategoryName("");
+                          setNewCategoryColor("#60a5fa");
+                        }}
+                        className="text-xs font-medium text-slate-500 hover:text-slate-700"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!newCategoryName.trim()) {
+                            toast.error("Category name is required");
+                            return;
+                          }
+                          try {
+                            const newCat =
+                              await createCategoryMutation.mutateAsync({
+                                name: newCategoryName.trim(),
+                                color: newCategoryColor.replace("#", ""),
+                              });
+                            set("categoryId", newCat._id);
+                            setShowNewCategory(false);
+                            setNewCategoryName("");
+                            setNewCategoryColor("#60a5fa");
+                          } catch {
+                            toast.error("Failed to create category");
+                          }
+                        }}
+                        disabled={createCategoryMutation.isPending}
+                        className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+                      >
+                        {createCategoryMutation.isPending
+                          ? "Creating..."
+                          : "Create & select"}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <div className="relative flex-1" ref={categoryDropdownRef}>
+                      <select
+                        value={form.categoryId}
+                        onChange={(e) => set("categoryId", e.target.value)}
+                        className={`${inputClass} appearance-none pr-8`}
+                      >
+                        <option value="">No category</option>
+                        {categories.map((cat) => (
+                          <option key={cat._id} value={cat._id}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </select>
+                      <svg
+                        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 12 12"
+                        fill="none"
+                      >
+                        <path
+                          d="M3 4.5L6 7.5L9 4.5"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowNewCategory(true)}
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
+                      title="Create new category"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                )}
+              </Field>
+
+              <Field label="Description">
+                <textarea
+                  value={form.description}
+                  onChange={(e) => set("description", e.target.value)}
+                  placeholder="Short description..."
+                  rows={2}
+                  className={`${inputClass} h-auto resize-none py-2`}
+                />
+              </Field>
+            </div>
+          </Section>
+
+          {/* ── Pricing ── */}
+          <Section
+            title="Pricing"
+            note={
+              marginPct !== null ? (
+                <span
+                  className={`inline-flex items-center gap-1 font-medium tabular-nums ${
+                    margin >= 0 ? "text-emerald-600" : "text-rose-600"
+                  }`}
+                >
+                  {margin >= 0 ? (
+                    <ArrowUpRight className="h-3 w-3" />
+                  ) : (
+                    <ArrowDownRight className="h-3 w-3" />
+                  )}
+                  {symbol}
+                  {Math.abs(margin).toLocaleString()} margin ({marginPct}%)
+                </span>
+              ) : undefined
+            }
+          >
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Selling price" domain="price" error={errors.price}>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-slate-400">
+                    {symbol}
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={form.price}
+                    onChange={(e) => set("price", Number(e.target.value))}
+                    className={`${errors.price ? inputErrorClass : inputClass} pl-9 tabular-nums`}
+                    placeholder="0"
+                  />
+                </div>
+              </Field>
+
+              <Field label="Cost price" domain="cost" error={errors.costPrice}>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-slate-400">
+                    {symbol}
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={form.costPrice}
+                    onChange={(e) => set("costPrice", Number(e.target.value))}
+                    className={`${errors.costPrice ? inputErrorClass : inputClass} pl-9 tabular-nums`}
+                    placeholder="0"
+                  />
+                </div>
+              </Field>
+            </div>
+          </Section>
+
+          {/* ── Discounts ── */}
+          {/* One list, selected state on the row. The separate "Applied
+              discounts" summary listed the same items a second time. */}
+          <Section
+            title="Discounts"
+            note={
+              form.discounts.length > 0
+                ? `${form.discounts.length} selected`
+                : undefined
+            }
+          >
+            {discounts.length === 0 ? (
+              <p className="text-[13px] text-slate-400">
+                No discounts yet. Create one below.
+              </p>
+            ) : (
+              <div className="max-h-44 space-y-1.5 overflow-y-auto -mr-1 pr-1">
+                {discounts.map((d) => {
+                  const isSelected = form.discounts.includes(d._id);
+                  return (
+                    <button
+                      key={d._id}
+                      type="button"
+                      onClick={() =>
+                        set(
+                          "discounts",
+                          isSelected
+                            ? form.discounts.filter((x) => x !== d._id)
+                            : [...form.discounts, d._id],
+                        )
+                      }
+                      className={`flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-[13px] transition ${
+                        isSelected
+                          ? "border-violet-300 bg-blue-50/60"
+                          : "border-slate-100 hover:border-slate-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span
+                          className={`h-3.5 w-1 shrink-0 rounded-full ${
+                            isSelected ? DOMAIN.discount.rail : "bg-slate-200"
+                          }`}
+                          aria-hidden="true"
+                        />
+                        <span className="truncate font-medium text-slate-800">
+                          {d.name}
+                        </span>
+                        <span className="shrink-0 text-[11px] text-slate-400 tabular-nums">
+                          {d.type === "percentage"
+                            ? `${d.rate}% off`
+                            : `${symbol}${d.rate} off`}
+                        </span>
+                      </span>
+
+                      <span
+                        className={`flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border-2 ${
+                          isSelected
+                            ? "border-blue-500 bg-blue-500"
+                            : "border-slate-300"
+                        }`}
+                      >
+                        {isSelected && (
+                          <Check className="h-2.5 w-2.5 font-bold text-white" />
+                        )}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="border-t border-slate-100 pt-3">
+              <CreateDiscountDialog />
+            </div>
+          </Section>
+
+          {/* ── Tax & stock ── */}
+          <Section title="Tax & stock">
+            <div className="divide-y divide-slate-100 rounded-xl border border-slate-200">
+              <div className="flex items-center justify-between gap-4 px-4 py-3">
+                <div>
+                  <p className="text-[13px] font-medium text-slate-800">
+                    Taxable
+                  </p>
+                  <p className="text-[11px] text-slate-400">
+                    Apply tax to this product
+                  </p>
+                </div>
+                <Toggle
+                  checked={form.isTaxable}
+                  onChange={(v) => set("isTaxable", v)}
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-4 px-4 py-3">
+                <div>
+                  <p className="text-[13px] font-medium text-slate-800">
+                    Track stock
+                  </p>
+                  <p className="text-[11px] text-slate-400">
+                    Monitor inventory levels
+                  </p>
+                </div>
+                <Toggle
+                  checked={form.usesStocks}
+                  onChange={(v) => {
+                    set("usesStocks", v);
+                    if (!v) {
+                      set("inStock", 0);
+                      set("lowStock", 0);
+                      setErrors((prev) => ({
+                        ...prev,
+                        inStock: undefined,
+                        lowStock: undefined,
+                      }));
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Stock fields live inside the same card, so turning the toggle
+                  on extends it rather than opening a detached block. */}
+              {form.usesStocks && (
+                <div className="space-y-3 px-4 py-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field
+                      label="In stock"
+                      domain="stock"
+                      error={errors.inStock}
+                    >
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.inStock}
+                        onChange={(e) => {
+                          set("inStock", Number(e.target.value));
+                          if (form.lowStock > Number(e.target.value)) {
+                            setErrors((prev) => ({
+                              ...prev,
+                              lowStock: "Low stock cannot exceed in stock.",
+                            }));
+                          } else {
+                            setErrors((prev) => ({
+                              ...prev,
+                              lowStock: undefined,
+                            }));
+                          }
+                        }}
+                        className={`${
+                          errors.inStock ? inputErrorClass : inputClass
+                        } tabular-nums`}
+                        placeholder="e.g. 50"
+                      />
+                    </Field>
+
+                    <Field
+                      label="Low stock alert"
+                      domain="stock"
+                      error={errors.lowStock}
+                      hint={
+                        !errors.lowStock &&
+                        form.lowStock > 0 &&
+                        form.lowStock <= 5 ? (
+                          <span className="text-amber-600">
+                            Alerts when stock reaches {form.lowStock}
+                          </span>
+                        ) : undefined
+                      }
+                    >
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.lowStock}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          set("lowStock", val);
+                          if (val > form.inStock) {
+                            setErrors((prev) => ({
+                              ...prev,
+                              lowStock: "Low stock cannot exceed in stock.",
+                            }));
+                          } else {
+                            setErrors((prev) => ({
+                              ...prev,
+                              lowStock: undefined,
+                            }));
+                          }
+                        }}
+                        className={`${
+                          errors.lowStock ? inputErrorClass : inputClass
+                        } tabular-nums ${
+                          !errors.lowStock &&
+                          form.lowStock > 0 &&
+                          form.lowStock <= form.inStock &&
+                          form.lowStock <= 5
+                            ? "border-amber-300 focus:ring-amber-400"
+                            : ""
+                        }`}
+                        placeholder="e.g. 5"
+                      />
+                    </Field>
+                  </div>
+
+                  <p className="rounded-lg bg-slate-50 px-3 py-2 text-[11px] leading-relaxed text-slate-500">
+                    ⓘ The inventory page charts stock against a 5,000-unit
+                    scale. You can still hold more than that.
+                  </p>
+                </div>
+              )}
+            </div>
+          </Section>
+        </div>
+
+        {/* ── Footer ── */}
+        <footer className="flex justify-end gap-2 border-t border-slate-100 bg-slate-50/60 px-6 py-4">
+          <button
+            type="button"
+            onClick={handleClose}
+            disabled={isPending}
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50"
           >
             Cancel
           </button>
@@ -322,405 +902,20 @@ export default function ProductFormModal({
             type="button"
             onClick={handleSave}
             disabled={isPending}
-            className={modalPrimaryBtn}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
           >
-            {isPending ? (
-              <>
-                <Loader2 size={13} className="animate-spin" />
-                {isEditMode ? "Updating..." : "Saving..."}
-              </>
-            ) : isEditMode ? (
-              "Update Product"
-            ) : (
-              "Save Product"
-            )}
+            {isPending && <Loader2 size={13} className="animate-spin" />}
+            {isPending
+              ? isEditMode
+                ? "Updating..."
+                : "Saving..."
+              : isEditMode
+                ? "Update product"
+                : "Save product"}
           </button>
-        </>
-      }
-    >
-      <div className="space-y-5">
-        {/* ── Product image ── */}
-        <Section title="Product Image">
-          <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center shrink-0">
-              {imagePreview ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={imagePreview}
-                  alt="Product"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <ImageIcon size={22} className="text-gray-300" />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <input
-                ref={imageInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-              />
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => imageInputRef.current?.click()}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition"
-                >
-                  <Upload size={13} />
-                  {imagePreview ? "Change image" : "Upload image"}
-                </button>
-                {imageFile && (
-                  <button
-                    type="button"
-                    onClick={clearImage}
-                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 transition"
-                  >
-                    <X size={13} />
-                    Remove
-                  </button>
-                )}
-              </div>
-              <p className="text-[11px] text-gray-400 mt-1.5">
-                PNG or JPG, up to 5MB.
-              </p>
-            </div>
-          </div>
-        </Section>
-
-        {/* ── Product info ── */}
-        <Section title="Product Info">
-          <div className="space-y-3">
-            <div>
-              <Label className="text-xs text-gray-500 mb-1.5 block">
-                Product name <span className="text-red-500">*</span>
-              </Label>
-              <input
-                value={form.name}
-                onChange={(e) => set("name", e.target.value)}
-                placeholder="e.g. Popcorn"
-                className={errors.name ? inputErrorClass : inputClass}
-              />
-              {errors.name && (
-                <p className="text-xs text-red-500 mt-1">{errors.name}</p>
-              )}
-            </div>
-
-            {/* Category dropdown */}
-            <div>
-              <Label className="text-xs text-gray-500 mb-1.5 block">
-                Category
-              </Label>
-              {showNewCategory ? (
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <input
-                      value={newCategoryName}
-                      onChange={(e) => setNewCategoryName(e.target.value)}
-                      placeholder="Category name"
-                      className={`${inputClass} flex-1`}
-                    />
-                    <input
-                      type="color"
-                      value={newCategoryColor}
-                      onChange={(e) => setNewCategoryColor(e.target.value)}
-                      className="h-9 w-9 rounded-lg border border-gray-200 cursor-pointer shrink-0"
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowNewCategory(false);
-                        setNewCategoryName("");
-                        setNewCategoryColor("#60a5fa");
-                      }}
-                      className="text-xs text-gray-500 hover:text-gray-700"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        if (!newCategoryName.trim()) {
-                          toast.error("Category name is required");
-                          return;
-                        }
-                        try {
-                          const newCat =
-                            await createCategoryMutation.mutateAsync({
-                              name: newCategoryName.trim(),
-                              color: newCategoryColor.replace("#", ""),
-                            });
-                          set("categoryId", newCat._id);
-                          setShowNewCategory(false);
-                          setNewCategoryName("");
-                          setNewCategoryColor("#60a5fa");
-                        } catch {
-                          toast.error("Failed to create category");
-                        }
-                      }}
-                      disabled={createCategoryMutation.isPending}
-                      className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-                    >
-                      {createCategoryMutation.isPending
-                        ? "Creating..."
-                        : "Create & Select"}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex gap-2">
-                  <div className="relative flex-1" ref={categoryDropdownRef}>
-                    <select
-                      value={form.categoryId}
-                      onChange={(e) => set("categoryId", e.target.value)}
-                      className={`${inputClass} appearance-none pr-8`}
-                    >
-                      <option value="">No category</option>
-                      {categories.map((cat) => (
-                        <option key={cat._id} value={cat._id}>
-                          {cat.name}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 12 12"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M3 4.5L6 7.5L9 4.5"
-                          stroke="#9CA3AF"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowNewCategory(true)}
-                    className="h-9 w-9 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 transition shrink-0"
-                    title="Create new category"
-                  >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 14 14"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M7 1V13M1 7H13"
-                        stroke="#6B7280"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div>
-              <Label className="text-xs text-gray-500 mb-1.5 block">
-                Description
-              </Label>
-              <textarea
-                value={form.description}
-                onChange={(e) => set("description", e.target.value)}
-                placeholder="Short description..."
-                rows={2}
-                className={`${inputClass} resize-none`}
-              />
-            </div>
-          </div>
-        </Section>
-
-        {/* ── Pricing ── */}
-        <Section title="Pricing">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label className="text-xs text-gray-500 mb-1.5 block">
-                Selling price
-              </Label>
-              <div className="relative">
-                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
-                  {formatCurrencySymbolOnly(currency.symbol)}
-                </span>
-                <input
-                  type="number"
-                  min={0}
-                  value={form.price}
-                  onChange={(e) => set("price", Number(e.target.value))}
-                  className={`${errors.price ? inputErrorClass : inputClass} pl-7`}
-                  placeholder="0"
-                />
-              </div>
-              {errors.price && (
-                <p className="text-xs text-red-500 mt-1">{errors.price}</p>
-              )}
-            </div>
-
-            <div>
-              <Label className="text-xs text-gray-500 mb-1.5 block">
-                Cost price
-              </Label>
-              <div className="relative">
-                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
-                  {formatCurrencySymbolOnly(currency.symbol)}
-                </span>
-                <input
-                  type="number"
-                  min={0}
-                  value={form.costPrice}
-                  onChange={(e) => set("costPrice", Number(e.target.value))}
-                  className={`${errors.costPrice ? inputErrorClass : inputClass} pl-7`}
-                  placeholder="0"
-                />
-              </div>
-              {errors.costPrice && (
-                <p className="text-xs text-red-500 mt-1">{errors.costPrice}</p>
-              )}
-            </div>
-          </div>
-        </Section>
-
-        {/* ── Tax & Inventory ── */}
-        <Section title="Tax & Inventory">
-          <div className="bg-gray-50 rounded-xl border border-gray-100 divide-y divide-gray-100">
-            {/* Is taxable */}
-            <div className="flex items-center justify-between px-4 py-3">
-              <div>
-                <p className="text-sm font-medium text-gray-800">Is Taxable</p>
-                <p className="text-xs text-gray-400">
-                  Apply tax to this product
-                </p>
-              </div>
-              <Toggle
-                checked={form.isTaxable}
-                onChange={(v) => set("isTaxable", v)}
-              />
-            </div>
-
-            {/* Track stock */}
-            <div className="flex items-center justify-between px-4 py-3">
-              <div>
-                <p className="text-sm font-medium text-gray-800">Track Stock</p>
-                <p className="text-xs text-gray-400">
-                  Monitor inventory levels
-                </p>
-              </div>
-              <Toggle
-                checked={form.usesStocks}
-                onChange={(v) => {
-                  set("usesStocks", v);
-                  if (!v) {
-                    set("inStock", 0);
-                    set("lowStock", 0);
-                    setErrors((prev) => ({
-                      ...prev,
-                      inStock: undefined,
-                      lowStock: undefined,
-                    }));
-                  }
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Stock fields — shown only when usesStocks is true */}
-          {form.usesStocks && (
-            <div className="space-y-3">
-              <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                ⓘ In the inventory page, the maximum stock threshold for all
-                products is set to 5,000 units.
-              </p>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs text-gray-500 mb-1.5 block">
-                    In stock
-                  </Label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.inStock}
-                    onChange={(e) => {
-                      set("inStock", Number(e.target.value));
-                      if (form.lowStock > Number(e.target.value)) {
-                        setErrors((prev) => ({
-                          ...prev,
-                          lowStock: "Low stock cannot exceed in stock.",
-                        }));
-                      } else {
-                        setErrors((prev) => ({
-                          ...prev,
-                          lowStock: undefined,
-                        }));
-                      }
-                    }}
-                    className={errors.inStock ? inputErrorClass : inputClass}
-                    placeholder="e.g. 50"
-                  />
-                  {errors.inStock && (
-                    <p className="text-xs text-red-500 mt-1">
-                      {errors.inStock}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <Label className="text-xs text-gray-500 mb-1.5 block">
-                    Low stock threshold
-                  </Label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.lowStock}
-                    onChange={(e) => {
-                      const val = Number(e.target.value);
-                      set("lowStock", val);
-                      if (val > form.inStock) {
-                        setErrors((prev) => ({
-                          ...prev,
-                          lowStock: "Low stock cannot exceed in stock.",
-                        }));
-                      } else {
-                        setErrors((prev) => ({
-                          ...prev,
-                          lowStock: undefined,
-                        }));
-                      }
-                    }}
-                    className={`${errors.lowStock ? inputErrorClass : inputClass} ${
-                      form.lowStock > 0 &&
-                      form.lowStock <= form.inStock &&
-                      form.lowStock <= 5
-                        ? "border-amber-300 focus:ring-amber-400"
-                        : ""
-                    }`}
-                    placeholder="e.g. 5"
-                  />
-                  {errors.lowStock ? (
-                    <p className="text-xs text-red-500 mt-1">
-                      {errors.lowStock}
-                    </p>
-                  ) : form.lowStock > 0 && form.lowStock <= 5 ? (
-                    <p className="text-xs text-amber-500 mt-1">
-                      ⚠ Alert triggers when stock reaches this level
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-          )}
-        </Section>
+        </footer>
       </div>
-    </SettingsModalShell>
+    </div>,
+    document.body,
   );
 }

@@ -409,16 +409,14 @@ export default function InvoiceItemsSelector({
 
             {/* Delete */}
             <TableCell className="text-center w-[35px]">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
+              <button
+                className="text-gray-400 hover:text-red-500 transition-colors shrink-0"
                 onClick={() =>
                   onItemsChange(items.filter((i) => i.id !== item.id))
                 }
               >
                 <Trash2 className="h-3.5 w-3.5 text-gray-400 hover:text-red-500" />
-              </Button>
+              </button>
             </TableCell>
           </TableRow>
 
@@ -491,7 +489,7 @@ export default function InvoiceItemsSelector({
                             ({d.rate}%) :
                           </span>
                           <span className="text-[11px] font-semibold  tracking-wider font-medium leading-none">
-                            -{formatCurrencySymbolOnly(currency.symbol)}
+                            - {formatCurrencySymbolOnly(currency.symbol)}
                             {(
                               (item.quantity * item.price * d.rate) /
                               100
@@ -504,7 +502,7 @@ export default function InvoiceItemsSelector({
                             {d.rate} off :
                           </span>
                           <span className="text-[11px] font-semibold  tracking-wider font-medium leading-none">
-                            -{formatCurrencySymbolOnly(currency.symbol)}
+                            - {formatCurrencySymbolOnly(currency.symbol)}
                             {(d.rate * item.quantity).toFixed(2)}
                           </span>
                         </>
@@ -526,11 +524,11 @@ export default function InvoiceItemsSelector({
 
                 {/* Tax pill — only when product isTaxable AND global tax active */}
                 {item.isTaxable && activeTax && (
-                  <Badge className="flex items-center gap-1 bg-green-100 text-green-700 border border-green-200 text-xs">
+                  <Badge className="flex items-center gap-1 bg-red-100 text-red-700 border border-red-200 text-xs">
                     <span className="text-[11px] font-semibold  tracking-wider leading-none">
                       {activeTax.name}
                     </span>
-                    <span className="text-[11px] text-green-500  tracking-wider leading-none">
+                    <span className="text-[11px] text-red-500  tracking-wider leading-none">
                       ({activeTax.rate}%) :
                     </span>
                     <span className="text-[11px] font-medium  tracking-wider  leading-none">
@@ -588,7 +586,7 @@ export default function InvoiceItemsSelector({
         </Fragment>
       ))}
 
-      <TableRow className="hover:bg-gray-50/70 transition-colors">
+      <TableRow className="hover:bg-gray-50/70 transition-colors ">
         <TableCell colSpan={10} className="p-0">
           <button
             onClick={addItem}
