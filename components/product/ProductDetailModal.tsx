@@ -12,7 +12,9 @@ import {
   Ban,
   AlertTriangle,
   X,
+  ImageOff,
 } from "lucide-react";
+import Image from "next/image";
 import { Product, ProductVariant } from "@/lib/types/product";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { useCategories } from "@/hooks/useCategories";
@@ -233,16 +235,35 @@ export default function ProductDetailModal({
       >
         {/* ── Header ── */}
         <header className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
-          <div className="min-w-0">
-            <h2
-              id="product-detail-title"
-              className="text-lg font-bold text-slate-800"
-            >
-              {product.name}
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              {product.description || "Product details"}
-            </p>
+          <div className="flex gap-4 min-w-0">
+            {/* Product Image */}
+            {product.image ? (
+              <div className="shrink-0 w-16 h-16 rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  width={64}
+                  height={64}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <div className="shrink-0 w-16 h-16 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center">
+                <ImageOff className="h-6 w-6 text-slate-300" />
+              </div>
+            )}
+
+            <div className="min-w-0">
+              <h2
+                id="product-detail-title"
+                className="text-lg font-bold text-slate-800"
+              >
+                {product.name}
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {product.description || "Product details"}
+              </p>
+            </div>
           </div>
 
           <button
