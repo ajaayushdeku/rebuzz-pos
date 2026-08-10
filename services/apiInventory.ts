@@ -16,7 +16,7 @@ export type InventoryItem = {
   orderedCount: number;
   costPrice: number;
   price: number;
-  categories: string;
+  categories?: string;
   /** Primary product image URL (from the products API), if any. */
   image?: string;
   /** Additional gallery image URLs (the `images` field). */
