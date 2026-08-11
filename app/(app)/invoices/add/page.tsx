@@ -165,7 +165,10 @@ export default function Page() {
       const d = masterDiscounts.find((m) => m._id === dId);
       if (!d) return dSum;
       return (
-        dSum + (d.type === "percentage" ? (rowRawTotal * d.rate) / 100 : d.rate)
+        dSum +
+        (d.type === "percentage"
+          ? (rowRawTotal * d.rate) / 100
+          : d.rate * item.quantity)
       );
     }, 0);
     return sum + (rowRawTotal - rowDiscount);
@@ -214,7 +217,10 @@ export default function Page() {
       if (!d) return dSum;
 
       return (
-        dSum + (d.type === "percentage" ? (itemTotal * d.rate) / 100 : d.rate)
+        dSum +
+        (d.type === "percentage"
+          ? (itemTotal * d.rate) / 100
+          : d.rate * item.quantity)
       );
     }, 0);
 
@@ -295,21 +301,21 @@ export default function Page() {
       return;
     }
 
-    // ── Stock validation: prevent save if any item exceeds available stock ──
-    for (const item of items) {
-      if (!item.productId) continue;
-      const product = products.find((p) => p.id === item.productId);
-      if (
-        product?.usesStocks &&
-        product.inStock !== undefined &&
-        item.quantity > product.inStock
-      ) {
-        toast.error(
-          `"${item.name}" quantity (${item.quantity}) exceeds available stock (${product.inStock}). Please adjust.`,
-        );
-        return;
-      }
-    }
+    // ── Stock validation temporarily disabled ──
+    // for (const item of items) {
+    //   if (!item.productId) continue;
+    //   const product = products.find((p) => p.id === item.productId);
+    //   if (
+    //     product?.usesStocks &&
+    //     product.inStock !== undefined &&
+    //     item.quantity > product.inStock
+    //   ) {
+    //     toast.error(
+    //       `"${item.name}" quantity (${item.quantity}) exceeds available stock (${product.inStock}). Please adjust.`,
+    //     );
+    //     return;
+    //   }
+    // }
 
     // Wait for custom product ID if still loading
     const customId = customProductIdRef.current;
@@ -336,11 +342,13 @@ export default function Page() {
       grandTotal: finalTotal,
       taxId: activeTaxId,
       note: `${notes}${invoiceNumber ? `|Invoice: ${invoiceNumber}` : ""}`,
+      isTaxExclusive: !!activeTaxId,
       items: updatedItems.map((item) => ({
         id: item.productId,
         name: item.name,
         quantity: item.quantity,
-        unitPrice: item.price,
+        // For variant items, use the variant's price as the unitPrice
+        unitPrice: item.variantItems?.unitPrice ?? item.price,
         note: null,
         discounts: item.discounts.map((id) => {
           const master = masterDiscounts.find((m) => m._id === id);
@@ -354,6 +362,22 @@ export default function Page() {
           };
         }),
         isTaxable: item.isTaxable ?? false,
+        // ── Variant support ──
+        ...(item.variantId
+          ? {
+              variantId: item.variantId,
+              variantLabel: item.variantLabel,
+              variantItems: item.variantItems
+                ? {
+                    _id: item.variantItems._id,
+                    name: item.variantItems.name,
+                    unitPrice: item.variantItems.unitPrice,
+                    quantity: item.variantItems.quantity,
+                    costPrice: item.variantItems.costPrice,
+                  }
+                : undefined,
+            }
+          : {}),
       })),
     };
 

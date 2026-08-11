@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { ChevronDown } from "lucide-react";
+import { Banknote, QrCode, X, Loader2 } from "lucide-react";
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import {
@@ -20,6 +20,45 @@ interface RecordPaymentModalProps {
   invoiceNo: string | number | undefined;
   /** Called after a successful payment (e.g. to refresh a list). */
   onSuccess?: () => void;
+}
+
+const PAYMENT_METHODS = [
+  { value: "cash", label: "Cash", icon: Banknote },
+  { value: "qr", label: "QR / Wallet", icon: QrCode },
+] as const;
+
+/** One line of the amount breakdown. Keeps every row on the same grid. */
+function SummaryRow({
+  label,
+  value,
+  tone = "muted",
+}: {
+  label: string;
+  value: string;
+  tone?: "muted" | "credit" | "debit";
+}) {
+  const toneClass =
+    tone === "credit"
+      ? "text-emerald-600"
+      : tone === "debit"
+        ? "text-gray-700"
+        : "text-gray-500";
+
+  return (
+    <div className="flex items-baseline justify-between gap-4 text-[13px]">
+      <span className="text-gray-500">{label}</span>
+      <span className={`font-medium tabular-nums ${toneClass}`}>{value}</span>
+    </div>
+  );
+}
+
+/** Small uppercase section heading used across the modal. */
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-400">
+      {children}
+    </span>
+  );
 }
 
 export default function RecordPaymentModal({
@@ -51,26 +90,21 @@ export default function RecordPaymentModal({
     discount: 0,
     method: "cash",
   });
-  const [methodOpen, setMethodOpen] = useState(false);
-  const methodRef = useRef<HTMLDivElement | null>(null);
 
-  // Close the payment method dropdown on outside click / Escape
+  // Escape closes the modal; lock background scroll while it's open.
   useEffect(() => {
-    const onClickOutside = (e: MouseEvent) => {
-      if (methodRef.current && !methodRef.current.contains(e.target as Node)) {
-        setMethodOpen(false);
-      }
-    };
+    if (!open) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMethodOpen(false);
+      if (e.key === "Escape") onClose();
     };
-    document.addEventListener("mousedown", onClickOutside);
     document.addEventListener("keydown", onKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     return () => {
-      document.removeEventListener("mousedown", onClickOutside);
       document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = prevOverflow;
     };
-  }, []);
+  }, [open, onClose]);
 
   // Reset form & load loyalty settings whenever the modal opens for an invoice.
   useEffect(() => {
@@ -150,6 +184,9 @@ export default function RecordPaymentModal({
       computedDiscountAmount -
       (redeemEnabled ? redeemPoints : 0),
   );
+
+  const money = (n: number) =>
+    formatCurrencySymbol(n, currency.symbol, currency.locale);
 
   const handleDiscountChange = (value: number) => {
     setPaymentData((prev) => ({ ...prev, discount: value }));
@@ -293,204 +330,158 @@ export default function RecordPaymentModal({
 
   if (!open || !mounted) return null;
 
+  const disabled =
+    !invoice || !!discountError || !!redeemError || isRecordingPayment;
+
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 p-4 "
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-lg px-2 py-1 rounded-2xl bg-white shadow-2xl overflow-hidden animate-in fade-in-0 slide-in-from-bottom-6 duration-300"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Record payment"
+        className="w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Header ── */}
-        <div className="relative sticky top-0 z-20 flex items-center justify-between border-b border-gray-100 bg-white/95 backdrop-blur px-5 py-3.5">
-          <div>
-            <h2 className="text-lg font-bold text-gray-800">Record Payment</h2>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Process payment for this invoice
-            </p>
+        <div className="flex items-start justify-between border-b border-gray-100 px-6 py-4">
+          <div className="min-w-0">
+            <h2 className="text-[15px] font-semibold leading-tight text-gray-900">
+              Record payment
+            </h2>
+            {invoice?.invoice != null && (
+              <p className="mt-0.5 text-[12px] text-gray-400 tabular-nums">
+                Invoice #{invoice.invoice}
+              </p>
+            )}
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center font-bold rounded-full  text-gray-500 transition  hover:text-red-500 hover:text-lg cursor-pointer text-sm "
+            aria-label="Close"
+            className="-mr-1.5 -mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
-            ✕
+            <X size={16} strokeWidth={2.2} />
           </button>
         </div>
 
         {/* ── Content ── */}
-        <div
-          className="max-h-[60vh] overflow-y-auto px-5 py-4 space-y-5"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
-          <style jsx>{`
-            div::-webkit-scrollbar {
-              display: none;
-            }
-          `}</style>
-
+        <div className="max-h-[65vh] overflow-y-auto px-6 py-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {!invoice ? (
-            <div className="flex items-center justify-center py-12 text-sm text-gray-400">
-              Loading invoice...
+            <div className="flex items-center justify-center gap-2 py-16 text-[13px] text-gray-400">
+              <Loader2 size={15} className="animate-spin" />
+              Loading invoice
             </div>
           ) : (
-            <>
-              {/* Payment Method */}
-              <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-widest block mb-2">
-                  Payment Method
-                </label>
-                <div ref={methodRef} className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setMethodOpen((o) => !o)}
-                    className="w-full flex items-center justify-between gap-2 pl-3 pr-2.5 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition capitalize"
-                  >
-                    <span>
-                      {paymentData.method === "cash"
-                        ? "Cash"
-                        : "QR / Digital Wallet"}
-                    </span>
-                    <ChevronDown
-                      size={14}
-                      className={`text-gray-400 transition-transform duration-200 ${
-                        methodOpen ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
+            <div className="space-y-6">
+              {/* Amount due + breakdown */}
+              <div className="rounded-xl border border-gray-100 bg-gray-50/70 px-4 py-4">
+                <SectionLabel>Amount due</SectionLabel>
+                <p className="mt-1.5 text-[30px] font-semibold leading-none tracking-tight text-gray-900 tabular-nums">
+                  {money(finalPayable)}
+                </p>
 
-                  <div
-                    className={`absolute z-30 mt-1.5 w-full origin-top rounded-md border border-gray-200 bg-white shadow-lg p-1 transition-all duration-200 ${
-                      methodOpen
-                        ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
-                        : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
-                    }`}
-                  >
-                    {[
-                      { value: "cash", label: "Cash" },
-                      { value: "qr", label: "QR / Digital Wallet" },
-                    ].map((opt) => (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => {
-                          setPaymentData({ ...paymentData, method: opt.value });
-                          setMethodOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-1.5 text-[13px] rounded-md transition-colors cursor-pointer capitalize ${
-                          paymentData.method === opt.value
-                            ? "bg-blue-50 text-blue-700 font-medium"
-                            : "text-gray-600 hover:bg-gray-100"
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
+                <div className="mt-4 space-y-1.5 border-t border-gray-200/70 pt-3">
+                  <SummaryRow
+                    label="Subtotal"
+                    value={money(subtotalBeforeTax)}
+                    tone="debit"
+                  />
+                  {isTaxApplied && (
+                    <SummaryRow
+                      label="Tax"
+                      value={`+ ${money(taxAmount)}`}
+                      tone="debit"
+                    />
+                  )}
+                  {computedDiscountAmount > 0 && (
+                    <SummaryRow
+                      label={
+                        discountType === "percentage"
+                          ? `Discount (${paymentData.discount}%)`
+                          : "Discount"
+                      }
+                      value={`− ${money(computedDiscountAmount)}`}
+                      tone="credit"
+                    />
+                  )}
+                  {redeemEnabled && redeemPoints > 0 && !redeemError && (
+                    <SummaryRow
+                      label={`Loyalty (${redeemPoints} pts)`}
+                      value={`− ${money(redeemPoints)}`}
+                      tone="credit"
+                    />
+                  )}
                 </div>
               </div>
 
-              {/* Summary */}
-              <div className="bg-gray-50 rounded-xl px-4 py-3 space-y-1.5 text-sm">
-                <div className="flex justify-between text-gray-500">
-                  <span>Subtotal</span>
-                  <span className="font-medium text-gray-800">
-                    {formatCurrencySymbol(
-                      subtotalBeforeTax,
-                      currency.symbol,
-                      currency.locale,
-                    )}
-                  </span>
-                </div>
-                {isTaxApplied && (
-                  <div className="flex justify-between text-blue-600">
-                    <span>Tax</span>
-                    <span>
-                      +
-                      {formatCurrencySymbol(
-                        taxAmount,
-                        currency.symbol,
-                        currency.locale,
-                      )}
-                    </span>
-                  </div>
-                )}
-                {computedDiscountAmount > 0 && (
-                  <div className="flex justify-between text-red-500">
-                    <span>Discount</span>
-                    <span>
-                      −
-                      {formatCurrencySymbol(
-                        computedDiscountAmount,
-                        currency.symbol,
-                        currency.locale,
-                      )}
-                    </span>
-                  </div>
-                )}
-                {redeemEnabled && redeemPoints > 0 && !redeemError && (
-                  <div className="flex justify-between text-violet-500">
-                    <span>Loyalty redeemed</span>
-                    <span>
-                      −
-                      {formatCurrencySymbol(
-                        redeemPoints,
-                        currency.symbol,
-                        currency.locale,
-                      )}
-                    </span>
-                  </div>
-                )}
-                <div className="flex justify-between font-bold text-gray-800 border-t pt-1.5 mt-1">
-                  <span>Total payable</span>
-                  <span>
-                    {formatCurrencySymbol(
-                      finalPayable,
-                      currency.symbol,
-                      currency.locale,
-                    )}
-                  </span>
+              {/* Payment method */}
+              <div>
+                <SectionLabel>Payment method</SectionLabel>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {PAYMENT_METHODS.map(({ value, label, icon: Icon }) => {
+                    const active = paymentData.method === value;
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() =>
+                          setPaymentData((prev) => ({ ...prev, method: value }))
+                        }
+                        aria-pressed={active}
+                        className={`flex items-center justify-center gap-2 rounded-xl border py-3 text-[13px] font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                          active
+                            ? "border-blue-600 bg-blue-50 text-blue-700"
+                            : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        <Icon
+                          size={16}
+                          strokeWidth={1.8}
+                          className={active ? "text-blue-600" : "text-gray-400"}
+                        />
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
               {/* Discount */}
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-widest block mb-2">
-                  Discount
-                </label>
-                <div className="flex gap-2 mb-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDiscountType("fixed");
-                      setPaymentData((prev) => ({ ...prev, discount: 0 }));
-                      setDiscountError("");
-                    }}
-                    className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${
-                      discountType === "fixed"
-                        ? "bg-blue-600 text-white border-blue-600"
-                        : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    Fixed Amount
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDiscountType("percentage");
-                      setPaymentData((prev) => ({ ...prev, discount: 0 }));
-                      setDiscountError("");
-                    }}
-                    className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${
-                      discountType === "percentage"
-                        ? "bg-blue-600 text-white border-blue-600"
-                        : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    Percentage (%)
-                  </button>
+                <div className="flex items-center justify-between">
+                  <SectionLabel>Discount</SectionLabel>
+                  <div className="flex rounded-lg border border-gray-200 p-0.5">
+                    {(
+                      [
+                        { key: "fixed", label: currency.symbol },
+                        { key: "percentage", label: "%" },
+                      ] as const
+                    ).map(({ key, label }) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => {
+                          setDiscountType(key);
+                          setPaymentData((prev) => ({ ...prev, discount: 0 }));
+                          setDiscountError("");
+                        }}
+                        aria-pressed={discountType === key}
+                        className={`min-w-[34px] rounded-md px-2 py-1 text-[12px] font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                          discountType === key
+                            ? "bg-gray-900 text-white"
+                            : "text-gray-500 hover:text-gray-800"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="relative">
+
+                <div className="relative mt-2">
                   <input
                     type="number"
                     min={0}
@@ -504,67 +495,60 @@ export default function RecordPaymentModal({
                     placeholder={
                       discountType === "percentage" ? "e.g. 10" : "e.g. 50"
                     }
-                    className={`w-full px-4 py-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm pr-10 ${
-                      discountError ? "border-red-300" : "border-gray-200"
+                    className={`w-full rounded-xl border bg-white px-3.5 py-2.5 pr-10 text-[13px] tabular-nums outline-none transition focus:ring-2 focus:ring-blue-500/40 ${
+                      discountError
+                        ? "border-red-300 focus:border-red-400"
+                        : "border-gray-200 focus:border-blue-500"
                     }`}
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                  <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[13px] text-gray-400">
                     {discountType === "percentage" ? "%" : currency.symbol}
                   </span>
                 </div>
-                {discountType === "percentage" &&
-                  paymentData.discount > 0 &&
-                  !discountError && (
-                    <p className="text-xs text-gray-400 mt-1">
-                      {paymentData.discount}% of{" "}
-                      {formatCurrencySymbol(
-                        subtotalBeforeTax,
-                        currency.symbol,
-                        currency.locale,
-                      )}{" "}
-                      ={" "}
-                      {formatCurrencySymbol(
-                        computedDiscountAmount,
-                        currency.symbol,
-                        currency.locale,
-                      )}{" "}
-                      off
+
+                {discountError ? (
+                  <p className="mt-1.5 text-[11px] text-red-500">
+                    {discountError}
+                  </p>
+                ) : (
+                  discountType === "percentage" &&
+                  paymentData.discount > 0 && (
+                    <p className="mt-1.5 text-[11px] text-gray-400 tabular-nums">
+                      {paymentData.discount}% of {money(subtotalBeforeTax)} ={" "}
+                      {money(computedDiscountAmount)} off
                     </p>
-                  )}
-                {discountError && (
-                  <p className="text-xs text-red-500 mt-1">{discountError}</p>
+                  )
                 )}
               </div>
 
               {/* Loyalty */}
               {customerProfile && (
-                <div className="border border-violet-200 rounded-xl p-4 space-y-3 bg-violet-50/40">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800">
-                        Redeem Loyalty Points
+                <div className="rounded-xl border border-gray-200 px-4 py-3.5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-medium text-gray-900">
+                        Redeem loyalty points
                       </p>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        Customer has{" "}
-                        <span className="font-semibold text-violet-600">
-                          {(customerProfile.loyaltyPoint ?? 0).toFixed(2)} pts
-                        </span>{" "}
+                      <p className="mt-0.5 text-[11px] text-gray-400 tabular-nums">
+                        {(customerProfile.loyaltyPoint ?? 0).toFixed(2)} pts
                         available
                       </p>
                     </div>
                     <button
                       type="button"
                       disabled={!canRedeem}
+                      aria-label="Redeem loyalty points"
+                      aria-pressed={redeemEnabled}
                       onClick={() => {
                         setRedeemEnabled((prev) => !prev);
                         setRedeemPoints(0);
                         setRedeemError("");
                       }}
-                      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus:outline-none ${
+                      className={`relative mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 ${
                         !canRedeem
-                          ? "bg-gray-300 cursor-not-allowed"
+                          ? "cursor-not-allowed bg-gray-200"
                           : redeemEnabled
-                            ? "bg-violet-500"
+                            ? "bg-blue-400"
                             : "bg-gray-200"
                       }`}
                     >
@@ -577,100 +561,75 @@ export default function RecordPaymentModal({
                       />
                     </button>
                   </div>
+
                   {!canRedeem && loyaltySettings && (
-                    <div className="bg-violet-100/60 rounded-lg px-3 py-2.5 text-xs text-gray-600">
-                      Your loyalty point is lower than the required base point (
-                      <span className="font-semibold text-violet-700">
+                    <p className="mt-2.5 border-t border-gray-100 pt-2.5 text-[11px] leading-relaxed text-gray-500">
+                      Needs at least{" "}
+                      <span className="font-semibold text-gray-700 tabular-nums">
                         {loyaltySettings.basePoint} pts
-                      </span>
-                      ). You currently have{" "}
-                      <span className="font-semibold">
-                        {(customerProfile.loyaltyPoint ?? 0).toFixed(2)} pts
-                      </span>
-                      .
-                    </div>
+                      </span>{" "}
+                      to redeem.
+                    </p>
                   )}
+
                   {redeemEnabled && (
-                    <div className="space-y-2">
-                      <div className="grid grid-cols-2 gap-3 text-xs text-gray-500 bg-white rounded-lg px-3 py-2 border border-violet-200">
-                        <div>
-                          <p className="text-gray-400">Total points</p>
-                          <p className="font-bold text-gray-800 text-sm">
-                            {customerProfile.loyaltyPoint ?? 0} pts
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-400">Max redeemable</p>
-                          <p className="font-bold text-violet-600 text-sm">
-                            {maxRedeemablePoints.toFixed(0)} pts
-                          </p>
-                        </div>
-                      </div>
-                      <div>
-                        <input
-                          type="number"
-                          min={0}
-                          max={maxRedeemablePoints}
-                          value={redeemPoints}
-                          onChange={(e) =>
-                            handleRedeemChange(Number(e.target.value))
+                    <div className="mt-3 space-y-1.5 border-t border-gray-100 pt-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] text-gray-400">
+                          Points to redeem
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleRedeemChange(
+                              Number(maxRedeemablePoints.toFixed(0)),
+                            )
                           }
-                          placeholder={`Max ${maxRedeemablePoints.toFixed(0)} pts`}
-                          className={`w-full px-4 py-2.5 bg-white border rounded-xl focus:ring-2 focus:ring-violet-400 outline-none text-sm ${
-                            redeemError ? "border-red-300" : "border-violet-200"
-                          }`}
-                        />
-                        {redeemError && (
-                          <p className="text-xs text-red-500 mt-1">
-                            {redeemError}
-                          </p>
-                        )}
-                        {!redeemError && redeemPoints > 0 && (
-                          <p className="text-xs text-violet-500 mt-1">
-                            {redeemPoints} pts ={" "}
-                            {formatCurrencySymbol(
-                              redeemPoints,
-                              currency.symbol,
-                              currency.locale,
-                            )}{" "}
-                            off
-                          </p>
-                        )}
+                          className="text-[11px] font-semibold text-blue-400 transition hover:text-blue-700 tabular-nums"
+                        >
+                          Use max ({maxRedeemablePoints.toFixed(0)} points)
+                        </button>
                       </div>
+                      <input
+                        type="number"
+                        min={0}
+                        max={maxRedeemablePoints}
+                        value={redeemPoints}
+                        onChange={(e) =>
+                          handleRedeemChange(Number(e.target.value))
+                        }
+                        placeholder="0"
+                        className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-[13px] tabular-nums outline-none transition focus:ring-2 focus:ring-blue-400/40 ${
+                          redeemError
+                            ? "border-red-300 focus:border-red-400"
+                            : "border-gray-200 focus:border-blue-400"
+                        }`}
+                      />
+                      {redeemError ? (
+                        <p className="text-[11px] text-red-500">
+                          {redeemError}
+                        </p>
+                      ) : (
+                        redeemPoints > 0 && (
+                          <p className="text-[11px] text-gray-400 tabular-nums">
+                            {redeemPoints} pts = {money(redeemPoints)} off
+                          </p>
+                        )
+                      )}
                     </div>
                   )}
                 </div>
               )}
-
-              {/* Final Amount */}
-              <div className="bg-white rounded-xl border border-gray-100 p-4 flex justify-between items-center shadow-sm">
-                <div>
-                  <p className="text-gray-400 text-[11px] uppercase font-medium">
-                    Final Amount
-                  </p>
-                  <p className="text-2xl font-bold text-gray-800">
-                    {formatCurrencySymbol(
-                      finalPayable,
-                      currency.symbol,
-                      currency.locale,
-                    )}
-                  </p>
-                </div>
-                <span className="text-[11px] bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full font-medium capitalize">
-                  {paymentData.method}
-                </span>
-              </div>
-            </>
+            </div>
           )}
         </div>
 
         {/* ── Footer ── */}
-        <div className="px-5 py-4 border-t border-gray-100">
+        <div className="border-t border-gray-100 px-6 py-4">
           <button
+            type="button"
             onClick={handleRecordPayment}
-            disabled={
-              !invoice || !!discountError || !!redeemError || isRecordingPayment
-            }
+            disabled={disabled}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-sm"
           >
             {isRecordingPayment ? (
@@ -694,16 +653,12 @@ export default function RecordPaymentModal({
                     d="M4 12a8 8 0 018-8v8z"
                   />
                 </svg>
-                Processing Payment...
+                Recording Payment...
               </>
             ) : (
               <>
-                Confirm &amp; Pay{" "}
-                {formatCurrencySymbol(
-                  finalPayable,
-                  currency.symbol,
-                  currency.locale,
-                )}
+                Confirm &amp; Pay
+                <span className="tabular-nums">{money(finalPayable)}</span>
               </>
             )}
           </button>

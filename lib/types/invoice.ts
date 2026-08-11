@@ -69,6 +69,10 @@ export interface InvoiceItem {
     quantity: number;
     costPrice: number;
   };
+  /** Selected variant id when the product has variants. */
+  variantId?: string;
+  /** Selected variant option values (e.g. ["small", "cherry"]). */
+  variantLabel?: string;
 }
 // export interface Discount {
 //   id: string;

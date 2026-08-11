@@ -1,16 +1,23 @@
 "use client";
 
-import jsPDF from "jspdf";
 import toast from "react-hot-toast";
-import { toJpeg } from "html-to-image";
-import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
-import { Download, FileText } from "lucide-react";
+import { useRef, useState } from "react";
+import { Download, FileText, Loader2 } from "lucide-react";
 
 import InvoicePreview from "@/components/invoice/InvoicePreview";
+import ModalShell, {
+  DocumentRow,
+  OffscreenLayer,
+} from "@/components/ui/ModalShell";
+import { buildInvoicePdf } from "@/lib/invoicePdf";
+import {
+  INVOICE_TYPES,
+  SHORT_LABELS,
+  DESCRIPTIONS,
+  fileStemFor,
+  type InvoiceType,
+} from "@/components/invoice/InvoiceDocuments";
 import { useInvoiceDocumentData } from "./useInvoiceTicket";
-
-type InvoiceType = "proforma" | "invoice" | "tax";
 
 interface ExportPdfModalProps {
   open: boolean;
@@ -30,10 +37,7 @@ export default function ExportPdfModal({
   const regularRef = useRef<HTMLDivElement | null>(null);
   const taxRef = useRef<HTMLDivElement | null>(null);
 
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
-  const [generatingFor, setGeneratingFor] = useState<string | null>(null);
+  const [generatingFor, setGeneratingFor] = useState<InvoiceType | null>(null);
 
   const refMap = {
     proforma: proformaRef,
@@ -41,64 +45,13 @@ export default function ExportPdfModal({
     tax: taxRef,
   } as const;
 
-  const handleDownloadPDF = async (
-    ref: React.RefObject<HTMLDivElement | null>,
-    suffix: string,
-  ) => {
-    if (!ref.current || !invoice) return;
+  const handleDownloadPDF = async (type: InvoiceType) => {
+    if (!invoice || generatingFor) return;
     try {
-      setGeneratingFor(suffix);
-      // JPEG at a moderate pixel ratio keeps the canvas within browser limits.
-      // Credited invoices add a long payment-history section, making the
-      // document tall — a lossless 2x PNG can exceed the canvas/memory cap and
-      // produce a blank export, so we mirror the public preview's approach.
-      const dataUrl = await toJpeg(ref.current, {
-        cacheBust: true,
-        quality: 0.7,
-        pixelRatio: 1.5,
-        backgroundColor: "#ffffff",
-      });
-      const pdf = new jsPDF({
-        orientation: "p",
-        unit: "mm",
-        format: "a4",
-        compress: true,
-      });
-      const pageWidth = 210;
-      const pageHeight = 297;
-      const imgProps = pdf.getImageProperties(dataUrl);
-      const imgWidth = pageWidth;
-      const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
-
-      let heightLeft = imgHeight;
-      let position = 0;
-      pdf.addImage(
-        dataUrl,
-        "JPEG",
-        0,
-        position,
-        imgWidth,
-        imgHeight,
-        undefined,
-        "FAST",
-      );
-      heightLeft -= pageHeight;
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(
-          dataUrl,
-          "JPEG",
-          0,
-          position,
-          imgWidth,
-          imgHeight,
-          undefined,
-          "FAST",
-        );
-        heightLeft -= pageHeight;
-      }
-      pdf.save(`Invoice-${invoice.invoice}-${suffix}.pdf`);
+      setGeneratingFor(type);
+      const pdf = await buildInvoicePdf(refMap[type]);
+      if (!pdf) throw new Error("Invoice preview not ready");
+      pdf.save(`Invoice-${invoice.invoice}-${fileStemFor(type)}.pdf`);
     } catch (err) {
       console.error("PDF Generation Error:", err);
       toast.error("Failed to generate PDF");
@@ -107,14 +60,14 @@ export default function ExportPdfModal({
     }
   };
 
-  if (!open || !mounted) return null;
+  if (!open) return null;
 
-  return createPortal(
+  return (
     <>
       {/* Off-screen previews used to render the PDF images. */}
       {invoice && (
-        <div aria-hidden className="absolute -left-[99999px] top-0">
-          {(["proforma", "invoice", "tax"] as InvoiceType[]).map((t) => (
+        <OffscreenLayer>
+          {INVOICE_TYPES.map((t) => (
             <InvoicePreview
               key={t}
               type={t}
@@ -127,79 +80,66 @@ export default function ExportPdfModal({
               credit={credit}
             />
           ))}
-        </div>
+        </OffscreenLayer>
       )}
 
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-        onClick={onClose}
+      <ModalShell
+        open={open}
+        onClose={onClose}
+        busy={!!generatingFor}
+        title="Export as PDF"
+        subtitle={
+          invoice?.invoice != null
+            ? `Invoice #${invoice.invoice} · printable copy`
+            : "Printable copy"
+        }
+        icon={FileText}
       >
-        <div
-          className="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden animate-in fade-in-0 slide-in-from-bottom-6 duration-300"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* ── Header ── */}
-          <div className="relative flex items-center justify-between border-b border-gray-100 px-5 py-3.5">
-            <div>
-              <h2 className="text-lg font-bold text-gray-800">Export as PDF</h2>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Download a printable invoice document
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center font-bold rounded-full  text-gray-500 transition  hover:text-red-500 hover:text-lg cursor-pointer text-sm "
-            >
-              ✕
-            </button>
+        {!invoice ? (
+          <div className="flex items-center justify-center gap-2 py-14 text-[13px] text-gray-400">
+            <Loader2 size={15} className="animate-spin" />
+            Loading invoice
           </div>
+        ) : (
+          <div className="space-y-2">
+            {INVOICE_TYPES.map((type) => {
+              const isGenerating = generatingFor === type;
+              return (
+                <DocumentRow
+                  key={type}
+                  icon={FileText}
+                  label={SHORT_LABELS[type]}
+                  description={DESCRIPTIONS[type]}
+                  trailing={
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadPDF(type)}
+                      disabled={!!generatingFor}
+                      className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 px-3 text-[12px] font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 size={13} className="animate-spin" />
+                          Preparing
+                        </>
+                      ) : (
+                        <>
+                          <Download size={13} />
+                          Download
+                        </>
+                      )}
+                    </button>
+                  }
+                />
+              );
+            })}
 
-          {/* ── Content ── */}
-          <div className="px-5 py-4">
-            {!invoice ? (
-              <div className="flex items-center justify-center py-10 text-sm text-gray-400">
-                Loading invoice...
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 gap-3">
-                {(
-                  [
-                    { label: "Proforma", type: "proforma", ref: proformaRef },
-                    { label: "Invoice", type: "invoice", ref: regularRef },
-                    { label: "Tax Invoice", type: "tax", ref: taxRef },
-                  ] as {
-                    label: string;
-                    type: InvoiceType;
-                    ref: React.RefObject<HTMLDivElement | null>;
-                  }[]
-                ).map((item) => (
-                  <button
-                    key={item.type}
-                    className="group cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                    onClick={() => handleDownloadPDF(item.ref, item.type)}
-                    disabled={generatingFor === item.type}
-                  >
-                    <div className="rounded-xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-3 shadow-sm transition-all hover:shadow-md">
-                      <div className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center mx-auto mb-2 group-hover:bg-red-100 transition">
-                        <Download className="text-red-500" size={14} />
-                      </div>
-                      <h4 className="text-xs font-semibold text-gray-800">
-                        {generatingFor === item.type
-                          ? "Generating..."
-                          : item.label}
-                      </h4>
-                      <p className="mt-0.5 text-[11px] text-gray-500">
-                        Download PDF
-                      </p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
+            <p className="pt-1 text-[11px] leading-relaxed text-gray-400">
+              Each file is A4 and ready to print.
+            </p>
           </div>
-        </div>
-      </div>
-    </>,
-    document.body,
+        )}
+      </ModalShell>
+    </>
   );
 }

@@ -2,6 +2,7 @@ import { Fragment, useState } from "react";
 
 import { cn } from "@/lib/utils";
 import { InvoiceItem, InvoiceItemsSelectorProps } from "@/lib/types/invoice";
+import { ProductVariant } from "@/lib/types/product";
 
 import {
   Trash2,
@@ -11,6 +12,7 @@ import {
   ChevronsUpDown,
   Plus,
   X,
+  Layers,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -50,6 +52,10 @@ export default function InvoiceItemsSelector({
   const [search, setSearch] = useState("");
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  // Track which row's product popover is open (per-row, not shared)
+  const [productPopoverRow, setProductPopoverRow] = useState<string | null>(
+    null,
+  );
 
   // Inside the component, add state:
   const [discountModalItemId, setDiscountModalItemId] = useState<string | null>(
@@ -61,6 +67,14 @@ export default function InvoiceItemsSelector({
     isCustom: boolean;
   } | null>(null);
 
+  // ── Variant picker state ──
+  const [variantPicker, setVariantPicker] = useState<{
+    itemId: string;
+    productId: string;
+    productName: string;
+    variants: ProductVariant[];
+  } | null>(null);
+
   // ── Stock validation errors per item ──
   const [stockErrors, setStockErrors] = useState<Record<string, string>>({});
 
@@ -68,7 +82,42 @@ export default function InvoiceItemsSelector({
     item: InvoiceItem,
   ): { type: "low" | "exceeded" | null; message: string } => {
     const product = products.find((p) => p.id === item.productId);
-    if (!product || !product.usesStocks || product.inStock === undefined) {
+    if (!product || !product.usesStocks) {
+      return { type: null, message: "" };
+    }
+
+    // If the item has a selected variant, check the variant's stock
+    if (item.variantId && product.variants) {
+      const variant = product.variants.find((v) => v.id === item.variantId);
+      if (!variant) return { type: null, message: "" };
+
+      const variantStock = variant.inStock ?? 0;
+      const variantLow = variant.lowStock ?? 0;
+
+      if (item.quantity > variantStock) {
+        return {
+          type: "exceeded",
+          message: `Only ${variantStock} in stock. You entered ${item.quantity}.`,
+        };
+      }
+
+      if (
+        variantLow > 0 &&
+        item.quantity > 0 &&
+        variantStock > 0 &&
+        variantStock <= variantLow
+      ) {
+        return {
+          type: "low",
+          message: `Low stock: only ${variantStock} remaining.`,
+        };
+      }
+
+      return { type: null, message: "" };
+    }
+
+    // Non-variant product - check parent stock
+    if (product.inStock === undefined) {
       return { type: null, message: "" };
     }
 
@@ -134,9 +183,18 @@ export default function InvoiceItemsSelector({
     field: keyof InvoiceItem,
     value: string | number,
   ) => {
-    const updatedItems = items.map((item) =>
-      item.id !== id ? item : { ...item, [field]: value },
-    );
+    const updatedItems = items.map((item) => {
+      if (item.id !== id) return item;
+      const updated = { ...item, [field]: value };
+      // Keep variantItems.quantity in sync when quantity changes
+      if (field === "quantity" && updated.variantItems) {
+        updated.variantItems = {
+          ...updated.variantItems,
+          quantity: Number(value),
+        };
+      }
+      return updated;
+    });
     onItemsChange(updatedItems);
 
     // Validate stock when quantity changes and product is set
@@ -155,6 +213,20 @@ export default function InvoiceItemsSelector({
       delete next[itemId];
       return next;
     });
+
+    // If the product has variants, open the variant picker
+    if (product?.variants && product.variants.length > 0) {
+      // Close the popover first so it doesn't overlap the variant picker
+      setProductPopoverRow(null);
+      setVariantPicker({
+        itemId,
+        productId: product.id,
+        productName: product.name,
+        variants: product.variants,
+      });
+      return;
+    }
+
     const updatedItems = items.map((item) =>
       item.id !== itemId
         ? item
@@ -167,6 +239,9 @@ export default function InvoiceItemsSelector({
             discounts: product?.discounts || [],
             isTaxable: product?.isTaxable ?? false, // ← pass through
             taxes: [],
+            variantId: undefined,
+            variantLabel: undefined,
+            variantItems: undefined,
           },
     );
     onItemsChange(updatedItems);
@@ -185,6 +260,49 @@ export default function InvoiceItemsSelector({
         isCustom: productName.toLowerCase() === "custom",
       });
     }
+  };
+
+  /** Apply a selected variant to an item. */
+  const handleVariantSelect = (variant: ProductVariant) => {
+    if (!variantPicker) return;
+    const { itemId, productId, productName } = variantPicker;
+    const variantLabel = variant.optionValues.join(" · ");
+
+    // Inherit the parent product's discounts
+    const parentProduct = products.find((p) => p.id === productId);
+
+    const updatedItems = items.map((item) =>
+      item.id !== itemId
+        ? item
+        : {
+            ...item,
+            name: `${productName} (${variantLabel})`,
+            productId,
+            price: variant.price,
+            description: variantLabel,
+            discounts: parentProduct?.discounts || [],
+            isTaxable: true,
+            taxes: [],
+            variantId: variant.id,
+            variantLabel,
+            variantItems: {
+              _id: variant.id,
+              name: variantLabel,
+              unitPrice: variant.price,
+              quantity: item.quantity,
+              costPrice: variant.costPrice ?? 0,
+            },
+          },
+    );
+    onItemsChange(updatedItems);
+
+    // Validate variant stock after selection
+    const updatedItem = updatedItems.find((i) => i.id === itemId);
+    if (updatedItem) {
+      validateStock(updatedItem);
+    }
+
+    setVariantPicker(null);
   };
 
   return (
@@ -208,7 +326,12 @@ export default function InvoiceItemsSelector({
                   placeholder="Product name"
                   className="flex-1 h-8 text-xs"
                 />
-                <Popover>
+                <Popover
+                  open={productPopoverRow === item.id}
+                  onOpenChange={(open) =>
+                    setProductPopoverRow(open ? item.id : null)
+                  }
+                >
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
@@ -242,6 +365,14 @@ export default function InvoiceItemsSelector({
                         <CommandGroup>
                           {products
                             .filter((product) => {
+                              // Variant products hold stock on their variants,
+                              // so skip the parent-level stock filter for them.
+                              if (
+                                product.variants &&
+                                product.variants.length > 0
+                              ) {
+                                return true;
+                              }
                               if (
                                 product.usesStocks &&
                                 product.inStock !== undefined
@@ -251,7 +382,10 @@ export default function InvoiceItemsSelector({
                               return true;
                             })
                             .map((product) => {
+                              const hasVariants =
+                                product.variants && product.variants.length > 0;
                               const isLowStock =
+                                !hasVariants &&
                                 product.usesStocks &&
                                 product.inStock !== undefined &&
                                 product.lowStock !== undefined &&
@@ -278,6 +412,12 @@ export default function InvoiceItemsSelector({
                                       <span className="text-sm">
                                         {product.name}
                                       </span>
+                                      {hasVariants && (
+                                        <span className="inline-flex items-center gap-0.5 text-[9px] px-1 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200 font-medium whitespace-nowrap">
+                                          <Layers className="h-2.5 w-2.5" />
+                                          {product.variants?.length} variants
+                                        </span>
+                                      )}
                                       {isLowStock && (
                                         <span className="text-[9px] px-1 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200 font-medium whitespace-nowrap">
                                           Low Stock
@@ -285,11 +425,21 @@ export default function InvoiceItemsSelector({
                                       )}
                                     </div>
                                     <span className="text-[11px] text-muted-foreground">
-                                      {formatCurrencySymbol(
-                                        product.price,
-                                        currency.symbol,
-                                        currency.locale,
-                                      )}
+                                      {hasVariants
+                                        ? `From ${formatCurrencySymbol(
+                                            Math.min(
+                                              ...(product.variants?.map(
+                                                (v) => v.price,
+                                              ) ?? [0]),
+                                            ),
+                                            currency.symbol,
+                                            currency.locale,
+                                          )}`
+                                        : formatCurrencySymbol(
+                                            product.price,
+                                            currency.symbol,
+                                            currency.locale,
+                                          )}
                                     </span>
                                   </div>
                                 </CommandItem>
@@ -360,7 +510,7 @@ export default function InvoiceItemsSelector({
                     sum +
                     (d.type === "percentage"
                       ? (rowSubtotal * d.rate) / 100
-                      : d.rate)
+                      : d.rate * item.quantity)
                   );
                 }, 0);
                 return (rowSubtotal - rowDiscount).toFixed(2);
@@ -433,12 +583,7 @@ export default function InvoiceItemsSelector({
                       Stock Exceeded
                     </span>
                     <span className="text-[11px]  font-semibold  tracking-wider leading-none">
-                      {(() => {
-                        const product = products.find(
-                          (p) => p.id === item.productId,
-                        );
-                        return product ? `(in stock: ${product.inStock})` : "";
-                      })()}
+                      {stockErrors[item.id]}
                     </span>
                   </Badge>
                 )}
@@ -489,7 +634,7 @@ export default function InvoiceItemsSelector({
                             ({d.rate}%) :
                           </span>
                           <span className="text-[11px] font-semibold  tracking-wider font-medium leading-none">
-                            - {formatCurrencySymbolOnly(currency.symbol)}
+                            - {formatCurrencySymbolOnly(currency.symbol)}{" "}
                             {(
                               (item.quantity * item.price * d.rate) /
                               100
@@ -499,10 +644,11 @@ export default function InvoiceItemsSelector({
                       ) : (
                         <>
                           <span className="text-[11px] font-semibold  tracking-wider text-blue-500 leading-none">
-                            {d.rate} off :
+                            ({formatCurrencySymbolOnly(currency.symbol)}{" "}
+                            {d.rate} off) :
                           </span>
                           <span className="text-[11px] font-semibold  tracking-wider font-medium leading-none">
-                            - {formatCurrencySymbolOnly(currency.symbol)}
+                            - {formatCurrencySymbolOnly(currency.symbol)}{" "}
                             {(d.rate * item.quantity).toFixed(2)}
                           </span>
                         </>
@@ -545,7 +691,7 @@ export default function InvoiceItemsSelector({
                               sum +
                               (d.type === "percentage"
                                 ? (rowTotal * d.rate) / 100
-                                : d.rate)
+                                : d.rate * item.quantity)
                             );
                           },
                           0,
@@ -658,6 +804,88 @@ export default function InvoiceItemsSelector({
             );
           }}
         />
+      )}
+
+      {/* ── Variant picker modal ── */}
+      {variantPicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 ">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="variant-picker-title"
+            className="w-full max-w-md rounded-2xl bg-white shadow-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200"
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
+              <div className="min-w-0">
+                <h2
+                  id="variant-picker-title"
+                  className="text-base font-semibold text-slate-900"
+                >
+                  {variantPicker.productName}
+                </h2>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  Select a variant to add to the invoice
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setVariantPicker(null)}
+                aria-label="Close"
+                className="-mr-1 -mt-1 shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Variant list */}
+            <div className="max-h-80 overflow-y-auto px-3 py-3 space-y-1.5">
+              {variantPicker.variants.map((variant) => {
+                const label = variant.optionValues.join(" · ");
+                const isLowStock =
+                  variant.inStock !== undefined &&
+                  variant.lowStock !== undefined &&
+                  variant.inStock > 0 &&
+                  variant.inStock <= variant.lowStock;
+
+                return (
+                  <button
+                    key={variant.id}
+                    type="button"
+                    onClick={() => handleVariantSelect(variant)}
+                    className="w-full flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3 py-2.5 text-left transition hover:border-blue-400 hover:bg-blue-50/50"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-50 text-violet-600">
+                        <Layers className="h-3.5 w-3.5" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate text-[13px] font-medium capitalize text-slate-800">
+                          {label}
+                        </p>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[11px] text-slate-400">
+                            {formatCurrencySymbol(
+                              variant.price,
+                              currency.symbol,
+                              currency.locale,
+                            )}
+                          </span>
+                          {isLowStock && (
+                            <span className="text-[9px] px-1 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200 font-medium whitespace-nowrap">
+                              Low Stock
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <Plus className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

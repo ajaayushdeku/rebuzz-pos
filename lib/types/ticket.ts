@@ -59,6 +59,16 @@ export type CreateTicketItem = {
   note: string | null;
   discounts: unknown[];
   isTaxable: boolean;
+  /** Optional variant info when the item is a product variant. */
+  variantId?: string;
+  variantLabel?: string;
+  variantItems?: {
+    _id: string;
+    name: string;
+    unitPrice: number;
+    quantity: number;
+    costPrice: number;
+  };
 };
 
 export type CreateTicketInput = {
@@ -72,4 +82,6 @@ export type CreateTicketInput = {
   phoneNumber: string;
   customerEmail: string;
   note: string;
+  /** Whether the tax is exclusive (added on top of the subtotal). */
+  isTaxExclusive?: boolean;
 };

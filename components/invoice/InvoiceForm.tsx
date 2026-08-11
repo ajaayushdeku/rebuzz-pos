@@ -7,6 +7,7 @@ import { useProductsList } from "@/hooks/useProductsList";
 
 import { Customer } from "@/lib/types/customer";
 import { InvoiceItem } from "@/lib/types/invoice";
+import { Product } from "@/lib/types/product";
 import { CreateTicketInput } from "@/lib/types/ticket";
 import {
   updateCreditItems,
@@ -15,7 +16,7 @@ import {
 } from "@/services/apiCredit.client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import toast from "react-hot-toast";
 import { Save } from "lucide-react";
 
@@ -60,43 +61,184 @@ interface CustomDiscount {
   value: number;
 }
 
-// ── Helper: map raw backend item to InvoiceItem ───────────────────────────
-function mapInitialItem(item: any): InvoiceItem {
+// ── Raw-payload normalisers ───────────────────────────────────────────────
+// The ticket API and the update payload disagree on two field names. Both
+// mismatches are isolated here so the rest of the form only sees InvoiceItem.
+
+/**
+ * The variant id on a FETCHED item lives under `variantItems.variant`, while
+ * the UPDATE payload expects it under `variantItems._id`. Reading the wrong
+ * key is what silently dropped variant data on edit. Every spelling seen in
+ * the wild is accepted here so a shape change can't break the round-trip.
+ */
+function rawVariantId(rawVariantItems: any): string | undefined {
+  if (!rawVariantItems) return undefined;
+  return (
+    rawVariantItems.variant ??
+    rawVariantItems._id ??
+    rawVariantItems.variantId ??
+    rawVariantItems.id ??
+    undefined
+  );
+}
+
+/**
+ * A fetched discount is a subdocument: `_id` is the subdocument's own id and
+ * `discount` holds the master discount id that `masterDiscounts` is keyed by.
+ * Taking `_id` here means no discount ever matches on edit.
+ */
+function rawDiscountIds(rawDiscounts: any[] | undefined): string[] {
+  return (rawDiscounts ?? [])
+    .map((d: any) => (typeof d === "string" ? d : (d?.discount ?? d?._id)))
+    .filter(Boolean);
+}
+
+/** `items` is an array of GROUPS, each holding an `item` array. Flatten all. */
+function flattenTicketItems(ticket: any): any[] {
+  return (ticket?.items ?? []).flatMap((group: any) => group?.item ?? []);
+}
+
+/**
+ * Build an InvoiceItem from a raw ticket item.
+ *
+ * Everything except QUANTITY is sourced from the live products list when the
+ * product still exists — name, price, description, taxability and variant
+ * details all reflect the product as it is today, not as it was invoiced.
+ * Quantity, and the discounts the user actually applied, come from the ticket.
+ */
+function mapRawItem(raw: any, products: Product[]): InvoiceItem {
+  const quantity = raw.quantity ?? 1;
+  const discounts = rawDiscountIds(raw.discounts);
+  const product = products.find((p) => p.id === raw.product);
+
+  // Product no longer in the list (custom or deleted) — keep what was stored.
+  if (!product) {
+    const storedVariantId = rawVariantId(raw.variantItems);
+    return {
+      id: raw._id ?? crypto.randomUUID(),
+      productId: raw.product ?? "",
+      name: raw.productName ?? "",
+      description: raw.description ?? "",
+      quantity,
+      price: raw.unitPrice ?? 0,
+      discounts,
+      taxes: [],
+      isTaxable: raw.isTaxable ?? false,
+      ...(storedVariantId
+        ? {
+            variantId: storedVariantId,
+            variantLabel: raw.variantItems?.name ?? "",
+            variantItems: {
+              _id: storedVariantId,
+              name: raw.variantItems?.name ?? "",
+              unitPrice: raw.variantItems?.unitPrice ?? raw.unitPrice ?? 0,
+              quantity,
+              costPrice: raw.variantItems?.costPrice ?? 0,
+            },
+          }
+        : {}),
+    };
+  }
+
+  const variantId = rawVariantId(raw.variantItems);
+  const variant = variantId
+    ? product.variants?.find((v) => v.id === variantId)
+    : undefined;
+
+  // Variant recorded on the ticket but since removed from the product — keep
+  // the stored snapshot so the line still round-trips through the update.
+  if (variantId && !variant) {
+    const label = raw.variantItems?.name ?? "";
+    return {
+      id: raw._id ?? crypto.randomUUID(),
+      productId: product.id,
+      name: raw.productName ?? product.name,
+      description: label,
+      quantity,
+      price: raw.variantItems?.unitPrice ?? raw.unitPrice ?? 0,
+      discounts,
+      taxes: [],
+      isTaxable: raw.isTaxable ?? false,
+      variantId,
+      variantLabel: label,
+      variantItems: {
+        _id: variantId,
+        name: label,
+        unitPrice: raw.variantItems?.unitPrice ?? raw.unitPrice ?? 0,
+        quantity,
+        costPrice: raw.variantItems?.costPrice ?? 0,
+      },
+    };
+  }
+
+  if (variant) {
+    const label = variant.optionValues?.join(" · ") ?? "";
+    return {
+      id: raw._id ?? crypto.randomUUID(),
+      productId: product.id,
+      name: `${product.name} (${label})`,
+      description: label,
+      quantity,
+      price: variant.price,
+      discounts,
+      taxes: [],
+      isTaxable: product.isTaxable ?? raw.isTaxable ?? false,
+      variantId: variant.id,
+      variantLabel: label,
+      variantItems: {
+        _id: variant.id,
+        name: label,
+        unitPrice: variant.price,
+        quantity,
+        costPrice: variant.costPrice ?? 0,
+      },
+    };
+  }
+
+  // Standard product
   return {
-    id: item._id ?? crypto.randomUUID(),
-    productId: item.product ?? "",
-    name: item.productName ?? "",
-    description: item.description ?? "",
-    quantity: item.quantity ?? 1,
-    price: item.unitPrice ?? 0,
-    discounts: (item.discounts ?? []).map((d: any) => d._id ?? d),
+    id: raw._id ?? crypto.randomUUID(),
+    productId: product.id,
+    name: product.name,
+    description: product.description ?? raw.description ?? "",
+    quantity,
+    price: product.price,
+    discounts,
     taxes: [],
-    isTaxable: item.isTaxable ?? false,
+    isTaxable: product.isTaxable ?? raw.isTaxable ?? false,
   };
 }
 
 // ── Helper: map a credit item (from the credit detail API) to InvoiceItem ──
 function mapCreditItem(item: CreditItem): InvoiceItem {
+  const raw = item as any;
+  const variantId = rawVariantId(raw.variantItems);
+  const quantity = item.quantity ?? 1;
+
   return {
     id: item._id ?? crypto.randomUUID(),
     productId: item.product ?? "",
     name: item.productName ?? "",
     description: "",
-    quantity: item.quantity ?? 1,
+    quantity,
     price: item.unitPrice ?? 0,
-    discounts: (item.discounts ?? []).map((d: any) => d?._id ?? d),
+    discounts: rawDiscountIds(item.discounts as any[]),
     taxes: [],
     isTaxable: item.isTaxable ?? false,
     // Preserve variant info when present so it round-trips to the credit API.
-    variantItems: (item as any).variantItems
+    ...(variantId
       ? {
-          _id: (item as any).variantItems._id,
-          name: (item as any).variantItems.name,
-          unitPrice: (item as any).variantItems.unitPrice,
-          quantity: (item as any).variantItems.quantity,
-          costPrice: (item as any).variantItems.costPrice,
+          variantId,
+          variantLabel: raw.variantItems?.name ?? "",
+          variantItems: {
+            _id: variantId,
+            name: raw.variantItems?.name ?? "",
+            unitPrice: raw.variantItems?.unitPrice ?? item.unitPrice ?? 0,
+            quantity: raw.variantItems?.quantity ?? quantity,
+            costPrice: raw.variantItems?.costPrice ?? 0,
+          },
         }
-      : undefined,
+      : {}),
   };
 }
 
@@ -124,8 +266,6 @@ export default function InvoiceForm({
 
   const tickets = initialData?.Tickets;
 
-  // console.log("Ticket Data:", tickets);
-
   // ── State — pre-filled from initialData in edit mode ─────────────────────
 
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
@@ -149,16 +289,35 @@ export default function InvoiceForm({
     initialData?.ticket?.note?.split("|Invoice:")[0]?.trim() ?? "",
   );
 
-  // Map items from backend shape, preserving isTaxable per item.
-  // For credit invoices, load the credit's items instead.
+  // Seed from the ticket immediately (products may not have loaded yet); the
+  // effect below re-maps against the live product data once it arrives.
   const [items, setItems] = useState<InvoiceItem[]>(() => {
     if (isCreditInvoice && creditItems.length > 0) {
       return creditItems.map(mapCreditItem);
     }
-    const rawItems = tickets?.items?.[0]?.item;
-    if (rawItems?.length) return rawItems.map(mapInitialItem);
+    const rawItems = flattenTicketItems(tickets);
+    if (rawItems.length) return rawItems.map((raw) => mapRawItem(raw, []));
     return [{ id: crypto.randomUUID(), ...DEFAULT_ITEM }];
   });
+
+  // Store raw ticket items to update with product details once products load
+  const rawTicketItemsRef = useRef(flattenTicketItems(tickets));
+  const hasUpdatedItemsFromProducts = useRef(false);
+
+  // Re-map items against the live products list once it loads, so prices,
+  // names and variant data reflect the product as it is now.
+  useEffect(() => {
+    // Credit invoices are seeded from the credit's own items — never clobber
+    // them with the ticket's.
+    if (isCreditInvoice) return;
+    if (hasUpdatedItemsFromProducts.current || !products.length) return;
+
+    const rawItems = rawTicketItemsRef.current;
+    if (!rawItems?.length) return;
+
+    setItems(rawItems.map((raw: any) => mapRawItem(raw, products)));
+    hasUpdatedItemsFromProducts.current = true;
+  }, [products, isCreditInvoice]);
 
   const [selectedDiscountIds, setSelectedDiscountIds] = useState<string[]>([]);
   const [customDiscounts, setCustomDiscounts] = useState<CustomDiscount[]>(
@@ -186,8 +345,11 @@ export default function InvoiceForm({
   const [activeTaxId, setActiveTaxId] = useState<string | null>(null);
   const [activeTaxRate, setActiveTaxRate] = useState<number>(0);
 
+  // Grouped taxes are valid selections too — matching the add page.
   const activeTaxDetails =
-    taxData?.taxes?.find((t) => t._id === activeTaxId) ?? null;
+    taxData?.taxes?.find((t) => t._id === activeTaxId) ??
+    taxData?.groupedTaxes?.find((g: any) => g._id === activeTaxId) ??
+    null;
 
   // ── Calculations ──────────────────────────────────────────────────────────
 
@@ -197,7 +359,10 @@ export default function InvoiceForm({
       const d = masterDiscounts.find((m) => m._id === dId);
       if (!d) return dSum;
       return (
-        dSum + (d.type === "percentage" ? (rowRawTotal * d.rate) / 100 : d.rate)
+        dSum +
+        (d.type === "percentage"
+          ? (rowRawTotal * d.rate) / 100
+          : d.rate * item.quantity)
       );
     }, 0);
     return sum + (rowRawTotal - rowDiscount);
@@ -211,7 +376,10 @@ export default function InvoiceForm({
       const d = masterDiscounts.find((m) => m._id === dId);
       if (!d) return dSum;
       return (
-        dSum + (d.type === "percentage" ? (rowRawTotal * d.rate) / 100 : d.rate)
+        dSum +
+        (d.type === "percentage"
+          ? (rowRawTotal * d.rate) / 100
+          : d.rate * item.quantity)
       );
     }, 0);
     return sum + Math.max(0, rowRawTotal - rowDiscount);
@@ -234,12 +402,6 @@ export default function InvoiceForm({
 
   const hasAnyDiscount =
     selectedDiscountIds.length > 0 || customDiscounts.length > 0;
-
-  // Replace initialDiscountAmount:
-  const initialDiscountAmount =
-    isEditMode && !hasAnyDiscount
-      ? (tickets?.discount ?? 0) // ← Tickets.discount, not ticket.discount
-      : 0;
 
   const globalDiscountValue = hasAnyDiscount
     ? masterDiscountValue + customDiscountValue
@@ -337,6 +499,89 @@ export default function InvoiceForm({
     setCustomDiscounts((prev) => prev.filter((d) => d.id !== id));
   };
 
+  /** The original raw ticket item a form row came from, if any. */
+  const rawFor = (item: InvoiceItem): any =>
+    rawTicketItemsRef.current.find((r: any) => r?._id && r._id === item.id);
+
+  /**
+   * Resolve the variant block for an outgoing item.
+   *
+   * Three independent sources, in order of freshness: the form item, its own
+   * stored snapshot, then the raw ticket item. A variant line must never
+   * degrade into a plain item just because one of them is missing — that is
+   * exactly what made the update drop `variantItems`.
+   */
+  const buildVariantPayload = (item: InvoiceItem, product?: Product) => {
+    console.log("ITEM:", item);
+    console.log("PRODU:", product);
+    const raw = rawFor(item);
+    const variantId =
+      item.variantId ??
+      item.variantItems?._id ??
+      rawVariantId(raw?.variantItems);
+    console.log("VAR ID:", variantId);
+    if (!variantId) return {};
+
+    const variant = product?.variants?.find((v) => v.id === variantId);
+    console.log("V:", variant);
+    const name =
+      item.variantLabel ||
+      item.variantItems?.name ||
+      variant?.optionValues?.join(" · ") ||
+      "";
+
+    return {
+      // variantId,
+      // variantLabel: name,
+      variantItems: {
+        // The update API keys the variant as `_id` (the fetch returns it as
+        // `variantItems.variant`).
+        _id: variantId,
+        name,
+        unitPrice:
+          variant?.price ??
+          item.variantItems?.unitPrice ??
+          raw?.variantItems?.unitPrice ??
+          item.price ??
+          0,
+        // Kept in step with the line quantity — they must not drift.
+        quantity: item.quantity,
+        costPrice:
+          variant?.costPrice ??
+          item.variantItems?.costPrice ??
+          raw?.variantItems?.costPrice ??
+          0,
+      },
+    };
+  };
+
+  /**
+   * Discount objects in the shape the update endpoint expects: the master
+   * discount's fields, plus `discount` holding the master id. When the
+   * discount was already on this ticket, its existing subdocument `_id` is
+   * reused so the backend updates that row instead of orphaning it.
+   */
+  const buildDiscountPayload = (item: InvoiceItem) => {
+    const rawDiscounts: any[] = rawFor(item)?.discounts ?? [];
+
+    return item.discounts
+      .map((id) => {
+        const master = masterDiscounts.find((m) => m._id === id);
+        if (!master) return null;
+
+        const existing = rawDiscounts.find(
+          (d: any) => (d?.discount ?? d?._id) === id,
+        );
+
+        return {
+          ...(master as object),
+          discount: master._id,
+          ...(existing?._id ? { _id: existing._id } : {}),
+        };
+      })
+      .filter(Boolean);
+  };
+
   // ── Submit ─────────────────────────────────────────────────────────────────
   const handleSave = () => {
     if (!selectedCustomer) {
@@ -347,10 +592,6 @@ export default function InvoiceForm({
       toast.error("Please add at least one item");
       return;
     }
-
-    // console.log("globalDiscountValue:", globalDiscountValue);
-    // console.log("selectedDiscountIds:", selectedDiscountIds);
-    // console.log("initialDiscountAmount:", initialDiscountAmount);
 
     const filteredItems = items.filter(
       (item) => item.name && item.quantity > 0,
@@ -364,24 +605,20 @@ export default function InvoiceForm({
       }
 
       const creditPayload = {
-        items: filteredItems.map((item) => ({
-          id: item.productId || item.id,
-          name: item.name,
-          quantity: item.quantity,
-          unitPrice: item.price,
-          isTaxable: item.isTaxable ?? false,
-          ...(item.variantItems
-            ? {
-                variantItems: {
-                  _id: item.variantItems._id,
-                  name: item.variantItems.name,
-                  unitPrice: item.variantItems.unitPrice,
-                  quantity: item.variantItems.quantity,
-                  costPrice: item.variantItems.costPrice,
-                },
-              }
-            : {}),
-        })),
+        items: filteredItems.map((item) => {
+          const product = products.find((p) => p.id === item.productId);
+          const variantPayload = buildVariantPayload(item, product);
+          return {
+            id: item.productId || item.id,
+            name: item.name,
+            quantity: item.quantity,
+            unitPrice: item.price,
+            isTaxable: item.isTaxable ?? false,
+            ...("variantItems" in variantPayload
+              ? { variantItems: variantPayload.variantItems }
+              : {}),
+          };
+        }),
         taxId: activeTaxId ?? "",
         isExclusiveTaxEnabled: !!activeTaxId,
         isAddonTaxEnabled: false,
@@ -404,27 +641,43 @@ export default function InvoiceForm({
       return;
     }
 
-    // ── Normal invoice: existing behavior unchanged ─────────────────────────
-    // ── Shared item payload shape ────────────────────────────────────────────
-    const mappedItems = filteredItems.map((item) => ({
-      id: item.productId, // used by create
-      name: item.name, // used by create
-      quantity: item.quantity,
-      unitPrice: item.price, // ← use unitPrice (matches update API)
-      note: null,
-      isTaxable: item.isTaxable ?? false,
-      discounts: item.discounts.map((id) => {
-        const master = masterDiscounts.find((m) => m._id === id);
-        return {
-          _id: master?._id,
-          name: master?.name,
-          rate: master?.rate,
-          type: master?.type,
-          isEnabled: true,
-          isSelected: true,
-        };
-      }),
-    }));
+    // ── Normal invoice ──────────────────────────────────────────────────────
+    const mappedItems = filteredItems.map((item) => {
+      const product = products.find((p) => p.id === item.productId);
+      console.log("PRODUCDD:", product);
+      const variantPayload = buildVariantPayload(item, product);
+      console.log("VARRRR:", variantPayload);
+
+      // A variant line prices off the variant, not the parent product.
+      const unitPrice =
+        (variantPayload as any).variantItems?.unitPrice ?? item.price;
+
+      // Loud in dev when a line looks like a variant (parent has variants,
+      // or the name is suffixed) but no variant id could be resolved.
+      if (
+        process.env.NODE_ENV !== "production" &&
+        !(variantPayload as any).variantItems &&
+        product?.variants?.length
+      ) {
+        console.warn(
+          `[InvoiceForm] "${item.name}" belongs to a product with variants but is being sent without variantItems.`,
+          { item, raw: rawFor(item) },
+        );
+      }
+
+      return {
+        id: item.productId,
+        name: item.name,
+        quantity: item.quantity,
+        unitPrice,
+        note: null,
+        isTaxable: item.isTaxable ?? false,
+        discounts: buildDiscountPayload(item),
+        ...variantPayload,
+      };
+    });
+
+    console.log("MAP ITEMS:", mappedItems);
 
     const ticketData: CreateTicketInput = {
       ticketName: invoiceTitle || selectedCustomer?.name || "Walk-in Customer",
@@ -437,6 +690,7 @@ export default function InvoiceForm({
       taxId: activeTaxId,
       note: `${notes}${invoiceNumber ? `|Invoice: ${invoiceNumber}` : ""}`,
       items: mappedItems,
+      isTaxExclusive: !!activeTaxId,
     };
 
     if (isEditMode && invoiceNumber) {
@@ -444,7 +698,6 @@ export default function InvoiceForm({
         { invoiceNumber, ticketData },
         {
           onSuccess: () => {
-            // toast.success("Invoice updated");
             router.push(`/invoices/${invoiceNumber}`);
           },
           onError: (err) => {
@@ -455,7 +708,6 @@ export default function InvoiceForm({
     } else {
       saveTicket(ticketData, {
         onSuccess: (response) => {
-          // toast.success("Invoice saved");
           const newId = response?.data?.ticket?.invoice;
           if (newId) router.push(`/invoices/${newId}`);
         },
@@ -614,7 +866,7 @@ export default function InvoiceForm({
                     ? {
                         id: activeTaxId,
                         name: activeTaxDetails.name,
-                        rate: activeTaxDetails.rate,
+                        rate: activeTaxRate || activeTaxDetails.rate,
                       }
                     : null
                 }

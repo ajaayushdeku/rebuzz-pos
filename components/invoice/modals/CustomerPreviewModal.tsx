@@ -1,13 +1,24 @@
 "use client";
 
 import toast from "react-hot-toast";
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { Link as LinkIcon, ExternalLink, Copy } from "lucide-react";
+import { useState } from "react";
+import {
+  Link as LinkIcon,
+  ExternalLink,
+  Copy,
+  Check,
+  Loader2,
+} from "lucide-react";
 
+import ModalShell, { DocumentRow } from "@/components/ui/ModalShell";
+import {
+  INVOICE_TYPES,
+  SHORT_LABELS,
+  DESCRIPTIONS,
+  segmentFor,
+  type InvoiceType,
+} from "@/components/invoice/InvoiceDocuments";
 import { useInvoiceDocumentData } from "./useInvoiceTicket";
-
-type InvoiceType = "proforma" | "invoice" | "tax";
 
 interface CustomerPreviewModalProps {
   open: boolean;
@@ -15,34 +26,32 @@ interface CustomerPreviewModalProps {
   invoiceNo: string | number | undefined;
 }
 
-/** Public preview route segment for each invoice type. */
-const segmentFor = (type: InvoiceType): string =>
-  type === "proforma"
-    ? "proforma"
-    : type === "invoice"
-      ? "invoice"
-      : "tax-invoice";
-
 export default function CustomerPreviewModal({
   open,
   onClose,
   invoiceNo,
 }: CustomerPreviewModalProps) {
   const { invoice } = useInvoiceDocumentData(invoiceNo, open);
-
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const [copied, setCopied] = useState<InvoiceType | null>(null);
 
   const buildUrl = (type: InvoiceType): string | null => {
     if (!invoice) return null;
     return `${window.location.origin}/preview/${segmentFor(type)}/${invoice.invoice}`;
   };
 
-  const handleCopy = (type: InvoiceType, label: string) => {
+  const handleCopy = async (type: InvoiceType, label: string) => {
     const url = buildUrl(type);
     if (!url) return;
-    navigator.clipboard.writeText(url);
-    toast.success(`${label} link copied!`);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(type);
+      setTimeout(() => setCopied((c) => (c === type ? null : c)), 1800);
+      toast.success(`${label} link copied`);
+    } catch {
+      toast.error(
+        "Couldn't copy the link. Copy it from the opened tab instead.",
+      );
+    }
   };
 
   const handleOpen = (type: InvoiceType) => {
@@ -51,84 +60,63 @@ export default function CustomerPreviewModal({
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  if (!open || !mounted) return null;
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      onClick={onClose}
+  return (
+    <ModalShell
+      open={open}
+      onClose={onClose}
+      title="Customer preview"
+      subtitle={
+        invoice?.invoice != null
+          ? `Invoice #${invoice.invoice} · public share links`
+          : "Public share links"
+      }
+      icon={LinkIcon}
     >
-      <div
-        className="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden animate-in fade-in-0 slide-in-from-bottom-6 duration-300"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* ── Header ── */}
-        <div className="relative flex items-center justify-between border-b border-indigo-100 px-6 py-3.5">
-          <div>
-            <h2 className="text-lg font-bold text-gray-800">
-              Customer Preview
-            </h2>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Open or copy the public invoice link to share with the customer
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center font-bold rounded-full  text-gray-500 transition  hover:text-red-500 hover:text-lg cursor-pointer text-sm "
-          >
-            ✕
-          </button>
+      {!invoice ? (
+        <div className="flex items-center justify-center gap-2 py-14 text-[13px] text-gray-400">
+          <Loader2 size={15} className="animate-spin" />
+          Loading invoice
         </div>
-
-        {/* ── Content ── */}
-        <div className="px-6 py-4">
-          {!invoice ? (
-            <div className="flex items-center justify-center py-10 text-sm text-gray-400">
-              Loading invoice...
-            </div>
-          ) : (
-            <div className="grid grid-cols-3 gap-3">
-              {(
-                [
-                  { label: "Proforma", type: "proforma" },
-                  { label: "Invoice", type: "invoice" },
-                  { label: "Tax Invoice", type: "tax" },
-                ] as { label: string; type: InvoiceType }[]
-              ).map((item) => (
-                <div
-                  key={item.type}
-                  className="rounded-xl border border-indigo-100 bg-gradient-to-b from-white to-indigo-50/50 p-3 shadow-sm transition-all hover:shadow-md"
-                >
-                  <div className="h-8 w-8 rounded-lg bg-indigo-50 flex items-center justify-center mx-auto mb-2">
-                    <LinkIcon className="text-blue-600" size={14} />
-                  </div>
-                  <h4 className="text-xs font-semibold text-gray-800 text-center">
-                    {item.label}
-                  </h4>
-
-                  <div className="mt-2.5 flex flex-col gap-1.5">
-                    <button
-                      onClick={() => handleOpen(item.type)}
-                      className="flex items-center justify-center gap-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-semibold px-2 py-1.5 transition-colors cursor-pointer"
-                    >
-                      <ExternalLink size={12} />
-                      Open
-                    </button>
-                    <button
-                      onClick={() => handleCopy(item.type, item.label)}
-                      className="flex items-center justify-center gap-1 rounded-lg border border-blue-200 text-blue-700 hover:bg-blue-50 text-[11px] font-semibold px-2 py-1.5 transition-colors cursor-pointer"
-                    >
-                      <Copy size={12} />
-                      Copy link
-                    </button>
-                  </div>
+      ) : (
+        <div className="space-y-2">
+          {INVOICE_TYPES.map((type) => (
+            <DocumentRow
+              key={type}
+              icon={LinkIcon}
+              label={SHORT_LABELS[type]}
+              description={DESCRIPTIONS[type]}
+              trailing={
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(type, SHORT_LABELS[type])}
+                    aria-label={`Copy ${SHORT_LABELS[type]} link`}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  >
+                    {copied === type ? (
+                      <Check size={14} className="text-emerald-600" />
+                    ) : (
+                      <Copy size={14} />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOpen(type)}
+                    className="flex h-8 items-center gap-1.5 rounded-lg bg-blue-600 px-3 text-[12px] font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                  >
+                    <ExternalLink size={13} />
+                    Open
+                  </button>
                 </div>
-              ))}
-            </div>
-          )}
+              }
+            />
+          ))}
+
+          <p className="pt-1 text-[11px] leading-relaxed text-gray-400">
+            Anyone with these links can view the document — no sign-in needed.
+          </p>
         </div>
-      </div>
-    </div>,
-    document.body,
+      )}
+    </ModalShell>
   );
 }

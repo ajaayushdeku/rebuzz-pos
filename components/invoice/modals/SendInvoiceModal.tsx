@@ -1,23 +1,35 @@
 "use client";
 
-import jsPDF from "jspdf";
 import toast from "react-hot-toast";
-import { toJpeg } from "html-to-image";
-import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
-import { Download, FileText, Link as LinkIcon, Mail } from "lucide-react";
+import { useRef, useState } from "react";
+import {
+  Download,
+  FileText,
+  Link as LinkIcon,
+  Mail,
+  Check,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
 
 import InvoicePreview from "@/components/invoice/InvoicePreview";
+import ModalShell, {
+  DocumentRow,
+  OffscreenLayer,
+  SectionLabel,
+} from "@/components/ui/ModalShell";
+import { buildInvoicePdf } from "@/lib/invoicePdf";
+import {
+  INVOICE_TYPES,
+  LABELS,
+  SHORT_LABELS,
+  DESCRIPTIONS,
+  BILL_TYPE,
+  segmentFor,
+  fileStemFor,
+  type InvoiceType,
+} from "@/components/invoice/InvoiceDocuments";
 import { useInvoiceDocumentData } from "./useInvoiceTicket";
-
-type InvoiceType = "proforma" | "invoice" | "tax";
-
-/** Maps the UI invoice type to the backend `billType` value. */
-const BILL_TYPE: Record<InvoiceType, "proforma" | "invoice" | "tax_invoice"> = {
-  proforma: "proforma",
-  invoice: "invoice",
-  tax: "tax_invoice",
-};
 
 interface SendInvoiceModalProps {
   open: boolean;
@@ -25,11 +37,37 @@ interface SendInvoiceModalProps {
   invoiceNo: string | number | undefined;
 }
 
-const LABELS: Record<InvoiceType, string> = {
-  proforma: "Proforma Invoice",
-  invoice: "Invoice",
-  tax: "Tax Invoice",
-};
+/** Square icon button used for the per-row actions. */
+function RowIconButton({
+  label,
+  onClick,
+  disabled,
+  active,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  active?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      title={label}
+      aria-label={label}
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 ${
+        active
+          ? "border-blue-200 bg-blue-50 text-blue-600"
+          : "border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
 
 export default function SendInvoiceModal({
   open,
@@ -43,13 +81,13 @@ export default function SendInvoiceModal({
   const regularRef = useRef<HTMLDivElement | null>(null);
   const taxRef = useRef<HTMLDivElement | null>(null);
 
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
-  const [generatingFor, setGeneratingFor] = useState<string | null>(null);
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
-  const [selectedInvoiceType, setSelectedInvoiceType] =
-    useState<InvoiceType>("proforma");
+  const [copied, setCopied] = useState<InvoiceType | null>(null);
+  const [downloadingFor, setDownloadingFor] = useState<InvoiceType | null>(
+    null,
+  );
+  const [emailingFor, setEmailingFor] = useState<InvoiceType | "all" | null>(
+    null,
+  );
 
   const refMap = {
     proforma: proformaRef,
@@ -57,98 +95,42 @@ export default function SendInvoiceModal({
     tax: taxRef,
   } as const;
 
-  // Render an off-screen invoice preview into a multi-page A4 jsPDF instance.
-  const buildPdf = async (
-    ref: React.RefObject<HTMLDivElement | null>,
-  ): Promise<jsPDF | null> => {
-    if (!ref.current) return null;
-    // JPEG + a modest pixel ratio + PDF deflate keeps the base64 payload small
-    // enough to stay under the serverless request-size limit.
-    const dataUrl = await toJpeg(ref.current, {
-      cacheBust: true,
-      quality: 0.7,
-      pixelRatio: 1.5,
-      backgroundColor: "#ffffff",
-    });
-    const pdf = new jsPDF({
-      orientation: "p",
-      unit: "mm",
-      format: "a4",
-      compress: true,
-    });
-    const pageWidth = 210;
-    const pageHeight = 297;
-    const imgProps = pdf.getImageProperties(dataUrl);
-    const imgWidth = pageWidth;
-    const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+  const recipient = customerProfile?.email || invoice?.customerEmail;
+  const busy = !!downloadingFor || !!emailingFor;
 
-    let heightLeft = imgHeight;
-    let position = 0;
-    pdf.addImage(
-      dataUrl,
-      "JPEG",
-      0,
-      position,
-      imgWidth,
-      imgHeight,
-      undefined,
-      "FAST",
-    );
-    heightLeft -= pageHeight;
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(
-        dataUrl,
-        "JPEG",
-        0,
-        position,
-        imgWidth,
-        imgHeight,
-        undefined,
-        "FAST",
-      );
-      heightLeft -= pageHeight;
+  // ── Copy link ─────────────────────────────────────────────────────────────
+  const copyPublicLinkForType = async (type: InvoiceType) => {
+    if (!invoice) return;
+    const url = `${window.location.origin}/preview/${segmentFor(type)}/${invoice.invoice}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(type);
+      setTimeout(() => setCopied((c) => (c === type ? null : c)), 1800);
+      toast.success(`${SHORT_LABELS[type]} link copied`);
+    } catch {
+      toast.error("Couldn't copy the link.");
     }
-    return pdf;
   };
 
-  const handleDownloadPDF = async (
-    ref: React.RefObject<HTMLDivElement | null>,
-    suffix: string,
-  ) => {
-    if (!ref.current || !invoice) return;
+  // ── Download ──────────────────────────────────────────────────────────────
+  const handleDownloadPDF = async (type: InvoiceType) => {
+    if (!invoice || busy) return;
     try {
-      setGeneratingFor(suffix);
-      const pdf = await buildPdf(ref);
-      if (!pdf) return;
-      pdf.save(`Invoice-${invoice.invoice}-${suffix}.pdf`);
+      setDownloadingFor(type);
+      const pdf = await buildInvoicePdf(refMap[type]);
+      if (!pdf) throw new Error("Invoice preview not ready");
+      pdf.save(`Invoice-${invoice.invoice}-${fileStemFor(type)}.pdf`);
     } catch (err) {
       console.error("PDF Generation Error:", err);
       toast.error("Failed to generate PDF");
     } finally {
-      setGeneratingFor(null);
+      setDownloadingFor(null);
     }
   };
 
-  const copyPublicLinkForType = (type: InvoiceType) => {
-    if (!invoice) return;
-    const segment =
-      type === "proforma"
-        ? "proforma"
-        : type === "invoice"
-          ? "invoice"
-          : "tax-invoice";
-    const url = `${window.location.origin}/preview/${segment}/${invoice.invoice}`;
-    navigator.clipboard.writeText(url);
-    toast.success(
-      `${type.charAt(0).toUpperCase() + type.slice(1)} link copied!`,
-    );
-  };
-
-  // Generate the bill PDF and email it via the backend (throws on failure so
-  // callers can aggregate results, e.g. "Send All 3").
-  const handleSendInvoiceByEmail = async (type: InvoiceType) => {
+  // ── Email ─────────────────────────────────────────────────────────────────
+  // Throws on failure so callers can aggregate results, e.g. "Email all three".
+  const sendInvoiceByEmail = async (type: InvoiceType) => {
     const ref = refMap[type];
     if (!ref.current || !invoice) {
       throw new Error("Invoice preview not ready");
@@ -161,12 +143,12 @@ export default function SendInvoiceModal({
     // Wait a tick to ensure the off-screen preview is painted.
     await new Promise((r) => setTimeout(r, 200));
 
-    const pdf = await buildPdf(ref);
+    const pdf = await buildInvoicePdf(ref);
     if (!pdf) throw new Error("Failed to generate PDF");
 
     // data:application/pdf;base64,... — the backend strips the prefix.
     const pdfBase64 = pdf.output("datauristring");
-    const fileName = `${type === "tax" ? "tax-invoice" : type}-${invoice.invoice}.pdf`;
+    const fileName = `${fileStemFor(type)}-${invoice.invoice}.pdf`;
 
     const res = await fetch("/api/bills/email", {
       method: "POST",
@@ -188,16 +170,43 @@ export default function SendInvoiceModal({
     toast.success(data.message || `${LABELS[type]} sent to ${recipientEmail}`);
   };
 
-  if (!open || !mounted) return null;
+  const emailOne = async (type: InvoiceType) => {
+    if (busy) return;
+    setEmailingFor(type);
+    try {
+      await sendInvoiceByEmail(type);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to email bill");
+    } finally {
+      setEmailingFor(null);
+    }
+  };
 
-  const recipient = customerProfile?.email || invoice?.customerEmail;
+  const emailAll = async () => {
+    if (busy) return;
+    setEmailingFor("all");
+    for (const type of INVOICE_TYPES) {
+      try {
+        await sendInvoiceByEmail(type);
+      } catch (err) {
+        toast.error(
+          err instanceof Error
+            ? `${LABELS[type]}: ${err.message}`
+            : `Failed to email ${LABELS[type]}`,
+        );
+      }
+    }
+    setEmailingFor(null);
+  };
 
-  return createPortal(
+  if (!open) return null;
+
+  return (
     <>
-      {/* ── Off-screen previews used for PDF export & email screenshots ── */}
+      {/* Off-screen previews used for PDF export & email attachments. */}
       {invoice && (
-        <div aria-hidden className="absolute -left-[99999px] top-0">
-          {(["proforma", "invoice", "tax"] as InvoiceType[]).map((t) => (
+        <OffscreenLayer>
+          {INVOICE_TYPES.map((t) => (
             <InvoicePreview
               key={t}
               type={t}
@@ -210,312 +219,159 @@ export default function SendInvoiceModal({
               credit={credit}
             />
           ))}
-        </div>
+        </OffscreenLayer>
       )}
 
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-        onClick={onClose}
-      >
-        <div
-          className="relative w-full max-w-2xl px-2 py-1 rounded-2xl bg-white shadow-2xl overflow-hidden animate-in fade-in-0 slide-in-from-bottom-6 duration-300"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* ── Header ── */}
-          <div className="sticky top-0 z-20 flex items-center justify-between border-b border-gray-100 bg-white/95 backdrop-blur px-5 py-3.5">
-            <div>
-              <h2 className="text-lg font-bold text-gray-800">Send Invoice</h2>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Share, download, or email invoice documents
-              </p>
-            </div>
+      <ModalShell
+        open={open}
+        onClose={onClose}
+        busy={busy}
+        title="Send invoice"
+        subtitle={
+          invoice?.invoice != null
+            ? `Invoice #${invoice.invoice} · copy, download or email`
+            : "Copy, download or email"
+        }
+        icon={FileText}
+        footer={
+          invoice ? (
             <button
-              onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200 hover:text-gray-700 cursor-pointer text-sm"
+              type="button"
+              onClick={emailAll}
+              disabled={!recipient || busy}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-[13px] font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              ✕
+              {emailingFor === "all" ? (
+                <>
+                  <svg
+                    className="animate-spin h-4 w-4 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8z"
+                    />
+                  </svg>
+                  Emailing All Three Invoices...
+                </>
+              ) : (
+                <>
+                  <Mail size={16} />
+                  Email All Three Invoices
+                </>
+              )}
             </button>
+          ) : null
+        }
+      >
+        {!invoice ? (
+          <div className="flex items-center justify-center gap-2 py-14 text-[13px] text-gray-400">
+            <Loader2 size={15} className="animate-spin" />
+            Loading invoice
           </div>
-
-          {/* ── Scrollable Content ── */}
-          <div
-            className="max-h-[75vh] overflow-y-auto px-5 py-4 space-y-5"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-          >
-            <style jsx>{`
-              div::-webkit-scrollbar {
-                display: none;
-              }
-            `}</style>
-
-            {!invoice ? (
-              <div className="flex items-center justify-center py-12 text-sm text-gray-400">
-                Loading invoice...
+        ) : (
+          <div className="space-y-5">
+            {/* Documents + per-row actions */}
+            <div>
+              <div className="flex items-baseline justify-between">
+                <SectionLabel>Documents</SectionLabel>
+                <span className="text-[11px] text-gray-400 pr-3">
+                  Copy · Download · Email
+                </span>
               </div>
-            ) : (
-              <>
-                {/* ── Copy Links ── */}
-                <div>
-                  <div className="mb-3">
-                    <h3 className="text-sm font-semibold text-gray-800">
-                      Copy Invoice Links
-                    </h3>
-                    <p className="text-xs text-gray-500">
-                      Share invoice links instantly
-                    </p>
-                  </div>
 
-                  <div className="grid grid-cols-3 gap-3">
-                    {(
-                      [
-                        { label: "Proforma", type: "proforma" },
-                        { label: "Invoice", type: "invoice" },
-                        { label: "Tax Invoice", type: "tax" },
-                      ] as { label: string; type: InvoiceType }[]
-                    ).map((item) => (
-                      <button
-                        key={item.type}
-                        className="group cursor-pointer"
-                        onClick={() => copyPublicLinkForType(item.type)}
-                      >
-                        <div className="rounded-xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-3 shadow-sm transition-all hover:shadow-md">
-                          <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center mx-auto mb-2 group-hover:bg-blue-100 transition">
-                            <LinkIcon className="text-blue-600" size={14} />
-                          </div>
-                          <h4 className="text-xs font-semibold text-gray-800">
-                            {item.label}
-                          </h4>
-                          <p className="mt-0.5 text-[11px] text-gray-500">
-                            Copy link
-                          </p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
+              <div className="mt-2 space-y-2">
+                {INVOICE_TYPES.map((type) => (
+                  <DocumentRow
+                    key={type}
+                    icon={FileText}
+                    label={SHORT_LABELS[type]}
+                    description={DESCRIPTIONS[type]}
+                    trailing={
+                      <div className="flex shrink-0 items-center gap-1.5">
+                        <RowIconButton
+                          label={`Copy ${SHORT_LABELS[type]} link`}
+                          onClick={() => copyPublicLinkForType(type)}
+                          active={copied === type}
+                        >
+                          {copied === type ? (
+                            <Check size={14} className="text-emerald-600" />
+                          ) : (
+                            <LinkIcon size={14} />
+                          )}
+                        </RowIconButton>
+
+                        <RowIconButton
+                          label={`Download ${SHORT_LABELS[type]} PDF`}
+                          onClick={() => handleDownloadPDF(type)}
+                          disabled={busy}
+                        >
+                          {downloadingFor === type ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <Download size={14} />
+                          )}
+                        </RowIconButton>
+
+                        <RowIconButton
+                          label={`Email ${SHORT_LABELS[type]}`}
+                          onClick={() => emailOne(type)}
+                          disabled={busy || !recipient}
+                        >
+                          {emailingFor === type || emailingFor === "all" ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <Mail size={14} />
+                          )}
+                        </RowIconButton>
+                      </div>
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Recipient */}
+            <div>
+              <SectionLabel>Emails go to</SectionLabel>
+              {recipient ? (
+                <div className="mt-2 flex items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50/70 px-3.5 py-2.5">
+                  <Mail size={14} className="shrink-0 text-gray-400" />
+                  <p className="truncate text-[13px] font-medium text-gray-800">
+                    {recipient}
+                  </p>
                 </div>
-
-                {/* ── Download PDFs ── */}
-                <div>
-                  <div className="mb-3">
-                    <h3 className="text-sm font-semibold text-gray-800">
-                      Download PDFs
-                    </h3>
-                    <p className="text-xs text-gray-500">
-                      Generate printable invoice documents
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-3">
-                    {(
-                      [
-                        {
-                          label: "Proforma",
-                          type: "proforma",
-                          ref: proformaRef,
-                        },
-                        { label: "Invoice", type: "invoice", ref: regularRef },
-                        { label: "Tax Invoice", type: "tax", ref: taxRef },
-                      ] as {
-                        label: string;
-                        type: InvoiceType;
-                        ref: React.RefObject<HTMLDivElement | null>;
-                      }[]
-                    ).map((item) => (
-                      <button
-                        key={item.type}
-                        className="group cursor-pointer"
-                        onClick={() => handleDownloadPDF(item.ref, item.type)}
-                        disabled={generatingFor === item.type}
-                      >
-                        <div className="rounded-xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-3 shadow-sm transition-all hover:shadow-md">
-                          <div className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center mx-auto mb-2 group-hover:bg-red-100 transition">
-                            <Download className="text-red-500" size={14} />
-                          </div>
-                          <h4 className="text-xs font-semibold text-gray-800">
-                            {generatingFor === item.type
-                              ? "Generating..."
-                              : item.label}
-                          </h4>
-                          <p className="mt-0.5 text-[11px] text-gray-500">
-                            Download PDF
-                          </p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
+              ) : (
+                <div className="mt-2 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5">
+                  <AlertCircle
+                    size={14}
+                    className="mt-0.5 shrink-0 text-red-500"
+                  />
+                  <p className="text-[12px] leading-relaxed text-red-600">
+                    This customer has no email on file. Copy and download still
+                    work; add an email to the customer profile to send.
+                  </p>
                 </div>
+              )}
+            </div>
 
-                {/* ── Send Email Section ── */}
-                <div className="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-4 shadow-sm">
-                  <div className="flex flex-col items-center text-center">
-                    <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600 shadow-sm">
-                      <Mail size={18} />
-                    </div>
-                    <h3 className="text-base font-bold text-gray-800">
-                      Send Invoice by Email
-                    </h3>
-                    <p className="mt-1 max-w-md text-xs text-gray-500">
-                      Select which invoice format you want to send to{" "}
-                      <span className="font-semibold text-gray-700">
-                        {recipient || "customer"}
-                      </span>
-                      .
-                    </p>
-                  </div>
-
-                  {/* ── Invoice Type Selector ── */}
-                  <div className="mt-4 grid grid-cols-3 gap-2">
-                    {(
-                      [
-                        { label: "Proforma", value: "proforma" },
-                        { label: "Invoice", value: "invoice" },
-                        { label: "Tax Invoice", value: "tax" },
-                      ] as { label: string; value: InvoiceType }[]
-                    ).map((item) => (
-                      <button
-                        key={item.value}
-                        type="button"
-                        onClick={() => setSelectedInvoiceType(item.value)}
-                        className={`rounded-xl border-2 p-3 text-left transition-all cursor-pointer ${
-                          selectedInvoiceType === item.value
-                            ? "border-blue-600 bg-blue-600 text-white shadow"
-                            : "border-gray-200 bg-white hover:border-blue-300"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs font-semibold">
-                              {item.label}
-                            </p>
-                            <p
-                              className={`text-[11px] mt-0.5 ${
-                                selectedInvoiceType === item.value
-                                  ? "text-blue-100"
-                                  : "text-gray-500"
-                              }`}
-                            >
-                              Send this
-                            </p>
-                          </div>
-                          <div
-                            className={`h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                              selectedInvoiceType === item.value
-                                ? "border-white bg-white"
-                                : "border-gray-300"
-                            }`}
-                          >
-                            {selectedInvoiceType === item.value && (
-                              <div className="w-2 h-2 rounded-full bg-blue-600" />
-                            )}
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* ── Recipient info ── */}
-                  {recipient ? (
-                    <div className="mt-3 flex items-center gap-2 bg-white rounded-lg border border-blue-100 px-3 py-2">
-                      <Mail size={12} className="text-blue-500 shrink-0" />
-                      <p className="text-xs text-gray-600">
-                        To:{" "}
-                        <span className="font-semibold text-gray-800">
-                          {recipient}
-                        </span>
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="mt-3 flex items-center gap-2 bg-red-50 rounded-lg border border-red-100 px-3 py-2">
-                      <p className="text-xs text-red-600">
-                        No customer email found
-                      </p>
-                    </div>
-                  )}
-
-                  {/* ── Action Buttons ── */}
-                  <div className="mt-4 flex gap-2">
-                    <button
-                      className="flex-1 rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
-                      disabled={isSendingEmail || !recipient}
-                      onClick={async () => {
-                        setIsSendingEmail(true);
-                        try {
-                          await handleSendInvoiceByEmail(selectedInvoiceType);
-                        } catch (err) {
-                          toast.error(
-                            err instanceof Error
-                              ? err.message
-                              : "Failed to email bill",
-                          );
-                        } finally {
-                          setIsSendingEmail(false);
-                        }
-                      }}
-                    >
-                      {isSendingEmail ? (
-                        <>
-                          <svg
-                            className="animate-spin h-3.5 w-3.5 text-white"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                            />
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8v8z"
-                            />
-                          </svg>
-                          Sending...
-                        </>
-                      ) : (
-                        <>
-                          <Mail size={13} />
-                          Send {LABELS[selectedInvoiceType]}
-                        </>
-                      )}
-                    </button>
-
-                    <button
-                      className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={isSendingEmail || !recipient}
-                      onClick={async () => {
-                        setIsSendingEmail(true);
-                        for (const type of [
-                          "proforma",
-                          "invoice",
-                          "tax",
-                        ] as InvoiceType[]) {
-                          try {
-                            await handleSendInvoiceByEmail(type);
-                          } catch (err) {
-                            toast.error(
-                              err instanceof Error
-                                ? `${LABELS[type]}: ${err.message}`
-                                : `Failed to email ${LABELS[type]}`,
-                            );
-                          }
-                        }
-                        setIsSendingEmail(false);
-                      }}
-                    >
-                      Send All 3
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
+            <p className="text-[11px] leading-relaxed text-gray-400">
+              Anyone with a copied link can view that document — no sign-in
+              needed.
+            </p>
           </div>
-        </div>
-      </div>
-    </>,
-    document.body,
+        )}
+      </ModalShell>
+    </>
   );
 }

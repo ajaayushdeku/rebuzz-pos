@@ -1,34 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Printer } from "lucide-react";
+import { Printer, FileText, Loader2 } from "lucide-react";
 
 import InvoicePreview from "@/components/invoice/InvoicePreview";
+import ModalShell, { DocumentRow } from "@/components/ui/ModalShell";
+import {
+  INVOICE_TYPES,
+  SHORT_LABELS,
+  DESCRIPTIONS,
+  type InvoiceType,
+} from "@/components/invoice/InvoiceDocuments";
 import { useInvoiceDocumentData } from "./useInvoiceTicket";
-
-type InvoiceType = "proforma" | "invoice" | "tax";
 
 interface PrintInvoiceModalProps {
   open: boolean;
   onClose: () => void;
   invoiceNo: string | number | undefined;
 }
-
-const OPTIONS: { label: string; type: InvoiceType }[] = [
-  {
-    label: "Proforma",
-    type: "proforma",
-  },
-  {
-    label: "Invoice",
-    type: "invoice",
-  },
-  {
-    label: "Tax Invoice",
-    type: "tax",
-  },
-];
 
 export default function PrintInvoiceModal({
   open,
@@ -38,120 +28,139 @@ export default function PrintInvoiceModal({
   const { invoice, customerProfile, business, billData, payments, credit } =
     useInvoiceDocumentData(invoiceNo, open);
 
-  const [mounted, setMounted] = useState(false);
   const [printType, setPrintType] = useState<InvoiceType | null>(null);
-  const [generatingFor, setGeneratingFor] = useState<string | null>(null);
 
+  const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  // Held in a ref so the print effect below doesn't restart when the parent
+  // passes a fresh inline `onClose` on every render.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   const handlePrint = (type: InvoiceType) => {
-    if (!invoice) return;
+    if (!invoice || printType) return;
     // Render the chosen preview into the print root; the effect below opens
     // the browser print dialog once it has painted.
-    setGeneratingFor(type);
     setPrintType(type);
   };
 
-  // Once a format is chosen and its preview is rendered off-screen, open the
-  // browser print dialog; clean up after the user finishes printing.
+  // Once a format is chosen and its preview is rendered, open the browser
+  // print dialog; clean up after the user finishes or cancels.
   useEffect(() => {
     if (!printType || !invoice) return;
+
     const timer = setTimeout(() => window.print(), 300);
     const handleAfterPrint = () => {
       setPrintType(null);
-      setGeneratingFor(null);
-      onClose();
+      onCloseRef.current();
     };
+
     window.addEventListener("afterprint", handleAfterPrint);
     return () => {
       clearTimeout(timer);
       window.removeEventListener("afterprint", handleAfterPrint);
     };
-  }, [printType, invoice, onClose]);
+  }, [printType, invoice]);
 
-  if (!open || !mounted) return null;
+  // Never leave the modal stuck on the printing state if it's dismissed.
+  useEffect(() => {
+    if (!open) setPrintType(null);
+  }, [open]);
 
-  return createPortal(
+  if (!open) return null;
+
+  return (
     <>
-      {/* Printable content — hidden on screen, isolated for print via CSS. */}
-      {printType && invoice && (
-        <div className="invoice-print-root">
-          <InvoicePreview
-            type={printType}
-            invoice={invoice}
-            customerProfile={customerProfile}
-            businessProfile={business}
-            billData={billData}
-            payments={payments}
-            credit={credit}
-          />
-        </div>
-      )}
+      {/*
+        Printable content — hidden on screen, isolated for print via CSS.
+        Portaled to <body> so no ancestor's stacking context, overflow or
+        transform can clip it out of the printed page.
+      */}
+      {mounted &&
+        printType &&
+        invoice &&
+        createPortal(
+          <div className="invoice-print-root">
+            <InvoicePreview
+              type={printType}
+              invoice={invoice}
+              customerProfile={customerProfile}
+              businessProfile={business}
+              billData={billData}
+              payments={payments}
+              credit={credit}
+            />
+          </div>,
+          document.body,
+        )}
 
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 print:hidden"
-        onClick={onClose}
+      <ModalShell
+        open={open}
+        onClose={onClose}
+        title="Print invoice"
+        subtitle={
+          invoice?.invoice != null
+            ? `Invoice #${invoice.invoice}`
+            : "Choose a document to print"
+        }
+        icon={Printer}
       >
-        <div
-          className="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden animate-in fade-in-0 slide-in-from-bottom-6 duration-300"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* ── Header ── */}
-          <div className="relative flex items-center justify-between border-b border-gray-100 px-5 py-3.5">
+        {!invoice ? (
+          <div className="flex items-center justify-center gap-2 py-14 text-[13px] text-gray-400">
+            <Loader2 size={15} className="animate-spin" />
+            Loading invoice
+          </div>
+        ) : printType ? (
+          <div className="flex flex-col items-center justify-center gap-3 py-14 text-center">
+            <Loader2 size={20} className="animate-spin text-blue-600" />
             <div>
-              <h2 className="text-lg font-bold text-gray-800">Print Invoice</h2>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Choose which invoice format to print
+              <p className="text-[13px] font-medium text-gray-800">
+                Opening the print dialog
+              </p>
+              <p className="mt-1 text-[11px] text-gray-400">
+                Printing {SHORT_LABELS[printType]}. If nothing appears, check
+                that pop-ups are allowed.
               </p>
             </div>
             <button
-              onClick={onClose}
-              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center font-bold rounded-full  text-gray-500 transition  hover:text-red-500 hover:text-lg cursor-pointer text-sm "
+              type="button"
+              onClick={() => setPrintType(null)}
+              className="mt-1 text-[11px] font-semibold text-gray-500 transition hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
-              ✕
+              Back to documents
             </button>
           </div>
-
-          {/* ── Content ── */}
-          <div className="px-5 py-4">
-            {!invoice ? (
-              <div className="flex items-center justify-center py-10 text-sm text-gray-400">
-                Loading invoice...
-              </div>
-            ) : printType && generatingFor ? (
-              <div className="flex items-center justify-center py-10 text-sm text-gray-500">
-                Opening print dialog...
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 gap-3">
-                {OPTIONS.map((item) => (
+        ) : (
+          <div className="space-y-2">
+            {INVOICE_TYPES.map((type) => (
+              <DocumentRow
+                key={type}
+                icon={FileText}
+                label={SHORT_LABELS[type]}
+                description={DESCRIPTIONS[type]}
+                trailing={
                   <button
-                    key={item.type}
-                    className="group cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                    onClick={() => handlePrint(item.type)}
-                    disabled={generatingFor === item.type}
+                    type="button"
+                    onClick={() => handlePrint(type)}
+                    className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 px-3 text-[12px] font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                   >
-                    <div className="rounded-xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-3 shadow-sm transition-all hover:shadow-md">
-                      <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center mx-auto mb-2 group-hover:bg-blue-100 transition">
-                        <Printer className="text-blue-500" size={14} />
-                      </div>
-                      <h4 className="text-xs font-semibold text-gray-800">
-                        {generatingFor === item.type
-                          ? "Generating..."
-                          : item.label}
-                      </h4>
-                      <p className="mt-0.5 text-[11px] text-gray-500">
-                        Print document
-                      </p>
-                    </div>
+                    <Printer size={13} />
+                    Print
                   </button>
-                ))}
-              </div>
-            )}
+                }
+              />
+            ))}
+
+            <p className="pt-1 text-[11px] leading-relaxed text-gray-400">
+              Opens your browser&lsquo;s print dialog — pick a printer or save
+              as PDF from there.
+            </p>
           </div>
-        </div>
-      </div>
-    </>,
-    document.body,
+        )}
+      </ModalShell>
+    </>
   );
 }
