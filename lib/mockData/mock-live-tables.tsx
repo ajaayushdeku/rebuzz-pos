@@ -1,11 +1,6 @@
 // ── Types ─────────────────────────────────────────────────────────────────
 
-export type TableStatus =
-  | "seated"
-  | "open"
-  | "reserved"
-  | "cleaning"
-  | "paying";
+export type TableStatus = "occupied" | "free";
 
 export type TableShape = "square" | "round" | "rectangle";
 export type TableZone = "indoor" | "outdoor";
@@ -80,7 +75,7 @@ export const MOCK_TABLES: LiveTable[] = [
     server: "Emma",
     seatedMinutes: 45,
     bill: 45.5,
-    status: "seated",
+    status: "occupied",
     x: 14,
     y: 18,
     orders: [
@@ -106,7 +101,7 @@ export const MOCK_TABLES: LiveTable[] = [
     server: null,
     seatedMinutes: null,
     bill: null,
-    status: "open",
+    status: "free",
     x: 32,
     y: 18,
   },
@@ -128,7 +123,7 @@ export const MOCK_TABLES: LiveTable[] = [
     server: "Liam",
     seatedMinutes: 76,
     bill: 12.0,
-    status: "seated",
+    status: "occupied",
     hasAlert: true,
     x: 50,
     y: 18,
@@ -156,7 +151,7 @@ export const MOCK_TABLES: LiveTable[] = [
     server: null,
     seatedMinutes: null,
     bill: null,
-    status: "reserved",
+    status: "free",
     x: 68,
     y: 18,
   },
@@ -178,7 +173,7 @@ export const MOCK_TABLES: LiveTable[] = [
     server: "Emma",
     seatedMinutes: 36,
     bill: 88.0,
-    status: "seated",
+    status: "occupied",
     x: 84,
     y: 18,
   },
@@ -200,7 +195,7 @@ export const MOCK_TABLES: LiveTable[] = [
     server: "Sophia",
     seatedMinutes: 89,
     bill: 110.0,
-    status: "seated",
+    status: "occupied",
     x: 14,
     y: 48,
   },
@@ -222,7 +217,7 @@ export const MOCK_TABLES: LiveTable[] = [
     server: null,
     seatedMinutes: null,
     bill: null,
-    status: "cleaning",
+    status: "free",
     x: 14,
     y: 73,
   },
@@ -244,7 +239,7 @@ export const MOCK_TABLES: LiveTable[] = [
     server: "James",
     seatedMinutes: 29,
     bill: 34.0,
-    status: "seated",
+    status: "occupied",
     x: 40,
     y: 73,
   },
@@ -266,7 +261,7 @@ export const MOCK_TABLES: LiveTable[] = [
     server: null,
     seatedMinutes: null,
     bill: null,
-    status: "reserved",
+    status: "free",
     x: 56,
     y: 73,
   },
@@ -288,7 +283,7 @@ export const MOCK_TABLES: LiveTable[] = [
     server: "James",
     seatedMinutes: 52,
     bill: 240.0,
-    status: "seated",
+    status: "occupied",
     hasAlert: true,
     isLarge: true,
     x: 50,
@@ -313,7 +308,7 @@ export const MOCK_TABLES: LiveTable[] = [
     server: "James",
     seatedMinutes: 44,
     bill: 85.0,
-    status: "seated",
+    status: "occupied",
     x: 84,
     y: 48,
   },
@@ -335,7 +330,7 @@ export const MOCK_TABLES: LiveTable[] = [
     server: null,
     seatedMinutes: null,
     bill: null,
-    status: "open",
+    status: "free",
     x: 84,
     y: 73,
   },
@@ -358,7 +353,7 @@ export const MOCK_TABLES: LiveTable[] = [
     server: "Aisha",
     seatedMinutes: 20,
     bill: 32.0,
-    status: "seated",
+    status: "occupied",
     x: 20,
     y: 25,
   },
@@ -380,7 +375,7 @@ export const MOCK_TABLES: LiveTable[] = [
     server: null,
     seatedMinutes: null,
     bill: null,
-    status: "open",
+    status: "free",
     x: 50,
     y: 25,
   },
@@ -402,7 +397,7 @@ export const MOCK_TABLES: LiveTable[] = [
     server: null,
     seatedMinutes: null,
     bill: null,
-    status: "reserved",
+    status: "free",
     isLarge: true,
     x: 75,
     y: 50,
@@ -425,7 +420,7 @@ export const MOCK_TABLES: LiveTable[] = [
     server: null,
     seatedMinutes: null,
     bill: null,
-    status: "cleaning",
+    status: "free",
     x: 30,
     y: 65,
   },
@@ -441,60 +436,36 @@ export function fmtMinutes(mins: number): string {
 
 export function getStatusColor(status: TableStatus): string {
   switch (status) {
-    case "seated":
+    case "occupied":
       return "#3b82f6"; // blue
-    case "open":
+    case "free":
       return "#22c55e"; // green
-    case "reserved":
-      return "#f59e0b"; // amber
-    case "cleaning":
-      return "#ef4444"; // red
-    case "paying":
-      return "#8b5cf6"; // purple
   }
 }
 
 export function getStatusBorderColor(status: TableStatus): string {
   switch (status) {
-    case "seated":
+    case "occupied":
       return "border-blue-500";
-    case "open":
+    case "free":
       return "border-green-500";
-    case "reserved":
-      return "border-amber-500";
-    case "cleaning":
-      return "border-red-500";
-    case "paying":
-      return "border-purple-500";
   }
 }
 
 export function getStatusBg(status: TableStatus): string {
   switch (status) {
-    case "seated":
+    case "occupied":
       return "bg-blue-600/10";
-    case "open":
+    case "free":
       return "bg-green-600/10";
-    case "reserved":
-      return "bg-amber-600/10";
-    case "cleaning":
-      return "bg-red-600/10";
-    case "paying":
-      return "bg-purple-600/10";
   }
 }
 
 export function getStatusLabel(status: TableStatus): string {
   switch (status) {
-    case "seated":
-      return "SEATED";
-    case "open":
-      return "OPEN";
-    case "reserved":
-      return "RESERVED";
-    case "cleaning":
-      return "CLEANING";
-    case "paying":
-      return "PAYING";
+    case "occupied":
+      return "OCCUPIED";
+    case "free":
+      return "FREE";
   }
 }

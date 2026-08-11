@@ -104,9 +104,6 @@ function TableNode({
         // Status mode shows the label via the dedicated status span below.
         return null;
       case "covers":
-        // return table.status === "open" || table.status === "cleaning"
-        //   ? "—"
-        //   : `${table.capacity}`;
         return `${table.capacity}`;
       case "total": {
         const amount = ticket?.grandTotal ?? table.bill;
@@ -259,10 +256,8 @@ function TableNode({
 // ── Legend ────────────────────────────────────────────────────────────────
 
 const LEGEND = [
-  { label: "Available", color: "#22c55e" },
+  { label: "Free", color: "#22c55e" },
   { label: "Occupied", color: "#3b82f6" },
-  { label: "Reserved", color: "#f59e0b" },
-  { label: "Needs Cleaning", color: "#ef4444" },
 ];
 
 // ── View mode buttons ─────────────────────────────────────────────────────
@@ -421,7 +416,7 @@ export default function FloorPlanView({
             >
               {label}
               <span
-                className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full ${
+                className={`inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold  bg-gray-300/40  ${
                   zone === id
                     ? "bg-gray-400 text-white"
                     : "bg-gray-200 text-gray-500"

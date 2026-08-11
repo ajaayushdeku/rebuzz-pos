@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import {
   Users,
   Clock,
-  Sparkles,
   MoreVertical,
   Armchair,
   Pencil,
@@ -23,40 +22,36 @@ const STATUS_CONFIG: Record<
   string,
   {
     label: string;
-    color: string;
+    hex: string; // real CSS color — for inline styles
+    textColor: string; // tailwind class — for the card
     border: string;
-    iconColor: string;
+    iconColor: string; // tailwind class — for the card icon
+    status: string;
   }
 > = {
-  seated: {
+  all: {
+    label: "All",
+    hex: "#475569", // slate-600
+    textColor: "text-slate-600",
+    border: "border-slate-500",
+    iconColor: "text-slate-600",
+    status: "all",
+  },
+  occupied: {
     label: "Occupied",
-    color: "text-blue-600",
+    hex: "#2563eb", // blue-600
+    textColor: "text-blue-600",
     border: "border-blue-500",
     iconColor: "text-blue-600",
+    status: "occupied",
   },
-  open: {
+  free: {
     label: "Free",
-    color: "text-green-600",
+    hex: "#16a34a", // green-600
+    textColor: "text-green-600",
     border: "border-gray-200",
     iconColor: "text-green-600",
-  },
-  reserved: {
-    label: "Reserved",
-    color: "text-amber-600",
-    border: "border-gray-200",
-    iconColor: "text-amber-600",
-  },
-  cleaning: {
-    label: "Cleaning",
-    color: "text-slate-500",
-    border: "border-gray-200",
-    iconColor: "text-slate-500",
-  },
-  paying: {
-    label: "Occupied",
-    color: "text-orange-600",
-    border: "border-orange-500",
-    iconColor: "text-orange-600",
+    status: "free",
   },
 };
 
@@ -98,12 +93,9 @@ function TableCard({
 
   const [nowMs] = useState(() => Date.now());
 
-  const isActive =
-    table.status === "seated" ||
-    table.status === "paying" ||
-    !!table.currentTicket;
+  const isActive = table.status === "occupied" || !!table.currentTicket;
 
-  const config = STATUS_CONFIG[table.status] ?? STATUS_CONFIG.open;
+  const config = STATUS_CONFIG[table.status] ?? STATUS_CONFIG.free;
 
   const bill = ticket?.grandTotal ?? table.bill;
 
@@ -132,7 +124,7 @@ function TableCard({
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
-        <div className={`flex items-center gap-2 ${config.color}`}>
+        <div className={`flex items-center gap-2 ${config.textColor}`}>
           <Armchair size={17} strokeWidth={2} className={config.iconColor} />
 
           <span className="text-sm font-medium">{config.label}</span>
@@ -241,17 +233,6 @@ function TableCard({
 
                 <span>{fmtMinutes(seatedMinutes)}</span>
               </div>
-            )}
-          </div>
-        ) : table.status === "reserved" ? (
-          <div className="flex items-center justify-between">
-            {table.server ? (
-              <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                <Sparkles size={13} />
-                <span>{table.server}</span>
-              </div>
-            ) : (
-              <div />
             )}
           </div>
         ) : (
@@ -372,17 +353,78 @@ export default function GridView({
   const [deleteTarget, setDeleteTarget] = useState<LiveTable | null>(null);
   const [changeTarget, setChangeTarget] = useState<LiveTable | null>(null);
   const [changeModalKey, setChangeModalKey] = useState(0);
+  const [tableStatus, setTableStatus] = useState("all");
 
   const handleOpenChangeTable = (table: LiveTable) => {
     setChangeModalKey((k) => k + 1);
     setChangeTarget(table);
   };
 
-  const indoor = tables.filter((t) => t.zone === "indoor");
-  const outdoor = tables.filter((t) => t.zone === "outdoor");
+  const { filteredTables, counts } = useMemo(() => {
+    const occupied = tables.filter((t) => t.status === "occupied");
+    const free = tables.filter((t) => t.status === "free");
+
+    return {
+      filteredTables:
+        tableStatus === "all"
+          ? tables
+          : tableStatus === "occupied"
+            ? occupied
+            : free,
+      counts: {
+        all: tables.length,
+        occupied: occupied.length,
+        free: free.length,
+      } as Record<string, number>,
+    };
+  }, [tableStatus, tables]);
+
+  const indoor = filteredTables.filter((t) => t.zone === "indoor");
+  const outdoor = filteredTables.filter((t) => t.zone === "outdoor");
 
   return (
     <div className="space-y-6">
+      <div>
+        {Object.entries(STATUS_CONFIG).map(([key, config]) => {
+          const isActive = tableStatus === config.status;
+          const count = counts[config.status] ?? 0;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setTableStatus(config.status)}
+              className={`inline-flex items-center gap-2 px-4 py-1.5 mr-2 rounded-full border text-xs font-medium transition-all duration-200 ${
+                isActive
+                  ? ""
+                  : `bg-white border-gray-200 text-gray-700 hover:bg-violet-50 hover:${config.border} hover:${config.textColor}`
+              }`}
+              style={
+                isActive
+                  ? {
+                      color: "white",
+                      backgroundColor: `${config.hex}`, // 8-digit hex = ~10% alpha
+                      borderColor: config.hex,
+                    }
+                  : undefined
+              }
+            >
+              <span
+                className="inline-block w-2 h-2 rounded-full shrink-0"
+                style={{ backgroundColor: isActive ? "white" : config.hex }}
+              />
+              {config.label}
+              <span
+                className={`inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold  bg-gray-300/40 ${
+                  isActive ? "text-white" : ""
+                }`}
+              >
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Indoor */}
       <div>
         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">

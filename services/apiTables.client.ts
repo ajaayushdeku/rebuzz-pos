@@ -34,7 +34,7 @@ const OUTDOOR_HINT =
  * The API only returns name/seats/notes/status/currentTicket, so the
  * presentation-only fields (bill, server, seated time, floor position…)
  * are derived or defaulted here:
- *  - status: "occupied" → "seated", "free" → "open"
+ *  - status: "occupied" → "occupied", "free" → "free"
  *  - zone: outdoor when notes match an outdoor keyword (see OUTDOOR_HINT),
  *          otherwise indoor
  *  - x/y: assigned in a second pass by {@link assignFloorPositions}
@@ -44,7 +44,7 @@ function mapOne(raw: RawApiTable, index: number): LiveTable {
   const zone: TableZone = OUTDOOR_HINT.test(raw.notes ?? "")
     ? "outdoor"
     : "indoor";
-  const status: TableStatus = occupied ? "seated" : "open";
+  const status: TableStatus = occupied ? "occupied" : "free";
   const id = parseTableNumber(raw.name, index + 1);
 
   return {

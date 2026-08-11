@@ -166,22 +166,22 @@ function InvoiceContent({
     minute: "2-digit",
   });
 
-  const calculatedTaxAmount = invoice.items.reduce((groupSum, group) => {
-    const itemTax = group.item.reduce(
-      (sum, product) => sum + product.taxAmount * product.quantity,
-      0,
-    );
-    return groupSum + itemTax;
-  }, 0);
-
   // const calculatedTaxAmount = invoice.items.reduce((groupSum, group) => {
   //   const itemTax = group.item.reduce(
-  //     (sum, product) =>
-  //       sum + (product.taxApplied ? product.taxAmount * product.quantity : 0),
+  //     (sum, product) => sum + product.taxAmount * product.quantity,
   //     0,
   //   );
   //   return groupSum + itemTax;
   // }, 0);
+
+  const calculatedTaxAmount = invoice.items.reduce((groupSum, group) => {
+    const itemTax = group.item.reduce(
+      (sum, product) =>
+        sum + (product.taxApplied ? product.taxAmount * product.quantity : 0),
+      0,
+    );
+    return groupSum + itemTax;
+  }, 0);
 
   const discountAmount = billData?.discount ?? invoice.discount ?? 0;
   const loyaltyRedeemedAmount = billData?.discountByPoints ?? 0;

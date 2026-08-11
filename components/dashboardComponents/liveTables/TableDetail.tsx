@@ -16,11 +16,8 @@ type OrderRow = {
 };
 
 const STATUS_BADGE: Record<string, string> = {
-  seated: "bg-blue-600 text-white",
-  open: "bg-green-500 text-white",
-  reserved: "bg-amber-500 text-white",
-  cleaning: "bg-red-500 text-white",
-  paying: "bg-purple-600 text-white",
+  occupied: "bg-blue-600 text-white",
+  free: "bg-green-500 text-white",
 };
 
 const ITEM_STATUS_BADGE: Record<string, string> = {
@@ -44,10 +41,7 @@ export default function TableDetail({ table }: TableDetailProps) {
     table.status.charAt(0).toUpperCase() + table.status.slice(1);
   // Treat any table with an open ticket as active so its live stats (bill, time
   // seated, order) render — matching what the floor-plan nodes already show.
-  const isActive =
-    table.status === "seated" ||
-    table.status === "paying" ||
-    !!table.currentTicket;
+  const isActive = table.status === "occupied" || !!table.currentTicket;
 
   // Prefer live ticket data; fall back to the table's own (derived) values.
   const ticketOrders: OrderRow[] = (ticket?.items ?? []).flatMap((group) =>
@@ -104,22 +98,12 @@ export default function TableDetail({ table }: TableDetailProps) {
             <span className="text-xs text-gray-500 capitalize">
               {table.zone}
             </span>
-            {table.status === "paying" && (
-              <>
-                <span className="text-gray-300">·</span>
-                <span className="text-xs text-purple-600 font-semibold">
-                  Paying
-                </span>
-              </>
-            )}
           </div>
         </div>
         <span
           className={`text-xs font-bold px-3 py-1.5 rounded-full ${STATUS_BADGE[table.status]}`}
         >
-          {statusLabel === "Seated"
-            ? "Occupied"
-            : statusLabel === "Open" && "Available"}
+          {statusLabel}
         </span>
       </div>
 
@@ -249,10 +233,7 @@ export default function TableDetail({ table }: TableDetailProps) {
       {/* Empty state for non-active tables */}
       {!isActive && (
         <div className="py-6 text-center text-gray-400 text-sm">
-          {table.status === "open" && "This table is available for seating."}
-          {table.status === "reserved" && "This table has a reservation."}
-          {table.status === "cleaning" &&
-            "This table needs cleaning before it can be seated."}
+          {table.status === "free" && "This table is available for seating."}
         </div>
       )}
     </div>

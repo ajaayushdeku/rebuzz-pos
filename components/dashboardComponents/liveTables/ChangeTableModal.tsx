@@ -27,9 +27,9 @@ export default function ChangeTableModal({
 
   if (!open || !currentTable) return null;
 
-  // Only FREE tables (status "open") are eligible for a change.
+  // Only FREE tables (status "free") are eligible for a change.
   const freeTables = allTables.filter(
-    (t) => t.status === "open" && t._id !== currentTable._id,
+    (t) => t.status === "free" && t._id !== currentTable._id,
   );
 
   const ticketNumber = currentTable.currentTicket?.invoice;
