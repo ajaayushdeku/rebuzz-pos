@@ -866,7 +866,7 @@ export default function InvoiceForm({
                     ? {
                         id: activeTaxId,
                         name: activeTaxDetails.name,
-                        rate: activeTaxRate || activeTaxDetails.rate,
+                        rate: activeTaxRate,
                       }
                     : null
                 }
