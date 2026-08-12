@@ -13,6 +13,12 @@ import {
   Plus,
   X,
   Layers,
+  TriangleAlert,
+  LucideIcon,
+  AlertTriangle,
+  Percent,
+  Tag,
+  Receipt,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -37,6 +43,71 @@ import ProductDetailModal from "./ProductDetailModal";
 import ProductFormModal from "@/components/product/ProductFormModal";
 import { formatCurrencySymbol, formatCurrencySymbolOnly } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
+
+// ── Compact pill representation ───────────────────────────────────────────
+
+type PillTone = "danger" | "warning" | "info" | "tax";
+
+/** One badge on the pills row, in both its compact and full forms. */
+type RowPill = {
+  key: string;
+  tone: PillTone;
+  icon: LucideIcon;
+  /** Screen-reader / tooltip text for the collapsed dot. */
+  label: string;
+  /** Draws attention — used for anything the user must act on. */
+  pulse?: boolean;
+  /** The full badge, shown on wide screens and inside the dot's popover. */
+  element: React.ReactNode;
+};
+
+const DOT_TONE: Record<PillTone, string> = {
+  danger: "bg-red-100 text-red-600 ring-red-300/70",
+  warning: "bg-amber-100 text-amber-600 ring-amber-300/70",
+  info: "bg-blue-100 text-blue-600 ring-blue-300/70",
+  tax: "bg-rose-100 text-rose-600 ring-rose-300/70",
+};
+
+/**
+ * A pill collapsed to a dot. Hovering — or focusing, which is what a tap does
+ * on touch devices — reveals the full badge.
+ *
+ * The popover sits inside the same `group` as the dot, so moving the pointer
+ * from the dot onto the badge keeps it open and its buttons stay clickable.
+ */
+function PillDot({ pill }: { pill: RowPill }) {
+  const Icon = pill.icon;
+
+  return (
+    <div className="relative shrink-0 group">
+      <button
+        type="button"
+        aria-label={pill.label}
+        title={pill.label}
+        onClick={(e) => e.preventDefault()}
+        className={cn(
+          "grid h-5 w-5 place-items-center rounded-full ring-2 transition",
+          "focus:outline-none focus-visible:ring-offset-1",
+          DOT_TONE[pill.tone],
+          pill.pulse && "animate-pulse",
+        )}
+      >
+        <Icon className="h-2.5 w-2.5" strokeWidth={2.4} />
+      </button>
+
+      <div
+        className={cn(
+          "absolute left-0 top-6 z-40 w-max max-w-[70vw]",
+          "hidden group-hover:block group-focus-within:block",
+        )}
+      >
+        <div className="rounded-lg bg-white p-1 shadow-lg ring-1 ring-black/5">
+          {pill.element}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function InvoiceItemsSelector({
   products,
@@ -78,6 +149,17 @@ export default function InvoiceItemsSelector({
   // ── Stock validation errors per item ──
   const [stockErrors, setStockErrors] = useState<Record<string, string>>({});
 
+  const netUnitPrice = (item: InvoiceItem) => {
+    const perUnit = item.discounts.reduce((sum, dId) => {
+      const d = masterDiscounts.find((m) => m._id === dId);
+      if (!d) return sum;
+      return (
+        sum + (d.type === "percentage" ? (item.price * d.rate) / 100 : d.rate)
+      );
+    }, 0);
+    return Math.max(0, item.price - perUnit);
+  };
+
   const getStockWarning = (
     item: InvoiceItem,
   ): { type: "low" | "exceeded" | null; message: string } => {
@@ -97,7 +179,7 @@ export default function InvoiceItemsSelector({
       if (item.quantity > variantStock) {
         return {
           type: "exceeded",
-          message: `Only ${variantStock} in stock. You entered ${item.quantity}.`,
+          message: `Only ${variantStock} in stock.`,
         };
       }
 
@@ -124,7 +206,7 @@ export default function InvoiceItemsSelector({
     if (item.quantity > product.inStock) {
       return {
         type: "exceeded",
-        message: `Only ${product.inStock} in stock. You entered ${item.quantity}.`,
+        message: `Only ${product.inStock} in stock.`,
       };
     }
 
@@ -305,432 +387,504 @@ export default function InvoiceItemsSelector({
     setVariantPicker(null);
   };
 
+  const buildRowPills = (item: InvoiceItem): RowPill[] => {
+    const pills: RowPill[] = [];
+    const stockError = stockErrors[item.id];
+    const product = products.find((p) => p.id === item.productId);
+
+    // Stock exceeded
+    if (stockError) {
+      pills.push({
+        key: "stock-exceeded",
+        tone: "danger",
+        icon: TriangleAlert,
+        label: `Stock exceeded — ${stockError}`,
+        pulse: true,
+        element: (
+          <Badge className="flex items-center gap-1 bg-red-100 text-red-700 hover:bg-red-200 text-xs">
+            <span className="text-[11px] font-semibold  tracking-wider leading-none">
+              Stock Exceeded,
+            </span>
+            <span className="text-[11px]  font-semibold  tracking-wider leading-none">
+              {stockError}
+            </span>
+          </Badge>
+        ),
+      });
+    }
+
+    // Low stock
+    if (
+      item.productId &&
+      !stockError &&
+      product?.usesStocks &&
+      product.inStock !== undefined &&
+      product.lowStock !== undefined &&
+      product.inStock > 0 &&
+      product.inStock <= product.lowStock
+    ) {
+      pills.push({
+        key: "low-stock",
+        tone: "warning",
+        icon: AlertTriangle,
+        label: `Low stock — ${product.inStock} left`,
+        element: (
+          <Badge className="flex items-center gap-1 bg-amber-100 text-amber-700 hover:bg-amber-200 text-xs border border-amber-200">
+            <span className="text-[11px]  font-semibold  tracking-wider leading-none">
+              Low Stock
+            </span>
+            <span className="text-[11px]  font-semibold  tracking-wider leading-none">
+              ({product.inStock} left)
+            </span>
+          </Badge>
+        ),
+      });
+    }
+
+    // Discounts
+    item.discounts.forEach((dId) => {
+      const d = masterDiscounts.find((m) => m._id === dId);
+      if (!d) return;
+
+      const amount =
+        d.type === "percentage"
+          ? (item.quantity * item.price * d.rate) / 100
+          : d.rate * item.quantity;
+
+      pills.push({
+        key: `discount-${dId}`,
+        tone: "info",
+        icon: d.type === "percentage" ? Percent : Tag,
+        label: `${d.name} — ${formatCurrencySymbolOnly(currency.symbol)} ${amount.toFixed(2)} off`,
+        element: (
+          <Badge className="flex items-center gap-1 bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs">
+            <span className="text-[11px] tracking-wider font-semibold leading-none">
+              {d.name}
+            </span>
+            {d.type === "percentage" ? (
+              <>
+                <span className="text-[11px] font-semibold  tracking-wider text-blue-500 leading-none">
+                  ({d.rate}%) :
+                </span>
+                <span className="text-[11px] font-semibold  tracking-wider leading-none">
+                  - {formatCurrencySymbolOnly(currency.symbol)}{" "}
+                  {amount.toFixed(2)}
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="text-[11px] font-semibold  tracking-wider text-blue-500 leading-none">
+                  ({formatCurrencySymbolOnly(currency.symbol)} {d.rate} off) :
+                </span>
+                <span className="text-[11px] font-semibold  tracking-wider leading-none">
+                  - {formatCurrencySymbolOnly(currency.symbol)}{" "}
+                  {amount.toFixed(2)}
+                </span>
+              </>
+            )}
+            <button
+              type="button"
+              className="ml-0.5 rounded-full hover:bg-blue-300 p-0.5 transition-colors"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onRemoveDiscount(item.id, dId);
+              }}
+            >
+              <X className="w-2.5 h-2.5" />
+            </button>
+          </Badge>
+        ),
+      });
+    });
+
+    // Tax — only when product isTaxable AND global tax active
+    if (item.isTaxable && activeTax) {
+      const rowTotal = item.quantity * item.price;
+      const discountTotal = item.discounts.reduce((sum, dId) => {
+        const d = masterDiscounts.find((m) => m._id === dId);
+        if (!d) return sum;
+        return (
+          sum +
+          (d.type === "percentage"
+            ? (rowTotal * d.rate) / 100
+            : d.rate * item.quantity)
+        );
+      }, 0);
+      const taxableAmount = Math.max(0, rowTotal - discountTotal);
+      const taxAmount = (taxableAmount * activeTax.rate) / 100;
+
+      pills.push({
+        key: "tax",
+        tone: "tax",
+        icon: Receipt,
+        label: `${activeTax.name} (${activeTax.rate}%) — ${formatCurrencySymbolOnly(currency.symbol)} ${taxAmount.toFixed(2)}`,
+        element: (
+          <Badge className="flex items-center gap-1 bg-red-100 text-red-700 hover:bg-red-200 text-xs">
+            <span className="text-[11px] font-semibold  tracking-wider leading-none">
+              {activeTax.name}
+            </span>
+            <span className="text-[11px] text-red-500  tracking-wider leading-none">
+              ({activeTax.rate}%) :
+            </span>
+            <span className="text-[11px] font-medium  tracking-wider  leading-none">
+              + {formatCurrencySymbolOnly(currency.symbol)}{" "}
+              {taxAmount.toFixed(2)}
+            </span>
+
+            {/* X disables taxable on this item */}
+            <button
+              type="button"
+              className="ml-0.5 rounded-full hover:bg-red-300 p-0.5 transition-colors"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                onItemsChange(
+                  items.map((i) =>
+                    i.id === item.id ? { ...i, isTaxable: false } : i,
+                  ),
+                );
+              }}
+            >
+              <X className="w-2.5 h-2.5" />
+            </button>
+          </Badge>
+        ),
+      });
+    }
+
+    return pills;
+  };
+
   return (
     <>
-      {items.map((item) => (
-        // Keyed Fragment — the bare <> here meant every item pair was an
-        // unkeyed array element, which React warns about and which makes rows
-        // remount on reorder.
-        <Fragment key={item.id}>
-          <TableRow className="border-b-0  w-full hover:bg-gray-50/70 transition-colors">
-            <TableCell className="w-6 px-1">
-              <GripVertical className="h-4 w-4 text-gray-300 cursor-grab" />
-            </TableCell>
+      {items.map((item) => {
+        // Display-only: what a single unit actually costs after this row's
+        // discounts. `item.price` is untouched.
+        const discountedUnit = netUnitPrice(item);
+        const showDiscountedUnit =
+          item.discounts.length > 0 && discountedUnit < item.price;
 
-            {/* Product selector */}
-            <TableCell className="min-w-[140px] lg:min-w-[180px]">
-              <div className="flex items-center gap-1">
+        const rowPills = buildRowPills(item);
+
+        return (
+          // Keyed Fragment — the bare <> here meant every item pair was an
+          // unkeyed array element, which React warns about and which makes rows
+          // remount on reorder.
+          <Fragment key={item.id}>
+            <TableRow className="border-b-0  w-full hover:bg-gray-50/70 transition-colors">
+              <TableCell className="w-6 px-1">
+                <GripVertical className="h-4 w-4 text-gray-300 cursor-grab" />
+              </TableCell>
+
+              {/* Product selector */}
+              <TableCell className="min-w-[140px] lg:min-w-[180px]">
+                <div className="flex items-center gap-1">
+                  <Input
+                    value={item.name}
+                    onChange={(e) =>
+                      updateItem(item.id, "name", e.target.value)
+                    }
+                    placeholder="Product name"
+                    className="flex-1 h-8 text-xs"
+                  />
+                  <Popover
+                    open={productPopoverRow === item.id}
+                    onOpenChange={(open) =>
+                      setProductPopoverRow(open ? item.id : null)
+                    }
+                  >
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 shrink-0 border-gray-200"
+                      >
+                        <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-72 p-0" align="start">
+                      <Command>
+                        <CommandInput
+                          placeholder="Search product..."
+                          value={search}
+                          onValueChange={setSearch}
+                        />
+                        <CommandList>
+                          <CommandEmpty className="p-0">
+                            <div className="py-4 text-center text-xs">
+                              No product found.
+                            </div>
+                            <Button
+                              variant="secondary"
+                              className="w-full rounded-none border-t flex items-center justify-start gap-2 px-4 py-2 text-xs"
+                              onClick={() => openCreateModal(item.id)}
+                            >
+                              <Plus className="h-3 w-3" />
+                              <span>Create &ldquo;{search}&rdquo;</span>
+                            </Button>
+                          </CommandEmpty>
+                          <CommandGroup>
+                            {products
+                              .filter((product) => {
+                                // Variant products hold stock on their variants,
+                                // so skip the parent-level stock filter for them.
+                                if (
+                                  product.variants &&
+                                  product.variants.length > 0
+                                ) {
+                                  return true;
+                                }
+                                if (
+                                  product.usesStocks &&
+                                  product.inStock !== undefined
+                                ) {
+                                  return product.inStock > 0;
+                                }
+                                return true;
+                              })
+                              .map((product) => {
+                                const hasVariants =
+                                  product.variants &&
+                                  product.variants.length > 0;
+                                const isLowStock =
+                                  !hasVariants &&
+                                  product.usesStocks &&
+                                  product.inStock !== undefined &&
+                                  product.lowStock !== undefined &&
+                                  product.inStock > 0 &&
+                                  product.inStock <= product.lowStock;
+                                return (
+                                  <CommandItem
+                                    key={product.id}
+                                    value={product.name}
+                                    onSelect={() =>
+                                      handleProductSelect(item.id, product.name)
+                                    }
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-3.5 w-3.5",
+                                        item.name === product.name
+                                          ? "opacity-100"
+                                          : "opacity-0",
+                                      )}
+                                    />
+                                    <div className="flex flex-col flex-1">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-sm">
+                                          {product.name}
+                                        </span>
+                                        {hasVariants && (
+                                          <span className="inline-flex items-center gap-0.5 text-[9px] px-1 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200 font-medium whitespace-nowrap">
+                                            <Layers className="h-2.5 w-2.5" />
+                                            {product.variants?.length} variants
+                                          </span>
+                                        )}
+                                        {isLowStock && (
+                                          <span className="text-[9px] px-1 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200 font-medium whitespace-nowrap">
+                                            Low Stock
+                                          </span>
+                                        )}
+                                      </div>
+                                      <span className="text-[11px] text-muted-foreground">
+                                        {hasVariants
+                                          ? `From ${formatCurrencySymbol(
+                                              Math.min(
+                                                ...(product.variants?.map(
+                                                  (v) => v.price,
+                                                ) ?? [0]),
+                                              ),
+                                              currency.symbol,
+                                              currency.locale,
+                                            )}`
+                                          : formatCurrencySymbol(
+                                              product.price,
+                                              currency.symbol,
+                                              currency.locale,
+                                            )}
+                                      </span>
+                                    </div>
+                                  </CommandItem>
+                                );
+                              })}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </TableCell>
+
+              {/* Description */}
+              <TableCell className="min-w-[100px]  xl:table-cell">
                 <Input
-                  value={item.name}
-                  onChange={(e) => updateItem(item.id, "name", e.target.value)}
-                  placeholder="Product name"
-                  className="flex-1 h-8 text-xs"
+                  value={item.description}
+                  onChange={(e) =>
+                    updateItem(item.id, "description", e.target.value)
+                  }
+                  placeholder="Description"
+                  className="h-8 text-xs"
                 />
-                <Popover
-                  open={productPopoverRow === item.id}
-                  onOpenChange={(open) =>
-                    setProductPopoverRow(open ? item.id : null)
+              </TableCell>
+
+              {/* Quantity */}
+              <TableCell className="relative min-w-[65px] w-[75px]">
+                <Input
+                  type="number"
+                  value={item.quantity}
+                  onChange={(e) =>
+                    updateItem(item.id, "quantity", Number(e.target.value))
+                  }
+                  className={cn(
+                    "text-right h-8 text-[13px] font-semibold  tracking-wider px-1.5 tabular-nums",
+                    stockErrors[item.id] &&
+                      "border-red-400 focus-visible:ring-orange-400",
+                  )}
+                />
+                {stockErrors[item.id] && (
+                  <span className="absolute -top-2 -right-1 text-[8px] font-medium text-red-600 bg-red-50 px-1 py-0.5 rounded-full border border-red-200 whitespace-nowrap">
+                    Stock Exceeded
+                  </span>
+                )}
+              </TableCell>
+
+              {/* Unit price */}
+              <TableCell className="min-w-[60px] w-[85px] relative ">
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-slate-400">
+                    {currency.symbol}
+                  </span>
+                  <Input
+                    type="number"
+                    value={item.price}
+                    onChange={(e) =>
+                      updateItem(item.id, "price", Number(e.target.value))
+                    }
+                    title={
+                      showDiscountedUnit
+                        ? `List price ${formatCurrencySymbolOnly(currency.symbol)} ${item.price.toFixed(2)} — ${formatCurrencySymbolOnly(currency.symbol)} ${discountedUnit.toFixed(2)} after discount`
+                        : undefined
+                    }
+                    className={cn(
+                      "text-right h-8 text-[13px] font-semibold  tracking-wider px-1.5 no-spinner tabular-nums",
+                      showDiscountedUnit && "text-gray-400 line-through",
+                    )}
+                  />
+                  {showDiscountedUnit && (
+                    <p className="absolute right-0 mt-1 pr-1.5 text-right text-[11px] font-semibold leading-none text-green-600 tabular-nums">
+                      {formatCurrencySymbolOnly(currency.symbol)}{" "}
+                      {discountedUnit.toFixed(2)}
+                    </p>
+                  )}
+                </div>
+              </TableCell>
+
+              {/* Row total */}
+              <TableCell className="min-w-[60px] text-right font-semibold text-xs text-gray-800 tabular-nums">
+                {formatCurrencySymbolOnly(currency.symbol)}{" "}
+                {(() => {
+                  const rowSubtotal = item.quantity * item.price;
+                  const rowDiscount = item.discounts.reduce((sum, dId) => {
+                    const d = masterDiscounts.find((m) => m._id === dId);
+                    if (!d) return sum;
+                    return (
+                      sum +
+                      (d.type === "percentage"
+                        ? (rowSubtotal * d.rate) / 100
+                        : d.rate * item.quantity)
+                    );
+                  }, 0);
+                  return (rowSubtotal - rowDiscount).toFixed(2);
+                })()}
+              </TableCell>
+
+              {/* Discount column — + button opens modal */}
+              <TableCell className="text-center">
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setDiscountModalItemId(item.id)}
+                    className="w-6 h-6 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center transition-colors"
+                    title="Add discount"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </button>
+                </div>
+              </TableCell>
+
+              {/* ── Taxable toggle ── */}
+              <TableCell className="text-center">
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newTaxable = !item.isTaxable;
+                      onItemsChange(
+                        items.map((i) =>
+                          i.id === item.id
+                            ? { ...i, isTaxable: newTaxable }
+                            : i,
+                        ),
+                      );
+                    }}
+                    className={`relative inline-flex h-5 w-8 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
+                      item.isTaxable ? "bg-blue-500" : "bg-gray-200"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-3 w-3 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                        item.isTaxable
+                          ? "translate-x-[16px]"
+                          : "translate-x-0.5"
+                      }`}
+                    />
+                  </button>
+                </div>
+              </TableCell>
+
+              {/* Delete */}
+              <TableCell className="text-center w-[35px]">
+                <button
+                  className="text-gray-400 hover:text-red-500 transition-colors shrink-0"
+                  onClick={() =>
+                    onItemsChange(items.filter((i) => i.id !== item.id))
                   }
                 >
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8 shrink-0 border-gray-200"
-                    >
-                      <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-72 p-0" align="start">
-                    <Command>
-                      <CommandInput
-                        placeholder="Search product..."
-                        value={search}
-                        onValueChange={setSearch}
-                      />
-                      <CommandList>
-                        <CommandEmpty className="p-0">
-                          <div className="py-4 text-center text-xs">
-                            No product found.
-                          </div>
-                          <Button
-                            variant="secondary"
-                            className="w-full rounded-none border-t flex items-center justify-start gap-2 px-4 py-2 text-xs"
-                            onClick={() => openCreateModal(item.id)}
-                          >
-                            <Plus className="h-3 w-3" />
-                            <span>Create &ldquo;{search}&rdquo;</span>
-                          </Button>
-                        </CommandEmpty>
-                        <CommandGroup>
-                          {products
-                            .filter((product) => {
-                              // Variant products hold stock on their variants,
-                              // so skip the parent-level stock filter for them.
-                              if (
-                                product.variants &&
-                                product.variants.length > 0
-                              ) {
-                                return true;
-                              }
-                              if (
-                                product.usesStocks &&
-                                product.inStock !== undefined
-                              ) {
-                                return product.inStock > 0;
-                              }
-                              return true;
-                            })
-                            .map((product) => {
-                              const hasVariants =
-                                product.variants && product.variants.length > 0;
-                              const isLowStock =
-                                !hasVariants &&
-                                product.usesStocks &&
-                                product.inStock !== undefined &&
-                                product.lowStock !== undefined &&
-                                product.inStock > 0 &&
-                                product.inStock <= product.lowStock;
-                              return (
-                                <CommandItem
-                                  key={product.id}
-                                  value={product.name}
-                                  onSelect={() =>
-                                    handleProductSelect(item.id, product.name)
-                                  }
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-3.5 w-3.5",
-                                      item.name === product.name
-                                        ? "opacity-100"
-                                        : "opacity-0",
-                                    )}
-                                  />
-                                  <div className="flex flex-col flex-1">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-sm">
-                                        {product.name}
-                                      </span>
-                                      {hasVariants && (
-                                        <span className="inline-flex items-center gap-0.5 text-[9px] px-1 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200 font-medium whitespace-nowrap">
-                                          <Layers className="h-2.5 w-2.5" />
-                                          {product.variants?.length} variants
-                                        </span>
-                                      )}
-                                      {isLowStock && (
-                                        <span className="text-[9px] px-1 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200 font-medium whitespace-nowrap">
-                                          Low Stock
-                                        </span>
-                                      )}
-                                    </div>
-                                    <span className="text-[11px] text-muted-foreground">
-                                      {hasVariants
-                                        ? `From ${formatCurrencySymbol(
-                                            Math.min(
-                                              ...(product.variants?.map(
-                                                (v) => v.price,
-                                              ) ?? [0]),
-                                            ),
-                                            currency.symbol,
-                                            currency.locale,
-                                          )}`
-                                        : formatCurrencySymbol(
-                                            product.price,
-                                            currency.symbol,
-                                            currency.locale,
-                                          )}
-                                    </span>
-                                  </div>
-                                </CommandItem>
-                              );
-                            })}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </TableCell>
-
-            {/* Description */}
-            <TableCell className="min-w-[100px]  xl:table-cell">
-              <Input
-                value={item.description}
-                onChange={(e) =>
-                  updateItem(item.id, "description", e.target.value)
-                }
-                placeholder="Description"
-                className="h-8 text-xs"
-              />
-            </TableCell>
-
-            {/* Quantity */}
-            <TableCell className="relative min-w-[65px] w-[75px]">
-              <Input
-                type="number"
-                value={item.quantity}
-                onChange={(e) =>
-                  updateItem(item.id, "quantity", Number(e.target.value))
-                }
-                className={cn(
-                  "text-right h-8 text-[13px] font-semibold  tracking-wider px-1.5 tabular-nums",
-                  stockErrors[item.id] &&
-                    "border-red-400 focus-visible:ring-red-400",
-                )}
-              />
-              {stockErrors[item.id] && (
-                <span className="absolute -top-2 -right-1 text-[8px] font-medium text-red-600 bg-red-50 px-1 py-0.5 rounded-full border border-red-200 whitespace-nowrap">
-                  Stock Exceeded
-                </span>
-              )}
-            </TableCell>
-
-            {/* Unit price */}
-            <TableCell className="min-w-[70px] w-[85px]">
-              <Input
-                type="number"
-                value={item.price}
-                onChange={(e) =>
-                  updateItem(item.id, "price", Number(e.target.value))
-                }
-                className="text-right h-8 text-[13px] font-semibold  tracking-wider px-1.5 no-spinner tabular-nums"
-              />
-            </TableCell>
-
-            {/* Row total */}
-            <TableCell className="min-w-[60px] text-right font-semibold text-xs text-gray-800 tabular-nums">
-              {formatCurrencySymbolOnly(currency.symbol)}{" "}
-              {(() => {
-                const rowSubtotal = item.quantity * item.price;
-                const rowDiscount = item.discounts.reduce((sum, dId) => {
-                  const d = masterDiscounts.find((m) => m._id === dId);
-                  if (!d) return sum;
-                  return (
-                    sum +
-                    (d.type === "percentage"
-                      ? (rowSubtotal * d.rate) / 100
-                      : d.rate * item.quantity)
-                  );
-                }, 0);
-                return (rowSubtotal - rowDiscount).toFixed(2);
-              })()}
-            </TableCell>
-
-            {/* Discount column — + button opens modal */}
-            <TableCell className="text-center">
-              <div className="flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => setDiscountModalItemId(item.id)}
-                  className="w-6 h-6 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center transition-colors"
-                  title="Add discount"
-                >
-                  <Plus className="w-3 h-3" />
+                  <Trash2 className="h-3.5 w-3.5 text-gray-400 hover:text-red-500" />
                 </button>
-              </div>
-            </TableCell>
+              </TableCell>
+            </TableRow>
 
-            {/* ── Taxable toggle ── */}
-            <TableCell className="text-center">
-              <div className="flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const newTaxable = !item.isTaxable;
-                    onItemsChange(
-                      items.map((i) =>
-                        i.id === item.id ? { ...i, isTaxable: newTaxable } : i,
-                      ),
-                    );
-                  }}
-                  className={`relative inline-flex h-5 w-8 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
-                    item.isTaxable ? "bg-blue-500" : "bg-gray-200"
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-3 w-3 transform rounded-full bg-white shadow transition-transform duration-200 ${
-                      item.isTaxable ? "translate-x-[16px]" : "translate-x-0.5"
-                    }`}
-                  />
-                </button>
-              </div>
-            </TableCell>
+            {/* ── Pills row — discount + tax badges ── */}
+            <TableRow className="border-b border-gray-100 hover:bg-gray-50/70 transition-colors">
+              {/* Skip grip + product columns */}
+              <TableCell className="w-6 px-1 pb-2 pt-0" />
+              <TableCell colSpan={7} className="pb-3 pt-0">
+                {rowPills.length > 0 && (
+                  <>
+                    {/* Narrow: one dot per badge, full badge on hover/tap */}
+                    <div className="flex flex-wrap items-center gap-1.5 lg:hidden">
+                      {rowPills.map((pill) => (
+                        <PillDot key={pill.key} pill={pill} />
+                      ))}
+                    </div>
 
-            {/* Delete */}
-            <TableCell className="text-center w-[35px]">
-              <button
-                className="text-gray-400 hover:text-red-500 transition-colors shrink-0"
-                onClick={() =>
-                  onItemsChange(items.filter((i) => i.id !== item.id))
-                }
-              >
-                <Trash2 className="h-3.5 w-3.5 text-gray-400 hover:text-red-500" />
-              </button>
-            </TableCell>
-          </TableRow>
-
-          {/* ── Pills row — discount + tax badges ── */}
-          <TableRow className="border-b border-gray-100 hover:bg-gray-50/70 transition-colors">
-            {/* Skip grip + product columns */}
-            <TableCell className="w-6 px-1 pb-2 pt-0" />
-            <TableCell colSpan={7} className="pb-3 pt-0">
-              <div className="flex flex-wrap items-center gap-1.5">
-                {/* Stock error badge */}
-                {stockErrors[item.id] && (
-                  <Badge className="flex items-center gap-1 bg-red-100 text-red-700 hover:bg-red-200 text-xs border border-red-200">
-                    <span className="text-[11px] font-semibold  tracking-wider leading-none">
-                      Stock Exceeded
-                    </span>
-                    <span className="text-[11px]  font-semibold  tracking-wider leading-none">
-                      {stockErrors[item.id]}
-                    </span>
-                  </Badge>
+                    {/* Wide: the badges themselves */}
+                    <div className="hidden flex-wrap items-center gap-1.5 lg:flex">
+                      {rowPills.map((pill) => (
+                        <Fragment key={pill.key}>{pill.element}</Fragment>
+                      ))}
+                    </div>
+                  </>
                 )}
-
-                {/* Low stock warning badge */}
-                {item.productId &&
-                  !stockErrors[item.id] &&
-                  (() => {
-                    const product = products.find(
-                      (p) => p.id === item.productId,
-                    );
-                    if (
-                      product?.usesStocks &&
-                      product.inStock !== undefined &&
-                      product.lowStock !== undefined &&
-                      product.inStock > 0 &&
-                      product.inStock <= product.lowStock
-                    ) {
-                      return (
-                        <Badge className="flex items-center gap-1 bg-amber-100 text-amber-700 hover:bg-amber-200 text-xs border border-amber-200">
-                          <span className="text-[11px]  font-semibold  tracking-widerleading-none">
-                            Low Stock
-                          </span>
-                          <span className="text-[11px]  font-semibold  tracking-wider leading-none">
-                            ({product.inStock} left)
-                          </span>
-                        </Badge>
-                      );
-                    }
-                    return null;
-                  })()}
-
-                {/* Discount badges */}
-                {item.discounts.map((dId) => {
-                  const d = masterDiscounts.find((m) => m._id === dId);
-                  if (!d) return null;
-                  return (
-                    <Badge
-                      key={dId}
-                      className="flex items-center gap-1 bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs"
-                    >
-                      <span className="text-[11px] tracking-wider font-semibold leading-none">
-                        {d.name}
-                      </span>
-                      {d.type === "percentage" ? (
-                        <>
-                          <span className="text-[11px] font-semibold  tracking-wider text-blue-500 leading-none">
-                            ({d.rate}%) :
-                          </span>
-                          <span className="text-[11px] font-semibold  tracking-wider font-medium leading-none">
-                            - {formatCurrencySymbolOnly(currency.symbol)}{" "}
-                            {(
-                              (item.quantity * item.price * d.rate) /
-                              100
-                            ).toFixed(2)}
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-[11px] font-semibold  tracking-wider text-blue-500 leading-none">
-                            ({formatCurrencySymbolOnly(currency.symbol)}{" "}
-                            {d.rate} off) :
-                          </span>
-                          <span className="text-[11px] font-semibold  tracking-wider font-medium leading-none">
-                            - {formatCurrencySymbolOnly(currency.symbol)}{" "}
-                            {(d.rate * item.quantity).toFixed(2)}
-                          </span>
-                        </>
-                      )}
-                      <button
-                        type="button"
-                        className="ml-0.5 rounded-full hover:bg-blue-300 p-0.5 transition-colors"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          onRemoveDiscount(item.id, dId);
-                        }}
-                      >
-                        <X className="w-2.5 h-2.5" />
-                      </button>
-                    </Badge>
-                  );
-                })}
-
-                {/* Tax pill — only when product isTaxable AND global tax active */}
-                {item.isTaxable && activeTax && (
-                  <Badge className="flex items-center gap-1 bg-red-100 text-red-700 border border-red-200 text-xs">
-                    <span className="text-[11px] font-semibold  tracking-wider leading-none">
-                      {activeTax.name}
-                    </span>
-                    <span className="text-[11px] text-red-500  tracking-wider leading-none">
-                      ({activeTax.rate}%) :
-                    </span>
-                    <span className="text-[11px] font-medium  tracking-wider  leading-none">
-                      + {formatCurrencySymbolOnly(currency.symbol)}{" "}
-                      {(() => {
-                        const rowTotal = item.quantity * item.price;
-                        const discountTotal = item.discounts.reduce(
-                          (sum, dId) => {
-                            const d = masterDiscounts.find(
-                              (m) => m._id === dId,
-                            );
-                            if (!d) return sum;
-                            return (
-                              sum +
-                              (d.type === "percentage"
-                                ? (rowTotal * d.rate) / 100
-                                : d.rate * item.quantity)
-                            );
-                          },
-                          0,
-                        );
-                        const taxableAmount = Math.max(
-                          0,
-                          rowTotal - discountTotal,
-                        );
-                        return ((taxableAmount * activeTax.rate) / 100).toFixed(
-                          2,
-                        );
-                      })()}
-                    </span>
-
-                    {/* ✅ X disables taxable on this item */}
-                    <button
-                      type="button"
-                      className="ml-0.5 rounded-full hover:bg-green-300 p-0.5 transition-colors"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-
-                        onItemsChange(
-                          items.map((i) =>
-                            i.id === item.id ? { ...i, isTaxable: false } : i,
-                          ),
-                        );
-                      }}
-                    >
-                      <X className="w-2.5 h-2.5" />
-                    </button>
-                  </Badge>
-                )}
-              </div>
-            </TableCell>
-            <TableCell className="w-8 pb-2 pt-0" />
-          </TableRow>
-        </Fragment>
-      ))}
+              </TableCell>
+              <TableCell className="w-8 pb-2 pt-0" />
+            </TableRow>
+          </Fragment>
+        );
+      })}
 
       <TableRow className="hover:bg-gray-50/70 transition-colors ">
         <TableCell colSpan={10} className="p-0">
