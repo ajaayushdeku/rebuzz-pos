@@ -61,6 +61,154 @@ interface CustomDiscount {
   value: number;
 }
 
+// ── Product / variant lookup ──────────────────────────────────────────────
+// `product.variants` is an OBJECT, not an array:
+//
+//   variants: { _id, productId, options: [...], variantItems: [ ... ] }
+//
+// The variants live in `variants.variantItems`, each keyed by `_id` — not
+// `id`. So `product.variants.find(v => v.id === someId)` THROWS
+// ("find is not a function"), and `products.find(p => p.id === someId)`
+// silently matches nothing when the API only returns `_id`. Both lookups go
+// through these helpers instead.
+
+type NormalizedVariant = {
+  id: string;
+  optionValues: string[];
+  price: number;
+  inStock?: number;
+  lowStock?: number;
+  costPrice: number;
+};
+
+/** Find a product by id, accepting `id` or `_id`. */
+function findProduct(
+  products: Product[] | undefined | null,
+  productId: string | undefined | null,
+): Product | undefined {
+  if (!productId) return undefined;
+  return (products ?? []).find(
+    (p) => p.id === productId || (p as any)._id === productId,
+  );
+}
+
+/**
+ * All variants of a product, flattened and normalized. Tolerates both the raw
+ * API object and an already-flattened array, so this keeps working whether or
+ * not `useProductsList` normalizes upstream.
+ */
+function getVariants(product: Product | undefined | null): NormalizedVariant[] {
+  const source: any = product?.variants;
+  if (!source) return [];
+
+  const list: any[] = Array.isArray(source)
+    ? source
+    : Array.isArray(source.variantItems)
+      ? source.variantItems
+      : [];
+
+  return list
+    .map((raw: any) => {
+      const id = raw?.id ?? raw?._id;
+      if (!id) return null;
+      return {
+        id,
+        optionValues: Array.isArray(raw.optionValues) ? raw.optionValues : [],
+        price: raw.price ?? 0,
+        inStock: raw.inStock,
+        lowStock: raw.lowStock,
+        costPrice: raw.costPrice ?? 0,
+      };
+    })
+    .filter(Boolean) as NormalizedVariant[];
+}
+
+/** Find one variant by id, accepting `id` or `_id` on the stored side. */
+function findVariant(
+  product: Product | undefined | null,
+  variantId: string | undefined | null,
+): NormalizedVariant | undefined {
+  if (!variantId) return undefined;
+  return getVariants(product).find((v) => v.id === variantId);
+}
+
+/** Human label for a variant, e.g. "small · cherry". */
+function variantLabel(variant: NormalizedVariant | undefined): string {
+  return variant?.optionValues.join(" · ") ?? "";
+}
+
+/** Trailing parenthesised label from a stored name: "Jelly (s,m,l)" → "s,m,l". */
+function labelFromName(name: string | undefined | null): string | undefined {
+  if (!name) return undefined;
+  const match = name.match(/\(([^()]*)\)\s*$/);
+  return match ? match[1].trim() : undefined;
+}
+
+/**
+ * The variant label as the API wants it: "small/cherry", not "small · cherry".
+ *
+ * The UI joins option values with " · " for readability; the payload uses
+ * "/". Converting here rather than at the join site keeps the display format
+ * intact and also normalises labels that arrive already stored in either
+ * form.
+ */
+function toPayloadLabel(label: string | undefined | null): string {
+  return (label ?? "").replace(/\s*·\s*/g, "/").trim();
+}
+
+/** Loose label compare — ignores case, spacing, and "·" vs "," separators. */
+function labelKey(label: string): string {
+  return label.toLowerCase().replace(/·/g, ",").replace(/\s+/g, "");
+}
+
+/**
+ * Work out which variant a line refers to.
+ *
+ * Ids are tried first. When none survive — an invoice saved by an earlier
+ * build dropped `variantItems`, so the server only kept "Coke (small ·
+ * vanilla)" and a unit price — the variant is recovered from the product by
+ * matching the name's trailing label, then by a uniquely-matching price.
+ */
+function resolveVariant(
+  product: Product | undefined,
+  opts: {
+    variantId?: string;
+    name?: string;
+    label?: string;
+    price?: number;
+  },
+): { variant?: NormalizedVariant; variantId?: string } {
+  const variants = getVariants(product);
+
+  // 1. An explicit id.
+  if (opts.variantId) {
+    return {
+      variant: variants.find((v) => v.id === opts.variantId),
+      variantId: opts.variantId,
+    };
+  }
+
+  if (!variants.length) return {};
+
+  // 2. The label, either stored directly or parsed off the name.
+  const label = opts.label ?? labelFromName(opts.name);
+  if (label) {
+    const key = labelKey(label);
+    const byLabel = variants.find((v) => labelKey(variantLabel(v)) === key);
+    if (byLabel) return { variant: byLabel, variantId: byLabel.id };
+  }
+
+  // 3. A price only one variant carries — ambiguous matches are rejected.
+  if (typeof opts.price === "number" && opts.price > 0) {
+    const byPrice = variants.filter((v) => v.price === opts.price);
+    if (byPrice.length === 1) {
+      return { variant: byPrice[0], variantId: byPrice[0].id };
+    }
+  }
+
+  return {};
+}
+
 // ── Raw-payload normalisers ───────────────────────────────────────────────
 // The ticket API and the update payload disagree on two field names. Both
 // mismatches are isolated here so the rest of the form only sees InvoiceItem.
@@ -99,6 +247,17 @@ function flattenTicketItems(ticket: any): any[] {
 }
 
 /**
+ * The ticket-product group id the update endpoint needs as `ticketProductId`.
+ *
+ * Note this is the GROUP's `_id` (`Tickets.items[0]._id`) — NOT the inner
+ * item's `_id`, which sits one level deeper at `items[0].item[0]._id`. They
+ * look alike and sort next to each other, so it's easy to send the wrong one.
+ */
+function ticketProductIdOf(ticket: any): string | undefined {
+  return ticket?.items?.[0]?._id ?? undefined;
+}
+
+/**
  * Build an InvoiceItem from a raw ticket item.
  *
  * Everything except QUANTITY is sourced from the live products list when the
@@ -109,7 +268,7 @@ function flattenTicketItems(ticket: any): any[] {
 function mapRawItem(raw: any, products: Product[]): InvoiceItem {
   const quantity = raw.quantity ?? 1;
   const discounts = rawDiscountIds(raw.discounts);
-  const product = products.find((p) => p.id === raw.product);
+  const product = findProduct(products, raw.product);
 
   // Product no longer in the list (custom or deleted) — keep what was stored.
   if (!product) {
@@ -140,10 +299,14 @@ function mapRawItem(raw: any, products: Product[]): InvoiceItem {
     };
   }
 
-  const variantId = rawVariantId(raw.variantItems);
-  const variant = variantId
-    ? product.variants?.find((v) => v.id === variantId)
-    : undefined;
+  const productId = product.id ?? (product as any)._id;
+  const resolved = resolveVariant(product, {
+    variantId: rawVariantId(raw.variantItems),
+    name: raw.productName,
+    label: raw.variantItems?.name,
+    price: raw.unitPrice,
+  });
+  const { variant, variantId } = resolved;
 
   // Variant recorded on the ticket but since removed from the product — keep
   // the stored snapshot so the line still round-trips through the update.
@@ -151,7 +314,7 @@ function mapRawItem(raw: any, products: Product[]): InvoiceItem {
     const label = raw.variantItems?.name ?? "";
     return {
       id: raw._id ?? crypto.randomUUID(),
-      productId: product.id,
+      productId,
       name: raw.productName ?? product.name,
       description: label,
       quantity,
@@ -172,10 +335,12 @@ function mapRawItem(raw: any, products: Product[]): InvoiceItem {
   }
 
   if (variant) {
-    const label = variant.optionValues?.join(" · ") ?? "";
+    const label = variantLabel(variant);
     return {
       id: raw._id ?? crypto.randomUUID(),
-      productId: product.id,
+      productId,
+      // Rows show the decorated name so staff can tell variants apart; the
+      // payload sends the base product name (see baseProductName below).
       name: `${product.name} (${label})`,
       description: label,
       quantity,
@@ -198,7 +363,7 @@ function mapRawItem(raw: any, products: Product[]): InvoiceItem {
   // Standard product
   return {
     id: raw._id ?? crypto.randomUUID(),
-    productId: product.id,
+    productId,
     name: product.name,
     description: product.description ?? raw.description ?? "",
     quantity,
@@ -302,6 +467,24 @@ export default function InvoiceForm({
 
   // Store raw ticket items to update with product details once products load
   const rawTicketItemsRef = useRef(flattenTicketItems(tickets));
+  // Identifies the ticket-product group being updated.
+  const ticketProductIdRef = useRef(ticketProductIdOf(tickets));
+
+  /**
+   * Ids of the lines that were ALREADY on the ticket (or credit) when this
+   * form loaded. Captured once at mount, so rows added afterwards are never
+   * mistaken for pre-existing ones.
+   *
+   * These two groups are sent differently — see `netUnitPrice`.
+   */
+  const existingItemIdsRef = useRef<Set<string>>(
+    new Set<string>([
+      ...flattenTicketItems(tickets)
+        .map((r: any) => r?._id)
+        .filter(Boolean),
+      ...creditItems.map((c: any) => c?._id).filter(Boolean),
+    ]),
+  );
   const hasUpdatedItemsFromProducts = useRef(false);
 
   // Re-map items against the live products list once it loads, so prices,
@@ -504,46 +687,116 @@ export default function InvoiceForm({
     rawTicketItemsRef.current.find((r: any) => r?._id && r._id === item.id);
 
   /**
+   * Was this line already on the ticket when the form loaded?
+   *
+   * Existing lines were stored with the discount baked into their unit price,
+   * so they go back the same way — net price, discounts flagged off. Lines
+   * added during this edit have never been priced by the backend, so they go
+   * out like a new ticket's: list price, discounts enabled, backend applies
+   * them. Sending a new line as "already discounted" would silently drop the
+   * discount; sending an existing line as "apply this" double-discounts it.
+   */
+  const isExistingItem = (item: InvoiceItem) =>
+    existingItemIdsRef.current.has(item.id);
+
+  /**
+   * Per-unit discount for a line.
+   *
+   * A fixed discount is charged per unit (matching the row-total maths
+   * above), so it comes off the unit price directly; a percentage comes off
+   * proportionally.
+   */
+  const unitDiscountFor = (discountIds: string[], unitPrice: number) =>
+    discountIds.reduce((sum, id) => {
+      const d = masterDiscounts.find((m) => m._id === id);
+      if (!d) return sum;
+      return (
+        sum + (d.type === "percentage" ? (unitPrice * d.rate) / 100 : d.rate)
+      );
+    }, 0);
+
+  /**
+   * List price minus the per-unit discount — a 91 variant with a "50 off"
+   * discount becomes 41.
+   *
+   * Used only for lines ALREADY on the ticket, whose stored price is already
+   * net. Those go out with `isEnabled: false` (see buildDiscountPayload) so
+   * the backend doesn't subtract the discount a second time.
+   *
+   * Newly added lines, and every line on create, send the list price with
+   * discounts enabled and let the backend do the arithmetic.
+   */
+  const netUnitPrice = (listPrice: number, discountIds: string[]) =>
+    Math.max(0, listPrice - unitDiscountFor(discountIds, listPrice));
+
+  /**
+   * The BASE product name for the payload.
+   *
+   * Rows display "Coke (small · vanilla)" so staff can tell variants apart,
+   * but the item carries the parent's name — the variant is identified by
+   * `variantItems`. Falls back to stripping the trailing "(label)" when the
+   * product isn't in the list.
+   */
+  const baseProductName = (item: InvoiceItem, product?: Product) => {
+    if (product?.name) return product.name;
+    const stripped = item.name?.replace(/\s*\([^()]*\)\s*$/, "").trim();
+    return stripped || item.name || "";
+  };
+
+  /**
    * Resolve the variant block for an outgoing item.
    *
-   * Three independent sources, in order of freshness: the form item, its own
-   * stored snapshot, then the raw ticket item. A variant line must never
-   * degrade into a plain item just because one of them is missing — that is
-   * exactly what made the update drop `variantItems`.
+   * Ids come from the form item, its own stored snapshot, or the raw ticket
+   * item; if none survive, the variant is recovered from the product by name
+   * or price. A variant line must never degrade into a plain item.
    */
-  const buildVariantPayload = (item: InvoiceItem, product?: Product) => {
-    console.log("ITEM:", item);
-    console.log("PRODU:", product);
+  const buildVariantPayload = (
+    item: InvoiceItem,
+    product?: Product,
+    /** Update sends the discounted price; create sends the list price. */
+    useNetPrice = false,
+  ) => {
     const raw = rawFor(item);
-    const variantId =
-      item.variantId ??
-      item.variantItems?._id ??
-      rawVariantId(raw?.variantItems);
-    console.log("VAR ID:", variantId);
+
+    const { variant, variantId } = resolveVariant(product, {
+      variantId:
+        item.variantId ??
+        item.variantItems?._id ??
+        rawVariantId(raw?.variantItems),
+      name: item.name ?? raw?.productName,
+      label: item.variantLabel ?? item.variantItems?.name,
+      price: item.price,
+    });
+
     if (!variantId) return {};
 
-    const variant = product?.variants?.find((v) => v.id === variantId);
-    console.log("V:", variant);
-    const name =
-      item.variantLabel ||
-      item.variantItems?.name ||
-      variant?.optionValues?.join(" · ") ||
-      "";
+    const name = toPayloadLabel(
+      variantLabel(variant) ||
+        item.variantLabel ||
+        item.variantItems?.name ||
+        raw?.variantItems?.name ||
+        labelFromName(item.name) ||
+        "",
+    );
 
+    const listPrice =
+      variant?.price ??
+      item.variantItems?.unitPrice ??
+      raw?.variantItems?.unitPrice ??
+      item.price ??
+      0;
+
+    // Only `variantItems` goes on the wire — the variant is identified there,
+    // so top-level variantId / variantLabel would be redundant.
     return {
-      // variantId,
-      // variantLabel: name,
       variantItems: {
         // The update API keys the variant as `_id` (the fetch returns it as
         // `variantItems.variant`).
         _id: variantId,
         name,
-        unitPrice:
-          variant?.price ??
-          item.variantItems?.unitPrice ??
-          raw?.variantItems?.unitPrice ??
-          item.price ??
-          0,
+        unitPrice: useNetPrice
+          ? netUnitPrice(listPrice, item.discounts)
+          : listPrice,
         // Kept in step with the line quantity — they must not drift.
         quantity: item.quantity,
         costPrice:
@@ -561,7 +814,7 @@ export default function InvoiceForm({
    * discount was already on this ticket, its existing subdocument `_id` is
    * reused so the backend updates that row instead of orphaning it.
    */
-  const buildDiscountPayload = (item: InvoiceItem) => {
+  const buildDiscountPayload = (item: InvoiceItem, alreadyApplied = false) => {
     const rawDiscounts: any[] = rawFor(item)?.discounts ?? [];
 
     return item.discounts
@@ -577,6 +830,10 @@ export default function InvoiceForm({
           ...(master as object),
           discount: master._id,
           ...(existing?._id ? { _id: existing._id } : {}),
+          // When the unit price already has the discount taken off, the
+          // discount is a RECORD of what was applied, not an instruction to
+          // apply it — leaving these true makes the backend deduct twice.
+          ...(alreadyApplied ? { isEnabled: false, isSelected: false } : {}),
         };
       })
       .filter(Boolean);
@@ -606,13 +863,22 @@ export default function InvoiceForm({
 
       const creditPayload = {
         items: filteredItems.map((item) => {
-          const product = products.find((p) => p.id === item.productId);
-          const variantPayload = buildVariantPayload(item, product);
+          const product = findProduct(products, item.productId);
+          const alreadyPriced = isExistingItem(item);
+          const variantPayload = buildVariantPayload(
+            item,
+            product,
+            alreadyPriced,
+          );
           return {
             id: item.productId || item.id,
-            name: item.name,
+            name: baseProductName(item, product),
             quantity: item.quantity,
-            unitPrice: item.price,
+            unitPrice:
+              (variantPayload as any).variantItems?.unitPrice ??
+              (alreadyPriced
+                ? netUnitPrice(item.price, item.discounts)
+                : item.price),
             isTaxable: item.isTaxable ?? false,
             ...("variantItems" in variantPayload
               ? { variantItems: variantPayload.variantItems }
@@ -643,43 +909,52 @@ export default function InvoiceForm({
 
     // ── Normal invoice ──────────────────────────────────────────────────────
     const mappedItems = filteredItems.map((item) => {
-      const product = products.find((p) => p.id === item.productId);
-      console.log("PRODUCDD:", product);
-      const variantPayload = buildVariantPayload(item, product);
-      console.log("VARRRR:", variantPayload);
+      const product = findProduct(products, item.productId);
+      // Decided per LINE, not per request: an edit can contain both lines the
+      // backend has already priced and lines added just now.
+      const alreadyPriced = isExistingItem(item);
+      const variantPayload = buildVariantPayload(item, product, alreadyPriced);
 
       // A variant line prices off the variant, not the parent product.
       const unitPrice =
-        (variantPayload as any).variantItems?.unitPrice ?? item.price;
+        (variantPayload as any).variantItems?.unitPrice ??
+        (alreadyPriced ? netUnitPrice(item.price, item.discounts) : item.price);
 
-      // Loud in dev when a line looks like a variant (parent has variants,
-      // or the name is suffixed) but no variant id could be resolved.
+      // Loud in dev when a line belongs to a product with variants but no
+      // variant could be resolved — it's about to be sent as a plain item.
       if (
         process.env.NODE_ENV !== "production" &&
         !(variantPayload as any).variantItems &&
-        product?.variants?.length
+        getVariants(product).length > 0
       ) {
         console.warn(
-          `[InvoiceForm] "${item.name}" belongs to a product with variants but is being sent without variantItems.`,
-          { item, raw: rawFor(item) },
+          `[InvoiceForm] "${item.name}" belongs to a product with variants but no variant could be resolved.`,
+          {
+            item,
+            raw: rawFor(item),
+            availableVariants: getVariants(product).map((v) => ({
+              id: v.id,
+              label: variantLabel(v),
+              price: v.price,
+            })),
+          },
         );
       }
 
       return {
         id: item.productId,
-        name: item.name,
+        // Base product name — the variant lives in `variantItems`.
+        name: baseProductName(item, product),
         quantity: item.quantity,
         unitPrice,
         note: null,
         isTaxable: item.isTaxable ?? false,
-        discounts: buildDiscountPayload(item),
+        discounts: buildDiscountPayload(item, alreadyPriced),
         ...variantPayload,
       };
     });
 
-    console.log("MAP ITEMS:", mappedItems);
-
-    const ticketData: CreateTicketInput = {
+    const ticketData: CreateTicketInput & { ticketProductId?: string } = {
       ticketName: invoiceTitle || selectedCustomer?.name || "Walk-in Customer",
       customerEmail: selectedCustomer?.email || "",
       phoneNumber: selectedCustomer?.phone || "",
@@ -691,9 +966,19 @@ export default function InvoiceForm({
       note: `${notes}${invoiceNumber ? `|Invoice: ${invoiceNumber}` : ""}`,
       items: mappedItems,
       isTaxExclusive: !!activeTaxId,
+      // Which ticket-product group this update targets. Only exists in edit
+      // mode — a new ticket has no group yet.
+      ...(ticketProductIdRef.current
+        ? { ticketProductId: ticketProductIdRef.current }
+        : {}),
     };
 
     if (isEditMode && invoiceNumber) {
+      if (!ticketProductIdRef.current) {
+        toast.error("This invoice is missing its ticket reference.");
+        return;
+      }
+
       updateTicket(
         { invoiceNumber, ticketData },
         {

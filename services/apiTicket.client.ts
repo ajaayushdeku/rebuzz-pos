@@ -26,7 +26,8 @@ const toUpdateItem = (item: any) => {
 
   return {
     id: item.id,
-    name: item.name,
+    name:
+      (item.name ?? "").replace(/\s*\([^()]*\)\s*$/, "").trim() || item.name,
     unitPrice: item.unitPrice ?? 0,
     quantity: item.quantity ?? 1,
     isTaxable: item.isTaxable ?? false,
@@ -37,8 +38,8 @@ const toUpdateItem = (item: any) => {
     // plain shape rather than a set of null keys.
     ...(variantId
       ? {
-          variantId,
-          variantLabel: item.variantLabel ?? item.variantItems?.name ?? "",
+          // variantId,
+          // variantLabel: item.variantLabel ?? item.variantItems?.name ?? "",
           variantItems: {
             _id: variantId,
             name: item.variantItems?.name ?? item.variantLabel ?? "",
@@ -60,11 +61,12 @@ export const updateTicket = async ({
   ticketData: any;
 }) => {
   const payload = {
+    ticketProductId: ticketData.ticketProductId ?? null,
     ticketName: ticketData.ticketName,
     customerEmail: ticketData.customerEmail,
     phoneNumber: ticketData.phoneNumber,
-    grandTotal: null,
-    total: null,
+    grandTotal: ticketData.grandTotal ?? null,
+    total: ticketData.total ?? null,
     taxId: ticketData.taxId ?? null,
     isTaxExclusive: !!ticketData.taxId,
     // ✅ include discount fields — same as create
