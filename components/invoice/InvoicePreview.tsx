@@ -17,6 +17,7 @@ import type { Transaction } from "@/components/dashboardComponents/orderHistory/
 import { parseNepalTime } from "@/lib/mappers/transaction";
 import type { CreditPayment } from "@/services/apiCredit.client";
 import InvoiceBillTable from "./InvoiceBillTable";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -268,6 +269,29 @@ function InvoiceContent({
                 <div>
                   <p className="text-xs font-medium text-gray-900">
                     {product.productName}
+                    {product.variantItems?.name && (
+                      <span className="text-gray-500">
+                        {" "}
+                        ({product.variantItems.name})
+                      </span>
+                    )}
+
+                    {product.discounts.length !== 0 && (
+                      <span className="block text-[10px] text-red-400">
+                        {product.discounts.map((disc, idx) => (
+                          <span key={idx} className="flex flex-col">
+                            - {disc.name}:{" "}
+                            {disc.type === "fixed"
+                              ? formatCurrencySymbol(
+                                  Number(disc.rate),
+                                  currency.symbol,
+                                )
+                              : `${disc.rate}%`}{" "}
+                            OFF{" "}
+                          </span>
+                        ))}
+                      </span>
+                    )}
                   </p>
                   <p className="text-[10px] text-gray-400 mt-0.5">
                     {product.quantity} × {currency.symbol}
@@ -275,7 +299,7 @@ function InvoiceContent({
                   </p>
                 </div>
                 <p className="text-xs font-semibold text-gray-900">
-                  {currency.symbol}
+                  {currency.symbol}{" "}
                   {((product.unitPrice ?? 0) * product.quantity).toFixed(2)}
                 </p>
               </div>
@@ -287,16 +311,14 @@ function InvoiceContent({
             <div className="flex justify-between text-gray-500">
               <span>Subtotal</span>
               <span>
-                {currency.symbol}
-                {Number(displayTotal).toFixed(2)}
+                {currency.symbol} {Number(displayTotal).toFixed(2)}
               </span>
             </div>
             {discountAmount > 0 && (
               <div className="flex justify-between text-gray-500">
                 <span>Discount</span>
                 <span>
-                  − {currency.symbol}
-                  {discountAmount.toFixed(2)}
+                  − {currency.symbol} {discountAmount.toFixed(2)}
                 </span>
               </div>
             )}
@@ -304,8 +326,7 @@ function InvoiceContent({
               <div className="flex justify-between text-gray-500">
                 <span>Discount by points</span>
                 <span>
-                  − {currency.symbol}
-                  {loyaltyRedeemedAmount.toFixed(2)}
+                  − {currency.symbol} {loyaltyRedeemedAmount.toFixed(2)}
                 </span>
               </div>
             )}
@@ -313,8 +334,7 @@ function InvoiceContent({
               <div className="flex justify-between text-gray-500">
                 <span>Tax</span>
                 <span>
-                  + {currency.symbol}
-                  {taxAmount.toFixed(2)}
+                  + {currency.symbol} {taxAmount.toFixed(2)}
                 </span>
               </div>
             )}
@@ -323,8 +343,7 @@ function InvoiceContent({
                 {billData ? "Grand Total" : "Total Payable"}
               </span>
               <span className="text-xs font-bold text-gray-900">
-                {currency.symbol}
-                {Number(displayGrandTotal).toFixed(2)}
+                {currency.symbol} {Number(displayGrandTotal).toFixed(2)}
               </span>
             </div>
           </div>

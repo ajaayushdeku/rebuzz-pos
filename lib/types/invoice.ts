@@ -123,6 +123,14 @@ export interface InvoiceItemDetails {
   note: string | null;
   addons: any[];
   discounts: any[];
+  /** Variant info when the item is a variant of a product. */
+  variantItems?: {
+    _id: string;
+    name: string;
+    unitPrice: number;
+    quantity: number;
+    costPrice: number;
+  };
 }
 
 export interface InvoiceItemGroup {

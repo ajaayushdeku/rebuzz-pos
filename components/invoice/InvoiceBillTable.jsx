@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 export default function InvoiceBillTable({ invoices }) {
   const { currency } = useCurrency();
@@ -38,7 +39,29 @@ export default function InvoiceBillTable({ invoices }) {
                 className="border-none hover:bg-transparent"
               >
                 <TableCell className="py-2 pl-0 text-sm text-black">
-                  {product.productName}
+                  {product.productName}{" "}
+                  {product.variantItems?.name && (
+                    <span className="text-gray-600">
+                      {" "}
+                      ({product.variantItems.name})
+                    </span>
+                  )}
+                  {product.discounts.length !== 0 && (
+                    <span className="block text-[12px] text-red-500/100">
+                      {product.discounts.map((disc, idx) => (
+                        <span key={idx} className="flex flex-col">
+                          - {disc.name}:{" "}
+                          {disc.type === "fixed"
+                            ? formatCurrencySymbol(
+                                Number(disc.rate),
+                                currency.symbol,
+                              )
+                            : `${disc.rate}%`}{" "}
+                          OFF{" "}
+                        </span>
+                      ))}
+                    </span>
+                  )}
                 </TableCell>
                 <TableCell className="py-2 text-center text-sm text-black">
                   x {product.quantity}
