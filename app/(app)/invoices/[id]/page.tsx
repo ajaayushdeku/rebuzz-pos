@@ -16,11 +16,7 @@ import {
   FileText,
   Mail,
   Plus,
-  RotateCcw,
   Send,
-  Wallet,
-  Loader2,
-  Trash2,
 } from "lucide-react";
 
 import { useBusiness } from "@/hooks/useBusiness";
@@ -33,7 +29,7 @@ import {
 } from "@/services/apiCredit.client";
 import { useInvoiceCredit } from "@/components/invoice/modals/useInvoiceTicket";
 import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
-import { RefundModal } from "@/components/dashboardComponents/orderHistory/Transactions";
+import RefundModal from "@/components/dashboardComponents/orderHistory/RefundModal";
 import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
 
 import {
@@ -43,14 +39,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { useCurrency } from "@/providers/CurrencyContext";
 import InvoicePreview from "@/components/invoice/InvoicePreview";
 import RecordPaymentModal from "@/components/invoice/modals/RecordPaymentModal";
@@ -60,6 +48,11 @@ import ExportPdfModal from "@/components/invoice/modals/ExportPdfModal";
 import PrintInvoiceModal from "@/components/invoice/modals/PrintInvoiceModal";
 import CustomerPreviewModal from "@/components/invoice/modals/CustomerPreviewModal";
 import CreditPaymentModal from "@/components/credit/CreditPaymentModal";
+import SendReminderModal from "@/components/invoice/modals/SendReminderModal";
+import DeleteCreditModal from "@/components/invoice/modals/DeleteCreditModal";
+import RemovePaymentModal from "@/components/invoice/modals/RemovePaymentModal";
+import DeleteInvoiceModal from "@/components/invoice/modals/DeleteInvoiceModal";
+import MoveToCreditModal from "@/components/invoice/modals/MoveToCreditModal";
 import { formatCurrencySymbol } from "@/utils/helper";
 
 type InvoiceTypeKey = "proforma" | "invoice" | "tax";
@@ -188,42 +181,49 @@ const InvoiceDetailPage = () => {
     });
   };
 
-  // "Send reminder" — credited invoices open a modal to compose the message,
-  // otherwise fall back to the normal invoice resend (fires immediately).
+  // "Send reminder" — always opens the modal to compose the message, whether
+  // the invoice is credited or not.
   const handleSendReminder = () => {
-    if (invoice?.paidStatus === "credited") {
-      if (!creditForInvoice?._id) {
-        toast.error("Credit not found for this invoice");
-        return;
-      }
-      const due = creditForInvoice.dueAmount ?? 0;
-      setReminderMessage(
-        `Reminder: ${formatCurrencySymbol(due, currency.symbol, currency.locale)} Due Amount`,
-      );
-      setIsReminderOpen(true);
-      return;
-    }
-    handleResendInvoice();
+    const due = creditForInvoice
+      ? (creditForInvoice.dueAmount ?? 0)
+      : Number(invoice.grandTotal ?? 0);
+    setReminderMessage(
+      `Reminder: ${formatCurrencySymbol(due, currency.symbol, currency.locale)} Due Amount`,
+    );
+    setIsReminderOpen(true);
   };
 
   const handleSubmitReminder = async () => {
-    if (!creditForInvoice?._id) return;
     if (!reminderMessage.trim()) {
       toast.error("Enter a reminder message");
       return;
     }
+
+    // Credited invoices send a composed reminder via the credit API.
+    if (creditForInvoice?._id) {
+      setSendingReminder(true);
+      try {
+        await sendCreditReminder(creditForInvoice._id, {
+          currencyType: currency.symbol,
+          message: reminderMessage.trim(),
+        });
+        toast.success("Reminder sent successfully!");
+        setIsReminderOpen(false);
+      } catch (err) {
+        toast.error(
+          err instanceof Error ? err.message : "Failed to send reminder",
+        );
+      } finally {
+        setSendingReminder(false);
+      }
+      return;
+    }
+
+    // Non-credited invoices fall back to the normal invoice resend.
     setSendingReminder(true);
     try {
-      await sendCreditReminder(creditForInvoice._id, {
-        currencyType: currency.symbol,
-        message: reminderMessage.trim(),
-      });
-      toast.success("Reminder sent successfully!");
+      await handleResendInvoice();
       setIsReminderOpen(false);
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to send reminder",
-      );
     } finally {
       setSendingReminder(false);
     }
@@ -1349,73 +1349,16 @@ const InvoiceDetailPage = () => {
       />
 
       {/* Credit reminder — compose the message before sending */}
-      {isReminderOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-          onClick={() => !sendingReminder && setIsReminderOpen(false)}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center gap-2.5 border-b border-gray-100 px-5 py-3.5">
-              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                <Bell size={16} className="text-blue-600" />
-              </div>
-              <div>
-                <h2 className="text-sm font-bold text-gray-900">
-                  Send reminder
-                </h2>
-                <p className="text-[11px] text-gray-400">
-                  {creditForInvoice?.user?.name || "Customer"} · Due{" "}
-                  {formatCurrencySymbol(
-                    creditForInvoice?.dueAmount ?? 0,
-                    currency.symbol,
-                    currency.locale,
-                  )}
-                </p>
-              </div>
-            </div>
-
-            <div className="px-5 py-4">
-              <label className="text-xs font-medium text-gray-500 block mb-1.5">
-                Reminder message
-              </label>
-              <textarea
-                rows={3}
-                value={reminderMessage}
-                onChange={(e) => setReminderMessage(e.target.value)}
-                placeholder="Write a reminder message..."
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none"
-              />
-            </div>
-
-            <div className="px-5 pb-5 flex gap-3">
-              <button
-                onClick={() => setIsReminderOpen(false)}
-                disabled={sendingReminder}
-                className="flex-1 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 py-2 text-sm font-medium transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSubmitReminder}
-                disabled={sendingReminder || !reminderMessage.trim()}
-                className="flex-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white py-2 text-sm font-semibold transition-colors disabled:opacity-50"
-              >
-                {sendingReminder ? (
-                  <span className="flex items-center justify-center gap-1.5">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Sending...
-                  </span>
-                ) : (
-                  "Send reminder"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <SendReminderModal
+        open={isReminderOpen}
+        onClose={() => setIsReminderOpen(false)}
+        credit={creditForInvoice}
+        currency={currency}
+        reminderMessage={reminderMessage}
+        onMessageChange={setReminderMessage}
+        sendingReminder={sendingReminder}
+        onSubmit={handleSubmitReminder}
+      />
 
       <RecordPaymentModal
         open={isPaymentModalOpen}
@@ -1446,123 +1389,22 @@ const InvoiceDetailPage = () => {
       />
 
       {/* Delete Credit (archive) confirmation */}
-      <Dialog
+      <DeleteCreditModal
         open={isArchiveModalOpen}
-        onOpenChange={(o) => !o && !isArchiving && setIsArchiveModalOpen(false)}
-      >
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-2">
-              <Trash2 className="h-5 w-5 text-red-600" />
-            </div>
-            <DialogTitle className="text-center text-base font-semibold">
-              Delete Credit?
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="text-center space-y-1 py-1">
-            <p className="text-sm text-gray-600">
-              Are you sure you want to delete{" "}
-              <span className="font-semibold text-gray-900">
-                {creditForInvoice?.user?.name || "this credit"}
-              </span>
-              ?
-            </p>
-            <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mt-2">
-              This moves it to the archived list.
-            </p>
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsArchiveModalOpen(false)}
-              disabled={isArchiving}
-              className="text-sm rounded-lg flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleArchiveCredit}
-              disabled={isArchiving}
-              className="bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg flex-1"
-            >
-              {isArchiving ? (
-                <span className="flex items-center gap-1.5">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Deleting...
-                </span>
-              ) : (
-                "Delete"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onClose={() => setIsArchiveModalOpen(false)}
+        credit={creditForInvoice}
+        isArchiving={isArchiving}
+        onConfirm={handleArchiveCredit}
+      />
 
       {/* Remove Payment Confirmation Modal */}
-      <Dialog
-        open={!!paymentToRemove}
-        onOpenChange={(o) => !o && setPaymentToRemove(null)}
-      >
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-2">
-              <Trash2 className="h-5 w-5 text-red-600" />
-            </div>
-            <DialogTitle className="text-center text-base font-semibold">
-              Remove Payment?
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="text-center space-y-1 py-1">
-            <p className="text-sm text-gray-600">
-              Are you sure you want to remove this payment of{" "}
-              <span className="font-semibold text-gray-900">
-                {paymentToRemove?.paymentAmount != null
-                  ? formatCurrencySymbol(
-                      paymentToRemove.paymentAmount,
-                      currency.symbol,
-                      currency.locale,
-                    )
-                  : ""}
-              </span>
-              ?
-            </p>
-            <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mt-2">
-              This action cannot be undone. The payment will be permanently
-              removed from the invoice.
-            </p>
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setPaymentToRemove(null)}
-              disabled={deletingPaymentId === paymentToRemove?._id}
-              className="text-sm rounded-lg flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() =>
-                paymentToRemove && handleRemovePayment(paymentToRemove._id)
-              }
-              disabled={deletingPaymentId === paymentToRemove?._id}
-              className="bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg flex-1"
-            >
-              {deletingPaymentId === paymentToRemove?._id ? (
-                <span className="flex items-center justify-center gap-1.5">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Removing...
-                </span>
-              ) : (
-                "Remove Payment"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <RemovePaymentModal
+        payment={paymentToRemove}
+        onClose={() => setPaymentToRemove(null)}
+        currency={currency}
+        deletingPaymentId={deletingPaymentId}
+        onConfirm={handleRemovePayment}
+      />
 
       <ExportPdfModal
         open={isExportPdfOpen}
@@ -1583,112 +1425,22 @@ const InvoiceDetailPage = () => {
       />
 
       {/* Delete Invoice Confirmation Modal */}
-      <Dialog
+      <DeleteInvoiceModal
         open={isDeleteModalOpen}
-        onOpenChange={(o) => !o && !isDeleting && setIsDeleteModalOpen(false)}
-      >
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-2">
-              <Trash2 className="h-5 w-5 text-red-600" />
-            </div>
-            <DialogTitle className="text-center text-base font-semibold">
-              Delete Invoice?
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="text-center space-y-1 py-1">
-            <p className="text-sm text-gray-600">
-              Are you sure you want to delete{" "}
-              <span className="font-semibold text-gray-900">
-                ORD-{invoice?.invoice}
-              </span>
-              ?
-            </p>
-            <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mt-2">
-              This action cannot be undone.
-            </p>
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteModalOpen(false)}
-              disabled={isDeleting}
-              className="text-sm rounded-lg flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleDeleteInvoice}
-              disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg flex-1"
-            >
-              {isDeleting ? (
-                <span className="flex items-center gap-1.5">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Deleting...
-                </span>
-              ) : (
-                "Delete"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onClose={() => setIsDeleteModalOpen(false)}
+        invoiceNo={invoice?.invoice}
+        isDeleting={isDeleting}
+        onConfirm={handleDeleteInvoice}
+      />
 
       {/* Move to Credit Confirmation Modal */}
-      {isMoveToCreditOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-          onClick={() => !movingToCredit && setIsMoveToCreditOpen(false)}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6 text-center">
-              <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-4">
-                <Wallet className="h-6 w-6 text-amber-500" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900">
-                Move to Credit?
-              </h3>
-              <p className="text-sm text-gray-500 mt-2">
-                Invoice{" "}
-                <span className="font-medium text-gray-700">
-                  ORD-{invoice?.invoice}
-                </span>{" "}
-                will be moved to the credit section and removed from the invoice
-                list.
-              </p>
-            </div>
-            <div className="px-6 pb-6 flex gap-3">
-              <button
-                onClick={() => setIsMoveToCreditOpen(false)}
-                disabled={movingToCredit}
-                className="flex-1 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 py-2 text-sm font-medium transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleMoveToCredit}
-                disabled={movingToCredit}
-                className="flex-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white py-2 text-sm font-semibold transition-colors disabled:opacity-50"
-              >
-                {movingToCredit ? (
-                  <span className="flex items-center justify-center gap-1.5">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Moving...
-                  </span>
-                ) : (
-                  "Move to Credit"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <MoveToCreditModal
+        open={isMoveToCreditOpen}
+        onClose={() => setIsMoveToCreditOpen(false)}
+        invoiceNo={invoice?.invoice}
+        movingToCredit={movingToCredit}
+        onConfirm={handleMoveToCredit}
+      />
     </div>
   );
 };

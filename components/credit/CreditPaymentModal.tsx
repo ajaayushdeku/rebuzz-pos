@@ -175,7 +175,7 @@ export default function CreditPaymentModal({
         role="dialog"
         aria-modal="true"
         aria-label="Record credit payment"
-        className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 duration-200"
+        className="w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Header ── */}
@@ -188,8 +188,15 @@ export default function CreditPaymentModal({
               <h2 className="text-[15px] font-semibold leading-tight text-gray-900">
                 Record payment
               </h2>
-              <p className="mt-0.5 truncate text-[12px] text-gray-400">
-                {credit.user?.name || "Customer"}
+
+              <p className="mt-0.5 truncate text-[12px] text-gray-400 flex flex-row items-center ">
+                {credit.user?.name || "Customer"} ·
+                {credit?.invoiceNo && (
+                  <p className="pl-1 tabular-nums">
+                    {" "}
+                    Invoice #{credit.invoiceNo}
+                  </p>
+                )}
               </p>
             </div>
           </div>
@@ -272,7 +279,7 @@ export default function CreditPaymentModal({
           {/* Method */}
           <div>
             <SectionLabel>Payment method</SectionLabel>
-            <div className="mt-2 grid grid-cols-4 gap-2">
+            <div className="mt-2 grid grid-cols-2 gap-2">
               {PAYMENT_METHODS.map(({ value: m, label, icon: Icon }) => {
                 const active = method === m;
                 return (
@@ -281,7 +288,7 @@ export default function CreditPaymentModal({
                     type="button"
                     onClick={() => setMethod(m)}
                     aria-pressed={active}
-                    className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border py-2.5 text-[12px] font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                    className={`flex items-center justify-center gap-2 rounded-xl border py-3 text-[13px] font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                       active
                         ? "border-blue-600 bg-blue-50 text-blue-700"
                         : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"

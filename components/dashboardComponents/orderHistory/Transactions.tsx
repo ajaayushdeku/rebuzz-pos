@@ -7,7 +7,6 @@ import {
   ChevronUp,
   ArrowUpDown,
   RotateCcw,
-  Loader2,
   ChevronLeft,
   ChevronRight,
   Receipt,
@@ -16,6 +15,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { Transaction } from "./transaction-columns";
 // import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
 import TransactionDetailModal from "./TransactionDetailModal";
+import RefundModal from "./RefundModal";
 import { statusStyles, paymentMethods } from "@/lib/config/transaction";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { parseNepalDateTime } from "../staffDash/staffDetail/staffDetailHelpers";
@@ -33,91 +33,8 @@ function timeAgo(date: Date): string {
   const days = Math.floor(hours / 24);
   return `${days} ${days === 1 ? "day" : "days"} ago`;
 }
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 type TabKey = "completed" | "refunded" | "all";
-
-// ── Refund confirmation modal ─────────────────────────────────────────────
-
-export const RefundModal = ({
-  open,
-  transaction,
-  onClose,
-  onConfirm,
-  isRefunding,
-}: {
-  open: boolean;
-  transaction: Transaction | null;
-  onClose: () => void;
-  onConfirm: () => void;
-  isRefunding: boolean;
-}) => {
-  return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <div className="mx-auto w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mb-2">
-            <RotateCcw className="h-5 w-5 text-orange-600" />
-          </div>
-          <DialogTitle className="text-center text-base font-semibold">
-            Refund Transaction
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="text-center space-y-1 py-1">
-          <p className="text-sm text-gray-600">
-            Are you sure you want to refund{" "}
-            <span className="font-semibold text-gray-900">
-              {transaction?.id}
-            </span>
-            ?
-          </p>
-          {transaction && (
-            <p className="text-xs text-gray-400">
-              Customer: {transaction.invoiceName || "—"} · {transaction.amount}
-            </p>
-          )}
-          <p className="text-xs text-orange-600 bg-orange-50 border border-orange-100 rounded-lg px-3 py-2 mt-2">
-            This action cannot be undone.
-          </p>
-        </div>
-
-        <DialogFooter className="gap-2">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            disabled={isRefunding}
-            className="text-sm rounded-lg flex-1"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={onConfirm}
-            disabled={isRefunding}
-            className="bg-orange-500 hover:bg-orange-600 text-white text-sm rounded-lg flex-1"
-          >
-            {isRefunding ? (
-              <span className="flex items-center gap-1.5">
-                <Loader2 size={13} className="animate-spin" />
-                Refunding...
-              </span>
-            ) : (
-              "Confirm Refund"
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
 
 // ── Main table ────────────────────────────────────────────────────────────
 

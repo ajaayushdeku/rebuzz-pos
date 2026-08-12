@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { Banknote, QrCode, X, Loader2 } from "lucide-react";
+import { Banknote, QrCode, X, Loader2, HandCoins } from "lucide-react";
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import {
@@ -24,7 +24,7 @@ interface RecordPaymentModalProps {
 
 const PAYMENT_METHODS = [
   { value: "cash", label: "Cash", icon: Banknote },
-  { value: "qr", label: "QR / Wallet", icon: QrCode },
+  { value: "qr", label: "QR", icon: QrCode },
 ] as const;
 
 /** One line of the amount breakdown. Keeps every row on the same grid. */
@@ -347,16 +347,23 @@ export default function RecordPaymentModal({
       >
         {/* ── Header ── */}
         <div className="flex items-start justify-between border-b border-gray-100 px-6 py-4">
-          <div className="min-w-0">
-            <h2 className="text-[15px] font-semibold leading-tight text-gray-900">
-              Record payment
-            </h2>
-            {invoice?.invoice != null && (
-              <p className="mt-0.5 text-[12px] text-gray-400 tabular-nums">
-                Invoice #{invoice.invoice}
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50">
+              <HandCoins size={16} className="text-blue-600" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-[15px] font-semibold leading-tight text-gray-900">
+                Record payment
+              </h2>
+              <p className="mt-0.5 truncate text-[12px] text-gray-400 flex flex-row items-center ">
+                {" "}
+                {invoice?.invoice != null && (
+                  <p className="tabular-nums">Invoice #{invoice.invoice}</p>
+                )}
               </p>
-            )}
+            </div>
           </div>
+
           <button
             type="button"
             onClick={onClose}

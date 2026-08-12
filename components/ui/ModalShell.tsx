@@ -40,6 +40,8 @@ interface ModalShellProps {
   title: string;
   subtitle?: string;
   icon?: LucideIcon;
+  iconColor?: string;
+  iconBgColor?: string;
   /** Blocks backdrop / Escape / close-button dismissal while work is running. */
   busy?: boolean;
   /** Tailwind max-width. Default fits a single column of rows. */
@@ -59,6 +61,8 @@ export default function ModalShell({
   title,
   subtitle,
   icon: Icon,
+  iconColor = "text-blue-600",
+  iconBgColor = "bg-blue-50",
   busy = false,
   maxWidth = "max-w-xl",
   footer,
@@ -99,8 +103,10 @@ export default function ModalShell({
         <div className="flex items-start justify-between border-b border-gray-100 px-6 py-4">
           <div className="flex min-w-0 items-center gap-3">
             {Icon && (
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50">
-                <Icon size={16} className="text-blue-600" />
+              <div
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${iconBgColor}`}
+              >
+                <Icon size={16} className={`${iconColor}`} />
               </div>
             )}
             <div className="min-w-0">
