@@ -175,6 +175,7 @@ export default function CategorySettingsPage() {
             ? `Delete "${deleteTargetName}"? This cannot be undone.`
             : ""
         }
+        itemName={deleteTargetName ? deleteTargetName : ""}
         onConfirm={confirmDelete}
         isPending={deleting}
       />

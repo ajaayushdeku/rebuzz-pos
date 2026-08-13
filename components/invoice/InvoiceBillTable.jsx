@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import { formatCurrencySymbol } from "@/utils/helper";
+import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
 
 export default function InvoiceBillTable({ invoices }) {
   const { currency } = useCurrency();
@@ -55,6 +55,7 @@ export default function InvoiceBillTable({ invoices }) {
                             ? formatCurrencySymbol(
                                 Number(disc.rate),
                                 currency.symbol,
+                                currency.locale,
                               )
                             : `${disc.rate}%`}{" "}
                           OFF{" "}
@@ -67,10 +68,13 @@ export default function InvoiceBillTable({ invoices }) {
                   x {product.quantity}
                 </TableCell>
                 <TableCell className="py-2 text-center text-sm text-black">
-                  {Number(product.unitPrice).toFixed(2)}
+                  {formatAmount(Number(product.unitPrice), currency.locale)}
                 </TableCell>
                 <TableCell className="py-2 pr-0 text-right text-sm text-black">
-                  {(product.quantity * product.unitPrice).toFixed(2)}
+                  {formatAmount(
+                    product.quantity * product.unitPrice,
+                    currency.locale,
+                  )}
                 </TableCell>
               </TableRow>
             )),

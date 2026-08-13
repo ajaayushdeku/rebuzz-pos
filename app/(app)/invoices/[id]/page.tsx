@@ -582,17 +582,15 @@ const InvoiceDetailPage = () => {
                 Print options
               </DropdownMenuItem>
 
-              {!isCredited && !isCreditArchived && (
-                <>
-                  <DropdownMenuSeparator className="my-1 bg-gray-100" />
+              <DropdownMenuSeparator className="my-1 bg-gray-100" />
 
-                  <DropdownMenuItem
-                    onClick={() => setIsMoveToCreditOpen(true)}
-                    className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-amber-50 focus:text-amber-600 text-sm"
-                  >
-                    Move to credit
-                  </DropdownMenuItem>
-                </>
+              {!isCredited && !isCreditArchived && !isPaid && (
+                <DropdownMenuItem
+                  onClick={() => setIsMoveToCreditOpen(true)}
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-violet-50 focus:text-violet-600 text-sm"
+                >
+                  Move to credit
+                </DropdownMenuItem>
               )}
 
               {isPaid && (

@@ -476,6 +476,7 @@ export default function TaxSettingsPage() {
             ? `Delete "${(deleteTarget.item as Tax | GroupedTax).name}"? This cannot be undone.`
             : ""
         }
+        itemName={deleteTarget ? deleteTarget.item.name : ""}
         onConfirm={
           deleteTarget?.type === "normal"
             ? confirmDeleteNormal

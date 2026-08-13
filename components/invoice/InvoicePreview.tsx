@@ -211,8 +211,11 @@ function InvoiceContent({
             {invoiceTitle} #{invoice.invoice}
           </p>
           <p className="text-2xl font-bold text-gray-900 mt-3">
-            {currency.symbol}
-            {Number(invoice.grandTotal).toFixed(2)}
+            {formatCurrencySymbol(
+              Number(invoice.grandTotal),
+              currency.symbol,
+              currency.locale,
+            )}
           </p>
           <p className="text-xs text-blue-600 mt-1">
             Issued on{" "}
@@ -230,7 +233,7 @@ function InvoiceContent({
             ["Invoice number:", String(invoice.invoice)],
             [
               "Amount due:",
-              `${currency.symbol}${Number(invoice.grandTotal).toFixed(2)}`,
+              `${formatCurrencySymbol(invoice.grandTotal, currency.symbol, currency.locale)}`,
             ],
             [
               "Payment due:",
@@ -285,6 +288,7 @@ function InvoiceContent({
                               ? formatCurrencySymbol(
                                   Number(disc.rate),
                                   currency.symbol,
+                                  currency.locale,
                                 )
                               : `${disc.rate}%`}{" "}
                             OFF{" "}
@@ -294,13 +298,20 @@ function InvoiceContent({
                     )}
                   </p>
                   <p className="text-[10px] text-gray-400 mt-0.5">
-                    {product.quantity} × {currency.symbol}
-                    {product.unitPrice?.toFixed(2)}
+                    {product.quantity} ×{" "}
+                    {formatCurrencySymbol(
+                      product.unitPrice,
+                      currency.symbol,
+                      currency.locale,
+                    )}
                   </p>
                 </div>
                 <p className="text-xs font-semibold text-gray-900">
-                  {currency.symbol}{" "}
-                  {((product.unitPrice ?? 0) * product.quantity).toFixed(2)}
+                  {formatCurrencySymbol(
+                    (product.unitPrice ?? 0) * product.quantity,
+                    currency.symbol,
+                    currency.locale,
+                  )}
                 </p>
               </div>
             )),
@@ -311,14 +322,23 @@ function InvoiceContent({
             <div className="flex justify-between text-gray-500">
               <span>Subtotal</span>
               <span>
-                {currency.symbol} {Number(displayTotal).toFixed(2)}
+                {formatCurrencySymbol(
+                  Number(displayTotal),
+                  currency.symbol,
+                  currency.locale,
+                )}
               </span>
             </div>
             {discountAmount > 0 && (
               <div className="flex justify-between text-gray-500">
                 <span>Discount</span>
                 <span>
-                  − {currency.symbol} {discountAmount.toFixed(2)}
+                  −{" "}
+                  {formatCurrencySymbol(
+                    discountAmount,
+                    currency.symbol,
+                    currency.locale,
+                  )}
                 </span>
               </div>
             )}
@@ -326,7 +346,12 @@ function InvoiceContent({
               <div className="flex justify-between text-gray-500">
                 <span>Discount by points</span>
                 <span>
-                  − {currency.symbol} {loyaltyRedeemedAmount.toFixed(2)}
+                  −{" "}
+                  {formatCurrencySymbol(
+                    loyaltyRedeemedAmount,
+                    currency.symbol,
+                    currency.locale,
+                  )}
                 </span>
               </div>
             )}
@@ -334,7 +359,12 @@ function InvoiceContent({
               <div className="flex justify-between text-gray-500">
                 <span>Tax</span>
                 <span>
-                  + {currency.symbol} {taxAmount.toFixed(2)}
+                  +{" "}
+                  {formatCurrencySymbol(
+                    taxAmount,
+                    currency.symbol,
+                    currency.locale,
+                  )}
                 </span>
               </div>
             )}
@@ -343,7 +373,11 @@ function InvoiceContent({
                 {billData ? "Grand Total" : "Total Payable"}
               </span>
               <span className="text-xs font-bold text-gray-900">
-                {currency.symbol} {Number(displayGrandTotal).toFixed(2)}
+                {formatCurrencySymbol(
+                  Number(displayGrandTotal),
+                  currency.symbol,
+                  currency.locale,
+                )}
               </span>
             </div>
           </div>
@@ -356,13 +390,17 @@ function InvoiceContent({
               </p>
               {paymentList.map((p) => (
                 <div key={p._id} className="flex justify-between text-gray-500">
-                  <span>
+                  <span className="text-[12px]">
                     {formatPaymentDate(p.paymentDate)} ·{" "}
                     {p.paymentMethod || "cash"}
                   </span>
                   <span className="font-medium text-gray-700">
-                    {currency.symbol}
-                    {(p.paymentAmount ?? 0).toFixed(2)}
+                    -{" "}
+                    {formatCurrencySymbol(
+                      p.paymentAmount ?? 0,
+                      currency.symbol,
+                      currency.locale,
+                    )}
                   </span>
                 </div>
               ))}
@@ -371,8 +409,11 @@ function InvoiceContent({
                   Amount Due ({currency.code || "NPR"})
                 </span>
                 <span className="text-xs font-bold text-gray-900">
-                  {currency.symbol}
-                  {amountDue.toFixed(2)}
+                  {formatCurrencySymbol(
+                    amountDue,
+                    currency.symbol,
+                    currency.locale,
+                  )}
                 </span>
               </div>
             </div>
@@ -502,14 +543,23 @@ function InvoiceContent({
         <div className="flex justify-between">
           <p className="text-gray-600">Subtotal</p>
           <p className="font-medium">
-            {currency.symbol} {Number(displayTotal).toFixed(2)}
+            {formatCurrencySymbol(
+              Number(displayTotal),
+              currency.symbol,
+              currency.locale,
+            )}
           </p>
         </div>
 
         <div className="flex justify-between">
           <p className="text-gray-600">Discount</p>
           <p className="font-medium">
-            − {currency.symbol} {discountAmount.toFixed(2) || 0}
+            −{" "}
+            {formatCurrencySymbol(
+              discountAmount || 0,
+              currency.symbol,
+              currency.locale,
+            )}
           </p>
         </div>
 
@@ -517,7 +567,12 @@ function InvoiceContent({
           <div className="flex justify-between">
             <p className="text-gray-600">Discount By Points</p>
             <p className="font-medium">
-              − {currency.symbol} {loyaltyRedeemedAmount.toFixed(2)}
+              −{" "}
+              {formatCurrencySymbol(
+                loyaltyRedeemedAmount,
+                currency.symbol,
+                currency.locale,
+              )}
             </p>
           </div>
         )}
@@ -526,33 +581,50 @@ function InvoiceContent({
           <div className="flex justify-between">
             <p className="text-gray-600">Tax</p>
             <p className="font-medium">
-              + {currency.symbol} {taxAmount.toFixed(2)}
+              +{" "}
+              {formatCurrencySymbol(
+                taxAmount,
+                currency.symbol,
+                currency.locale,
+              )}
             </p>
           </div>
         )}
 
-        <div className="flex justify-between pt-2  border-gray-200">
+        <div className="flex justify-between pt-2  border-t border-gray-200">
           <p className="font-bold text-base">
             {billData ? "Grand Total" : "Total Payable"}
           </p>
           <p className="font-bold text-base">
-            {currency.symbol} {Number(displayGrandTotal).toFixed(2)}
+            {formatCurrencySymbol(
+              Number(displayGrandTotal),
+              currency.symbol,
+              currency.locale,
+            )}
           </p>
         </div>
       </div>
 
       {/* ───────────────── Payments received (credited) ───────────────── */}
       {paymentList.length > 0 && (
-        <div className="mt-5 text-sm">
+        <div className="mt-2 text-sm">
           <div className="space-y-1.5">
             {paymentList.map((p) => (
-              <div key={p._id} className="flex justify-between text-gray-700">
+              <div
+                key={p._id}
+                className="flex justify-between my-1.5 text-gray-700"
+              >
                 <span>
                   Payment on {formatPaymentDate(p.paymentDate)} using a{" "}
                   {p.paymentMethod || "cash"} payment:
                 </span>
                 <span className="font-medium">
-                  {currency.symbol} {(p.paymentAmount ?? 0).toFixed(2)}
+                  -{" "}
+                  {formatCurrencySymbol(
+                    p.paymentAmount ?? 0,
+                    currency.symbol,
+                    currency.locale,
+                  )}
                 </span>
               </div>
             ))}
@@ -562,7 +634,11 @@ function InvoiceContent({
               Amount Due ({currency.code || "NPR"}):
             </p>
             <p className="font-bold text-base">
-              {currency.symbol} {amountDue.toFixed(2)}
+              {formatCurrencySymbol(
+                amountDue,
+                currency.symbol,
+                currency.locale,
+              )}
             </p>
           </div>
         </div>

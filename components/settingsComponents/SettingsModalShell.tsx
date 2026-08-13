@@ -1,12 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import ModalShell from "@/components/ui/ModalShell";
 
 /** Footer button styles shared by the settings modals (match SendInvoiceModal). */
 export const modalCancelBtn =
@@ -22,10 +17,17 @@ export const modalDangerBtn =
 export const modalInputClass =
   "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
 
+/** Map a Tailwind `sm/md:max-w-*` class to a bare `max-w-*` for ModalShell. */
+const toMaxWidth = (widthClass: string): string => {
+  const match = widthClass.match(/max-w-(\S+)/);
+  return match ? `max-w-${match[1]}` : "max-w-xl";
+};
+
 /**
- * Modal shell styled after SendInvoiceModal: rounded card, sticky bordered
- * header with a title/subtitle and a round close button, scrollable body and
- * a bordered footer for actions.
+ * Modal shell shared by the settings pages (discounts, taxes, categories).
+ * Renders through the same {@link ModalShell} used by the invoice modals so
+ * the whole app shares one consistent modal chrome — backdrop, animated card,
+ * icon header, Escape/scroll-lock, and footer.
  */
 export default function SettingsModalShell({
   open,
@@ -46,43 +48,15 @@ export default function SettingsModalShell({
   widthClass?: string;
 }) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        showCloseButton={false}
-        className={`${widthClass} px-2 py-2 gap-0 rounded-2xl border-0 shadow-2xl overflow-hidden`}
-      >
-        {/* ── Header ── */}
-        <div className="relative flex items-center justify-between border-b border-gray-100 bg-white/95 backdrop-blur px-5 py-3.5">
-          <div className="min-w-0">
-            <DialogTitle className="text-lg font-bold text-gray-800">
-              {title}
-            </DialogTitle>
-            <DialogDescription className="text-xs text-gray-500 mt-0.5">
-              {description}
-            </DialogDescription>
-          </div>
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            aria-label="Close"
-            className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center font-bold rounded-full text-gray-500 transition hover:text-red-500 hover:text-lg cursor-pointer text-sm"
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* ── Content ── */}
-        <div className="max-h-[70vh] overflow-y-auto px-5 py-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          {children}
-        </div>
-
-        {/* ── Footer ── */}
-        {footer && (
-          <div className="flex items-center justify-end gap-2 border-t border-gray-100 px-5 py-3.5">
-            {footer}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+    <ModalShell
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title={title}
+      subtitle={description}
+      maxWidth={toMaxWidth(widthClass)}
+      footer={footer}
+    >
+      {children}
+    </ModalShell>
   );
 }

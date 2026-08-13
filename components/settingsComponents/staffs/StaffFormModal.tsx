@@ -1,11 +1,7 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
-import SettingsModalShell, {
-  modalCancelBtn,
-  modalPrimaryBtn,
-  modalInputClass as inputClass,
-} from "@/components/settingsComponents/SettingsModalShell";
+import { BadgePercent, Loader2 } from "lucide-react";
+import ModalShell from "@/components/ui/ModalShell";
 
 export interface StaffFormData {
   name: string;
@@ -18,13 +14,21 @@ export type StaffFormErrors = Partial<Record<keyof StaffFormData, string>>;
 
 const errorClass = "border-red-300 focus:ring-red-400";
 
+const inputClass =
+  "w-full h-9 rounded-lg border border-slate-200 px-3 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+
 const FIELDS: {
   key: "name" | "email" | "phone";
   label: string;
   type: string;
   placeholder: string;
 }[] = [
-  { key: "name", label: "Staff Name", type: "text", placeholder: "e.g. John Doe" },
+  {
+    key: "name",
+    label: "Staff Name",
+    type: "text",
+    placeholder: "e.g. John Doe",
+  },
   {
     key: "email",
     label: "Email",
@@ -63,22 +67,23 @@ export default function StaffFormModal({
   saving: boolean;
 }) {
   return (
-    <SettingsModalShell
+    <ModalShell
       open={open}
-      onOpenChange={onOpenChange}
+      onClose={() => onOpenChange(false)}
       title={isEdit ? "Edit Staff" : "Add New Staff"}
-      description={
+      subtitle={
         isEdit
           ? "Update this staff member's information"
           : "Create a new staff account"
       }
+      icon={BadgePercent}
       footer={
-        <>
+        <div className="flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={() => onOpenChange(false)}
             disabled={saving}
-            className={modalCancelBtn}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
@@ -86,7 +91,7 @@ export default function StaffFormModal({
             type="button"
             onClick={onSave}
             disabled={saving}
-            className={modalPrimaryBtn}
+            className="rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
           >
             {saving ? (
               <>
@@ -99,15 +104,17 @@ export default function StaffFormModal({
               "Add Staff"
             )}
           </button>
-        </>
+        </div>
       }
     >
       <div className="space-y-5">
         {/* ── Contact ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-sm font-semibold text-gray-800">Details</h3>
-            <p className="text-xs text-gray-500">
+            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+              Details
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
               How this staff member signs in and is contacted
             </p>
           </div>
@@ -115,7 +122,7 @@ export default function StaffFormModal({
           <div className="space-y-3">
             {FIELDS.map(({ key, label, type, placeholder }) => (
               <div key={key}>
-                <label className="text-xs font-medium text-gray-500 block mb-1.5">
+                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
                   {label}
                 </label>
                 <input
@@ -136,13 +143,15 @@ export default function StaffFormModal({
         {/* ── Role ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-sm font-semibold text-gray-800">Role</h3>
-            <p className="text-xs text-gray-500">
+            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+              Role
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
               Controls what this staff member can access
             </p>
           </div>
 
-          <label className="text-xs font-medium text-gray-500 block mb-1.5">
+          <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
             Staff Role
           </label>
           <select
@@ -160,6 +169,6 @@ export default function StaffFormModal({
           )}
         </div>
       </div>
-    </SettingsModalShell>
+    </ModalShell>
   );
 }

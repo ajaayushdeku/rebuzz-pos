@@ -3,6 +3,8 @@
 import { RotateCcw, Loader2 } from "lucide-react";
 import ModalShell from "@/components/ui/ModalShell";
 import type { Transaction } from "./transaction-columns";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
 
 interface RefundModalProps {
   open: boolean;
@@ -19,6 +21,7 @@ export default function RefundModal({
   onConfirm,
   isRefunding,
 }: RefundModalProps) {
+  const { currency } = useCurrency();
   return (
     <ModalShell
       open={open}
@@ -38,7 +41,12 @@ export default function RefundModal({
         </p>
         {transaction && (
           <p className="text-xs text-gray-400">
-            Customer: {transaction.invoiceName || "—"} · {transaction.amount}
+            {transaction.invoiceName || "—"} ·{" "}
+            {formatCurrencySymbol(
+              Number(transaction.amount),
+              currency.symbol,
+              currency.locale,
+            )}
           </p>
         )}
         <p className="text-xs text-orange-600 w-[400px] bg-orange-50 border border-orange-100 rounded-lg px-3 py-2 mt-2">
@@ -46,18 +54,18 @@ export default function RefundModal({
         </p>
       </div>
 
-      <div className="flex gap-3 mt-4">
+      <div className="flex items-center justify-end gap-2 mt-4">
         <button
           onClick={onClose}
           disabled={isRefunding}
-          className="flex-1 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
+          className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Cancel
         </button>
         <button
           onClick={onConfirm}
           disabled={isRefunding}
-          className="flex-1 rounded-lg bg-orange-500 hover:bg-orange-600 text-white py-2.5 text-sm font-semibold transition-colors disabled:opacity-50"
+          className="rounded-lg bg-orange-500 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-orange-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
         >
           {isRefunding ? (
             <span className="flex items-center justify-center gap-1.5">
@@ -65,7 +73,10 @@ export default function RefundModal({
               Refunding...
             </span>
           ) : (
-            "Confirm Refund"
+            <span className="flex items-center justify-center gap-1.5">
+              <RotateCcw className="h-4 w-4" />
+              Confirm Refund
+            </span>
           )}
         </button>
       </div>

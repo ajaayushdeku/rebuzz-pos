@@ -24,6 +24,7 @@ export default function DeleteInvoiceModal({
       onClose={onClose}
       busy={isDeleting}
       title="Delete Invoice?"
+      subtitle="This action cannot be undone."
       icon={Trash2}
       iconColor="text-red-600"
       iconBgColor="bg-red-100"
@@ -39,18 +40,18 @@ export default function DeleteInvoiceModal({
         </p>
       </div>
 
-      <div className="flex gap-3 mt-4">
+      <div className="flex items-center justify-end gap-2 mt-4">
         <button
           onClick={onClose}
           disabled={isDeleting}
-          className="flex-1 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
+          className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Cancel
         </button>
         <button
           onClick={onConfirm}
           disabled={isDeleting}
-          className="flex-1 rounded-lg bg-red-600 hover:bg-red-700 text-white py-2.5 text-sm font-semibold transition-colors disabled:opacity-50"
+          className="rounded-lg bg-red-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-red-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
         >
           {isDeleting ? (
             <span className="flex items-center justify-center gap-1.5">
@@ -58,7 +59,10 @@ export default function DeleteInvoiceModal({
               Deleting...
             </span>
           ) : (
-            "Delete"
+            <span className="flex items-center justify-center gap-1.5">
+              <Trash2 className="h-4 w-4" />
+              Delete
+            </span>
           )}
         </button>
       </div>

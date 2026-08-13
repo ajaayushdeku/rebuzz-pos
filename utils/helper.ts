@@ -56,6 +56,26 @@ export const formatCurrencySymbol = (
   return `${symbol} ${formatted}`;
 };
 
+/* Formats an amount with locale-aware grouping */
+export const formatAmount = (
+  amount: number,
+  locale: string = "en-US",
+): string => {
+  const abs = Math.abs(amount);
+  const isIndian = isIndianGroupingLocale(locale);
+  const threshold = isIndian ? 1_00_00_00_000 : 1_000_000_000;
+
+  // Very large values — use compact notation so they fit in the UI
+  if (abs >= threshold) {
+    return formatCompactNumber(amount, locale);
+  }
+
+  return new Intl.NumberFormat(numberLocale(locale), {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+};
+
 export const formatCurrencySymbolOnly = (symbol: string) => {
   return symbol;
 };

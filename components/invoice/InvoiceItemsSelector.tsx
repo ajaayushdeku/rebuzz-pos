@@ -15,10 +15,10 @@ import {
   Layers,
   TriangleAlert,
   LucideIcon,
-  AlertTriangle,
   Percent,
   Tag,
   Receipt,
+  Boxes,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -65,31 +65,38 @@ const DOT_TONE: Record<PillTone, string> = {
   danger: "bg-red-100 text-red-600 ring-red-300/70",
   warning: "bg-amber-100 text-amber-600 ring-amber-300/70",
   info: "bg-blue-100 text-blue-600 ring-blue-300/70",
-  tax: "bg-rose-100 text-rose-600 ring-rose-300/70",
+  tax: "bg-violet-100 text-violet-600 ring-violet-400",
 };
 
-/**
- * A pill collapsed to a dot. Hovering — or focusing, which is what a tap does
- * on touch devices — reveals the full badge.
- *
- * The popover sits inside the same `group` as the dot, so moving the pointer
- * from the dot onto the badge keeps it open and its buttons stay clickable.
- */
-function PillDot({ pill }: { pill: RowPill }) {
+function PillDot({
+  pill,
+  isOpen,
+  onToggle,
+}: {
+  pill: RowPill;
+  isOpen: boolean;
+  onToggle: () => void;
+}) {
   const Icon = pill.icon;
 
   return (
-    <div className="relative shrink-0 group">
+    <div className="flex shrink-0 items-center">
       <button
         type="button"
         aria-label={pill.label}
+        aria-expanded={isOpen}
         title={pill.label}
-        onClick={(e) => e.preventDefault()}
+        onClick={onToggle}
         className={cn(
-          "grid h-5 w-5 place-items-center rounded-full ring-2 transition",
+          "grid h-5 w-5 shrink-0 place-items-center rounded-full ring-2 cursor-pointer",
+          "transition-all duration-300 ease-out hover:scale-110",
           "focus:outline-none focus-visible:ring-offset-1",
+          "motion-reduce:transition-none motion-reduce:hover:scale-100",
           DOT_TONE[pill.tone],
-          pill.pulse && "animate-pulse",
+          isOpen && "scale-110 ring-offset-1",
+          // Only pulse while collapsed — once it's open it has the user's
+          // attention and a throbbing badge is just noise.
+          pill.pulse && !isOpen && "animate-pulse",
         )}
       >
         <Icon className="h-2.5 w-2.5" strokeWidth={2.4} />
@@ -97,12 +104,28 @@ function PillDot({ pill }: { pill: RowPill }) {
 
       <div
         className={cn(
-          "absolute left-0 top-6 z-40 w-max max-w-[70vw]",
-          "hidden group-hover:block group-focus-within:block",
+          "grid transition-all duration-300 ease-out",
+          "motion-reduce:transition-none",
+          isOpen ? "grid-cols-[1fr] opacity-100" : "grid-cols-[0fr] opacity-0",
         )}
       >
-        <div className="rounded-lg bg-white p-1 shadow-lg ring-1 ring-black/5">
-          {pill.element}
+        <div className="overflow-hidden">
+          <div
+            className={cn(
+              "pl-1.5 whitespace-nowrap transition-transform duration-300 ease-out",
+              "motion-reduce:transition-none",
+              isOpen ? "translate-x-0" : "-translate-x-2",
+            )}
+            // Collapsed content is inert: not tabbable, not clickable.
+            {...(isOpen
+              ? {}
+              : ({ inert: true, "aria-hidden": true } as unknown as {
+                  inert: boolean;
+                  "aria-hidden": boolean;
+                }))}
+          >
+            {pill.element}
+          </div>
         </div>
       </div>
     </div>
@@ -148,6 +171,10 @@ export default function InvoiceItemsSelector({
 
   // ── Stock validation errors per item ──
   const [stockErrors, setStockErrors] = useState<Record<string, string>>({});
+
+  // Which collapsed pill is expanded, as "<itemId>:<pillKey>". One at a time
+  // so an expanded badge never pushes another one off the row.
+  const [expandedPill, setExpandedPill] = useState<string | null>(null);
 
   const netUnitPrice = (item: InvoiceItem) => {
     const perUnit = item.discounts.reduce((sum, dId) => {
@@ -426,7 +453,7 @@ export default function InvoiceItemsSelector({
       pills.push({
         key: "low-stock",
         tone: "warning",
-        icon: AlertTriangle,
+        icon: Boxes,
         label: `Low stock — ${product.inStock} left`,
         element: (
           <Badge className="flex items-center gap-1 bg-amber-100 text-amber-700 hover:bg-amber-200 text-xs border border-amber-200">
@@ -477,8 +504,12 @@ export default function InvoiceItemsSelector({
                   ({formatCurrencySymbolOnly(currency.symbol)} {d.rate} off) :
                 </span>
                 <span className="text-[11px] font-semibold  tracking-wider leading-none">
-                  - {formatCurrencySymbolOnly(currency.symbol)}{" "}
-                  {amount.toFixed(2)}
+                  -{" "}
+                  {formatCurrencySymbol(
+                    Number(amount),
+                    currency.symbol,
+                    currency.locale,
+                  )}{" "}
                 </span>
               </>
             )}
@@ -520,22 +551,26 @@ export default function InvoiceItemsSelector({
         icon: Receipt,
         label: `${activeTax.name} (${activeTax.rate}%) — ${formatCurrencySymbolOnly(currency.symbol)} ${taxAmount.toFixed(2)}`,
         element: (
-          <Badge className="flex items-center gap-1 bg-red-100 text-red-700 hover:bg-red-200 text-xs">
+          <Badge className="flex items-center gap-1 bg-violet-100 text-violet-700 hover:bg-violet-200 text-xs">
             <span className="text-[11px] font-semibold  tracking-wider leading-none">
               {activeTax.name}
             </span>
-            <span className="text-[11px] text-red-500  tracking-wider leading-none">
+            <span className="text-[11px] text-violet-500  tracking-wider leading-none">
               ({activeTax.rate}%) :
             </span>
             <span className="text-[11px] font-medium  tracking-wider  leading-none">
-              + {formatCurrencySymbolOnly(currency.symbol)}{" "}
-              {taxAmount.toFixed(2)}
+              +{" "}
+              {formatCurrencySymbol(
+                Number(taxAmount),
+                currency.symbol,
+                currency.locale,
+              )}{" "}
             </span>
 
             {/* X disables taxable on this item */}
             <button
               type="button"
-              className="ml-0.5 rounded-full hover:bg-red-300 p-0.5 transition-colors"
+              className="ml-0.5 rounded-full hover:bg-violet-300 p-0.5 transition-colors"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -730,7 +765,7 @@ export default function InvoiceItemsSelector({
               </TableCell>
 
               {/* Quantity */}
-              <TableCell className="relative min-w-[65px] w-[75px]">
+              <TableCell className="relative min-w-[65px] w-[80px]">
                 <Input
                   type="number"
                   value={item.quantity}
@@ -738,9 +773,9 @@ export default function InvoiceItemsSelector({
                     updateItem(item.id, "quantity", Number(e.target.value))
                   }
                   className={cn(
-                    "text-right h-8 text-[13px] font-semibold  tracking-wider px-1.5 tabular-nums",
+                    "text-right h-8 text-[13px] sm:text-[11px]  font-semibold  tracking-wider px-1.5 no-spinner tabular-nums",
                     stockErrors[item.id] &&
-                      "border-red-400 focus-visible:ring-orange-400",
+                      "border-red-400 focus-visible:ring-red-400",
                   )}
                 />
                 {stockErrors[item.id] && (
@@ -768,7 +803,7 @@ export default function InvoiceItemsSelector({
                         : undefined
                     }
                     className={cn(
-                      "text-right h-8 text-[13px] font-semibold  tracking-wider px-1.5 no-spinner tabular-nums",
+                      "text-right h-8 text-[13px] sm:text-[11px] font-semibold  tracking-wider px-1.5 no-spinner tabular-nums",
                       showDiscountedUnit && "text-gray-400 line-through",
                     )}
                   />
@@ -782,22 +817,25 @@ export default function InvoiceItemsSelector({
               </TableCell>
 
               {/* Row total */}
-              <TableCell className="min-w-[60px] text-right font-semibold text-xs text-gray-800 tabular-nums">
-                {formatCurrencySymbolOnly(currency.symbol)}{" "}
-                {(() => {
-                  const rowSubtotal = item.quantity * item.price;
-                  const rowDiscount = item.discounts.reduce((sum, dId) => {
-                    const d = masterDiscounts.find((m) => m._id === dId);
-                    if (!d) return sum;
-                    return (
-                      sum +
-                      (d.type === "percentage"
-                        ? (rowSubtotal * d.rate) / 100
-                        : d.rate * item.quantity)
-                    );
-                  }, 0);
-                  return (rowSubtotal - rowDiscount).toFixed(2);
-                })()}
+              <TableCell className="min-w-[60px] text-right font-semibold text-[13px] sm:text-[11px] text-gray-800 tabular-nums">
+                {formatCurrencySymbol(
+                  (() => {
+                    const rowSubtotal = item.quantity * item.price;
+                    const rowDiscount = item.discounts.reduce((sum, dId) => {
+                      const d = masterDiscounts.find((m) => m._id === dId);
+                      if (!d) return sum;
+                      return (
+                        sum +
+                        (d.type === "percentage"
+                          ? (rowSubtotal * d.rate) / 100
+                          : d.rate * item.quantity)
+                      );
+                    }, 0);
+                    return rowSubtotal - rowDiscount;
+                  })(),
+                  currency.symbol,
+                  currency.locale,
+                )}{" "}
               </TableCell>
 
               {/* Discount column — + button opens modal */}
@@ -861,22 +899,34 @@ export default function InvoiceItemsSelector({
             <TableRow className="border-b border-gray-100 hover:bg-gray-50/70 transition-colors">
               {/* Skip grip + product columns */}
               <TableCell className="w-6 px-1 pb-2 pt-0" />
-              <TableCell colSpan={7} className="pb-3 pt-0">
+              <TableCell colSpan={7} className="pb-3 pt-1">
                 {rowPills.length > 0 && (
                   <>
                     {/* Narrow: one dot per badge, full badge on hover/tap */}
-                    <div className="flex flex-wrap items-center gap-1.5 lg:hidden">
-                      {rowPills.map((pill) => (
-                        <PillDot key={pill.key} pill={pill} />
-                      ))}
+                    <div className="flex flex-wrap items-center gap-1.75 lg:gap-2  pl-1">
+                      {rowPills.map((pill) => {
+                        const pillId = `${item.id}:${pill.key}`;
+                        return (
+                          <PillDot
+                            key={pill.key}
+                            pill={pill}
+                            isOpen={expandedPill === pillId}
+                            onToggle={() =>
+                              setExpandedPill((cur) =>
+                                cur === pillId ? null : pillId,
+                              )
+                            }
+                          />
+                        );
+                      })}
                     </div>
 
                     {/* Wide: the badges themselves */}
-                    <div className="hidden flex-wrap items-center gap-1.5 lg:flex">
+                    {/* <div className="hidden flex-wrap items-center gap-1.5 lg:flex">
                       {rowPills.map((pill) => (
                         <Fragment key={pill.key}>{pill.element}</Fragment>
                       ))}
-                    </div>
+                    </div> */}
                   </>
                 )}
               </TableCell>

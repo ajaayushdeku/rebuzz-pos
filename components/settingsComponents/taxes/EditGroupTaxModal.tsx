@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Check, Loader2 } from "lucide-react";
+import { Search, Check, Loader2, Layers } from "lucide-react";
 import { Tax, GroupedTax } from "@/services/apiTaxes.client";
-import SettingsModalShell, {
-  modalCancelBtn,
-  modalPrimaryBtn,
-  modalInputClass as inputClass,
-} from "@/components/settingsComponents/SettingsModalShell";
+import ModalShell from "@/components/ui/ModalShell";
+
+const inputClass =
+  "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
 
 const EditGroupTaxModal = ({
   open,
@@ -58,18 +57,20 @@ const EditGroupTaxModal = ({
   };
 
   return (
-    <SettingsModalShell
+    <ModalShell
       open={open}
-      onOpenChange={handleOpenChange}
+      onClose={() => handleOpenChange(false)}
+      busy={isPending}
       title={group ? "Edit Group Tax" : "Create Group Tax"}
-      description="Combine several taxes into a single group rate"
+      subtitle="Combine several taxes into a single group rate"
+      icon={Layers}
       footer={
-        <>
+        <div className="flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={() => onOpenChange(false)}
             disabled={isPending}
-            className={modalCancelBtn}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
@@ -77,7 +78,7 @@ const EditGroupTaxModal = ({
             type="button"
             onClick={handleSave}
             disabled={isPending || !name.trim() || selectedTaxIds.length === 0}
-            className={modalPrimaryBtn}
+            className="rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
           >
             {isPending ? (
               <>
@@ -88,7 +89,7 @@ const EditGroupTaxModal = ({
               "Save Group"
             )}
           </button>
-        </>
+        </div>
       }
     >
       <div className="space-y-5">
@@ -202,7 +203,7 @@ const EditGroupTaxModal = ({
           </div>
         )}
       </div>
-    </SettingsModalShell>
+    </ModalShell>
   );
 };
 

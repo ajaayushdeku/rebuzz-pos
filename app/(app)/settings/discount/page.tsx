@@ -1,10 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Search, Plus, Percent, DollarSign } from "lucide-react";
+import { Search, Percent, DollarSign } from "lucide-react";
 import {
   useDiscounts,
-  useCreateDiscount,
   useUpdateDiscount,
   useDeleteDiscount,
 } from "@/hooks/useDiscounts";
@@ -12,7 +11,7 @@ import toast from "react-hot-toast";
 import DiscountTable from "@/components/settingsComponents/discounts/DiscountTable";
 import EditDiscountModal from "@/components/settingsComponents/discounts/EditDiscountModal";
 import DeleteConfirmModal from "@/components/settingsComponents/DeleteConfirmModal";
-import { Button } from "@/components/ui/button";
+import { CreateDiscountDialog } from "@/components/invoice/CreateDiscount";
 
 export interface Discount {
   _id: string;
@@ -33,7 +32,6 @@ type DiscountForm = {
 
 export default function DiscountSettingsPage() {
   const { data: discounts = [], isLoading } = useDiscounts();
-  const { mutate: createDiscount, isPending: creating } = useCreateDiscount();
   const { mutate: updateDiscount, isPending: updating } = useUpdateDiscount();
   const { mutate: deleteDiscount, isPending: deleting } = useDeleteDiscount();
   const [search, setSearch] = useState("");
@@ -42,7 +40,7 @@ export default function DiscountSettingsPage() {
   const [activeTab, setActiveTab] = useState<DiscountType>("percentage");
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
-  // Edit/Create modal state
+  // Edit modal state (create now goes through CreateDiscountDialog)
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Discount | null>(null);
   const [form, setForm] = useState<DiscountForm>({
@@ -59,13 +57,6 @@ export default function DiscountSettingsPage() {
     (d: Discount) => d.type === "percentage",
   );
   const fixedDiscounts = discounts.filter((d: Discount) => d.type === "fixed");
-
-  const openCreate = () => {
-    setEditTarget(null);
-    // New discounts default to whichever table you're looking at
-    setForm({ name: "", type: activeTab, rate: 0 });
-    setModalOpen(true);
-  };
 
   const openEdit = (d: Discount) => {
     setEditTarget(d);
@@ -89,7 +80,7 @@ export default function DiscountSettingsPage() {
       { docId: deleteTarget._docId, discountId: deleteTarget._id },
       {
         onSuccess: () => {
-          toast.success("Discount deleted");
+          // toast.success("Discount deleted");
           setDeleteModalOpen(false);
           setDeleteTarget(null);
         },
@@ -101,49 +92,26 @@ export default function DiscountSettingsPage() {
   const handleSave = () => {
     if (!form.name.trim() || form.rate <= 0) return;
 
-    if (editTarget) {
-      if (!editTarget._docId) {
-        toast.error("Missing document reference");
-        return;
-      }
-
-      updateDiscount(
-        {
-          docId: editTarget._docId,
-          discountId: editTarget._id,
-          payload: { name: form.name, rate: form.rate, type: form.type },
-        },
-        {
-          onSuccess: () => {
-            toast.success("Discount updated");
-            setModalOpen(false);
-          },
-          onError: () => toast.error("Failed to update discount"),
-        },
-      );
-    } else {
-      createDiscount(
-        {
-          discounts: [
-            {
-              name: form.name,
-              rate: form.rate,
-              type: form.type,
-              isEnabled: false,
-            },
-          ],
-        },
-        {
-          onSuccess: () => {
-            toast.success("Discount created");
-            setModalOpen(false);
-            // Follow the new discount to its table
-            setActiveTab(form.type);
-          },
-          onError: () => toast.error("Failed to create discount"),
-        },
-      );
+    if (!editTarget) return;
+    if (!editTarget._docId) {
+      toast.error("Missing document reference");
+      return;
     }
+
+    updateDiscount(
+      {
+        docId: editTarget._docId,
+        discountId: editTarget._id,
+        payload: { name: form.name, rate: form.rate, type: form.type },
+      },
+      {
+        onSuccess: () => {
+          // toast.success("Discount updated");
+          setModalOpen(false);
+        },
+        onError: () => toast.error("Failed to update discount"),
+      },
+    );
   };
 
   const tabs: Array<{
@@ -195,12 +163,7 @@ export default function DiscountSettingsPage() {
               {discounts.length} discounts configured
             </p>
           </div>
-          <Button
-            onClick={openCreate}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" /> New Discount
-          </Button>
+          <CreateDiscountDialog />
         </div>
 
         {/* ── Search — stays put, filters whichever table is showing ── */}
@@ -295,7 +258,7 @@ export default function DiscountSettingsPage() {
           )}
         </div>
 
-        {/* Create/Edit modal */}
+        {/* Edit modal (create uses CreateDiscountDialog) */}
         <EditDiscountModal
           open={modalOpen}
           onOpenChange={setModalOpen}
@@ -303,7 +266,7 @@ export default function DiscountSettingsPage() {
           form={form}
           onFormChange={setForm}
           onSave={handleSave}
-          isPending={creating || updating}
+          isPending={updating}
         />
 
         {/* Delete confirmation modal */}
@@ -321,6 +284,7 @@ export default function DiscountSettingsPage() {
               ? `Delete "${deleteTarget.name}"? This cannot be undone.`
               : ""
           }
+          itemName={deleteTarget ? deleteTarget.name : ""}
           onConfirm={confirmDelete}
           isPending={deleting}
         />

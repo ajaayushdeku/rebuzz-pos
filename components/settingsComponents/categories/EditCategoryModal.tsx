@@ -1,13 +1,9 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { Loader2, Tag } from "lucide-react";
 import type { Category } from "@/lib/types/category";
 import { normalizeColor } from "@/services/category.client";
-import SettingsModalShell, {
-  modalCancelBtn,
-  modalPrimaryBtn,
-  modalInputClass as inputClass,
-} from "@/components/settingsComponents/SettingsModalShell";
+import ModalShell from "@/components/ui/ModalShell";
 
 const PRESET_COLORS = [
   "#F47003",
@@ -27,6 +23,9 @@ const PRESET_COLORS = [
   "#D946EF",
   "#FB923C",
 ];
+
+const inputClass =
+  "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
 
 interface EditCategoryModalProps {
   open: boolean;
@@ -48,18 +47,20 @@ const EditCategoryModal = ({
   isPending,
 }: EditCategoryModalProps) => {
   return (
-    <SettingsModalShell
+    <ModalShell
       open={open}
-      onOpenChange={(o) => !o && onOpenChange(false)}
+      onClose={() => onOpenChange(false)}
+      busy={isPending}
       title={editTarget ? "Edit Category" : "Create New Category"}
-      description="Name your category and pick a colour to identify it"
+      subtitle="Name your category and pick a colour to identify it"
+      icon={Tag}
       footer={
-        <>
+        <div className="flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={() => onOpenChange(false)}
             disabled={isPending}
-            className={modalCancelBtn}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
@@ -67,7 +68,7 @@ const EditCategoryModal = ({
             type="button"
             onClick={onSave}
             disabled={isPending || !form.name.trim() || !form.color.trim()}
-            className={modalPrimaryBtn}
+            className="rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
           >
             {isPending ? (
               <>
@@ -80,20 +81,22 @@ const EditCategoryModal = ({
               "Create Category"
             )}
           </button>
-        </>
+        </div>
       }
     >
       <div className="space-y-5">
         {/* ── Details ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-sm font-semibold text-gray-800">Details</h3>
-            <p className="text-xs text-gray-500">
+            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+              Details
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
               How this category appears across the app
             </p>
           </div>
 
-          <label className="text-xs font-medium text-gray-500 block mb-1.5">
+          <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
             Category Name
           </label>
           <input
@@ -107,8 +110,10 @@ const EditCategoryModal = ({
         {/* ── Colour ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-sm font-semibold text-gray-800">Colour</h3>
-            <p className="text-xs text-gray-500">
+            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+              Colour
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
               Pick a preset or enter a custom hex value
             </p>
           </div>
@@ -136,7 +141,7 @@ const EditCategoryModal = ({
           {/* Custom colour + hex */}
           <div className="mt-3 grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-gray-500 block mb-1.5">
+              <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
                 Custom
               </label>
               <input
@@ -151,7 +156,7 @@ const EditCategoryModal = ({
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-500 block mb-1.5">
+              <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
                 Hex
               </label>
               <div className="relative">
@@ -176,7 +181,9 @@ const EditCategoryModal = ({
         {/* ── Preview ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-sm font-semibold text-gray-800">Preview</h3>
+            <h3 className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-600">
+              Preview
+            </h3>
           </div>
           <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-3 shadow-sm">
             <span
@@ -184,17 +191,17 @@ const EditCategoryModal = ({
               style={{ backgroundColor: normalizeColor(form.color) }}
             />
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-gray-800 truncate">
+              <p className="text-[13px] font-semibold uppercase tracking-[0.1em] text-slate-700">
                 {form.name || "Category Name"}
               </p>
-              <p className="text-[11px] text-gray-400 font-mono">
+              <p className="text-[11px] text-gray-400 tracking-[0.1em]  font-mono">
                 {normalizeColor(form.color)}
               </p>
             </div>
           </div>
         </div>
       </div>
-    </SettingsModalShell>
+    </ModalShell>
   );
 };
 

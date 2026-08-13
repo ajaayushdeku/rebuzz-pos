@@ -21,16 +21,10 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import DeleteConfirmModal from "@/components/settingsComponents/DeleteConfirmModal";
 import StaffFormModal from "@/components/settingsComponents/staffs/StaffFormModal";
 
-// â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Types ───────────────────────────────────────────────────────────────────
 interface StaffFormData {
   name: string;
   email: string;
@@ -56,10 +50,10 @@ const emptyForm: StaffFormData = {
   role: "staff",
 };
 
-// â”€â”€ Input styling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Input styling ───────────────────────────────────────────────────────────
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
-// â”€â”€ Role badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Role badge ──────────────────────────────────────────────────────────────
 function RoleBadge({ role }: { role: string }) {
   const isStaff = role === "staff";
   return (
@@ -80,7 +74,7 @@ function RoleBadge({ role }: { role: string }) {
   );
 }
 
-// â”€â”€ Status badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Status badge ────────────────────────────────────────────────────────────
 function StatusBadge({ deactivated }: { deactivated?: boolean }) {
   return (
     <span
@@ -101,7 +95,7 @@ function StatusBadge({ deactivated }: { deactivated?: boolean }) {
 }
 
 export default function StaffManagementPage() {
-  // â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── State ─────────────────────────────────────────────────────────────────
   const router = useRouter();
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -142,7 +136,13 @@ export default function StaffManagementPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  // â”€â”€ Fetch staff â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // The row behind the open confirmation. Resolved once here rather than
+  // looked up inline, so the name and email can't disagree with each other.
+  const deleteTarget = deleteConfirm
+    ? staff.find((s) => s._id === deleteConfirm)
+    : null;
+
+  // ── Fetch staff ───────────────────────────────────────────────────────────
   const fetchStaff = () => {
     setLoading(true);
     fetch("/api/staff")
@@ -166,7 +166,7 @@ export default function StaffManagementPage() {
     })();
   }, []);
 
-  // â”€â”€ Open modal for add/edit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Open modal for add/edit ───────────────────────────────────────────────
   const openAdd = () => {
     setEditStaff(null);
     setForm(emptyForm);
@@ -186,7 +186,7 @@ export default function StaffManagementPage() {
     setModalOpen(true);
   };
 
-  // â”€â”€ Validation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Validation ────────────────────────────────────────────────────────────
   const validate = (): boolean => {
     const e: Partial<Record<keyof StaffFormData, string>> = {};
     if (!form.name.trim()) e.name = "Name is required";
@@ -199,7 +199,7 @@ export default function StaffManagementPage() {
     return Object.keys(e).length === 0;
   };
 
-  // â”€â”€ Save (create or update) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Save (create or update) ───────────────────────────────────────────────
   const handleSave = async () => {
     if (!validate()) return;
 
@@ -245,7 +245,7 @@ export default function StaffManagementPage() {
     }
   };
 
-  // â”€â”€ Delete â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Delete ────────────────────────────────────────────────────────────────
   const handleDelete = async (userId: string) => {
     setDeleting(true);
     try {
@@ -268,14 +268,14 @@ export default function StaffManagementPage() {
     }
   };
 
-  // â”€â”€ Set form field â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Set form field ────────────────────────────────────────────────────────
   const set = (key: keyof StaffFormData, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     if (formErrors[key])
       setFormErrors((prev) => ({ ...prev, [key]: undefined }));
   };
 
-  // â”€â”€ Filter, sort, paginate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Filter, sort, paginate ────────────────────────────────────────────────
   const filtered = useMemo(() => {
     let result = staff;
     const q = search.toLowerCase();
@@ -332,7 +332,7 @@ export default function StaffManagementPage() {
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
       <div className="w-full mx-auto">
-        {/* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── Header ───────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2 pb-4 border-b border-gray-200">
           <div>
             <h1 className="font-bold text-xl md:text-2xl truncate">
@@ -352,7 +352,7 @@ export default function StaffManagementPage() {
           </Button>
         </div>
 
-        {/* â”€â”€ Search + Filter â”€â”€ */}
+        {/* ── Search + Filter ── */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
           <div className="relative flex-1">
             <Search
@@ -421,7 +421,7 @@ export default function StaffManagementPage() {
           </div>
         </div>
 
-        {/* â”€â”€ Staff Table â”€â”€ */}
+        {/* ── Staff Table ── */}
         {/* Table always renders; loading + empty states live inside the tbody. */}
         <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <table className="w-full text-sm min-w-[1000px]">
@@ -574,7 +574,7 @@ export default function StaffManagementPage() {
           </button>
         </div>
 
-        {/* â”€â”€ Add/Edit Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── Add/Edit Modal ─────────────────────────────────── */}
         <StaffFormModal
           open={modalOpen}
           onOpenChange={setModalOpen}
@@ -586,61 +586,16 @@ export default function StaffManagementPage() {
           saving={saving}
         />
 
-        {/* â”€â”€ Delete Confirmation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-        <Dialog
+        {/* ── Delete Confirmation ────────────────────────────── */}
+        <DeleteConfirmModal
           open={!!deleteConfirm}
           onOpenChange={(o) => !o && !deleting && setDeleteConfirm(null)}
-        >
-          <DialogContent className="max-w-sm">
-            <DialogHeader>
-              <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-2">
-                <Trash2 className="h-5 w-5 text-red-600" />
-              </div>
-              <DialogTitle className="text-center text-base font-semibold">
-                Delete Staff?
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="text-center space-y-1 py-1">
-              <p className="text-sm text-gray-600">
-                Are you sure you want to delete{" "}
-                <span className="font-semibold text-gray-900">
-                  {staff.find((s) => s._id === deleteConfirm)?.name ||
-                    "this staff member"}
-                </span>
-                ?
-              </p>
-              <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mt-2">
-                This action cannot be undone.
-              </p>
-            </div>
-
-            <DialogFooter className="gap-2">
-              <Button
-                onClick={() => setDeleteConfirm(null)}
-                variant="outline"
-                disabled={deleting}
-                className="text-sm rounded-lg flex-1"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
-                disabled={deleting}
-                className="bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg flex-1"
-              >
-                {deleting ? (
-                  <span className="flex items-center gap-1.5">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Deleting...
-                  </span>
-                ) : (
-                  "Delete"
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          title="Delete Employee"
+          message={deleteTarget?.email || "This employee will be removed."}
+          itemName={deleteTarget?.name || "this employee"}
+          onConfirm={() => deleteConfirm && handleDelete(deleteConfirm)}
+          isPending={deleting}
+        />
       </div>
     </div>
   );

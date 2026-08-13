@@ -70,8 +70,8 @@ const PublicPreviewPage = ({ type }: { type: InvoiceType }) => {
 
   if (invLoading || bizLoading || billLoading)
     return (
-      <div className="p-20 text-center">
-        <Loader2 className="animate-spin inline" />
+      <div className="fixed inset-0 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   if (!invoice)
