@@ -24,6 +24,7 @@ import {
   LoyaltyPointPayload,
 } from "@/services/apiLoyaltyPoint";
 import { useBusiness } from "@/hooks/useBusiness";
+import { ComponentHeader } from "@/components/ComponentHeader";
 
 const inputClass =
   "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
@@ -482,16 +483,14 @@ export default function LoyaltyPointPage() {
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div className="border-t pt-8">
           <div className="mb-6">
-            <div className="flex items-center gap-2.5 mb-1">
+            <div className="flex flex-row items-center gap-3 mb-1">
               <Trophy className="h-5 w-5 text-yellow-500" />
-              <h2 className="text-lg font-bold text-gray-900">
-                Customer Loyalty Status
-              </h2>
+              <ComponentHeader
+                title="Customer Loyalty Status"
+                subHeader="Define loyalty tiers (Bronze, Silver, Gold, Diamond, etc.) and
+              their point thresholds."
+              />
             </div>
-            <p className="text-sm text-gray-500 ml-8">
-              Define loyalty tiers (Bronze, Silver, Gold, Diamond, etc.) and
-              their point thresholds.
-            </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">

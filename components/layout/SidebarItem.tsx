@@ -49,9 +49,26 @@ export default function SidebarItem({
   }
 
   return (
-    <Link href={href} className={baseClass} onClick={closeMobile}>
+    <Link
+      href={label === "Receipt AI" ? "#" : href}
+      className={cn(
+        baseClass,
+        label === "Receipt AI" && "cursor-not-allowed opacity-50",
+      )}
+      onClick={(e) => {
+        if (label === "Receipt AI") {
+          e.preventDefault();
+          return;
+        }
+
+        closeMobile();
+      }}
+    >
       <Icon className="w-4 h-4 shrink-0" />
-      <span>{label}</span>
+
+      <span className={label === "Receipt AI" ? "line-through" : ""}>
+        {label}
+      </span>
     </Link>
   );
 }
