@@ -2,16 +2,13 @@
 
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { Loader2, ImageIcon, X } from "lucide-react";
+import { Loader2, ImageIcon, X, User } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import type { Customer } from "./customer-columns";
 import { getCustomerImageUrl } from "@/lib/types/customer";
-import SettingsModalShell, {
-  modalCancelBtn,
-  modalPrimaryBtn,
-  modalInputClass as inputClass,
-} from "@/components/settingsComponents/SettingsModalShell";
+
+import ModalShell from "../ui/ModalShell";
 
 export type EditCustomerForm = {
   name: string;
@@ -23,6 +20,9 @@ export type EditCustomerForm = {
 };
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+const inputClass =
+  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
 
 const emptyForm = (customer: Customer | null): EditCustomerForm => ({
   name: customer?.name ?? "",
@@ -40,7 +40,12 @@ const CONTACT_FIELDS: {
   placeholder?: string;
 }[] = [
   { key: "name", label: "Full Name", placeholder: "John Doe" },
-  { key: "email", label: "Email", type: "email", placeholder: "john@example.com" },
+  {
+    key: "email",
+    label: "Email",
+    type: "email",
+    placeholder: "john@example.com",
+  },
   { key: "phone", label: "Phone", type: "tel", placeholder: "98XXXXXXXX" },
   { key: "countryCode", label: "Country Code" },
 ];
@@ -165,22 +170,24 @@ export default function EditCustomerModal({
   };
 
   return (
-    <SettingsModalShell
+    <ModalShell
       open={open}
-      onOpenChange={handleOpenChange}
+      onClose={() => handleOpenChange(false)}
+      // busy={isPending}
       title="Edit Customer"
-      description={
+      subtitle={
         customer?.name
           ? `Update the details for ${customer.name}`
           : "Update the customer's details"
       }
+      icon={User}
       footer={
-        <>
+        <div className="flex items-center justify-end gap-2 mt-4">
           <button
             type="button"
             onClick={onClose}
             disabled={saving}
-            className={modalCancelBtn}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
@@ -188,7 +195,7 @@ export default function EditCustomerModal({
             type="button"
             onClick={handleSave}
             disabled={saving || !form.name.trim()}
-            className={modalPrimaryBtn}
+            className="rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
           >
             {saving ? (
               <>
@@ -199,22 +206,24 @@ export default function EditCustomerModal({
               "Save Changes"
             )}
           </button>
-        </>
+        </div>
       }
     >
       <div className="space-y-5">
         {/* ── Contact ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-sm font-semibold text-gray-800">Contact</h3>
-            <p className="text-xs text-gray-500">
+            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+              Contact
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
               How you reach this customer
             </p>
           </div>
 
           {/* Profile photo */}
           <div className="mb-4">
-            <label className="text-xs font-medium text-gray-500 block mb-1.5">
+            <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
               Profile photo
             </label>
             <div className="flex items-center gap-3">
@@ -265,7 +274,7 @@ export default function EditCustomerModal({
           <div className="space-y-3">
             {CONTACT_FIELDS.map(({ key, label, type, placeholder }) => (
               <div key={key}>
-                <label className="text-xs font-medium text-gray-500 block mb-1.5">
+                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
                   {label}
                 </label>
                 <input
@@ -285,8 +294,10 @@ export default function EditCustomerModal({
         {/* ── Additional ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-sm font-semibold text-gray-800">Additional</h3>
-            <p className="text-xs text-gray-500">
+            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+              Additional
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
               Tax details and internal notes
             </p>
           </div>
@@ -294,7 +305,7 @@ export default function EditCustomerModal({
           <div className="space-y-3">
             {EXTRA_FIELDS.map(({ key, label, placeholder }) => (
               <div key={key}>
-                <label className="text-xs font-medium text-gray-500 block mb-1.5">
+                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
                   {label}
                 </label>
                 <input
@@ -310,6 +321,6 @@ export default function EditCustomerModal({
           </div>
         </div>
       </div>
-    </SettingsModalShell>
+    </ModalShell>
   );
 }

@@ -26,6 +26,7 @@ import {
   deleteCreditPayment,
   moveInvoiceToCredit,
   sendCreditReminder,
+  type CreditPayment,
 } from "@/services/apiCredit.client";
 import { useInvoiceCredit } from "@/components/invoice/modals/useInvoiceTicket";
 import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
@@ -51,6 +52,7 @@ import CreditPaymentModal from "@/components/credit/CreditPaymentModal";
 import SendReminderModal from "@/components/invoice/modals/SendReminderModal";
 import DeleteCreditModal from "@/components/invoice/modals/DeleteCreditModal";
 import RemovePaymentModal from "@/components/invoice/modals/RemovePaymentModal";
+import EditPaymentModal from "@/components/invoice/modals/EditPaymentModal";
 import DeleteInvoiceModal from "@/components/invoice/modals/DeleteInvoiceModal";
 import MoveToCreditModal from "@/components/invoice/modals/MoveToCreditModal";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -101,6 +103,9 @@ const InvoiceDetailPage = () => {
     paymentMethod?: string;
     paymentDate?: string;
   } | null>(null);
+  const [paymentToEdit, setPaymentToEdit] = useState<CreditPayment | null>(
+    null,
+  );
 
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
@@ -1002,7 +1007,7 @@ const InvoiceDetailPage = () => {
                       </span>
                     ) : isCredited ? (
                       <span className="flex flex-row gap-1 ">
-                        <p className="text-violet-600 font-bold">
+                        <p className="text-violet-600 font-semibold">
                           {" "}
                           {creditPaid > 0
                             ? `${formatCurrencySymbol(
@@ -1013,7 +1018,7 @@ const InvoiceDetailPage = () => {
                             : ""}
                         </p>
                         <p> {creditPaid > 0 ? "paid so far ·" : ""}</p>
-                        <p className="text-violet-600 font-bold">
+                        <p className="text-violet-600 font-semibold">
                           {formatCurrencySymbol(
                             creditDue,
                             currency.symbol,
@@ -1116,15 +1121,15 @@ const InvoiceDetailPage = () => {
                   {displayBillData && displayBillData.status === "refunded" ? (
                     <span className="text-orange-600 font-bold">Refunded</span>
                   ) : invoice.paidStatus === "paid" ? (
-                    <span className="text-green-700 font-bold">
+                    <span className="text-green-700 font-semibold">
                       This invoice has been fully paid
                     </span>
                   ) : isCreditArchived ? (
-                    <span className="text-gray-700 font-bold">
+                    <span className="text-gray-700 font-semibold">
                       This invoice&lsquo;s credit has been archived
                     </span>
                   ) : isCredited ? (
-                    <span className="text-violet-700 font-bold">
+                    <span className="text-violet-700 font-semibold">
                       This invoice is on credit
                     </span>
                   ) : (
@@ -1165,8 +1170,8 @@ const InvoiceDetailPage = () => {
                             <>
                               <span className="text-gray-300">·</span>
                               <button
-                                className="opacity-40 cursor-not-allowed pointer-events-none"
-                                disabled
+                                onClick={() => setPaymentToEdit(p)}
+                                className="hover:underline"
                               >
                                 Edit payment
                               </button>
@@ -1402,6 +1407,27 @@ const InvoiceDetailPage = () => {
         currency={currency}
         deletingPaymentId={deletingPaymentId}
         onConfirm={handleRemovePayment}
+      />
+
+      {/* Edit Payment Modal */}
+      <EditPaymentModal
+        open={!!paymentToEdit}
+        onClose={() => setPaymentToEdit(null)}
+        creditId={creditForInvoice?._id ?? null}
+        payment={paymentToEdit}
+        maxAmount={(creditDue ?? 0) + (paymentToEdit?.paymentAmount ?? 0)}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ["ticket", id] });
+          queryClient.invalidateQueries({ queryKey: ["credits"] });
+          queryClient.invalidateQueries({ queryKey: ["credits", "completed"] });
+          queryClient.invalidateQueries({
+            queryKey: ["credit-detail-by-id", creditForInvoice?._id],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["credit-payment-history", creditForInvoice?._id],
+          });
+          router.refresh();
+        }}
       />
 
       <ExportPdfModal

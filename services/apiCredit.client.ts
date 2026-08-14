@@ -239,6 +239,13 @@ export async function updateCreditItems(
       name: string;
       quantity: number;
       unitPrice: number;
+      isTaxable?: boolean;
+      discounts?: Array<{
+        _id?: string;
+        name: string;
+        type: string;
+        rate: number;
+      }>;
       variantItems?: {
         _id: string;
         name: string;
@@ -301,6 +308,32 @@ export async function deleteCreditPayment(
         ?.message ||
         (data as { message?: string }).message ||
         "Failed to delete payment",
+    );
+  }
+}
+
+/** Update an existing payment on a credit. */
+export async function updateCreditPayment(
+  creditId: string,
+  paymentId: string,
+  payload: {
+    paymentAmount: number;
+    paymentMethod: string;
+    paidAt: string;
+  },
+): Promise<void> {
+  const res = await fetch(`/api/credit/${creditId}/payments/${paymentId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data?.status === "error") {
+    throw new Error(
+      (data as { data?: { message?: string }; message?: string })?.data
+        ?.message ||
+        (data as { message?: string }).message ||
+        "Failed to update payment",
     );
   }
 }

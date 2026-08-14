@@ -1,7 +1,8 @@
 "use client";
 
-import { BadgePercent, Loader2 } from "lucide-react";
+import { Loader2, UserCog } from "lucide-react";
 import ModalShell from "@/components/ui/ModalShell";
+import SelectMenu from "@/components/ui/SelectMenu";
 
 export interface StaffFormData {
   name: string;
@@ -14,8 +15,15 @@ export type StaffFormErrors = Partial<Record<keyof StaffFormData, string>>;
 
 const errorClass = "border-red-300 focus:ring-red-400";
 
+// Matches SelectMenu's trigger (rounded-xl, py-2.5, 13px) so the text fields
+// and the role dropdown share a height and radius.
 const inputClass =
-  "w-full h-9 rounded-lg border border-slate-200 px-3 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+
+const ROLE_OPTIONS = [
+  { value: "basic", label: "Basic" },
+  { value: "staff", label: "Staff" },
+];
 
 const FIELDS: {
   key: "name" | "email" | "phone";
@@ -70,13 +78,14 @@ export default function StaffFormModal({
     <ModalShell
       open={open}
       onClose={() => onOpenChange(false)}
+      busy={saving}
       title={isEdit ? "Edit Staff" : "Add New Staff"}
       subtitle={
         isEdit
           ? "Update this staff member's information"
           : "Create a new staff account"
       }
-      icon={BadgePercent}
+      icon={UserCog}
       footer={
         <div className="flex items-center justify-end gap-2">
           <button
@@ -154,16 +163,14 @@ export default function StaffFormModal({
           <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
             Staff Role
           </label>
-          <select
+          <SelectMenu
             value={form.role}
-            onChange={(e) => onChange("role", e.target.value)}
-            className={`${inputClass} appearance-none ${
-              errors.role ? errorClass : ""
-            }`}
-          >
-            <option value="basic">Basic</option>
-            <option value="staff">Staff</option>
-          </select>
+            options={ROLE_OPTIONS}
+            onChange={(role) => onChange("role", role)}
+            placeholder="Select a role"
+            className="w-full"
+            aria-label="Staff role"
+          />
           {errors.role && (
             <p className="text-xs text-red-500 mt-1">{errors.role}</p>
           )}

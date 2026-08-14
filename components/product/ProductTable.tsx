@@ -12,7 +12,6 @@ import {
   Package,
   Pencil,
   Trash2,
-  Loader2,
   ChevronRight,
   ChevronLeft,
   CornerDownRight,
@@ -20,15 +19,8 @@ import {
 import { Product, ProductVariant } from "@/lib/types/product";
 import ProductDetailModal from "./ProductDetailModal";
 import ProductFormModal from "./ProductFormModal";
+import DeleteProductModal from "./DeleteProductModal";
 import { useDeleteProduct } from "@/hooks/useProducts";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
@@ -561,69 +553,12 @@ export default function ProductTable({ products }: { products: Product[] }) {
         product={editingProduct}
       />
 
-      {/* ── Delete confirmation modal ── */}
-      <Dialog
-        open={!!deleteTarget}
-        onOpenChange={(o) =>
-          !o && !deleteMutation.isPending && setDeleteTarget(null)
-        }
-      >
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-2">
-              <Trash2 className="h-5 w-5 text-red-600" />
-            </div>
-            <DialogTitle className="text-center text-base font-semibold">
-              Delete Product?
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="text-center space-y-1 py-1">
-            <p className="text-sm text-gray-600">
-              Are you sure you want to delete{" "}
-              <span className="font-semibold text-gray-900">
-                {deleteTarget?.name}
-              </span>
-              ?
-            </p>
-            {(deleteTarget?.variants?.length ?? 0) > 0 && (
-              <p className="text-xs text-gray-500">
-                Its {deleteTarget?.variants?.length} variant
-                {(deleteTarget?.variants?.length ?? 0) > 1 ? "s" : ""} will be
-                removed too.
-              </p>
-            )}
-            <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mt-2">
-              This action cannot be undone.
-            </p>
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setDeleteTarget(null)}
-              disabled={deleteMutation.isPending}
-              className="text-sm rounded-lg flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={confirmDelete}
-              disabled={deleteMutation.isPending}
-              className="bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg flex-1"
-            >
-              {deleteMutation.isPending ? (
-                <span className="flex items-center gap-1.5">
-                  <Loader2 size={13} className="animate-spin" />
-                  Deleting...
-                </span>
-              ) : (
-                "Delete"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DeleteProductModal
+        product={deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        deleting={deleteMutation.isPending}
+        onConfirm={confirmDelete}
+      />
     </>
   );
 }

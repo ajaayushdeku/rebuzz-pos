@@ -137,7 +137,7 @@ export default function ModalShell({
 
         {/* Footer */}
         {footer && (
-          <div className="border-t border-gray-100 px-6 py-4">{footer}</div>
+          <div className="border-t border-gray-100 px-6 py-4 z-1">{footer}</div>
         )}
       </div>
     </div>,

@@ -4,9 +4,15 @@ import { useState } from "react";
 import { Percent, Loader2, BadgePercent } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ModalShell from "@/components/ui/ModalShell";
+import SelectMenu from "@/components/ui/SelectMenu";
 import { useCreateDiscount } from "@/hooks/useDiscounts";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbolOnly } from "@/utils/helper";
+
+const DISCOUNT_TYPES: { value: "percentage" | "fixed"; label: string }[] = [
+  { value: "percentage", label: "Percentage (%)" },
+  { value: "fixed", label: "Fixed Amount" },
+];
 
 export const CreateDiscountDialog = () => {
   const { currency } = useCurrency();
@@ -48,8 +54,10 @@ export const CreateDiscountDialog = () => {
     });
   };
 
+  // Matches SelectMenu's trigger (rounded-xl, py-2.5, 13px) so the Type
+  // dropdown and the Value field sit on the same baseline and height.
   const inputClass =
-    "w-full h-9 rounded-lg border border-slate-200 px-3 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+    "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
 
   return (
     <>
@@ -140,26 +148,21 @@ export const CreateDiscountDialog = () => {
                 <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
                   Type
                 </label>
-                <select
+                <SelectMenu
                   value={formData.type}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      type: e.target.value as "percentage" | "fixed",
-                    })
-                  }
-                  className={`${inputClass} appearance-none`}
-                >
-                  <option value="percentage">Percentage (%)</option>
-                  <option value="fixed">Fixed Amount</option>
-                </select>
+                  options={DISCOUNT_TYPES}
+                  onChange={(type) => setFormData({ ...formData, type })}
+                  className="w-full"
+                  capitalize={false}
+                  aria-label="Discount type"
+                />
               </div>
               <div>
                 <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
                   Value
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-slate-400">
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-slate-400">
                     {formData.type === "percentage" ? (
                       <Percent size={11} />
                     ) : (
@@ -176,7 +179,7 @@ export const CreateDiscountDialog = () => {
                         rate: Number(e.target.value),
                       })
                     }
-                    className={`${inputClass} pl-7`}
+                    className={`${inputClass} pl-7 tabular-nums`}
                     placeholder="0"
                   />
                 </div>

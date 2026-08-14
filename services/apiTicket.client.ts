@@ -61,12 +61,14 @@ export const updateTicket = async ({
   ticketData: any;
 }) => {
   const payload = {
-    ticketProductId: ticketData.ticketProductId ?? null,
+    // ticketProductId: ticketData.ticketProductId ?? null,
     ticketName: ticketData.ticketName,
     customerEmail: ticketData.customerEmail,
     phoneNumber: ticketData.phoneNumber,
     grandTotal: ticketData.grandTotal ?? null,
     total: ticketData.total ?? null,
+    // grandTotal: null,
+    // total: null,
     taxId: ticketData.taxId ?? null,
     isTaxExclusive: !!ticketData.taxId,
     // ✅ include discount fields — same as create

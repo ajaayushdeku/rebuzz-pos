@@ -6,11 +6,10 @@ import { Loader2, Star } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import type { Customer } from "./customer-columns";
-import SettingsModalShell, {
-  modalCancelBtn,
-  modalPrimaryBtn,
-  modalInputClass as inputClass,
-} from "@/components/settingsComponents/SettingsModalShell";
+import ModalShell from "@/components/ui/ModalShell";
+
+const inputClass =
+  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
 
 /**
  * Update a customer's loyalty points. Shared by the customers table and the
@@ -60,23 +59,36 @@ export default function LoyaltyPointModal({
   };
 
   return (
-    <SettingsModalShell
+    // <SettingsModalShell
+    //   open={open}
+    //   onOpenChange={handleOpenChange}
+    //   title="Update Loyalty Points"
+    //   description={
+    //     customer?.name
+    //       ? `Adjust the points balance for ${customer.name}`
+    //       : "Adjust the customer's points balance"
+    //   }
+    //   widthClass="sm:max-w-sm"
+
+    <ModalShell
       open={open}
-      onOpenChange={handleOpenChange}
+      onClose={() => handleOpenChange(false)}
+      // busy={isPending}
       title="Update Loyalty Points"
-      description={
+      subtitle={
         customer?.name
           ? `Adjust the points balance for ${customer.name}`
           : "Adjust the customer's points balance"
       }
-      widthClass="sm:max-w-sm"
+      icon={Star}
+      maxWidth="max-w-lg"
       footer={
-        <>
+        <div className="flex items-center justify-end gap-2 mt-4">
           <button
             type="button"
             onClick={onClose}
             disabled={saving}
-            className={modalCancelBtn}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
@@ -84,7 +96,7 @@ export default function LoyaltyPointModal({
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className={modalPrimaryBtn}
+            className="rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
           >
             {saving ? (
               <>
@@ -95,7 +107,7 @@ export default function LoyaltyPointModal({
               "Update Points"
             )}
           </button>
-        </>
+        </div>
       }
     >
       <div className="space-y-4">
@@ -107,10 +119,12 @@ export default function LoyaltyPointModal({
                 <Star size={15} className="text-amber-500" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-gray-700">
+                <p className="text-[13px] font-semibold uppercase tracking-[0.1em] text-slate-700">
                   Current Balance
                 </p>
-                <p className="text-[11px] text-gray-400">{customer.name}</p>
+                <p className="text-[11px] text-gray-400 tracking-[0.1em]  font-mono">
+                  {customer.name}
+                </p>
               </div>
             </div>
             <p className="text-xl font-bold text-amber-600">
@@ -120,7 +134,7 @@ export default function LoyaltyPointModal({
         )}
 
         <div>
-          <label className="text-xs font-medium text-gray-500 block mb-1.5">
+          <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
             Loyalty Points
           </label>
           <div className="relative">
@@ -142,6 +156,6 @@ export default function LoyaltyPointModal({
           </p>
         </div>
       </div>
-    </SettingsModalShell>
+    </ModalShell>
   );
 }

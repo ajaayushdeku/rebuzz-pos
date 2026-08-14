@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
 import {
   Upload,
   ImageIcon,
@@ -11,9 +10,11 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Plus,
-  Layers,
+  Package,
 } from "lucide-react";
 import { Product } from "@/lib/types/product";
+import ModalShell from "@/components/ui/ModalShell";
+import SelectMenu from "@/components/ui/SelectMenu";
 import ProductVariantsEditor, {
   buildVariantRows,
   rowKey,
@@ -199,8 +200,6 @@ export default function ProductFormModal({
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryColor, setNewCategoryColor] = useState("#60a5fa");
-  const categoryDropdownRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
 
   // ── Variants ──
   const [hasVariants, setHasVariants] = useState(false);
@@ -213,8 +212,6 @@ export default function ProductFormModal({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => setMounted(true), []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -289,16 +286,6 @@ export default function ProductFormModal({
       setVariantErrors({});
     }
   }, [product, open]);
-
-  // Stop the page behind the overlay from scrolling with it.
-  useEffect(() => {
-    if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [open]);
 
   const set = <K extends keyof ProductFormData>(
     key: K,
@@ -512,19 +499,6 @@ export default function ProductFormModal({
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  // Escape closes — but never mid-save, which would strand the mutation.
-  useEffect(() => {
-    if (!open) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !isPending) handleClose();
-    };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, isPending]);
-
-  if (!open || !mounted) return null;
-
   const symbol = formatCurrencySymbolOnly(currency.symbol);
 
   // Live margin — both figures are on screen, so show what they add up to.
@@ -532,572 +506,21 @@ export default function ProductFormModal({
   const marginPct =
     form.costPrice > 0 ? Math.round((margin / form.costPrice) * 100) : null;
 
-  return createPortal(
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 "
-      onClick={() => !isPending && handleClose()}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="product-form-title"
-        className="relative flex w-full max-w-2xl max-h-[90vh] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl animate-in fade-in-0 zoom-in-95 duration-200"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* ── Header ── */}
-        <header className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
-          <div className="min-w-0">
-            <h2
-              id="product-form-title"
-              className="text-lg font-bold text-slate-800"
-            >
-              {isEditMode ? "Update product" : "Create product"}
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              {isEditMode
-                ? "Change this product's details, pricing and stock."
-                : "Add a product with its pricing, image and stock."}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleClose}
-            disabled={isPending}
-            aria-label="Close"
-            className="-mr-1 -mt-1 shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 disabled:opacity-40"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </header>
-
-        {/* ── Body ── */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-7">
-          {/* ── Image ── */}
-          <Section title="Image">
-            <div className="flex items-center gap-4">
-              <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
-                {imagePreview ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={imagePreview}
-                    alt="Product"
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <ImageIcon size={22} className="text-slate-300" />
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <input
-                  ref={imageInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => imageInputRef.current?.click()}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
-                  >
-                    <Upload size={13} />
-                    {imagePreview ? "Change image" : "Upload image"}
-                  </button>
-                  {imageFile && (
-                    <button
-                      type="button"
-                      onClick={clearImage}
-                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold text-rose-500 transition hover:bg-rose-50"
-                    >
-                      <X size={13} />
-                      Remove
-                    </button>
-                  )}
-                </div>
-                <p className="mt-1.5 text-[11px] text-slate-400">
-                  PNG or JPG, up to 5MB.
-                </p>
-              </div>
-            </div>
-          </Section>
-
-          {/* ── Details ── */}
-          <Section title="Details">
-            <div className="space-y-3">
-              <Field label="Product name" required error={errors.name}>
-                <input
-                  value={form.name}
-                  onChange={(e) => set("name", e.target.value)}
-                  placeholder="e.g. Popcorn"
-                  className={errors.name ? inputErrorClass : inputClass}
-                />
-              </Field>
-
-              <Field label="Category">
-                {showNewCategory ? (
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <input
-                        value={newCategoryName}
-                        onChange={(e) => setNewCategoryName(e.target.value)}
-                        placeholder="Category name"
-                        className={`${inputClass} flex-1`}
-                      />
-                      <input
-                        type="color"
-                        value={newCategoryColor}
-                        onChange={(e) => setNewCategoryColor(e.target.value)}
-                        className="h-9 w-9 shrink-0 cursor-pointer rounded-lg border border-slate-200"
-                      />
-                    </div>
-                    <div className="flex gap-3">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowNewCategory(false);
-                          setNewCategoryName("");
-                          setNewCategoryColor("#60a5fa");
-                        }}
-                        className="text-xs font-medium text-slate-500 hover:text-slate-700"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          if (!newCategoryName.trim()) {
-                            toast.error("Category name is required");
-                            return;
-                          }
-                          try {
-                            const newCat =
-                              await createCategoryMutation.mutateAsync({
-                                name: newCategoryName.trim(),
-                                color: newCategoryColor.replace("#", ""),
-                              });
-                            set("categoryId", newCat._id);
-                            setShowNewCategory(false);
-                            setNewCategoryName("");
-                            setNewCategoryColor("#60a5fa");
-                          } catch {
-                            toast.error("Failed to create category");
-                          }
-                        }}
-                        disabled={createCategoryMutation.isPending}
-                        className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-                      >
-                        {createCategoryMutation.isPending
-                          ? "Creating..."
-                          : "Create & select"}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <div className="relative flex-1" ref={categoryDropdownRef}>
-                      <select
-                        value={form.categoryId}
-                        onChange={(e) => set("categoryId", e.target.value)}
-                        className={`${inputClass} appearance-none pr-8`}
-                      >
-                        <option value="">No category</option>
-                        {categories.map((cat) => (
-                          <option key={cat._id} value={cat._id}>
-                            {cat.name}
-                          </option>
-                        ))}
-                      </select>
-                      <svg
-                        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-                        width="12"
-                        height="12"
-                        viewBox="0 0 12 12"
-                        fill="none"
-                      >
-                        <path
-                          d="M3 4.5L6 7.5L9 4.5"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowNewCategory(true)}
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
-                      title="Create new category"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                )}
-              </Field>
-
-              <Field label="Description">
-                <textarea
-                  value={form.description}
-                  onChange={(e) => set("description", e.target.value)}
-                  placeholder="Short description..."
-                  rows={2}
-                  className={`${inputClass} h-auto resize-none py-2`}
-                />
-              </Field>
-            </div>
-          </Section>
-
-          {/* ── Pricing ── */}
-          <Section
-            title="Pricing"
-            note={
-              !hasVariants && marginPct !== null ? (
-                <span
-                  className={`inline-flex items-center gap-1 font-medium tabular-nums ${
-                    margin >= 0 ? "text-emerald-600" : "text-rose-600"
-                  }`}
-                >
-                  {margin >= 0 ? (
-                    <ArrowUpRight className="h-3 w-3" />
-                  ) : (
-                    <ArrowDownRight className="h-3 w-3" />
-                  )}
-                  {symbol}
-                  {Math.abs(margin).toLocaleString()} margin ({marginPct}%)
-                </span>
-              ) : undefined
-            }
-          >
-            {hasVariants && (
-              <p className="rounded-lg bg-violet-50 px-3 py-2 text-[11px] leading-relaxed text-violet-700">
-                Each variant carries its own price and cost, so these are set
-                per row below.
-              </p>
-            )}
-
-            <div
-              className={`grid grid-cols-2 gap-3 ${
-                hasVariants ? "pointer-events-none opacity-50" : ""
-              }`}
-            >
-              <Field label="Selling price" domain="price" error={errors.price}>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-slate-400">
-                    {symbol}
-                  </span>
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.price}
-                    onChange={(e) => set("price", Number(e.target.value))}
-                    className={`${errors.price ? inputErrorClass : inputClass} pl-9 tabular-nums`}
-                    placeholder="0"
-                  />
-                </div>
-              </Field>
-
-              <Field label="Cost price" domain="cost" error={errors.costPrice}>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-slate-400">
-                    {symbol}
-                  </span>
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.costPrice}
-                    onChange={(e) => set("costPrice", Number(e.target.value))}
-                    className={`${errors.costPrice ? inputErrorClass : inputClass} pl-9 tabular-nums`}
-                    placeholder="0"
-                  />
-                </div>
-              </Field>
-            </div>
-          </Section>
-
-          {/* ── Discounts ── */}
-          {/* One list, selected state on the row. The separate "Applied
-              discounts" summary listed the same items a second time. */}
-          <Section
-            title="Discounts"
-            note={
-              form.discounts.length > 0
-                ? `${form.discounts.length} selected`
-                : undefined
-            }
-          >
-            {discounts.length === 0 ? (
-              <p className="text-[13px] text-slate-400">
-                No discounts yet. Create one below.
-              </p>
-            ) : (
-              <div className="max-h-44 space-y-1.5 overflow-y-auto -mr-1 pr-1">
-                {discounts.map((d) => {
-                  const isSelected = form.discounts.includes(d._id);
-                  return (
-                    <button
-                      key={d._id}
-                      type="button"
-                      onClick={() =>
-                        set(
-                          "discounts",
-                          isSelected
-                            ? form.discounts.filter((x) => x !== d._id)
-                            : [...form.discounts, d._id],
-                        )
-                      }
-                      className={`flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-[13px] transition ${
-                        isSelected
-                          ? "border-violet-300 bg-violet-50/60"
-                          : "border-slate-100 hover:border-slate-200 hover:bg-slate-50"
-                      }`}
-                    >
-                      <span className="flex min-w-0 items-center gap-2">
-                        <span
-                          className={`h-3.5 w-1 shrink-0 rounded-full ${
-                            isSelected ? DOMAIN.discount.rail : "bg-slate-200"
-                          }`}
-                          aria-hidden="true"
-                        />
-                        <span className="truncate font-medium text-slate-800">
-                          {d.name}
-                        </span>
-                        <span className="shrink-0 text-[11px] text-slate-400 tabular-nums">
-                          {d.type === "percentage"
-                            ? `${d.rate}% off`
-                            : `${symbol}${d.rate} off`}
-                        </span>
-                      </span>
-
-                      <span
-                        className={`flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border-2 ${
-                          isSelected
-                            ? "border-violet-500 bg-violet-500"
-                            : "border-slate-300"
-                        }`}
-                      >
-                        {isSelected && (
-                          <Check className="h-2.5 w-2.5 text-white" />
-                        )}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
-            <div className="border-t border-slate-100 pt-3">
-              <CreateDiscountDialog />
-            </div>
-          </Section>
-
-          {/* ── Tax & stock ── */}
-          <Section title="Tax & stock">
-            <div className="divide-y divide-slate-100 rounded-xl border border-slate-200">
-              <div className="flex items-center justify-between gap-4 px-4 py-3">
-                <div>
-                  <p className="text-[13px] font-medium text-slate-800">
-                    Taxable
-                  </p>
-                  <p className="text-[11px] text-slate-400">
-                    Apply tax to this product
-                  </p>
-                </div>
-                <Toggle
-                  checked={form.isTaxable}
-                  onChange={(v) => set("isTaxable", v)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between gap-4 px-4 py-3">
-                <div>
-                  <p className="text-[13px] font-medium text-slate-800">
-                    Track stock
-                  </p>
-                  <p className="text-[11px] text-slate-400">
-                    Monitor inventory levels
-                  </p>
-                </div>
-                <Toggle
-                  checked={form.usesStocks}
-                  onChange={(v) => {
-                    set("usesStocks", v);
-                    if (!v) {
-                      set("inStock", 0);
-                      set("lowStock", 0);
-                      setErrors((prev) => ({
-                        ...prev,
-                        inStock: undefined,
-                        lowStock: undefined,
-                      }));
-                    }
-                  }}
-                />
-              </div>
-
-              {/* Stock fields live inside the same card, so turning the toggle
-                  on extends it rather than opening a detached block. */}
-              {form.usesStocks && hasVariants && (
-                <div className="px-4 py-3">
-                  <p className="rounded-lg bg-violet-50 px-3 py-2 text-[11px] leading-relaxed text-violet-700">
-                    Stock is counted per variant, in the section below.
-                  </p>
-                </div>
-              )}
-
-              {form.usesStocks && !hasVariants && (
-                <div className="space-y-3 px-4 py-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field
-                      label="In stock"
-                      domain="stock"
-                      error={errors.inStock}
-                    >
-                      <input
-                        type="number"
-                        min={0}
-                        value={form.inStock}
-                        onChange={(e) => {
-                          set("inStock", Number(e.target.value));
-                          if (form.lowStock > Number(e.target.value)) {
-                            setErrors((prev) => ({
-                              ...prev,
-                              lowStock: "Low stock cannot exceed in stock.",
-                            }));
-                          } else {
-                            setErrors((prev) => ({
-                              ...prev,
-                              lowStock: undefined,
-                            }));
-                          }
-                        }}
-                        className={`${
-                          errors.inStock ? inputErrorClass : inputClass
-                        } tabular-nums`}
-                        placeholder="e.g. 50"
-                      />
-                    </Field>
-
-                    <Field
-                      label="Low stock alert"
-                      domain="stock"
-                      error={errors.lowStock}
-                      hint={
-                        !errors.lowStock &&
-                        form.lowStock > 0 &&
-                        form.lowStock <= 5 ? (
-                          <span className="text-amber-600">
-                            Alerts when stock reaches {form.lowStock}
-                          </span>
-                        ) : undefined
-                      }
-                    >
-                      <input
-                        type="number"
-                        min={0}
-                        value={form.lowStock}
-                        onChange={(e) => {
-                          const val = Number(e.target.value);
-                          set("lowStock", val);
-                          if (val > form.inStock) {
-                            setErrors((prev) => ({
-                              ...prev,
-                              lowStock: "Low stock cannot exceed in stock.",
-                            }));
-                          } else {
-                            setErrors((prev) => ({
-                              ...prev,
-                              lowStock: undefined,
-                            }));
-                          }
-                        }}
-                        className={`${
-                          errors.lowStock ? inputErrorClass : inputClass
-                        } tabular-nums ${
-                          !errors.lowStock &&
-                          form.lowStock > 0 &&
-                          form.lowStock <= form.inStock &&
-                          form.lowStock <= 5
-                            ? "border-amber-300 focus:ring-amber-400"
-                            : ""
-                        }`}
-                        placeholder="e.g. 5"
-                      />
-                    </Field>
-                  </div>
-
-                  <p className="rounded-lg bg-slate-50 px-3 py-2 text-[11px] leading-relaxed text-slate-500">
-                    The inventory page charts stock against a 5,000-unit scale.
-                    You can still hold more than that.
-                  </p>
-                </div>
-              )}
-            </div>
-          </Section>
-          {/* ── Variants ── */}
-          <Section
-            title="Variants"
-            note={
-              hasVariants && variantRows.length > 0
-                ? `${variantRows.length} combination${variantRows.length > 1 ? "s" : ""}`
-                : undefined
-            }
-          >
-            <div className="rounded-xl border border-slate-200">
-              <div className="flex items-center justify-between gap-4 px-4 py-3">
-                <div className="flex items-start gap-2.5">
-                  <span
-                    className="mt-1 h-3.5 w-1 shrink-0 rounded-full bg-violet-500"
-                    aria-hidden="true"
-                  />
-                  <div>
-                    <p className="text-[13px] font-medium text-slate-800">
-                      Sell in variants
-                    </p>
-                    <p className="text-[11px] text-slate-400">
-                      For different sizes, colours or other options
-                    </p>
-                  </div>
-                </div>
-                <Toggle
-                  checked={hasVariants}
-                  onChange={(v) => {
-                    setHasVariants(v);
-                    if (v && options.length === 0) {
-                      // Start with one empty option so there's somewhere to type.
-                      const first = {
-                        id: crypto.randomUUID(),
-                        title: "",
-                        values: [],
-                      };
-                      setOptions([first]);
-                      setVariantRows([]);
-                    }
-                    if (!v) setVariantErrors({});
-                  }}
-                />
-              </div>
-
-              {hasVariants && (
-                <div className="border-t border-slate-100 p-4">
-                  <ProductVariantsEditor
-                    options={options}
-                    rows={variantRows}
-                    currencySymbol={symbol}
-                    showStock={form.usesStocks}
-                    errors={variantErrors}
-                    onOptionsChange={setOptions}
-                    onRowsChange={setVariantRows}
-                  />
-                </div>
-              )}
-            </div>
-          </Section>
-        </div>
-
-        {/* ── Footer ── */}
-        <footer className="flex justify-end gap-2 border-t border-slate-100 bg-slate-50/60 px-6 py-4">
+  return (
+    <ModalShell
+      open={open}
+      onClose={handleClose}
+      busy={isPending}
+      title={isEditMode ? "Update product" : "Create product"}
+      subtitle={
+        isEditMode
+          ? "Change this product's details, pricing and stock."
+          : "Add a product with its pricing, image and stock."
+      }
+      icon={Package}
+      maxWidth="max-w-2xl"
+      footer={
+        <div className="flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={handleClose}
@@ -1121,9 +544,517 @@ export default function ProductFormModal({
                 ? "Update product"
                 : "Save product"}
           </button>
-        </footer>
+        </div>
+      }
+    >
+      <div className="space-y-7">
+        {/* ── Image ── */}
+        <Section title="Image">
+          <div className="flex items-center gap-4">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+              {imagePreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={imagePreview}
+                  alt="Product"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <ImageIcon size={22} className="text-slate-300" />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => imageInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  <Upload size={13} />
+                  {imagePreview ? "Change image" : "Upload image"}
+                </button>
+                {imageFile && (
+                  <button
+                    type="button"
+                    onClick={clearImage}
+                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold text-rose-500 transition hover:bg-rose-50"
+                  >
+                    <X size={13} />
+                    Remove
+                  </button>
+                )}
+              </div>
+              <p className="mt-1.5 text-[11px] text-slate-400">
+                PNG or JPG, up to 5MB.
+              </p>
+            </div>
+          </div>
+        </Section>
+
+        {/* ── Details ── */}
+        <Section title="Details">
+          <div className="space-y-3">
+            <Field label="Product name" required error={errors.name}>
+              <input
+                value={form.name}
+                onChange={(e) => set("name", e.target.value)}
+                placeholder="e.g. Popcorn"
+                className={errors.name ? inputErrorClass : inputClass}
+              />
+            </Field>
+
+            <Field label="Category">
+              {showNewCategory ? (
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      placeholder="Category name"
+                      className={`${inputClass} flex-1`}
+                    />
+                    <input
+                      type="color"
+                      value={newCategoryColor}
+                      onChange={(e) => setNewCategoryColor(e.target.value)}
+                      className="h-9 w-9 shrink-0 cursor-pointer rounded-lg border border-slate-200"
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowNewCategory(false);
+                        setNewCategoryName("");
+                        setNewCategoryColor("#60a5fa");
+                      }}
+                      className="text-xs font-medium text-slate-500 hover:text-slate-700"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!newCategoryName.trim()) {
+                          toast.error("Category name is required");
+                          return;
+                        }
+                        try {
+                          const newCat =
+                            await createCategoryMutation.mutateAsync({
+                              name: newCategoryName.trim(),
+                              color: newCategoryColor.replace("#", ""),
+                            });
+                          set("categoryId", newCat._id);
+                          setShowNewCategory(false);
+                          setNewCategoryName("");
+                          setNewCategoryColor("#60a5fa");
+                        } catch {
+                          toast.error("Failed to create category");
+                        }
+                      }}
+                      disabled={createCategoryMutation.isPending}
+                      className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+                    >
+                      {createCategoryMutation.isPending
+                        ? "Creating..."
+                        : "Create & select"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <SelectMenu
+                      value={form.categoryId}
+                      options={[
+                        { value: "", label: "No category" },
+                        ...categories.map((cat) => ({
+                          value: cat._id,
+                          label: cat.name,
+                        })),
+                      ]}
+                      onChange={(v) => set("categoryId", v)}
+                      placeholder="No category"
+                      className="w-full"
+                      triggerClassName="h-9 border border-slate-200 rounded-lg"
+                      capitalize={false}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewCategory(true)}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
+                    title="Create new category"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              )}
+            </Field>
+
+            <Field label="Description">
+              <textarea
+                value={form.description}
+                onChange={(e) => set("description", e.target.value)}
+                placeholder="Short description..."
+                rows={2}
+                className={`${inputClass} h-auto resize-none py-2`}
+              />
+            </Field>
+          </div>
+        </Section>
+
+        {/* ── Pricing ── */}
+        <Section
+          title="Pricing"
+          note={
+            !hasVariants && marginPct !== null ? (
+              <span
+                className={`inline-flex items-center gap-1 font-medium tabular-nums ${
+                  margin >= 0 ? "text-emerald-600" : "text-rose-600"
+                }`}
+              >
+                {margin >= 0 ? (
+                  <ArrowUpRight className="h-3 w-3" />
+                ) : (
+                  <ArrowDownRight className="h-3 w-3" />
+                )}
+                {symbol}
+                {Math.abs(margin).toLocaleString()} margin ({marginPct}%)
+              </span>
+            ) : undefined
+          }
+        >
+          {hasVariants && (
+            <p className="rounded-lg bg-violet-50 px-3 py-2 text-[11px] leading-relaxed text-violet-700">
+              Each variant carries its own price and cost, so these are set per
+              row below.
+            </p>
+          )}
+
+          <div
+            className={`grid grid-cols-2 gap-3 ${
+              hasVariants ? "pointer-events-none opacity-50" : ""
+            }`}
+          >
+            <Field label="Selling price" domain="price" error={errors.price}>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-slate-400">
+                  {symbol}
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  value={form.price}
+                  onChange={(e) => set("price", Number(e.target.value))}
+                  className={`${errors.price ? inputErrorClass : inputClass} pl-9 tabular-nums`}
+                  placeholder="0"
+                />
+              </div>
+            </Field>
+
+            <Field label="Cost price" domain="cost" error={errors.costPrice}>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-slate-400">
+                  {symbol}
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  value={form.costPrice}
+                  onChange={(e) => set("costPrice", Number(e.target.value))}
+                  className={`${errors.costPrice ? inputErrorClass : inputClass} pl-9 tabular-nums`}
+                  placeholder="0"
+                />
+              </div>
+            </Field>
+          </div>
+        </Section>
+
+        {/* ── Discounts ── */}
+        {/* One list, selected state on the row. The separate "Applied
+              discounts" summary listed the same items a second time. */}
+        <Section
+          title="Discounts"
+          note={
+            form.discounts.length > 0
+              ? `${form.discounts.length} selected`
+              : undefined
+          }
+        >
+          {discounts.length === 0 ? (
+            <p className="text-[13px] text-slate-400">
+              No discounts yet. Create one below.
+            </p>
+          ) : (
+            <div className="max-h-44 space-y-1.5 overflow-y-auto -mr-1 pr-1">
+              {discounts.map((d) => {
+                const isSelected = form.discounts.includes(d._id);
+                return (
+                  <button
+                    key={d._id}
+                    type="button"
+                    onClick={() =>
+                      set(
+                        "discounts",
+                        isSelected
+                          ? form.discounts.filter((x) => x !== d._id)
+                          : [...form.discounts, d._id],
+                      )
+                    }
+                    className={`flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-[13px] transition ${
+                      isSelected
+                        ? "border-violet-300 bg-violet-50/60"
+                        : "border-slate-100 hover:border-slate-200 hover:bg-slate-50"
+                    }`}
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span
+                        className={`h-3.5 w-1 shrink-0 rounded-full ${
+                          isSelected ? DOMAIN.discount.rail : "bg-slate-200"
+                        }`}
+                        aria-hidden="true"
+                      />
+                      <span className="truncate font-medium text-slate-800">
+                        {d.name}
+                      </span>
+                      <span className="shrink-0 text-[11px] text-slate-400 tabular-nums">
+                        {d.type === "percentage"
+                          ? `${d.rate}% off`
+                          : `${symbol}${d.rate} off`}
+                      </span>
+                    </span>
+
+                    <span
+                      className={`flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border-2 ${
+                        isSelected
+                          ? "border-violet-500 bg-violet-500"
+                          : "border-slate-300"
+                      }`}
+                    >
+                      {isSelected && (
+                        <Check className="h-2.5 w-2.5 text-white" />
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="border-t border-slate-100 pt-3">
+            <CreateDiscountDialog />
+          </div>
+        </Section>
+
+        {/* ── Tax & stock ── */}
+        <Section title="Tax & stock">
+          <div className="divide-y divide-slate-100 rounded-xl border border-slate-200">
+            <div className="flex items-center justify-between gap-4 px-4 py-3">
+              <div>
+                <p className="text-[13px] font-medium text-slate-800">
+                  Taxable
+                </p>
+                <p className="text-[11px] text-slate-400">
+                  Apply tax to this product
+                </p>
+              </div>
+              <Toggle
+                checked={form.isTaxable}
+                onChange={(v) => set("isTaxable", v)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-4 px-4 py-3">
+              <div>
+                <p className="text-[13px] font-medium text-slate-800">
+                  Track stock
+                </p>
+                <p className="text-[11px] text-slate-400">
+                  Monitor inventory levels
+                </p>
+              </div>
+              <Toggle
+                checked={form.usesStocks}
+                onChange={(v) => {
+                  set("usesStocks", v);
+                  if (!v) {
+                    set("inStock", 0);
+                    set("lowStock", 0);
+                    setErrors((prev) => ({
+                      ...prev,
+                      inStock: undefined,
+                      lowStock: undefined,
+                    }));
+                  }
+                }}
+              />
+            </div>
+
+            {/* Stock fields live inside the same card, so turning the toggle
+                  on extends it rather than opening a detached block. */}
+            {form.usesStocks && hasVariants && (
+              <div className="px-4 py-3">
+                <p className="rounded-lg bg-violet-50 px-3 py-2 text-[11px] leading-relaxed text-violet-700">
+                  Stock is counted per variant, in the section below.
+                </p>
+              </div>
+            )}
+
+            {form.usesStocks && !hasVariants && (
+              <div className="space-y-3 px-4 py-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="In stock" domain="stock" error={errors.inStock}>
+                    <input
+                      type="number"
+                      min={0}
+                      value={form.inStock}
+                      onChange={(e) => {
+                        set("inStock", Number(e.target.value));
+                        if (form.lowStock > Number(e.target.value)) {
+                          setErrors((prev) => ({
+                            ...prev,
+                            lowStock: "Low stock cannot exceed in stock.",
+                          }));
+                        } else {
+                          setErrors((prev) => ({
+                            ...prev,
+                            lowStock: undefined,
+                          }));
+                        }
+                      }}
+                      className={`${
+                        errors.inStock ? inputErrorClass : inputClass
+                      } tabular-nums`}
+                      placeholder="e.g. 50"
+                    />
+                  </Field>
+
+                  <Field
+                    label="Low stock alert"
+                    domain="stock"
+                    error={errors.lowStock}
+                    hint={
+                      !errors.lowStock &&
+                      form.lowStock > 0 &&
+                      form.lowStock <= 5 ? (
+                        <span className="text-amber-600">
+                          Alerts when stock reaches {form.lowStock}
+                        </span>
+                      ) : undefined
+                    }
+                  >
+                    <input
+                      type="number"
+                      min={0}
+                      value={form.lowStock}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        set("lowStock", val);
+                        if (val > form.inStock) {
+                          setErrors((prev) => ({
+                            ...prev,
+                            lowStock: "Low stock cannot exceed in stock.",
+                          }));
+                        } else {
+                          setErrors((prev) => ({
+                            ...prev,
+                            lowStock: undefined,
+                          }));
+                        }
+                      }}
+                      className={`${
+                        errors.lowStock ? inputErrorClass : inputClass
+                      } tabular-nums ${
+                        !errors.lowStock &&
+                        form.lowStock > 0 &&
+                        form.lowStock <= form.inStock &&
+                        form.lowStock <= 5
+                          ? "border-amber-300 focus:ring-amber-400"
+                          : ""
+                      }`}
+                      placeholder="e.g. 5"
+                    />
+                  </Field>
+                </div>
+
+                <p className="rounded-lg bg-slate-50 px-3 py-2 text-[11px] leading-relaxed text-slate-500">
+                  The inventory page charts stock against a 5,000-unit scale.
+                  You can still hold more than that.
+                </p>
+              </div>
+            )}
+          </div>
+        </Section>
+
+        {/* ── Variants ── */}
+        <Section
+          title="Variants"
+          note={
+            hasVariants && variantRows.length > 0
+              ? `${variantRows.length} combination${variantRows.length > 1 ? "s" : ""}`
+              : undefined
+          }
+        >
+          <div className="rounded-xl border border-slate-200">
+            <div className="flex items-center justify-between gap-4 px-4 py-3">
+              <div className="flex items-start gap-2.5">
+                <span
+                  className="mt-1 h-3.5 w-1 shrink-0 rounded-full bg-violet-500"
+                  aria-hidden="true"
+                />
+                <div>
+                  <p className="text-[13px] font-medium text-slate-800">
+                    Sell in variants
+                  </p>
+                  <p className="text-[11px] text-slate-400">
+                    For different sizes, colours or other options
+                  </p>
+                </div>
+              </div>
+              <Toggle
+                checked={hasVariants}
+                onChange={(v) => {
+                  setHasVariants(v);
+                  if (v && options.length === 0) {
+                    // Start with one empty option so there's somewhere to type.
+                    const first = {
+                      id: crypto.randomUUID(),
+                      title: "",
+                      values: [],
+                    };
+                    setOptions([first]);
+                    setVariantRows([]);
+                  }
+                  if (!v) setVariantErrors({});
+                }}
+              />
+            </div>
+
+            {hasVariants && (
+              <div className="border-t border-slate-100 p-4">
+                <ProductVariantsEditor
+                  options={options}
+                  rows={variantRows}
+                  currencySymbol={symbol}
+                  showStock={form.usesStocks}
+                  errors={variantErrors}
+                  onOptionsChange={setOptions}
+                  onRowsChange={setVariantRows}
+                />
+              </div>
+            )}
+          </div>
+        </Section>
       </div>
-    </div>,
-    document.body,
+    </ModalShell>
   );
 }

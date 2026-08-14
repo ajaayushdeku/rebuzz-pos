@@ -9,7 +9,6 @@ import {
   ArrowUpDown,
   Pencil,
   Trash2,
-  Loader2,
   ChevronLeft,
   ChevronRight,
   Users,
@@ -18,18 +17,11 @@ import { Customer } from "./customer-columns";
 import CustomerDetailModal from "./CustomerDetailModal";
 import EditCustomerModal from "./EditCustomerModal";
 import LoyaltyPointModal from "./LoyaltyPointModal";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import DeleteCustomerModal from "./DeleteCustomerModal";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrencySymbol } from "@/utils/helper";
+import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
 
 const TIER_STYLES: Record<string, string> = {
   Bronze: "bg-amber-100 text-amber-800 border-amber-200",
@@ -290,7 +282,7 @@ export default function CustomerTable({
                       onClick={(e) => e.stopPropagation()}
                     >
                       <span className="font-semibold text-gray-800">
-                        {customer.loyaltyPoint}
+                        {formatAmount(customer.loyaltyPoint, currency.locale)}
                       </span>
 
                       <button
@@ -429,60 +421,12 @@ export default function CustomerTable({
         }}
       />
 
-      {/* â”€â”€ Delete Confirmation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <Dialog
-        open={!!deleteConfirm}
-        onOpenChange={(o) => !o && !deleting && setDeleteConfirm(null)}
-      >
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-2">
-              <Trash2 className="h-5 w-5 text-red-600" />
-            </div>
-            <DialogTitle className="text-center text-base font-semibold">
-              Delete Customer?
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="text-center space-y-1 py-1">
-            <p className="text-sm text-gray-600">
-              Are you sure you want to delete{" "}
-              <span className="font-semibold text-gray-900">
-                {deleteConfirm?.name}
-              </span>
-              ?
-            </p>
-            <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mt-2">
-              This action cannot be undone.
-            </p>
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setDeleteConfirm(null)}
-              disabled={deleting}
-              className="text-sm rounded-lg flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg flex-1"
-            >
-              {deleting ? (
-                <span className="flex items-center gap-1.5">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Deleting...
-                </span>
-              ) : (
-                "Delete"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DeleteCustomerModal
+        customer={deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        deleting={deleting}
+        onConfirm={handleDelete}
+      />
     </>
   );
 }

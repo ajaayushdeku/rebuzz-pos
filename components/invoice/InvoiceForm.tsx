@@ -375,28 +375,44 @@ function mapRawItem(raw: any, products: Product[]): InvoiceItem {
 }
 
 // ── Helper: map a credit item (from the credit detail API) to InvoiceItem ──
-function mapCreditItem(item: CreditItem): InvoiceItem {
+/**
+ * Build an InvoiceItem from a stored credit item.
+ *
+ * IMPORTANT: the credit API stores the DISCOUNTED unit price. Taking
+ * `item.unitPrice` straight into `price` puts a net figure in the form's
+ * price column, which then reads as though the product itself got cheaper —
+ * and, because the credit payload sends list prices, would re-discount the
+ * line on every save.
+ *
+ * So price comes from the live product (or its variant) whenever the product
+ * still exists; only quantity and the applied discounts come from the credit.
+ * Same rule as `mapRawItem` on the ticket side.
+ */
+function mapCreditItem(item: CreditItem, products: Product[]): InvoiceItem {
   const raw = item as any;
-  const variantId = rawVariantId(raw.variantItems);
+  const storedVariantId = rawVariantId(raw.variantItems);
   const quantity = item.quantity ?? 1;
+  const discounts = rawDiscountIds(item.discounts as any[]);
+  const product = findProduct(products, item.product);
 
-  return {
+  /** The stored snapshot — used until products load, and for gone products. */
+  const stored: InvoiceItem = {
     id: item._id ?? crypto.randomUUID(),
     productId: item.product ?? "",
     name: item.productName ?? "",
     description: "",
     quantity,
     price: item.unitPrice ?? 0,
-    discounts: rawDiscountIds(item.discounts as any[]),
+    discounts,
     taxes: [],
     isTaxable: item.isTaxable ?? false,
     // Preserve variant info when present so it round-trips to the credit API.
-    ...(variantId
+    ...(storedVariantId
       ? {
-          variantId,
+          variantId: storedVariantId,
           variantLabel: raw.variantItems?.name ?? "",
           variantItems: {
-            _id: variantId,
+            _id: storedVariantId,
             name: raw.variantItems?.name ?? "",
             unitPrice: raw.variantItems?.unitPrice ?? item.unitPrice ?? 0,
             quantity: raw.variantItems?.quantity ?? quantity,
@@ -404,6 +420,59 @@ function mapCreditItem(item: CreditItem): InvoiceItem {
           },
         }
       : {}),
+  };
+
+  if (!product) return stored;
+
+  const productId = product.id ?? (product as any)._id;
+  const { variant, variantId } = resolveVariant(product, {
+    variantId: storedVariantId,
+    name: item.productName,
+    label: raw.variantItems?.name,
+    // Only reached when there's no id and no label. The stored price is net,
+    // so this can mis-match on a discounted line — it's a last resort.
+    price: item.unitPrice,
+  });
+
+  // Variant recorded on the credit but since removed from the product.
+  if (variantId && !variant) return { ...stored, productId };
+
+  if (variant) {
+    const label = variantLabel(variant);
+    return {
+      id: stored.id,
+      productId,
+      name: `${product.name} (${label})`,
+      description: label,
+      quantity,
+      // The variant's LIST price, not the credit's stored net price.
+      price: variant.price,
+      discounts,
+      taxes: [],
+      isTaxable: product.isTaxable ?? item.isTaxable ?? false,
+      variantId: variant.id,
+      variantLabel: label,
+      variantItems: {
+        _id: variant.id,
+        name: label,
+        unitPrice: variant.price,
+        quantity,
+        costPrice: variant.costPrice ?? 0,
+      },
+    };
+  }
+
+  // Standard product — again the product's LIST price.
+  return {
+    id: stored.id,
+    productId,
+    name: product.name,
+    description: product.description ?? "",
+    quantity,
+    price: product.price,
+    discounts,
+    taxes: [],
+    isTaxable: product.isTaxable ?? item.isTaxable ?? false,
   };
 }
 
@@ -458,7 +527,7 @@ export default function InvoiceForm({
   // effect below re-maps against the live product data once it arrives.
   const [items, setItems] = useState<InvoiceItem[]>(() => {
     if (isCreditInvoice && creditItems.length > 0) {
-      return creditItems.map(mapCreditItem);
+      return creditItems.map((c) => mapCreditItem(c, []));
     }
     const rawItems = flattenTicketItems(tickets);
     if (rawItems.length) return rawItems.map((raw) => mapRawItem(raw, []));
@@ -467,6 +536,8 @@ export default function InvoiceForm({
 
   // Store raw ticket items to update with product details once products load
   const rawTicketItemsRef = useRef(flattenTicketItems(tickets));
+  // Same, for a credit invoice's own items.
+  const rawCreditItemsRef = useRef(creditItems);
   // Identifies the ticket-product group being updated.
   const ticketProductIdRef = useRef(ticketProductIdOf(tickets));
 
@@ -489,11 +560,21 @@ export default function InvoiceForm({
 
   // Re-map items against the live products list once it loads, so prices,
   // names and variant data reflect the product as it is now.
+  //
+  // This matters most for credits: their stored unitPrice is the DISCOUNTED
+  // figure, so without this pass the price column shows a net amount.
   useEffect(() => {
-    // Credit invoices are seeded from the credit's own items — never clobber
-    // them with the ticket's.
-    if (isCreditInvoice) return;
     if (hasUpdatedItemsFromProducts.current || !products.length) return;
+
+    if (isCreditInvoice) {
+      // Credit invoices re-map from the CREDIT's items, never the ticket's.
+      const rawCredit = rawCreditItemsRef.current;
+      if (!rawCredit?.length) return;
+
+      setItems(rawCredit.map((c) => mapCreditItem(c, products)));
+      hasUpdatedItemsFromProducts.current = true;
+      return;
+    }
 
     const rawItems = rawTicketItemsRef.current;
     if (!rawItems?.length) return;
@@ -695,6 +776,9 @@ export default function InvoiceForm({
    * out like a new ticket's: list price, discounts enabled, backend applies
    * them. Sending a new line as "already discounted" would silently drop the
    * discount; sending an existing line as "apply this" double-discounts it.
+   *
+   * This applies to the TICKET endpoint only — the credit endpoint always
+   * takes list prices (see the credit payload in handleSave).
    */
   const isExistingItem = (item: InvoiceItem) =>
     existingItemIdsRef.current.has(item.id);
@@ -749,11 +833,16 @@ export default function InvoiceForm({
    * Ids come from the form item, its own stored snapshot, or the raw ticket
    * item; if none survive, the variant is recovered from the product by name
    * or price. A variant line must never degrade into a plain item.
+   *
+   * NOTE: discounts do NOT go in here. They sit at ITEM level for both plain
+   * and variant lines — a variant inherits its parent product's discounts, so
+   * one discounts array on the item covers both cases. A nested second copy
+   * risks the backend applying it twice.
    */
   const buildVariantPayload = (
     item: InvoiceItem,
     product?: Product,
-    /** Update sends the discounted price; create sends the list price. */
+    /** Send the discounted price instead of the list price. */
     useNetPrice = false,
   ) => {
     const raw = rawFor(item);
@@ -809,10 +898,10 @@ export default function InvoiceForm({
   };
 
   /**
-   * Discount objects in the shape the update endpoint expects: the master
-   * discount's fields, plus `discount` holding the master id. When the
-   * discount was already on this ticket, its existing subdocument `_id` is
-   * reused so the backend updates that row instead of orphaning it.
+   * Discounts for the TICKET endpoint: the master discount's fields, plus
+   * `discount` holding the master id. When the discount was already on this
+   * ticket, its existing subdocument `_id` is reused so the backend updates
+   * that row instead of orphaning it.
    */
   const buildDiscountPayload = (item: InvoiceItem, alreadyApplied = false) => {
     const rawDiscounts: any[] = rawFor(item)?.discounts ?? [];
@@ -839,6 +928,35 @@ export default function InvoiceForm({
       .filter(Boolean);
   };
 
+  /**
+   * Discounts for the CREDIT items endpoint — a narrower shape:
+   *
+   *   { _id, name, type, rate }
+   *
+   * `_id` here is the MASTER discount id, not a ticket subdocument id, and
+   * there are no isEnabled / isSelected flags: the credit endpoint takes list
+   * prices and applies the discounts itself. Applies to variant lines too — a
+   * variant inherits its parent product's discounts.
+   */
+  const buildCreditDiscountPayload = (item: InvoiceItem) =>
+    item.discounts
+      .map((id) => {
+        const master = masterDiscounts.find((m) => m._id === id);
+        if (!master) return null;
+        return {
+          _id: master._id,
+          name: master.name,
+          type: master.type,
+          rate: master.rate,
+        };
+      })
+      .filter(Boolean) as Array<{
+      _id: string;
+      name: string;
+      type: string;
+      rate: number;
+    }>;
+
   // ── Submit ─────────────────────────────────────────────────────────────────
   const handleSave = () => {
     if (!selectedCustomer) {
@@ -864,22 +982,22 @@ export default function InvoiceForm({
       const creditPayload = {
         items: filteredItems.map((item) => {
           const product = findProduct(products, item.productId);
-          const alreadyPriced = isExistingItem(item);
-          const variantPayload = buildVariantPayload(
-            item,
-            product,
-            alreadyPriced,
-          );
+          // The credit endpoint takes LIST prices and applies the discounts
+          // itself — unlike the ticket update, which wants the price already
+          // net. So no netUnitPrice here, and no isEnabled:false flags.
+          const variantPayload = buildVariantPayload(item, product, false);
+          const discounts = buildCreditDiscountPayload(item);
+
           return {
             id: item.productId || item.id,
             name: baseProductName(item, product),
             quantity: item.quantity,
             unitPrice:
-              (variantPayload as any).variantItems?.unitPrice ??
-              (alreadyPriced
-                ? netUnitPrice(item.price, item.discounts)
-                : item.price),
+              (variantPayload as any).variantItems?.unitPrice ?? item.price,
             isTaxable: item.isTaxable ?? false,
+            // Omitted entirely when the line has none, matching the API's own
+            // payload rather than sending an empty array.
+            ...(discounts.length > 0 ? { discounts } : {}),
             ...("variantItems" in variantPayload
               ? { variantItems: variantPayload.variantItems }
               : {}),

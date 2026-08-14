@@ -16,9 +16,9 @@ import {
   TriangleAlert,
   LucideIcon,
   Percent,
-  Tag,
   Receipt,
   Boxes,
+  DollarSignIcon,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -41,7 +41,11 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import DiscountPickerModal from "./DiscountPickerModal";
 import ProductDetailModal from "./ProductDetailModal";
 import ProductFormModal from "@/components/product/ProductFormModal";
-import { formatCurrencySymbol, formatCurrencySymbolOnly } from "@/utils/helper";
+import {
+  formatCurrencySymbol,
+  formatCurrencySymbolOnly,
+  formatNumber,
+} from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 
 // ── Compact pill representation ───────────────────────────────────────────
@@ -65,7 +69,7 @@ const DOT_TONE: Record<PillTone, string> = {
   danger: "bg-red-100 text-red-600 ring-red-300/70",
   warning: "bg-amber-100 text-amber-600 ring-amber-300/70",
   info: "bg-blue-100 text-blue-600 ring-blue-300/70",
-  tax: "bg-violet-100 text-violet-600 ring-violet-400",
+  tax: "bg-violet-100 text-violet-600 ring-violet-400/70",
 };
 
 function PillDot({
@@ -99,7 +103,7 @@ function PillDot({
           pill.pulse && !isOpen && "animate-pulse",
         )}
       >
-        <Icon className="h-2.5 w-2.5" strokeWidth={2.4} />
+        <Icon className="h-3 w-3" strokeWidth={2.4} />
       </button>
 
       <div
@@ -176,6 +180,35 @@ export default function InvoiceItemsSelector({
   // so an expanded badge never pushes another one off the row.
   const [expandedPill, setExpandedPill] = useState<string | null>(null);
 
+  // ── Row reordering ──
+  // Tracked by ID, never by index. Everything downstream — the existing-item
+  // set, the raw-ticket lookup, the original-price fingerprints in
+  // InvoiceForm — keys off `item.id`, so a row keeps its identity wherever it
+  // sits. Reorder the array; never rebuild the objects.
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+
+  /** Move `fromId` to `toId`'s position, preserving every object identity. */
+  const moveRow = (fromId: string, toId: string) => {
+    if (fromId === toId) return;
+    const from = items.findIndex((i) => i.id === fromId);
+    const to = items.findIndex((i) => i.id === toId);
+    if (from === -1 || to === -1) return;
+
+    const next = [...items];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    onItemsChange(next);
+  };
+
+  /** Keyboard equivalent — the grip is focusable, arrows shift the row. */
+  const nudgeRow = (id: string, direction: -1 | 1) => {
+    const from = items.findIndex((i) => i.id === id);
+    const to = from + direction;
+    if (from === -1 || to < 0 || to >= items.length) return;
+    moveRow(id, items[to].id);
+  };
+
   const netUnitPrice = (item: InvoiceItem) => {
     const perUnit = item.discounts.reduce((sum, dId) => {
       const d = masterDiscounts.find((m) => m._id === dId);
@@ -206,7 +239,7 @@ export default function InvoiceItemsSelector({
       if (item.quantity > variantStock) {
         return {
           type: "exceeded",
-          message: `Only ${variantStock} in stock.`,
+          message: `Only ${formatNumber(variantStock, currency.locale)} in stock.`,
         };
       }
 
@@ -218,7 +251,7 @@ export default function InvoiceItemsSelector({
       ) {
         return {
           type: "low",
-          message: `Low stock: only ${variantStock} remaining.`,
+          message: `Low stock: only ${formatNumber(variantStock, currency.locale)} remaining.`,
         };
       }
 
@@ -233,7 +266,7 @@ export default function InvoiceItemsSelector({
     if (item.quantity > product.inStock) {
       return {
         type: "exceeded",
-        message: `Only ${product.inStock} in stock.`,
+        message: `Only ${formatNumber(product.inStock, currency.locale)} in stock.`,
       };
     }
 
@@ -245,7 +278,7 @@ export default function InvoiceItemsSelector({
     ) {
       return {
         type: "low",
-        message: `Low stock: only ${product.inStock} remaining.`,
+        message: `Low stock: only ${formatNumber(product.inStock, currency.locale)} remaining.`,
       };
     }
 
@@ -481,7 +514,7 @@ export default function InvoiceItemsSelector({
       pills.push({
         key: `discount-${dId}`,
         tone: "info",
-        icon: d.type === "percentage" ? Percent : Tag,
+        icon: d.type === "percentage" ? Percent : DollarSignIcon,
         label: `${d.name} — ${formatCurrencySymbolOnly(currency.symbol)} ${amount.toFixed(2)} off`,
         element: (
           <Badge className="flex items-center gap-1 bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs">
@@ -598,6 +631,7 @@ export default function InvoiceItemsSelector({
         // Display-only: what a single unit actually costs after this row's
         // discounts. `item.price` is untouched.
         const discountedUnit = netUnitPrice(item);
+
         const showDiscountedUnit =
           item.discounts.length > 0 && discountedUnit < item.price;
 
@@ -608,9 +642,57 @@ export default function InvoiceItemsSelector({
           // unkeyed array element, which React warns about and which makes rows
           // remount on reorder.
           <Fragment key={item.id}>
-            <TableRow className="border-b-0  w-full hover:bg-gray-50/70 transition-colors">
+            <TableRow
+              draggable={draggingId === item.id}
+              onDragOver={(e) => {
+                if (!draggingId) return;
+                // Without preventDefault the browser refuses the drop.
+                e.preventDefault();
+                if (dragOverId !== item.id) setDragOverId(item.id);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (draggingId) moveRow(draggingId, item.id);
+                setDraggingId(null);
+                setDragOverId(null);
+              }}
+              onDragEnd={() => {
+                setDraggingId(null);
+                setDragOverId(null);
+              }}
+              className={cn(
+                "border-b-0 w-full hover:bg-gray-50/70 transition-colors",
+                draggingId === item.id && "opacity-40",
+                dragOverId === item.id &&
+                  draggingId !== item.id &&
+                  "border-t-2 border-t-blue-400",
+              )}
+            >
               <TableCell className="w-6 px-1">
-                <GripVertical className="h-4 w-4 text-gray-300 cursor-grab" />
+                {/* The row is only draggable while the grip is held, so
+                    dragging a number input doesn't start a row drag. */}
+                <button
+                  type="button"
+                  aria-label={`Reorder ${item.name || "item"}`}
+                  title="Drag to reorder — or focus and use ↑ / ↓"
+                  onMouseDown={() => setDraggingId(item.id)}
+                  onTouchStart={() => setDraggingId(item.id)}
+                  onDragStart={(e) => {
+                    setDraggingId(item.id);
+                    e.dataTransfer.effectAllowed = "move";
+                    // Firefox won't start a drag without payload data.
+                    e.dataTransfer.setData("text/plain", item.id);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+                    e.preventDefault();
+                    nudgeRow(item.id, e.key === "ArrowUp" ? -1 : 1);
+                  }}
+                  onBlur={() => setDraggingId(null)}
+                  className="cursor-grab rounded p-0.5 text-gray-300 transition hover:text-gray-500 active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                >
+                  <GripVertical className="h-4 w-4" />
+                </button>
               </TableCell>
 
               {/* Product selector */}
