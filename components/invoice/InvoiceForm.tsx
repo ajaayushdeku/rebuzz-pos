@@ -156,18 +156,45 @@ function toPayloadLabel(label: string | undefined | null): string {
   return (label ?? "").replace(/\s*·\s*/g, "/").trim();
 }
 
-/** Loose label compare — ignores case, spacing, and "·" vs "," separators. */
-function labelKey(label: string): string {
-  return label.toLowerCase().replace(/·/g, ",").replace(/\s+/g, "");
+/**
+ * Split a stored variant label back into its option values.
+ *
+ * Only "/" and "·" separate values — a comma does NOT. Option values can
+ * legitimately contain commas ("red, blue ,pink" and "s,m,l" are each a
+ * SINGLE value), so splitting on them would shatter one value into three.
+ */
+function optionValuesFromLabel(label: string | undefined | null): string[] {
+  return (label ?? "")
+    .split(/[/·]/)
+    .map((v) => v.trim())
+    .filter(Boolean);
+}
+
+/**
+ * A comparable key for a set of option values.
+ *
+ * Case- and order-insensitive: "Small/Cherry" and "cherry · small" both key
+ * to the same thing, so a reordered option group still matches.
+ */
+function optionKey(values: string[]): string {
+  return values
+    .map((v) => v.toLowerCase().replace(/\s+/g, " ").trim())
+    .sort()
+    .join("|");
 }
 
 /**
  * Work out which variant a line refers to.
  *
- * Ids are tried first. When none survive — an invoice saved by an earlier
- * build dropped `variantItems`, so the server only kept "Coke (small ·
- * vanilla)" and a unit price — the variant is recovered from the product by
- * matching the name's trailing label, then by a uniquely-matching price.
+ * OPTION VALUES COME FIRST, not the id. Updating a product regenerates its
+ * variant ids, so the id stored on an old ticket routinely points at nothing
+ * — which is why variant lines kept falling back to their stored (already
+ * discounted) price. The option values are what actually identify a variant
+ * across edits: "small/cherry" is still small + cherry no matter how many
+ * times the product has been saved.
+ *
+ * The id is kept as a secondary check for the rare label-less line, and a
+ * uniquely-matching price as a last resort.
  */
 function resolveVariant(
   product: Product | undefined,
@@ -180,22 +207,24 @@ function resolveVariant(
 ): { variant?: NormalizedVariant; variantId?: string } {
   const variants = getVariants(product);
 
-  // 1. An explicit id.
-  if (opts.variantId) {
-    return {
-      variant: variants.find((v) => v.id === opts.variantId),
-      variantId: opts.variantId,
-    };
+  if (!variants.length) {
+    return opts.variantId ? { variantId: opts.variantId } : {};
   }
 
-  if (!variants.length) return {};
-
-  // 2. The label, either stored directly or parsed off the name.
+  // 1. Option values — from the stored label, or parsed off the item name.
   const label = opts.label ?? labelFromName(opts.name);
-  if (label) {
-    const key = labelKey(label);
-    const byLabel = variants.find((v) => labelKey(variantLabel(v)) === key);
-    if (byLabel) return { variant: byLabel, variantId: byLabel.id };
+  const values = optionValuesFromLabel(label);
+  if (values.length) {
+    const key = optionKey(values);
+    const byValues = variants.find((v) => optionKey(v.optionValues) === key);
+    // Return the variant's CURRENT id — the stored one may be stale.
+    if (byValues) return { variant: byValues, variantId: byValues.id };
+  }
+
+  // 2. The stored id, for a line that never had a usable label.
+  if (opts.variantId) {
+    const byId = variants.find((v) => v.id === opts.variantId);
+    if (byId) return { variant: byId, variantId: byId.id };
   }
 
   // 3. A price only one variant carries — ambiguous matches are rejected.
@@ -206,7 +235,9 @@ function resolveVariant(
     }
   }
 
-  return {};
+  // Nothing matched. Keep the stored id so the line still round-trips as a
+  // variant, but with no `variant` the caller knows its price is unverified.
+  return opts.variantId ? { variantId: opts.variantId } : {};
 }
 
 // ── Raw-payload normalisers ───────────────────────────────────────────────
@@ -244,6 +275,20 @@ function rawDiscountIds(rawDiscounts: any[] | undefined): string[] {
 /** `items` is an array of GROUPS, each holding an `item` array. Flatten all. */
 function flattenTicketItems(ticket: any): any[] {
   return (ticket?.items ?? []).flatMap((group: any) => group?.item ?? []);
+}
+
+/**
+ * The unit price a ticket line was last saved with.
+ *
+ * This is the figure the backend already computed — Pizza listed at 400 with
+ * a 50 discount is stored as 350 — and it's what an existing line sends back
+ * on update. A variant keeps its own copy one level down, which wins.
+ */
+function storedUnitPrice(raw: any): number | undefined {
+  if (!raw) return undefined;
+  const variantPrice = raw.variantItems?.unitPrice;
+  if (typeof variantPrice === "number") return variantPrice;
+  return typeof raw.unitPrice === "number" ? raw.unitPrice : undefined;
 }
 
 /**
@@ -300,10 +345,12 @@ function mapRawItem(raw: any, products: Product[]): InvoiceItem {
   }
 
   const productId = product.id ?? (product as any)._id;
+  // The stored label is the reliable key — see resolveVariant. The id is
+  // passed too, but only gets used if the line has no usable label.
   const resolved = resolveVariant(product, {
-    variantId: rawVariantId(raw.variantItems),
-    name: raw.productName,
     label: raw.variantItems?.name,
+    name: raw.productName,
+    variantId: rawVariantId(raw.variantItems),
     price: raw.unitPrice,
   });
   const { variant, variantId } = resolved;
@@ -426,11 +473,11 @@ function mapCreditItem(item: CreditItem, products: Product[]): InvoiceItem {
 
   const productId = product.id ?? (product as any)._id;
   const { variant, variantId } = resolveVariant(product, {
-    variantId: storedVariantId,
-    name: item.productName,
     label: raw.variantItems?.name,
-    // Only reached when there's no id and no label. The stored price is net,
-    // so this can mis-match on a discounted line — it's a last resort.
+    name: item.productName,
+    variantId: storedVariantId,
+    // Last resort only. The stored price is net, so this can mis-match on a
+    // discounted line.
     price: item.unitPrice,
   });
 
@@ -542,11 +589,9 @@ export default function InvoiceForm({
   const ticketProductIdRef = useRef(ticketProductIdOf(tickets));
 
   /**
-   * Ids of the lines that were ALREADY on the ticket (or credit) when this
-   * form loaded. Captured once at mount, so rows added afterwards are never
-   * mistaken for pre-existing ones.
-   *
-   * These two groups are sent differently — see `netUnitPrice`.
+   * Ids of the lines already on the ticket (or credit) when the form loaded.
+   * Captured once at mount, so rows added afterwards are never mistaken for
+   * pre-existing ones.
    */
   const existingItemIdsRef = useRef<Set<string>>(
     new Set<string>([
@@ -556,6 +601,17 @@ export default function InvoiceForm({
       ...creditItems.map((c: any) => c?._id).filter(Boolean),
     ]),
   );
+
+  /**
+   * Each line's price as first mapped, so a later hand-edit of the price
+   * field can be told apart from an untouched line. Discounts aren't tracked
+   * here — they're handled per discount in buildDiscountPayload.
+   */
+  const originalLinesRef = useRef<Map<string, number>>(new Map());
+  const rememberOriginals = (list: InvoiceItem[]) => {
+    originalLinesRef.current = new Map(list.map((i) => [i.id, i.price]));
+  };
+
   const hasUpdatedItemsFromProducts = useRef(false);
 
   // Re-map items against the live products list once it loads, so prices,
@@ -571,7 +627,9 @@ export default function InvoiceForm({
       const rawCredit = rawCreditItemsRef.current;
       if (!rawCredit?.length) return;
 
-      setItems(rawCredit.map((c) => mapCreditItem(c, products)));
+      const mappedCredit = rawCredit.map((c) => mapCreditItem(c, products));
+      setItems(mappedCredit);
+      rememberOriginals(mappedCredit);
       hasUpdatedItemsFromProducts.current = true;
       return;
     }
@@ -579,7 +637,9 @@ export default function InvoiceForm({
     const rawItems = rawTicketItemsRef.current;
     if (!rawItems?.length) return;
 
-    setItems(rawItems.map((raw: any) => mapRawItem(raw, products)));
+    const mapped = rawItems.map((raw: any) => mapRawItem(raw, products));
+    setItems(mapped);
+    rememberOriginals(mapped);
     hasUpdatedItemsFromProducts.current = true;
   }, [products, isCreditInvoice]);
 
@@ -767,51 +827,43 @@ export default function InvoiceForm({
   const rawFor = (item: InvoiceItem): any =>
     rawTicketItemsRef.current.find((r: any) => r?._id && r._id === item.id);
 
-  /**
-   * Was this line already on the ticket when the form loaded?
-   *
-   * Existing lines were stored with the discount baked into their unit price,
-   * so they go back the same way — net price, discounts flagged off. Lines
-   * added during this edit have never been priced by the backend, so they go
-   * out like a new ticket's: list price, discounts enabled, backend applies
-   * them. Sending a new line as "already discounted" would silently drop the
-   * discount; sending an existing line as "apply this" double-discounts it.
-   *
-   * This applies to the TICKET endpoint only — the credit endpoint always
-   * takes list prices (see the credit payload in handleSave).
-   */
+  /** Was this line already on the ticket when the form loaded? */
   const isExistingItem = (item: InvoiceItem) =>
     existingItemIdsRef.current.has(item.id);
 
   /**
-   * Per-unit discount for a line.
+   * Did the user type a new price into this line's price field?
    *
-   * A fixed discount is charged per unit (matching the row-total maths
-   * above), so it comes off the unit price directly; a percentage comes off
-   * proportionally.
+   * Only a hand-edit counts — changing discounts doesn't. Without this an
+   * edited price would be silently discarded in favour of the stored one.
    */
-  const unitDiscountFor = (discountIds: string[], unitPrice: number) =>
-    discountIds.reduce((sum, id) => {
-      const d = masterDiscounts.find((m) => m._id === id);
-      if (!d) return sum;
-      return (
-        sum + (d.type === "percentage" ? (unitPrice * d.rate) / 100 : d.rate)
-      );
-    }, 0);
+  const isPriceEdited = (item: InvoiceItem) => {
+    const original = originalLinesRef.current.get(item.id);
+    if (original === undefined) return false;
+    return original !== item.price;
+  };
 
   /**
-   * List price minus the per-unit discount — a 91 variant with a "50 off"
-   * discount becomes 41.
+   * The unit price to send for a line.
    *
-   * Used only for lines ALREADY on the ticket, whose stored price is already
-   * net. Those go out with `isEnabled: false` (see buildDiscountPayload) so
-   * the backend doesn't subtract the discount a second time.
+   * A line already on the ticket sends the price the TICKET holds — Pizza
+   * saved at 350 goes back as 350. It's never re-derived from the list price,
+   * which is what keeps repeated edits of the same invoice stable: netting
+   * 350 again would send 300, then 250.
    *
-   * Newly added lines, and every line on create, send the list price with
-   * discounts enabled and let the backend do the arithmetic.
+   * Whether each discount still needs applying is expressed separately, per
+   * discount, via `isEnabled` in buildDiscountPayload — so a new discount on
+   * an existing line arrives as "apply this to the 350".
+   *
+   * New lines, and lines whose price the user typed over, send what's on
+   * screen instead.
    */
-  const netUnitPrice = (listPrice: number, discountIds: string[]) =>
-    Math.max(0, listPrice - unitDiscountFor(discountIds, listPrice));
+  const outgoingUnitPrice = (item: InvoiceItem) => {
+    const stored = storedUnitPrice(rawFor(item));
+    const useStored =
+      isExistingItem(item) && !isPriceEdited(item) && stored !== undefined;
+    return useStored ? (stored as number) : item.price;
+  };
 
   /**
    * The BASE product name for the payload.
@@ -842,8 +894,11 @@ export default function InvoiceForm({
   const buildVariantPayload = (
     item: InvoiceItem,
     product?: Product,
-    /** Send the discounted price instead of the list price. */
-    useNetPrice = false,
+    /**
+     * The unit price this line is sending. Passed in rather than derived so
+     * the variant block can't disagree with the item it belongs to.
+     */
+    unitPriceOverride?: number,
   ) => {
     const raw = rawFor(item);
 
@@ -859,6 +914,9 @@ export default function InvoiceForm({
 
     if (!variantId) return {};
 
+    // Prefer the LIVE variant's option values — the stored label may predate
+    // an option being renamed. `variantId` above is likewise the resolved
+    // variant's current id, not the (probably stale) stored one.
     const name = toPayloadLabel(
       variantLabel(variant) ||
         item.variantLabel ||
@@ -868,11 +926,12 @@ export default function InvoiceForm({
         "",
     );
 
-    const listPrice =
+    const unitPrice =
+      unitPriceOverride ??
       variant?.price ??
+      item.price ??
       item.variantItems?.unitPrice ??
       raw?.variantItems?.unitPrice ??
-      item.price ??
       0;
 
     // Only `variantItems` goes on the wire — the variant is identified there,
@@ -883,9 +942,9 @@ export default function InvoiceForm({
         // `variantItems.variant`).
         _id: variantId,
         name,
-        unitPrice: useNetPrice
-          ? netUnitPrice(listPrice, item.discounts)
-          : listPrice,
+        // Mirrors the item's own unitPrice — for an existing line that's the
+        // ticket's stored figure, never a recomputed one.
+        unitPrice,
         // Kept in step with the line quantity — they must not drift.
         quantity: item.quantity,
         costPrice:
@@ -903,7 +962,7 @@ export default function InvoiceForm({
    * ticket, its existing subdocument `_id` is reused so the backend updates
    * that row instead of orphaning it.
    */
-  const buildDiscountPayload = (item: InvoiceItem, alreadyApplied = false) => {
+  const buildDiscountPayload = (item: InvoiceItem) => {
     const rawDiscounts: any[] = rawFor(item)?.discounts ?? [];
 
     return item.discounts
@@ -911,18 +970,26 @@ export default function InvoiceForm({
         const master = masterDiscounts.find((m) => m._id === id);
         if (!master) return null;
 
+        // Was this exact discount already on this line when the ticket was
+        // last saved? The fetched entry keys the master id under `discount`;
+        // its own `_id` is the subdocument's.
         const existing = rawDiscounts.find(
           (d: any) => (d?.discount ?? d?._id) === id,
         );
+        const wasAlreadyApplied = !!existing;
 
         return {
           ...(master as object),
           discount: master._id,
+          // Reuse the subdocument id so the backend updates that row rather
+          // than orphaning it and inserting a duplicate.
           ...(existing?._id ? { _id: existing._id } : {}),
-          // When the unit price already has the discount taken off, the
-          // discount is a RECORD of what was applied, not an instruction to
-          // apply it — leaving these true makes the backend deduct twice.
-          ...(alreadyApplied ? { isEnabled: false, isSelected: false } : {}),
+          // Per DISCOUNT, not per line. One already on the ticket has had its
+          // effect banked, so it goes back as a record: isEnabled false. One
+          // added during this edit still needs applying: isEnabled true. A
+          // line can carry both at once.
+          isEnabled: !wasAlreadyApplied,
+          isSelected: !wasAlreadyApplied,
         };
       })
       .filter(Boolean);
@@ -982,10 +1049,10 @@ export default function InvoiceForm({
       const creditPayload = {
         items: filteredItems.map((item) => {
           const product = findProduct(products, item.productId);
-          // The credit endpoint takes LIST prices and applies the discounts
-          // itself — unlike the ticket update, which wants the price already
-          // net. So no netUnitPrice here, and no isEnabled:false flags.
-          const variantPayload = buildVariantPayload(item, product, false);
+          // The credit endpoint always takes LIST prices and applies the
+          // discounts itself — unlike the ticket update, which wants the price already
+          // net. So no stored-price override here, and no isEnabled:false.
+          const variantPayload = buildVariantPayload(item, product);
           const discounts = buildCreditDiscountPayload(item);
 
           return {
@@ -1028,15 +1095,13 @@ export default function InvoiceForm({
     // ── Normal invoice ──────────────────────────────────────────────────────
     const mappedItems = filteredItems.map((item) => {
       const product = findProduct(products, item.productId);
-      // Decided per LINE, not per request: an edit can contain both lines the
-      // backend has already priced and lines added just now.
-      const alreadyPriced = isExistingItem(item);
-      const variantPayload = buildVariantPayload(item, product, alreadyPriced);
-
-      // A variant line prices off the variant, not the parent product.
-      const unitPrice =
-        (variantPayload as any).variantItems?.unitPrice ??
-        (alreadyPriced ? netUnitPrice(item.price, item.discounts) : item.price);
+      // Decided per LINE, not per request: an edit can contain lines the
+      // backend has already priced, lines added just now, and lines that were
+      // there but have since been edited.
+      // Existing line → the ticket's stored price; new or hand-edited →
+      // what's on screen. See outgoingUnitPrice.
+      const unitPrice = outgoingUnitPrice(item);
+      const variantPayload = buildVariantPayload(item, product, unitPrice);
 
       // Loud in dev when a line belongs to a product with variants but no
       // variant could be resolved — it's about to be sent as a plain item.
@@ -1067,7 +1132,7 @@ export default function InvoiceForm({
         unitPrice,
         note: null,
         isTaxable: item.isTaxable ?? false,
-        discounts: buildDiscountPayload(item, alreadyPriced),
+        discounts: buildDiscountPayload(item),
         ...variantPayload,
       };
     });
