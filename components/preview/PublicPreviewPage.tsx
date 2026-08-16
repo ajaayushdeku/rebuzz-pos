@@ -92,13 +92,29 @@ const PublicPreviewPage = ({ type }: { type: InvoiceType }) => {
         customerProfile={customerProfile}
         billData={billData ?? null}
         payments={payments}
+        // credit={
+        //   creditForInvoice
+        //     ? {
+        //         total: creditForInvoice.total,
+        //         grandTotal: creditForInvoice.grandTotal,
+        //         taxamt: creditForInvoice.taxamt,
+        //         user: creditForInvoice.user,
+        //       }
+        //     : null
+        // }
+
         credit={
           creditForInvoice
             ? {
                 total: creditForInvoice.total,
                 grandTotal: creditForInvoice.grandTotal,
                 taxamt: creditForInvoice.taxamt,
-                user: creditForInvoice.user,
+                user: {
+                  _id: creditForInvoice.user?._id ?? "",
+                  name: creditForInvoice.user?.name ?? "",
+                  phone: creditForInvoice.user?.phone ?? "",
+                  email: creditForInvoice.user?.email ?? "",
+                },
               }
             : null
         }

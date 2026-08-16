@@ -139,7 +139,22 @@ export default function EmailInvoiceModal({
               businessProfile={business}
               billData={billData}
               payments={payments}
-              credit={credit}
+              // credit={credit}
+              credit={
+                credit
+                  ? {
+                      total: credit.total,
+                      grandTotal: credit.grandTotal,
+                      taxamt: credit.taxamt,
+                      user: {
+                        _id: credit.user?._id ?? "",
+                        name: credit.user?.name ?? "",
+                        phone: credit.user?.phone ?? "",
+                        email: credit.user?.email ?? "",
+                      },
+                    }
+                  : null
+              }
             />
           ))}
         </OffscreenLayer>

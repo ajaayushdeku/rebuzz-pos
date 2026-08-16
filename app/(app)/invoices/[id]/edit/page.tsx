@@ -58,8 +58,8 @@ export default function Page() {
       isEditMode={true}
       invoiceNumber={id}
       isCreditInvoice={!!credit}
-      credit={credit}
-      creditDetails={creditDetail}
+      credit={credit ?? undefined}
+      creditDetails={creditDetail ?? undefined}
       creditId={credit?._id}
       creditUserId={credit?.user?._id}
       creditItems={creditDetail?.items ?? []}
