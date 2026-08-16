@@ -566,22 +566,20 @@ export default function InvoiceForm({
   // ── State — pre-filled from initialData in edit mode ─────────────────────
 
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
-    customerProfile ??
-      (tickets
-        ? ({
-            // Use actual customer name if available, fallback to ticketName
-            id: creditUserId ?? "",
-            name:
-              profileName ??
-              creditDetails?.credit?.user?.name ??
-              initialData?.customerName ??
-              tickets.ticketName ??
-              "",
-            email: tickets.customerEmail ?? "",
-            phone:
-              (creditDetails?.credit?.user?.phone || tickets.phoneNumber) ?? "",
-          } as Customer)
-        : null),
+    tickets
+      ? ({
+          id: creditUserId ?? "",
+          name:
+            profileName ??
+            creditDetails?.credit?.user?.name ??
+            initialData?.customerName ??
+            tickets.ticketName ??
+            "",
+          email: tickets.customerEmail ?? "",
+          phone:
+            (creditDetails?.credit?.user?.phone || tickets.phoneNumber) ?? "",
+        } as Customer)
+      : null,
   );
 
   // UI only — the picker starts open when there's no customer yet.

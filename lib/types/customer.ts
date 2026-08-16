@@ -24,9 +24,9 @@ export type LoyaltyTier = "Bronze" | "Silver" | "Gold" | "Platinum";
 
 export type Customer = {
   id: string;
-  name?: string;
-  email?: string | null;
-  phone?: string;
+  name: string;
+  email: string | null;
+  phone: string;
   numberOfPurchases?: number;
   totalDueAmount?: number;
   loyaltyPoint: number;

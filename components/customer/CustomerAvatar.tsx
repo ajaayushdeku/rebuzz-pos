@@ -42,7 +42,9 @@ export function CustomerAvatar({
     <div
       className={`rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold ${textClass} ${className}`}
     >
-      {name.charAt(0).toUpperCase()}
+      {/* `name` is optional on Customer, and a blank name would otherwise
+          render an empty circle — fall back to "?" for both cases. */}
+      {(name?.trim().charAt(0) || "?").toUpperCase()}
     </div>
   );
 }

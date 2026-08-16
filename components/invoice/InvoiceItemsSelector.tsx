@@ -712,14 +712,18 @@ export default function InvoiceItemsSelector({
                 setDragOverId(null);
               }}
               className={cn(
-                "border-b-0 w-full hover:bg-gray-50/70 transition-colors",
+                "border-b-1 w-full hover:bg-blue-50/70 transition-colors",
                 draggingId === item.id && "opacity-40",
                 dragOverId === item.id &&
                   draggingId !== item.id &&
                   "border-t-2 border-t-blue-400",
               )}
             >
-              <TableCell className="w-6 px-1">
+              {/* Column widths are declared in BOTH this row and
+                  AddInvoiceHeader — auto table layout takes the widest of the
+                  pair, so an edit to one without the other silently does
+                  nothing. Keep them in sync. */}
+              <TableCell className="w-[28px] px-1 ">
                 {/* The row is only draggable while the grip is held, so
                     dragging a number input doesn't start a row drag. */}
                 <button
@@ -740,23 +744,48 @@ export default function InvoiceItemsSelector({
                     nudgeRow(item.id, e.key === "ArrowUp" ? -1 : 1);
                   }}
                   onBlur={() => setDraggingId(null)}
-                  className="cursor-grab rounded p-0.5 text-gray-300 transition hover:text-gray-500 active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  className="cursor-grab rounded p-0.5 pb-10 text-gray-300 transition hover:text-gray-500 active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 >
                   <GripVertical className="h-4 w-4" />
                 </button>
               </TableCell>
 
               {/* Product selector */}
-              <TableCell className="min-w-[140px] lg:min-w-[180px]">
-                <div className="flex items-center gap-1">
+              <TableCell className="w-[32%] min-w-[190px]">
+                <div className="relative flex items-center pb-10 gap-1">
                   <Input
                     value={item.name}
                     onChange={(e) =>
                       updateItem(item.id, "name", e.target.value)
                     }
                     placeholder="Product name"
-                    className="flex-1 h-8 text-xs"
+                    className="flex-1 h-8 text-xs bg-white"
                   />
+                  <div className="w-full absolute top-2/3 left-0">
+                    {rowPills.length > 0 && (
+                      <>
+                        {/* Narrow: one dot per badge, full badge on hover/tap */}
+                        <div className="flex flex-wrap items-center gap-1.75 lg:gap-2  pl-1">
+                          {rowPills.map((pill) => {
+                            const pillId = `${item.id}:${pill.key}`;
+                            return (
+                              <PillDot
+                                key={pill.key}
+                                pill={pill}
+                                isOpen={expandedPill === pillId}
+                                onToggle={() =>
+                                  setExpandedPill((cur) =>
+                                    cur === pillId ? null : pillId,
+                                  )
+                                }
+                              />
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
+                  </div>
+
                   <Popover
                     open={productPopoverRow === item.id}
                     onOpenChange={(open) =>
@@ -906,62 +935,68 @@ export default function InvoiceItemsSelector({
               </TableCell>
 
               {/* Description */}
-              <TableCell className="min-w-[100px]  xl:table-cell">
-                <Input
-                  value={item.description}
-                  onChange={(e) =>
-                    updateItem(item.id, "description", e.target.value)
-                  }
-                  placeholder="Description"
-                  className="h-8 text-xs"
-                />
+              <TableCell className="w-[24%] min-w-[150px]">
+                <div className="pb-10">
+                  <Input
+                    value={item.description}
+                    onChange={(e) =>
+                      updateItem(item.id, "description", e.target.value)
+                    }
+                    placeholder="Description"
+                    className="h-8 text-xs bg-white "
+                  />
+                </div>
               </TableCell>
 
               {/* Quantity */}
-              <TableCell className="relative min-w-[65px] w-[80px]">
-                <Input
-                  type="number"
-                  value={item.quantity}
-                  onChange={(e) =>
-                    updateItem(item.id, "quantity", Number(e.target.value))
-                  }
-                  className={cn(
-                    "text-right h-8 text-[14px] sm:text-[12px] tracking-wider px-1.5 no-spinner tabular-nums",
-                    stockErrors[item.id] &&
-                      "border-red-400 focus-visible:ring-red-400",
+              <TableCell className="relative w-[84px] min-w-[84px]">
+                <div className=" relative pb-10">
+                  <Input
+                    type="number"
+                    value={item.quantity}
+                    onChange={(e) =>
+                      updateItem(item.id, "quantity", Number(e.target.value))
+                    }
+                    className={cn(
+                      "text-right bg-white h-8 text-[14px] sm:text-[12px] tracking-wider px-1.5 no-spinner tabular-nums",
+                      stockErrors[item.id] &&
+                        "border-red-400 focus-visible:ring-red-400",
+                    )}
+                  />
+                  {stockErrors[item.id] && (
+                    <span className="absolute bottom-5 right-0 text-[8px] font-medium text-red-600 bg-red-50 px-1 py-0.5 rounded-full border border-red-200 whitespace-nowrap">
+                      Stock Exceeded
+                    </span>
                   )}
-                />
-                {stockErrors[item.id] && (
-                  <span className="absolute -top-2 -right-1 text-[8px] font-medium text-red-600 bg-red-50 px-1 py-0.5 rounded-full border border-red-200 whitespace-nowrap">
-                    Stock Exceeded
-                  </span>
-                )}
+                </div>
               </TableCell>
 
               {/* Unit price */}
-              <TableCell className="min-w-[60px] w-[85px] relative ">
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] sm:text-[11px] text-slate-400">
-                    {currency.symbol}
-                  </span>
-                  <Input
-                    type="number"
-                    value={item.price}
-                    onChange={(e) =>
-                      updateItem(item.id, "price", Number(e.target.value))
-                    }
-                    title={
-                      showDiscountedUnit
-                        ? `List price ${formatCurrencySymbolOnly(currency.symbol)} ${item.price.toFixed(2)} — ${formatCurrencySymbolOnly(currency.symbol)} ${discountedUnit.toFixed(2)} after discount`
-                        : undefined
-                    }
-                    className={cn(
-                      "text-right h-8 md:text-[14px] sm:text-[12px] tracking-wider px-1.5 no-spinner tabular-nums",
-                      showDiscountedUnit && "text-gray-400 line-through",
-                    )}
-                  />
+              <TableCell className="w-[104px] min-w-[104px] relative ">
+                <div className="relative pb-10">
+                  <>
+                    <span className="relative left-5 top-1/2 -translate-y-1/2 text-[14px] sm:text-[11px] text-slate-400">
+                      {currency.symbol}
+                    </span>
+                    <Input
+                      type="number"
+                      value={item.price}
+                      onChange={(e) =>
+                        updateItem(item.id, "price", Number(e.target.value))
+                      }
+                      title={
+                        showDiscountedUnit
+                          ? `List price ${formatCurrencySymbolOnly(currency.symbol)} ${item.price.toFixed(2)} — ${formatCurrencySymbolOnly(currency.symbol)} ${discountedUnit.toFixed(2)} after discount`
+                          : undefined
+                      }
+                      className={cn(
+                        "text-right h-8 bg-white md:text-[14px] sm:text-[12px] tracking-wider px-1.5 no-spinner tabular-nums",
+                        showDiscountedUnit && "text-gray-400 line-through",
+                      )}
+                    />
+                  </>
                   {showDiscountedUnit && (
-                    <p className="absolute right-0 mt-1 pr-1.5 text-right text-[13px] sm:text-[11px] font-semibold leading-none text-green-600 tabular-nums">
+                    <p className="absolute -right-1.5 mt-1 text-right text-[13px] sm:text-[11px] font-semibold leading-none text-green-600 tabular-nums">
                       {formatCurrencySymbolOnly(currency.symbol)}{" "}
                       {discountedUnit.toFixed(2)}
                     </p>
@@ -970,31 +1005,34 @@ export default function InvoiceItemsSelector({
               </TableCell>
 
               {/* Row total */}
-              <TableCell className="min-w-[60px] text-right font-semibold text-[14px]  text-gray-800 tabular-nums">
-                {formatCurrencySymbol(
-                  (() => {
-                    const rowSubtotal = item.quantity * item.price;
-                    const rowDiscount = item.discounts.reduce((sum, dId) => {
-                      const d = masterDiscounts.find((m) => m._id === dId);
-                      if (!d) return sum;
-                      return (
-                        sum +
-                        (d.type === "percentage"
-                          ? (rowSubtotal * d.rate) / 100
-                          : d.rate * item.quantity)
-                      );
-                    }, 0);
-                    return rowSubtotal - rowDiscount;
-                  })(),
-                  currency.symbol,
-                  currency.locale,
-                )}{" "}
+              <TableCell className="w-[132px] min-w-[120px] text-right font-semibold text-[12px] md:text-[14px] text-gray-800 tabular-nums">
+                <p className="pb-10">
+                  {" "}
+                  {formatCurrencySymbol(
+                    (() => {
+                      const rowSubtotal = item.quantity * item.price;
+                      const rowDiscount = item.discounts.reduce((sum, dId) => {
+                        const d = masterDiscounts.find((m) => m._id === dId);
+                        if (!d) return sum;
+                        return (
+                          sum +
+                          (d.type === "percentage"
+                            ? (rowSubtotal * d.rate) / 100
+                            : d.rate * item.quantity)
+                        );
+                      }, 0);
+                      return rowSubtotal - rowDiscount;
+                    })(),
+                    currency.symbol,
+                    currency.locale,
+                  )}{" "}
+                </p>
               </TableCell>
 
               {/* ── Discount column temporarily hidden ──
                   Paired with the matching <TableHead> in AddInvoiceHeader and
                   the pills-row colSpan below. Restore all three together. */}
-              {/* <TableCell className="text-center">
+              {/* <TableCell className="text-center w-[80px] min-w-[80px]">
                 <div className="flex justify-center">
                   <button
                     type="button"
@@ -1008,8 +1046,8 @@ export default function InvoiceItemsSelector({
               </TableCell> */}
 
               {/* ── Taxable toggle ── */}
-              <TableCell className="text-center">
-                <div className="flex justify-center">
+              <TableCell className="text-center w-[76px] min-w-[76px]">
+                <div className="flex justify-center pb-10">
                   <button
                     type="button"
                     onClick={() => {
@@ -1038,9 +1076,9 @@ export default function InvoiceItemsSelector({
               </TableCell>
 
               {/* Delete */}
-              <TableCell className="text-center w-[35px]">
+              <TableCell className="text-center w-[44px] min-w-[44px]">
                 <button
-                  className="text-gray-400 hover:text-red-500 transition-colors shrink-0"
+                  className="text-gray-400 pb-10 hover:text-red-500 transition-colors shrink-0"
                   onClick={() =>
                     onItemsChange(items.filter((i) => i.id !== item.id))
                   }
@@ -1051,15 +1089,12 @@ export default function InvoiceItemsSelector({
             </TableRow>
 
             {/* ── Pills row — discount + tax badges ── */}
-            <TableRow className="border-b border-gray-100 hover:bg-gray-50/70 transition-colors">
-              {/* Skip grip + product columns */}
+            {/* <TableRow className="border-b border-gray-100 hover:bg-gray-50/70 transition-colors">
               <TableCell className="w-6 px-1 pb-2 pt-0" />
-              {/* colSpan was 7 while the Discount column was present — restore
-                  it to 7 when that column comes back. */}
               <TableCell colSpan={6} className="pb-3 pt-1">
                 {rowPills.length > 0 && (
                   <>
-                    {/* Narrow: one dot per badge, full badge on hover/tap */}
+                  
                     <div className="flex flex-wrap items-center gap-1.75 lg:gap-2  pl-1">
                       {rowPills.map((pill) => {
                         const pillId = `${item.id}:${pill.key}`;
@@ -1077,24 +1112,20 @@ export default function InvoiceItemsSelector({
                         );
                       })}
                     </div>
-
-                    {/* Wide: the badges themselves */}
-                    {/* <div className="hidden flex-wrap items-center gap-1.5 lg:flex">
-                      {rowPills.map((pill) => (
-                        <Fragment key={pill.key}>{pill.element}</Fragment>
-                      ))}
-                    </div> */}
                   </>
                 )}
               </TableCell>
               <TableCell className="w-8 pb-2 pt-0" />
-            </TableRow>
+            </TableRow> */}
           </Fragment>
         );
       })}
 
-      <TableRow className="hover:bg-gray-50/70 transition-colors ">
-        <TableCell colSpan={10} className="p-0">
+      <TableRow className="hover:bg-blue-50/70 transition-colors ">
+        {/* 8 columns while Discount is hidden — 9 when it comes back. An
+            over-long colSpan is clamped rather than erroring, which is why the
+            stale 10 here went unnoticed. */}
+        <TableCell colSpan={8} className="p-0">
           <button
             onClick={addItem}
             className="flex w-full items-center gap-2 text-blue-600 font-semibold text-sm hover:text-blue-700 transition-colors px-4 py-3"
