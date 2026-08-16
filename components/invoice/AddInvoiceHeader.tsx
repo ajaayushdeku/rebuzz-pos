@@ -15,18 +15,21 @@ export default function AddInvoiceHeader() {
         <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 min-w-[100px]">
           Description
         </TableHead>
-        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-center min-w-[65px] w-[75px]">
+        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-center min-w-[65px] w-[85px]">
           Qty
         </TableHead>
-        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-center min-w-[70px] w-[85px]">
+        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-center min-w-[70px] w-[95px]">
           Price
         </TableHead>
         <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-right min-w-[60px]">
           Amount
         </TableHead>
-        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-center">
+        {/* ── Discount column temporarily hidden ──
+            Paired with the matching <TableCell> in InvoiceItemsSelector and the
+            pills-row colSpan there. Restore all three together. */}
+        {/* <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-center">
           Discount
-        </TableHead>
+        </TableHead> */}
         <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-center">
           Taxable
         </TableHead>

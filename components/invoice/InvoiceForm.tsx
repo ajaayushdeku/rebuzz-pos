@@ -49,6 +49,8 @@ interface InvoiceFormProps {
   creditUserId?: string;
   creditItems?: CreditItem[];
   creditPaymentHistory?: CreditPayment[];
+  // ── Full customer profile (fetched by the edit page) ──
+  customerProfile?: Customer;
 }
 
 const DEFAULT_ITEM: Omit<InvoiceItem, "id"> = {
@@ -541,6 +543,7 @@ export default function InvoiceForm({
   creditUserId,
   creditItems = [],
   creditPaymentHistory = [],
+  customerProfile,
 }: InvoiceFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -558,23 +561,27 @@ export default function InvoiceForm({
 
   const tickets = initialData?.Tickets;
 
+  const profileName = customerProfile?.name;
+
   // ── State — pre-filled from initialData in edit mode ─────────────────────
 
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
-    tickets
-      ? ({
-          // Use actual customer name if available, fallback to ticketName
-          id: creditUserId ?? "",
-          name:
-            creditDetails?.credit?.user?.name ??
-            initialData?.customerName ??
-            tickets.ticketName ??
-            "",
-          email: tickets.customerEmail ?? "",
-          phone:
-            (creditDetails?.credit?.user?.phone || tickets.phoneNumber) ?? "",
-        } as Customer)
-      : null,
+    customerProfile ??
+      (tickets
+        ? ({
+            // Use actual customer name if available, fallback to ticketName
+            id: creditUserId ?? "",
+            name:
+              profileName ??
+              creditDetails?.credit?.user?.name ??
+              initialData?.customerName ??
+              tickets.ticketName ??
+              "",
+            email: tickets.customerEmail ?? "",
+            phone:
+              (creditDetails?.credit?.user?.phone || tickets.phoneNumber) ?? "",
+          } as Customer)
+        : null),
   );
 
   // UI only — the picker starts open when there's no customer yet.

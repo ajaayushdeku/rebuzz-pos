@@ -69,7 +69,7 @@ const DOT_TONE: Record<PillTone, string> = {
   danger: "bg-red-100 text-red-600 ring-red-300/70",
   warning: "bg-amber-100 text-amber-600 ring-amber-300/70",
   info: "bg-blue-100 text-blue-600 ring-blue-300/70",
-  tax: "bg-violet-100 text-violet-600 ring-violet-400/70",
+  tax: "bg-gray-100 text-slate-600 ring-slate-400/80",
 };
 
 function PillDot({
@@ -136,13 +136,55 @@ function PillDot({
   );
 }
 
+// ── Stock display ─────────────────────────────────────────────────────────
+
+type StockLevel = "untracked" | "out" | "low" | "ok";
+
+/**
+ * How a stock count should read in the UI.
+ *
+ * `untracked` covers the two cases that both mean "no number worth showing":
+ * the product doesn't use stocks at all, or the API returned no count for it.
+ * Those are deliberately not rendered as "0" — an untracked product is not an
+ * empty one.
+ */
+function stockLevel(
+  tracksStock: boolean,
+  inStock: number | undefined,
+  lowStock: number | undefined,
+): StockLevel {
+  if (!tracksStock || inStock === undefined) return "untracked";
+  if (inStock <= 0) return "out";
+  // "out" is already returned above, so inStock >= 1 here and a lowStock of 0
+  // can never match — no extra guard needed.
+  if (lowStock !== undefined && inStock <= lowStock) return "low";
+  return "ok";
+}
+
+const STOCK_TONE: Record<Exclude<StockLevel, "untracked">, string> = {
+  out: "border-red-200 bg-red-50 text-red-600",
+  low: "border-amber-200 bg-amber-50 text-amber-700",
+  ok: "border-emerald-200 bg-emerald-50 text-emerald-700",
+};
+
+/** Badge copy for a stock level — "12 in stock" / "3 left" / "Out of stock". */
+function stockLabel(
+  level: Exclude<StockLevel, "untracked">,
+  inStock: number,
+  locale: string,
+): string {
+  if (level === "out") return "Out of stock";
+  const count = formatNumber(inStock, locale);
+  return level === "low" ? `${count} left` : `${count} in stock`;
+}
+
 export default function InvoiceItemsSelector({
   products,
   items,
   onItemsChange,
   masterDiscounts,
   // onAddDiscount,
-  onRemoveDiscount,
+  // onRemoveDiscount,
   activeTax,
   // refetchProducts,
 }: InvoiceItemsSelectorProps) {
@@ -546,7 +588,7 @@ export default function InvoiceItemsSelector({
                 </span>
               </>
             )}
-            <button
+            {/* <button
               type="button"
               className="ml-0.5 rounded-full hover:bg-blue-300 p-0.5 transition-colors"
               onClick={(e) => {
@@ -556,7 +598,7 @@ export default function InvoiceItemsSelector({
               }}
             >
               <X className="w-2.5 h-2.5" />
-            </button>
+            </button> */}
           </Badge>
         ),
       });
@@ -584,11 +626,11 @@ export default function InvoiceItemsSelector({
         icon: Receipt,
         label: `${activeTax.name} (${activeTax.rate}%) — ${formatCurrencySymbolOnly(currency.symbol)} ${taxAmount.toFixed(2)}`,
         element: (
-          <Badge className="flex items-center gap-1 bg-violet-100 text-violet-700 hover:bg-violet-200 text-xs">
+          <Badge className="flex items-center gap-1 bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs">
             <span className="text-[11px] font-semibold  tracking-wider leading-none">
               {activeTax.name}
             </span>
-            <span className="text-[11px] text-violet-500  tracking-wider leading-none">
+            <span className="text-[11px] text-slate-500  tracking-wider leading-none">
               ({activeTax.rate}%) :
             </span>
             <span className="text-[11px] font-medium  tracking-wider  leading-none">
@@ -624,6 +666,15 @@ export default function InvoiceItemsSelector({
 
     return pills;
   };
+
+  // ── Variant picker derived data ──
+  // The picker only carries the variants themselves, but whether their stock
+  // counts mean anything depends on the PARENT product's `usesStocks` flag —
+  // so resolve the parent once here rather than per tile.
+  const variantPickerTracksStock = variantPicker
+    ? (products.find((p) => p.id === variantPicker.productId)?.usesStocks ??
+      false)
+    : false;
 
   return (
     <>
@@ -765,13 +816,24 @@ export default function InvoiceItemsSelector({
                                 const hasVariants =
                                   product.variants &&
                                   product.variants.length > 0;
-                                const isLowStock =
-                                  !hasVariants &&
-                                  product.usesStocks &&
-                                  product.inStock !== undefined &&
-                                  product.lowStock !== undefined &&
-                                  product.inStock > 0 &&
-                                  product.inStock <= product.lowStock;
+                                // A variant product holds no stock of its own —
+                                // its total is the sum across variants, which
+                                // the variant picker then breaks back down per
+                                // tile.
+                                const stockCount = hasVariants
+                                  ? (product.variants ?? []).reduce(
+                                      (sum, v) => sum + (v.inStock ?? 0),
+                                      0,
+                                    )
+                                  : product.inStock;
+                                // An aggregate has no meaningful low-stock
+                                // threshold, so only a flat product can read as
+                                // "low" here.
+                                const level = stockLevel(
+                                  product.usesStocks,
+                                  stockCount,
+                                  hasVariants ? undefined : product.lowStock,
+                                );
                                 return (
                                   <CommandItem
                                     key={product.id}
@@ -794,14 +856,23 @@ export default function InvoiceItemsSelector({
                                           {product.name}
                                         </span>
                                         {hasVariants && (
-                                          <span className="inline-flex items-center gap-0.5 text-[9px] px-1 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200 font-medium whitespace-nowrap">
-                                            <Layers className="h-2.5 w-2.5" />
+                                          <span className="inline-flex items-center gap-0.5 text-[9px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200 font-medium whitespace-nowrap">
+                                            {/* <Layers size={5} /> */}
                                             {product.variants?.length} variants
                                           </span>
                                         )}
-                                        {isLowStock && (
-                                          <span className="text-[9px] px-1 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200 font-medium whitespace-nowrap">
-                                            Low Stock
+                                        {level !== "untracked" && (
+                                          <span
+                                            className={cn(
+                                              "text-[9px] px-2 py-0.5 rounded-full border font-medium whitespace-nowrap tabular-nums",
+                                              STOCK_TONE[level],
+                                            )}
+                                          >
+                                            {stockLabel(
+                                              level,
+                                              stockCount ?? 0,
+                                              currency.locale,
+                                            )}
                                           </span>
                                         )}
                                       </div>
@@ -855,7 +926,7 @@ export default function InvoiceItemsSelector({
                     updateItem(item.id, "quantity", Number(e.target.value))
                   }
                   className={cn(
-                    "text-right h-8 text-[13px] sm:text-[11px]  font-semibold  tracking-wider px-1.5 no-spinner tabular-nums",
+                    "text-right h-8 text-[14px] sm:text-[12px] tracking-wider px-1.5 no-spinner tabular-nums",
                     stockErrors[item.id] &&
                       "border-red-400 focus-visible:ring-red-400",
                   )}
@@ -870,7 +941,7 @@ export default function InvoiceItemsSelector({
               {/* Unit price */}
               <TableCell className="min-w-[60px] w-[85px] relative ">
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-slate-400">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] sm:text-[11px] text-slate-400">
                     {currency.symbol}
                   </span>
                   <Input
@@ -885,12 +956,12 @@ export default function InvoiceItemsSelector({
                         : undefined
                     }
                     className={cn(
-                      "text-right h-8 text-[13px] sm:text-[11px] font-semibold  tracking-wider px-1.5 no-spinner tabular-nums",
+                      "text-right h-8 md:text-[14px] sm:text-[12px] tracking-wider px-1.5 no-spinner tabular-nums",
                       showDiscountedUnit && "text-gray-400 line-through",
                     )}
                   />
                   {showDiscountedUnit && (
-                    <p className="absolute right-0 mt-1 pr-1.5 text-right text-[11px] font-semibold leading-none text-green-600 tabular-nums">
+                    <p className="absolute right-0 mt-1 pr-1.5 text-right text-[13px] sm:text-[11px] font-semibold leading-none text-green-600 tabular-nums">
                       {formatCurrencySymbolOnly(currency.symbol)}{" "}
                       {discountedUnit.toFixed(2)}
                     </p>
@@ -899,7 +970,7 @@ export default function InvoiceItemsSelector({
               </TableCell>
 
               {/* Row total */}
-              <TableCell className="min-w-[60px] text-right font-semibold text-[13px] sm:text-[11px] text-gray-800 tabular-nums">
+              <TableCell className="min-w-[60px] text-right font-semibold text-[14px]  text-gray-800 tabular-nums">
                 {formatCurrencySymbol(
                   (() => {
                     const rowSubtotal = item.quantity * item.price;
@@ -920,8 +991,10 @@ export default function InvoiceItemsSelector({
                 )}{" "}
               </TableCell>
 
-              {/* Discount column — + button opens modal */}
-              <TableCell className="text-center">
+              {/* ── Discount column temporarily hidden ──
+                  Paired with the matching <TableHead> in AddInvoiceHeader and
+                  the pills-row colSpan below. Restore all three together. */}
+              {/* <TableCell className="text-center">
                 <div className="flex justify-center">
                   <button
                     type="button"
@@ -932,7 +1005,7 @@ export default function InvoiceItemsSelector({
                     <Plus className="w-3 h-3" />
                   </button>
                 </div>
-              </TableCell>
+              </TableCell> */}
 
               {/* ── Taxable toggle ── */}
               <TableCell className="text-center">
@@ -981,7 +1054,9 @@ export default function InvoiceItemsSelector({
             <TableRow className="border-b border-gray-100 hover:bg-gray-50/70 transition-colors">
               {/* Skip grip + product columns */}
               <TableCell className="w-6 px-1 pb-2 pt-0" />
-              <TableCell colSpan={7} className="pb-3 pt-1">
+              {/* colSpan was 7 while the Discount column was present — restore
+                  it to 7 when that column comes back. */}
+              <TableCell colSpan={6} className="pb-3 pt-1">
                 {rowPills.length > 0 && (
                   <>
                     {/* Narrow: one dot per badge, full badge on hover/tap */}
@@ -1124,22 +1199,41 @@ export default function InvoiceItemsSelector({
               </button>
             </div>
 
-            {/* Variant list */}
+            {/* ── Variant list ──
+                One full-width row per variant: label and price on the left,
+                stock on the right, so the stock column lines up down the list
+                and is scannable in one pass. */}
             <div className="max-h-80 overflow-y-auto px-3 py-3 space-y-1.5">
               {variantPicker.variants.map((variant) => {
                 const label = variant.optionValues.join(" · ");
-                const isLowStock =
-                  variant.inStock !== undefined &&
-                  variant.lowStock !== undefined &&
-                  variant.inStock > 0 &&
-                  variant.inStock <= variant.lowStock;
+                const level = stockLevel(
+                  variantPickerTracksStock,
+                  variant.inStock,
+                  variant.lowStock,
+                );
+                // Matches how the product list already treats a flat product
+                // with no stock — it's filtered out and unpickable there, so
+                // an empty variant is unpickable here.
+                const isOut = level === "out";
 
                 return (
                   <button
                     key={variant.id}
                     type="button"
+                    disabled={isOut}
                     onClick={() => handleVariantSelect(variant)}
-                    className="w-full flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3 py-2.5 text-left transition hover:border-blue-400 hover:bg-blue-50/50"
+                    title={
+                      isOut
+                        ? `${label} — out of stock`
+                        : `Add ${label} to the invoice`
+                    }
+                    className={cn(
+                      "w-full flex items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-left transition",
+                      "focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1",
+                      isOut
+                        ? "cursor-not-allowed border-slate-200 bg-slate-50 opacity-60"
+                        : "cursor-pointer border-slate-200 hover:border-blue-400 hover:bg-blue-50/50",
+                    )}
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-50 text-violet-600">
@@ -1149,23 +1243,35 @@ export default function InvoiceItemsSelector({
                         <p className="truncate text-[13px] font-medium capitalize text-slate-800">
                           {label}
                         </p>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[11px] text-slate-400">
-                            {formatCurrencySymbol(
-                              variant.price,
-                              currency.symbol,
-                              currency.locale,
-                            )}
-                          </span>
-                          {isLowStock && (
-                            <span className="text-[9px] px-1 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200 font-medium whitespace-nowrap">
-                              Low Stock
-                            </span>
+                        <span className="text-[11px] tabular-nums text-slate-400">
+                          {formatCurrencySymbol(
+                            variant.price,
+                            currency.symbol,
+                            currency.locale,
                           )}
-                        </div>
+                        </span>
                       </div>
                     </div>
-                    <Plus className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+
+                    <div className="flex shrink-0 items-center gap-2">
+                      {level !== "untracked" && (
+                        <span
+                          className={cn(
+                            "rounded-full border px-1.5 py-0.5 text-[10px] font-semibold tabular-nums whitespace-nowrap",
+                            STOCK_TONE[level],
+                          )}
+                        >
+                          {stockLabel(
+                            level,
+                            variant.inStock ?? 0,
+                            currency.locale,
+                          )}
+                        </span>
+                      )}
+                      {!isOut && (
+                        <Plus className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+                      )}
+                    </div>
                   </button>
                 );
               })}

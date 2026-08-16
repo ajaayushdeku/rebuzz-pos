@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { getTicketByInvoice } from "@/services/apiTicket.client";
 import { useInvoiceCredit } from "@/components/invoice/modals/useInvoiceTicket";
+import { mapRawCustomerToCustomer, type Customer } from "@/lib/types/customer";
 import InvoiceForm from "@/components/invoice/InvoiceForm";
 
 export default function Page() {
@@ -25,6 +26,24 @@ export default function Page() {
     invoice,
     !!invoice?.invoice,
   );
+
+  // Fetch the full customer profile so the form is populated with complete
+  // customer details (loyalty points, tier, etc.) — not just name/email/phone.
+  const { data: customerProfile } = useQuery<Customer | null>({
+    queryKey: ["customer-lookup", invoice?.customerEmail, invoice?.phoneNumber],
+    queryFn: async () => {
+      const creditUser = credit?.user as { phone?: string } | undefined;
+      const identifier =
+        invoice?.customerEmail || creditUser?.phone || invoice?.phoneNumber;
+      if (!identifier) return null;
+      const query = `email=${invoice?.customerEmail}`;
+      const response = await fetch(`/api/customers/lookup?${query}`);
+      const result = await response.json();
+      const raw = result?.data?.users?.[0];
+      return raw ? mapRawCustomerToCustomer(raw) : null;
+    },
+    enabled: !!invoice,
+  });
 
   if (isLoading) {
     return (
@@ -64,6 +83,7 @@ export default function Page() {
       creditUserId={credit?.user?._id}
       creditItems={creditDetail?.items ?? []}
       creditPaymentHistory={creditDetail?.paymentHistory ?? []}
+      customerProfile={customerProfile ?? undefined}
     />
   );
 }
