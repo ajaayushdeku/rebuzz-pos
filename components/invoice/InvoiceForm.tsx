@@ -10,6 +10,9 @@ import { InvoiceItem } from "@/lib/types/invoice";
 import { Product } from "@/lib/types/product";
 import { CreateTicketInput } from "@/lib/types/ticket";
 import {
+  Credit,
+  CreditDetail,
+  updateCredit,
   updateCreditItems,
   type CreditItem,
   type CreditPayment,
@@ -17,6 +20,7 @@ import {
 
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { Save } from "lucide-react";
 
@@ -39,7 +43,10 @@ interface InvoiceFormProps {
   invoiceNumber?: string;
   // ── Credit-invoice support ──
   isCreditInvoice?: boolean;
+  credit?: Credit;
+  creditDetails?: CreditDetail;
   creditId?: string;
+  creditUserId?: string;
   creditItems?: CreditItem[];
   creditPaymentHistory?: CreditPayment[];
 }
@@ -528,11 +535,15 @@ export default function InvoiceForm({
   isEditMode,
   invoiceNumber,
   isCreditInvoice = false,
+  credit,
+  creditDetails,
   creditId,
+  creditUserId,
   creditItems = [],
   creditPaymentHistory = [],
 }: InvoiceFormProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { currency } = useCurrency();
   const { mutate: saveTicket, isPending: isCreating } = useCreateTicket();
   const { mutate: updateTicket, isPending: isUpdating } = useUpdateTicket();
@@ -553,9 +564,15 @@ export default function InvoiceForm({
     tickets
       ? ({
           // Use actual customer name if available, fallback to ticketName
-          name: initialData?.customerName ?? tickets.ticketName ?? "",
+          id: creditUserId ?? "",
+          name:
+            creditDetails?.credit?.user?.name ??
+            initialData?.customerName ??
+            tickets.ticketName ??
+            "",
           email: tickets.customerEmail ?? "",
-          phone: tickets.phoneNumber ?? "",
+          phone:
+            (creditDetails?.credit?.user?.phone || tickets.phoneNumber) ?? "",
         } as Customer)
       : null,
   );
@@ -1076,9 +1093,34 @@ export default function InvoiceForm({
       };
 
       setIsSavingCredit(true);
-      updateCreditItems(creditId, creditPayload)
+
+      // Also update the credit's user and/or ticketName via the PATCH API.
+      const creditUpdatePayload: { user?: string; ticketName?: string } = {};
+      if (selectedCustomer?.id) creditUpdatePayload.user = selectedCustomer.id;
+      if (invoiceTitle) creditUpdatePayload.ticketName = invoiceTitle;
+
+      const creditUpdatePromise =
+        Object.keys(creditUpdatePayload).length > 0
+          ? updateCredit(creditId, creditUpdatePayload)
+          : Promise.resolve();
+
+      Promise.all([
+        updateCreditItems(creditId, creditPayload),
+        creditUpdatePromise,
+      ])
         .then(() => {
           toast.success("Credit invoice updated");
+          // Invalidate the ticket + credit caches so the detail page shows the
+          // updated content immediately (same as the normal-invoice path).
+          queryClient.invalidateQueries({
+            queryKey: ["ticket", invoiceNumber],
+          });
+          queryClient.invalidateQueries({ queryKey: ["credits"] });
+          queryClient.invalidateQueries({ queryKey: ["credits", "completed"] });
+          queryClient.invalidateQueries({ queryKey: ["credits", "archived"] });
+          queryClient.invalidateQueries({
+            queryKey: ["credit-detail-by-id", creditId],
+          });
           router.push(`/invoices/${invoiceNumber}`);
         })
         .catch((err) => {

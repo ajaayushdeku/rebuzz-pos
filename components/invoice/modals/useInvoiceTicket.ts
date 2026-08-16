@@ -66,13 +66,14 @@ export function useInvoiceTicket(
   const invoice: TicketInvoice | undefined = data?.data?.Tickets;
 
   const { data: customerProfile } = useQuery<CustomerProfile | null>({
-    queryKey: ["customer-lookup", invoice?.phoneNumber, invoice?.customerEmail],
+    queryKey: ["customer-lookup", invoice?.customerEmail, invoice?.phoneNumber],
     queryFn: async () => {
-      const identifier = invoice?.phoneNumber || invoice?.customerEmail;
+      const identifier = invoice?.customerEmail || invoice?.phoneNumber;
       if (!identifier) return null;
-      const query = invoice?.phoneNumber
-        ? `phone=${invoice.phoneNumber}`
-        : `email=${invoice?.customerEmail}`;
+      // const query = invoice?.phoneNumber
+      //   ? `phone=${invoice.phoneNumber}`
+      //   : `email=${invoice?.customerEmail}`;
+      const query = `email=${invoice?.customerEmail}`;
       const response = await fetch(`/api/customers/lookup?${query}`);
       const result = await response.json();
       return result?.data?.users?.[0] || null;
@@ -213,6 +214,12 @@ export function useInvoiceDocumentData(
           total: credit.total,
           grandTotal: credit.grandTotal,
           taxamt: credit.taxamt,
+          user: {
+            _id: credit.user?._id,
+            name: credit.user?.name,
+            phone: detail?.credit.user?.phone,
+            email: detail?.credit.user?.email,
+          },
         }
       : null,
     isLoading,

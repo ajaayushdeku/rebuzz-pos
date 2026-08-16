@@ -71,6 +71,12 @@ interface InvoicePreviewProps {
     total: number;
     grandTotal: number;
     taxamt: number;
+    user: {
+      _id: string;
+      name: string;
+      phone: string;
+      email: string;
+    };
   } | null;
   /** Renders the interactive preview chrome with a Desktop/Mobile toggle.
    *  Off by default so PDF/print/public rendering keep the raw document only. */
@@ -99,6 +105,12 @@ function InvoiceContent({
     total: number;
     grandTotal: number;
     taxamt: number;
+    user: {
+      _id: string;
+      name: string;
+      phone: string;
+      email: string;
+    };
   } | null;
   isMobile: boolean;
 }) {
@@ -211,11 +223,12 @@ function InvoiceContent({
             {invoiceTitle} #{invoice.invoice}
           </p>
           <p className="text-2xl font-bold text-gray-900 mt-3">
-            {formatCurrencySymbol(
+            {/* {formatCurrencySymbol(
               Number(invoice.grandTotal),
               currency.symbol,
               currency.locale,
-            )}
+            )} */}
+            {invoice.ticketName}
           </p>
           <p className="text-xs text-blue-600 mt-1">
             Issued on{" "}
@@ -500,7 +513,8 @@ function InvoiceContent({
 
           {invoice.phoneNumber && (
             <p>
-              <span className="font-medium">Phone:</span> {invoice.phoneNumber}
+              <span className="font-medium">Phone:</span>{" "}
+              {credit?.user?.phone || invoice.phoneNumber}
             </p>
           )}
 

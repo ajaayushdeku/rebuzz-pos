@@ -58,7 +58,10 @@ export default function Page() {
       isEditMode={true}
       invoiceNumber={id}
       isCreditInvoice={!!credit}
+      credit={credit}
+      creditDetails={creditDetail}
       creditId={credit?._id}
+      creditUserId={credit?.user?._id}
       creditItems={creditDetail?.items ?? []}
       creditPaymentHistory={creditDetail?.paymentHistory ?? []}
     />

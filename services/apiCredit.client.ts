@@ -2,7 +2,7 @@
 
 export interface Credit {
   _id: string;
-  user: { _id: string; name: string } | null;
+  user: { _id: string; name: string; phone?: string; email?: string } | null;
   adminId: string;
   total: number;
   grandTotal: number;
@@ -226,6 +226,32 @@ export async function archiveCredit(creditId: string): Promise<void> {
         ?.message ||
         (data as { message?: string }).message ||
         "Failed to archive credit",
+    );
+  }
+}
+
+/**
+ * Update a credit's user and/or ticketName.
+ *
+ * PATCH /api/credit/[creditId] — the backend accepts a partial body with
+ * `user` (customer ObjectId) and/or `ticketName`.
+ */
+export async function updateCredit(
+  creditId: string,
+  payload: { user?: string; ticketName?: string },
+): Promise<void> {
+  const res = await fetch(`/api/credit/${creditId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data?.status === "error") {
+    throw new Error(
+      (data as { data?: { message?: string }; message?: string })?.data
+        ?.message ||
+        (data as { message?: string }).message ||
+        "Failed to update credit",
     );
   }
 }

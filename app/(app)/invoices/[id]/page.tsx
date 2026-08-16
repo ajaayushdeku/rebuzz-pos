@@ -116,15 +116,31 @@ const InvoiceDetailPage = () => {
   });
   const invoice = data?.data?.Tickets;
 
+  // Detect whether this invoice was ever a credit invoice (ongoing OR since
+  // fully paid) and load its full detail — independent of paidStatus or entry
+  // point. Drives the amount due / payment sections, the payment history and
+  // the Record Payment modal.
+  const { detail: creditDetail } = useInvoiceCredit(
+    invoice,
+    invoice?.invoice != null,
+  );
+  const creditForInvoice = creditDetail?.credit ?? null;
+  console.log("CREDITED INVOICE:", creditForInvoice);
+
   const { data: customerData, isLoading: isCustomerLoading } = useQuery({
-    queryKey: ["customer-lookup", invoice?.phoneNumber, invoice?.customerEmail],
+    queryKey: ["customer-lookup", invoice?.customerEmail, invoice?.phoneNumber],
     queryFn: async () => {
-      const identifier = invoice?.phoneNumber || invoice?.customerEmail;
+      const creditUser = creditForInvoice?.user as
+        | { phone?: string }
+        | undefined;
+      const identifier =
+        invoice?.customerEmail || creditUser?.phone || invoice?.phoneNumber;
       if (!identifier) return null;
 
-      const query = invoice.phoneNumber
-        ? `phone=${invoice.phoneNumber}`
-        : `email=${invoice.customerEmail}`;
+      // const query = invoice.phoneNumber
+      //   ? `phone=${invoice.phoneNumber}`
+      //   : `email=${invoice.customerEmail}`;
+      const query = `email=${invoice.customerEmail}`;
       const response = await fetch(`/api/customers/lookup?${query}`);
       const result = await response.json();
       return result?.data?.users?.[0] || null;
@@ -142,16 +158,6 @@ const InvoiceDetailPage = () => {
     retry: false,
   });
   const displayBillData = billDataQuery ?? null;
-
-  // Detect whether this invoice was ever a credit invoice (ongoing OR since
-  // fully paid) and load its full detail — independent of paidStatus or entry
-  // point. Drives the amount due / payment sections, the payment history and
-  // the Record Payment modal.
-  const { detail: creditDetail } = useInvoiceCredit(
-    invoice,
-    invoice?.invoice != null,
-  );
-  const creditForInvoice = creditDetail?.credit ?? null;
 
   // ── Send Reminder (resend) — reused by the invoice list too ──────────────
   const handleResendInvoice = async (invoiceTypeToSend?: string) => {
@@ -1267,6 +1273,7 @@ const InvoiceDetailPage = () => {
                       total: creditForInvoice.total,
                       grandTotal: creditForInvoice.grandTotal,
                       taxamt: creditForInvoice.taxamt,
+                      user: creditForInvoice.user,
                     }
                   : null
               }
@@ -1294,6 +1301,7 @@ const InvoiceDetailPage = () => {
                       total: creditForInvoice.total,
                       grandTotal: creditForInvoice.grandTotal,
                       taxamt: creditForInvoice.taxamt,
+                      user: creditForInvoice.user,
                     }
                   : null
               }
@@ -1319,6 +1327,7 @@ const InvoiceDetailPage = () => {
                       total: creditForInvoice.total,
                       grandTotal: creditForInvoice.grandTotal,
                       taxamt: creditForInvoice.taxamt,
+                      user: creditForInvoice.user,
                     }
                   : null
               }

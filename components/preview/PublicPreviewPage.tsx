@@ -29,14 +29,19 @@ const PublicPreviewPage = ({ type }: { type: InvoiceType }) => {
   // console.log("Invoice Data:", invoice);
 
   const { data: customerData, isLoading: isCustomerLoading } = useQuery({
-    queryKey: ["customer-lookup", invoice?.phoneNumber, invoice?.customerEmail],
+    queryKey: ["customer-lookup", invoice?.customerEmail, invoice?.phoneNumber],
     queryFn: async () => {
-      const identifier = invoice?.phoneNumber || invoice?.customerEmail;
+      const identifier =
+        invoice?.customerEmail ||
+        creditForInvoice?.user?.phone ||
+        invoice?.phoneNumber;
       if (!identifier) return null;
 
-      const query = invoice.phoneNumber
-        ? `phone=${invoice.phoneNumber}`
-        : `email=${invoice.customerEmail}`;
+      // const query = invoice.phoneNumber
+      //   ? `phone=${invoice.phoneNumber}`
+      //   : `email=${invoice.customerEmail}`;
+
+      const query = `email=${invoice.customerEmail}`;
       const response = await fetch(`/api/customers/lookup?${query}`);
       const result = await response.json();
       // console.log(result);
@@ -93,6 +98,7 @@ const PublicPreviewPage = ({ type }: { type: InvoiceType }) => {
                 total: creditForInvoice.total,
                 grandTotal: creditForInvoice.grandTotal,
                 taxamt: creditForInvoice.taxamt,
+                user: creditForInvoice.user,
               }
             : null
         }
