@@ -24,8 +24,8 @@ export default function PriceChangeImpact({ data }: PriceChangeImpactProps) {
       <LockDimFeactureOverlay component_name="Prime Change Impact" />
 
       {/* Header */}
-      <div className="flex items-center gap-2.5 mb-4 md:mb-5">
-        <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+      <div className="flex items-center gap-3 mb-4 md:mb-5">
+        <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
           <Tag size={15} className="text-amber-600" />
         </div>
         <ComponentHeader

@@ -15,18 +15,8 @@ import {
   ChevronUp,
   ChevronDown,
   Receipt,
-  AlertTriangle,
-  Loader2,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import {
   getPurposeColor,
   useTracker,
@@ -392,52 +382,21 @@ export default function RecentTransactions() {
       </div>
 
       {/* ── Delete confirmation modal ── */}
-      <Dialog
+      <DeleteConfirmDialog
         open={deleteTarget !== null}
         onOpenChange={(o) => {
           if (!o && !isDeleting) setDeleteTarget(null);
         }}
-      >
-        <DialogContent className="max-w-sm" showCloseButton={!isDeleting}>
-          <DialogHeader>
-            <div className="mx-auto mb-2 w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
-              <AlertTriangle className="h-6 w-6 text-red-500" />
-            </div>
-            <DialogTitle className="text-base font-semibold text-center text-gray-900">
-              Delete transaction?
-            </DialogTitle>
-            <DialogDescription className="text-center text-sm text-gray-500">
-              {deleteTarget
-                ? `“${deleteTarget.remark || getPurposeName(deleteTarget.purposeId)}” will be permanently removed. This action cannot be undone.`
-                : "This transaction will be permanently removed. This action cannot be undone."}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex-row gap-2 sm:justify-center">
-            <Button
-              variant="outline"
-              onClick={() => setDeleteTarget(null)}
-              disabled={isDeleting}
-              className="flex-1 sm:flex-none"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={confirmDelete}
-              disabled={isDeleting}
-              className="flex-1 sm:flex-none bg-red-600 text-white hover:bg-red-700"
-            >
-              {isDeleting ? (
-                <>
-                  <Loader2 size={14} className="animate-spin" /> Deleting...
-                </>
-              ) : (
-                "Delete"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        icon={Receipt}
+        title="Delete transaction?"
+        description={
+          deleteTarget
+            ? `“${deleteTarget.remark || getPurposeName(deleteTarget.purposeId)}” will be permanently removed. This action cannot be undone.`
+            : "This transaction will be permanently removed. This action cannot be undone."
+        }
+        onConfirm={confirmDelete}
+        isPending={isDeleting}
+      />
 
       {/* ── Edit transaction form ── */}
       <ExpenseIncomeForm

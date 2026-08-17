@@ -8,31 +8,20 @@ import {
   ChevronDown,
   ChevronUp,
   ArrowUpDown,
-  Wallet,
   // Eye,
   // Pencil,
   // Copy,
   // Send,
   // FileText,
   // Printer,
-  Trash2,
   ChevronLeft,
   ChevronRight,
-  Loader2,
   FileText,
 } from "lucide-react";
 import { Invoice } from "@/lib/types/invoice";
 import { LoyaltyTier } from "@/lib/types/customer";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatDatetime } from "@/utils/helper";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,6 +33,8 @@ import RecordPaymentModal from "@/components/invoice/modals/RecordPaymentModal";
 import ExportPdfModal from "@/components/invoice/modals/ExportPdfModal";
 import PrintInvoiceModal from "@/components/invoice/modals/PrintInvoiceModal";
 import EmailInvoiceModal from "@/components/invoice/modals/EmailInvoiceModal";
+import DeleteInvoiceModal from "@/components/invoice/modals/DeleteInvoiceModal";
+import MoveToCreditModal from "@/components/invoice/modals/MoveToCreditModal";
 import toast from "react-hot-toast";
 import { parseNepalDateTime } from "../dashboardComponents/staffDash/staffDetail/staffDetailHelpers";
 import { moveInvoiceToCredit } from "@/services/apiCredit.client";
@@ -112,6 +103,34 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
       document.removeEventListener("keydown", onKeyDown);
     };
   }, []);
+
+  // Lifted out of the old inline modal's onClick so DeleteInvoiceModal can be
+  // handed a plain onConfirm.
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/invoices/${deleteTarget.invoice}/archive`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(
+          (data as { error?: string }).error || "Failed to delete invoice",
+        );
+      }
+      toast.success("Invoice deleted successfully");
+      setDeleteTarget(null);
+      window.location.reload();
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to delete invoice",
+      );
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const handleMoveToCredit = async () => {
     const invoiceNo = moveTarget?.invoice;
@@ -685,89 +704,13 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
       </div>
 
       {/* Delete Confirmation Modal */}
-      <Dialog
+      <DeleteInvoiceModal
         open={!!deleteTarget}
-        onOpenChange={(o) => !o && !deleting && setDeleteTarget(null)}
-      >
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-2">
-              <Trash2 className="h-5 w-5 text-red-600" />
-            </div>
-            <DialogTitle className="text-center text-base font-semibold">
-              Delete Invoice?
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="text-center space-y-1 py-1">
-            <p className="text-sm text-gray-600">
-              Are you sure you want to delete{" "}
-              <span className="font-semibold text-gray-900">
-                ORD-{deleteTarget?.invoice}
-              </span>
-              ?
-            </p>
-            <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mt-2">
-              This action cannot be undone.
-            </p>
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setDeleteTarget(null)}
-              disabled={deleting}
-              className="text-sm rounded-lg flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={async () => {
-                if (!deleteTarget) return;
-                setDeleting(true);
-                try {
-                  const res = await fetch(
-                    `/api/invoices/${deleteTarget.invoice}/archive`,
-                    {
-                      method: "DELETE",
-                      headers: { "Content-Type": "application/json" },
-                    },
-                  );
-                  if (!res.ok) {
-                    const data = await res.json().catch(() => ({}));
-                    throw new Error(
-                      (data as { error?: string }).error ||
-                        "Failed to delete invoice",
-                    );
-                  }
-                  toast.success("Invoice deleted successfully");
-                  setDeleteTarget(null);
-                  window.location.reload();
-                } catch (err) {
-                  toast.error(
-                    err instanceof Error
-                      ? err.message
-                      : "Failed to delete invoice",
-                  );
-                } finally {
-                  setDeleting(false);
-                }
-              }}
-              disabled={deleting}
-              className="bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg flex-1"
-            >
-              {deleting ? (
-                <span className="flex items-center gap-1.5">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Deleting...
-                </span>
-              ) : (
-                "Delete"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onClose={() => setDeleteTarget(null)}
+        invoiceNo={deleteTarget?.invoice}
+        isDeleting={deleting}
+        onConfirm={handleDelete}
+      />
 
       {/* Record Payment Modal */}
       <RecordPaymentModal
@@ -802,59 +745,13 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
       />
 
       {/* Move to Credit Confirmation Modal */}
-      <Dialog
+      <MoveToCreditModal
         open={!!moveTarget}
-        onOpenChange={(o) => !o && !moving && setMoveTarget(null)}
-      >
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <div className="mx-auto w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mb-2">
-              <Wallet className="h-5 w-5 text-amber-600" />
-            </div>
-            <DialogTitle className="text-center text-base font-semibold">
-              Move to Credit?
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="text-center space-y-1 py-1">
-            <p className="text-sm text-gray-600">
-              Move invoice{" "}
-              <span className="font-semibold text-gray-900">
-                ORD-{moveTarget?.invoice}
-              </span>{" "}
-              to the credit section?
-            </p>
-            <p className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mt-2">
-              It will be removed from this list.
-            </p>
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setMoveTarget(null)}
-              disabled={moving}
-              className="text-sm rounded-lg flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleMoveToCredit}
-              disabled={moving}
-              className="bg-amber-600 hover:bg-amber-700 text-white text-sm rounded-lg flex-1"
-            >
-              {moving ? (
-                <span className="flex items-center gap-1.5">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Moving...
-                </span>
-              ) : (
-                "Move to Credit"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onClose={() => setMoveTarget(null)}
+        invoiceNo={moveTarget?.invoice}
+        movingToCredit={moving}
+        onConfirm={handleMoveToCredit}
+      />
     </>
   );
 }

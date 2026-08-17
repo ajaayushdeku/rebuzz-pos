@@ -12,7 +12,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
-  Trash2,
   CreditCard,
   History,
 } from "lucide-react";
@@ -26,19 +25,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import CreditPaymentModal from "@/components/credit/CreditPaymentModal";
 import CreditPaymentHistory from "@/components/credit/CreditPaymentHistory";
 import EmailInvoiceModal from "@/components/invoice/modals/EmailInvoiceModal";
 import ExportPdfModal from "@/components/invoice/modals/ExportPdfModal";
 import PrintInvoiceModal from "@/components/invoice/modals/PrintInvoiceModal";
+import DeleteCreditModal from "@/components/invoice/modals/DeleteCreditModal";
 import {
   archiveCredit,
   fetchCreditDetail,
@@ -711,59 +703,13 @@ export default function CreditsTable({
       />
 
       {/* Delete (archive) confirmation */}
-      <Dialog
+      <DeleteCreditModal
         open={!!archiveTarget}
-        onOpenChange={(o) => !o && !archiving && setArchiveTarget(null)}
-      >
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-2">
-              <Trash2 className="h-5 w-5 text-red-600" />
-            </div>
-            <DialogTitle className="text-center text-base font-semibold">
-              Delete Credit?
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="text-center space-y-1 py-1">
-            <p className="text-sm text-gray-600">
-              Are you sure you want to delete{" "}
-              <span className="font-semibold text-gray-900">
-                {archiveTarget?.user?.name || "this credit"}
-              </span>
-              ?
-            </p>
-            <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mt-2">
-              This moves it to the archived list.
-            </p>
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setArchiveTarget(null)}
-              disabled={archiving}
-              className="text-sm rounded-lg flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleArchive}
-              disabled={archiving}
-              className="bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg flex-1"
-            >
-              {archiving ? (
-                <span className="flex items-center gap-1.5">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Deleting...
-                </span>
-              ) : (
-                "Delete"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onClose={() => setArchiveTarget(null)}
+        credit={archiveTarget}
+        isArchiving={archiving}
+        onConfirm={handleArchive}
+      />
     </>
   );
 }

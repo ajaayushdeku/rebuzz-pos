@@ -72,8 +72,8 @@ export default function UnitEconomics() {
     <div className="relative  w-full rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
       <LockDimFeactureOverlay component_name="Unit Economics" />
 
-      <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
           <Calculator size={15} className="text-emerald-600" />
         </div>
         <ComponentHeader title="Unit Economics" subHeader="" />

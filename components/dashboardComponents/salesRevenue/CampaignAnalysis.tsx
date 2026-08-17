@@ -94,8 +94,8 @@ export default function CampaignAnalysis({ data }: CampaignAnalysisProps) {
       <LockDimFeactureOverlay component_name="Campaign Analysis" />
 
       {/* Header */}
-      <div className="flex items-center gap-2.5 mb-4 md:mb-5">
-        <div className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
+      <div className="flex items-center gap-3 mb-4 md:mb-5">
+        <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
           <Megaphone size={15} className="text-violet-600" />
         </div>
         <ComponentHeader

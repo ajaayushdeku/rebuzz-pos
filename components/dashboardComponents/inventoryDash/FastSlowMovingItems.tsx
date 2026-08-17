@@ -173,7 +173,7 @@ const Panel = ({
       }`}
     >
       <div className="flex flex-row items-center gap-2">
-        <div className="flex items-center gap-2 mb-0.5">
+        <div className="flex items-center gap-3 mb-0.5">
           {isFast ? (
             <Flame size={18} className="text-green-600" />
           ) : (

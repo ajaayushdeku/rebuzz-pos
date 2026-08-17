@@ -115,8 +115,8 @@ const PeakDaysAnalysis = ({ data }: PeakDayDataProps) => {
   return (
     <div className="bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
       {/* HEADER */}
-      <div className="flex items-center gap-2.5 mb-4 md:mb-6">
-        <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+      <div className="flex items-center gap-3 mb-4 md:mb-6">
+        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
           <CalendarDays size={15} className="text-blue-600" />
         </div>
         <ComponentHeader

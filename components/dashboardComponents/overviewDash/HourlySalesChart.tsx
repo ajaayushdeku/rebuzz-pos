@@ -16,6 +16,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { FilterSelect } from "@/components/ui/FilterSelect";
 import { Clock } from "lucide-react";
 
 export interface HourlyData {
@@ -64,6 +65,20 @@ function toAmPm(hour24: string): string {
   const h12 = h % 12 || 12;
   return `${h12}:${String(m).padStart(2, "0")} ${period}`;
 }
+
+/**
+ * Options for the hour-range dropdown. "Custom" is listed but disabled: it is
+ * only ever reached by editing the From / To inputs, matching how the native
+ * <option disabled> behaved.
+ */
+const HOUR_RANGE_OPTIONS = [
+  { value: "all", label: "All Day (00:00 – 23:59)" },
+  ...HOUR_RANGES.filter((r) => !(r.start === 0 && r.end === 23)).map((r) => ({
+    value: `${r.start}-${r.end}`,
+    label: r.label,
+  })),
+  { value: "custom", label: "Custom", disabled: true },
+];
 
 export default function HourlySalesChart({ data }: HourlyDataProps) {
   const { currency } = useCurrency();
@@ -175,7 +190,7 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
       <div className=" flex flex-col  md:flex-row md:items-center md:justify-between gap-3 mb-4 md:mb-6">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center shrink-0">
-            <Clock size={16} />
+            <Clock size={15} />
           </div>
           <ComponentHeader
             title="Hourly Sales Trend"
@@ -186,26 +201,12 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
         {/* Hour Range Filter */}
         <div className="flex flex-col gap-1.5">
           <div className="flex flex-wrap items-center gap-2">
-            <select
+            <FilterSelect
               value={presetValue}
-              onChange={(e) => handlePresetChange(e.target.value)}
-              className="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent whitespace-nowrap"
-            >
-              <option value="all">All Day (00:00 – 23:59)</option>
-              {HOUR_RANGES.filter((r) => !(r.start === 0 && r.end === 23)).map(
-                (range) => (
-                  <option
-                    key={range.label}
-                    value={`${range.start}-${range.end}`}
-                  >
-                    {range.label}
-                  </option>
-                ),
-              )}
-              <option value="custom" disabled>
-                Custom
-              </option>
-            </select>
+              options={HOUR_RANGE_OPTIONS}
+              onChange={handlePresetChange}
+              className="w-[210px]"
+            />
 
             {/* Vertical divider */}
             <div className="w-px h-6 bg-gray-300 mx-1" />
@@ -221,7 +222,7 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                 max={23}
                 value={fromHour}
                 onChange={(e) => handleFromChange(Number(e.target.value))}
-                className="w-14 text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                className="w-14 text-xs border border-gray-200 rounded-lg px-2 py-2.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
               />
               <label className="text-xs text-gray-400 whitespace-nowrap">
                 To
@@ -232,7 +233,7 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                 max={23}
                 value={toHour}
                 onChange={(e) => handleToChange(Number(e.target.value))}
-                className="w-14 text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                className="w-14 text-xs border border-gray-200 rounded-lg px-2 py-2.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
               />
             </div>
           </div>

@@ -2,18 +2,17 @@
 
 import * as React from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  CalendarDays,
+  CalendarRange,
+  Check,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { FilterSelect } from "@/components/ui/FilterSelect";
 import { cn } from "@/lib/utils";
 
 export type DateRangeValue = {
@@ -318,103 +317,23 @@ export function DateRangeFilter({
 
         <DialogContent
           showCloseButton={false}
-          className="w-[360px] sm:w-[375px] p-0 rounded-2xl shadow-xl bg-white"
+          className="w-[calc(300vw-2rem)] sm:w-[720px] sm:max-w-[720px] p-0 gap-0 rounded-2xl shadow-xl bg-white"
         >
-          <div className="pt-6 pb-2 px-6">
-            {/* Mode Toggle */}
-            <div className="flex w-full rounded-lg overflow-hidden border border-gray-200">
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("single");
-                  const d = tempStartDate || parseDateStr(startInput);
-                  if (d) {
-                    setTempEndDate(d);
-                    setEndInput(toDateStr(d));
-                  }
-                }}
-                className={cn(
-                  "flex-1 py-2 text-sm font-medium transition-colors",
-                  mode === "single"
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : "bg-gray-50 text-gray-500 hover:text-gray-700 hover:bg-gray-100",
-                )}
-              >
-                Single
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode("range")}
-                className={cn(
-                  "flex-1 py-2 text-sm font-medium transition-colors",
-                  mode === "range"
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : "bg-gray-50 text-gray-500 hover:text-gray-700 hover:bg-gray-100",
-                )}
-              >
-                Range
-              </button>
-            </div>
-
-            {/* Preset dropdown */}
-            {showPresets && (
-              <div className="mt-3">
-                <Select
-                  value={preset || "month"}
-                  onValueChange={handlePresetChange}
-                >
-                  <SelectTrigger className="w-full h-10 text-sm border-gray-200 bg-white rounded-lg">
-                    <SelectValue placeholder="Quick select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PRESET_RANGES.map(({ value, label }) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {/* Date input fields */}
-            <div className="flex items-center gap-2 mt-3">
-              <div className="flex-1">
-                <label className="block text-xs text-gray-500 mb-1">
-                  {mode === "single" ? "Date" : "Start Date"}
-                </label>
-                <input
-                  type="date"
-                  value={startInput}
-                  onChange={(e) => handleStartInputChange(e.target.value)}
-                  onBlur={handleStartBlur}
-                  className="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              {mode === "range" && (
-                <div className="flex-1">
-                  <label className="block text-xs text-gray-500 mb-1">
-                    End Date
-                  </label>
-                  <input
-                    type="date"
-                    value={endInput}
-                    onChange={(e) => handleEndInputChange(e.target.value)}
-                    className="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Calendar */}
-            <div className="w-full mt-3">
+          {/* Two columns from sm up: calendar on the left, controls on the
+              right. Stacked, this ran ~600px tall and filled a laptop viewport;
+              side by side it is roughly half that, and the extra width is what
+              pays for it. */}
+          <div className="grid gap-5 p-5 sm:grid-cols-[minmax(0,1fr)_280px]">
+            {/* Calendar — `p-0` drops the component's own p-3, which was adding
+                24px of height inside an already tall modal. */}
+            <div>
               {mode === "single" ? (
                 <Calendar
                   mode="single"
                   selected={tempStartDate}
                   onSelect={handleSingleDateSelect}
                   defaultMonth={tempStartDate}
-                  className="w-full"
+                  className="p-0 mx-auto [--cell-size:--spacing(13)] [&_[data-day]]:text-[15px] [&_th]:text-[13px]"
                   disabled={(date) => date > new Date()}
                 />
               ) : (
@@ -424,31 +343,119 @@ export function DateRangeFilter({
                   onSelect={handleRangeSelect}
                   defaultMonth={tempStartDate}
                   numberOfMonths={1}
-                  className="w-full"
+                  className="p-0 mx-auto [--cell-size:--spacing(13)] [&_[data-day]]:text-[15px] [&_th]:text-[13px]"
                   disabled={(date) => date > new Date()}
                 />
               )}
             </div>
+
+            <div className="flex flex-col gap-3 sm:border-l sm:border-gray-100 sm:pl-5">
+              {/* Mode toggle — the app's pill tab treatment, matching the
+                  Recent Transactions / settings tab bars. */}
+              <div
+                role="tablist"
+                aria-label="Date selection mode"
+                className="flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === "single"}
+                  onClick={() => {
+                    setMode("single");
+                    const d = tempStartDate || parseDateStr(startInput);
+                    if (d) {
+                      setTempEndDate(d);
+                      setEndInput(toDateStr(d));
+                    }
+                  }}
+                  className={cn(
+                    "flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe]",
+                    mode === "single"
+                      ? "bg-white font-bold text-blue-950 shadow-sm"
+                      : "font-semibold text-blue-800 hover:text-blue-950",
+                  )}
+                >
+                  <CalendarDays size={14} className="shrink-0" />
+                  Single
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === "range"}
+                  onClick={() => setMode("range")}
+                  className={cn(
+                    "flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe]",
+                    mode === "range"
+                      ? "bg-white font-bold text-blue-950 shadow-sm"
+                      : "font-semibold text-blue-800 hover:text-blue-950",
+                  )}
+                >
+                  <CalendarRange size={14} className="shrink-0" />
+                  Range
+                </button>
+              </div>
+
+              {/* Preset dropdown */}
+              {showPresets && (
+                <FilterSelect
+                  value={preset || "month"}
+                  options={PRESET_RANGES}
+                  onChange={handlePresetChange}
+                  placeholder="Quick select"
+                  className="w-full"
+                />
+              )}
+
+              {/* Date input fields — stacked, since the column is narrow. */}
+              <div className="flex flex-col gap-2.5">
+                <div>
+                  <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
+                    {mode === "single" ? "Date" : "Start Date"}
+                  </label>
+                  <input
+                    type="date"
+                    value={startInput}
+                    onChange={(e) => handleStartInputChange(e.target.value)}
+                    onBlur={handleStartBlur}
+                    className="w-full h-9 px-3 text-xs tracking-[0.06em] border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                {mode === "range" && (
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      End Date
+                    </label>
+                    <input
+                      type="date"
+                      value={endInput}
+                      onChange={(e) => handleEndInputChange(e.target.value)}
+                      className="w-full h-9 px-3 text-xs tracking-[0.06em] border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Apply / Cancel buttons */}
-          <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
-            <Button
-              variant="ghost"
-              size="sm"
+          {/* Apply / Cancel buttons — same pair the confirm dialogs use. */}
+          <div className="flex items-center gap-2.5 px-5 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
+            <button
+              type="button"
               onClick={() => setOpen(false)}
-              className="text-gray-500 hover:text-gray-700 hover:bg-gray-200"
+              className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-[13px] font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
             >
               Cancel
-            </Button>
-            <Button
-              size="sm"
+            </button>
+            <button
+              type="button"
               onClick={handleApply}
               disabled={!canApply}
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-[13px] font-bold text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
+              <Check className="h-4 w-4" />
               Apply
-            </Button>
+            </button>
           </div>
         </DialogContent>
       </Dialog>

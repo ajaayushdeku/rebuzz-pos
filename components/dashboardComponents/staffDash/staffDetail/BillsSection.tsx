@@ -235,7 +235,7 @@ export default function BillsSection({
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 ">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
             <Receipt size={16} className="text-purple-500" />
           </div>
 
@@ -255,7 +255,7 @@ export default function BillsSection({
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 ">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
             <Receipt size={16} className="text-purple-500" />
           </div>
 
@@ -281,7 +281,7 @@ export default function BillsSection({
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 ">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
             <Receipt size={16} className="text-purple-500" />
           </div>
 

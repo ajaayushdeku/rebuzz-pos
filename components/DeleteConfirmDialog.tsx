@@ -1,73 +1,68 @@
 "use client";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { AlertTriangle, Trash2 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface DeleteConfirmDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
   description: string;
+  /**
+   * Badge icon, same contract as ModalShell's. Defaults to a warning triangle.
+   * Callers pass the icon of the thing being deleted; the red tint is what
+   * carries the "destructive" reading, so keep the colours red unless there's
+   * a reason not to.
+   */
+  icon?: LucideIcon;
+  iconColor?: string;
+  iconBgColor?: string;
+  /**
+   * Optional red callout below the description, for the one consequence the
+   * user most needs to see — "This action cannot be undone", "This moves it to
+   * the archived list".
+   */
+  warning?: string;
   onConfirm: () => void;
   isPending?: boolean;
 }
 
+/**
+ * The delete preset of {@link ConfirmDialog} — red tone, Delete / Deleting
+ * labels, a trash icon on the confirm button.
+ *
+ * Kept as its own component because a dozen call sites already speak this API;
+ * all the layout lives in ConfirmDialog, which refunds and move-to-credit share.
+ */
 export function DeleteConfirmDialog({
   open,
   onOpenChange,
   title,
   description,
+  icon = AlertTriangle,
+  iconColor = "text-red-500",
+  iconBgColor = "bg-red-50",
+  warning,
   onConfirm,
   isPending = false,
 }: DeleteConfirmDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
-            <AlertTriangle className="h-6 w-6 text-red-500" />
-          </div>
-          <DialogTitle className="text-center text-base font-semibold">
-            {title}
-          </DialogTitle>
-          <DialogDescription className="text-center text-sm text-gray-500">
-            {description}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter className="gap-2 sm:justify-center">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isPending}
-            className="text-sm rounded-lg"
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={onConfirm}
-            disabled={isPending}
-            className="text-sm rounded-lg"
-          >
-            {isPending ? (
-              <>
-                <Loader2 size={13} className="animate-spin mr-1.5" />
-                Deleting...
-              </>
-            ) : (
-              "Delete"
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <ConfirmDialog
+      open={open}
+      onClose={() => onOpenChange(false)}
+      icon={icon}
+      iconColor={iconColor}
+      iconBgColor={iconBgColor}
+      title={title}
+      description={description}
+      warning={warning}
+      tone="danger"
+      confirmLabel="Delete"
+      pendingLabel="Deleting..."
+      confirmIcon={Trash2}
+      onConfirm={onConfirm}
+      isPending={isPending}
+    />
   );
 }

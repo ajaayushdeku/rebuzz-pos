@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, Shapes } from "lucide-react";
 import {
   useCategories,
   useCreateCategory,
@@ -12,7 +12,7 @@ import toast from "react-hot-toast";
 import type { Category } from "@/lib/types/category";
 import CategoryTable from "@/components/settingsComponents/categories/CategoryTable";
 import EditCategoryModal from "@/components/settingsComponents/categories/EditCategoryModal";
-import DeleteConfirmModal from "@/components/settingsComponents/DeleteConfirmModal";
+import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { Button } from "@/components/ui/button";
 
 type CategoryForm = {
@@ -160,7 +160,7 @@ export default function CategorySettingsPage() {
       />
 
       {/* Delete confirmation modal */}
-      <DeleteConfirmModal
+      <DeleteConfirmDialog
         open={deleteModalOpen}
         onOpenChange={(o) => {
           if (!o) {
@@ -169,13 +169,14 @@ export default function CategorySettingsPage() {
             setDeleteTargetName("");
           }
         }}
-        title="Delete Category"
-        message={
+        icon={Shapes}
+        title="Delete category?"
+        description={
           deleteTargetName
-            ? `Delete "${deleteTargetName}"? This cannot be undone.`
-            : ""
+            ? `“${deleteTargetName}” will be permanently removed.`
+            : "This category will be permanently removed."
         }
-        itemName={deleteTargetName ? deleteTargetName : ""}
+        warning="This action cannot be undone."
         onConfirm={confirmDelete}
         isPending={deleting}
       />

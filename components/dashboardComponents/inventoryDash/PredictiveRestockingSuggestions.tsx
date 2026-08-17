@@ -94,8 +94,8 @@ export default function PredictiveRestockingSuggestions({
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
       <div className="mb-6">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
             <PackagePlus size={15} className="text-indigo-600" />
           </div>
           <ComponentHeader

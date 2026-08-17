@@ -94,8 +94,8 @@ function BreakdownSection({
       </h3>
 
       {colored.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+        <div className="flex flex-col items-center justify-center py-12 gap-3">
+          <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mb-3">
             <Percent size={24} className="text-gray-500" />
           </div>
           <p className="text-sm font-medium text-gray-500">{emptyLabel}</p>
@@ -244,9 +244,9 @@ export default function TaxRateBreakdown() {
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6">
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-3">
         <div
-          className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
           style={{
             background: "linear-gradient(90deg, #2a9070c3 50%, #7c3aedbd 50%)",
           }}

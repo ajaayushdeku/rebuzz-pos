@@ -105,8 +105,8 @@ export default function MenuEngineeringMatrix() {
 
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
             <Grid2x2 size={15} className="text-indigo-600" />
           </div>
           <ComponentHeader

@@ -1,7 +1,7 @@
 "use client";
 
-import { RotateCcw, Loader2 } from "lucide-react";
-import ModalShell from "@/components/ui/ModalShell";
+import { RotateCcw } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import type { Transaction } from "./transaction-columns";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -14,6 +14,10 @@ interface RefundModalProps {
   isRefunding: boolean;
 }
 
+/**
+ * Renders through the shared {@link ConfirmDialog} so it matches the delete
+ * prompts. `warning` tone — a refund is irreversible but isn't a deletion.
+ */
 export default function RefundModal({
   open,
   transaction,
@@ -22,64 +26,35 @@ export default function RefundModal({
   isRefunding,
 }: RefundModalProps) {
   const { currency } = useCurrency();
+
   return (
-    <ModalShell
+    <ConfirmDialog
       open={open}
       onClose={onClose}
-      busy={isRefunding}
-      title="Refund Transaction"
       icon={RotateCcw}
-      iconColor="text-amber-600"
-      iconBgColor="bg-amber-100"
-      maxWidth="max-w-lg"
-    >
-      <div className="text-center space-y-1 py-1 flex flex-col items-center">
-        <p className="text-sm text-gray-600">
-          Are you sure you want to refund{" "}
-          <span className="font-semibold text-gray-900">{transaction?.id}</span>
-          ?
-        </p>
-        {transaction && (
-          <p className="text-xs text-gray-400">
-            {transaction.invoiceName || "—"} ·{" "}
-            {formatCurrencySymbol(
+      iconColor="text-orange-600"
+      iconBgColor="bg-orange-50"
+      title="Refund transaction?"
+      description={
+        transaction?.id
+          ? `“${transaction.id}” will be refunded.`
+          : "This transaction will be refunded."
+      }
+      detail={
+        transaction
+          ? `${transaction.invoiceName || "—"} · ${formatCurrencySymbol(
               Number(transaction.amount),
               currency.symbol,
               currency.locale,
-            )}
-          </p>
-        )}
-        <p className="text-xs text-orange-600 w-[400px] bg-orange-50 border border-orange-100 rounded-lg px-3 py-2 mt-2">
-          This action cannot be undone.
-        </p>
-      </div>
-
-      <div className="flex items-center justify-end gap-2 mt-4">
-        <button
-          onClick={onClose}
-          disabled={isRefunding}
-          className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={onConfirm}
-          disabled={isRefunding}
-          className="rounded-lg bg-orange-500 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-orange-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
-        >
-          {isRefunding ? (
-            <span className="flex items-center justify-center gap-1.5">
-              <Loader2 size={13} className="animate-spin" />
-              Refunding...
-            </span>
-          ) : (
-            <span className="flex items-center justify-center gap-1.5">
-              <RotateCcw className="h-4 w-4" />
-              Confirm Refund
-            </span>
-          )}
-        </button>
-      </div>
-    </ModalShell>
+            )}`
+          : undefined
+      }
+      warning="This action cannot be undone."
+      tone="warning"
+      confirmLabel="Confirm Refund"
+      pendingLabel="Refunding..."
+      onConfirm={onConfirm}
+      isPending={isRefunding}
+    />
   );
 }

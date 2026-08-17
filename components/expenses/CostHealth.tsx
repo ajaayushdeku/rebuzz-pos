@@ -128,7 +128,7 @@ function CostHealthCard({ card }: { card: CostCard }) {
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           {createElement(Icon, {
             size: 15,
             style: { color: card.iconColor },
@@ -419,8 +419,8 @@ export default function CostHealth() {
       <section>
         {/* Section header */}
         <div className="mb-5">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
               <Activity size={15} className="text-rose-600" />
             </div>
             <ComponentHeader
@@ -493,8 +493,8 @@ export default function CostHealth() {
       <section>
         {/* Section header */}
         <div className="mb-5">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
               <PieChart size={15} className="text-blue-600" />
             </div>
             <ComponentHeader

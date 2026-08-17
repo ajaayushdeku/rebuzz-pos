@@ -161,7 +161,7 @@ export default function InvoiceListSection({
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 ">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
             <FileText size={16} className="text-orange-500" />
           </div>
 
@@ -181,7 +181,7 @@ export default function InvoiceListSection({
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 ">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
             <FileText size={16} className="text-orange-500" />
           </div>
 
@@ -210,7 +210,7 @@ export default function InvoiceListSection({
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 ">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
             <FileText size={16} className="text-orange-500" />
           </div>
 

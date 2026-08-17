@@ -147,7 +147,7 @@ export default function ShiftsSection({
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
               <Clock size={15} className="text-orange-500" />
             </div>
 

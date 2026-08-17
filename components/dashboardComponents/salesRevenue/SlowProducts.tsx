@@ -16,13 +16,7 @@ import {
 import { SlowProduct } from "./slow-product-columns";
 import { getDaysColor } from "@/lib/utils";
 import { useSlowProducts } from "@/hooks/useSlowProducts";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { FilterSelect } from "@/components/ui/FilterSelect";
 import { ComponentHeader } from "@/components/ComponentHeader";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
@@ -96,8 +90,8 @@ export default function SlowProducts({
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
-      <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
           <TrendingDown size={15} className="text-rose-600" />
         </div>
         <ComponentHeader
@@ -157,25 +151,17 @@ export default function SlowProducts({
             <span className="text-xs text-gray-400">days</span>
           </div>
 
-          <Select
+          <FilterSelect
             value={String(days)}
-            onValueChange={(val) => {
+            options={DAYS_PRESETS}
+            onChange={(val) => {
               setDays(Number(val));
               setCustomDays("");
               setPage(0);
             }}
-          >
-            <SelectTrigger className="w-[90px] h-9 text-sm">
-              <SelectValue placeholder="Select days" />
-            </SelectTrigger>
-            <SelectContent>
-              {DAYS_PRESETS.map(({ value, label }) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            placeholder="Select days"
+            className="w-[110px]"
+          />
         </div>
       </div>
 

@@ -89,8 +89,8 @@ export default function TopProducts({
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
             <Trophy size={15} className="text-amber-600" />
           </div>
           <ComponentHeader
@@ -102,7 +102,7 @@ export default function TopProducts({
 
       {/* Search */}
       <div className="flex justify-between items-center gap-2 mt-4 mb-4">
-        <div className="relative w-full sm:w-64">
+        <div className="relative w-full ">
           <Search
             size={14}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"

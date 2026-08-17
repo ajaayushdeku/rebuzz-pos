@@ -161,8 +161,8 @@ export default function CashFlowTrend() {
         </p>
       </div> */}
 
-      <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
           <ArrowLeftRight size={15} className="text-emerald-600" />
         </div>
         <ComponentHeader

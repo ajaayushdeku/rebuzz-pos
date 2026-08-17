@@ -54,7 +54,7 @@ const GroupTaxTable = ({
           <table className="w-full text-sm">
             <thead>
               <tr className="text-xs text-gray-400 border-b border-gray-100">
-                <th className="text-left pb-2.5 font-medium">#</th>
+                <th className="text-left pb-2.5 pr-1 font-medium">#</th>
                 <th className="text-left pb-2.5 font-medium">Name</th>
                 <th className="text-left pb-2.5 font-medium">Combined Rate</th>
                 <th className="text-left pb-2.5 font-medium">Includes</th>
@@ -103,7 +103,7 @@ const GroupTaxTable = ({
                       key={group._id}
                       className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
                     >
-                      <td className="py-3 font-medium text-xs text-gray-400">
+                      <td className="py-3 pr-1 font-medium text-xs text-gray-400">
                         {idx + 1}
                       </td>
                       <td className="py-3 font-medium text-xs text-gray-800">

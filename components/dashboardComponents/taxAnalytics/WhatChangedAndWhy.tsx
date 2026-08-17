@@ -117,12 +117,14 @@ export default function WhatChangedAndWhy() {
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-      <div className="flex items-center gap-2 mb-1">
-        {increased ? (
-          <TrendingUp size={14} className="text-amber-500" />
-        ) : (
-          <TrendingDown size={14} className="text-blue-500" />
-        )}
+      <div className="flex items-center gap-3 mb-1">
+        <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
+          {increased ? (
+            <TrendingUp size={14} className="text-amber-500" />
+          ) : (
+            <TrendingDown size={14} className="text-blue-500" />
+          )}
+        </div>
         <ComponentHeader
           title="What Changed & Why"
           subHeader="Your VAT bill this month compared to last"

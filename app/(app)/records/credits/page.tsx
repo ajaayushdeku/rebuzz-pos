@@ -2,9 +2,9 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Wallet, HandCoins, Users } from "lucide-react";
+import { Wallet, HandCoins, Users, Loader2 } from "lucide-react";
 
-import { Spinner } from "@/components/ui/spinner";
+// import { Spinner } from "@/components/ui/spinner";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import CreditsTable from "@/components/credit/CreditsTable";
@@ -55,8 +55,9 @@ export default function Page() {
 
   if (isLoading)
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spinner className="size-8" />
+      <div className="flex items-center justify-center py-20">
+        <Loader2 size={24} className="animate-spin text-blue-500" />
+        <span className="ml-3 text-sm text-gray-500">Loading credits...</span>
       </div>
     );
 

@@ -49,8 +49,8 @@ export default function StockMovementChart({
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex-1">
       <div className="mb-6">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
             <ChartColumnBig size={15} className="text-blue-600" />
           </div>
           <ComponentHeader

@@ -164,7 +164,7 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
             <svg
               className="w-4 h-4 text-blue-500"
               fill="none"

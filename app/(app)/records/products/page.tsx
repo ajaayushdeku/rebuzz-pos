@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import ProductTable from "@/components/product/ProductTable";
 import ProductFormModal from "@/components/product/ProductFormModal";
-import { PackagePlus } from "lucide-react";
+import { Loader2, PackagePlus } from "lucide-react";
 import { useProductsList } from "@/hooks/useProductsList";
 
 export default function Page() {
@@ -31,8 +31,11 @@ export default function Page() {
         </div>
 
         {isLoading ? (
-          <div className="text-center py-12 text-gray-400">
-            Loading products...
+          <div className="flex items-center justify-center py-20">
+            <Loader2 size={24} className="animate-spin text-blue-500" />
+            <span className="ml-3 text-sm text-gray-500">
+              Loading products...
+            </span>
           </div>
         ) : (
           <ProductTable products={products} />

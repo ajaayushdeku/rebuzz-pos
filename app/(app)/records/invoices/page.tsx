@@ -9,6 +9,7 @@ import { fetchArchivedInvoicesClient } from "@/services/apiArchivedInvoice.clien
 import { fetchInvoicesClient } from "@/services/apiInvoice.client";
 import { useInvoiceStore } from "@/stores/invoiceStore";
 import { useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 type TabKey = "invoices" | "archived";
@@ -45,8 +46,9 @@ export default function Page() {
 
   if (isLoading)
     return (
-      <div className="flex items-center justify-center min-h-screen ">
-        <Spinner className="size-8" />
+      <div className="flex items-center justify-center py-20">
+        <Loader2 size={24} className="animate-spin text-blue-500" />
+        <span className="ml-3 text-sm text-gray-500">Loading invoices...</span>
       </div>
     );
   if (error)

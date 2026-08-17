@@ -69,8 +69,8 @@ export default function ProfitVarianceBridge() {
 
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-sky-50 flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center shrink-0">
             <ArrowLeftRight size={15} className="text-sky-600" />
           </div>
           <ComponentHeader

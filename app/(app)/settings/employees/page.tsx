@@ -18,10 +18,11 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  UserRound,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import DeleteConfirmModal from "@/components/settingsComponents/DeleteConfirmModal";
+import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import StaffFormModal from "@/components/settingsComponents/staffs/StaffFormModal";
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -587,12 +588,19 @@ export default function StaffManagementPage() {
         />
 
         {/* ── Delete Confirmation ────────────────────────────── */}
-        <DeleteConfirmModal
+        <DeleteConfirmDialog
           open={!!deleteConfirm}
           onOpenChange={(o) => !o && !deleting && setDeleteConfirm(null)}
-          title="Delete Employee"
-          message={deleteTarget?.email || "This employee will be removed."}
-          itemName={deleteTarget?.name || "this employee"}
+          icon={UserRound}
+          title="Delete employee?"
+          description={
+            deleteTarget?.name
+              ? `“${deleteTarget.name}”${
+                  deleteTarget.email ? ` (${deleteTarget.email})` : ""
+                } will be permanently removed.`
+              : "This employee will be permanently removed."
+          }
+          warning="This action cannot be undone."
           onConfirm={() => deleteConfirm && handleDelete(deleteConfirm)}
           isPending={deleting}
         />

@@ -56,8 +56,8 @@ export default function IncomeTaxProvision() {
   return (
     <div className="relative bg-gray-900 rounded-2xl p-6 flex flex-col gap-5">
       {/* Header */}
-      <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
           <Landmark size={15} className="text-white" />
         </div>
         <ComponentHeader

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Search, Loader2, Layers, Receipt } from "lucide-react";
+import { Search, Loader2, Layers, Receipt, Percent } from "lucide-react";
 import {
   useTaxes,
   useToggleTax,
@@ -18,7 +18,7 @@ import StandardTaxTable from "@/components/settingsComponents/taxes/StandardTaxT
 import GroupTaxTable from "@/components/settingsComponents/taxes/GroupTaxTable";
 import EditNormalTaxModal from "@/components/settingsComponents/taxes/EditNormalTaxModal";
 import EditGroupTaxModal from "@/components/settingsComponents/taxes/EditGroupTaxModal";
-import DeleteConfirmModal from "@/components/settingsComponents/DeleteConfirmModal";
+import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 
 type TabKey = "standard" | "group";
 
@@ -460,7 +460,7 @@ export default function TaxSettingsPage() {
       />
 
       {/* ── Delete Confirmation Modal ─────────────────────────── */}
-      <DeleteConfirmModal
+      <DeleteConfirmDialog
         open={deleteModalOpen}
         onOpenChange={(o) => {
           if (!o) {
@@ -468,15 +468,16 @@ export default function TaxSettingsPage() {
             setDeleteTarget(null);
           }
         }}
+        icon={deleteTarget?.type === "normal" ? Percent : Layers}
         title={
-          deleteTarget?.type === "normal" ? "Delete Tax" : "Delete Group Tax"
+          deleteTarget?.type === "normal" ? "Delete tax?" : "Delete group tax?"
         }
-        message={
+        description={
           deleteTarget
-            ? `Delete "${(deleteTarget.item as Tax | GroupedTax).name}"? This cannot be undone.`
-            : ""
+            ? `“${(deleteTarget.item as Tax | GroupedTax).name}” will be permanently removed.`
+            : "This tax will be permanently removed."
         }
-        itemName={deleteTarget ? deleteTarget.item.name : ""}
+        warning="This action cannot be undone."
         onConfirm={
           deleteTarget?.type === "normal"
             ? confirmDeleteNormal

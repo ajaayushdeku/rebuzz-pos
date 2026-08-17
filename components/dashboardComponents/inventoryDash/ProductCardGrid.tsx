@@ -14,6 +14,7 @@ import { InventoryItem } from "@/lib/mockData/mock-inventory-data";
 import { useSalesByItemQuery } from "@/hooks/useInventory";
 import { nameTokens } from "@/lib/salesVelocity";
 import ProductCard from "@/components/product/ProductCard";
+import { FilterSelect } from "@/components/ui/FilterSelect";
 import { useCategories } from "@/hooks/useCategories";
 import { normalizeColor } from "@/services/category.client";
 
@@ -357,17 +358,12 @@ const ProductCardGrid = ({
           {/* Sort */}
           <div className="flex items-center gap-2 shrink-0">
             <ArrowUpDown size={14} className="text-gray-400" />
-            <select
+            <FilterSelect
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortKey)}
-              className="h-9 text-xs border border-gray-200 rounded-lg px-2.5 bg-white text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-            >
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              options={SORT_OPTIONS}
+              onChange={(val) => setSortBy(val as SortKey)}
+              className="w-[200px]"
+            />
           </div>
 
           {/* Stock-tracking tabs */}

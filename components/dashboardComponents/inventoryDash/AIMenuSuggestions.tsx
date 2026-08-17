@@ -82,7 +82,7 @@ export default function AIMenuSuggestions() {
     <div className="flex flex-col gap-4">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center shrink-0">
+        <div className="w-9 h-9 rounded-lg bg-violet-100 flex items-center justify-center shrink-0">
           <Sparkles size={16} className="text-violet-600" />
         </div>
 

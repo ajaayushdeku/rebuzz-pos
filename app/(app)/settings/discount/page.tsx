@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Search, Percent, DollarSign } from "lucide-react";
+import { Search, Percent, DollarSign, BadgePercent } from "lucide-react";
 import {
   useDiscounts,
   useUpdateDiscount,
@@ -10,7 +10,7 @@ import {
 import toast from "react-hot-toast";
 import DiscountTable from "@/components/settingsComponents/discounts/DiscountTable";
 import EditDiscountModal from "@/components/settingsComponents/discounts/EditDiscountModal";
-import DeleteConfirmModal from "@/components/settingsComponents/DeleteConfirmModal";
+import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { CreateDiscountDialog } from "@/components/invoice/CreateDiscount";
 
 export interface Discount {
@@ -270,7 +270,7 @@ export default function DiscountSettingsPage() {
         />
 
         {/* Delete confirmation modal */}
-        <DeleteConfirmModal
+        <DeleteConfirmDialog
           open={deleteModalOpen}
           onOpenChange={(o) => {
             if (!o) {
@@ -278,13 +278,14 @@ export default function DiscountSettingsPage() {
               setDeleteTarget(null);
             }
           }}
-          title="Delete Discount"
-          message={
+          icon={BadgePercent}
+          title="Delete discount?"
+          description={
             deleteTarget
-              ? `Delete "${deleteTarget.name}"? This cannot be undone.`
-              : ""
+              ? `“${deleteTarget.name}” will be permanently removed.`
+              : "This discount will be permanently removed."
           }
-          itemName={deleteTarget ? deleteTarget.name : ""}
+          warning="This action cannot be undone."
           onConfirm={confirmDelete}
           isPending={deleting}
         />

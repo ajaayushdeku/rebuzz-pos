@@ -14,6 +14,36 @@ export function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+// ── Field styling ─────────────────────────────────────────────────────────
+// The input treatment the invoice modals use: 44px tall, rounded-xl, 13px
+// text, blue focus ring. Exported so every modal form shares one definition
+// rather than each re-declaring a near-identical class string that then drifts.
+
+export const modalInput =
+  "h-11 w-full rounded-xl border bg-white px-3.5 text-[13px] outline-none transition focus:ring-2";
+export const modalInputIdle =
+  "border-gray-200 focus:border-blue-500 focus:ring-blue-500/20";
+export const modalInputError =
+  "border-red-300 focus:border-red-400 focus:ring-red-500/20";
+
+/**
+ * Matching treatment for a shadcn <SelectTrigger>. Its base sets height via
+ * `data-[size=default]:h-9` — an attribute selector — so the override has to
+ * carry the same variant prefix or it loses on specificity and stays 36px.
+ */
+export const modalSelectTrigger =
+  "w-full data-[size=default]:h-11 rounded-xl bg-white px-3.5 text-[13px] shadow-none focus-visible:ring-2";
+export const modalSelectTriggerIdle =
+  "border-gray-200 focus-visible:border-blue-500 focus-visible:ring-blue-500/20";
+export const modalSelectTriggerError =
+  "border-red-300 focus-visible:border-red-400 focus-visible:ring-red-500/20";
+
+/** Footer button pair used across the modal forms. */
+export const modalGhostButton =
+  "shrink-0 rounded-xl px-5 py-3 text-[13px] font-semibold text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50";
+export const modalPrimaryButton =
+  "flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white shadow-md transition-all disabled:cursor-not-allowed disabled:opacity-50";
+
 /**
  * Renders children into <body>, parked off-screen. Used for the invoice
  * previews that jsPDF rasterises — they must be painted but never seen.
@@ -47,6 +77,12 @@ interface ModalShellProps {
   /** Tailwind max-width. Default fits a single column of rows. */
   maxWidth?: string;
   footer?: React.ReactNode;
+  /**
+   * Drops the header bar, leaving a floating close button. For centred layouts
+   * — confirmations — where the icon and title belong in the body, not in a
+   * left-aligned bar. `title` is still required: it stays the aria-label.
+   */
+  hideHeader?: boolean;
   children: React.ReactNode;
 }
 
@@ -66,6 +102,7 @@ export default function ModalShell({
   busy = false,
   maxWidth = "max-w-xl",
   footer,
+  hideHeader = false,
   children,
 }: ModalShellProps) {
   const [mounted, setMounted] = useState(false);
@@ -97,38 +134,53 @@ export default function ModalShell({
         aria-modal="true"
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
-        className={`w-full ${maxWidth} overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 duration-200`}
+        className={`relative w-full ${maxWidth} overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 duration-200`}
       >
-        {/* Header */}
-        <div className="flex items-start justify-between border-b border-gray-100 px-6 py-4">
-          <div className="flex min-w-0 items-center gap-3">
-            {Icon && (
-              <div
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${iconBgColor}`}
-              >
-                <Icon size={16} className={`${iconColor}`} />
-              </div>
-            )}
-            <div className="min-w-0">
-              <h2 className="text-[15px] font-semibold leading-tight text-gray-900">
-                {title}
-              </h2>
-              {subtitle && (
-                <p className="mt-0.5 truncate text-[12px] text-gray-400">
-                  {subtitle}
-                </p>
-              )}
-            </div>
-          </div>
+        {/* Headerless layouts still need a way out, so the close button floats
+            over the content instead of sitting in a bar. */}
+        {hideHeader && !busy && (
           <button
             type="button"
-            onClick={() => !busy && onClose()}
+            onClick={onClose}
             aria-label="Close"
-            className="-mr-1.5 -mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             <X size={16} strokeWidth={2.2} />
           </button>
-        </div>
+        )}
+
+        {/* Header */}
+        {!hideHeader && (
+          <div className="flex items-start justify-between border-b border-gray-100 px-6 py-4">
+            <div className="flex min-w-0 items-center gap-3">
+              {Icon && (
+                <div
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${iconBgColor}`}
+                >
+                  <Icon size={16} className={`${iconColor}`} />
+                </div>
+              )}
+              <div className="min-w-0">
+                <h2 className="text-[15px] font-semibold leading-tight text-gray-900">
+                  {title}
+                </h2>
+                {subtitle && (
+                  <p className="mt-0.5 truncate text-[12px] text-gray-400">
+                    {subtitle}
+                  </p>
+                )}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => !busy && onClose()}
+              aria-label="Close"
+              className="-mr-1.5 -mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            >
+              <X size={16} strokeWidth={2.2} />
+            </button>
+          </div>
+        )}
 
         {/* Content */}
         <div className="max-h-[65vh] overflow-y-auto px-6 py-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

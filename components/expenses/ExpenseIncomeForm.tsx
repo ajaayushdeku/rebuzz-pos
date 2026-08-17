@@ -1,14 +1,26 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Plus, Loader2, Settings } from "lucide-react";
-import toast from "react-hot-toast";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Plus,
+  Loader2,
+  Settings,
+  ArrowDownRight,
+  ArrowUpRight,
+  Repeat,
+} from "lucide-react";
+import toast from "react-hot-toast";
+import ModalShell, {
+  SectionLabel,
+  modalInput,
+  modalInputIdle,
+  modalInputError,
+  modalSelectTrigger,
+  modalSelectTriggerIdle,
+  modalSelectTriggerError,
+  modalGhostButton,
+  modalPrimaryButton,
+} from "@/components/ui/ModalShell";
 import {
   Select,
   SelectContent,
@@ -28,14 +40,31 @@ import { Button } from "../ui/button";
 import { formatCurrencySymbolOnly } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 
-const inputClass =
-  "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white";
-
 const FREQUENCIES = ["daily", "weekly", "monthly", "yearly"] as const;
 
 /** Maximum allowed amount for a transaction (0 – 100,000,000). */
 const MAX_AMOUNT = 100_000_000;
 const AMOUNT_RANGE_MSG = `Amount must be between 0 and ${MAX_AMOUNT.toLocaleString()}`;
+
+/** Per-tab accent. Expense reads as money out, income as money in. */
+const TAB_STYLE = {
+  expense: {
+    icon: ArrowDownRight,
+    iconColor: "text-red-600",
+    iconBgColor: "bg-red-50",
+    active: "border-red-500 bg-red-50 text-red-700",
+    activeIcon: "text-red-500",
+    submit: "bg-red-500 hover:bg-red-600",
+  },
+  income: {
+    icon: ArrowUpRight,
+    iconColor: "text-emerald-600",
+    iconBgColor: "bg-emerald-50",
+    active: "border-emerald-500 bg-emerald-50 text-emerald-700",
+    activeIcon: "text-emerald-500",
+    submit: "bg-emerald-500 hover:bg-emerald-600",
+  },
+} as const;
 
 type Props = {
   /** When provided, the form opens in edit mode for this transaction */
@@ -80,6 +109,7 @@ export default function ExpenseIncomeForm({
 
   const isEditing = !!editTransaction;
   const purposes = tab === "expense" ? expensePurposes : incomePurposes;
+  const theme = TAB_STYLE[tab];
 
   // True when the entered amount exceeds the allowed maximum
   const isAmountOutOfRange =
@@ -114,6 +144,17 @@ export default function ExpenseIncomeForm({
     setFrequency("monthly");
     setEndDate("");
     setErrors({});
+  };
+
+  /**
+   * Every dismissal path — X, backdrop, Escape, Cancel — runs this. Under the
+   * old Dialog the Cancel button closed unconditionally while the X did not,
+   * so they could disagree in edit mode; one handler removes that split.
+   */
+  const handleClose = () => {
+    resetForm();
+    setOpen(false);
+    if (isEditing) onEditSuccess?.();
   };
 
   const validate = (): boolean => {
@@ -181,67 +222,113 @@ export default function ExpenseIncomeForm({
         </Button>
       )}
 
-      <Dialog
+      <ModalShell
         open={open}
-        onOpenChange={(o) => {
-          if (!o) {
-            resetForm();
-            if (isEditing) onEditSuccess?.();
-          }
-          if (!isEditing) setOpen(o);
-        }}
+        onClose={handleClose}
+        // ModalShell's Escape listener is on the document, so the stacked
+        // purposes modal would close this one too without the guard.
+        busy={saving || managePurposeOpen}
+        title={isEditing ? "Edit transaction" : "Add transaction"}
+        subtitle={
+          isEditing
+            ? "Update this expense or income entry"
+            : "Record a new expense or income"
+        }
+        icon={theme.icon}
+        iconColor={theme.iconColor}
+        iconBgColor={theme.iconBgColor}
+        maxWidth="max-w-xl"
+        footer={
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={saving}
+              className={modalGhostButton}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={saving || isAmountOutOfRange}
+              className={`${modalPrimaryButton} ${theme.submit}`}
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : isEditing ? (
+                "Update transaction"
+              ) : (
+                `Add ${tab === "expense" ? "expense" : "income"}`
+              )}
+            </button>
+          </div>
+        }
       >
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-base font-semibold text-gray-900">
-              {isEditing ? "Edit Transaction" : "Add Transaction"}
-            </DialogTitle>
-          </DialogHeader>
-
-          {/* ── Tabs ── */}
-          <div className="flex items-center bg-gray-100 rounded-xl p-1 gap-1">
-            {(["expense", "income"] as TransactionType[]).map((t) => (
-              <button
-                key={t}
-                onClick={() => {
-                  setTab(t);
-                  setPurposeId("");
-                  setErrors({});
-                }}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all capitalize ${
-                  tab === t
-                    ? t === "expense"
-                      ? "bg-red-500 text-white shadow-sm"
-                      : "bg-green-500 text-white shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                {t}
-              </button>
-            ))}
+        <div className="space-y-6">
+          {/* ── Type ──
+              Same two-up bordered control the invoice modals use for payment
+              method, keeping the red / green accent that distinguishes the
+              two kinds of entry. */}
+          <div>
+            <SectionLabel>Type</SectionLabel>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {(["expense", "income"] as TransactionType[]).map((t) => {
+                const active = tab === t;
+                const style = TAB_STYLE[t];
+                const Icon = style.icon;
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => {
+                      setTab(t);
+                      setPurposeId("");
+                      setErrors({});
+                    }}
+                    className={`flex items-center justify-center gap-2 rounded-xl border py-3 text-[13px] font-medium capitalize transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                      active
+                        ? style.active
+                        : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Icon
+                      size={16}
+                      strokeWidth={1.8}
+                      className={active ? style.activeIcon : "text-gray-400"}
+                    />
+                    {t}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          {/* ── Purpose selector ── */}
+          {/* ── Purpose ── */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-medium text-gray-500">
-                Purpose
-              </label>
+            <div className="flex items-center justify-between">
+              <SectionLabel>Purpose</SectionLabel>
               <button
+                type="button"
                 onClick={() => setManagePurposeOpen(true)}
-                className="flex items-center gap-1 text-[11px] text-blue-500 hover:text-blue-700"
+                className="flex items-center gap-1 text-[11px] font-semibold text-blue-600 transition hover:text-blue-700"
               >
                 <Settings size={11} /> Manage
               </button>
             </div>
+
             {isPurposesLoading ? (
-              <div className="flex items-center gap-2 py-3 text-xs text-gray-400">
-                <Loader2 size={13} className="animate-spin" /> Loading
-                purposes...
+              <div className="mt-2 flex items-center gap-2 rounded-xl border border-gray-200 px-3.5 py-3 text-[13px] text-gray-400">
+                <Loader2 size={14} className="animate-spin" />
+                Loading purposes...
               </div>
             ) : purposes.length === 0 ? (
-              <div className="py-3 text-xs text-gray-400">
-                No {tab} purposes yet. Click “Manage” to add one.
+              <div className="mt-2 rounded-xl border border-dashed border-gray-200 px-3.5 py-3 text-[13px] text-gray-400">
+                No {tab} purposes yet. Use “Manage” to add one.
               </div>
             ) : (
               <Select
@@ -251,16 +338,22 @@ export default function ExpenseIncomeForm({
                   setErrors((e) => ({ ...e, purpose: "" }));
                 }}
               >
-                <SelectTrigger className="w-full h-10">
+                <SelectTrigger
+                  className={`mt-2 ${modalSelectTrigger} ${
+                    errors.purpose
+                      ? modalSelectTriggerError
+                      : modalSelectTriggerIdle
+                  }`}
+                >
                   <SelectValue placeholder="Select a purpose" />
                 </SelectTrigger>
-                <SelectContent className="max-h-60 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                <SelectContent className="max-h-60 overflow-y-auto rounded-xl [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                   {purposes.map((p) => {
                     const Icon = getPurposeIcon(p.icon, p.name);
                     const iconColor = getPurposeColor(p.icon, p.name);
                     return (
                       <SelectItem key={p._id} value={p._id}>
-                        <span className="flex items-center gap-2">
+                        <span className="flex items-center gap-2 text-[13px]">
                           <Icon
                             className="size-4"
                             style={{ color: iconColor }}
@@ -273,35 +366,38 @@ export default function ExpenseIncomeForm({
                 </SelectContent>
               </Select>
             )}
+
             {errors.purpose && (
-              <p className="text-xs text-red-500 mt-1">{errors.purpose}</p>
+              <p className="mt-1.5 text-[11px] font-medium text-red-500">
+                {errors.purpose}
+              </p>
             )}
           </div>
 
           {/* ── Remark ── */}
           <div>
-            <label className="text-xs font-medium text-gray-500 block mb-1.5">
-              Remark
-            </label>
+            <SectionLabel>Remark</SectionLabel>
             <input
               value={remark}
               onChange={(e) => setRemark(e.target.value)}
               placeholder="e.g. This month grocery"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              className={`mt-2 ${modalInput} ${
+                errors.remark ? modalInputError : modalInputIdle
+              }`}
             />
             {errors.remark && (
-              <p className="text-xs text-red-500 mt-1">{errors.remark}</p>
+              <p className="mt-1.5 text-[11px] font-medium text-red-500">
+                {errors.remark}
+              </p>
             )}
           </div>
 
           {/* ── Amount + Date ── */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="text-xs font-medium text-gray-500 block mb-1.5">
-                Amount
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
+              <SectionLabel>Amount</SectionLabel>
+              <div className="relative mt-2">
+                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] text-gray-400">
                   {formatCurrencySymbolOnly(currency.symbol)}
                 </span>
                 <input
@@ -326,125 +422,111 @@ export default function ExpenseIncomeForm({
                     }
                   }}
                   placeholder="0.00"
-                  className={`${inputClass} pl-8 ${
-                    errors.amount || isAmountOutOfRange ? "border-red-300" : ""
+                  className={`${modalInput} pl-9 tabular-nums ${
+                    errors.amount || isAmountOutOfRange ? modalInputError : modalInputIdle
                   }`}
                 />
               </div>
 
               {isAmountOutOfRange && (
-                <p className="text-[10px] text-red-500 mt-1">
+                <p className="mt-1.5 text-[11px] font-medium text-red-500">
                   {AMOUNT_RANGE_MSG}
                 </p>
               )}
               {errors.amount && (
-                <p className="text-xs text-red-500 mt-1">{errors.amount}</p>
+                <p className="mt-1.5 text-[11px] font-medium text-red-500">
+                  {errors.amount}
+                </p>
               )}
             </div>
+
             <div>
-              <label className="text-xs font-medium text-gray-500 block mb-1.5">
-                Date
-              </label>
+              <SectionLabel>Date</SectionLabel>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-              />
-            </div>
-          </div>
-
-          {/* ── Recurring toggle ── */}
-          <div className="flex items-center justify-between py-1.5 border-t border-gray-50">
-            <div>
-              <p className="text-xs font-semibold text-gray-700">Recurring</p>
-              <p className="text-[10px] text-gray-400">
-                Repeat this transaction
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setRecurring((p) => !p)}
-              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                recurring ? "bg-blue-600" : "bg-gray-200"
-              }`}
-            >
-              <span
-                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
-                  recurring ? "translate-x-[18px]" : "translate-x-0.5"
+                className={`mt-2 ${modalInput} tabular-nums ${
+                  errors.date ? modalInputError : modalInputIdle
                 }`}
               />
-            </button>
-          </div>
-
-          {/* ── Recurring options ── */}
-          {recurring && (
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-medium text-gray-500 block mb-1.5">
-                  Frequency
-                </label>
-                <select
-                  value={frequency}
-                  onChange={(e) => setFrequency(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {FREQUENCIES.map((f) => (
-                    <option key={f} value={f} className="capitalize">
-                      {f}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs font-medium text-gray-500 block mb-1.5">
-                  End Date
-                </label>
-                <input
-                  type="date"
-                  value={endDate}
-                  min={date}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {errors.endDate && (
-                  <p className="text-xs text-red-500 mt-1">{errors.endDate}</p>
-                )}
-              </div>
+              {errors.date && (
+                <p className="mt-1.5 text-[11px] font-medium text-red-500">
+                  {errors.date}
+                </p>
+              )}
             </div>
-          )}
-
-          {/* ── Submit ── */}
-          <div className="flex gap-2 pt-1">
-            <button
-              onClick={() => {
-                resetForm();
-                setOpen(false);
-                if (isEditing) onEditSuccess?.();
-              }}
-              className="flex-1 py-2.5 text-sm text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors font-medium"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSubmit}
-              disabled={saving || isAmountOutOfRange}
-              className={`flex-1 py-2.5 text-sm text-white rounded-xl transition-colors font-semibold flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed ${
-                tab === "expense"
-                  ? "bg-red-500 hover:bg-red-600"
-                  : "bg-green-500 hover:bg-green-600"
-              }`}
-            >
-              {saving && <Loader2 size={13} className="animate-spin" />}
-              {saving
-                ? "Saving..."
-                : isEditing
-                  ? "Update"
-                  : `Add ${tab === "expense" ? "Expense" : "Income"}`}
-            </button>
           </div>
-        </DialogContent>
-      </Dialog>
+
+          {/* ── Recurring ──
+              Card + switch, matching the loyalty block in RecordPaymentModal:
+              the options only appear once the switch is on. */}
+          <div className="rounded-xl border border-gray-200 px-4 py-3.5">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="flex items-center gap-1.5 text-[13px] font-medium text-gray-900">
+                  <Repeat size={13} className="text-gray-400" />
+                  Recurring
+                </p>
+                <p className="mt-0.5 text-[11px] text-gray-400">
+                  Repeat this transaction on a schedule
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="Recurring transaction"
+                aria-pressed={recurring}
+                onClick={() => setRecurring((p) => !p)}
+                className={`relative mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 ${
+                  recurring ? "bg-blue-600" : "bg-gray-200"
+                }`}
+              >
+                <span
+                  className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                    recurring ? "translate-x-[18px]" : "translate-x-0.5"
+                  }`}
+                />
+              </button>
+            </div>
+
+            {recurring && (
+              <div className="mt-3 grid grid-cols-1 gap-4 border-t border-gray-100 pt-3 sm:grid-cols-2">
+                <div>
+                  <label className="text-[11px] text-gray-400">Frequency</label>
+                  <select
+                    value={frequency}
+                    onChange={(e) => setFrequency(e.target.value)}
+                    className={`mt-1.5 ${modalInput} capitalize ${modalInputIdle}`}
+                  >
+                    {FREQUENCIES.map((f) => (
+                      <option key={f} value={f} className="capitalize">
+                        {f}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] text-gray-400">End date</label>
+                  <input
+                    type="date"
+                    value={endDate}
+                    min={date}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className={`mt-1.5 ${modalInput} tabular-nums ${
+                      errors.endDate ? modalInputError : modalInputIdle
+                    }`}
+                  />
+                  {errors.endDate && (
+                    <p className="mt-1.5 text-[11px] font-medium text-red-500">
+                      {errors.endDate}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </ModalShell>
 
       {/* Manage purposes modal */}
       <ManagePurposesModal

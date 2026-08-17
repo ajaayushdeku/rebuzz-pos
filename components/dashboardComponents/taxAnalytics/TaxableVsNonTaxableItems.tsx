@@ -121,9 +121,9 @@ const TaxableVsNonTaxableItems = ({
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6">
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-3">
         <div
-          className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
           style={{
             background: "linear-gradient(90deg, #0ba2c0b9 50%, #ea1f5ccd 50%)",
           }}

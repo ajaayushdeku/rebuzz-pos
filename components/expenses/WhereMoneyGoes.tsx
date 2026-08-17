@@ -120,8 +120,8 @@ export default function WhereMoneyGoes() {
 
       <div className="mb-4">
         {" "}
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
             <Wallet size={15} className="text-amber-600" />
           </div>
           <ComponentHeader
