@@ -9,6 +9,7 @@ import {
   Move,
   Check,
   RotateCcw,
+  Eye,
 } from "lucide-react";
 import type { LiveTable, ViewMode } from "@/lib/mockData/mock-live-tables";
 import {
@@ -46,6 +47,7 @@ function TableNode({
   editing,
   pos,
   onClick,
+  onViewDetails,
   onDragStart,
   onDragMove,
   onDragEnd,
@@ -56,6 +58,7 @@ function TableNode({
   editing: boolean;
   pos: { x: number; y: number };
   onClick: () => void;
+  onViewDetails: () => void;
   onDragStart: (
     e: React.PointerEvent<HTMLDivElement>,
     table: LiveTable,
@@ -161,6 +164,38 @@ function TableNode({
       onPointerMove={editing ? onDragMove : undefined}
       onPointerUp={editing ? onDragEnd : undefined}
     >
+      {/* View details — a corner badge, since the node itself is too small to
+          hold a labelled button. Hidden while editing so it can't be hit
+          mid-drag. */}
+      {!editing && (
+        <button
+          type="button"
+          title="View table details"
+          aria-label={`View details for ${table.name || `Table ${table.id}`}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewDetails();
+          }}
+          style={{
+            position: "absolute",
+            top: -8,
+            right: -8,
+            width: 20,
+            height: 20,
+            borderRadius: "50%",
+            backgroundColor: "#fff",
+            border: `1px solid ${color}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            padding: 0,
+          }}
+        >
+          <Eye size={11} color={color} />
+        </button>
+      )}
+
       {/* Alert A badge */}
       {table.hasAlert && (
         <div
@@ -276,6 +311,7 @@ interface FloorPlanViewProps {
   outdoorTables: LiveTable[];
   selectedTableId: number | null;
   onSelectTable: (table: LiveTable) => void;
+  onViewDetails: (table: LiveTable) => void;
 }
 
 export default function FloorPlanView({
@@ -283,6 +319,7 @@ export default function FloorPlanView({
   outdoorTables,
   selectedTableId,
   onSelectTable,
+  onViewDetails,
 }: FloorPlanViewProps) {
   const [zone, setZone] = useState<"indoor" | "outdoor">("indoor");
   const [mode, setMode] = useState<ViewMode>("status");
@@ -524,6 +561,7 @@ export default function FloorPlanView({
             editing={editing}
             pos={posFor(table)}
             onClick={() => onSelectTable(table)}
+            onViewDetails={() => onViewDetails(table)}
             onDragStart={handleDragStart}
             onDragMove={handleDragMove}
             onDragEnd={handleDragEnd}

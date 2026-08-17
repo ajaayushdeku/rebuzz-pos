@@ -10,6 +10,7 @@ import {
   Trash2,
   Loader2,
   ArrowRightLeft,
+  Eye,
 } from "lucide-react";
 import type { LiveTable } from "@/lib/mockData/mock-live-tables";
 import { fmtMinutes } from "@/lib/mockData/mock-live-tables";
@@ -62,6 +63,7 @@ function TableCard({
   onEdit,
   onDelete,
   onChangeTable,
+  onViewDetails,
 }: {
   table: LiveTable;
   isSelected: boolean;
@@ -69,6 +71,7 @@ function TableCard({
   onEdit: (table: LiveTable) => void;
   onDelete: (table: LiveTable) => void;
   onChangeTable: (table: LiveTable) => void;
+  onViewDetails: (table: LiveTable) => void;
 }) {
   // A table is "occupied" when it has an assigned ticket.
   const isOccupied = !!table.currentTicket;
@@ -130,70 +133,87 @@ function TableCard({
           <span className="text-sm font-medium">{config.label}</span>
         </div>
 
-        {/* 3-dot menu */}
-        <div className="relative" ref={menuRef}>
+        <div className="flex items-center gap-0.5">
+          {/* View details — stops propagation so it doesn't also select the
+              card underneath. */}
           <button
             type="button"
+            title="View table details"
+            aria-label={`View details for ${table.name || `Table ${table.id}`}`}
             onClick={(e) => {
               e.stopPropagation();
-              setMenuOpen((v) => !v);
+              onViewDetails(table);
             }}
-            className="
-              text-gray-400
-              hover:text-gray-600
-              transition-colors
-              p-0.5
-              rounded-md
-            "
+            className="rounded-md p-0.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-blue-600"
           >
-            <MoreVertical size={17} />
+            <Eye size={16} />
           </button>
 
-          {menuOpen && (
-            <div
-              className="absolute right-0 top-7 z-20 w-40 bg-white rounded-xl border border-gray-100 shadow-lg py-1.5"
-              onClick={(e) => e.stopPropagation()}
+          {/* 3-dot menu */}
+          <div className="relative" ref={menuRef}>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen((v) => !v);
+              }}
+              className="
+                text-gray-400
+                hover:text-gray-600
+                transition-colors
+                p-0.5
+                rounded-md
+              "
             >
-              {isOccupied ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    onChangeTable(table);
-                  }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 transition-colors"
-                >
-                  <ArrowRightLeft size={14} className="text-blue-400" />
-                  Change Table
-                </button>
-              ) : (
-                <>
+              <MoreVertical size={17} />
+            </button>
+
+            {menuOpen && (
+              <div
+                className="absolute right-0 top-7 z-20 w-40 bg-white rounded-xl border border-gray-100 shadow-lg py-1.5"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {isOccupied ? (
                   <button
                     type="button"
                     onClick={() => {
                       setMenuOpen(false);
-                      onEdit(table);
+                      onChangeTable(table);
                     }}
-                    className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 transition-colors"
                   >
-                    <Pencil size={14} className="text-gray-400" />
-                    Edit Table
+                    <ArrowRightLeft size={14} className="text-blue-400" />
+                    Change Table
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      onDelete(table);
-                    }}
-                    className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                  >
-                    <Trash2 size={14} className="text-red-400" />
-                    Delete
-                  </button>
-                </>
-              )}
-            </div>
-          )}
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        onEdit(table);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <Pencil size={14} className="text-gray-400" />
+                      Edit Table
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        onDelete(table);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <Trash2 size={14} className="text-red-400" />
+                      Delete
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -340,6 +360,7 @@ interface GridViewProps {
   onEditTable: (table: LiveTable) => void;
   onTableDeleted: () => void;
   onTableChanged: () => void;
+  onViewDetails: (table: LiveTable) => void;
 }
 
 export default function GridView({
@@ -349,6 +370,7 @@ export default function GridView({
   onEditTable,
   onTableDeleted,
   onTableChanged,
+  onViewDetails,
 }: GridViewProps) {
   const [deleteTarget, setDeleteTarget] = useState<LiveTable | null>(null);
   const [changeTarget, setChangeTarget] = useState<LiveTable | null>(null);
@@ -441,6 +463,7 @@ export default function GridView({
               onEdit={onEditTable}
               onDelete={setDeleteTarget}
               onChangeTable={handleOpenChangeTable}
+              onViewDetails={onViewDetails}
             />
           ))}
         </div>
@@ -462,6 +485,7 @@ export default function GridView({
               onEdit={onEditTable}
               onDelete={setDeleteTarget}
               onChangeTable={handleOpenChangeTable}
+              onViewDetails={onViewDetails}
             />
           ))}
         </div>

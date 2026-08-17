@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { LayoutGrid, Map, Loader2, Utensils, Plus } from "lucide-react";
+import { LayoutGrid, Map, Loader2, Utensils, Armchair } from "lucide-react";
 
 import type { LiveTable } from "@/lib/mockData/mock-live-tables";
 import { useLiveTables, useTableLiveSales } from "@/hooks/useLiveTables";
@@ -12,6 +12,8 @@ import FloorPlanView from "@/components/dashboardComponents/liveTables/FloorPlan
 import GridView from "@/components/dashboardComponents/liveTables/GridView";
 import TableDetail from "@/components/dashboardComponents/liveTables/TableDetail";
 import AddTableModal from "@/components/dashboardComponents/liveTables/AddTableModal";
+import TableTicketCards from "@/components/dashboardComponents/liveTables/TableTicketCards";
+import { Button } from "@/components/ui/button";
 
 type Tab = "floor" | "grid";
 
@@ -19,6 +21,9 @@ export default function LiveTablesPage() {
   const [tab, setTab] = useState<Tab>("grid");
   const [selectedTable, setSelectedTable] = useState<LiveTable | null>(null);
   const [addModalOpen, setAddModalOpen] = useState(false);
+  // Which table's detail modal is open — separate from `selectedTable`, so
+  // selecting a table on the floor plan doesn't force a modal open.
+  const [detailTable, setDetailTable] = useState<LiveTable | null>(null);
   const [editingTable, setEditingTable] = useState<LiveTable | null>(null);
 
   const queryClient = useQueryClient();
@@ -59,6 +64,19 @@ export default function LiveTablesPage() {
               real-time.
             </p>
           </div>
+
+          {/* ── Add Table (fixed bottom-right) ── */}
+          <Button
+            className="bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
+            type="button"
+            onClick={() => {
+              setEditingTable(null);
+              setAddModalOpen(true);
+            }}
+          >
+            <Armchair size={18} />
+            Add Table
+          </Button>
         </div>
 
         {/* ── Main panel ── */}
@@ -126,6 +144,7 @@ export default function LiveTablesPage() {
                   outdoorTables={outdoorTables}
                   selectedTableId={selectedTable?.id ?? null}
                   onSelectTable={setSelectedTable}
+                  onViewDetails={setDetailTable}
                 />
               ) : (
                 <GridView
@@ -135,28 +154,32 @@ export default function LiveTablesPage() {
                   onEditTable={handleEditTable}
                   onTableDeleted={handleTableCreated}
                   onTableChanged={handleTableCreated}
+                  onViewDetails={setDetailTable}
                 />
               )}
 
-              {/* ── Table detail ── */}
-              {selectedTable && <TableDetail table={selectedTable} />}
+              {/* ── Assigned tickets ──
+                  Lives here rather than inside GridView so a table picked on
+                  the floor plan highlights its card too. Fed the unfiltered
+                  `tables`: the status pills inside GridView filter that grid,
+                  not this summary. */}
+              <div className="mt-6">
+                <TableTicketCards
+                  tables={tables}
+                  selectedTableId={selectedTable?.id ?? null}
+                />
+              </div>
             </>
           )}
         </div>
       </div>
 
-      {/* ── Add Table (fixed bottom-right) ── */}
-      <button
-        type="button"
-        onClick={() => {
-          setEditingTable(null);
-          setAddModalOpen(true);
-        }}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-5 py-3 rounded-full bg-blue-600 text-white text-sm font-semibold shadow-lg shadow-blue-600/30 hover:bg-blue-700 hover:shadow-blue-700/30 transition-all"
-      >
-        <Plus size={18} />
-        Add Table
-      </button>
+      {/* ── Table detail (modal) ── */}
+      <TableDetail
+        table={detailTable}
+        open={!!detailTable}
+        onClose={() => setDetailTable(null)}
+      />
 
       <AddTableModal
         key={editingTable?._id ?? "new"}

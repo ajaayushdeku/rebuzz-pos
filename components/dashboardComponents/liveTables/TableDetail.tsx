@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { DollarSign, Clock, Users, Sparkles, Loader2 } from "lucide-react";
+import {
+  DollarSign,
+  Clock,
+  Users,
+  Sparkles,
+  Loader2,
+  Armchair,
+} from "lucide-react";
+import ModalShell from "@/components/ui/ModalShell";
 import type { LiveTable } from "@/lib/mockData/mock-live-tables";
 import { fmtMinutes } from "@/lib/mockData/mock-live-tables";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -16,8 +24,8 @@ type OrderRow = {
 };
 
 const STATUS_BADGE: Record<string, string> = {
-  occupied: "bg-blue-600 text-white",
-  free: "bg-green-500 text-white",
+  occupied: "bg-blue-200 text-blue-700",
+  free: "bg-green-100 text-green-700",
 };
 
 const ITEM_STATUS_BADGE: Record<string, string> = {
@@ -27,15 +35,28 @@ const ITEM_STATUS_BADGE: Record<string, string> = {
 };
 
 interface TableDetailProps {
-  table: LiveTable;
+  /** Null closes the modal — the page holds the "which table" state. */
+  table: LiveTable | null;
+  open: boolean;
+  onClose: () => void;
 }
 
-export default function TableDetail({ table }: TableDetailProps) {
+export default function TableDetail({
+  table,
+  open,
+  onClose,
+}: TableDetailProps) {
   const { currency } = useCurrency();
 
   // Occupied tables carry an open ticket — fetch its live details.
-  const invoiceNo = table.currentTicket?.invoice ?? null;
+  const invoiceNo = table?.currentTicket?.invoice ?? null;
   const { data: ticket, isLoading: ticketLoading } = useTableTicket(invoiceNo);
+
+  // Capture "now" once at mount via a lazy initializer so render stays pure.
+  const [nowMs] = useState(() => Date.now());
+
+  // Hooks must run before this — the early return has to come after them.
+  if (!table) return null;
 
   const statusLabel =
     table.status.charAt(0).toUpperCase() + table.status.slice(1);
@@ -72,9 +93,6 @@ export default function TableDetail({ table }: TableDetailProps) {
     0,
   );
 
-  // Capture "now" once at mount via a lazy initializer so render stays pure.
-  const [nowMs] = useState(() => Date.now());
-
   const seatedMinutes = ticket?.createdAt
     ? Math.max(
         0,
@@ -83,33 +101,19 @@ export default function TableDetail({ table }: TableDetailProps) {
     : table.seatedMinutes;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-2">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900">
-            {table.name || `Table ${table.id}`}
-          </h2>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs text-gray-500 capitalize">
-              {table.shape}
-            </span>
-            <span className="text-gray-300">·</span>
-            <span className="text-xs text-gray-500 capitalize">
-              {table.zone}
-            </span>
-          </div>
-        </div>
-        <span
-          className={`text-xs font-bold px-3 py-1.5 rounded-full ${STATUS_BADGE[table.status]}`}
-        >
-          {statusLabel}
-        </span>
-      </div>
-
+    <ModalShell
+      open={open}
+      onClose={onClose}
+      title={table.name || `Table ${table.id}`}
+      subtitle={`${table.shape} · ${table.zone} · ${table.capacity} seats`}
+      icon={Armchair}
+      iconColor="text-blue-600"
+      iconBgColor="bg-blue-50"
+      maxWidth="max-w-2xl"
+    >
       {/* ── 4 stat cards ── */}
       {isActive && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
           {[
             {
               icon: <DollarSign size={18} className="text-green-500" />,
@@ -137,7 +141,7 @@ export default function TableDetail({ table }: TableDetailProps) {
               icon: <Sparkles size={18} className="text-amber-500" />,
               bg: "bg-amber-50",
               label: "Ticket",
-              value: ticket?.ticketName || "—",
+              value: `ORD-${ticket?.invoice}` || "—",
             },
           ].map(({ icon, bg, label, value }) => (
             <div
@@ -172,7 +176,7 @@ export default function TableDetail({ table }: TableDetailProps) {
             <div className="flex items-center gap-2">
               <span className="text-sm">📋</span>
               <p className="text-sm font-semibold text-gray-900">
-                Order Details
+                Order Details{" "}
               </p>
             </div>
             <p className="text-xs text-gray-400">{totalItems} items</p>
@@ -232,10 +236,29 @@ export default function TableDetail({ table }: TableDetailProps) {
 
       {/* Empty state for non-active tables */}
       {!isActive && (
-        <div className="py-6 text-center text-gray-400 text-sm">
-          {table.status === "free" && "This table is available for seating."}
+        <div className="flex flex-col items-center justify-center py-6">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+            <Armchair size={24} className="text-gray-500" />
+          </div>
+          <p className="text-sm font-medium text-gray-500">Free Table</p>
+
+          <p className="text-xs text-gray-400 mt-1">
+            {table.status === "free" && "This table is available for seating."}
+          </p>
         </div>
       )}
-    </div>
+
+      <div className="flex items-center justify-between mt-2 pt-4  border-t-1 border-gray-300">
+        <span className="text-sm font-semibold text-gray-700">
+          Table Status
+        </span>
+
+        <span
+          className={`rounded-full px-3 py-1.5 text-xs font-bold ${STATUS_BADGE[table.status]}`}
+        >
+          {statusLabel}
+        </span>
+      </div>
+    </ModalShell>
   );
 }
