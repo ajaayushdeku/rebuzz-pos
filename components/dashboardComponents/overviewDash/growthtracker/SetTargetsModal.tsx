@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Target, Loader2 } from "lucide-react";
+import { Target, Loader2, Save } from "lucide-react";
+import ModalShell, {
+  modalGhostButton,
+  modalPrimaryButton,
+} from "@/components/ui/ModalShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import {
-  fetchMonthlyOverview,
-  setTargets,
-} from "@/services/apiTarget.client";
+import { fetchMonthlyOverview, setTargets } from "@/services/apiTarget.client";
 
 interface Props {
   isOpen: boolean;
@@ -95,8 +96,6 @@ export default function SetTargetsModal({
     },
   });
 
-  if (!isOpen) return null;
-
   const rows = overview?.months ?? [];
   const totalTarget = rows.reduce((sum, m) => sum + (draft[m.month] ?? 0), 0);
 
@@ -112,161 +111,146 @@ export default function SetTargetsModal({
   };
 
   return (
-    // Backdrop
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      onClick={onClose}
-    >
-      {/* Modal panel */}
-      <div
-        className="relative w-full max-w-lg px-2 py-1 rounded-2xl bg-white shadow-2xl overflow-hidden animate-in fade-in-0 slide-in-from-bottom-6 duration-300"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="sticky top-0 z-20 flex items-center justify-between border-b border-gray-100 bg-white/95 backdrop-blur px-5 py-3.5">
-          <div>
-            <h3 className="text-lg font-bold text-gray-800">
-              Set Monthly Targets
-            </h3>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Enter revenue targets for each month of {resolvedYear}
-            </p>
+    <ModalShell
+      open={isOpen}
+      onClose={onClose}
+      busy={saving}
+      title="Set monthly targets"
+      subtitle={`Enter revenue targets for each month of ${resolvedYear}`}
+      icon={Target}
+      iconColor="text-blue-600"
+      iconBgColor="bg-blue-50"
+      maxWidth="max-w-lg"
+      footer={
+        <div className="space-y-2.5">
+          {/* Total stays in the footer so it is visible while scrolling the
+              month list. One line rather than a card — the modal was running
+              tall and this block was the cheapest height to give back. */}
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-blue-100 bg-blue-50/60 px-3 py-4">
+            <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-500">
+              <Target size={13} className="text-blue-600" />
+              Total annual target
+            </span>
+            <span className="text-[18px] font-bold text-gray-700 tabular-nums">
+              {formatCurrencySymbol(
+                totalTarget,
+                currency.symbol,
+                currency.locale,
+              )}
+            </span>
           </div>
-          <button
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200 hover:text-gray-700 cursor-pointer text-sm"
-          >
-            ✕
-          </button>
+
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              className={modalGhostButton}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => save()}
+              disabled={saving || isLoading || isError}
+              className={`${modalPrimaryButton} bg-blue-600 hover:bg-blue-700`}
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  Save targets
+                </>
+              )}
+            </button>
+          </div>
         </div>
-
-        {/* Scrollable month targets */}
-        <div className="max-h-[50vh] overflow-y-auto px-5 py-3 scrollbar-hide">
-          <div className="mb-2">
-            <h3 className="text-xs font-semibold text-gray-800">
-              Monthly Revenue Targets
-            </h3>
-            <p className="text-[11px] text-gray-500">
-              Set a target for each month and track progress
-            </p>
-          </div>
-
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12 text-gray-400">
-              <Loader2 size={18} className="animate-spin" />
-              <span className="ml-2 text-sm">Loading targets...</span>
-            </div>
-          ) : isError ? (
-            <div className="py-12 text-center text-sm text-red-500">
-              Couldn&apos;t load targets. Please try again.
-            </div>
-          ) : (
-            <div className="border-t border-gray-200">
-              {rows.map((row, index) => {
+      }
+    >
+      {isLoading ? (
+        <div className="flex items-center justify-center gap-2 py-16 text-[13px] text-gray-400">
+          <Loader2 size={15} className="animate-spin" />
+          Loading targets
+        </div>
+      ) : isError ? (
+        <div className="py-16 text-center text-[13px] text-red-500">
+          Couldn&apos;t load targets. Please try again.
+        </div>
+      ) : (
+        /* A table rather than stacked cards: the columns now carry headers, and
+           dropping the per-row borders and padding takes ~12px off every row. */
+        <div className="max-h-[42vh] overflow-y-auto rounded-md [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <table className="w-full border-collapse text-sm">
+            <thead className="sticky top-0 z-10 bg-gray-50">
+              <tr className="text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-400">
+                <th className="px-3 py-2 text-left">Month</th>
+                <th className="px-3 py-2 text-right">Actual</th>
+                <th className="px-3 py-2 text-right">Target</th>
+                <th className="px-3 py-2 text-right">Variance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => {
                 const targetValue = draft[row.month] ?? 0;
                 const variance = getVariance(row.actual, targetValue);
-                const isOnTrack = targetValue === 0 || row.actual >= targetValue;
+                const isOnTrack =
+                  targetValue === 0 || row.actual >= targetValue;
+
                 return (
-                  <div
+                  <tr
                     key={row.month}
-                    className={`flex items-center justify-between gap-3 px-3 py-3.5 ${
-                      index < rows.length - 1 ? "border-b border-gray-100" : ""
-                    }`}
+                    className="border-t border-gray-100 py-2 transition-colors hover:bg-gray-50/70"
                   >
-                    <span className="text-xs font-semibold text-gray-700 w-10 shrink-0">
+                    <td className="px-3 py-1.5 text-[13px] font-semibold text-gray-900">
                       {MONTHS_SHORT[row.month - 1]}
-                    </span>
+                    </td>
 
-                    {/* Actual — read only for reference */}
-                    <div className="flex items-center gap-1 text-[11px] text-gray-500">
-                      <span>Actual:</span>
-                      <span className="font-semibold text-blue-600">
-                        {formatCurrencySymbol(
-                          row.actual,
-                          currency.symbol,
-                          currency.locale,
-                        )}
-                      </span>
-                    </div>
+                    <td className="px-3 py-1.5 text-right text-[12px] font-semibold text-blue-600 tabular-nums">
+                      {formatCurrencySymbol(
+                        row.actual,
+                        currency.symbol,
+                        currency.locale,
+                      )}
+                    </td>
 
-                    {/* Target input */}
-                    <div className="relative flex items-center">
-                      <span className="absolute left-2.5 text-[11px] text-gray-400">
-                        {currency.symbol}{" "}
-                      </span>
-                      <input
-                        type="number"
-                        value={targetValue}
-                        onChange={(e) =>
-                          handleChange(row.month, e.target.value)
-                        }
-                        disabled={saving}
-                        className="w-32 pl-6 pr-2 py-1.5 text-xs border border-gray-200 rounded
-                                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                                   text-gray-800 font-medium bg-white disabled:opacity-50"
-                        min={0}
-                        step={1000}
-                      />
-                    </div>
+                    <td className="px-3 py-1.5">
+                      <div className="relative ml-auto w-32">
+                        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-gray-400">
+                          {currency.symbol}
+                        </span>
+                        <input
+                          type="number"
+                          value={targetValue}
+                          onChange={(e) =>
+                            handleChange(row.month, e.target.value)
+                          }
+                          disabled={saving}
+                          min={0}
+                          step={1000}
+                          className="h-8 w-full rounded-lg border border-gray-200 bg-white pl-7 pr-2 text-right text-[12px] tabular-nums text-gray-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50"
+                        />
+                      </div>
+                    </td>
 
-                    {/* Variance indicator */}
-                    <span
-                      className={`text-[11px] font-semibold w-16 text-right shrink-0 ${
+                    <td
+                      className={`px-3 py-1.5 text-right text-[11px] font-semibold tabular-nums ${
                         isOnTrack ? "text-green-600" : "text-red-500"
                       }`}
                     >
                       <span className="mr-0.5">{isOnTrack ? "▲" : "▼"}</span>
                       {variance}%
-                    </span>
-                  </div>
+                    </td>
+                  </tr>
                 );
               })}
-            </div>
-          )}
+            </tbody>
+          </table>
         </div>
-
-        {/* Fixed total annual target */}
-        <div className="px-5 py-3 border-t border-gray-100 bg-white">
-          <div className="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-3 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 text-blue-600 shadow-sm shrink-0">
-                <Target size={16} />
-              </div>
-              <div>
-                <p className="text-[11px] text-gray-500">Total annual target</p>
-                <p className="text-sm font-bold text-gray-800">
-                  {formatCurrencySymbol(
-                    totalTarget,
-                    currency.symbol,
-                    currency.locale,
-                  )}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="px-5 py-4 border-t border-gray-100">
-          <div className="flex gap-2">
-            <button
-              onClick={onClose}
-              disabled={saving}
-              className="flex-1 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all cursor-pointer disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => save()}
-              disabled={saving || isLoading || isError}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50"
-            >
-              {saving && <Loader2 size={13} className="animate-spin" />}
-              {saving ? "Saving..." : "Save Targets"}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+      )}
+    </ModalShell>
   );
 }

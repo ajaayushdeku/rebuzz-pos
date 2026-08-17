@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  X,
   Clock,
   Receipt,
   ArrowDownLeft,
@@ -13,7 +12,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import type { ShiftDetail } from "./staffDetailHelpers";
 import { parseNepalDateTime, extractTime } from "./staffDetailHelpers";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import ModalShell from "@/components/ui/ModalShell";
 
 interface ShiftDetailModalProps {
   open: boolean;
@@ -30,68 +29,42 @@ export default function ShiftDetailModal({
   error,
   onClose,
 }: ShiftDetailModalProps) {
-  const { currency } = useCurrency();
-
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 " onClick={onClose} />
-
-      {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto scrollbar-hide animate-in fade-in zoom-in-95 duration-200">
-        {/* Header */}
-        <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between rounded-t-2xl">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
-              <Clock size={15} className="text-white" />
-            </div>
-
-            <ComponentHeader
-              title="Shift Details"
-              subHeader={`${shiftDetail?.transactions?.length ?? 0} transactions recorded`}
-            />
+    <ModalShell
+      open={open}
+      onClose={onClose}
+      title="Shift details"
+      subtitle={`${shiftDetail?.transactions?.length ?? 0} transactions recorded`}
+      icon={Clock}
+      iconColor="text-amber-600"
+      iconBgColor="bg-amber-50"
+      maxWidth="max-w-3xl"
+    >
+      {loading ? (
+        <div className="flex items-center justify-center gap-2 py-16 text-[13px] text-gray-400">
+          <Loader2 size={15} className="animate-spin" />
+          Loading shift details
+        </div>
+      ) : error ? (
+        <div className="py-16 text-center">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
+            <AlertTriangle size={22} className="text-red-400" />
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
-          >
-            <X size={16} />
-          </button>
+          <p className="text-[13px] font-medium text-gray-500">{error}</p>
         </div>
-
-        {/* Body */}
-        <div className="px-6 py-5">
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 size={20} className="animate-spin text-amber-500" />
-              <span className="ml-3 text-sm text-gray-400">
-                Loading shift details...
-              </span>
-            </div>
-          ) : error ? (
-            <div className="text-center py-12">
-              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3">
-                <AlertTriangle size={22} className="text-red-400" />
-              </div>
-              <p className="text-sm font-medium text-gray-500">{error}</p>
-            </div>
-          ) : shiftDetail ? (
-            <ShiftDetailContent shiftDetail={shiftDetail} />
-          ) : (
-            <div className="text-center py-12">
-              <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3">
-                <Clock size={20} className="text-gray-300" />
-              </div>
-              <p className="text-sm font-medium text-gray-500">
-                No shift details available
-              </p>
-            </div>
-          )}
+      ) : shiftDetail ? (
+        <ShiftDetailContent shiftDetail={shiftDetail} />
+      ) : (
+        <div className="py-16 text-center">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-50">
+            <Clock size={20} className="text-gray-300" />
+          </div>
+          <p className="text-[13px] font-medium text-gray-500">
+            No shift details available
+          </p>
         </div>
-      </div>
-    </div>
+      )}
+    </ModalShell>
   );
 }
 
@@ -198,7 +171,7 @@ function ShiftDetailContent({ shiftDetail }: { shiftDetail: ShiftDetail }) {
               {shiftDetail.transactions.length} entries
             </span>
           </div>
-          <div className="overflow-x-auto rounded-xl border border-gray-100">
+          <div className="overflow-x-auto rounded-xl border border-gray-200">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-[10px] text-gray-400 uppercase tracking-wider bg-gray-50/80">
@@ -301,11 +274,11 @@ function DetailCard({
   accent?: string;
 }) {
   return (
-    <div className="bg-white rounded-xl p-3.5 border border-gray-100 shadow-sm">
-      <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-1">
+    <div className="rounded-xl border border-gray-200 bg-white p-3.5">
+      <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-400">
         {label}
       </p>
-      <p className={`text-sm font-bold ${accent ?? "text-gray-900"}`}>
+      <p className={`text-sm font-bold tabular-nums ${accent ?? "text-gray-900"}`}>
         {value}
       </p>
     </div>

@@ -1,16 +1,27 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Loader2, ImageIcon, X } from "lucide-react";
+  Loader2,
+  ImageIcon,
+  X,
+  UserPlus,
+  ArrowLeft,
+  ArrowRight,
+  Phone,
+  User,
+  Lock,
+  Check,
+  AlertCircle,
+} from "lucide-react";
+import ModalShell, {
+  SectionLabel,
+  modalInput,
+  modalInputIdle,
+  modalInputError,
+  modalGhostButton,
+  modalPrimaryButton,
+} from "@/components/ui/ModalShell";
 import checkCustomerExist from "@/services/apiCheckCustomerExist";
 import createCustomer from "@/services/apiCreateCustomer";
 import { useQueryClient } from "@tanstack/react-query";
@@ -39,11 +50,21 @@ const INITIAL_FORM: CustomerFormData = {
   note: "",
 };
 
-const inputClass =
-  "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+/** The two-step wizard, driving both the stepper and the header copy. */
+const STEPS = [
+  { id: 1, label: "Phone", icon: Phone },
+  { id: 2, label: "Details", icon: User },
+] as const;
 
-const inputErrorClass =
-  "w-full border border-red-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition";
+/** Shared red callout for a step's error. */
+function FormError({ message }: { message: string }) {
+  return (
+    <p className="flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3.5 py-2.5 text-[12px] font-medium text-red-600">
+      <AlertCircle size={14} className="mt-px shrink-0" />
+      {message}
+    </p>
+  );
+}
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
@@ -197,266 +218,313 @@ export default function CustomerFormModal({
     setCreateLoading(false);
   };
 
+  const handleClose = () => {
+    resetAll();
+    onClose();
+  };
+
   return (
-    <Dialog
+    <ModalShell
       open={open}
-      onOpenChange={(o) => {
-        if (!o) {
-          resetAll();
-          onClose();
-        }
-      }}
-    >
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-blue-600">
-            {step === 1 ? "Add Customer" : "Customer Details"}
-          </DialogTitle>
-          <p id="customer-form-desc" className="sr-only">
-            {step === 1
-              ? "Enter the customer phone number to check for duplicates."
-              : "Fill in the customer details to create a new account."}
-          </p>
-        </DialogHeader>
-
-        {/* ── Progress bar ── */}
-        <div className="flex gap-2 mb-1">
-          <div className="h-1 flex-1 rounded-full bg-blue-600" />
-          <div
-            className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
-              step === 2 ? "bg-blue-600" : "bg-gray-200"
-            }`}
-          />
-        </div>
-        <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-4">
-          Step {step} of 2 —{" "}
-          {step === 1 ? "Phone verification" : "Customer details"}
-        </p>
-
-        {step === 1 && (
-          <div className="space-y-5">
-            <div className="flex gap-3">
-              <div className="w-28">
-                <Label className="text-xs text-gray-500 mb-1.5 block">
-                  Country code
-                </Label>
-                <input
-                  type="text"
-                  value={countryCode}
-                  onChange={(e) => setCountryCode(e.target.value)}
-                  placeholder="+977"
-                  className={inputClass}
-                />
-              </div>
-              <div className="flex-1">
-                <Label className="text-xs text-gray-500 mb-1.5 block">
-                  Phone number
-                </Label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleCheckPhone()}
-                  placeholder="98XXXXXXXX"
-                  className={inputClass}
-                />
-              </div>
-            </div>
-
-            {checkError && (
-              <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5">
-                {checkError}
-              </p>
+      onClose={handleClose}
+      busy={createLoading}
+      title={step === 1 ? "Add customer" : "Customer details"}
+      subtitle={
+        step === 1
+          ? "Check the phone number before creating an account"
+          : "Fill in the details for this new customer"
+      }
+      icon={UserPlus}
+      iconColor="text-blue-600"
+      iconBgColor="bg-blue-50"
+      maxWidth="max-w-xl"
+      footer={
+        /* Both steps put their primary action here — step 1's button used to
+           sit inline in the body, so the two halves of the wizard didn't agree
+           on where the action lived. */
+        step === 1 ? (
+          <button
+            type="button"
+            onClick={handleCheckPhone}
+            disabled={checkLoading}
+            className={`${modalPrimaryButton} bg-blue-600 hover:bg-blue-700`}
+          >
+            {checkLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Checking...
+              </>
+            ) : (
+              <>
+                Check &amp; continue
+                <ArrowRight className="h-4 w-4" />
+              </>
             )}
-
-            <div className="flex justify-end pt-1">
-              <Button
-                className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-5 py-2.5 rounded-lg"
-                onClick={handleCheckPhone}
-                disabled={checkLoading}
-              >
-                {checkLoading ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Checking...
-                  </span>
-                ) : (
-                  "Check & continue →"
-                )}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="space-y-5">
-            {/* Profile photo */}
-            <div>
-              <Label className="text-xs text-gray-500 mb-1.5 block">
-                Profile photo
-              </Label>
-              <div className="flex items-center gap-3">
-                {imagePreview ? (
-                  <div className="relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={imagePreview}
-                      alt="Profile preview"
-                      className="h-16 w-16 rounded-full object-cover border border-gray-200"
-                    />
-                    <button
-                      type="button"
-                      onClick={clearImage}
-                      className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 shadow-sm hover:bg-red-600"
-                      aria-label="Remove photo"
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="h-16 w-16 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
-                    <ImageIcon size={18} className="text-gray-400" />
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex-1 flex items-center justify-center gap-2 text-xs text-gray-500 border border-dashed border-gray-300 rounded-lg px-3 py-2.5 hover:border-blue-400 hover:text-blue-600 transition"
-                >
-                  <ImageIcon size={14} />
-                  {imageFile ? "Change photo" : "Upload photo"}
-                </button>
-              </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageSelect}
-                className="hidden"
-              />
-            </div>
-
-            <div>
-              <Label className="text-xs text-gray-500 mb-1.5 block">
-                Name <span className="text-red-500">*</span>
-              </Label>
-              <input
-                type="text"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="John Doe"
-                className={
-                  createError?.includes("Name") ? inputErrorClass : inputClass
-                }
-              />
-            </div>
-
-            <div>
-              <Label className="text-xs text-gray-500 mb-1.5 block">
-                Email <span className="text-red-500">*</span>
-              </Label>
-              <input
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="john@example.com"
-                className={
-                  createError?.includes("email") ? inputErrorClass : inputClass
-                }
-              />
-            </div>
-
-            {/* Phone — read only, pre-filled from step 1 */}
-            <div className="flex gap-3">
-              <div className="w-28">
-                <Label className="text-xs text-gray-500 mb-1.5 block">
-                  Country code
-                </Label>
-                <input
-                  value={form.countryCode}
-                  readOnly
-                  className="w-full border border-gray-100 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-400 cursor-not-allowed"
-                />
-              </div>
-              <div className="flex-1">
-                <Label className="text-xs text-gray-500 mb-1.5 block">
-                  Phone
-                </Label>
-                <input
-                  value={form.phone}
-                  readOnly
-                  className="w-full border border-gray-100 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-400 cursor-not-allowed"
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-xs text-gray-500 mb-1.5 block">
-                Tax ID
-              </Label>
-              <input
-                type="text"
-                value={form.customerPan}
-                onChange={(e) =>
-                  setForm({ ...form, customerPan: e.target.value })
-                }
-                placeholder="PAN number (optional)"
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <Label className="text-xs text-gray-500 mb-1.5 block">Note</Label>
-              <textarea
-                value={form.note}
-                onChange={(e) => setForm({ ...form, note: e.target.value })}
-                placeholder="Additional info... (optional)"
-                rows={3}
-                className={`${inputClass} resize-none`}
-              />
-            </div>
-
-            {createError && (
-              <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5">
-                {createError}
-              </p>
-            )}
-          </div>
-        )}
-
-        <DialogFooter className="gap-2 pt-2">
-          {step === 2 && (
-            <Button
-              variant="outline"
+          </button>
+        ) : (
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
               onClick={() => {
                 setStep(1);
                 setCreateError("");
               }}
               disabled={createLoading}
-              className="rounded-lg"
+              className={modalGhostButton}
             >
-              ← Back
-            </Button>
-          )}
-
-          {step === 2 && (
-            <Button
+              <span className="flex items-center gap-1.5">
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Back
+              </span>
+            </button>
+            <button
+              type="button"
               onClick={handleCreate}
               disabled={createLoading}
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+              className={`${modalPrimaryButton} bg-blue-600 hover:bg-blue-700`}
             >
               {createLoading ? (
-                <span className="flex items-center gap-2">
+                <>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Creating...
-                </span>
+                </>
               ) : (
-                "Create customer"
+                <>
+                  <UserPlus className="h-4 w-4" />
+                  Create customer
+                </>
               )}
-            </Button>
-          )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+            </button>
+          </div>
+        )
+      }
+    >
+      {/* ── Stepper ──
+          Numbered nodes with a connector, replacing two flat progress bars and
+          a line of text. A completed step shows a tick, so the state reads at a
+          glance rather than being inferred from a filled bar. */}
+      <div className="mb-6 flex items-center">
+        {STEPS.map((s, i) => {
+          const done = step > s.id;
+          const active = step === s.id;
+          const Icon = s.icon;
+
+          return (
+            <Fragment key={s.id}>
+              <div className="flex shrink-0 items-center gap-2.5">
+                <span
+                  className={`flex h-9 w-9 items-center justify-center rounded-full transition ${
+                    done
+                      ? "bg-blue-600 text-white"
+                      : active
+                        ? "bg-blue-50 text-blue-600 ring-2 ring-blue-600"
+                        : "bg-gray-100 text-gray-400"
+                  }`}
+                >
+                  {done ? <Check size={16} /> : <Icon size={15} />}
+                </span>
+                <div className="leading-tight">
+                  <p
+                    className={`text-[13px] font-semibold ${
+                      done || active ? "text-gray-900" : "text-gray-400"
+                    }`}
+                  >
+                    {s.label}
+                  </p>
+                  <p className="text-[11px] text-gray-400">Step {s.id} of 2</p>
+                </div>
+              </div>
+
+              {i < STEPS.length - 1 && (
+                <div
+                  className={`mx-3 h-0.5 flex-1 rounded-full transition-colors duration-300 ${
+                    step > s.id ? "bg-blue-600" : "bg-gray-200"
+                  }`}
+                />
+              )}
+            </Fragment>
+          );
+        })}
+      </div>
+
+      {step === 1 && (
+        <div className="space-y-6">
+          <div>
+            <SectionLabel>Phone number</SectionLabel>
+            {/* Country code and number share one bordered group so they read as
+                a single field, rather than two boxes that happen to sit side
+                by side. */}
+            <div
+              className={`mt-2 flex items-center rounded-xl border bg-white transition focus-within:ring-2 ${
+                checkError
+                  ? "border-red-300 focus-within:border-red-400 focus-within:ring-red-500/20"
+                  : "border-gray-200 focus-within:border-blue-500 focus-within:ring-blue-500/20"
+              }`}
+            >
+              <span className="pl-3.5 text-gray-400">
+                <Phone size={15} />
+              </span>
+              <input
+                type="text"
+                value={countryCode}
+                onChange={(e) => setCountryCode(e.target.value)}
+                placeholder="+977"
+                aria-label="Country code"
+                className="h-11 w-16 bg-transparent px-2 text-center text-[13px] tabular-nums outline-none"
+              />
+              <span className="h-6 w-px shrink-0 bg-gray-200" />
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleCheckPhone()}
+                placeholder="98XXXXXXXX"
+                aria-label="Phone number"
+                className="h-11 flex-1 bg-transparent px-3 text-[13px] tabular-nums outline-none"
+              />
+            </div>
+            <p className="mt-1.5 text-[11px] text-gray-400">
+              We&apos;ll check whether this number already belongs to a
+              customer.
+            </p>
+          </div>
+
+          {checkError && <FormError message={checkError} />}
+        </div>
+      )}
+
+      {step === 2 && (
+        <div className="space-y-6">
+          {/* Profile photo */}
+          <div>
+            <SectionLabel>Profile photo</SectionLabel>
+            <div className="mt-2 flex items-center gap-4 rounded-xl border border-gray-200 p-3">
+              {imagePreview ? (
+                <div className="relative shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={imagePreview}
+                    alt="Profile preview"
+                    className="h-16 w-16 rounded-full border border-gray-200 object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={clearImage}
+                    aria-label="Remove photo"
+                    className="absolute -right-1.5 -top-1.5 rounded-full bg-red-500 p-0.5 text-white shadow-sm transition hover:bg-red-600"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-dashed border-gray-300 bg-gray-50">
+                  <ImageIcon size={18} className="text-gray-400" />
+                </div>
+              )}
+
+              <div className="min-w-0 flex-1">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-gray-700 transition hover:border-blue-400 hover:text-blue-600"
+                >
+                  <ImageIcon size={13} />
+                  {imageFile ? "Change photo" : "Upload photo"}
+                </button>
+                <p className="mt-1.5 text-[11px] text-gray-400">
+                  PNG or JPG, up to 5 MB.
+                </p>
+              </div>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageSelect}
+              className="hidden"
+            />
+          </div>
+
+          {/* Name + email */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <SectionLabel>
+                Name <span className="text-red-500">*</span>
+              </SectionLabel>
+              <input
+                type="text"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="John Doe"
+                className={`mt-2 ${modalInput} ${
+                  createError?.includes("Name")
+                    ? modalInputError
+                    : modalInputIdle
+                }`}
+              />
+            </div>
+
+            <div>
+              <SectionLabel>
+                Email <span className="text-red-500">*</span>
+              </SectionLabel>
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="john@example.com"
+                className={`mt-2 ${modalInput} ${
+                  createError?.includes("email")
+                    ? modalInputError
+                    : modalInputIdle
+                }`}
+              />
+            </div>
+          </div>
+
+          {/* Phone — settled in step 1, so shown as a locked summary rather
+              than two greyed-out inputs pretending to be editable. */}
+          <div>
+            <SectionLabel>Phone</SectionLabel>
+            <div className="mt-2 flex h-11 items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3.5">
+              <Lock size={13} className="shrink-0 text-gray-400" />
+              <span className="text-[13px] text-gray-600 tabular-nums">
+                {form.countryCode} {form.phone}
+              </span>
+              <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">
+                <Check size={10} />
+                Checked
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <SectionLabel>Tax ID</SectionLabel>
+            <input
+              type="text"
+              value={form.customerPan}
+              onChange={(e) =>
+                setForm({ ...form, customerPan: e.target.value })
+              }
+              placeholder="PAN number (optional)"
+              className={`mt-2 ${modalInput} ${modalInputIdle}`}
+            />
+          </div>
+
+          <div>
+            <SectionLabel>Note</SectionLabel>
+            <textarea
+              value={form.note}
+              onChange={(e) => setForm({ ...form, note: e.target.value })}
+              placeholder="Additional info... (optional)"
+              rows={3}
+              className="mt-2 w-full resize-none rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-[13px] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+            />
+          </div>
+
+          {createError && <FormError message={createError} />}
+        </div>
+      )}
+    </ModalShell>
   );
 }

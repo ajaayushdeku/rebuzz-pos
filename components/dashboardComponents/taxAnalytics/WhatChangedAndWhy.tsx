@@ -118,7 +118,9 @@ export default function WhatChangedAndWhy() {
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
       <div className="flex items-center gap-3 mb-1">
-        <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
+        <div
+          className={`w-8 h-8 rounded-lg ${increased ? "bg-amber-50" : "bg-blue-50"} flex items-center justify-center shrink-0`}
+        >
           {increased ? (
             <TrendingUp size={14} className="text-amber-500" />
           ) : (

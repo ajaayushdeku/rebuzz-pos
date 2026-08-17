@@ -6,10 +6,13 @@ import { Loader2, Star } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import type { Customer } from "./customer-columns";
-import ModalShell from "@/components/ui/ModalShell";
-
-const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+import ModalShell, {
+  SectionLabel,
+  modalInput,
+  modalInputIdle,
+  modalGhostButton,
+  modalPrimaryButton,
+} from "@/components/ui/ModalShell";
 
 /**
  * Update a customer's loyalty points. Shared by the customers table and the
@@ -59,36 +62,27 @@ export default function LoyaltyPointModal({
   };
 
   return (
-    // <SettingsModalShell
-    //   open={open}
-    //   onOpenChange={handleOpenChange}
-    //   title="Update Loyalty Points"
-    //   description={
-    //     customer?.name
-    //       ? `Adjust the points balance for ${customer.name}`
-    //       : "Adjust the customer's points balance"
-    //   }
-    //   widthClass="sm:max-w-sm"
-
     <ModalShell
       open={open}
       onClose={() => handleOpenChange(false)}
-      // busy={isPending}
-      title="Update Loyalty Points"
+      busy={saving}
+      title="Update loyalty points"
       subtitle={
         customer?.name
           ? `Adjust the points balance for ${customer.name}`
           : "Adjust the customer's points balance"
       }
       icon={Star}
+      iconColor="text-amber-600"
+      iconBgColor="bg-amber-50"
       maxWidth="max-w-lg"
       footer={
-        <div className="flex items-center justify-end gap-2 mt-4">
+        <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className={modalGhostButton}
           >
             Cancel
           </button>
@@ -96,49 +90,50 @@ export default function LoyaltyPointModal({
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+            className={`${modalPrimaryButton} bg-amber-500/90 hover:bg-amber-700`}
           >
             {saving ? (
               <>
-                <Loader2 size={13} className="animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
                 Saving...
               </>
             ) : (
-              "Update Points"
+              <>
+                <Star className="h-4 w-4" />
+                Update points
+              </>
             )}
           </button>
         </div>
       }
     >
-      <div className="space-y-4">
+      <div className="space-y-6">
         {/* Current balance */}
         {customer && (
-          <div className="flex items-center justify-between rounded-xl border border-amber-100 bg-gradient-to-br from-amber-50 via-white to-orange-50 px-4 py-3 shadow-sm">
+          <div className="flex items-center justify-between rounded-xl border border-amber-100 bg-amber-50/60 px-4 py-3">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100">
                 <Star size={15} className="text-amber-500" />
               </div>
-              <div>
-                <p className="text-[13px] font-semibold uppercase tracking-[0.1em] text-slate-700">
-                  Current Balance
+              <div className="min-w-0">
+                <p className="text-[13px] font-medium leading-tight text-gray-900">
+                  Current balance
                 </p>
-                <p className="text-[11px] text-gray-400 tracking-[0.1em]  font-mono">
+                <p className="mt-0.5 truncate text-[11px] text-gray-400">
                   {customer.name}
                 </p>
               </div>
             </div>
-            <p className="text-xl font-bold text-amber-600">
+            <p className="text-xl font-bold text-amber-700/80 tabular-nums">
               {(customer.loyaltyPoint ?? 0).toLocaleString()}
             </p>
           </div>
         )}
 
         <div>
-          <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
-            Loyalty Points
-          </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400 text-xs">
+          <SectionLabel>Loyalty points</SectionLabel>
+          <div className="relative mt-2">
+            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] text-amber-400">
               ★
             </span>
             <input
@@ -147,11 +142,11 @@ export default function LoyaltyPointModal({
               value={points}
               onChange={(e) => setPoints(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSave()}
-              className={`${inputClass} pl-7`}
               placeholder="0"
+              className={`${modalInput} ${modalInputIdle} pl-9 tabular-nums`}
             />
           </div>
-          <p className="text-[11px] text-gray-400 mt-1.5">
+          <p className="mt-1.5 text-[11px] text-gray-400">
             Enter the new total points balance for this customer.
           </p>
         </div>

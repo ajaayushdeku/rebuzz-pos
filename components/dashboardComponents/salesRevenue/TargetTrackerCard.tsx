@@ -168,7 +168,7 @@ export default function TargetTrackerCard() {
             }}
             className={`flex-1 py-2.5 rounded-lg text-xs font-semibold transition-all ${
               activePeriod === tab.value
-                ? " border-[1.5px] border-gray-800 text-gray-900 shadow-sm"
+                ? " border-[1.5px] border-gray-600/70 text-gray-900 shadow-sm bg-white"
                 : "text-gray-700 hover:text-gray-800"
             }`}
           >

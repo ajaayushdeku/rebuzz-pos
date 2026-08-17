@@ -137,7 +137,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
       </div>
 
       {/* Search */}
-      <div className="relative mt-4 mb-2 w-full sm:w-64">
+      <div className="relative mt-4 mb-2 w-full ">
         <Search
           size={14}
           className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -271,7 +271,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                   <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
                     {customer.loyaltyPoints}
                   </td>
-                  <td className="py-3 px-4 text-right">
+                  <td className="py-3  text-center md:text-right">
                     <button
                       onClick={() => setHistoryFor(customer)}
                       disabled={!customer.id}
@@ -279,7 +279,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                   font-semibold text-blue-500 hover:text-blue-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <History size={14} />
-                      View History
+                      <p className="hidden md:block"> View History</p>
                     </button>
                   </td>
                 </tr>

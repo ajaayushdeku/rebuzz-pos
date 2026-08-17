@@ -2,13 +2,19 @@
 
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { Loader2, ImageIcon, X, User } from "lucide-react";
+import { Loader2, ImageIcon, X, User, Save, Phone } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import type { Customer } from "./customer-columns";
 import { getCustomerImageUrl } from "@/lib/types/customer";
 
-import ModalShell from "../ui/ModalShell";
+import ModalShell, {
+  SectionLabel,
+  modalInput,
+  modalInputIdle,
+  modalGhostButton,
+  modalPrimaryButton,
+} from "../ui/ModalShell";
 
 export type EditCustomerForm = {
   name: string;
@@ -21,9 +27,6 @@ export type EditCustomerForm = {
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
-const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
-
 const emptyForm = (customer: Customer | null): EditCustomerForm => ({
   name: customer?.name ?? "",
   email: customer?.email ?? "",
@@ -32,36 +35,6 @@ const emptyForm = (customer: Customer | null): EditCustomerForm => ({
   note: customer?.note ?? "",
   customerPan: customer?.customerPan ?? "",
 });
-
-const CONTACT_FIELDS: {
-  key: keyof EditCustomerForm;
-  label: string;
-  type?: string;
-  placeholder?: string;
-}[] = [
-  { key: "name", label: "Full Name", placeholder: "John Doe" },
-  {
-    key: "email",
-    label: "Email",
-    type: "email",
-    placeholder: "john@example.com",
-  },
-  { key: "phone", label: "Phone", type: "tel", placeholder: "98XXXXXXXX" },
-  { key: "countryCode", label: "Country Code" },
-];
-
-const EXTRA_FIELDS: {
-  key: keyof EditCustomerForm;
-  label: string;
-  placeholder?: string;
-}[] = [
-  {
-    key: "customerPan",
-    label: "Tax ID / PAN Number",
-    placeholder: "PAN number (optional)",
-  },
-  { key: "note", label: "Note", placeholder: "Additional info..." },
-];
 
 /**
  * Edit a customer's details. Shared by the customers table and the customer
@@ -173,21 +146,24 @@ export default function EditCustomerModal({
     <ModalShell
       open={open}
       onClose={() => handleOpenChange(false)}
-      // busy={isPending}
-      title="Edit Customer"
+      busy={saving}
+      title="Edit customer"
       subtitle={
         customer?.name
           ? `Update the details for ${customer.name}`
           : "Update the customer's details"
       }
       icon={User}
+      iconColor="text-blue-600"
+      iconBgColor="bg-blue-50"
+      maxWidth="max-w-xl"
       footer={
-        <div className="flex items-center justify-end gap-2 mt-4">
+        <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className={modalGhostButton}
           >
             Cancel
           </button>
@@ -195,130 +171,157 @@ export default function EditCustomerModal({
             type="button"
             onClick={handleSave}
             disabled={saving || !form.name.trim()}
-            className="rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+            className={`${modalPrimaryButton} bg-blue-600 hover:bg-blue-700`}
           >
             {saving ? (
               <>
-                <Loader2 size={13} className="animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
                 Saving...
               </>
             ) : (
-              "Save Changes"
+              <>
+                <Save className="h-4 w-4" />
+                Save changes
+              </>
             )}
           </button>
         </div>
       }
     >
-      <div className="space-y-5">
-        {/* ── Contact ── */}
+      <div className="space-y-6">
+        {/* Profile photo */}
         <div>
-          <div className="mb-3">
-            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
-              Contact
-            </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              How you reach this customer
-            </p>
-          </div>
+          <SectionLabel>Profile photo</SectionLabel>
+          <div className="mt-2 flex items-center gap-4 rounded-xl border border-gray-200 p-3">
+            {previewSrc ? (
+              <div className="relative shrink-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={previewSrc}
+                  alt="Profile preview"
+                  className="h-16 w-16 rounded-full border border-gray-200 object-cover"
+                />
+                {/* Only a newly picked file can be discarded here — removing an
+                    already-saved photo isn't supported by the API. */}
+                {imageFile && (
+                  <button
+                    type="button"
+                    onClick={clearImage}
+                    aria-label="Discard selected photo"
+                    className="absolute -right-1.5 -top-1.5 rounded-full bg-red-500 p-0.5 text-white shadow-sm transition hover:bg-red-600"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-dashed border-gray-300 bg-gray-50">
+                <ImageIcon size={18} className="text-gray-400" />
+              </div>
+            )}
 
-          {/* Profile photo */}
-          <div className="mb-4">
-            <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
-              Profile photo
-            </label>
-            <div className="flex items-center gap-3">
-              {previewSrc ? (
-                <div className="relative">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={previewSrc}
-                    alt="Profile preview"
-                    className="h-16 w-16 rounded-full object-cover border border-gray-200"
-                  />
-                  {/* Only a newly picked file can be discarded here — removing
-                      an already-saved photo isn't supported by the API. */}
-                  {imageFile && (
-                    <button
-                      type="button"
-                      onClick={clearImage}
-                      className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 shadow-sm hover:bg-red-600"
-                      aria-label="Discard selected photo"
-                    >
-                      <X size={12} />
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <div className="h-16 w-16 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
-                  <ImageIcon size={18} className="text-gray-400" />
-                </div>
-              )}
+            <div className="min-w-0 flex-1">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex-1 flex items-center justify-center gap-2 text-xs text-gray-500 border border-dashed border-gray-300 rounded-lg px-3 py-2.5 hover:border-blue-400 hover:text-blue-600 transition"
+                className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-gray-700 transition hover:border-blue-400 hover:text-blue-600"
               >
-                <ImageIcon size={14} />
+                <ImageIcon size={13} />
                 {imageFile ? "Change photo" : "Upload photo"}
               </button>
+              <p className="mt-1.5 text-[11px] text-gray-400">
+                PNG or JPG, up to 5 MB.
+              </p>
             </div>
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageSelect}
+            className="hidden"
+          />
+        </div>
+
+        {/* Name + email */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <SectionLabel>
+              Name <span className="text-red-500">*</span>
+            </SectionLabel>
             <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageSelect}
-              className="hidden"
+              type="text"
+              value={form.name}
+              onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+              placeholder="John Doe"
+              className={`mt-2 ${modalInput} ${modalInputIdle}`}
             />
           </div>
 
-          <div className="space-y-3">
-            {CONTACT_FIELDS.map(({ key, label, type, placeholder }) => (
-              <div key={key}>
-                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
-                  {label}
-                </label>
-                <input
-                  type={type ?? "text"}
-                  value={form[key]}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, [key]: e.target.value }))
-                  }
-                  placeholder={placeholder ?? label}
-                  className={inputClass}
-                />
-              </div>
-            ))}
+          <div>
+            <SectionLabel>Email</SectionLabel>
+            <input
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+              placeholder="john@example.com"
+              className={`mt-2 ${modalInput} ${modalInputIdle}`}
+            />
           </div>
         </div>
 
-        {/* ── Additional ── */}
+        {/* Phone — country code and number share one bordered group so they
+            read as a single field, matching CustomerFormModal's step 1. */}
         <div>
-          <div className="mb-3">
-            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
-              Additional
-            </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Tax details and internal notes
-            </p>
+          <SectionLabel>Phone</SectionLabel>
+          <div className="mt-2 flex items-center rounded-xl border border-gray-200 bg-white transition focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20">
+            <span className="pl-3.5 text-gray-400">
+              <Phone size={15} />
+            </span>
+            <input
+              type="text"
+              value={form.countryCode}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, countryCode: e.target.value }))
+              }
+              placeholder="+977"
+              aria-label="Country code"
+              className="h-11 w-24 bg-transparent px-2 text-center text-[13px] tabular-nums outline-none"
+            />
+            <span className="h-6 w-px shrink-0 bg-gray-200" />
+            <input
+              type="tel"
+              value={form.phone}
+              onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
+              placeholder="98XXXXXXXX"
+              aria-label="Phone number"
+              className="h-11 flex-1 bg-transparent px-3 text-[13px] tabular-nums outline-none"
+            />
           </div>
+        </div>
 
-          <div className="space-y-3">
-            {EXTRA_FIELDS.map(({ key, label, placeholder }) => (
-              <div key={key}>
-                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
-                  {label}
-                </label>
-                <input
-                  value={form[key]}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, [key]: e.target.value }))
-                  }
-                  placeholder={placeholder ?? label}
-                  className={inputClass}
-                />
-              </div>
-            ))}
-          </div>
+        <div>
+          <SectionLabel>Tax ID</SectionLabel>
+          <input
+            type="text"
+            value={form.customerPan}
+            onChange={(e) =>
+              setForm((p) => ({ ...p, customerPan: e.target.value }))
+            }
+            placeholder="PAN number (optional)"
+            className={`mt-2 ${modalInput} ${modalInputIdle}`}
+          />
+        </div>
+
+        <div>
+          <SectionLabel>Note</SectionLabel>
+          <textarea
+            value={form.note}
+            onChange={(e) => setForm((p) => ({ ...p, note: e.target.value }))}
+            placeholder="Additional info... (optional)"
+            rows={3}
+            className="mt-2 w-full resize-none rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-[13px] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+          />
         </div>
       </div>
     </ModalShell>
