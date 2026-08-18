@@ -45,8 +45,7 @@ import {
   OrderHistoryTableSkeleton,
 } from "@/components/customer/CustomerDetailSkeletons";
 
-// â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
+//  Types
 type PurchaseHistoryItem = {
   grandTotal: number;
   paidAt?: string;
@@ -63,8 +62,7 @@ type PurchaseHistoryResponse = {
   customerPurchases: PurchaseHistoryItem[];
 };
 
-// â”€â”€ Tier badge styling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
+// Tier badge styling
 const TIER_BG: Record<string, string> = {
   Bronze: "bg-amber-100 text-amber-800",
   Silver: "bg-slate-200 text-slate-800",
@@ -79,7 +77,7 @@ const TIER_RING: Record<string, string> = {
   Platinum: "ring-indigo-300",
 };
 
-// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Helpers
 function parseNepalDate(rawDate: string): Date | null {
   if (!rawDate) return null;
   const normalized = rawDate.includes("T")
@@ -101,8 +99,7 @@ const ORDER_STATUS_STYLE: Record<string, string> = {
   refunded: "bg-gray-200 text-gray-800 ",
 };
 
-// â”€â”€ Global scrollbar-hide styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
+// Global scrollbar-hide styles
 const scrollbarHideStyles = `
   .scrollbar-hide {
     -ms-overflow-style: none;
@@ -113,8 +110,7 @@ const scrollbarHideStyles = `
   }
 `;
 
-// â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
+// Main Page
 export default function CustomerDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -201,7 +197,7 @@ export default function CustomerDetailPage() {
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
       {/* <div className="max-w-6xl mx-auto"> */}
       <div>
-        {/* â”€â”€ Header â”€â”€ */}
+        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
             <button
@@ -688,7 +684,7 @@ export default function CustomerDetailPage() {
                           </td>
                           <td className="py-3 px-3 text-center">
                             <span
-                              className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border capitalize inline-block ${orderStatusStyle}`}
+                              className={`text-xs font-semibold px-2.5 py-0.5 rounded-full  capitalize inline-block ${orderStatusStyle}`}
                             >
                               {statusKey}
                             </span>

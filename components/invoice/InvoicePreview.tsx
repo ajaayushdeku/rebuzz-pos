@@ -15,6 +15,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { InvoiceItemGroup } from "@/lib/types/invoice";
 import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
 import { parseNepalTime } from "@/lib/mappers/transaction";
+import { normalizePaymentMethod } from "@/lib/config/transaction";
 import type { CreditPayment } from "@/services/apiCredit.client";
 import InvoiceBillTable from "./InvoiceBillTable";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -48,6 +49,8 @@ interface BusinessProfile {
   businessName?: string | null;
   address?: string | null;
   panNumber?: number | string | null;
+  /** Uploaded business logo URL; falls back to the bundled Rebuzz mark. */
+  logo?: string | null;
 }
 
 type PreviewMode = "desktop" | "mobile";
@@ -141,6 +144,11 @@ function InvoiceContent({
         });
   };
 
+  // "Cash Payment" / "QR Payment". Normalising first also fixes the raw backend
+  // casing ("cash", "Qr Payment") that was reaching the receipt verbatim.
+  const paymentLabel = (method?: string | null) =>
+    `${normalizePaymentMethod(method)} Payment`;
+
   const customerName =
     customerProfile?.name ||
     invoice.ticketName ||
@@ -215,7 +223,7 @@ function InvoiceContent({
         <div className="h-1.5 bg-gray-800" />
 
         {/* Business name hero */}
-        <div className="text-center px-5 pt-6 pb-4 border-b border-gray-100">
+        <div className="text-center px-5 pt-6 pb-4 border-b border-dashed border-gray-300">
           <p className="text-lg font-bold text-gray-900">
             {businessProfile?.businessName || "My Business"}
           </p>
@@ -241,7 +249,7 @@ function InvoiceContent({
         </div>
 
         {/* Details */}
-        <div className="px-5 py-4 border-b border-gray-100 space-y-2.5 text-xs">
+        <div className="px-5 py-4 border-b border-dashed border-gray-300 space-y-2.5 text-xs">
           {[
             ["Invoice number:", String(invoice.invoice)],
             [
@@ -280,7 +288,7 @@ function InvoiceContent({
             group.item.map((product, pi) => (
               <div
                 key={`${gi}-${pi}`}
-                className="flex justify-between items-start py-2.5 border-b border-gray-50 last:border-0"
+                className="flex justify-between items-start py-2.5 border-b border-dotted border-gray-200 last:border-0"
               >
                 <div>
                   <p className="text-xs font-medium text-gray-900">
@@ -381,7 +389,7 @@ function InvoiceContent({
                 </span>
               </div>
             )}
-            <div className="flex justify-between items-center pt-2 mt-1 border-t border-gray-200">
+            <div className="flex justify-between items-center pt-2 mt-1 border-t border-dashed border-gray-300">
               <span className="text-xs font-bold text-gray-900">
                 {billData ? "Grand Total" : "Total Payable"}
               </span>
@@ -405,7 +413,7 @@ function InvoiceContent({
                 <div key={p._id} className="flex justify-between text-gray-500">
                   <span className="text-[12px]">
                     {formatPaymentDate(p.paymentDate)} ·{" "}
-                    {p.paymentMethod || "cash"}
+                    {paymentLabel(p.paymentMethod)}
                   </span>
                   <span className="font-medium text-gray-700">
                     -{" "}
@@ -417,7 +425,7 @@ function InvoiceContent({
                   </span>
                 </div>
               ))}
-              <div className="flex justify-between items-center pt-2 mt-1 border-t border-gray-200">
+              <div className="flex justify-between items-center pt-2 mt-1 border-t border-dashed border-gray-300">
                 <span className="text-xs font-bold text-gray-900">
                   Amount Due ({currency.code || "NPR"})
                 </span>
@@ -434,7 +442,7 @@ function InvoiceContent({
         </div>
 
         {/* Footer */}
-        <div className="px-5 pb-6 border-t border-gray-100 pt-4 text-[10px] text-gray-500 space-y-1">
+        <div className="px-5 pb-6 border-t border-dashed border-gray-300 pt-4 text-[10px] text-gray-500 space-y-1">
           <div className="flex justify-between">
             <span>Cashier: {billData?.generatedBy || "N/A"}</span>
             {billData && (
@@ -462,25 +470,29 @@ function InvoiceContent({
 
   // ── Desktop layout — full A4 document (existing UI) ─────────────────────
   return (
-    <div className="bg-white w-full min-h-[1123px] px-8 py-10 text-black border-[4px] border-orange-500 font-sans">
+    <div className="bg-white w-full min-h-[1200px] px-10 py-10 text-black border-[3px] border-blue-900 font-sans">
       {/* ───────────────── Header ───────────────── */}
       <div className="text-center mb-10">
-        <h1 className="text-4xl font-bold tracking-tight">{invoiceTitle}</h1>
+        <h1 className="text-4xl font-bold  tracking-wider ">{invoiceTitle}</h1>
       </div>
 
       {/* ───────────────── Business Info ───────────────── */}
       <div className="flex justify-between items-start mb-10">
+        {/* Routed through next/image even for the remote logo: the optimiser
+            serves it from /_next/image on this origin, so html-to-image can
+            read it into the canvas for the PDF. A direct cross-origin <img>
+            would taint the canvas and drop the logo from the download. */}
         <Image
-          src={businessLogo}
-          alt="Business Logo"
-          width={120}
-          height={120}
+          src={businessProfile?.logo || businessLogo}
+          alt={`${businessProfile?.businessName || "Business"} logo`}
+          width={150}
+          height={150}
           quality={100}
           priority
-          className="object-contain"
+          className="object-contain max-h-[150px] w-auto rounded-lg"
         />
 
-        <div className="text-right">
+        <div className="text-right  tracking-wider">
           <h2 className="text-2xl font-bold">
             {businessProfile?.businessName || "My Business"}
           </h2>
@@ -495,13 +507,13 @@ function InvoiceContent({
         </div>
       </div>
 
-      <div className="border-b border-gray-300 mb-6" />
+      <div className="border-b border-dashed border-gray-400 mb-6" />
 
       {/* ───────────────── Customer Info ───────────────── */}
       <div className="mb-6">
-        <h3 className="font-bold text-lg mb-1">Client Info</h3>
+        <h3 className="font-bold text-lg mb-1  tracking-wider">Client Info</h3>
 
-        <div className="space-y-1 text-sm">
+        <div className="space-y-1 text-sm  tracking-wider">
           <p>
             <span className="font-medium">Name:</span> {customerName}
           </p>
@@ -525,12 +537,14 @@ function InvoiceContent({
         </div>
       </div>
 
-      <div className="border-b border-gray-300 mb-3" />
+      {/* <div className="border-b border-dashed border-gray-400 mb-3" /> */}
 
       {/* ───────────────── Meta Info ───────────────── */}
-      <div className="flex justify-between items-center text-sm mb-3">
+      <div className="flex justify-between items-center text-sm mb-3  tracking-wider">
         <div>
-          <p className="font-medium underline">{customerName}</p>
+          <p className="font-medium underline">
+            {billData?.invoiceName || invoice.ticketName || customerName}
+          </p>
         </div>
 
         {billData ? (
@@ -539,24 +553,24 @@ function InvoiceContent({
             <p className="mt-1">Bill No: {billData.billNo || "N/A"}</p>
           </>
         ) : (
-          <div className="text-right text-gray-600">
+          <div className="text-right text-gray-600 ">
             <p>Date: {formattedDate}</p>
           </div>
         )}
       </div>
 
-      <div className="border-b border-gray-300 mb-3" />
+      {/* <div className="border-b border-dashed border-gray-400 mb-3" /> */}
 
       {/* ───────────────── Items Table ───────────────── */}
       <InvoiceBillTable invoices={invoice.items} />
 
-      <div className="border-b border-style-dash border-gray-300 mt-3 mb-5" />
+      <div className="border-b border-dotted border-gray-300 mt-3 mb-3" />
 
       {/* ───────────────── Totals ───────────────── */}
       <div className="space-y-3 text-sm">
         <div className="flex justify-between">
-          <p className="text-gray-600">Subtotal</p>
-          <p className="font-medium">
+          <p className="text-gray-700 tracking-wider">Subtotal</p>
+          <p className="font-medium  tracking-wider">
             {formatCurrencySymbol(
               Number(displayTotal),
               currency.symbol,
@@ -566,8 +580,8 @@ function InvoiceContent({
         </div>
 
         <div className="flex justify-between">
-          <p className="text-gray-600">Discount</p>
-          <p className="font-medium">
+          <p className="text-gray-700 tracking-wider">Discount</p>
+          <p className="font-medium  tracking-wider">
             −{" "}
             {formatCurrencySymbol(
               discountAmount || 0,
@@ -579,8 +593,8 @@ function InvoiceContent({
 
         {loyaltyRedeemedAmount > 0 && (
           <div className="flex justify-between">
-            <p className="text-gray-600">Discount By Points</p>
-            <p className="font-medium">
+            <p className="text-gray-700 tracking-wider">Discount By Points</p>
+            <p className="font-medium  tracking-wider">
               −{" "}
               {formatCurrencySymbol(
                 loyaltyRedeemedAmount,
@@ -593,8 +607,8 @@ function InvoiceContent({
 
         {isTaxInvoice && (
           <div className="flex justify-between">
-            <p className="text-gray-600">Tax</p>
-            <p className="font-medium">
+            <p className="text-gray-700 tracking-wider">Tax</p>
+            <p className="font-medium  tracking-wider">
               +{" "}
               {formatCurrencySymbol(
                 taxAmount,
@@ -605,11 +619,11 @@ function InvoiceContent({
           </div>
         )}
 
-        <div className="flex justify-between pt-2  border-t border-gray-200">
-          <p className="font-bold text-base">
+        <div className="flex justify-between pt-2  border-t border-dotted border-gray-300">
+          <p className="font-bold text-base tracking-wider">
             {billData ? "Grand Total" : "Total Payable"}
           </p>
-          <p className="font-bold text-base">
+          <p className="font-bold text-base  tracking-wider ">
             {formatCurrencySymbol(
               Number(displayGrandTotal),
               currency.symbol,
@@ -626,11 +640,11 @@ function InvoiceContent({
             {paymentList.map((p) => (
               <div
                 key={p._id}
-                className="flex justify-between my-1.5 text-gray-700"
+                className="flex justify-between my-1.5 text-gray-700  tracking-wider"
               >
                 <span>
                   Payment on {formatPaymentDate(p.paymentDate)} using a{" "}
-                  {p.paymentMethod || "cash"} payment:
+                  {paymentLabel(p.paymentMethod)}:
                 </span>
                 <span className="font-medium">
                   -{" "}
@@ -643,9 +657,9 @@ function InvoiceContent({
               </div>
             ))}
           </div>
-          <div className="flex justify-between pt-3 mt-3 border-t border-gray-300">
+          <div className="flex justify-between pt-3 mt-3 border-t border-dashed border-gray-400  tracking-wider">
             <p className="font-bold text-base">
-              Amount Due ({currency.code || "NPR"}):
+              Amount Due ({currency.symbol || "NPR"}):
             </p>
             <p className="font-bold text-base">
               {formatCurrencySymbol(
@@ -659,11 +673,11 @@ function InvoiceContent({
       )}
 
       {/* ───────────────── Footer ───────────────── */}
-      <div className="border-b border-gray-300 my-6" />
+      <div className="border-b border-dashed border-gray-400 my-6" />
 
       <div className="bg-gray-50 py-4 px-2 rounded-lg text-sm">
         <div className="flex justify-between items-start text-sm text-black-600">
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2  tracking-wider">
             <p>Cashier: {billData?.generatedBy || "N/A"}</p>
             {billData && <p>Counter: POS12</p>}
 
@@ -672,7 +686,7 @@ function InvoiceContent({
             )}
           </div>
 
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex flex-col items-end gap-2  tracking-wider">
             {billData && (
               <p>Payment Mode: {billData?.paymentMethod || "N/A"}</p>
             )}
@@ -689,19 +703,19 @@ function InvoiceContent({
 
         {billData && (
           <div className="flex justify-between items-start text-sm text-black-600 mt-4 gap-2">
-            <div className="flex flex-col justify-between gap-2">
+            <div className="flex flex-col justify-between gap-2  tracking-wider">
               <p>Current Point:</p>
               <p>Total Points:</p>
             </div>
 
-            <div className="flex flex-col  gap-2 items-end">
+            <div className="flex flex-col  gap-2 items-end  tracking-wider">
               <span> {billData?.currentPoint || "0"}</span>
               <span> {billData?.totalPoints || "0"}</span>
             </div>
           </div>
         )}
 
-        <div className="text-center mt-10 text-xs text-gray-500">
+        <div className="text-center mt-10 text-xs text-gray-500  tracking-wider">
           <p>All rights reserved : Rebuzz POS by</p>
           <p className="mt-1 font-medium">Brand Builder Pvt Ltd</p>
         </div>
