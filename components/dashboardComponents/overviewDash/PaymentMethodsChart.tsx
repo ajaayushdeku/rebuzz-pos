@@ -58,7 +58,11 @@ const CustomTooltip = ({
     const sales = entry.transactionCount;
     return (
       <div className="bg-white rounded-xl px-4 py-2 shadow-lg border border-gray-100">
-        <p className="text-gray-500 text-xs">{entry.paymentMethod}</p>
+        <p className="text-gray-500 text-xs">
+          {entry.paymentMethod === "Qr payment"
+            ? "QR Payment"
+            : entry.paymentMethod}
+        </p>
         <p className="font-bold text-sm" style={{ color: entry.color }}>
           {entry.percentage.toFixed(1)}%
         </p>
@@ -213,7 +217,9 @@ const PaymentMethodsChart = ({
                       }}
                     />
                     <span className="text-xs text-gray-700 truncate">
-                      {entry.paymentMethod}
+                      {entry.paymentMethod === "Qr payment"
+                        ? "QR Payment"
+                        : entry.paymentMethod}
                     </span>
                   </div>
 

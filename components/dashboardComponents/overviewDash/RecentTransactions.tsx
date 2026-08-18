@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ChevronRight, Receipt } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { Transaction } from "../orderHistory/transaction-columns";
-import { statusStyles } from "@/lib/config/transaction";
+import { statusStyles, paymentMethods } from "@/lib/config/transaction";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
 
@@ -73,6 +73,9 @@ export default function RecentTransactions({
             <tr className="text-xs text-gray-400 border-b border-gray-100">
               <th className="text-left pb-3 pt-3 px-4 font-medium">Order</th>
               <th className="text-left pb-3 pt-3 px-4 font-medium">Customer</th>
+              <th className="text-center pb-3 pt-3 px-4 font-medium">
+                Payment
+              </th>
               <th className="text-right pb-3 pt-3 px-4 font-medium">Amount</th>
               <th className="text-center pb-3 pt-3 px-4 font-medium">Status</th>
             </tr>
@@ -101,6 +104,7 @@ export default function RecentTransactions({
             ) : (
               transactions.map((tx) => {
                 const styles = statusStyles[tx.status];
+                const paymentStyles = paymentMethods[tx.paymentMethod];
                 const txDate = getTxDate(tx);
                 return (
                   <tr
@@ -120,6 +124,14 @@ export default function RecentTransactions({
                     <td className="py-3 px-4 text-xs text-gray-700">
                       {tx.invoiceName}
                     </td>
+                    <td className="py-3 px-4 text-center">
+                      <span
+                        className={`${paymentStyles.badge} ${paymentStyles.cell} inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold`}
+                      >
+                        {tx.paymentMethod.charAt(0).toUpperCase() +
+                          tx.paymentMethod.slice(1)}
+                      </span>
+                    </td>
                     <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
                       {/* {formatCurrency(Number(tx.amount), currency)} */}
                       {formatCurrencySymbol(
@@ -130,7 +142,7 @@ export default function RecentTransactions({
                     </td>
                     <td className="py-3 px-4 text-center">
                       <span
-                        className={`${styles.badge} inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold`}
+                        className={`${styles.badge} ${styles.cell} inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold`}
                       >
                         {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
                       </span>

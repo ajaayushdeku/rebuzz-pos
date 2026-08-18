@@ -1,6 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": { "incremental": false, "types": ["node", "react", "react-dom"] },
-  "include": ["**/*.ts", "**/*.tsx", "**/*.mts"],
-  "exclude": ["node_modules", ".next", "next-env.d.ts"]
-}

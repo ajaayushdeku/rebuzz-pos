@@ -550,7 +550,7 @@ function InvoiceContent({
       {/* ───────────────── Items Table ───────────────── */}
       <InvoiceBillTable invoices={invoice.items} />
 
-      <div className="border-b border-gray-300 mt-3 mb-5" />
+      <div className="border-b border-style-dash border-gray-300 mt-3 mb-5" />
 
       {/* ───────────────── Totals ───────────────── */}
       <div className="space-y-3 text-sm">

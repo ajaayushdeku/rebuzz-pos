@@ -29,7 +29,11 @@ import { Button } from "@/components/ui/button";
 import EditCustomerModal from "@/components/customer/EditCustomerModal";
 import LoyaltyPointModal from "@/components/customer/LoyaltyPointModal";
 import toast from "react-hot-toast";
-import { statusStyles, paymentMethods } from "@/lib/config/transaction";
+import {
+  statusStyles,
+  normalizePaymentMethod,
+  paymentMethodStyle,
+} from "@/lib/config/transaction";
 import {
   WhatsAppIcon,
   whatsappLink,
@@ -93,8 +97,8 @@ function parseNepalDate(rawDate: string): Date | null {
 }
 
 const ORDER_STATUS_STYLE: Record<string, string> = {
-  completed: "bg-green-50 text-green-700 border-green-200",
-  refunded: "bg-gray-100 text-gray-500 border-gray-200",
+  completed: "bg-green-200 text-green-800 ",
+  refunded: "bg-gray-200 text-gray-800 ",
 };
 
 // â”€â”€ Global scrollbar-hide styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -604,10 +608,13 @@ export default function CustomerDetailPage() {
                         ORDER_STATUS_STYLE[statusKey] ??
                         "bg-gray-50 text-gray-600 border-gray-200";
 
-                      const paymentMethod = (purchase.paymentMethod ??
-                        "Cash") as "Card" | "Cash" | "QR" | "Loyalty";
-                      const p =
-                        paymentMethods[paymentMethod] ?? paymentMethods["Cash"];
+                      // Normalise rather than cast — the raw value is
+                      // inconsistently cased, so the cast was asserting a shape
+                      // the data did not have and the lookup missed.
+                      const paymentMethod = normalizePaymentMethod(
+                        purchase.paymentMethod,
+                      );
+                      const p = paymentMethodStyle(purchase.paymentMethod);
 
                       return (
                         <tr

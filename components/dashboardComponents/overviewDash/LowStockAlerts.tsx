@@ -5,15 +5,30 @@ import Link from "next/link";
 import { AlertTriangle, ChevronRight, PackageCheck } from "lucide-react";
 import { useInventoryQuery } from "@/hooks/useInventory";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { formatVariantName } from "@/utils/helper";
 
 type Level = "out" | "critical" | "warning";
 
 type StockAlert = {
+  /** Unique per row — a product id, or "<productId>:<variantId>". */
+  key: string;
+  /** "Coke [Medium/Cherry]" for a variant row. */
   name: string;
   remaining: string;
   inStock: number;
   level: Level;
 };
+
+/**
+ * Severity for a stock reading, or null when there is nothing to report.
+ * Extracted so the parent-product and per-variant paths can't drift apart.
+ */
+function levelFor(inStock: number, lowStock: number): Level | null {
+  if (inStock <= 0) return "out";
+  if (inStock <= lowStock) return "critical";
+  if (inStock <= lowStock * 2) return "warning";
+  return null;
+}
 
 const LEVEL_STYLES: Record<Level, { badge: string; label: string }> = {
   out: { badge: "bg-red-200 text-red-800", label: "out of stock" },
@@ -32,13 +47,32 @@ export default function LowStockAlerts() {
     for (const p of products) {
       if (!p.usesStocks) continue;
 
-      let level: Level | null = null;
-      if (p.inStock <= 0) level = "out";
-      else if (p.inStock <= p.lowStock) level = "critical";
-      else if (p.inStock <= p.lowStock * 2) level = "warning";
+      const variants = p.variants ?? [];
+
+      // A variant product holds no stock of its own — its `inStock` is 0, which
+      // the parent-level check would report as "out of stock" for every such
+      // product. Each variant is its own sellable line, so each is its own row.
+      if (variants.length > 0) {
+        for (const v of variants) {
+          const level = levelFor(v.inStock, v.lowStock);
+          if (!level) continue;
+
+          rows.push({
+            key: `${p.id}:${v.id}`,
+            name: formatVariantName(p.name, v.optionValues),
+            remaining: `${v.inStock.toLocaleString()} ${p.unit}`,
+            inStock: v.inStock,
+            level,
+          });
+        }
+        continue;
+      }
+
+      const level = levelFor(p.inStock, p.lowStock);
       if (!level) continue;
 
       rows.push({
+        key: p.id,
         name: p.name,
         remaining: `${p.inStock.toLocaleString()} ${p.unit}`,
         inStock: p.inStock,
@@ -121,7 +155,7 @@ export default function LowStockAlerts() {
             const s = LEVEL_STYLES[alert.level];
             return (
               <div
-                key={alert.name}
+                key={alert.key}
                 className="flex items-center justify-between py-3 px-4 border-b border-gray-50 last:border-0"
               >
                 <div className="min-w-0">

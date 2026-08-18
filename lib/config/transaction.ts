@@ -45,3 +45,33 @@ export const paymentMethods: Record<
     badge: "bg-blue-200",
   },
 };
+
+/**
+ * Map a raw backend payment method onto a {@link PaymentMethod} key.
+ *
+ * The API is inconsistent — "cash", "Cash", "qr", "Qr Payment" all occur — so
+ * indexing `paymentMethods` with the raw string misses and silently falls back
+ * to grey. Normalising first is what makes the badge colours correct.
+ *
+ * The returned key doubles as the display label, since the keys are already
+ * written the way they should read.
+ */
+export function normalizePaymentMethod(method?: string | null): PaymentMethod {
+  const lower = (method ?? "").toLowerCase();
+  if (lower.includes("qr")) return "QR";
+  if (lower.includes("card")) return "Card";
+  if (lower.includes("loyalty") || lower.includes("point")) return "Loyalty";
+  if (lower.includes("cash") || !lower) return "Cash";
+  // Unrecognised method — preserved so the UI shows what the backend actually
+  // said ("Bank Transfer") rather than inventing "Cash". Use
+  // `paymentMethodStyle` for the badge, which falls back safely.
+  return method as PaymentMethod;
+}
+
+/** Badge styling for any method, recognised or not. Never undefined. */
+export function paymentMethodStyle(method?: string | null): {
+  cell: string;
+  badge: string;
+} {
+  return paymentMethods[normalizePaymentMethod(method)] ?? paymentMethods.Cash;
+}

@@ -6,16 +6,9 @@ import {
   RawBillDetailResponse,
   RawBillListResponse,
 } from "../types/bill";
-import { PaymentMethod } from "../config/transaction";
-
-// Handles inconsistent casing from the backend
-function normalizePaymentMethod(method: string): PaymentMethod {
-  const lower = method.toLowerCase();
-  if (lower === "cash") return "Cash";
-  if (lower.includes("qr")) return "QR";
-  if (lower === "card") return "Card";
-  return method as PaymentMethod;
-}
+// Casing/wording from the backend is inconsistent; the shared normaliser in
+// the config is the single place that knows how to reconcile it.
+import { normalizePaymentMethod } from "../config/transaction";
 
 /**
  * Parse a raw `paidAt` string into a Date whose UTC fields equal the Nepal

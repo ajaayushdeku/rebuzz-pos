@@ -14,7 +14,11 @@ import { formatCurrencySymbol } from "@/utils/helper";
 import { parseNepalDateTime } from "./staffDetailHelpers";
 import { useRouter } from "next/navigation";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
-import { statusStyles, paymentMethods } from "@/lib/config/transaction";
+import {
+  statusStyles,
+  normalizePaymentMethod,
+  paymentMethodStyle,
+} from "@/lib/config/transaction";
 import { ComponentHeader } from "@/components/ComponentHeader";
 
 interface BillRecord {
@@ -226,11 +230,6 @@ export default function BillsSection({
     (page + 1) * pageSize,
   );
 
-  const paymentMethodsRecord = paymentMethods as Record<
-    string,
-    { cell: string; badge: string }
-  >;
-
   if (loading) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 ">
@@ -396,10 +395,11 @@ export default function BillsSection({
                 const s =
                   statusStyles[bill.isRefunded ? "refunded" : "completed"] ??
                   statusStyles["completed"];
-                const p =
-                  paymentMethodsRecord[bill.paymentMethod] ??
-                  paymentMethodsRecord["Cash"];
-
+                // Normalise before indexing — the raw value is inconsistently
+                // cased ("cash", "Qr Payment"), which missed the lookup and
+                // fell back to grey. The key is also the display label.
+                const paymentM = normalizePaymentMethod(bill.paymentMethod);
+                const p = paymentMethodStyle(bill.paymentMethod);
                 return (
                   <tr
                     key={bill._id}
@@ -450,8 +450,7 @@ export default function BillsSection({
                       <span
                         className={`${p.badge} ${p.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
                       >
-                        {bill.paymentMethod.charAt(0).toUpperCase() +
-                          bill.paymentMethod.slice(1)}
+                        {paymentM}
                       </span>
                     </td>
 

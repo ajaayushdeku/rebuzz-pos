@@ -15,6 +15,10 @@ import { useRouter } from "next/navigation";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { parseNepalDateTime } from "./staffDetailHelpers";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  normalizePaymentMethod,
+  paymentMethodStyle,
+} from "@/lib/config/transaction";
 
 interface EnrichedTicket {
   _id: string;
@@ -141,21 +145,22 @@ export default function InvoiceListSection({
     (page + 1) * pageSize,
   );
 
-  const paymentMethodsRecord: Record<string, { cell: string; badge: string }> =
-    {
-      Cash: {
-        cell: "text-emerald-600",
-        badge: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-      },
-      Card: {
-        cell: "text-blue-600",
-        badge: "bg-blue-50 text-blue-700 border border-blue-200",
-      },
-      default: {
-        cell: "text-gray-600",
-        badge: "bg-gray-50 text-gray-700 border border-gray-200",
-      },
-    };
+  // const paymentMethodsRecord: Record<string, { cell: string; badge: string }> =
+  //   {
+  //     Cash: {
+  //       cell: "text-emerald-600",
+  //       badge: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  //     },
+  //     Card: {
+  //       cell: "text-blue-600",
+  //       badge: "bg-blue-50 text-blue-700 border border-blue-200",
+  //     },
+
+  //     default: {
+  //       cell: "text-gray-600",
+  //       badge: "bg-gray-50 text-gray-700 border border-gray-200",
+  //     },
+  //   };
 
   if (loading) {
     return (
@@ -325,9 +330,13 @@ export default function InvoiceListSection({
                   ? parseNepalDateTime(ticket.createdAt)
                   : null;
 
-                const pm = ticket.paymentMethod
-                  ? (paymentMethodsRecord[ticket.paymentMethod] ??
-                    paymentMethodsRecord.default)
+                // An unpaid ticket has no method at all — that still renders
+                // as a dash. Anything present is normalised before lookup.
+                const paymentM = ticket.paymentMethod
+                  ? normalizePaymentMethod(ticket.paymentMethod)
+                  : null;
+                const pm = paymentM
+                  ? paymentMethodStyle(ticket.paymentMethod)
                   : null;
 
                 return (
@@ -378,10 +387,7 @@ export default function InvoiceListSection({
                         <span
                           className={`${pm.badge} ${pm.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
                         >
-                          {ticket.paymentMethod
-                            ? ticket.paymentMethod.charAt(0).toUpperCase() +
-                              ticket.paymentMethod.slice(1)
-                            : "—"}
+                          {paymentM ?? "—"}
                         </span>
                       ) : (
                         <span className="text-gray-400">—</span>
