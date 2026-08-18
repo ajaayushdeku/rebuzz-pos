@@ -1,8 +1,4 @@
-export type TransactionStatus =
-  | "completed"
-  | "pending"
-  | "failed"
-  | "refunded";
+export type TransactionStatus = "completed" | "pending" | "failed" | "refunded";
 
 export const statusStyles: Record<
   TransactionStatus,
@@ -10,7 +6,7 @@ export const statusStyles: Record<
 > = {
   completed: {
     cell: "text-green-800",
-    badge: "bg-green-300",
+    badge: "bg-green-200",
   },
   pending: {
     cell: "text-yellow-800",
@@ -26,19 +22,15 @@ export const statusStyles: Record<
   },
 };
 
-export type PaymentMethod =
-  | "Card"
-  | "Cash"
-  | "Loyalty"
-  | "QR";
+export type PaymentMethod = "Card" | "Cash" | "Loyalty" | "QR";
 
 export const paymentMethods: Record<
   PaymentMethod,
   { cell: string; badge: string }
 > = {
   Card: {
-    cell: "text-blue-800",
-    badge: "bg-blue-200",
+    cell: "text-green-800",
+    badge: "bg-green-200",
   },
   Cash: {
     cell: "text-gray-800",
@@ -49,7 +41,7 @@ export const paymentMethods: Record<
     badge: "bg-purple-200",
   },
   QR: {
-    cell: "text-green-800",
-    badge: "text-green-200",
+    cell: "text-blue-800",
+    badge: "bg-blue-200",
   },
 };

@@ -123,10 +123,13 @@ export function parseNepalDateTime(raw: string): Date | null {
   const normalized = raw.includes("T")
     ? raw.replace("Z", "")
     : raw.replace(" ", "T");
-  // Milliseconds present -> already Nepal local time; absent -> UTC (+5:45).
-  const hasMs = /\.\d/.test(normalized);
+  // Non-zero milliseconds -> already Nepal local time; ".000" or no fraction
+  // -> UTC (+5:45). Mirrors `parseNepalTime` in lib/mappers/transaction.ts,
+  // which parses the same `paidAt` values for Order History.
+  const fraction = normalized.match(/\.(\d+)/)?.[1];
+  const hasSubSecond = fraction != null && Number(fraction) > 0;
   let date: Date;
-  if (hasMs) {
+  if (hasSubSecond) {
     date = new Date(normalized);
   } else {
     date = new Date(normalized + "+00:00");

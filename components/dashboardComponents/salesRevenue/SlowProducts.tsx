@@ -49,7 +49,11 @@ export default function SlowProducts({
   const filtered = useMemo(() => {
     if (!search) return slowProducts;
     const q = search.toLowerCase();
-    return slowProducts.filter((p) => p.name.toLowerCase().includes(q));
+    return slowProducts.filter((p) =>
+      [p.name, p.productName, p.variantLabel]
+        .filter(Boolean)
+        .some((field) => (field as string).toLowerCase().includes(q)),
+    );
   }, [slowProducts, search]);
 
   const sorted = useMemo(() => {
@@ -237,7 +241,7 @@ export default function SlowProducts({
                 const { text } = getDaysColor(product.days);
                 return (
                   <tr
-                    key={product.name}
+                    key={`${product.productName ?? product.name}-${product.variantLabel ?? ""}`}
                     className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
                   >
                     <td className="py-3 px-4 text-gray-400 text-xs">
@@ -245,6 +249,8 @@ export default function SlowProducts({
                     </td>
 
                     <td className="py-3 px-4">
+                      {/* `name` already reads "Coke [Medium/Cherry]" for a
+                          variant row. */}
                       <span className="font-medium text-xs text-gray-900">
                         {product.name}
                       </span>

@@ -23,20 +23,23 @@ function normalizePaymentMethod(method: string): PaymentMethod {
  * is identical on every machine (dev in Nepal or a UTC server) — otherwise the
  * runtime timezone would add the Nepal offset a second time.
  *
- * paidAt WITH milliseconds (e.g. "…28.424") is already Nepal wall-clock and is
- * used as-is; paidAt WITHOUT milliseconds (e.g. "…27") is UTC and needs the
- * +5:45 Nepal offset.
+ * paidAt with NON-ZERO milliseconds (e.g. "…15.934") is already Nepal
+ * wall-clock and is used as-is. A zero fraction ("…51.000") or no fraction at
+ * all is UTC and needs the +5:45 Nepal offset — the backend emits those
+ * truncated to whole seconds, so ".000" is not evidence of a real timestamp.
  */
 export function parseNepalTime(rawDate: string): Date {
   const normalized = rawDate.includes("T")
     ? rawDate.replace("Z", "")
     : rawDate.replace(" ", "T");
-  // Milliseconds present -> already Nepal local time; absent -> UTC.
-  const hasMs = /\.\d/.test(normalized);
+  // Non-zero milliseconds -> already Nepal local time. ".000" counts as absent:
+  // it is a truncated UTC value, not a genuine sub-second reading.
+  const fraction = normalized.match(/\.(\d+)/)?.[1];
+  const hasSubSecond = fraction != null && Number(fraction) > 0;
   // Parse the wall-clock components AS UTC (append "Z"), never as local time,
   // so downstream UTC formatting round-trips the intended value.
   const utc = new Date(normalized + "Z");
-  if (hasMs) {
+  if (hasSubSecond) {
     return utc;
   }
   return new Date(utc.getTime() + (5 * 60 + 45) * 60 * 1000);

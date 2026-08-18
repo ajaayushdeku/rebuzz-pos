@@ -335,7 +335,7 @@ export default function Transactions({
               { value: "all", label: "All Payment" },
               { value: "Card", label: "Card" },
               { value: "Cash", label: "Cash" },
-              { value: "QR", label: "QR" },
+              { value: "QR", label: "QR Payment" },
             ].map((opt) => (
               <button
                 key={opt.value}

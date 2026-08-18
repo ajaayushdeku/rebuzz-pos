@@ -6,9 +6,14 @@ import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 
 export type SlowProduct = {
+  /** Display name — "Momo (buff · large)" for a variant row. */
   name: string;
   days: number;
   stockAmount: number;
+  /** Parent product name; set only on variant rows. */
+  productName?: string;
+  /** Option values joined for display; set only on variant rows. */
+  variantLabel?: string;
 };
 
 export const slowProductColumns: ColumnDef<SlowProduct>[] = [

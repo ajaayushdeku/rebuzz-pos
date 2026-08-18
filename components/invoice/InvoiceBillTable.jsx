@@ -67,7 +67,7 @@ export default function InvoiceBillTable({ invoices }) {
                 <TableCell className="py-2 text-center text-sm text-black">
                   x {product.quantity}
                 </TableCell>
-                <TableCell className="py-2 text-right text-sm text-black">
+                <TableCell className="py-2 text-center text-sm text-black">
                   {formatAmount(Number(product.unitPrice), currency.locale)}
                 </TableCell>
                 <TableCell className="py-2 pr-0 text-right text-sm text-black">

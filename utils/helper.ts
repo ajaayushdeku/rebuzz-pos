@@ -173,3 +173,42 @@ export function formatDatetime(dateString: string) {
 
   return `${day}-${month}-${year} ${hours}:${minutes}`;
 }
+
+/**
+ * Render a product with its variant as `Coke [Medium/Cherry]`.
+ *
+ * Option values arrive in several spellings — the item picker joins them with
+ * " · " while the payload builder rewrites them to "/" — so every separator is
+ * flattened to a single "/" and each value is capitalised. Returns the bare
+ * product name when there is no variant.
+ */
+export const formatVariantName = (
+  productName: string,
+  optionValues?: string | string[] | null,
+): string => {
+  // A stored name often already carries its variant as "Coke (medium · cherry)"
+  // — that is how the item picker writes it, and paid bills do not always send
+  // a separate `variantItems`. Peel any trailing "(…)"/"[…]" off so the bracket
+  // form is produced from one place whichever shape arrived, and so an explicit
+  // label never gets appended on top of one already in the name.
+  let base = productName.trim();
+  let values = optionValues;
+
+  const trailing = base.match(/^(.*\S)\s*[([]([^()[\]]+)[)\]]$/);
+  if (trailing) {
+    base = trailing[1].trim();
+    const explicit = Array.isArray(values)
+      ? values.filter(Boolean).length > 0
+      : !!values?.trim();
+    if (!explicit) values = trailing[2];
+  }
+
+  const parts = (
+    Array.isArray(values) ? values : (values ?? "").split(/[/·,]/)
+  )
+    .map((v) => v.trim())
+    .filter(Boolean)
+    .map((v) => v.charAt(0).toUpperCase() + v.slice(1));
+
+  return parts.length ? `${base} [${parts.join("/")}]` : base;
+};

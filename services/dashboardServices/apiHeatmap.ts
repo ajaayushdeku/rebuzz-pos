@@ -61,11 +61,13 @@ function parseNepalHour(paidAt: string): {
   const [h, m] = timePart.split(":").map(Number);
 
   // ── Compute Nepal hour from string ─────────────────────────────────────
-  // Bills store `paidAt` with milliseconds when it is already Nepal wall-clock
-  // and without milliseconds when it is UTC (needs the +5:45 Nepal offset).
-  const hasMs = /\.\d/.test(timePart);
+  // Bills store `paidAt` with NON-ZERO milliseconds when it is already Nepal
+  // wall-clock. A ".000" fraction — or none at all — is UTC and needs the
+  // +5:45 Nepal offset; the backend truncates those to whole seconds.
+  const fraction = timePart.match(/\.(\d+)/)?.[1];
+  const hasSubSecond = fraction != null && Number(fraction) > 0;
   let nepalHour: number;
-  if (hasMs) {
+  if (hasSubSecond) {
     nepalHour = h; // Already Nepal 24-hour time
   } else {
     nepalHour = h + 5; // UTC time — add 5 hours 45 minutes
@@ -78,7 +80,7 @@ function parseNepalHour(paidAt: string): {
     ? paidAt.replace("Z", "")
     : paidAt.replace(" ", "T");
   let nepalDate: Date;
-  if (hasMs) {
+  if (hasSubSecond) {
     nepalDate = new Date(rawDate + "+05:45");
   } else {
     nepalDate = new Date(rawDate + "+00:00");

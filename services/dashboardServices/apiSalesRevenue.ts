@@ -274,7 +274,7 @@ export const getPeakDaysData = async (
       cache: "no-store",
     }),
     // Orders (invoices) — endpoint has no date filtering, so fetch all.
-    fetch(`${BASE}/business/ticket/unarchived`, {
+    fetch(`${BASE}/business/ticket`, {
       headers,
       cache: "no-store",
     }),

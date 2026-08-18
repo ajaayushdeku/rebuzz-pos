@@ -20,7 +20,7 @@ import type { Credit } from "@/services/apiCredit.client";
 const PAYMENT_METHODS = [
   { value: "cash", label: "Cash", icon: Banknote },
   // { value: "card", label: "Card", icon: CreditCard },
-  { value: "qr", label: "QR", icon: QrCode },
+  { value: "Qr Payment", label: "QR", icon: QrCode },
   // { value: "online", label: "Online", icon: Smartphone },
 ] as const;
 

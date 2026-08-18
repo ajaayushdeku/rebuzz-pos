@@ -24,11 +24,12 @@ interface DayTimeProfitHeatmapProps {
 
 const getColor = (profit: number): string => {
   if (profit < 0) return "bg-red-300";
-  if (profit >= 150) return "bg-emerald-600";
-  if (profit >= 120) return "bg-emerald-500";
-  if (profit >= 90) return "bg-emerald-400";
-  if (profit >= 60) return "bg-emerald-300";
-  if (profit >= 30) return "bg-emerald-200";
+  if (profit >= 200) return "bg-emerald-600";
+  if (profit >= 150) return "bg-emerald-500";
+  if (profit >= 100) return "bg-emerald-400";
+  if (profit >= 50) return "bg-emerald-300";
+  if (profit > 0) return "bg-emerald-200";
+  if (profit === 0) return "bg-emerald-100";
   return "bg-emerald-100";
 };
 

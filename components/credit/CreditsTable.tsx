@@ -400,7 +400,7 @@ export default function CreditsTable({
                       <td className="py-3.5 px-4">
                         {(() => {
                           const d = parseNepalDateTime(c.creationDate);
-                          console.log("invoiceDate", d, c.creationDate);
+                          // console.log("invoiceDate", d, c.creationDate);
                           return d ? (
                             <div>
                               <span className="font-medium text-gray-800 text-xs block">

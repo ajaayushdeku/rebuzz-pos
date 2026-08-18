@@ -125,7 +125,6 @@ const InvoiceDetailPage = () => {
     invoice?.invoice != null,
   );
   const creditForInvoice = creditDetail?.credit ?? null;
-  console.log("CREDITED INVOICE:", creditForInvoice);
 
   const { data: customerData, isLoading: isCustomerLoading } = useQuery({
     queryKey: ["customer-lookup", invoice?.customerEmail, invoice?.phoneNumber],

@@ -60,6 +60,7 @@ export default function OrderHistoryPage() {
 
         if (transRes.ok) {
           const transJson = await transRes.json();
+
           setTransactions(transJson?.data ?? []);
         } else {
           setTransactions([]);

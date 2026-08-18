@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Timer } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol, formatVariantName } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
 
 type TimePeriod = "morning" | "lunch" | "afternoon" | "evening";
@@ -40,11 +40,14 @@ interface DetailItem {
   productName?: string;
   quantity?: number;
   unitPrice?: number;
+  /** Present when the line is a variant of a product (e.g. "buff/large"). */
+  variantItems?: { name?: string };
 }
 
 interface TimeWiseProduct {
   period: TimePeriod;
   title: string;
+  /** Includes the variant when there is one — "Coke [Medium/Cherry]". */
   productName: string;
   unitsSold: number;
   revenue: number;
@@ -115,7 +118,8 @@ async function buildTimeWiseProducts(
   }));
 
   const perWindow = WINDOWS.map(
-    () => new Map<string, { units: number; revenue: number }>(),
+    () =>
+      new Map<string, { name: string; units: number; revenue: number }>(),
   );
 
   for (const { hour, items } of withItems) {
@@ -125,13 +129,25 @@ async function buildTimeWiseProducts(
 
     for (const li of items) {
       const name = li?.productName || "Unknown";
+      // Variants of the same product sell independently, so each is its own
+      // bucket — otherwise "Momo" would merge buff/chicken/veg into one row
+      // and no single variant could ever be reported as the window's top.
+      const variantLabel = li?.variantItems?.name?.trim() || undefined;
+      // "Coke [Medium/Cherry]" — also the bucket key, so two variants of the
+      // same product never merge.
+      const displayName = formatVariantName(name, variantLabel);
+
       const qty = Number(li?.quantity) || 0;
       const revenue = (Number(li?.unitPrice) || 0) * qty;
       const bucket = perWindow[wi];
-      const cur = bucket.get(name) ?? { units: 0, revenue: 0 };
+      const cur = bucket.get(displayName) ?? {
+        name: displayName,
+        units: 0,
+        revenue: 0,
+      };
       cur.units += qty;
       cur.revenue += revenue;
-      bucket.set(name, cur);
+      bucket.set(displayName, cur);
     }
   }
 
@@ -144,13 +160,13 @@ async function buildTimeWiseProducts(
 
     let top: { name: string; units: number; revenue: number } | null = null;
     let topScore = -1;
-    for (const [name, v] of entries) {
+    for (const [, v] of entries) {
       const score =
         (maxRevenue > 0 ? v.revenue / maxRevenue : 0) +
         (maxUnits > 0 ? v.units / maxUnits : 0);
       if (score > topScore) {
         topScore = score;
-        top = { name, ...v };
+        top = v;
       }
     }
 

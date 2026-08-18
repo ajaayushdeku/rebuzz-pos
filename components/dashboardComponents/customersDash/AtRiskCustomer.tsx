@@ -59,7 +59,7 @@ export default function AtRiskCustomer({
   const [historyFor, setHistoryFor] = useState<AtRiskCustomer | null>(null);
   const pageSize = 5;
 
-  console.log("At Risk Customers:", riskCustomers);
+  // console.log("At Risk Customers:", riskCustomers);
 
   const filtered = useMemo(() => {
     if (!search) return riskCustomers;

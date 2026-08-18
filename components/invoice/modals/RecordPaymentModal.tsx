@@ -24,7 +24,7 @@ interface RecordPaymentModalProps {
 
 const PAYMENT_METHODS = [
   { value: "cash", label: "Cash", icon: Banknote },
-  { value: "qr", label: "QR", icon: QrCode },
+  { value: "Qr Payment", label: "QR", icon: QrCode },
 ] as const;
 
 /** One line of the amount breakdown. Keeps every row on the same grid. */

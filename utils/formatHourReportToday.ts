@@ -30,10 +30,11 @@ export const formatHourlyData = (
     let hour = parseInt(timePart.split(":")[0], 10);
     let minute = parseInt(timePart.split(":")[1], 10);
 
-    // paidAt WITH milliseconds is already Nepal time; WITHOUT milliseconds it's
-    // UTC from MongoDB, so convert to Nepal time (+5:45).
-    const hasMs = /\.\d/.test(timePart);
-    if (!hasMs) {
+    // paidAt with NON-ZERO milliseconds is already Nepal time; ".000" or no
+    // fraction is UTC from MongoDB, so convert to Nepal time (+5:45).
+    const fraction = timePart.match(/\.(\d+)/)?.[1];
+    const hasSubSecond = fraction != null && Number(fraction) > 0;
+    if (!hasSubSecond) {
       minute += 45;
       if (minute >= 60) {
         minute -= 60;
@@ -71,10 +72,11 @@ const deriveHourFromPaidAt = (paidAt: string): number | null => {
   if (Number.isNaN(hour)) return null;
   if (Number.isNaN(minute)) minute = 0;
 
-  // paidAt WITH milliseconds is already Nepal time; WITHOUT milliseconds it's
-  // UTC from MongoDB — convert to Nepal (+5:45).
-  const hasMs = /\.\d/.test(timePart);
-  if (!hasMs) {
+  // paidAt with NON-ZERO milliseconds is already Nepal time; ".000" or no
+  // fraction is UTC from MongoDB — convert to Nepal (+5:45).
+  const fraction = timePart.match(/\.(\d+)/)?.[1];
+  const hasSubSecond = fraction != null && Number(fraction) > 0;
+  if (!hasSubSecond) {
     minute += 45;
     if (minute >= 60) {
       minute -= 60;
