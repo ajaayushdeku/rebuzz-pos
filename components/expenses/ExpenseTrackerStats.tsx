@@ -62,7 +62,7 @@ export default function ExpenseTrackerStats() {
   ];
 
   return (
-    <div className="bg-white py-2 mb-4">
+    <div className="bg-white pb-2 mb-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {statItems.map((item) => (
           <div
