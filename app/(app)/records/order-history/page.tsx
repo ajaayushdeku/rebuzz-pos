@@ -11,7 +11,6 @@ import SampleDataBadge from "@/components/ui/sampledatabadge";
 // import { mockTransactions } from "@/lib/mockData/mock-transactions";
 import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
 import type { OrderHistoryStats as StatsData } from "@/components/dashboardComponents/orderHistory/OrderHistoryStats";
-import { Loader2 } from "lucide-react";
 
 function getDefaultDateRange(): DateRangeValue {
   const today = new Date();
@@ -122,19 +121,7 @@ export default function OrderHistoryPage() {
         <OrderHistoryStats stats={stats} isLoading={loading} />
       </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 size={24} className="animate-spin text-blue-500" />
-          <span className="ml-3 text-sm text-gray-500">
-            Loading transactions...
-          </span>
-        </div>
-      ) : (
-        // ) : isEmpty ? (
-        //   <Transactions transactions={displayData} />
-        // ) : (
-        <Transactions transactions={transactions} />
-      )}
+      <Transactions transactions={transactions} isLoading={loading} />
     </div>
   );
 }

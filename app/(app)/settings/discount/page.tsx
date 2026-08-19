@@ -166,22 +166,8 @@ export default function DiscountSettingsPage() {
           <CreateDiscountDialog />
         </div>
 
-        {/* ── Search — stays put, filters whichever table is showing ── */}
-        <div className="relative ">
-          <Search
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-          />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search discounts..."
-            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-          />
-        </div>
-
         {/* ── Tabs — the rule runs edge to edge and the pill sits on top ── */}
-        <div className="relative flex justify-center">
+        <div className="relative flex justify-center mt-6">
           <span
             aria-hidden="true"
             className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
@@ -229,13 +215,27 @@ export default function DiscountSettingsPage() {
           </div>
         </div>
 
+        {/* ── Search — stays put, filters whichever table is showing ── */}
+        <div className="relative ">
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search discounts..."
+            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+          />
+        </div>
+
         {/* ── Panels ─────────────────────────────────────── */}
         <div
           role="tabpanel"
           id={`discounts-panel-${activeTab}`}
           aria-labelledby={`discounts-tab-${activeTab}`}
           tabIndex={0}
-          className="bg-white rounded-xl px-6 py-5 focus-visible:outline-none"
+          className="bg-white rounded-xl px-6 py-2 focus-visible:outline-none"
         >
           {activeTab === "percentage" ? (
             <DiscountTable

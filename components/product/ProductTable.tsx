@@ -20,6 +20,7 @@ import { Product, ProductVariant } from "@/lib/types/product";
 import ProductDetailModal from "./ProductDetailModal";
 import ProductFormModal from "./ProductFormModal";
 import DeleteProductModal from "./DeleteProductModal";
+import LoadingState from "@/components/ui/LoadingState";
 import { useDeleteProduct } from "@/hooks/useProducts";
 import toast from "react-hot-toast";
 
@@ -27,7 +28,13 @@ type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 type TabKey = "products" | "variants";
 type VariantRow = { product: Product; variant: ProductVariant };
 
-export default function ProductTable({ products }: { products: Product[] }) {
+export default function ProductTable({
+  products,
+  isLoading = false,
+}: {
+  products: Product[];
+  isLoading?: boolean;
+}) {
   const { currency } = useCurrency();
   const deleteMutation = useDeleteProduct();
   const [detailProduct, setDetailProduct] = useState<Product | null>(null);
@@ -220,7 +227,7 @@ export default function ProductTable({ products }: { products: Product[] }) {
     <>
       {/* ── Tabs — hidden when nothing has variants ───────── */}
       {hasVariants && (
-        <div className="relative flex justify-center mb-8 mt-6">
+        <div className="relative flex justify-center  mt-6">
           <span
             aria-hidden="true"
             className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
@@ -268,7 +275,7 @@ export default function ProductTable({ products }: { products: Product[] }) {
       )}
 
       {/* ── Search ───────────────────────────────────────── */}
-      <div className="relative mb-4">
+      <div className="relative mb-4 mt-6">
         <Search
           size={14}
           className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -325,7 +332,15 @@ export default function ProductTable({ products }: { products: Product[] }) {
             </tr>
           </thead>
           <tbody>
-            {isEmpty ? (
+            {/* Loading lives in the tbody so the header row and the toolbar
+                above stay visible, matching the settings tables. */}
+            {isLoading ? (
+              <tr>
+                <td colSpan={7}>
+                  <LoadingState message="Loading products..." />
+                </td>
+              </tr>
+            ) : isEmpty ? (
               <tr>
                 <td
                   colSpan={7}

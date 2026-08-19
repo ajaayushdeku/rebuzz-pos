@@ -50,16 +50,19 @@ function monthLabel(date: Date): string {
   return date.toLocaleDateString("en-US", { month: "short" });
 }
 
-// Retained for the preserved month-based comparison in getGrowthData (see the
-// commented-out block there); the app may switch back to calendar months later.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function firstDayOfMonth(year: number, month: number): Date {
   return new Date(year, month, 1);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function lastDayOfMonth(year: number, month: number): Date {
   return new Date(year, month + 1, 0);
+}
+
+// compare-sales-by-month buckets are keyed by `monthStart` (the 1st of the
+// month), so buckets are matched on their "YYYY-MM" prefix rather than by
+// range comparison — the raw value may carry a time component.
+function monthKey(dateStr: string): string {
+  return dateStr.slice(0, 7);
 }
 
 // ── Date helpers for filtering bills client-side ──────────────────────────
@@ -129,6 +132,8 @@ async function fetchSalesByItemForPeriod(
     };
   const json = await res.json();
 
+  console.log("SALES:", json);
+
   return (
     json ?? {
       data: [],
@@ -139,31 +144,14 @@ async function fetchSalesByItemForPeriod(
   );
 }
 
-// ── getGrowthData — 6 stat cards (current 30-day period vs previous 30 days) ─
+// ── getGrowthData — 6 stat cards (current calendar month vs previous month) ─
 
 export const getGrowthData = async (): Promise<GrowthStatsApiResponse> => {
   const today = new Date();
 
-  // ── Rolling 30-day periods (current vs the 30 days immediately before) ────
-  // Current period:  the last 30 days, ending today       (e.g. Jun 11 → Jul 10).
-  // Previous period: the 30 days immediately before it     (e.g. May 12 → Jun 10).
-  const currPeriodStartDate = new Date(today);
-  currPeriodStartDate.setDate(today.getDate() - 29);
-  const prevPeriodEndDate = new Date(today);
-  prevPeriodEndDate.setDate(today.getDate() - 30);
-  const prevPeriodStartDate = new Date(today);
-  prevPeriodStartDate.setDate(today.getDate() - 59);
-
-  const currPeriodStart = toDateStr(currPeriodStartDate);
-  const currPeriodEnd = toDateStr(today);
-  const prevPeriodStart = toDateStr(prevPeriodStartDate);
-  const prevPeriodEnd = toDateStr(prevPeriodEndDate);
-
-  /* ── Previous behavior: calendar-month comparison — intentionally preserved ─
-     Kept for future use; the app may switch back to month-over-month comparisons.
-       Current Month:  first day of the current month  → today.
-       Previous Month: first day of the previous month → last day of previous month.
-
+  // ── Calendar months (current month-to-date vs the whole previous month) ──
+  // Current month:  1st of this month  → today          (e.g. Aug 1  → Aug 19).
+  // Previous month: 1st of last month  → last day of it  (e.g. Jul 1  → Jul 31).
   const currPeriodStart = toDateStr(
     firstDayOfMonth(today.getFullYear(), today.getMonth()),
   );
@@ -174,27 +162,22 @@ export const getGrowthData = async (): Promise<GrowthStatsApiResponse> => {
   const prevPeriodEnd = toDateStr(
     lastDayOfMonth(today.getFullYear(), today.getMonth() - 1),
   );
-  */
 
-  /* ── Month-bucketed revenue/orders source — preserved for calendar-month mode ─
-     compare-sales-by-month returns whole-month buckets keyed by `monthStart`
-     (the 1st of each month). Filtering those buckets by an arbitrary rolling
-     window mis-attributes data (it drops the partial current/previous month),
-     which is why the numbers looked stale after the date range changed.
-     Revenue & orders are now derived from the exact-range bills below instead.
-     Re-enable this when switching back to calendar-month comparisons.
-
+  // ── Revenue & orders from compare-sales-by-month ────────────────────
+  // The endpoint returns whole-month buckets, which now line up exactly with
+  // the comparison periods, so each period is a single bucket lookup.
   const monthlyData = await fetchCompareSalesByMonth(
     prevPeriodStart,
     currPeriodEnd,
   );
+  const currMonthKey = monthKey(currPeriodStart);
+  const prevMonthKey = monthKey(prevPeriodStart);
   const currCompare = monthlyData.filter(
-    (d) => d.monthStart >= currPeriodStart && d.monthStart <= currPeriodEnd,
+    (d) => monthKey(d.monthStart) === currMonthKey,
   );
   const prevCompare = monthlyData.filter(
-    (d) => d.monthStart >= prevPeriodStart && d.monthStart <= prevPeriodEnd,
+    (d) => monthKey(d.monthStart) === prevMonthKey,
   );
-  */
 
   // Single bills fetch covering both periods, then filter client-side
   const allBills = await fetchBills(prevPeriodStart, currPeriodEnd);
@@ -214,26 +197,15 @@ export const getGrowthData = async (): Promise<GrowthStatsApiResponse> => {
     prevPeriodEnd,
   );
 
-  // ── Revenue & Orders from the exact-range bills (accurate for rolling windows) ─
-  const aggregateBills = (bills: RawBill[]) => {
-    const nonRefunded = bills.filter((b) => !b.isRefunded);
-    const revenue = nonRefunded.reduce((s, b) => s + (b.grandTotal ?? 0), 0);
-    const orders = nonRefunded.length;
+  // ── Revenue & Orders from the month buckets ─────────────────────────────
+  const aggregateCompare = (data: RawMonthCompare[]) => {
+    const revenue = data.reduce((s, d) => s + (d.totalRevenue ?? 0), 0);
+    const orders = data.reduce((s, d) => s + (d.totalSales ?? 0), 0);
     return { revenue, orders };
   };
 
-  const currCompareAgg = aggregateBills(currBills);
-  const prevCompareAgg = aggregateBills(prevBills);
-
-  /* Previous (month-bucket) aggregation — preserved for calendar-month mode:
-  const aggregateCompare = (data: RawMonthCompare[]) => {
-    const totalRevenue = data.reduce((s, d) => s + d.totalRevenue, 0);
-    const totalOrders = data.reduce((s, d) => s + d.totalSales, 0);
-    return { revenue: totalRevenue, orders: totalOrders };
-  };
   const currCompareAgg = aggregateCompare(currCompare);
   const prevCompareAgg = aggregateCompare(prevCompare);
-  */
 
   // ── Profit Margin from salesByItem ────────────────────────────────────────
   const getNetProfit = (res: RawSalesByItemResponse) => {

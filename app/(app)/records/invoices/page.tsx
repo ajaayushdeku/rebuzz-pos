@@ -4,12 +4,11 @@ import ArchivedInvoicesTable from "@/components/invoice/ArchivedInvoicesTable";
 import InvoiceHeader from "@/components/invoice/InvoiceHeader";
 import InvoiceStats from "@/components/invoice/InvoiceStats";
 import InvoiceTable from "@/components/invoice/InvoiceTable";
-import { Spinner } from "@/components/ui/spinner";
+import ErrorState from "@/components/ui/ErrorState";
 import { fetchArchivedInvoicesClient } from "@/services/apiArchivedInvoice.client";
 import { fetchInvoicesClient } from "@/services/apiInvoice.client";
 import { useInvoiceStore } from "@/stores/invoiceStore";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 type TabKey = "invoices" | "archived";
@@ -26,6 +25,8 @@ export default function Page() {
     isLoading,
     data: invoices = [],
     error,
+    refetch,
+    isFetching,
   } = useQuery({
     queryKey: ["invoice"],
     queryFn: fetchInvoicesClient,
@@ -44,22 +45,12 @@ export default function Page() {
     }
   }, [invoices, setInvoices]);
 
-  if (isLoading)
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 size={24} className="animate-spin text-blue-500" />
-        <span className="ml-3 text-sm text-gray-500">Loading invoices...</span>
-      </div>
-    );
-  if (error)
-    return (
-      <div className="flex items-center justify-center w-screen h-screen text-2xl">
-        {":( Error loading invoices"}
-      </div>
-    );
-
   const tabs: Array<{ key: TabKey; label: string; count: number | null }> = [
-    { key: "invoices", label: "Invoices", count: invoices.length },
+    {
+      key: "invoices",
+      label: "Invoices",
+      count: isLoading ? null : invoices.length,
+    },
     {
       key: "archived",
       label: "Archived",
@@ -88,73 +79,88 @@ export default function Page() {
       <div className="w-full mx-auto space-y-8">
         <InvoiceHeader />
 
-        {/* Stats stay put — they always reflect the full invoice list */}
-        <InvoiceStats invoices={invoices} />
-
-        {/* Tabs — the rule runs edge to edge and the pill sits on top of it */}
-        <div className="relative flex justify-center">
-          <span
-            aria-hidden="true"
-            className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
+        {/* Loading and error swap the body only — the header stays put in
+            every state, matching the products page. */}
+        {error ? (
+          <ErrorState
+            title="Couldn't load invoices"
+            message="The invoice list didn't come back from the server. Check your connection and try again."
+            onRetry={() => refetch()}
+            isRetrying={isFetching}
           />
-          <div
-            role="tablist"
-            aria-label="Invoice view"
-            onKeyDown={handleTabKeyDown}
-            className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
-          >
-            {tabs.map((tab, i) => {
-              const selected = tab.key === activeTab;
+        ) : (
+          <>
+            {/* Stats stay put — they always reflect the full invoice list */}
+            <InvoiceStats invoices={invoices} />
 
-              return (
-                <button
-                  key={tab.key}
-                  ref={(el) => {
-                    tabRefs.current[i] = el;
-                  }}
-                  type="button"
-                  role="tab"
-                  id={`invoices-tab-${tab.key}`}
-                  aria-selected={selected}
-                  aria-controls={`invoices-panel-${tab.key}`}
-                  tabIndex={selected ? 0 : -1}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`flex items-center gap-2 rounded-full px-5 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
-                    selected
-                      ? "bg-white font-bold text-blue-950 shadow-sm"
-                      : "font-semibold text-blue-800 hover:text-blue-950"
-                  }`}
-                >
-                  {tab.label}
-                  <span
-                    className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 
-                     bg-[#e4f2fe] text-blue-950 ring-blue-900"
-                  >
-                    {tab.count === null ? "–" : tab.count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+            {/* Tabs — the rule runs edge to edge and the pill sits on top of it */}
+            <div className="relative flex justify-center">
+              <span
+                aria-hidden="true"
+                className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
+              />
+              <div
+                role="tablist"
+                aria-label="Invoice view"
+                onKeyDown={handleTabKeyDown}
+                className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+              >
+                {tabs.map((tab, i) => {
+                  const selected = tab.key === activeTab;
 
-        {/* Panels */}
-        <div
-          role="tabpanel"
-          id={`invoices-panel-${activeTab}`}
-          aria-labelledby={`invoices-tab-${activeTab}`}
-          tabIndex={0}
-          className="focus-visible:outline-none"
-        >
-          {activeTab === "invoices" && <InvoiceTable invoices={invoices} />}
+                  return (
+                    <button
+                      key={tab.key}
+                      ref={(el) => {
+                        tabRefs.current[i] = el;
+                      }}
+                      type="button"
+                      role="tab"
+                      id={`invoices-tab-${tab.key}`}
+                      aria-selected={selected}
+                      aria-controls={`invoices-panel-${tab.key}`}
+                      tabIndex={selected ? 0 : -1}
+                      onClick={() => setActiveTab(tab.key)}
+                      className={`flex items-center gap-2 rounded-full px-5 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                        selected
+                          ? "bg-white font-bold text-blue-950 shadow-sm"
+                          : "font-semibold text-blue-800 hover:text-blue-950"
+                      }`}
+                    >
+                      {tab.label}
+                      <span
+                        className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 
+                         bg-[#e4f2fe] text-blue-950 ring-blue-900"
+                      >
+                        {tab.count === null ? "–" : tab.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
-          {activeTab === "archived" && (
-            <ArchivedInvoicesTable
-              invoices={archivedInvoices}
-              isLoading={archivedLoading}
-            />
-          )}
-        </div>
+            {/* Panels */}
+            <div
+              role="tabpanel"
+              id={`invoices-panel-${activeTab}`}
+              aria-labelledby={`invoices-tab-${activeTab}`}
+              tabIndex={0}
+              className="focus-visible:outline-none"
+            >
+              {activeTab === "invoices" && (
+                <InvoiceTable invoices={invoices} isLoading={isLoading} />
+              )}
+
+              {activeTab === "archived" && (
+                <ArchivedInvoicesTable
+                  invoices={archivedInvoices}
+                  isLoading={archivedLoading}
+                />
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

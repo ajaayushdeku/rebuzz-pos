@@ -58,17 +58,15 @@ export const getStatsData = async (
   // concurrent current/previous period requests
   const _ts = Date.now();
 
-  const [compareRes, salesByItemRes, reportRes] = await Promise.all([
+  // `/business/report` was fetched here only for its `report.profit`; net
+  // profit is now summed from salesByItem, so that request is gone.
+  const [compareRes, salesByItemRes] = await Promise.all([
     fetch(
       `${BASE}/business/report/${compareEndpoint(compareType)}?startDate=${start}&endDate=${end}&_t=${_ts}`,
       { headers, cache: "no-store" },
     ),
     fetch(
       `${BASE}/business/report/salesByItem?startDate=${start}&endDate=${end}&_t=${_ts + 1}`,
-      { headers, cache: "no-store" },
-    ),
-    fetch(
-      `${BASE}/business/report?startDate=${start}&endDate=${end}&_t=${_ts + 2}`,
       { headers, cache: "no-store" },
     ),
   ]);
@@ -88,26 +86,24 @@ export const getStatsData = async (
     0,
   );
 
-  // Get total products sold from salesByItem data
-  const salesByItemJson = await safeJson<{ data?: { count: number }[] }>(
-    salesByItemRes,
-  );
-  const salesItems: { count: number }[] = salesByItemJson?.data ?? [];
+  // Products sold and net profit both come from salesByItem.
+  const salesByItemJson = await safeJson<{
+    data?: { count: number; netProfit?: number }[];
+  }>(salesByItemRes);
+  const salesItems: { count: number; netProfit?: number }[] =
+    salesByItemJson?.data ?? [];
   const totalProductsSold = salesItems.reduce(
     (sum, item) => sum + (item.count ?? 0),
     0,
   );
 
-  // Get net profit from the /business/report endpoint (direct profit figure)
-  const reportJson = await safeJson<{
-    data?: { report?: { profit?: number } };
-  }>(reportRes);
-  const netProfit: number = reportJson?.data?.report?.profit ?? 0;
-
-  //  netProfit =
-  //   salesItems.reduce((sum, item) => sum + (item.netProfit ?? 0), 0) -
-  //   (salesByItemJson.totalDiscount ?? 0) -
-  //   (salesByItemJson.totalRedeemPoint ?? 0);
+  // Summed per item rather than read from /business/report's `profit`, which
+  // was reporting an incorrect total. Matches how InventoryValueSummary
+  // derives its own net-profit figure from the same endpoint.
+  const netProfit = salesItems.reduce(
+    (sum, item) => sum + (item.netProfit ?? 0),
+    0,
+  );
 
   return {
     totalSales: { value: totalRevenue, percent: 0 },

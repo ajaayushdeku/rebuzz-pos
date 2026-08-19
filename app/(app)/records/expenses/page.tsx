@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import LoadingState from "@/components/ui/LoadingState";
 
 import { ExpenseTrackerProvider, useTracker } from "@/providers/ExpenseContext";
 import ExpenseTrackerStats from "@/components/expenses/ExpenseTrackerStats";
@@ -12,17 +12,6 @@ import ExpenseMonthYearFilter from "@/components/expenses/ExpenseMonthYearFilter
 
 function ExpenseRecordsPage() {
   const { isLoading } = useTracker();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex items-center gap-2 text-gray-400 text-sm">
-          <Loader2 size={16} className="animate-spin" />
-          Loading your data...
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
@@ -45,13 +34,19 @@ function ExpenseRecordsPage() {
         </div>
 
         {/* ── Records ── */}
-        <ExpenseTrackerStats />
-        <PurposeSummaryTables />
+        {isLoading ? (
+          <LoadingState message="Loading your expense data..." />
+        ) : (
+          <>
+            <ExpenseTrackerStats />
+            <PurposeSummaryTables />
 
-        {/* Horizontal divider */}
-        <div className="border-t border-gray-200 my-6" />
+            {/* Horizontal divider */}
+            <div className="border-t border-gray-200 my-6" />
 
-        <RecentTransactions />
+            <RecentTransactions />
+          </>
+        )}
       </div>
     </div>
   );

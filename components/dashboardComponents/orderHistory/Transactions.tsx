@@ -16,6 +16,7 @@ import { Transaction } from "./transaction-columns";
 // import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
 import TransactionDetailModal from "./TransactionDetailModal";
 import RefundModal from "./RefundModal";
+import LoadingState from "@/components/ui/LoadingState";
 import { statusStyles, paymentMethods } from "@/lib/config/transaction";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { parseNepalDateTime } from "../staffDash/staffDetail/staffDetailHelpers";
@@ -40,8 +41,10 @@ type TabKey = "completed" | "refunded" | "all";
 
 export default function Transactions({
   transactions: initialTransactions,
+  isLoading = false,
 }: {
   transactions: Transaction[];
+  isLoading?: boolean;
 }) {
   const router = useRouter();
   const { currency } = useCurrency();
@@ -425,7 +428,16 @@ export default function Transactions({
             </tr>
           </thead>
           <tbody>
-            {paged.length === 0 ? (
+            {/* Loading lives in the tbody so the header row and the
+                controls above stay visible, matching the settings
+                tables. */}
+            {isLoading ? (
+              <tr>
+                <td colSpan={10}>
+                  <LoadingState message="Loading transactions..." />
+                </td>
+              </tr>
+            ) : paged.length === 0 ? (
               <tr>
                 <td
                   colSpan={10}

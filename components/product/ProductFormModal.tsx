@@ -2,15 +2,16 @@
 
 import { useState, useEffect, useRef } from "react";
 import {
-  Upload,
-  ImageIcon,
-  X,
-  Loader2,
-  Check,
-  ArrowUpRight,
+  AlertCircle,
   ArrowDownRight,
-  Plus,
+  ArrowUpRight,
+  Check,
+  ImageIcon,
+  Loader2,
   Package,
+  Plus,
+  Upload,
+  X,
 } from "lucide-react";
 import { Product } from "@/lib/types/product";
 import ModalShell from "@/components/ui/ModalShell";
@@ -54,6 +55,13 @@ type ProductFormData = {
 };
 
 type FormErrors = Partial<Record<keyof ProductFormData, string>>;
+
+/** "812 KB" / "1.4 MB" — shown next to the stated upload limit. */
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  const kb = bytes / 1024;
+  return kb < 1024 ? `${Math.round(kb)} KB` : `${(kb / 1024).toFixed(1)} MB`;
+}
 
 const INITIAL_FORM: ProductFormData = {
   name: "",
@@ -197,6 +205,13 @@ export default function ProductFormModal({
 
   const [form, setForm] = useState<ProductFormData>(INITIAL_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
+  /**
+   * Server-side failure for the whole submit, as opposed to `errors`, which is
+   * per-field client validation. Shown in the footer next to Save — the
+   * mutations use `mutateAsync` with no rejection handler, so before this a
+   * failed save surfaced nothing at all.
+   */
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryColor, setNewCategoryColor] = useState("#60a5fa");
@@ -220,8 +235,8 @@ export default function ProductFormModal({
       toast.error("Please select an image file");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5MB");
+    if (file.size > 1 * 1024 * 1024) {
+      toast.error("Image must be under 1MB");
       return;
     }
     setImageFile(file);
@@ -250,6 +265,7 @@ export default function ProductFormModal({
         discounts: product.discounts ?? [],
       });
       setErrors({});
+      setSubmitError(null);
       setImageFile(null);
       setImagePreview(product.image ?? null);
 
@@ -278,6 +294,7 @@ export default function ProductFormModal({
     } else if (!product && open) {
       setForm({ ...INITIAL_FORM, name: initialName ?? "" });
       setErrors({});
+      setSubmitError(null);
       setImageFile(null);
       setImagePreview(null);
       setHasVariants(false);
@@ -298,6 +315,7 @@ export default function ProductFormModal({
   const resetForm = () => {
     setForm(INITIAL_FORM);
     setErrors({});
+    setSubmitError(null);
     setShowNewCategory(false);
     setNewCategoryName("");
     setNewCategoryColor("#60a5fa");
@@ -361,6 +379,7 @@ export default function ProductFormModal({
   };
 
   const handleSave = async () => {
+    setSubmitError(null);
     if (!validate()) return;
 
     // If user is creating a new category inline, create it first
@@ -372,8 +391,10 @@ export default function ProductFormModal({
           color: newCategoryColor.replace("#", ""),
         });
         categoryId = newCat._id;
-      } catch {
-        toast.error("Failed to create category");
+      } catch (err) {
+        setSubmitError(
+          err instanceof Error ? err.message : "Failed to create category",
+        );
         return;
       }
     }
@@ -429,71 +450,83 @@ export default function ProductFormModal({
     const parentInStock = hasVariants ? 0 : form.inStock;
     const parentLowStock = hasVariants ? 0 : form.lowStock;
 
-    if (isEditMode && product) {
-      await updateMutation.mutateAsync(
-        {
-          productId: product.id,
-          fields: {
-            name: form.name,
-            price: parentPrice,
-            costPrice: parentCostPrice,
-            description: form.description,
-            isTaxable: form.isTaxable,
-            usesStocks: form.usesStocks,
-            inStock: parentInStock,
-            lowStock: parentLowStock,
-            soldBy: "each",
-            categories: categoryId,
-            image: imageFile,
-            discounts: form.discounts,
-            discountType: "applyEverytime",
-            ...variantFields,
+    // `mutateAsync` rejects on failure and both `onError` callbacks were
+    // commented out, so a failed save previously surfaced nothing at all.
+    try {
+      if (isEditMode && product) {
+        await updateMutation.mutateAsync(
+          {
+            productId: product.id,
+            fields: {
+              name: form.name,
+              price: parentPrice,
+              costPrice: parentCostPrice,
+              description: form.description,
+              isTaxable: form.isTaxable,
+              usesStocks: form.usesStocks,
+              inStock: parentInStock,
+              lowStock: parentLowStock,
+              soldBy: "each",
+              categories: categoryId,
+              image: imageFile,
+              discounts: form.discounts,
+              discountType: "applyEverytime",
+              ...variantFields,
+            },
           },
-        },
-        {
-          onSuccess: () => {
-            // toast.success(`Product "${form.name}" updated`);
+          {
+            onSuccess: () => {
+              // toast.success(`Product "${form.name}" updated`);
+              resetForm();
+              onClose();
+            },
+            // onError: (err) => {
+            //   toast.error(`Update failed: ${err.message}`);
+            // },
+          },
+        );
+      } else {
+        const payload: Record<string, unknown> = {
+          name: form.name,
+          price: parentPrice,
+          costPrice: parentCostPrice,
+          description: form.description,
+          isTaxable: form.isTaxable,
+          usesStocks: form.usesStocks,
+          soldBy: "each",
+          categories: categoryId,
+          image: imageFile,
+          discounts: form.discounts,
+          discountType: "applyEverytime",
+        };
+        // The parent's own counters are sent as 0 alongside variants, matching
+        // the API payload.
+        if (form.usesStocks) {
+          payload.inStock = parentInStock;
+          payload.lowStock = parentLowStock;
+        }
+        Object.assign(payload, variantFields);
+
+        await createMutation.mutateAsync(payload, {
+          onSuccess: (result) => {
+            toast.success(`Product "${result.name}" created`);
+            onSuccess?.(result);
             resetForm();
             onClose();
           },
-          onError: (err) => {
-            toast.error(`Update failed: ${err.message}`);
-          },
-        },
-      );
-    } else {
-      const payload: Record<string, unknown> = {
-        name: form.name,
-        price: parentPrice,
-        costPrice: parentCostPrice,
-        description: form.description,
-        isTaxable: form.isTaxable,
-        usesStocks: form.usesStocks,
-        soldBy: "each",
-        categories: categoryId,
-        image: imageFile,
-        discounts: form.discounts,
-        discountType: "applyEverytime",
-      };
-      // The parent's own counters are sent as 0 alongside variants, matching
-      // the API payload.
-      if (form.usesStocks) {
-        payload.inStock = parentInStock;
-        payload.lowStock = parentLowStock;
+          // onError: (err) => {
+          //   toast.error(`Create failed: ${err.message}`);
+          // },
+        });
       }
-      Object.assign(payload, variantFields);
-
-      await createMutation.mutateAsync(payload, {
-        onSuccess: (result) => {
-          toast.success(`Product "${result.name}" created`);
-          onSuccess?.(result);
-          resetForm();
-          onClose();
-        },
-        onError: (err) => {
-          toast.error(`Create failed: ${err.message}`);
-        },
-      });
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error
+          ? err.message
+          : isEditMode
+            ? "Failed to update product"
+            : "Failed to create product",
+      );
     }
   };
 
@@ -520,30 +553,47 @@ export default function ProductFormModal({
       icon={Package}
       maxWidth="max-w-2xl"
       footer={
-        <div className="flex items-center justify-end gap-2">
-          <button
-            type="button"
-            onClick={handleClose}
-            disabled={isPending}
-            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={isPending}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
-          >
-            {isPending && <Loader2 size={13} className="animate-spin" />}
-            {isPending
-              ? isEditMode
-                ? "Updating..."
-                : "Saving..."
-              : isEditMode
-                ? "Update product"
-                : "Save product"}
-          </button>
+        <div className="space-y-3">
+          {/* Server-side failure for the whole submit — sits by the Save
+              button so the reason is where the retry is. Per-field validation
+              still renders under its own control. */}
+          {submitError && (
+            <div
+              role="alert"
+              className="flex items-start gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2.5"
+            >
+              <AlertCircle size={14} className="mt-px shrink-0 text-rose-500" />
+              <p className="text-[12px] font-medium text-rose-700">
+                {submitError}
+              </p>
+            </div>
+          )}
+
+          <div className="flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={isPending}
+              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isPending}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+            >
+              {isPending && <Loader2 size={13} className="animate-spin" />}
+              {isPending
+                ? isEditMode
+                  ? "Updating..."
+                  : "Saving..."
+                : isEditMode
+                  ? "Update product"
+                  : "Save product"}
+            </button>
+          </div>
         </div>
       }
     >
@@ -591,9 +641,23 @@ export default function ProductFormModal({
                   </button>
                 )}
               </div>
-              <p className="mt-1.5 text-[11px] text-slate-400">
-                PNG or JPG, up to 5MB.
+              <p className="mt-1.5 ml-1.5 text-[11px] text-slate-400">
+                PNG or JPG, up to 1MB.
               </p>
+
+              {imageFile && (
+                <p className="mt-1.5 ml-1.5 flex items-baseline gap-1.5 text-[11px]">
+                  <span
+                    className="min-w-0 truncate font-medium text-slate-600"
+                    title={imageFile.name}
+                  >
+                    {imageFile.name}
+                  </span>
+                  <span className="shrink-0 text-slate-400">
+                    ({formatFileSize(imageFile.size)})
+                  </span>
+                </p>
+              )}
             </div>
           </div>
         </Section>

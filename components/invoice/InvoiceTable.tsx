@@ -35,6 +35,7 @@ import PrintInvoiceModal from "@/components/invoice/modals/PrintInvoiceModal";
 import EmailInvoiceModal from "@/components/invoice/modals/EmailInvoiceModal";
 import DeleteInvoiceModal from "@/components/invoice/modals/DeleteInvoiceModal";
 import MoveToCreditModal from "@/components/invoice/modals/MoveToCreditModal";
+import LoadingState from "@/components/ui/LoadingState";
 import toast from "react-hot-toast";
 import { parseNepalDateTime } from "../dashboardComponents/staffDash/staffDetail/staffDetailHelpers";
 import { moveInvoiceToCredit } from "@/services/apiCredit.client";
@@ -65,7 +66,13 @@ function timeAgo(date: Date): string {
   return `${days} ${days === 1 ? "day" : "days"} ago`;
 }
 
-export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
+export default function InvoiceTable({
+  invoices,
+  isLoading = false,
+}: {
+  invoices: Invoice[];
+  isLoading?: boolean;
+}) {
   const { currency } = useCurrency();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -321,7 +328,16 @@ export default function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
             </tr>
           </thead>
           <tbody>
-            {paged.length === 0 ? (
+            {/* Loading lives in the tbody so the header row and the
+                controls above stay visible, matching the settings
+                tables. */}
+            {isLoading ? (
+              <tr>
+                <td colSpan={9}>
+                  <LoadingState message="Loading invoices..." />
+                </td>
+              </tr>
+            ) : paged.length === 0 ? (
               <tr>
                 <td
                   colSpan={9}

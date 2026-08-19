@@ -223,7 +223,7 @@ export default function ProductCard({
           {/* Status badge overlay */}
           {item.usesStocks && (
             <span
-              className={`absolute top-2 left-2 text-[10px] font-semibold px-2 py-0.5 rounded-full shadow-sm ${cfg.badge}`}
+              className={`absolute top-2 left-2 text-[10px] font-semibold px-2 py-0.5 rounded-full ${cfg.badge}`}
             >
               {cfg.icon} {cfg.label}
             </span>

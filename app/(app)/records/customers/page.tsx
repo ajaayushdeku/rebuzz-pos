@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Loader2, UserPlus } from "lucide-react";
+import { UserPlus } from "lucide-react";
 import { useCustomersList } from "@/hooks/useCustomersList";
 import CustomerTable from "@/components/customer/CustomerTable";
 import CustomerFormModal from "@/components/invoice/CustomerFormModal";
@@ -32,16 +32,7 @@ export default function Page() {
           </Button>
         </div>
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 size={24} className="animate-spin text-blue-500" />
-            <span className="ml-3 text-sm text-gray-500">
-              Loading customers...
-            </span>
-          </div>
-        ) : (
-          <CustomerTable customers={customers} />
-        )}
+        <CustomerTable customers={customers} isLoading={isLoading} />
       </div>
 
       <CustomerFormModal

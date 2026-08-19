@@ -123,7 +123,7 @@ export default function CategorySettingsPage() {
         </div>
 
         {/* ── Search ──────────────────────────────────────── */}
-        <div className="relative ">
+        <div className="relative mt-6">
           <Search
             size={14}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"

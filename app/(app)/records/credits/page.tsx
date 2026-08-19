@@ -2,12 +2,13 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Wallet, HandCoins, Users, Loader2 } from "lucide-react";
+import { Wallet, HandCoins, Users } from "lucide-react";
 
 // import { Spinner } from "@/components/ui/spinner";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import CreditsTable from "@/components/credit/CreditsTable";
+import ErrorState from "@/components/ui/ErrorState";
 import {
   fetchCreditsClient,
   fetchCreditsByStatus,
@@ -24,6 +25,8 @@ export default function Page() {
     data: credits = [],
     isLoading,
     error,
+    refetch,
+    isFetching,
   } = useQuery({
     queryKey: ["credits"],
     queryFn: fetchCreditsClient,
@@ -53,20 +56,18 @@ export default function Page() {
     return { count: credits.length, totalDue, totalValue };
   }, [credits]);
 
-  if (isLoading)
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 size={24} className="animate-spin text-blue-500" />
-        <span className="ml-3 text-sm text-gray-500">Loading credits...</span>
+  // Extracted because the header renders above whichever body state is
+  // showing; keeping it in one place stops the three from drifting.
+  const header = (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2 pb-4 border-b border-gray-200">
+      <div>
+        <h1 className="font-bold text-xl md:text-2xl truncate">Credits</h1>
+        <p className="text-xs text-gray-400 mt-0.5">
+          Invoices moved to credit and their outstanding dues
+        </p>
       </div>
-    );
-
-  if (error)
-    return (
-      <div className="flex items-center justify-center w-screen h-screen text-2xl">
-        {":( Error loading credits"}
-      </div>
-    );
+    </div>
+  );
 
   const statItems = [
     {
@@ -135,140 +136,149 @@ export default function Page() {
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
       <div className="w-full mx-auto space-y-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2 pb-4 border-b border-gray-200">
-          <div>
-            <h1 className="font-bold text-xl md:text-2xl truncate">Credits</h1>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Invoices moved to credit and their outstanding dues
-            </p>
-          </div>
-        </div>
+        {header}
 
-        {/* Stats — always reflect all credits, regardless of the selected tab */}
-        <div className="bg-white py-2 mb-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {statItems.map((item) => {
-              const displayValue =
-                item.format === "currency"
-                  ? formatCurrencySymbol(
-                      item.value,
-                      currency.symbol,
-                      currency.locale,
-                    )
-                  : item.value.toLocaleString();
-
-              return (
-                <div
-                  key={item.label}
-                  className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-gray-400 font-medium">
-                      {item.label}
-                    </span>
-                    <div
-                      className={`w-7 h-7 rounded-lg ${item.bgColor} flex items-center justify-center shrink-0`}
-                    >
-                      <item.icon size={16} className={item.iconColor} />
-                    </div>
-                  </div>
-                  <p
-                    className={`text-lg font-bold truncate ${item.valueColor}`}
-                  >
-                    {displayValue}
-                  </p>
-                  {item.subText && (
-                    <p className="text-[11px] text-gray-400 truncate">
-                      {item.subText}
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Tabs — the rule runs edge to edge and the pill sits on top of it */}
-        <div className="relative flex justify-center mt-8">
-          <span
-            aria-hidden="true"
-            className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
+        {/* Loading and error swap the body only — the header stays put in
+            every state, matching the products page. */}
+        {error ? (
+          <ErrorState
+            title="Couldn't load credits"
+            message="The credits list didn't come back from the server. Check your connection and try again."
+            onRetry={() => refetch()}
+            isRetrying={isFetching}
           />
-          <div
-            role="tablist"
-            aria-label="Credit status"
-            onKeyDown={handleTabKeyDown}
-            className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
-          >
-            {tabs.map((tab, i) => {
-              const selected = tab.key === activeTab;
+        ) : (
+          <>
 
-              return (
-                <button
-                  key={tab.key}
-                  ref={(el) => {
-                    tabRefs.current[i] = el;
-                  }}
-                  type="button"
-                  role="tab"
-                  id={`credits-tab-${tab.key}`}
-                  aria-selected={selected}
-                  aria-controls={`credits-panel-${tab.key}`}
-                  tabIndex={selected ? 0 : -1}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`flex items-center gap-2 rounded-full px-5 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
-                    selected
-                      ? "bg-white font-bold text-blue-950 shadow-sm"
-                      : "font-semibold text-blue-800 hover:text-blue-950"
-                  }`}
-                >
-                  {tab.label}
-                  <span
-                    className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 
-                     bg-[#e4f2fe] text-blue-950 ring-blue-900"
-                  >
-                    {tab.count === null ? "–" : tab.count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+            {/* Stats — always reflect all credits, regardless of the selected tab */}
+            <div className="bg-white py-2 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {statItems.map((item) => {
+                  const displayValue =
+                    item.format === "currency"
+                      ? formatCurrencySymbol(
+                          item.value,
+                          currency.symbol,
+                          currency.locale,
+                        )
+                      : item.value.toLocaleString();
 
-        {/* Panels */}
-        <div
-          role="tabpanel"
-          id={`credits-panel-${activeTab}`}
-          aria-labelledby={`credits-tab-${activeTab}`}
-          tabIndex={0}
-          className="focus-visible:outline-none"
-        >
-          {activeTab === "credited" && <CreditsTable credits={credits} />}
+                  return (
+                    <div
+                      key={item.label}
+                      className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-gray-400 font-medium">
+                          {item.label}
+                        </span>
+                        <div
+                          className={`w-7 h-7 rounded-lg ${item.bgColor} flex items-center justify-center shrink-0`}
+                        >
+                          <item.icon size={16} className={item.iconColor} />
+                        </div>
+                      </div>
+                      <p
+                        className={`text-lg font-bold truncate ${item.valueColor}`}
+                      >
+                        {displayValue}
+                      </p>
+                      {item.subText && (
+                        <p className="text-[11px] text-gray-400 truncate">
+                          {item.subText}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
-          {/* Completed — all actions except Record payment (they're paid) */}
-          {activeTab === "completed" && (
-            <CreditsTable
-              credits={completedCredits}
-              actionsMode="full"
-              creditStatus="completed"
-              // showStatusFilter={false}
-              isLoading={completedLoading}
-              error={completedError}
-            />
-          )}
+            {/* Tabs — the rule runs edge to edge and the pill sits on top of it */}
+            <div className="relative flex justify-center mt-8">
+              <span
+                aria-hidden="true"
+                className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
+              />
+              <div
+                role="tablist"
+                aria-label="Credit status"
+                onKeyDown={handleTabKeyDown}
+                className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+              >
+                {tabs.map((tab, i) => {
+                  const selected = tab.key === activeTab;
 
-          {/* Archived — no Actions column */}
-          {activeTab === "archived" && (
-            <CreditsTable
-              credits={archivedCredits}
-              actionsMode="none"
-              creditStatus="archived"
-              showStatusFilter={false}
-              isLoading={archivedLoading}
-              error={archivedError}
-            />
-          )}
-        </div>
+                  return (
+                    <button
+                      key={tab.key}
+                      ref={(el) => {
+                        tabRefs.current[i] = el;
+                      }}
+                      type="button"
+                      role="tab"
+                      id={`credits-tab-${tab.key}`}
+                      aria-selected={selected}
+                      aria-controls={`credits-panel-${tab.key}`}
+                      tabIndex={selected ? 0 : -1}
+                      onClick={() => setActiveTab(tab.key)}
+                      className={`flex items-center gap-2 rounded-full px-5 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                        selected
+                          ? "bg-white font-bold text-blue-950 shadow-sm"
+                          : "font-semibold text-blue-800 hover:text-blue-950"
+                      }`}
+                    >
+                      {tab.label}
+                      <span
+                        className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 
+                         bg-[#e4f2fe] text-blue-950 ring-blue-900"
+                      >
+                        {tab.count === null ? "–" : tab.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Panels */}
+            <div
+              role="tabpanel"
+              id={`credits-panel-${activeTab}`}
+              aria-labelledby={`credits-tab-${activeTab}`}
+              tabIndex={0}
+              className="focus-visible:outline-none"
+            >
+              {activeTab === "credited" && (
+                <CreditsTable credits={credits} isLoading={isLoading} />
+              )}
+
+              {/* Completed — all actions except Record payment (they're paid) */}
+              {activeTab === "completed" && (
+                <CreditsTable
+                  credits={completedCredits}
+                  actionsMode="full"
+                  creditStatus="completed"
+                  // showStatusFilter={false}
+                  isLoading={completedLoading}
+                  error={completedError}
+                />
+              )}
+
+              {/* Archived — no Actions column */}
+              {activeTab === "archived" && (
+                <CreditsTable
+                  credits={archivedCredits}
+                  actionsMode="none"
+                  creditStatus="archived"
+                  showStatusFilter={false}
+                  isLoading={archivedLoading}
+                  error={archivedError}
+                />
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

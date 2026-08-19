@@ -18,6 +18,7 @@ import CustomerDetailModal from "./CustomerDetailModal";
 import EditCustomerModal from "./EditCustomerModal";
 import LoyaltyPointModal from "./LoyaltyPointModal";
 import DeleteCustomerModal from "./DeleteCustomerModal";
+import LoadingState from "@/components/ui/LoadingState";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -74,8 +75,10 @@ type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
 export default function CustomerTable({
   customers,
+  isLoading = false,
 }: {
   customers: Customer[];
+  isLoading?: boolean;
 }) {
   const router = useRouter();
   const { currency } = useCurrency();
@@ -178,7 +181,7 @@ export default function CustomerTable({
   return (
     <>
       {/* Search */}
-      <div className="relative mb-4">
+      <div className="relative mb-4 mt-6">
         <Search
           size={14}
           className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -231,7 +234,16 @@ export default function CustomerTable({
             </tr>
           </thead>
           <tbody>
-            {paged.length === 0 ? (
+            {/* Loading lives in the tbody so the header row and the
+                controls above stay visible, matching the settings
+                tables. */}
+            {isLoading ? (
+              <tr>
+                <td colSpan={8}>
+                  <LoadingState message="Loading customers..." />
+                </td>
+              </tr>
+            ) : paged.length === 0 ? (
               <tr>
                 <td
                   colSpan={8}

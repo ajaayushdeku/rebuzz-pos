@@ -1,5 +1,55 @@
 import { mapRawProductToProduct, Product } from "@/lib/types/product";
 
+/**
+ * Pull the most useful message out of a failed response.
+ *
+ * The product API routes are passthroughs, so on a backend rejection the body
+ * is whatever the backend sent — usually `{ message }`, sometimes `{ error }`
+ * or a validation array. Reading it means the user sees "A product named
+ * 'Coke' already exists" instead of a generic "Failed to create product".
+ *
+ * Falls back to the caller's text plus the status code, since that is the only
+ * signal left when the body is empty or unparseable.
+ */
+async function readErrorMessage(
+  res: Response,
+  fallback: string,
+): Promise<string> {
+  const body = (await res.json().catch(() => null)) as {
+    message?: unknown;
+    error?: unknown;
+    errors?: unknown;
+    data?: { message?: unknown } | null;
+  } | null;
+
+  const str = (v: unknown): string | undefined =>
+    typeof v === "string" && v.trim() ? v.trim() : undefined;
+
+  const fromError =
+    str(body?.error) ??
+    (body?.error && typeof body.error === "object"
+      ? str((body.error as { message?: unknown }).message)
+      : undefined);
+
+  // Validation errors often arrive as a list of strings or { message } objects.
+  const fromErrors = Array.isArray(body?.errors)
+    ? body.errors
+        .map(
+          (e) => str(e) ?? str((e as { message?: unknown } | null)?.message),
+        )
+        .filter(Boolean)
+        .join(", ")
+    : "";
+
+  return (
+    str(body?.message) ??
+    fromError ??
+    (fromErrors || undefined) ??
+    str(body?.data?.message) ??
+    `${fallback} (${res.status})`
+  );
+}
+
 export async function fetchProductsListClient(): Promise<Product[]> {
   const res = await fetch("/api/products");
 
@@ -83,7 +133,9 @@ export async function createProduct(
     body: formData,
   });
 
-  if (!res.ok) throw new Error("Failed to create product");
+  if (!res.ok) {
+    throw new Error(await readErrorMessage(res, "Failed to create product"));
+  }
 
   const result = await res.json();
   return mapRawProductToProduct(result.data.products);
@@ -165,7 +217,9 @@ export async function updateProduct(
     method: "PUT",
     body: formData,
   });
-  if (!res.ok) throw new Error("Failed to update product");
+  if (!res.ok) {
+    throw new Error(await readErrorMessage(res, "Failed to update product"));
+  }
   const result = await res.json();
   return mapRawProductToProduct(result.data.products ?? result.data);
 }
