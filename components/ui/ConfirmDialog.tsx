@@ -9,7 +9,7 @@ import ModalShell from "@/components/ui/ModalShell";
  * warning callout together so they can't disagree — a red button over an amber
  * warning reads as two different levels of severity.
  */
-export type ConfirmTone = "danger" | "warning" | "notice";
+export type ConfirmTone = "danger" | "warning" | "notice" | "primary";
 
 const TONE: Record<ConfirmTone, { button: string; warning: string }> = {
   danger: {
@@ -24,6 +24,10 @@ const TONE: Record<ConfirmTone, { button: string; warning: string }> = {
     button: "bg-violet-600 hover:bg-violet-700 focus-visible:ring-violet-500",
     warning: "border-violet-100 bg-violet-50 text-violet-600",
   },
+  primary: {
+    button: "bg-blue-600 hover:bg-blue-700 focus-visible:ring-blue-500",
+    warning: "border-blue-100 bg-blue-50 text-blue-600",
+  },
 };
 
 interface ConfirmDialogProps {
@@ -33,6 +37,12 @@ interface ConfirmDialogProps {
   icon?: LucideIcon;
   iconColor?: string;
   iconBgColor?: string;
+  /**
+   * Replaces the icon badge entirely — for prompts whose subject is better
+   * shown than symbolised (a country flag, a product thumbnail). `icon` still
+   * supplies the confirm button's icon when `confirmIcon` is omitted.
+   */
+  badge?: React.ReactNode;
   title: string;
   description: React.ReactNode;
   /** Optional second line — an amount, an invoice name, a count. */
@@ -63,6 +73,7 @@ export function ConfirmDialog({
   icon: Icon = AlertTriangle,
   iconColor = "text-red-500",
   iconBgColor = "bg-red-50",
+  badge,
   title,
   description,
   detail,
@@ -119,11 +130,13 @@ export function ConfirmDialog({
       }
     >
       <div className="flex flex-col items-center px-1 pt-2 text-center">
-        <div
-          className={`mb-3 flex h-12 w-12 items-center justify-center rounded-full ${iconBgColor}`}
-        >
-          <Icon className={`h-6 w-6 ${iconColor}`} />
-        </div>
+        {badge ?? (
+          <div
+            className={`mb-3 flex h-12 w-12 items-center justify-center rounded-full ${iconBgColor}`}
+          >
+            <Icon className={`h-6 w-6 ${iconColor}`} />
+          </div>
+        )}
 
         <h2 className="text-base font-semibold text-gray-900">{title}</h2>
 

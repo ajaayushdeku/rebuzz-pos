@@ -43,12 +43,12 @@ export default function Navbar() {
 
   return (
     <nav className="w-full border-b bg-white z-200">
-      <div className="flex items-center justify-between px-6 py-3">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between pl-3 pr-4 py-3">
+        <div className="flex items-center ">
           <MobileButton />
           <Link
             href="/"
-            className="text-xl font-bold tracking-tight text-blue-600 transition-opacity hover:opacity-80 flex flex-row items-center gap-2"
+            className="text-xl pl-3 font-bold tracking-tight text-blue-600 transition-opacity hover:opacity-80 flex flex-row items-center gap-2"
           >
             <Image
               src="/rebuzz.png"
@@ -64,12 +64,12 @@ export default function Navbar() {
           <ServerEnvBadge className="hidden sm:inline-flex" />
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* {currency.symbol}{" "} */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-600">{currency.symbol}</span>{" "}
           {/* <ServerEnvBadge className="sm:hidden xs:hidden" /> */}
           <span
             title={currency.code}
-            className="w-8 h-5 inline-flex items-center justify-center shrink-0 overflow-hidden  rounded-xs bg-gray-50 ring-1 ring-black/5"
+            className="w-8 h-5 inline-flex items-center justify-center shrink-0 overflow-hidden  rounded-xs "
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -79,6 +79,7 @@ export default function Navbar() {
               loading="lazy"
             />
           </span>
+          <div className="h-5 border-1  border-gray-200 mr-2" />
           <HelpButton />
           <User
             initialBusinessName={businessData?.businessName || "My Business"}

@@ -152,7 +152,7 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="flex items-center gap-2 md:px-3 px-1"
+            className="flex items-center gap-2 md:px-2 px-1"
           >
             {businessLogo ? (
               <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 border border-gray-200">

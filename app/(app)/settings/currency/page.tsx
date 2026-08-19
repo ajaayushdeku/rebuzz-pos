@@ -1,18 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, Check, Coins, Loader2 } from "lucide-react";
+import { Search, Check, Coins } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import toast from "react-hot-toast";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 const CURRENCIES = [
   {
@@ -231,10 +223,11 @@ export default function CurrencyPage() {
   const handleConfirm = () => {
     if (!confirmTarget) return;
     setSaving(true);
-    // Apply immediately then reload so all rendered amounts refresh.
+    // Apply immediately then reload so all rendered amounts refresh. The dialog
+    // stays open on its pending state until the reload takes over — closing it
+    // first would flash the list back for the moment before the page goes.
     setCurrency(confirmTarget.code);
     toast.success(`Currency changed to ${confirmTarget.code}`);
-    setConfirmTarget(null);
     window.location.reload();
   };
 
@@ -326,65 +319,43 @@ export default function CurrencyPage() {
       </div>
 
       {/* Confirmation modal */}
-      <Dialog
+      <ConfirmDialog
         open={!!confirmTarget}
-        onOpenChange={(o) => !o && !saving && setConfirmTarget(null)}
-      >
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            {confirmTarget && (
-              <div className="mx-auto mb-2">
-                <Flag
-                  countryCode={confirmTarget.countryCode}
-                  label={confirmTarget.code}
-                  className="w-16 h-12 rounded-lg"
-                />
-              </div>
-            )}
-            <DialogTitle className="text-center text-base font-semibold">
-              Change Currency?
-            </DialogTitle>
-            <DialogDescription className="text-center text-sm text-gray-500">
-              Switch your active currency to{" "}
-              <span className="font-semibold text-gray-800">
-                {confirmTarget?.code} ({confirmTarget?.symbol})
-              </span>
-              ?
-            </DialogDescription>
-          </DialogHeader>
-
-          {confirmTarget && (
-            <p className="text-xs text-gray-400 text-center -mt-1">
-              {confirmTarget.country} — {confirmTarget.name}
-            </p>
-          )}
-
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setConfirmTarget(null)}
-              disabled={saving}
-              className="text-sm rounded-lg flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleConfirm}
-              disabled={saving}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg flex-1"
-            >
-              {saving ? (
-                <span className="flex items-center gap-1.5">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Changing...
-                </span>
-              ) : (
-                "Confirm"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onClose={() => !saving && setConfirmTarget(null)}
+        tone="primary"
+        // The flag stands in for the icon badge — the currency's identity is
+        // the whole point of the prompt.
+        badge={
+          confirmTarget ? (
+            <Flag
+              countryCode={confirmTarget.countryCode}
+              label={confirmTarget.code}
+              className="mb-3 h-12 w-20 "
+            />
+          ) : undefined
+        }
+        title="Change Currency?"
+        description={
+          <>
+            Switch your active currency to{" "}
+            <span className="font-semibold text-gray-800">
+              {confirmTarget?.code} ({confirmTarget?.symbol})
+            </span>
+            ?
+          </>
+        }
+        detail={
+          confirmTarget
+            ? `${confirmTarget.country} — ${confirmTarget.name}`
+            : undefined
+        }
+        // warning="The page will reload so every amount re-renders in the new currency."
+        confirmLabel="Confirm"
+        pendingLabel="Changing..."
+        confirmIcon={Check}
+        onConfirm={handleConfirm}
+        isPending={saving}
+      />
     </div>
   );
 }

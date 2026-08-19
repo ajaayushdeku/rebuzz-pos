@@ -37,7 +37,10 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        "border-r bg-background h-screen flex flex-col transition-all duration-300",
+        // h-full, not h-screen: both mounts are fixed containers already inset
+        // by the navbar height, so a full viewport height would overhang the
+        // bottom of the screen and push the scrollable nav out of reach.
+        "border-r bg-background h-full flex flex-col transition-all duration-300",
         isCollapsed ? "w-12" : "w-56",
       )}
     >

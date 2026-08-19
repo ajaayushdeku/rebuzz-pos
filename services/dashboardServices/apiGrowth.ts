@@ -132,8 +132,6 @@ async function fetchSalesByItemForPeriod(
     };
   const json = await res.json();
 
-  console.log("SALES:", json);
-
   return (
     json ?? {
       data: [],

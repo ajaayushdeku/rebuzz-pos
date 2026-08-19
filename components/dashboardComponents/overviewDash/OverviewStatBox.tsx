@@ -3,7 +3,7 @@
 import { ICON_MAP } from "@/lib/config/dashboard";
 import { getPercentColor } from "@/lib/utils";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrencySymbol } from "@/utils/helper";
+import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface StatBoxProps {
@@ -99,7 +99,7 @@ const OverviewStatBox = ({
             className={`text-[11px] sm:text-xs font-semibold ${text} whitespace-nowrap`}
           >
             {percent > 0 ? "+" : ""}
-            {percent}%
+            {formatAmount(percent, currency.locale)}%
           </span>
           {!isExpanded && (
             <span className="text-[10px] sm:text-xs text-gray-400 truncate">

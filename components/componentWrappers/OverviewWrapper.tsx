@@ -287,7 +287,8 @@ export const OverviewStatsWrapper = async ({
     // Compute percent change
     const percent = (() => {
       if (prev?.value > 0) {
-        return Math.round(((cur.value - prev.value) / prev.value) * 100);
+        // return Math.round(((cur.value - prev.value) / prev.value) * 100);
+        return ((cur.value - prev.value) / prev.value) * 100;
       }
       // Previous value was 0 but current is non-zero → infinite growth
       if (prev?.value === 0 && cur.value > 0) {
