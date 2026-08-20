@@ -241,16 +241,18 @@ export default function StaffManagementPage() {
           throw new Error(await readError(res, "Failed to update staff"));
         toast.success("Staff updated successfully");
       } else {
-        const res = await fetch("/api/staff", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: form.name.trim(),
-            email: form.email.trim(),
-            phone: form.phone.trim(),
-            role: form.role,
-          }),
-        });
+        // multipart/form-data all the way through — the create endpoint
+        // behind /api/staff takes a form body, so sending one from here too
+        // keeps the request the browser makes and the request the backend
+        // receives the same shape. No Content-Type header: fetch has to write
+        // the multipart boundary itself.
+        const body = new FormData();
+        body.append("name", form.name.trim());
+        body.append("email", form.email.trim());
+        body.append("phone", form.phone.trim());
+        body.append("role", form.role);
+
+        const res = await fetch("/api/staff", { method: "POST", body });
         if (!res.ok)
           throw new Error(await readError(res, "Failed to create staff"));
         toast.success("Staff created successfully");

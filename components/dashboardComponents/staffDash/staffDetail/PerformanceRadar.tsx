@@ -132,6 +132,8 @@ function RadarChart({
   const angleStep = (2 * Math.PI) / numVertices;
   const offset = -Math.PI / 2;
 
+  console.log("DATA:", data);
+
   // Outer hexagon points (benchmark = 100)
   const outerPoints = Array.from({ length: numVertices }, (_, i) => {
     const angle = offset + i * angleStep;

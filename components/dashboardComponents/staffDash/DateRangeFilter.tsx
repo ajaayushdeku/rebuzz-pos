@@ -20,6 +20,14 @@ export type DateRangeValue = {
   endDate: string;
 };
 
+/**
+ * What actually goes into localStorage. Presets are stored by id, not by the
+ * dates they resolved to — "Last 7 Days" saved on Aug 8 must still mean the
+ * last 7 days when the page is opened in September, not Aug 2 – Aug 8 forever.
+ * A hand-picked range has no preset and is restored verbatim.
+ */
+type StoredDateRange = DateRangeValue & { preset?: string };
+
 type DateMode = "single" | "range";
 
 const PRESET_RANGES = [
@@ -152,9 +160,20 @@ export function DateRangeFilter({
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved) {
-        const parsed = JSON.parse(saved) as DateRangeValue;
-        if (parsed.startDate && parsed.endDate) {
-          onChange(parsed);
+        const parsed = JSON.parse(saved) as StoredDateRange;
+        const isKnownPreset =
+          !!parsed.preset &&
+          PRESET_RANGES.some((r) => r.value === parsed.preset);
+
+        if (isKnownPreset) {
+          // Re-resolved against today, so the "sync the preset dropdown"
+          // effect below matches it back to this preset when the modal opens.
+          onChange(getPresetRange(parsed.preset as string));
+        } else if (parsed.startDate && parsed.endDate) {
+          onChange({
+            startDate: parsed.startDate,
+            endDate: parsed.endDate,
+          });
         }
       }
     } catch {
@@ -186,11 +205,17 @@ export function DateRangeFilter({
     }
   }, [value.startDate, value.endDate]);
 
-  const applyFilters = (params: DateRangeValue) => {
+  // `presetValue` is the preset the range came from, if any — it is what gets
+  // persisted so the range re-resolves on the next visit. A custom range
+  // passes nothing and is stored as the literal dates.
+  const applyFilters = (params: DateRangeValue, presetValue?: string) => {
     onChange(params);
     if (storageKey) {
       try {
-        localStorage.setItem(storageKey, JSON.stringify(params));
+        const stored: StoredDateRange = presetValue
+          ? { ...params, preset: presetValue }
+          : params;
+        localStorage.setItem(storageKey, JSON.stringify(stored));
       } catch {
         // Ignore storage errors
       }
@@ -205,7 +230,7 @@ export function DateRangeFilter({
     setTempEndDate(new Date(range.endDate));
     setStartInput(range.startDate);
     setEndInput(range.endDate);
-    applyFilters(range);
+    applyFilters(range, value);
   };
 
   const handleStartInputChange = (newValue: string) => {

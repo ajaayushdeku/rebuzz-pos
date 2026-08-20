@@ -47,7 +47,10 @@ const FIELDS: {
     key: "phone",
     label: "Phone Number",
     type: "text",
-    placeholder: "e.g. +977-9841234567",
+    // Bare local digits, matching what the create endpoint is sent elsewhere
+    // (e.g. "9814173184") — the old "+977-…" example steered users into a
+    // country-code-and-hyphens format the API never receives.
+    placeholder: "e.g. 9841234567",
   },
 ];
 

@@ -49,17 +49,22 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { name, email, phone, role } = await request.json();
-
   try {
     // The create endpoint takes multipart/form-data, the same as every other
-    // create in this API (products, customers, shifts). Content-Type is left
-    // unset so fetch writes the boundary itself.
+    // create in this API (products, customers, shifts). The body is rebuilt
+    // rather than piped straight through so only these four fields ever reach
+    // the backend. Content-Type is left unset so fetch writes the boundary.
+    const incoming = await request.formData();
+    const str = (key: string) => {
+      const v = incoming.get(key);
+      return v == null || v instanceof File ? "" : String(v);
+    };
+
     const formData = new FormData();
-    formData.append("name", name ?? "");
-    formData.append("email", email ?? "");
-    formData.append("phone", phone ?? "");
-    formData.append("role", role ?? "");
+    formData.append("name", str("name"));
+    formData.append("email", str("email"));
+    formData.append("phone", str("phone"));
+    formData.append("role", str("role"));
 
     const res = await fetch(`${BASE}/business/auth/user/create`, {
       method: "POST",
@@ -71,7 +76,10 @@ export const POST = async (request: NextRequest) => {
 
     if (!res.ok) {
       // Surface the backend's own reason ("email already in use", …) and its
-      // status, so the client can toast something the user can act on.
+      // status, so the client can toast something the user can act on. The
+      // full body also goes to the server log — a rejection that arrives
+      // without a `message` is otherwise invisible from the browser.
+      console.error("Create staff failed:", res.status, data);
       const message =
         (data as { message?: string; error?: string } | null)?.message ??
         (data as { message?: string; error?: string } | null)?.error ??

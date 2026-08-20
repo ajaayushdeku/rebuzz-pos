@@ -31,7 +31,7 @@ const OrderHistoryStats = ({
           bgColor: "bg-blue-50",
           valueColor: "text-black-700",
           format: "number" as const,
-          subText: "All time",
+          subText: "Refunds included",
         },
         {
           label: "Revenue",
