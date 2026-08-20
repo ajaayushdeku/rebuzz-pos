@@ -54,6 +54,69 @@ type ChangedEntry = {
 /** Height of the collapsed changed-items handle. List padding must clear it. */
 const HANDLE_HEIGHT = 48;
 
+/**
+ * Stepper + threshold pair, used for both products and variants.
+ *
+ * Module scope, deliberately: while it was declared inside the modal it was a
+ * brand-new component type on every render, so React unmounted and remounted
+ * these inputs on each keystroke and the field lost focus mid-number.
+ */
+const StockControls = ({
+  inStock,
+  lowStock,
+  onChange,
+}: {
+  inStock: number;
+  lowStock: number;
+  onChange: (field: "inStock" | "lowStock", value: number) => void;
+}) => (
+  <div className="flex shrink-0 items-end gap-3">
+    <div>
+      <label className="mb-1 block text-[10px] font-medium uppercase tracking-[0.06em] text-blue-700">
+        In stock
+      </label>
+      <div className="flex items-center">
+        <button
+          type="button"
+          onClick={() => onChange("inStock", inStock - 1)}
+          className="flex h-8 w-8 items-center justify-center rounded-l-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
+          aria-label="Decrease stock"
+        >
+          <Minus className="h-3 w-3" />
+        </button>
+        <input
+          type="number"
+          min={0}
+          value={inStock}
+          onChange={(e) => onChange("inStock", Number(e.target.value))}
+          className="h-8 w-20 border-y border-slate-200 px-2 text-center text-[13px] tabular-nums text-slate-800 focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          type="button"
+          onClick={() => onChange("inStock", inStock + 1)}
+          className="flex h-8 w-8 items-center justify-center rounded-r-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
+          aria-label="Increase stock"
+        >
+          <Plus className="h-3 w-3" />
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <label className="mb-1 block text-[10px] font-medium uppercase tracking-[0.06em] text-blue-700">
+        Low at
+      </label>
+      <input
+        type="number"
+        min={0}
+        value={lowStock}
+        onChange={(e) => onChange("lowStock", Number(e.target.value))}
+        className="h-8 w-16 rounded-lg border border-slate-200 px-2 text-center text-[13px] tabular-nums text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      />
+    </div>
+  </div>
+);
+
 export default function ProductStockEditModal({
   open,
   onOpenChange,
@@ -358,63 +421,6 @@ export default function ProductStockEditModal({
       updateField(entry.id, "lowStock", entry.oldLowStock);
     }
   };
-
-  /** Stepper + threshold pair, used for both products and variants. */
-  const StockControls = ({
-    inStock,
-    lowStock,
-    onChange,
-  }: {
-    inStock: number;
-    lowStock: number;
-    onChange: (field: "inStock" | "lowStock", value: number) => void;
-  }) => (
-    <div className="flex shrink-0 items-end gap-3">
-      <div>
-        <label className="mb-1 block text-[10px] font-medium uppercase tracking-[0.06em] text-blue-700">
-          In stock
-        </label>
-        <div className="flex items-center">
-          <button
-            type="button"
-            onClick={() => onChange("inStock", inStock - 1)}
-            className="flex h-8 w-8 items-center justify-center rounded-l-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
-            aria-label="Decrease stock"
-          >
-            <Minus className="h-3 w-3" />
-          </button>
-          <input
-            type="number"
-            min={0}
-            value={inStock}
-            onChange={(e) => onChange("inStock", Number(e.target.value))}
-            className="h-8 w-20 border-y border-slate-200 px-2 text-center text-[13px] tabular-nums text-slate-800 focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            type="button"
-            onClick={() => onChange("inStock", inStock + 1)}
-            className="flex h-8 w-8 items-center justify-center rounded-r-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
-            aria-label="Increase stock"
-          >
-            <Plus className="h-3 w-3" />
-          </button>
-        </div>
-      </div>
-
-      <div>
-        <label className="mb-1 block text-[10px] font-medium uppercase tracking-[0.06em] text-blue-700">
-          Low at
-        </label>
-        <input
-          type="number"
-          min={0}
-          value={lowStock}
-          onChange={(e) => onChange("lowStock", Number(e.target.value))}
-          className="h-8 w-16 rounded-lg border border-slate-200 px-2 text-center text-[13px] tabular-nums text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-      </div>
-    </div>
-  );
 
   return createPortal(
     <div

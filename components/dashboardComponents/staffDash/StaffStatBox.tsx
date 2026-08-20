@@ -9,9 +9,9 @@ import {
   ShoppingCart,
   TrendingUp,
   Clock,
-  DollarSign,
   ArrowRight,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 export interface StaffBoxProps {
   staffId: string;
@@ -21,7 +21,6 @@ export interface StaffBoxProps {
   ordersTaken: number;
   amount: number;
   avgTime?: string;
-  colorIndex?: number;
   role?: "Basic" | "Staff" | "Owner";
 }
 
@@ -46,35 +45,54 @@ function resolveRole(
   return "Basic";
 }
 
-// ── Consistent card styling ───────────────────────────────────────────
-// All cards share the same color for the left border and avatar;
-// only the role badge uses distinct colors per role.
-
-const cardColors = {
-  borderLeft: "border-l-blue-400",
-  avatar: "from-blue-400 to-blue-400",
-  avatarRing: "ring-2 ring-blue-400 ring-offset-2",
-};
-
-// ── Role-based configuration (badge + label + icon only) ───────────────
+// ── Role accents ───────────────────────────────────────────────────────
+// One colour per role drives the avatar and the badge together, so a grid of
+// cards can be scanned by role at a glance. Previously every avatar was blue
+// regardless and only the badge carried the role.
 
 const roleConfig = {
   Owner: {
-    badge: "bg-amber-50 text-amber-700 border border-amber-200",
+    avatar: "bg-amber-500",
+    badge: "bg-amber-50 text-amber-700 ring-amber-200",
     label: "Owner",
     icon: Crown,
   },
   Staff: {
-    badge: "bg-blue-50 text-blue-700 border border-blue-200",
+    avatar: "bg-blue-500",
+    badge: "bg-blue-50 text-blue-700 ring-blue-200",
     label: "Staff",
     icon: User,
   },
   Basic: {
-    badge: "bg-indigo-50 text-indigo-700 border border-indigo-200",
+    avatar: "bg-indigo-500",
+    badge: "bg-indigo-50 text-indigo-700 ring-indigo-200",
     label: "Basic",
     icon: User,
   },
 };
+
+/** One figure in the metrics row. */
+function Metric({
+  icon: Icon,
+  value,
+  label,
+}: {
+  icon: LucideIcon;
+  value: string | number;
+  label: string;
+}) {
+  return (
+    <div className="flex min-w-0 flex-1 flex-col items-center gap-1 px-1">
+      <Icon size={13} className="text-gray-400" />
+      <p className="truncate text-sm font-bold leading-none text-gray-900 tabular-nums">
+        {value}
+      </p>
+      <p className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+        {label}
+      </p>
+    </div>
+  );
+}
 
 export default function StaffStatBox({
   staffId,
@@ -84,7 +102,6 @@ export default function StaffStatBox({
   ordersTaken,
   amount,
   avgTime,
-  colorIndex = 0,
   role,
 }: StaffBoxProps) {
   const roleKey = role ?? resolveRole(staffPosition);
@@ -94,127 +111,82 @@ export default function StaffStatBox({
   const staffInitials = getInitials(staffName);
   const { currency } = useCurrency();
 
-  const colors = cardColors;
-
   return (
-    <div
-      className="relative rounded-xl bg-white overflow-hidden transition-all duration-300 cursor-pointer group
-        border-t-4 border-t-blue-400 border border-gray-200 shadow-sm hover:shadow-md"
+    // A real button: the card was a div with onClick, so it could not be
+    // reached or activated from the keyboard.
+    <button
+      type="button"
       onClick={() => router.push(`/records/employee/${staffId}`)}
+      className="group bg-surface-card border-surface-border flex h-full w-full flex-col rounded-xl border p-4 text-left shadow-sm transition-shadow duration-200 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
     >
-      <div className="p-4 flex flex-col h-full">
-        {/* ── Header row with Revenue on the right ── */}
-        <div className="flex items-start justify-between">
-          {/* Avatar + Name + Role */}
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div
-                className={`rounded-full w-10 h-10 shrink-0 bg-gradient-to-br ${colors.avatar} flex items-center text-white font-bold text-sm justify-center`}
-              >
-                {staffInitials}
-              </div>
-              {/* Role badge dot */}
-              {roleKey === "Owner" && (
-                <div className="absolute -top-1 -right-1 bg-amber-400 rounded-full p-0.5 shadow">
-                  <Crown size={10} className="text-white" />
-                </div>
-              )}
+      {/* ── Identity + revenue ── */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="relative shrink-0">
+            <div
+              className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white ${rConfig.avatar}`}
+            >
+              {staffInitials}
             </div>
-
-            {/* Name + Role badge */}
-            <div className="min-w-0">
-              <p className="text-gray-900 font-semibold text-sm truncate leading-tight">
-                {staffName}
-              </p>
-              <div className="flex items-center gap-1.5 mt-1.5">
-                <RoleIcon size={11} className="text-gray-400" />
-                <span
-                  className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold leading-tight ${rConfig.badge}`}
-                >
-                  {rConfig.label}
-                </span>
+            {roleKey === "Owner" && (
+              <div className="absolute -right-1 -top-1 rounded-full bg-amber-400 p-0.5 shadow">
+                <Crown size={10} className="text-white" />
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Revenue on top right */}
-          <div className="flex flex-col items-end shrink-0">
-            <div className="flex items-center gap-1">
-              {/* <DollarSign size={12} className="text-green-500" /> */}
-              <span className="text-[8px] text-gray-400 uppercase tracking-wider font-medium">
-                Revenue
-              </span>
-            </div>
-            <p className="text-sm font-bold text-green-500 leading-none mt-0.5 truncate max-w-[130px]">
-              {formatCurrencySymbol(amount, currency.symbol, currency.locale)}
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold leading-tight text-gray-900">
+              {staffName}
             </p>
+            <span
+              className={`mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold leading-tight ring-1 ${rConfig.badge}`}
+            >
+              <RoleIcon size={10} />
+              {rConfig.label}
+            </span>
           </div>
         </div>
 
-        {/* ── Metrics grid ── */}
-        {roleKey === "Staff" ? (
-          <div className="mt-4 grid grid-cols-1 gap-1.5">
-            <div className="p-1.5 text-center">
-              <ShoppingCart size={12} className="mx-auto mb-1 text-gray-500" />
-              <p className="text-xs font-bold text-gray-900 leading-none">
-                {ordersTaken}
-              </p>
-              <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-0.5 font-medium">
-                Orders
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="mt-4 grid grid-cols-3 gap-1.5">
-            {/* Orders */}
-            <div className="p-1.5 text-center">
-              <ShoppingCart size={12} className="mx-auto mb-1 text-gray-500" />
-              <p className="text-xs font-bold text-gray-900 leading-none">
-                {ordersTaken}
-              </p>
-              <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-0.5 font-medium">
-                Orders
-              </p>
-            </div>
-
-            {/* Sales */}
-            <div className="p-1.5 text-center">
-              <TrendingUp size={12} className="mx-auto mb-1 text-gray-500" />
-              <p className="text-xs font-bold text-gray-900 leading-none">
-                {salesTaken}
-              </p>
-              <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-0.5 font-medium">
-                Sales
-              </p>
-            </div>
-
-            {/* Avg Time */}
-            <div className="p-1.5 text-center">
-              <Clock size={12} className="mx-auto mb-1 text-gray-500" />
-              <p className="text-xs font-bold text-gray-900 leading-none">
-                {avgTime && avgTime !== "—" ? avgTime : "—"}
-              </p>
-              <p className="text-[8px] text-gray-400 uppercase tracking-wider mt-0.5 font-medium">
-                Avg Time
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Spacer to push footer down */}
-        <div className="flex-1" />
-
-        {/* ── "View full report" footer ── */}
-        <div className="mt-3 pt-3 border-t border-gray-100">
-          <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-gray-600 group-hover:text-blue-700 transition-colors">
-            View full report
-            <ArrowRight
-              size={14}
-              className="group-hover:translate-x-0.5 transition-transform"
-            />
-          </div>
+        <div className="flex shrink-0 flex-col items-end">
+          <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+            Revenue
+          </span>
+          <p className="mt-0.5 max-w-[140px] truncate text-base font-bold leading-tight text-gray-900 tabular-nums">
+            {formatCurrencySymbol(amount, currency.symbol, currency.locale)}
+          </p>
         </div>
       </div>
-    </div>
+
+      {/* ── Metrics — ruled off, so the figures don't run into the name ──
+          Staff see orders only; the other roles get the full breakdown. */}
+      <div className="mt-4 flex items-stretch divide-x divide-gray-100 border-t border-gray-100 pt-3">
+        <Metric icon={ShoppingCart} value={ordersTaken} label="Orders" />
+        {roleKey !== "Staff" && (
+          <>
+            <Metric icon={TrendingUp} value={salesTaken} label="Sales" />
+            <Metric
+              icon={Clock}
+              value={avgTime && avgTime !== "—" ? avgTime : "—"}
+              label="Avg Time"
+            />
+          </>
+        )}
+      </div>
+
+      {/* Spacer to push the footer down */}
+      <div className="flex-1" />
+
+      {/* ── Footer ── */}
+      <div className="mt-3 border-t border-gray-100 pt-3">
+        <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-gray-500 transition-colors group-hover:text-blue-700">
+          View full report
+          <ArrowRight
+            size={14}
+            className="transition-transform group-hover:translate-x-0.5"
+          />
+        </div>
+      </div>
+    </button>
   );
 }

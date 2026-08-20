@@ -105,12 +105,14 @@ export default function StaffBoxContainer({
       ) : (
         /* Responsive: 2-column grid on large screens, horizontal scroll on small/medium */
         <div className="lg:grid lg:grid-cols-3 lg:gap-3 flex gap-3 overflow-x-auto px-2 sm:px-0 lg:overflow-visible scrollbar-custom">
-          {displayStaff.map((staff, idx) => (
+          {displayStaff.map((staff) => (
             <div
-              key={staff.staffName}
+              // staffId, not staffName — two people can share a name, and a
+              // name key would collide and drop a card.
+              key={staff.staffId}
               className="shrink-0 w-[85vw] sm:w-[360px] lg:w-auto lg:shrink"
             >
-              <StaffStatBox {...staff} colorIndex={idx} />
+              <StaffStatBox {...staff} />
             </div>
           ))}
         </div>

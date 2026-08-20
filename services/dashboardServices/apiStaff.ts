@@ -2,6 +2,7 @@ import { StaffRevenue } from "@/components/dashboardComponents/staffDash/Revenue
 import { Shift } from "@/components/dashboardComponents/staffDash/ShiftAnalysisReport";
 import { StaffHourlyData } from "@/components/dashboardComponents/staffDash/StaffSalesChart";
 import { StaffBoxProps } from "@/components/dashboardComponents/staffDash/StaffStatBox";
+import { formatHourLabel } from "@/utils/formatHourReportToday";
 import { authHeaders } from "../authServices/session";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
@@ -137,27 +138,54 @@ function getNepalHour(paidAt: string): number {
     (paidAt.includes("T") ? paidAt.split("T")[1] : paidAt.split(" ")[1]) ||
     "00:00:00";
   const [h, m] = timePart.split(":").map(Number);
+  const hour = Number.isNaN(h) ? 0 : h;
+  const minute = Number.isNaN(m) ? 0 : m;
 
-  if (h >= 12) {
-    // Already Nepal 24-hour time — use as-is
-    return h;
-  }
+  // paidAt with NON-ZERO milliseconds is already Nepal time; ".000" or no
+  // fraction is UTC out of MongoDB, so convert (+5:45). Same rule as
+  // formatHourlyData — the previous "h >= 12 means Nepal" heuristic
+  // mis-bucketed every UTC afternoon bill.
+  const fraction = timePart.match(/\.(\d+)/)?.[1];
+  const hasSubSecond = fraction != null && Number(fraction) > 0;
+  if (hasSubSecond) return hour;
 
-  // UTC time — add 5 hours 45 minutes
-  let nepalHour = h + 5;
-  if ((m ?? 0) + 45 >= 60) nepalHour += 1;
-  return nepalHour;
+  let nepalHour = hour + 5;
+  if (minute + 45 >= 60) nepalHour += 1;
+  return nepalHour % 24;
 }
 
-function getHourLabel(paidAt: string): string | null {
-  const h = getNepalHour(paidAt);
-  if (h === 12) return "12pm";
-  if (h >= 7 && h <= 11) return `${h}am`;
-  if (h >= 13 && h <= 21) return `${h - 12}pm`;
-  return null; // outside tracked range
+/** "HH:00" in Nepal time, for the full 24-hour clock. */
+function getHourLabel(paidAt: string): string {
+  return formatHourLabel(getNepalHour(paidAt));
 }
 
 // ── Core fetcher — salesByAllEmployee ────────────────────────────────────
+
+/**
+ * salesByAllEmployee reports sales against the employee name as it was when
+ * the bill was paid, so an employee who has been renamed comes back as two
+ * rows sharing one `_id` — one under the old name, one under the new. Merged
+ * here rather than at each call site: unmerged they rendered as two separate
+ * series in the charts, and `getStaffData` silently dropped one of them
+ * (its Map keyed by `_id` kept only the last row it saw).
+ */
+function mergeEmployeesById(employees: RawEmployee[]): RawEmployee[] {
+  const merged = new Map<string, RawEmployee>();
+
+  for (const emp of employees) {
+    const existing = merged.get(emp._id);
+    if (!existing) {
+      merged.set(emp._id, { ...emp, bills: [...(emp.bills ?? [])] });
+      continue;
+    }
+    existing.totalSales = (existing.totalSales ?? 0) + (emp.totalSales ?? 0);
+    existing.totalRevenue =
+      (existing.totalRevenue ?? 0) + (emp.totalRevenue ?? 0);
+    existing.bills.push(...(emp.bills ?? []));
+  }
+
+  return Array.from(merged.values());
+}
 
 async function fetchAllEmployeeSales(
   range: string = "month",
@@ -172,12 +200,12 @@ async function fetchAllEmployeeSales(
 
   const res = await fetch(
     `${BASE}/business/report/salesByAllEmployee?startDate=${startDate}&endDate=${endDate}`,
-    { headers: await authHeaders(), next: { revalidate: 300 } },
+    { headers: await authHeaders(), cache: "no-store" },
   );
   if (!res.ok) throw new Error(`salesByAllEmployee failed: ${res.status}`);
   const json = await res.json();
   // Response shape: { status, data: { businessName, employeesData: [...] } }
-  return json?.data?.employeesData ?? [];
+  return mergeEmployeesById(json?.data?.employeesData ?? []);
 }
 
 // ── Core fetcher — salesByEmployee/:id ───────────────────────────────────
@@ -190,7 +218,7 @@ async function fetchEmployeeDetail(
 
   const res = await fetch(
     `${BASE}/business/report/salesByEmployee/${employeeId}?startDate=${startDate}&endDate=${endDate}`,
-    { headers: await authHeaders(), next: { revalidate: 300 } },
+    { headers: await authHeaders(), cache: "no-store" },
   );
   if (!res.ok) return null;
   const json = await res.json();
@@ -204,7 +232,7 @@ async function fetchAllEmployees(): Promise<RawUser[]> {
   try {
     const res = await fetch(`${BASE}/business/users/roles/employee`, {
       headers: await authHeaders(),
-      next: { revalidate: 300 },
+      cache: "no-store",
     });
     if (!res.ok) throw new Error(`fetchAllEmployees failed: ${res.status}`);
     const json = await res.json();
@@ -221,6 +249,18 @@ async function fetchAllEmployees(): Promise<RawUser[]> {
     console.error("fetchAllEmployees error:", err);
     return [];
   }
+}
+
+/**
+ * `_id` → the employee's current name, from the live user records. The name on
+ * a sales row is a snapshot from when the bill was paid, so it goes stale on
+ * rename; this is what the charts label their series with.
+ */
+async function fetchEmployeeNameMap(): Promise<Map<string, string>> {
+  const users = await fetchAllEmployees();
+  return new Map(
+    users.filter((u) => u?._id && u?.name).map((u) => [u._id, u.name]),
+  );
 }
 
 // ── Core fetcher — all shifts ──────────────────────────────────────────
@@ -246,7 +286,7 @@ export async function fetchAllShifts(
     `${BASE}/business/shift/allshifts?${params.toString()}`,
     {
       headers: await authHeaders(),
-      next: { revalidate: 300 },
+      cache: "no-store",
     },
   );
   // A real HTTP failure is an error — let it surface (not "no data").
@@ -281,7 +321,7 @@ async function fetchAllTickets(
 
     const res = await fetch(`${BASE}/business/ticket?${params.toString()}`, {
       headers: await authHeaders(),
-      next: { revalidate: 300 },
+      cache: "no-store",
     });
     if (!res.ok) return [];
 
@@ -322,11 +362,8 @@ export async function getStaffData(
       fetchAllTickets(range, startDate, endDate),
     ]);
 
-    const allUsers: RawUser[] = Array.isArray(allUsersRaw)
-      ? allUsersRaw
-      : Array.isArray((allUsersRaw as any)?.users)
-        ? (allUsersRaw as any).users
-        : [];
+    // fetchAllEmployees already unwraps both response shapes and returns [].
+    const allUsers: RawUser[] = allUsersRaw;
 
     const allShifts: RawShift[] = Array.isArray(allShiftsRaw)
       ? allShiftsRaw
@@ -429,7 +466,7 @@ export async function getStaffData(
 
     // ── Merge everything ──────────────────────────────────────────────────
     const staffList: StaffBoxProps[] = Array.from(identityMap.entries()).map(
-      ([id, identity], idx) => {
+      ([id, identity]) => {
         const sales = salesMap.get(id);
         const salesFromApi = sales?.totalSales ?? 0;
         const ticketCount = ticketCountMap.get(id) ?? 0;
@@ -443,7 +480,6 @@ export async function getStaffData(
           ordersTaken: resolvedOrders,
           amount: Math.round((sales?.totalRevenue ?? 0) * 100) / 100,
           avgTime: avgTimeMap.get(id) ?? "—",
-          colorIndex: idx,
         };
       },
     );
@@ -462,12 +498,17 @@ export async function getStaffRevenue(
   endDate?: string,
 ): Promise<StaffRevenue[]> {
   try {
-    const employees = await fetchAllEmployeeSales(range, startDate, endDate);
+    const [employees, nameMap] = await Promise.all([
+      fetchAllEmployeeSales(range, startDate, endDate),
+      fetchEmployeeNameMap(),
+    ]);
     if (employees.length === 0) return [];
 
     return employees
       .map((emp) => ({
-        name: emp.name || emp._id,
+        // Current name first — the name on the sales row is whatever it was
+        // when the bill was paid.
+        name: nameMap.get(emp._id) || emp.name || emp._id,
         revenue: Math.round((emp.totalRevenue ?? 0) * 100) / 100,
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
@@ -485,32 +526,22 @@ export async function getStaffSalesPerHour(
   endDate?: string,
 ): Promise<StaffHourlyData[]> {
   try {
-    const employees = await fetchAllEmployeeSales(range, startDate, endDate);
+    const [employees, nameMap] = await Promise.all([
+      fetchAllEmployeeSales(range, startDate, endDate),
+      fetchEmployeeNameMap(),
+    ]);
     if (employees.length === 0) return [];
 
-    const HOUR_SLOTS = [
-      "7am",
-      "8am",
-      "9am",
-      "10am",
-      "11am",
-      "12pm",
-      "1pm",
-      "2pm",
-      "3pm",
-      "4pm",
-      "5pm",
-      "6pm",
-      "7pm",
-      "8pm",
-      "9pm",
-    ];
+    // The full clock — the chart filters it down to a range client-side, the
+    // same way the hourly sales trend does.
+    const HOUR_SLOTS = Array.from({ length: 24 }, (_, h) => formatHourLabel(h));
 
     // Build map: employeeName → hour → count
     const staffHourMap = new Map<string, Map<string, number>>();
 
     for (const emp of employees) {
-      const name = emp.name || emp._id;
+      // Current name first, same as the revenue chart.
+      const name = nameMap.get(emp._id) || emp.name || emp._id;
       const hourMap = new Map<string, number>(HOUR_SLOTS.map((h) => [h, 0]));
 
       for (const bill of emp.bills ?? []) {
