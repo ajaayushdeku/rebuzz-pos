@@ -13,7 +13,7 @@ import GridView from "@/components/dashboardComponents/liveTables/GridView";
 import TableDetail from "@/components/dashboardComponents/liveTables/TableDetail";
 import AddTableModal from "@/components/dashboardComponents/liveTables/AddTableModal";
 import TableTicketCards from "@/components/dashboardComponents/liveTables/TableTicketCards";
-import { Button } from "@/components/ui/button";
+import HeaderActionButton from "@/components/ui/HeaderActionButton";
 
 type Tab = "floor" | "grid";
 
@@ -66,17 +66,16 @@ export default function LiveTablesPage() {
           </div>
 
           {/* ── Add Table (fixed bottom-right) ── */}
-          <Button
-            className="bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
-            type="button"
+          <HeaderActionButton
+            variant="dashed"
+            icon={Armchair}
+            hideLabelOnMobile
+            label="Add Table"
             onClick={() => {
               setEditingTable(null);
               setAddModalOpen(true);
             }}
-          >
-            <Armchair size={18} />
-            Add Table
-          </Button>
+          />
         </div>
 
         {/* ── Main panel ── */}

@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import ProductTable from "@/components/product/ProductTable";
 import ProductFormModal from "@/components/product/ProductFormModal";
 import { PackagePlus } from "lucide-react";
 import { useProductsList } from "@/hooks/useProductsList";
+import HeaderActionButton from "@/components/ui/HeaderActionButton";
 
 export default function Page() {
   const [formModalOpen, setFormModalOpen] = useState(false);
@@ -21,13 +21,13 @@ export default function Page() {
               Manage your product inventory
             </p>
           </div>
-          <Button
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
+          <HeaderActionButton
+            variant="dashed"
+            icon={PackagePlus}
+            hideLabelOnMobile
+            label="Add new product"
             onClick={() => setFormModalOpen(true)}
-          >
-            <PackagePlus className="h-4 w-4" />
-            Add new product
-          </Button>
+          />
         </div>
 
         <ProductTable products={products} isLoading={isLoading} />

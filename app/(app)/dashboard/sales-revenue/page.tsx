@@ -1,7 +1,5 @@
 import { Suspense } from "react";
-import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
 import TableSkeleton from "@/components/ui/tableskeleton";
 import ChartSkeleton from "@/components/ui/chartskeleton";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
@@ -26,6 +24,8 @@ import {
   TimeWiseProductAnalysisWrapper,
   SalesRecommendationsAlertsWrapper,
 } from "@/components/componentWrappers/SalesRevenueWrapper";
+import HeaderActionButton from "@/components/ui/HeaderActionButton";
+import { Plus } from "lucide-react";
 
 export default async function Page({
   searchParams,
@@ -63,12 +63,13 @@ export default async function Page({
           {/* Global date range filter — single source of truth */}
           <SalesRevenueHeader />
 
-          <Button
-            className="flex items-center gap-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2"
-            asChild
-          >
-            <Link href="/invoices/add">Create order</Link>
-          </Button>
+          <HeaderActionButton
+            variant="dashed"
+            icon={Plus}
+            hideLabelOnMobile
+            label="Create order"
+            href="/invoices/add"
+          />
         </div>
       </div>
 

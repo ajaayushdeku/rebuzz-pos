@@ -1,9 +1,8 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { Plus } from "lucide-react";
+import { Box } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import {
   DateRangeFilter,
@@ -28,6 +27,7 @@ import {
   InventoryMovementAnalysisSkeleton,
   PredictiveRestockingSkeleton,
 } from "@/components/dashboardComponents/inventoryDash/InventorySkeletons";
+import HeaderActionButton from "@/components/ui/HeaderActionButton";
 
 /** Default revenue/profit window: last 30 days. */
 function getDefaultDateRange(): DateRangeValue {
@@ -68,13 +68,13 @@ export default function InventoryPage() {
               storageKey="rebuzz-inventory-date-filter"
             />
 
-            <Button
+            <HeaderActionButton
+              variant="dashed"
+              icon={Box}
+              label="Add Stock"
+              hideLabelOnMobile
               onClick={() => setModalOpen(true)}
-              className="flex items-center gap-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2"
-            >
-              <Plus size={15} />
-              Add Stock
-            </Button>
+            />
           </div>
         </div>
 

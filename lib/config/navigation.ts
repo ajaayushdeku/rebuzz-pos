@@ -6,7 +6,6 @@ import {
   Building,
   Building2,
   User,
-  Users,
   UsersRound,
   Settings,
   Package,
@@ -30,6 +29,8 @@ import {
   Banknote,
   History,
   Utensils,
+  BriefcaseBusiness,
+  ContactRound,
 } from "lucide-react";
 
 export type NavigationItem =
@@ -100,8 +101,12 @@ export const navigationConfig: NavigationItem[] = [
         href: "/dashboard/live-tables",
         icon: Utensils,
       },
-      { label: "Employees", href: "/dashboard/employee", icon: UsersRound },
-      { label: "Customers", href: "/dashboard/customers", icon: Users },
+      {
+        label: "Employees",
+        href: "/dashboard/employee",
+        icon: BriefcaseBusiness,
+      },
+      { label: "Customers", href: "/dashboard/customers", icon: UsersRound },
     ],
   },
   {
@@ -121,7 +126,7 @@ export const navigationConfig: NavigationItem[] = [
         href: "/records/order-history",
         icon: History,
       },
-      { label: "Customers", href: "/records/customers", icon: Users },
+      { label: "Customers", href: "/records/customers", icon: ContactRound },
       { label: "Products", href: "/records/products", icon: Package },
     ],
   },

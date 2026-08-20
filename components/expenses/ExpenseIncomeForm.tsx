@@ -36,9 +36,9 @@ import {
 } from "@/providers/ExpenseContext";
 import { getPurposeIcon } from "@/lib/purpose-icons";
 import ManagePurposesModal from "./ManagePurposesModal";
-import { Button } from "../ui/button";
 import { formatCurrencySymbolOnly } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
+import HeaderActionButton from "@/components/ui/HeaderActionButton";
 
 const FREQUENCIES = ["daily", "weekly", "monthly", "yearly"] as const;
 
@@ -213,13 +213,14 @@ export default function ExpenseIncomeForm({
   return (
     <>
       {!isEditing && !offAddExpense && (
-        <Button
+        <HeaderActionButton
+          variant="dashed"
+          icon={Plus}
+          label="Add Expense"
+          hideLabelOnMobile
+          className="px-2.5 lg:px-4"
           onClick={() => setOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 px-3 md:px-2 py-2.5 text-white rounded-xl text-sm font-semibold flex flex-row gap-1 items-center"
-        >
-          <Plus size={15} className="h-4 w-4" />
-          <span className="hidden lg:block">Add Expense</span>
-        </Button>
+        />
       )}
 
       <ModalShell
@@ -423,7 +424,9 @@ export default function ExpenseIncomeForm({
                   }}
                   placeholder="0.00"
                   className={`${modalInput} pl-9 tabular-nums ${
-                    errors.amount || isAmountOutOfRange ? modalInputError : modalInputIdle
+                    errors.amount || isAmountOutOfRange
+                      ? modalInputError
+                      : modalInputIdle
                   }`}
                 />
               </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Plus, Shapes } from "lucide-react";
+import { Search, Shapes, Tag } from "lucide-react";
 import {
   useCategories,
   useCreateCategory,
@@ -13,7 +13,7 @@ import type { Category } from "@/lib/types/category";
 import CategoryTable from "@/components/settingsComponents/categories/CategoryTable";
 import EditCategoryModal from "@/components/settingsComponents/categories/EditCategoryModal";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
-import { Button } from "@/components/ui/button";
+import HeaderActionButton from "@/components/ui/HeaderActionButton";
 
 type CategoryForm = {
   name: string;
@@ -114,12 +114,13 @@ export default function CategorySettingsPage() {
               {categories.length} categories configured
             </p>
           </div>
-          <Button
+          <HeaderActionButton
+            variant="dashed"
+            icon={Tag}
+            hideLabelOnMobile
+            label="New Category"
             onClick={openCreate}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" /> New Category
-          </Button>
+          />
         </div>
 
         {/* ── Search ──────────────────────────────────────── */}

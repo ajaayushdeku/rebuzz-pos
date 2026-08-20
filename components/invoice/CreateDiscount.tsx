@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import { Percent, Loader2, BadgePercent } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import ModalShell from "@/components/ui/ModalShell";
 import SelectMenu from "@/components/ui/SelectMenu";
 import { useCreateDiscount } from "@/hooks/useDiscounts";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbolOnly } from "@/utils/helper";
+import HeaderActionButton from "@/components/ui/HeaderActionButton";
 
 const DISCOUNT_TYPES: { value: "percentage" | "fixed"; label: string }[] = [
   { value: "percentage", label: "Percentage (%)" },
@@ -61,14 +61,13 @@ export const CreateDiscountDialog = () => {
 
   return (
     <>
-      <Button
-        variant="outline"
+      <HeaderActionButton
+        variant="dashed"
+        hideLabelOnMobile
+        icon={BadgePercent}
+        label="Create New Discount"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 border-dashed text-sm border-blue-400 text-blue-600 hover:bg-blue-50"
-      >
-        <BadgePercent className="h-4 w-4" />
-        Create New Discount
-      </Button>
+      />
 
       <ModalShell
         open={open}

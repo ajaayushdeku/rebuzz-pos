@@ -1,11 +1,11 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { UserPlus } from "lucide-react";
 import { useCustomersList } from "@/hooks/useCustomersList";
 import CustomerTable from "@/components/customer/CustomerTable";
 import CustomerFormModal from "@/components/invoice/CustomerFormModal";
 import { useState } from "react";
+import HeaderActionButton from "@/components/ui/HeaderActionButton";
 
 export default function Page() {
   const { data: customers = [], isLoading } = useCustomersList();
@@ -23,13 +23,13 @@ export default function Page() {
               Manage your customer records
             </p>
           </div>
-          <Button
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
+          <HeaderActionButton
+            variant="dashed"
+            icon={UserPlus}
+            hideLabelOnMobile
+            label="Add new customer"
             onClick={() => setCreateModalOpen(true)}
-          >
-            <UserPlus className="h-4 w-4" />
-            Add new customer
-          </Button>
+          />
         </div>
 
         <CustomerTable customers={customers} isLoading={isLoading} />

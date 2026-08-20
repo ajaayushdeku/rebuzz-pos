@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Percent, Check, Search, Loader2, Receipt } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import ModalShell from "@/components/ui/ModalShell";
 import { useCreateTax, useCreateGroupTax, useTaxes } from "@/hooks/useTaxes";
+import HeaderActionButton from "@/components/ui/HeaderActionButton";
 
 type Tab = "normal" | "group";
 
@@ -98,14 +98,13 @@ export const CreateTaxDialog = () => {
 
   return (
     <>
-      <Button
-        variant="outline"
+      <HeaderActionButton
+        variant="dashed"
+        hideLabelOnMobile
+        icon={Receipt}
+        label="Create Tax"
         onClick={() => setOpen(true)}
-        className="flex text-sm items-center gap-2 border-dashed border-blue-400 text-blue-600 hover:bg-blue-50"
-      >
-        <Receipt className="h-4 w-4" />
-        Create Tax
-      </Button>
+      />
 
       <ModalShell
         open={open}

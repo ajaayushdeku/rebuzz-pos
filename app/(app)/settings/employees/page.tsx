@@ -21,9 +21,9 @@ import {
   UserRound,
 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import StaffFormModal from "@/components/settingsComponents/staffs/StaffFormModal";
+import HeaderActionButton from "@/components/ui/HeaderActionButton";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 interface StaffFormData {
@@ -362,13 +362,13 @@ export default function StaffManagementPage() {
             </p>
           </div>
 
-          <Button
+          <HeaderActionButton
+            variant="dashed"
+            icon={Plus}
+            hideLabelOnMobile
+            label="Add New Employee"
             onClick={openAdd}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Add New Employee
-          </Button>
+          />
         </div>
 
         {/* ── Search + Filter ── */}

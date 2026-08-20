@@ -1,6 +1,5 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import HeaderActionButton from "@/components/ui/HeaderActionButton";
 
 export default function InvoiceHeader() {
   return (
@@ -10,15 +9,13 @@ export default function InvoiceHeader() {
         <p className="text-xs text-gray-400 mt-0.5">Manage your invoices</p>
       </div>
 
-      <Button
-        asChild
-        className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
-      >
-        <Link href="/invoices/add">
-          <Plus className="h-4 w-4" />
-          Create an invoice
-        </Link>
-      </Button>
+      <HeaderActionButton
+        variant="dashed"
+        hideLabelOnMobile
+        icon={Plus}
+        label="Create an invoice"
+        href="/invoices/add"
+      />
     </div>
   );
 }

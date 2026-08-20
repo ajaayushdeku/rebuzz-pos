@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Flame, LayoutDashboard, Plus, TrendingUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { CalendarDateFilter } from "@/components/dashboardComponents/staffDash/CalendarDateFilter";
 import { useQuery } from "@tanstack/react-query";
 import { fetchUserData } from "@/services/apiProfile";
+import HeaderActionButton from "@/components/ui/HeaderActionButton";
 
 const tabs = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -47,15 +47,12 @@ export default function DashboardLayout({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            className="bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
-            asChild
-          >
-            <Link href="/invoices/add">
-              <Plus size={15} className="h-4 w-4" />
-              Create Order
-            </Link>
-          </Button>
+          <HeaderActionButton
+            variant="dashed"
+            icon={Plus}
+            label="Create Order"
+            href="/invoices/add"
+          />
         </div>
       </div>
 
