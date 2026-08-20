@@ -152,7 +152,7 @@ export default function StaffStatBox({
           <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
             Revenue
           </span>
-          <p className="mt-0.5 max-w-[140px] truncate text-base font-bold leading-tight text-gray-900 tabular-nums">
+          <p className="mt-0.5 max-w-[140px] truncate text-base font-bold leading-tight text-green-700 tabular-nums">
             {formatCurrencySymbol(amount, currency.symbol, currency.locale)}
           </p>
         </div>

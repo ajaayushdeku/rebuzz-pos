@@ -43,9 +43,13 @@ interface StaffOrdersChartProps {
 }
 
 const COLOR_PALETTE = [
+  "#a78bfa",
+  "#9c2a95",
+  "#da2747",
+  "#8ecd21",
   "#34d399",
   "#f59e0b",
-  "#a78bfa",
+
   "#f472b6",
   "#60a5fa",
   "#fb923c",

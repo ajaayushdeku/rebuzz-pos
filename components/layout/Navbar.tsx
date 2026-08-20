@@ -48,7 +48,7 @@ export default function Navbar() {
           <MobileButton />
           <Link
             href="/"
-            className="text-xl pl-3 font-bold tracking-tight text-blue-600 transition-opacity hover:opacity-80 flex flex-row items-center gap-2"
+            className="text-xl px-3 font-bold tracking-tight text-blue-600 transition-opacity hover:opacity-80 flex flex-row items-center gap-2"
           >
             <Image
               src="/rebuzz.png"
@@ -65,11 +65,13 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-600">{currency.symbol}</span>{" "}
+          <span className="text-xs text-gray-600">
+            {currency.code} ( {currency.symbol} )
+          </span>{" "}
           {/* <ServerEnvBadge className="sm:hidden xs:hidden" /> */}
           <span
             title={currency.code}
-            className="w-8 h-5 inline-flex items-center justify-center shrink-0 overflow-hidden  rounded-xs "
+            className="w-8 h-8 inline-flex items-center justify-center shrink-0 overflow-hidden  rounded-xs "
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img

@@ -1,5 +1,13 @@
 "use client";
 
+import {
+  FlaskConical,
+  ShieldCheck,
+  Laptop,
+  HelpCircle,
+  type LucideIcon,
+} from "lucide-react";
+
 // NEXT_PUBLIC_ vars are inlined at build time, so this reads fine on the client.
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
@@ -7,6 +15,7 @@ type EnvInfo = {
   label: string;
   className: string;
   dot: string;
+  icon: LucideIcon;
 };
 
 /** Map the configured API host to a human-readable environment. */
@@ -14,8 +23,9 @@ function resolveEnv(): EnvInfo {
   if (API_URL.includes("api.beta.")) {
     return {
       label: "Testing Server",
-      className: "bg-amber-50 text-amber-700 border-amber-200",
-      dot: "bg-amber-500",
+      className: "bg-blue-50 text-blue-700 border-blue-200",
+      dot: "bg-blue-500",
+      icon: FlaskConical,
     };
   }
   if (API_URL.includes("appapi.")) {
@@ -23,6 +33,7 @@ function resolveEnv(): EnvInfo {
       label: "Production Server",
       className: "bg-green-50 text-green-700 border-green-200",
       dot: "bg-green-500",
+      icon: ShieldCheck,
     };
   }
   if (API_URL.includes("localhost") || API_URL.includes("127.0.0.1")) {
@@ -30,12 +41,14 @@ function resolveEnv(): EnvInfo {
       label: "Local Server",
       className: "bg-gray-100 text-gray-600 border-gray-200",
       dot: "bg-gray-400",
+      icon: Laptop,
     };
   }
   return {
     label: "Unknown Server",
     className: "bg-gray-100 text-gray-600 border-gray-200",
     dot: "bg-gray-400",
+    icon: HelpCircle,
   };
 }
 
@@ -50,13 +63,25 @@ export default function ServerEnvBadge({
   className?: string;
 }) {
   const env = resolveEnv();
+  const Icon = env.icon;
 
   return (
     <span
       title={API_URL || "No API URL configured"}
-      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-xs font-semibold whitespace-nowrap ${env.className} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${env.className} ${className}`}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${env.dot}`} />
+      {/* Pulsing status dot — the ring reads as "connected and live" the way a
+          stream indicator does. Held still when the OS asks for less motion. */}
+      <span className="relative flex h-1.5 w-1.5 shrink-0">
+        <span
+          className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 motion-reduce:animate-none ${env.dot}`}
+        />
+        <span
+          className={`relative inline-flex h-1.5 w-1.5 rounded-full ${env.dot}`}
+        />
+      </span>
+
+      <Icon size={12} className="shrink-0" aria-hidden="true" />
       {env.label}
     </span>
   );

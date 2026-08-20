@@ -141,30 +141,39 @@ export const getWinningStats = async (): Promise<WinningApiResponse> => {
     { hour: "N/A", revenue: 0 },
   );
 
-  const formatPeakHourRange = (hour: string): string => {
-    if (hour === "N/A") return "No data";
-    const match = hour.match(/^(\d+)(AM|PM)$/);
-    if (!match) return hour;
-    const num = parseInt(match[1]);
-    const period = match[2];
-    let nextNum = num + 1;
-    let nextPeriod = period;
-    if (num === 11 && period === "AM") {
-      nextNum = 12;
-      nextPeriod = "PM";
-    } else if (num === 12 && period === "PM") {
-      nextNum = 1;
-      nextPeriod = "AM";
-    } else if (nextNum === 13) {
-      nextNum = 1;
-    }
-    return `${hour} - ${nextNum}${nextPeriod}`;
+  /**
+   * "14:00" → { range: "14:00 – 15:00", ampm: "2:00 PM – 3:00 PM" }.
+   *
+   * getHourlySalesData runs the bills through formatHourlyData, which emits
+   * "HH:00" labels. The previous implementation matched /^(\d+)(AM|PM)$/ —
+   * a shape that data never has — so it always fell through to the bare
+   * "14:00" and both the range and the AM/PM formatting were dead.
+   */
+  const formatPeakHourWindow = (
+    hour: string,
+  ): { range: string; ampm?: string } => {
+    if (hour === "N/A") return { range: "No data" };
+
+    const match = hour.match(/^(\d{1,2}):(\d{2})$/);
+    if (!match) return { range: hour };
+
+    const start = Number(match[1]);
+    if (Number.isNaN(start)) return { range: hour };
+    const end = (start + 1) % 24;
+
+    const h24 = (h: number) => `${String(h).padStart(2, "0")}:00`;
+    const h12 = (h: number) => `${h % 12 || 12}:00 ${h >= 12 ? "PM" : "AM"}`;
+
+    return {
+      range: `${h24(start)} – ${h24(end)}`,
+      ampm: `${h12(start)} – ${h12(end)}`,
+    };
   };
 
-  const peakHour =
+  const peakHourWindow =
     peakHourData.revenue > 0
-      ? formatPeakHourRange(peakHourData.hour)
-      : "No sales today";
+      ? formatPeakHourWindow(peakHourData.hour)
+      : { range: "No sales today" };
 
   // ── Best day — highest revenue day of the week ───────────────────────────
   const bestDayData = weeklyData.reduce(
@@ -260,7 +269,10 @@ export const getWinningStats = async (): Promise<WinningApiResponse> => {
 
   return {
     topSellingProduct: { value: topSellingProduct, footer: topSellingFooter },
-    peakHour: { value: peakHour },
+    peakHour: {
+      value: peakHourWindow.range,
+      valueNote: peakHourWindow.ampm,
+    },
     bestDay: { value: bestDay, footer: bestDayFooter },
     salesStreak: salesStreak,
   };

@@ -69,14 +69,14 @@ export interface MergedClientConfig extends ClientStatConfig {
 export const STATS_CONFIG: SerializableStatConfig[] = [
   {
     key: "totalSales",
-    label: "Total Sales",
+    label: "Total Revenue",
     iconName: "DollarSign",
     iconColor: "text-blue-500",
     format: "currency",
   },
   {
     key: "totalOrders",
-    label: "Total Orders",
+    label: "Total Sales",
     iconName: "ShoppingBag",
     iconColor: "text-purple-500",
   },

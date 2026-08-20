@@ -3,6 +3,8 @@ import { LucideIcon } from "lucide-react";
 export interface WinningStatBoxProps {
   label: string;
   value: string;
+  /** Small companion beside the value — e.g. the 12-hour peak-hour window. */
+  valueNote?: string;
   footer?: string;
   icon: LucideIcon;
   iconColor?: string;
@@ -12,6 +14,7 @@ export interface WinningStatBoxProps {
 const WinningStatBox = ({
   label,
   value,
+  valueNote,
   footer,
   icon: Icon,
   iconColor = "text-white",
@@ -19,7 +22,7 @@ const WinningStatBox = ({
 }: WinningStatBoxProps) => {
   return (
     <div
-      className={`relative w-full px-6 pt-4 pb-6 ${bgColor} rounded-2xl overflow-hidden lg:min-h-[180px] flex flex-col justify-center sm:min-h-[120px] `}
+      className={`relative w-full px-6 pt-4 pb-6 ${bgColor} rounded-2xl overflow-hidden lg:min-h-[180px] flex flex-col justify-center sm:min-h-[150px] `}
     >
       {/* Background ghost icon */}
       <Icon
@@ -35,10 +38,17 @@ const WinningStatBox = ({
         </p>
 
         <div className="w-full flex flex-row  justify-between items-center">
-          <div>
+          <div className="min-w-0">
             <p className="text-[20px] md:text-2xl font-bold text-white leading-tight">
               {value}
             </p>
+            {valueNote && (
+              // Same idiom as the chart axes: 24-hour figure, 12-hour in
+              // brackets underneath.
+              <p className="mt-0.5 text-[11px] font-medium text-white/70 tabular-nums">
+                [ {valueNote} ]
+              </p>
+            )}
             {footer && (
               <p className="text-xs text-white/60 mt-1.5 font-medium">
                 {footer}

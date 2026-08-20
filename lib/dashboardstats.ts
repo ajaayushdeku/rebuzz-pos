@@ -20,6 +20,8 @@ export type StatsApiResponse = Record<StatKey, Stat>;
 // For winning stats
 export interface WinningStat {
   value: string;
+  /** Small companion shown beside the value, e.g. the 12-hour peak window. */
+  valueNote?: string;
   // Optional computed footer; overrides the static footer in WINNING_STAT_CONFIG.
   footer?: string;
 }
