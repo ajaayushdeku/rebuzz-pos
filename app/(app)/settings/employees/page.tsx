@@ -51,6 +51,21 @@ const emptyForm: StaffFormData = {
   role: "staff",
 };
 
+/**
+ * The reason a request failed, ready to toast. The staff routes answer with
+ * `{ error }`, the [employeeId] route passes the backend's `{ message }`
+ * straight through, and a gateway failure answers with neither (or with HTML,
+ * which is why the parse is guarded — an unguarded res.json() surfaces
+ * "Unexpected token <" to the user instead of the real problem).
+ */
+async function readError(res: Response, fallback: string): Promise<string> {
+  const data = (await res.json().catch(() => null)) as {
+    error?: string;
+    message?: string;
+  } | null;
+  return data?.error || data?.message || `${fallback} (${res.status})`;
+}
+
 // ── Input styling ───────────────────────────────────────────────────────────
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -147,7 +162,11 @@ export default function StaffManagementPage() {
   const fetchStaff = () => {
     setLoading(true);
     fetch("/api/staff")
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok)
+          throw new Error(await readError(res, "Failed to load staff"));
+        return res.json();
+      })
       .then((data) => {
         const list: StaffMember[] = data?.data?.users || data?.users || [];
         setStaff(list);
@@ -218,8 +237,8 @@ export default function StaffManagementPage() {
             role: form.role,
           }),
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Failed to update staff");
+        if (!res.ok)
+          throw new Error(await readError(res, "Failed to update staff"));
         toast.success("Staff updated successfully");
       } else {
         const res = await fetch("/api/staff", {
@@ -232,8 +251,8 @@ export default function StaffManagementPage() {
             role: form.role,
           }),
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Failed to create staff");
+        if (!res.ok)
+          throw new Error(await readError(res, "Failed to create staff"));
         toast.success("Staff created successfully");
       }
 
@@ -254,11 +273,8 @@ export default function StaffManagementPage() {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       });
-      const data = await res.json().catch(() => ({}));
       if (!res.ok)
-        throw new Error(
-          (data as { error?: string }).error || "Failed to delete staff",
-        );
+        throw new Error(await readError(res, "Failed to delete staff"));
       toast.success("Staff deleted successfully");
       setDeleteConfirm(null);
       fetchStaff();

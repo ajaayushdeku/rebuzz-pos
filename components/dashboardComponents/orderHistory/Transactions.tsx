@@ -49,9 +49,25 @@ export default function Transactions({
   const router = useRouter();
   const { currency } = useCurrency();
 
-  // Local copy so we can optimistically update status
-  const [transactions, setTransactions] =
-    useState<Transaction[]>(initialTransactions);
+  /**
+   * Rows come straight from the prop. The only local edit is the optimistic
+   * refund, tracked as a set of invoice numbers layered on top — copying the
+   * prop into state instead would freeze the table at whatever the parent held
+   * on first render, which is the empty array it starts with before its fetch
+   * resolves (useState's argument is read once and ignored thereafter).
+   */
+  const [refundedInvoiceNos, setRefundedInvoiceNos] = useState<Set<number>>(
+    () => new Set(),
+  );
+
+  const transactions = useMemo<Transaction[]>(() => {
+    if (refundedInvoiceNos.size === 0) return initialTransactions;
+    return initialTransactions.map((t) =>
+      t.invoiceNo != null && refundedInvoiceNos.has(t.invoiceNo)
+        ? { ...t, status: "refunded" as const }
+        : t,
+    );
+  }, [initialTransactions, refundedInvoiceNos]);
 
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
@@ -100,6 +116,10 @@ export default function Transactions({
     if (!refundTarget) return;
 
     const invoiceNo = refundTarget.invoiceNo;
+    if (invoiceNo == null) {
+      toast.error("This transaction has no invoice number to refund");
+      return;
+    }
     setIsRefunding(true);
 
     try {
@@ -112,12 +132,8 @@ export default function Transactions({
         throw new Error(result.message || "Refund failed");
       }
 
-      // ── Optimistically update status in local state ─────────────────────
-      setTransactions((prev) =>
-        prev.map((t) =>
-          t.invoiceNo === invoiceNo ? { ...t, status: "refunded" } : t,
-        ),
-      );
+      // ── Optimistically mark it refunded until the parent refetches ──────
+      setRefundedInvoiceNos((prev) => new Set(prev).add(invoiceNo));
 
       toast.success(`Order ${refundTarget.id} refunded successfully`);
       setRefundTarget(null);

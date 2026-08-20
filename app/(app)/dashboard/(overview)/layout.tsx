@@ -61,32 +61,34 @@ export default function DashboardLayout({
 
       {/* ── Tabs + Calendar — single row on all screen sizes ── */}
       <div className="flex items-center justify-between gap-2 pt-4">
-        {/* Tabs — icons only on mobile, icons + label on md+ */}
-        <div className="flex items-center gap-1.5">
+        {/* Tabs — one segmented control rather than three loose buttons, so the
+            group reads as a single switch. Icons only on mobile, icons +
+            label on md+. Matches the pill tabs on the discount settings page. */}
+        <nav
+          aria-label="Dashboard sections"
+          className="inline-flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+        >
           {tabs.map(({ label, href, icon: Icon }) => {
             const active = pathname === href;
             return (
-              <Button
+              <Link
                 key={href}
-                asChild
-                variant={active ? "default" : "outline"}
-                className={`rounded-lg px-2.5 py-2 md:px-4 ${
+                href={href}
+                title={label}
+                aria-current={active ? "page" : undefined}
+                className={`flex items-center gap-1.5 rounded-full px-3 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] md:px-4 ${
                   active
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
-                    : "border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    ? "bg-white font-bold text-blue-950 shadow-sm"
+                    : "font-semibold text-blue-800 hover:text-blue-950"
                 }`}
               >
-                <Link href={href} title={label}>
-                  <Icon className="h-4 w-4 shrink-0" />
-                  {/* Label hidden on mobile, shown on md+ */}
-                  <span className="text-sm hidden md:block md:ml-1.5">
-                    {label}
-                  </span>
-                </Link>
-              </Button>
+                <Icon className="h-4 w-4 shrink-0" />
+                {/* Label hidden on mobile, shown on md+ */}
+                <span className="hidden md:block">{label}</span>
+              </Link>
             );
           })}
-        </div>
+        </nav>
 
         {/* Calendar — compact icon-only trigger on mobile */}
         {pathname === "/dashboard" && (

@@ -32,6 +32,9 @@ const ICON_BG_MAP: Record<string, string> = {
   "text-cyan-500": "bg-cyan-50",
 };
 
+const CARD =
+  "bg-surface-card border-surface-border rounded-xl border shadow-sm p-4 md:p-5";
+
 const OverviewStatBox = ({
   label,
   value,
@@ -46,7 +49,7 @@ const OverviewStatBox = ({
   isExpanded = false,
   onToggle,
 }: StatBoxProps) => {
-  const { text, ArrowIcon } = getPercentColor(percent);
+  const { badge, ArrowIcon } = getPercentColor(percent);
   const { currency } = useCurrency();
 
   const Icon = ICON_MAP[iconName];
@@ -61,48 +64,52 @@ const OverviewStatBox = ({
 
   if (isLoading) {
     return (
-      <div className="bg-surface-card rounded-xl border border-surface-border shadow-sm p-3 sm:p-4 animate-pulse">
-        <div className="flex items-center justify-between mb-3">
-          <div className="h-3 w-20 sm:w-24 bg-gray-200 rounded" />
-          <div className="w-6 h-6 sm:w-7 sm:h-7 bg-gray-200 rounded-lg" />
+      <div className={`${CARD} animate-pulse`}>
+        <div className="flex items-center justify-between gap-2">
+          <div className="h-3.5 w-24 rounded bg-gray-200" />
+          <div className="h-7 w-7 shrink-0 rounded-lg bg-gray-200 md:h-8 md:w-8" />
         </div>
-        <div className="h-6 sm:h-7 w-24 sm:w-28 bg-gray-200 rounded mb-2" />
-        <div className="h-3 w-16 sm:w-20 bg-gray-100 rounded" />
+        <div className="mt-3 h-6 w-28 rounded bg-gray-200 md:mt-4" />
+        <div className="mt-2.5 flex items-center gap-2 border-t border-gray-100 pt-2.5">
+          <div className="h-5 w-16 shrink-0 rounded-full bg-gray-200" />
+          <div className="h-3 w-20 rounded bg-gray-100" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-surface-card rounded-xl border border-surface-border shadow-sm px-4 sm:px-5 md:px-6 pt-3 sm:pt-4 pb-4 sm:pb-6 hover:shadow-md transition-shadow duration-200">
-      {/* Label + Icon */}
-      <div className="flex items-center justify-between mb-2 sm:mb-3">
-        <span className="text-xs sm:text-[12px] font-medium text-gray-500 truncate mr-2">
+    <div className={`${CARD} transition-shadow duration-200 hover:shadow-md`}>
+      {/* Label + icon */}
+      <div className="flex items-center justify-between gap-2">
+        <span className="truncate text-xs font-medium text-gray-500 md:text-[13px]">
           {label}
         </span>
         <div
-          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg ${iconBg} flex items-center justify-center shrink-0`}
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg md:h-8 md:w-8 ${iconBg}`}
         >
-          <Icon size={14} className={`${iconColor} sm:size-[16px]`} />
+          <Icon size={15} className={iconColor} />
         </div>
       </div>
 
       {/* Value */}
-      <p className="text-xl sm:text-[20px] md:text-[22px] font-bold text-gray-900 tracking-tight mb-1 sm:mb-1.5">
+      <p className="mt-3 truncate text-xl font-bold tracking-tight text-gray-900 tabular-nums md:mt-4 md:text-[22px]">
         {formattedValue}
       </p>
 
-      {/* Percent + period — collapsible */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1 min-w-0">
-          <ArrowIcon size={12} className={`${text} shrink-0`} />
+      {/* Change vs. the comparison period — ruled off so the figure above
+          reads on its own, matching the growth tracker tiles. */}
+      <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-gray-100 pt-2.5">
+        <div className="flex min-w-0 items-center gap-1.5">
           <span
-            className={`text-[11px] sm:text-xs font-semibold ${text} whitespace-nowrap`}
+            className={`flex shrink-0 items-center gap-0.5 rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums md:text-xs ${badge}`}
           >
+            <ArrowIcon size={12} />
             {percent > 0 ? "+" : ""}
             {formatAmount(percent, currency.locale)}%
           </span>
-          {!isExpanded && (
-            <span className="text-[10px] sm:text-xs text-gray-400 truncate">
+          {!isExpanded && periodLabel && (
+            <span className="truncate text-[11px] text-gray-400 md:text-xs">
               {periodLabel}
             </span>
           )}
@@ -112,10 +119,11 @@ const OverviewStatBox = ({
         {onToggle && (
           <button
             onClick={onToggle}
-            className="p-0.5 text-gray-300 hover:text-gray-500 transition-colors shrink-0"
+            className="shrink-0 rounded-md p-1 text-gray-300 transition-colors hover:bg-gray-50 hover:text-gray-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             aria-label={isExpanded ? "Collapse details" : "Expand details"}
+            aria-expanded={isExpanded}
           >
-            {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
           </button>
         )}
       </div>
@@ -128,22 +136,28 @@ const OverviewStatBox = ({
           opacity: isExpanded ? 1 : 0,
         }}
       >
-        <div className="mt-2 pt-2 border-t border-gray-50 space-y-0.5">
+        <div className="mt-2.5 space-y-1 rounded-lg bg-gray-50 px-2.5 py-2">
           {currentDateRange && (
-            <p className="text-[10px] sm:text-[11px] text-gray-400">
-              <span className="text-gray-500 font-medium">Period: </span>
-              {currentDateRange}
+            <p className="flex items-baseline justify-between gap-2 text-[11px] text-gray-500">
+              <span className="shrink-0 font-medium text-gray-400">
+                Period (current)
+              </span>
+              <span className="truncate text-right tabular-nums">
+                {currentDateRange}
+              </span>
             </p>
           )}
           {comparisonDateRangeLabel && (
-            <p className="text-[10px] sm:text-[11px] text-gray-400">
-              <span className="text-gray-500 font-medium">vs: </span>
-              {comparisonDateRangeLabel}
+            <p className="flex items-baseline justify-between gap-2 text-[11px] text-gray-500">
+              <span className="shrink-0 font-medium text-gray-400">vs</span>
+              <span className="truncate text-right tabular-nums">
+                {comparisonDateRangeLabel}
+              </span>
             </p>
           )}
-          <p className="text-[10px] sm:text-[11px] text-gray-400">
-            {periodLabel}
-          </p>
+          {periodLabel && (
+            <p className="text-[11px] text-gray-400">{periodLabel}</p>
+          )}
         </div>
       </div>
     </div>

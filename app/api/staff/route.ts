@@ -52,18 +52,34 @@ export const POST = async (request: NextRequest) => {
   const { name, email, phone, role } = await request.json();
 
   try {
-    const res = await axios.post(
-      `${BASE}/java/auth/user/create`,
-      { name, email, phone, role },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      },
-    );
+    // The create endpoint takes multipart/form-data, the same as every other
+    // create in this API (products, customers, shifts). Content-Type is left
+    // unset so fetch writes the boundary itself.
+    const formData = new FormData();
+    formData.append("name", name ?? "");
+    formData.append("email", email ?? "");
+    formData.append("phone", phone ?? "");
+    formData.append("role", role ?? "");
 
-    return NextResponse.json(res.data, { status: res.status });
+    const res = await fetch(`${BASE}/business/auth/user/create`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      // Surface the backend's own reason ("email already in use", …) and its
+      // status, so the client can toast something the user can act on.
+      const message =
+        (data as { message?: string; error?: string } | null)?.message ??
+        (data as { message?: string; error?: string } | null)?.error ??
+        "Failed to create staff";
+      return NextResponse.json({ error: message }, { status: res.status });
+    }
+
+    return NextResponse.json(data ?? {}, { status: res.status });
   } catch (error: unknown) {
     const message = getErrorMessage(error, "Failed to create staff");
     return NextResponse.json({ error: message }, { status: 500 });

@@ -244,12 +244,12 @@ export const GROWTH_STAT_CONFIG = [
   },
   {
     key: "orders",
-    label: "Order Growth (MoM)",
+    label: "Sales Growth (MoM)",
     inverseColor: false,
   },
   {
     key: "avgOrder",
-    label: "Avg Order Value (AoV)",
+    label: "Avg Sales Value (AoV)",
     inverseColor: false,
     format: "currency",
   },

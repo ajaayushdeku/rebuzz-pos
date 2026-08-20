@@ -142,6 +142,25 @@ async function fetchSalesByItemForPeriod(
   );
 }
 
+/**
+ * Short month names for the two periods getGrowthData compares, e.g.
+ * `{ current: "Aug", previous: "Jul" }`. Derived from the same month math the
+ * fetch uses so the labels on the cards can't drift from the numbers on them.
+ */
+export function getGrowthPeriodLabels(reference: Date = new Date()): {
+  current: string;
+  previous: string;
+} {
+  return {
+    current: monthLabel(
+      firstDayOfMonth(reference.getFullYear(), reference.getMonth()),
+    ),
+    previous: monthLabel(
+      firstDayOfMonth(reference.getFullYear(), reference.getMonth() - 1),
+    ),
+  };
+}
+
 // ── getGrowthData — 6 stat cards (current calendar month vs previous month) ─
 
 export const getGrowthData = async (): Promise<GrowthStatsApiResponse> => {

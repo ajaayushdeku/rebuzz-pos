@@ -4,6 +4,7 @@ import YearOverYearChart from "../dashboardComponents/overviewDash/growthtracker
 
 import {
   getGrowthData,
+  getGrowthPeriodLabels,
   getTargetActualData,
   getYoYData,
 } from "@/services/dashboardServices/apiGrowth";
@@ -13,6 +14,7 @@ import GrowthByCategory from "../dashboardComponents/overviewDash/growthtracker/
 
 export const GrowthStatsWrapper = async () => {
   const growthStat = await getGrowthData();
+  const period = getGrowthPeriodLabels();
   const stats = GROWTH_STAT_CONFIG.map((config) => ({
     ...config,
     value: growthStat[config.key as keyof typeof growthStat]?.value ?? 0,
@@ -21,9 +23,14 @@ export const GrowthStatsWrapper = async () => {
   }));
   // console.log("Growth Data:", growthStat); // Log the fetched growth data for debugging
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 md:gap-3 ">
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3 ">
       {stats.map(({ key, ...stat }) => (
-        <GrowthTrackCard key={key} {...stat} />
+        <GrowthTrackCard
+          key={key}
+          {...stat}
+          currentLabel={period.current}
+          previousLabel={period.previous}
+        />
       ))}
     </div>
   );
