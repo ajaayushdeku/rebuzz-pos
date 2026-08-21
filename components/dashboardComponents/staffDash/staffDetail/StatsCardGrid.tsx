@@ -21,8 +21,10 @@ import {
   ChevronUp,
   Timer,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import RangeTag from "@/components/ui/RangeTag";
 import type { StaffOverview } from "./staffDetailHelpers";
 
 interface StatsCardGridProps {
@@ -35,6 +37,18 @@ interface StatsCardGridProps {
   onRetry?: () => void;
 }
 
+/** One tile's data. The grid is built from a list of these, not from JSX. */
+type StatSpec = {
+  key: string;
+  label: string;
+  value: string;
+  icon: LucideIcon;
+  iconColor: string;
+  bgColor: string;
+  /** Follows the page's date filter. Untagged figures ignore it. */
+  ranged: boolean;
+};
+
 function formatMinutesToHours(minutes: number): string {
   const hrs = Math.floor(minutes / 60);
   const mins = Math.round(minutes % 60);
@@ -42,6 +56,69 @@ function formatMinutesToHours(minutes: number): string {
     return `${hrs}h ${mins}m`;
   }
   return `${mins}m`;
+}
+
+const CARD =
+  "bg-surface-card border-surface-border rounded-xl border p-4 shadow-sm md:p-5";
+
+/**
+ * Shape and spacing follow OverviewStatBox and CustomerStatBox, so every
+ * figure tile in the app reads the same.
+ */
+function StatCard({
+  label,
+  value,
+  icon: Icon,
+  iconColor,
+  bgColor,
+  ranged,
+}: Omit<StatSpec, "key">) {
+  return (
+    <div className={`${CARD} transition-shadow duration-200 hover:shadow-md`}>
+      <div className="flex items-center justify-between gap-2">
+        <span className="truncate text-xs font-medium text-gray-500 md:text-[13px]">
+          {label}
+        </span>
+        <div
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg md:h-8 md:w-8 ${bgColor}`}
+        >
+          <Icon size={15} className={iconColor} />
+        </div>
+      </div>
+
+      {/* Tag rides the value row so it costs no extra height. */}
+      <div className="mt-3 flex items-baseline justify-between gap-2 md:mt-4">
+        <p className="truncate text-xl font-bold tracking-tight tabular-nums text-gray-900 md:text-[22px]">
+          {value}
+        </p>
+        {ranged && <RangeTag />}
+      </div>
+    </div>
+  );
+}
+
+/** Toggles how many tiles are shown. Rendered once, used in both states. */
+function LoadMoreButton({
+  remaining,
+  increment,
+  onClick,
+}: {
+  remaining: number;
+  increment: number;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-100 hover:text-blue-700"
+    >
+      <ChevronDown size={14} />
+      Load More{" "}
+      <span className="text-xs text-blue-400">
+        ( {Math.min(increment, remaining)} more )
+      </span>
+    </button>
+  );
 }
 
 export default function StatsCardGrid({
@@ -57,19 +134,24 @@ export default function StatsCardGrid({
   const [visibleCount, setVisibleCount] = useState(4);
   const INCREMENT = 4;
 
+  const money = (amount: number) =>
+    formatCurrencySymbol(amount, currency.symbol, currency.locale);
+
   // ── Loading state ──────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        {Array.from({ length: showOnlyOrders ? 1 : 4 }).map((_, i) => (
-          <div
-            key={i}
-            className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 animate-pulse"
-          >
-            <div className="h-3 w-20 bg-gray-100 rounded mb-3" />
-            <div className="h-5 w-16 bg-gray-100 rounded" />
-          </div>
-        ))}
+      <div className="mb-6">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          {Array.from({ length: showOnlyOrders ? 1 : 4 }).map((_, i) => (
+            <div key={i} className={`${CARD} animate-pulse`}>
+              <div className="flex items-center justify-between gap-2">
+                <div className="h-3.5 w-20 rounded bg-gray-100" />
+                <div className="h-7 w-7 shrink-0 rounded-lg bg-gray-100 md:h-8 md:w-8" />
+              </div>
+              <div className="mt-3 h-6 w-24 rounded bg-gray-100 md:mt-4" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -78,16 +160,16 @@ export default function StatsCardGrid({
   if (error) {
     return (
       <div className="mb-6 flex items-center justify-between gap-3 rounded-xl border border-red-100 bg-red-50/60 px-4 py-3">
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex min-w-0 items-center gap-2.5">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100">
             <AlertTriangle size={16} className="text-red-600" />
           </div>
-          <p className="text-sm font-medium text-gray-600 truncate">{error}</p>
+          <p className="truncate text-sm font-medium text-gray-600">{error}</p>
         </div>
         {onRetry && (
           <button
             onClick={onRetry}
-            className="shrink-0 px-3 py-1.5 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+            className="shrink-0 rounded-lg bg-red-500 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-600"
           >
             Retry
           </button>
@@ -99,12 +181,12 @@ export default function StatsCardGrid({
   // ── Empty state ────────────────────────────────────────────────────────────
   if (!overview) {
     return (
-      <div className="mb-6 rounded-xl border border-gray-100 bg-white shadow-sm px-4 py-8 text-center">
-        <div className="w-11 h-11 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3">
+      <div className="bg-surface-card border-surface-border mb-6 rounded-xl border px-4 py-8 text-center shadow-sm">
+        <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-gray-50">
           <BarChart3 size={20} className="text-gray-300" />
         </div>
         <p className="text-sm font-medium text-gray-500">No stats available</p>
-        <p className="text-xs text-gray-400 mt-1">
+        <p className="mt-1 text-xs text-gray-400">
           No activity recorded for this period
         </p>
       </div>
@@ -123,440 +205,198 @@ export default function StatsCardGrid({
     overview.billsPerHour !== undefined ||
     overview.totalShiftMinutes !== undefined;
 
-  // Collect all stat cards into an array
-  const statCards: React.ReactNode[] = [];
+  /** Included only when the analytics payload actually carried the KPI. */
+  const kpi = (source: number | undefined, spec: StatSpec): StatSpec[] =>
+    hasAnalyticsKpis && source !== undefined ? [spec] : [];
 
-  if (!showOnlyOrders) {
-    // 1. Total Orders
-    statCards.push(
-      <div
-        key="orders"
-        className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
-      >
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-gray-400 font-medium">
-            Total Orders (All Time)
-          </span>
-          <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-            <ShoppingCart size={16} className="text-blue-500" />
-          </div>
-        </div>
-        <p className="text-lg font-bold text-gray-900 truncate">
-          {String(overview?.totalOrders ?? 0)}
-        </p>
-      </div>,
-    );
+  const ordersCard: StatSpec = {
+    key: "orders",
+    label: "Total Orders (All Time)",
+    value: (overview.totalOrders ?? 0).toLocaleString(),
+    icon: ShoppingCart,
+    iconColor: "text-blue-500",
+    bgColor: "bg-blue-50",
+    // The only figure in this grid that does not follow the date filter.
+    ranged: false,
+  };
 
-    // 2. Total Sales
-    statCards.push(
-      <div
-        key="sales"
-        className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
-      >
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-gray-400 font-medium">Total Sales</span>
-          <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
-            <TrendingUp size={16} className="text-indigo-500" />
-          </div>
-        </div>
-        <p className="text-lg font-bold text-gray-900 truncate">
-          {String(overview?.totalSales ?? 0)}
-        </p>
-      </div>,
-    );
-
-    // 3. Total Revenue
-    statCards.push(
-      <div
-        key="revenue"
-        className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
-      >
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-gray-400 font-medium">
-            Total Revenue
-          </span>
-          <div className="w-7 h-7 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
-            <DollarSign size={16} className="text-green-500" />
-          </div>
-        </div>
-        <p className="text-lg font-bold text-gray-900 truncate">
-          {formatCurrencySymbol(
-            overview?.totalRevenue ?? 0,
-            currency.symbol,
-            currency.locale,
-          )}
-        </p>
-      </div>,
-    );
-
-    // 4. Total Profit
-    if (hasAnalyticsKpis && overview.totalProfit !== undefined) {
-      statCards.push(
-        <div
-          key="totalProfit"
-          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-400 font-medium">
-              Total Profit
-            </span>
-            <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-              <PiggyBank size={16} className="text-emerald-500" />
-            </div>
-          </div>
-          <p className="text-lg font-bold text-gray-900 truncate">
-            {formatCurrencySymbol(
-              overview.totalProfit,
-              currency.symbol,
-              currency.locale,
-            )}
-          </p>
-        </div>,
-      );
-    }
-
-    // 5. Profit Margin
-    if (hasAnalyticsKpis && overview.profitMargin !== undefined) {
-      statCards.push(
-        <div
-          key="profitMargin"
-          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-400 font-medium">
-              Profit Margin
-            </span>
-            <div className="w-7 h-7 rounded-lg bg-cyan-50 flex items-center justify-center shrink-0">
-              <Percent size={16} className="text-cyan-500" />
-            </div>
-          </div>
-          <p className="text-lg font-bold text-gray-900 truncate">
-            {overview.profitMargin.toFixed(2)}%
-          </p>
-        </div>,
-      );
-    }
-
-    // 6. Avg Bill Value
-    if (hasAnalyticsKpis && overview.avgBillValue !== undefined) {
-      statCards.push(
-        <div
-          key="avgBillValue"
-          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-400 font-medium">
-              Avg Bill Value
-            </span>
-            <div className="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
-              <DollarSign size={16} className="text-amber-500" />
-            </div>
-          </div>
-          <p className="text-lg font-bold text-gray-900 truncate">
-            {formatCurrencySymbol(
-              overview.avgBillValue,
-              currency.symbol,
-              currency.locale,
-            )}
-          </p>
-        </div>,
-      );
-    }
-
-    // 7. Total Pay In
-    statCards.push(
-      <div
-        key="payIn"
-        className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
-      >
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-gray-400 font-medium">
-            Total Pay In
-          </span>
-          <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-            <ArrowDownLeft size={16} className="text-emerald-500" />
-          </div>
-        </div>
-        <p className="text-lg font-bold text-gray-900 truncate">
-          {formatCurrencySymbol(totalPayIn, currency.symbol, currency.locale)}
-        </p>
-      </div>,
-    );
-
-    // 8. Total Pay Out
-    statCards.push(
-      <div
-        key="payOut"
-        className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
-      >
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-gray-400 font-medium">
-            Total Pay Out
-          </span>
-          <div className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
-            <ArrowUpRight size={16} className="text-red-500" />
-          </div>
-        </div>
-        <p className="text-lg font-bold text-gray-900 truncate">
-          {formatCurrencySymbol(totalPayOut, currency.symbol, currency.locale)}
-        </p>
-      </div>,
-    );
-
-    // 9. Total Shift Time
-    if (hasAnalyticsKpis && overview.totalShiftMinutes !== undefined) {
-      statCards.push(
-        <div
-          key="totalShiftTime"
-          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-400 font-medium">
-              Total Shift Time
-            </span>
-            <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-              <Timer size={16} className="text-blue-500" />
-            </div>
-          </div>
-          <p className="text-lg font-bold text-gray-900 truncate">
-            {formatMinutesToHours(overview.totalShiftMinutes)}
-          </p>
-        </div>,
-      );
-    }
-
-    // 10. Avg Time
-    statCards.push(
-      <div
-        key="avgTime"
-        className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
-      >
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-gray-400 font-medium">
-            Avg Shift Time
-          </span>
-          <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
-            <Clock size={16} className="text-indigo-500" />
-          </div>
-        </div>
-        <p className="text-lg font-bold text-gray-900 truncate">
-          {overview?.avgTime ?? "—"}
-        </p>
-      </div>,
-    );
-
-    // 11. Sales Per Hour
-    if (hasAnalyticsKpis && overview.salesPerHour !== undefined) {
-      statCards.push(
-        <div
-          key="salesPerHour"
-          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-400 font-medium">
-              Revenue/Hour
-            </span>
-            <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
-              <Zap size={16} className="text-violet-500" />
-            </div>
-          </div>
-          <p className="text-lg font-bold text-gray-900 truncate">
-            {formatCurrencySymbol(
-              overview.salesPerHour,
-              currency.symbol,
-              currency.locale,
-            )}
-          </p>
-        </div>,
-      );
-    }
-
-    // 12. Bills Per Hour
-    if (hasAnalyticsKpis && overview.billsPerHour !== undefined) {
-      statCards.push(
-        <div
-          key="billsPerHour"
-          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-400 font-medium">
-              Bills/Hour
-            </span>
-            <div className="w-7 h-7 rounded-lg bg-teal-50 flex items-center justify-center shrink-0">
-              <TrendingUp size={16} className="text-teal-500" />
-            </div>
-          </div>
-          <p className="text-lg font-bold text-gray-900 truncate">
-            {overview.billsPerHour.toFixed(2)}
-          </p>
-        </div>,
-      );
-    }
-
-    // 13. Avg Items Per Bill
-    if (hasAnalyticsKpis && overview.avgItemsPerBill !== undefined) {
-      statCards.push(
-        <div
-          key="avgItemsPerBill"
-          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-400 font-medium">
-              Avg Items/Bill
-            </span>
-            <div className="w-7 h-7 rounded-lg bg-pink-50 flex items-center justify-center shrink-0">
-              <List size={16} className="text-pink-500" />
-            </div>
-          </div>
-          <p className="text-lg font-bold text-gray-900 truncate">
-            {overview.avgItemsPerBill.toFixed(2)}
-          </p>
-        </div>,
-      );
-    }
-
-    // 14. Items Sold
-    if (hasAnalyticsKpis && overview.itemsSold !== undefined) {
-      statCards.push(
-        <div
-          key="itemsSold"
-          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-400 font-medium">
-              Items Sold
-            </span>
-            <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center shrink-0">
-              <Package size={16} className="text-orange-500" />
-            </div>
-          </div>
-          <p className="text-lg font-bold text-gray-900 truncate">
-            {String(overview.itemsSold)}
-          </p>
-        </div>,
-      );
-    }
-
-    // 15. Total Refunds
-    if (hasAnalyticsKpis && overview.totalRefunds !== undefined) {
-      statCards.push(
-        <div
-          key="totalRefunds"
-          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-400 font-medium">
-              Total Refunds
-            </span>
-            <div className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
-              <RefreshCcw size={16} className="text-red-500" />
-            </div>
-          </div>
-          <p className="text-lg font-bold text-gray-900 truncate">
-            {String(overview.totalRefunds)}
-          </p>
-        </div>,
-      );
-    }
-
-    // 16. Refunded Amount
-    if (hasAnalyticsKpis && overview.refundedAmount !== undefined) {
-      statCards.push(
-        <div
-          key="refundedAmount"
-          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-400 font-medium">
-              Refunded Amount
-            </span>
-            <div className="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
-              <Scale size={16} className="text-rose-500" />
-            </div>
-          </div>
-          <p className="text-lg font-bold text-gray-900 truncate">
-            {formatCurrencySymbol(
-              overview.refundedAmount,
-              currency.symbol,
-              currency.locale,
-            )}
-          </p>
-        </div>,
-      );
-    }
-  }
+  const statCards: StatSpec[] = showOnlyOrders
+    ? [ordersCard]
+    : [
+        ordersCard,
+        {
+          key: "sales",
+          label: "Total Sales",
+          value: (overview.totalSales ?? 0).toLocaleString(),
+          icon: TrendingUp,
+          iconColor: "text-indigo-500",
+          bgColor: "bg-indigo-50",
+          ranged: true,
+        },
+        {
+          key: "revenue",
+          label: "Total Revenue",
+          value: money(overview.totalRevenue ?? 0),
+          icon: DollarSign,
+          iconColor: "text-green-500",
+          bgColor: "bg-green-50",
+          ranged: true,
+        },
+        ...kpi(overview.totalProfit, {
+          key: "totalProfit",
+          label: "Total Profit",
+          value: money(overview.totalProfit ?? 0),
+          icon: PiggyBank,
+          iconColor: "text-emerald-500",
+          bgColor: "bg-emerald-50",
+          ranged: true,
+        }),
+        ...kpi(overview.profitMargin, {
+          key: "profitMargin",
+          label: "Profit Margin",
+          value: `${(overview.profitMargin ?? 0).toFixed(2)}%`,
+          icon: Percent,
+          iconColor: "text-cyan-500",
+          bgColor: "bg-cyan-50",
+          ranged: true,
+        }),
+        ...kpi(overview.avgBillValue, {
+          key: "avgBillValue",
+          label: "Avg Bill Value",
+          value: money(overview.avgBillValue ?? 0),
+          icon: DollarSign,
+          iconColor: "text-amber-500",
+          bgColor: "bg-amber-50",
+          ranged: true,
+        }),
+        {
+          key: "payIn",
+          label: "Total Pay In",
+          value: money(totalPayIn),
+          icon: ArrowDownLeft,
+          iconColor: "text-emerald-500",
+          bgColor: "bg-emerald-50",
+          ranged: true,
+        },
+        {
+          key: "payOut",
+          label: "Total Pay Out",
+          value: money(totalPayOut),
+          icon: ArrowUpRight,
+          iconColor: "text-red-500",
+          bgColor: "bg-red-50",
+          ranged: true,
+        },
+        ...kpi(overview.totalShiftMinutes, {
+          key: "totalShiftTime",
+          label: "Total Shift Time",
+          value: formatMinutesToHours(overview.totalShiftMinutes ?? 0),
+          icon: Timer,
+          iconColor: "text-blue-500",
+          bgColor: "bg-blue-50",
+          ranged: true,
+        }),
+        {
+          key: "avgTime",
+          label: "Avg Shift Time",
+          value: overview.avgTime ?? "—",
+          icon: Clock,
+          iconColor: "text-indigo-500",
+          bgColor: "bg-indigo-50",
+          ranged: true,
+        },
+        ...kpi(overview.salesPerHour, {
+          key: "salesPerHour",
+          label: "Revenue/Hour",
+          value: money(overview.salesPerHour ?? 0),
+          icon: Zap,
+          iconColor: "text-violet-500",
+          bgColor: "bg-violet-50",
+          ranged: true,
+        }),
+        ...kpi(overview.billsPerHour, {
+          key: "billsPerHour",
+          label: "Bills/Hour",
+          value: (overview.billsPerHour ?? 0).toFixed(2),
+          icon: TrendingUp,
+          iconColor: "text-teal-500",
+          bgColor: "bg-teal-50",
+          ranged: true,
+        }),
+        ...kpi(overview.avgItemsPerBill, {
+          key: "avgItemsPerBill",
+          label: "Avg Items/Bill",
+          value: (overview.avgItemsPerBill ?? 0).toFixed(2),
+          icon: List,
+          iconColor: "text-pink-500",
+          bgColor: "bg-pink-50",
+          ranged: true,
+        }),
+        ...kpi(overview.itemsSold, {
+          key: "itemsSold",
+          label: "Items Sold",
+          value: (overview.itemsSold ?? 0).toLocaleString(),
+          icon: Package,
+          iconColor: "text-orange-500",
+          bgColor: "bg-orange-50",
+          ranged: true,
+        }),
+        ...kpi(overview.totalRefunds, {
+          key: "totalRefunds",
+          label: "Total Refunds",
+          value: (overview.totalRefunds ?? 0).toLocaleString(),
+          icon: RefreshCcw,
+          iconColor: "text-red-500",
+          bgColor: "bg-red-50",
+          ranged: true,
+        }),
+        ...kpi(overview.refundedAmount, {
+          key: "refundedAmount",
+          label: "Refunded Amount",
+          value: money(overview.refundedAmount ?? 0),
+          icon: Scale,
+          iconColor: "text-rose-500",
+          bgColor: "bg-rose-50",
+          ranged: true,
+        }),
+      ];
 
   const hasMoreCards = visibleCount < statCards.length;
-  const visibleCards = statCards.slice(0, visibleCount);
+  const visibleCards = showOnlyOrders
+    ? statCards
+    : statCards.slice(0, visibleCount);
   const remaining = statCards.length - visibleCount;
+
+  const showMore = () =>
+    setVisibleCount((prev) => Math.min(prev + INCREMENT, statCards.length));
 
   return (
     <div className="mb-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {showOnlyOrders ? (
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-gray-400 font-medium">
-                Total Orders
-              </span>
-              <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-                <ShoppingCart size={16} className="text-blue-500" />
-              </div>
-            </div>
-            <p className="text-lg font-bold text-gray-900 truncate">
-              {String(overview?.totalOrders ?? 0)}
-            </p>
-          </div>
-        ) : (
-          visibleCards
-        )}
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        {visibleCards.map(({ key, ...spec }) => (
+          <StatCard key={key} {...spec} />
+        ))}
       </div>
 
-      {/* Load More / Hide button */}
+      {/* Load More / Hide */}
       {statCards.length > 4 && !showOnlyOrders && (
-        <div className="flex justify-center mt-4">
-          {visibleCount > 4 ? (
-            <div className="flex items-center gap-2">
-              {hasMoreCards && (
-                <button
-                  onClick={() =>
-                    setVisibleCount((prev) =>
-                      Math.min(prev + INCREMENT, statCards.length),
-                    )
-                  }
-                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors"
-                >
-                  <ChevronDown size={14} />
-                  Load More{" "}
-                  <span className="text-xs text-blue-400">
-                    ( {Math.min(INCREMENT, remaining)} more )
-                  </span>
-                </button>
-              )}
-              <button
-                onClick={() =>
-                  setVisibleCount((prev) => Math.max(prev - INCREMENT, 4))
-                }
-                className="px-4 py-2 rounded-lg border border-gray-200 bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed flex flex-row items-center gap-1"
-              >
-                <ChevronUp size={14} />
-                Hide
-              </button>
-            </div>
-          ) : (
+        <div className="mt-4 flex items-center justify-center gap-2">
+          {hasMoreCards && (
+            <LoadMoreButton
+              remaining={remaining}
+              increment={INCREMENT}
+              onClick={showMore}
+            />
+          )}
+          {visibleCount > 4 && (
             <button
               onClick={() =>
-                setVisibleCount((prev) =>
-                  Math.min(prev + INCREMENT, statCards.length),
-                )
+                setVisibleCount((prev) => Math.max(prev - INCREMENT, 4))
               }
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors"
+              className="flex flex-row items-center gap-1 rounded-lg border border-gray-200 bg-gray-100 px-4 py-2 text-xs font-medium text-gray-700 transition hover:bg-gray-200"
             >
-              <ChevronDown size={14} />
-              Load More{" "}
-              <span className="text-xs text-blue-400">
-                ( {Math.min(INCREMENT, remaining)} more )
-              </span>
+              <ChevronUp size={14} />
+              Hide
             </button>
           )}
         </div>

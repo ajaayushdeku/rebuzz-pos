@@ -1,7 +1,18 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { mergeEmployeeSalesById } from "@/lib/staff/employeeSales";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
+
+type EmployeeSalesRow = {
+  _id: string;
+  name?: string;
+  totalSales?: number;
+  totalRevenue?: number;
+  totalRefunds?: number;
+  refundedAmount?: number;
+  bills?: unknown[];
+};
 
 export const GET = async (request: NextRequest) => {
   const cookieStore = await cookies();
@@ -35,7 +46,13 @@ export const GET = async (request: NextRequest) => {
     }
 
     const data = await res.json();
-    const employeesData = data?.data?.employeesData ?? [];
+
+    // A renamed employee is returned as two rows sharing one `_id`. The sums
+    // below are unaffected, but the list is passed through to callers, so it
+    // is merged here too rather than leaving one person as two entries.
+    const employeesData: EmployeeSalesRow[] = mergeEmployeeSalesById(
+      data?.data?.employeesData ?? [],
+    );
 
     // Calculate total revenue and total sales from all employees
     let totalRevenue = 0;
@@ -46,10 +63,10 @@ export const GET = async (request: NextRequest) => {
       totalSales += employee.totalSales ?? 0;
     }
 
-    // Return the original data plus aggregated totals
     return NextResponse.json(
       {
         ...data,
+        data: { ...data?.data, employeesData },
         aggregated: {
           totalRevenue: Math.round(totalRevenue * 100) / 100,
           totalSales,

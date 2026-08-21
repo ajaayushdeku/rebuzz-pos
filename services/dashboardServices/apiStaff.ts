@@ -3,6 +3,7 @@ import { Shift } from "@/components/dashboardComponents/staffDash/ShiftAnalysisR
 import { StaffHourlyData } from "@/components/dashboardComponents/staffDash/StaffSalesChart";
 import { StaffBoxProps } from "@/components/dashboardComponents/staffDash/StaffStatBox";
 import { formatHourLabel } from "@/utils/formatHourReportToday";
+import { mergeEmployeeSalesById } from "@/lib/staff/employeeSales";
 import { authHeaders } from "../authServices/session";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
@@ -161,32 +162,6 @@ function getHourLabel(paidAt: string): string {
 
 // ── Core fetcher — salesByAllEmployee ────────────────────────────────────
 
-/**
- * salesByAllEmployee reports sales against the employee name as it was when
- * the bill was paid, so an employee who has been renamed comes back as two
- * rows sharing one `_id` — one under the old name, one under the new. Merged
- * here rather than at each call site: unmerged they rendered as two separate
- * series in the charts, and `getStaffData` silently dropped one of them
- * (its Map keyed by `_id` kept only the last row it saw).
- */
-function mergeEmployeesById(employees: RawEmployee[]): RawEmployee[] {
-  const merged = new Map<string, RawEmployee>();
-
-  for (const emp of employees) {
-    const existing = merged.get(emp._id);
-    if (!existing) {
-      merged.set(emp._id, { ...emp, bills: [...(emp.bills ?? [])] });
-      continue;
-    }
-    existing.totalSales = (existing.totalSales ?? 0) + (emp.totalSales ?? 0);
-    existing.totalRevenue =
-      (existing.totalRevenue ?? 0) + (emp.totalRevenue ?? 0);
-    existing.bills.push(...(emp.bills ?? []));
-  }
-
-  return Array.from(merged.values());
-}
-
 async function fetchAllEmployeeSales(
   range: string = "month",
   startDateOverride?: string,
@@ -205,7 +180,7 @@ async function fetchAllEmployeeSales(
   if (!res.ok) throw new Error(`salesByAllEmployee failed: ${res.status}`);
   const json = await res.json();
   // Response shape: { status, data: { businessName, employeesData: [...] } }
-  return mergeEmployeesById(json?.data?.employeesData ?? []);
+  return mergeEmployeeSalesById(json?.data?.employeesData ?? []);
 }
 
 // ── Core fetcher — salesByEmployee/:id ───────────────────────────────────

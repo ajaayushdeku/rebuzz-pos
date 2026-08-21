@@ -178,7 +178,7 @@ export default function StaffStatBox({
       <div className="flex-1" />
 
       {/* ── Footer ── */}
-      <div className="mt-3 border-t border-gray-100 pt-3">
+      <div className="mt-3 border-t border-gray-100 pt-3 cursor-pointer">
         <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-gray-500 transition-colors group-hover:text-blue-700">
           View full report
           <ArrowRight

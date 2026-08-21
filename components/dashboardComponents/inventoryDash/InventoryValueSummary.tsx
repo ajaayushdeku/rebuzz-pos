@@ -17,6 +17,7 @@ import {
 } from "@/hooks/useInventory";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import RangeTag from "@/components/ui/RangeTag";
 
 // Combined selling/cost value across every product in the business catalog.
 // Revenue & net profit follow the shared date range; the rest are stock-based
@@ -69,7 +70,7 @@ export default function InventoryValueSummary({
     {
       label: "Total Revenue Generated",
       value: fmt(totalRevenue),
-      icon: <DollarSign size={16} className="text-emerald-600" />,
+      icon: <DollarSign size={15} className="text-emerald-600" />,
       iconBg: "bg-emerald-50",
       loading: salesLoading,
       ranged: true,
@@ -77,7 +78,7 @@ export default function InventoryValueSummary({
     {
       label: "Total Net Profit Generated",
       value: fmt(totalNetProfit),
-      icon: <LineChart size={16} className="text-blue-600" />,
+      icon: <LineChart size={15} className="text-blue-600" />,
       iconBg: "bg-blue-50",
       loading: salesLoading,
       ranged: true,
@@ -85,7 +86,7 @@ export default function InventoryValueSummary({
     {
       label: "Total Item Order Count",
       value: totalOrderCount.toLocaleString(),
-      icon: <ShoppingCart size={16} className="text-violet-600" />,
+      icon: <ShoppingCart size={15} className="text-violet-600" />,
       iconBg: "bg-violet-50",
       loading: salesLoading,
       ranged: true,
@@ -97,7 +98,7 @@ export default function InventoryValueSummary({
     {
       label: "Total Selling Price",
       value: fmt(totalSelling),
-      icon: <Tag size={16} className="text-emerald-600" />,
+      icon: <Tag size={15} className="text-emerald-600" />,
       iconBg: "bg-emerald-50",
       loading: isLoading,
       ranged: false,
@@ -105,7 +106,7 @@ export default function InventoryValueSummary({
     {
       label: "Total Cost Price",
       value: fmt(totalCost),
-      icon: <Wallet size={16} className="text-amber-600" />,
+      icon: <Wallet size={15} className="text-amber-600" />,
       iconBg: "bg-amber-50",
       loading: isLoading,
       ranged: false,
@@ -113,7 +114,7 @@ export default function InventoryValueSummary({
     {
       label: "Potential Margin",
       value: fmt(potentialMargin),
-      icon: <TrendingUp size={16} className="text-blue-600" />,
+      icon: <TrendingUp size={15} className="text-blue-600" />,
       iconBg: "bg-blue-50",
       loading: isLoading,
       ranged: false,
@@ -122,7 +123,7 @@ export default function InventoryValueSummary({
       // Parent products only — a product with variants still counts once.
       label: "Total Products",
       value: productCount.toLocaleString(),
-      icon: <Package size={16} className="text-gray-600" />,
+      icon: <Package size={15} className="text-gray-600" />,
       iconBg: "bg-gray-100",
       loading: isLoading,
       ranged: false,
@@ -131,7 +132,7 @@ export default function InventoryValueSummary({
       // Variants across every product; products without variants contribute 0.
       label: "Total Product Variants",
       value: variantCount.toLocaleString(),
-      icon: <Layers size={16} className="text-indigo-600" />,
+      icon: <Layers size={15} className="text-indigo-600" />,
       iconBg: "bg-indigo-50",
       loading: isLoading,
       ranged: false,
@@ -140,31 +141,36 @@ export default function InventoryValueSummary({
 
   const showError = isError && salesError;
 
+  // Label left, icon right, value below — the same tile as OverviewStatBox,
+  // CustomerStatBox and the staff-detail grid, so every figure in the app
+  // reads the same. The Range tag rides the value row rather than competing
+  // with the label for the top row's width.
   const renderCard = (card: Card) => (
     <div
       key={card.label}
-      className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4"
+      className="bg-surface-card border-surface-border rounded-xl border p-4 shadow-sm transition-shadow duration-200 hover:shadow-md md:p-5"
     >
-      <div className="flex items-center gap-2 mb-2">
+      <div className="flex items-center justify-between gap-2">
+        <span className="truncate text-xs font-medium text-gray-500 md:text-[13px]">
+          {card.label}
+        </span>
         <div
-          className={`w-7 h-7 rounded-lg ${card.iconBg} flex items-center justify-center shrink-0`}
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg md:h-8 md:w-8 ${card.iconBg}`}
         >
           {card.icon}
         </div>
-        <span className="text-xs text-gray-400 font-medium truncate">
-          {card.label}
-        </span>
-        {card.ranged && (
-          <span className="ml-auto text-[9px] uppercase tracking-wide text-gray-700 font-semibold">
-            Range
-          </span>
-        )}
       </div>
-      {card.loading ? (
-        <div className="h-6 w-24 bg-gray-100 rounded animate-pulse" />
-      ) : (
-        <p className="text-lg font-bold text-gray-900 truncate">{card.value}</p>
-      )}
+
+      <div className="mt-3 flex items-baseline justify-between gap-2 md:mt-4">
+        {card.loading ? (
+          <div className="h-6 w-24 animate-pulse rounded bg-gray-100" />
+        ) : (
+          <p className="truncate text-xl font-bold tracking-tight tabular-nums text-gray-900 md:text-[22px]">
+            {card.value}
+          </p>
+        )}
+        {card.ranged && <RangeTag />}
+      </div>
     </div>
   );
 

@@ -9,10 +9,15 @@ import {
   ArrowUpRight,
   Circle,
   Eye,
+  Timer,
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { parseNepalDateTime, extractTime } from "./staffDetailHelpers";
+import {
+  parseNepalDateTime,
+  extractTime,
+  formatShiftDuration,
+} from "./staffDetailHelpers";
 import type { ShiftSummary, ShiftDetail } from "./staffDetailHelpers";
 import ShiftDetailModal from "./ShiftDetailModal";
 import { ComponentHeader } from "@/components/ComponentHeader";
@@ -78,6 +83,29 @@ function formatShiftDateRange(
   return `${formatDateShort(openD)} - ${formatDateShort(closeD)}, ${closeD.getFullYear()}`;
 }
 
+/* ── Shift duration ── */
+
+/**
+ * Prefers the shared duration helper, which works off the timestamps this row
+ * already shows. `totalHours` is only supplied by the staff-shifts path — the
+ * analytics path builds its ShiftSummary without it — so it is a fallback,
+ * not the source. An open shift has no end yet and reads "—"; the Status
+ * badge on the same row explains why.
+ */
+function shiftDuration(shift: ShiftSummary): string {
+  const computed = formatShiftDuration(shift.openingTime, shift.closingTIme);
+  if (computed) return computed;
+
+  if (shift.totalHours) {
+    const [h, m] = shift.totalHours.split(":").map(Number);
+    if (!Number.isNaN(h) && !Number.isNaN(m)) {
+      return h > 0 ? `${h}h ${m}m` : `${m}m`;
+    }
+  }
+
+  return "—";
+}
+
 /* ── Time with AM/PM ── */
 const extractTimeWithAmPm = (raw: string | undefined): string => {
   if (!raw) return "—";
@@ -105,7 +133,7 @@ function StatusBadge({ closingTime }: { closingTime?: string }) {
     <span
       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide ${
         isClosed
-          ? "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200"
+          ? "bg-red-50 text-red-700 ring-1 ring-inset ring-red-200"
           : "bg-green-50 text-green-700 ring-1 ring-inset ring-green-200"
       }`}
     >
@@ -203,13 +231,16 @@ export default function ShiftsSection({
         ) : (
           <>
             <div className="overflow-x-auto scrollbar-hide">
-              <table className="w-full min-w-[900px] text-sm">
+              <table className="w-full min-w-[1020px] text-sm">
                 <thead>
-                  <tr className="text-[11px] text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                  <tr className="text-[11px] text-gray-400  tracking-wider border-b border-gray-100">
                     <th className="text-left pb-3 pr-3 pl-0 font-semibold w-8">
                       S.No.
                     </th>
                     <th className="text-left pb-3 px-3 font-semibold">Shift</th>
+                    <th className="text-left pb-3 px-3 font-semibold">
+                      Total Shift Time
+                    </th>
                     <th className="text-right pb-3 px-3 font-semibold">
                       Opening Cash
                     </th>
@@ -265,6 +296,12 @@ export default function ShiftsSection({
                             </div>
                           </div>
                         </div>
+                      </td>
+                      <td className="py-3.5 px-3 align-top">
+                        <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold tabular-nums text-gray-800">
+                          <Timer size={12} className="shrink-0 text-gray-400" />
+                          {shiftDuration(shift)}
+                        </span>
                       </td>
                       <td className="py-3.5 px-3 text-right align-top">
                         <span className="text-[13px] font-semibold text-gray-800">

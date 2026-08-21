@@ -31,6 +31,8 @@ export type ShiftSummary = {
   payIn?: number;
   payOut?: number;
   totalSale?: number;
+  /** "HH:MM:SS" from the staff-shifts endpoint; absent on the analytics path. */
+  totalHours?: string;
   cashSale?: number;
   onlineSale?: number;
   openingCash?: number;
@@ -135,6 +137,32 @@ export function parseNepalDateTime(raw: string): Date | null {
     date = new Date(normalized + "+00:00");
   }
   return isNaN(date.getTime()) ? null : date;
+}
+
+/**
+ * How long a shift ran, e.g. "7h 45m", or null when it can't be determined —
+ * an open shift has no end yet, and a stale "elapsed so far" would be worse
+ * than showing nothing.
+ *
+ * Shared by the shifts table and the shift detail modal so the two can't
+ * disagree about the same shift's length.
+ */
+export function formatShiftDuration(
+  openingTime: string | undefined,
+  closingTime: string | undefined,
+): string | null {
+  if (!openingTime || !closingTime) return null;
+
+  const open = parseNepalDateTime(openingTime) ?? new Date(openingTime);
+  const close = parseNepalDateTime(closingTime) ?? new Date(closingTime);
+  if (isNaN(open.getTime()) || isNaN(close.getTime())) return null;
+
+  const minutes = Math.round((close.getTime() - open.getTime()) / 60000);
+  if (minutes < 0) return null;
+
+  const hrs = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
 }
 
 export const inputClass =

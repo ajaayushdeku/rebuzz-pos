@@ -6,11 +6,22 @@ import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  PERFORMANCE_TARGETS,
+  avgOrderValueTarget,
+} from "@/lib/config/performanceTargets";
 interface AggregatedMetrics {
   totalRevenue: number;
   totalSales: number;
   totalOrders: number;
   totalBills: number;
+  /** Best single employee in the range — the 100 mark for the volume axes. */
+  maxEmployeeRevenue: number;
+  maxEmployeeSales: number;
+  maxEmployeeBills: number;
+  maxEmployeeOrders: number;
+  maxEmployeeCustomers: number;
+  activeEmployeeCount: number;
 }
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -33,14 +44,27 @@ interface EmployeeBills {
   refundRate: number;
 }
 
+/**
+ * How an axis got its 100 mark.
+ *
+ * `peer`   — the best-performing employee in the same date range. Right for
+ *            volumes (revenue, orders, sales, customers), which scale with
+ *            business size, season and shifts worked, so no constant holds.
+ * `target` — a fixed goal from lib/config/performanceTargets. Right for rates
+ *            (avg order value, orders per bill, refund rate, shift length),
+ *            which are already normalised and comparable between people.
+ */
+type BenchmarkKind = "peer" | "target";
+
 interface RadarDataPoint {
   label: string;
   score: number;
   rawValue: number;
   unit: string;
   description: string;
-  benchmarkValue: number; // ← the max value used for normalization
+  benchmarkValue: number; // ← the value that scores 100
   benchmarkUnit: string; // ← formatted benchmark for display
+  benchmarkKind: BenchmarkKind;
 }
 
 const RADAR_SIZE = 360;
@@ -112,10 +136,11 @@ function formatPercentage(value: number): string {
   return `${(value * 100).toFixed(1)}%`;
 }
 
-function formatRatioValue(orders: number, sales: number): string {
-  if (sales === 0) return "—";
-  return `${(orders / sales).toFixed(2)}x`;
-}
+// Used only by the hidden Ord-to-Sales axis.
+// function formatRatioValue(orders: number, sales: number): string {
+//   if (sales === 0) return "—";
+//   return `${(orders / sales).toFixed(2)}x`;
+// }
 
 // ── Hexagon Radar Chart ─────────────────────────────────────────────────────
 
@@ -131,8 +156,6 @@ function RadarChart({
   const numVertices = data.length;
   const angleStep = (2 * Math.PI) / numVertices;
   const offset = -Math.PI / 2;
-
-  console.log("DATA:", data);
 
   // Outer hexagon points (benchmark = 100)
   const outerPoints = Array.from({ length: numVertices }, (_, i) => {
@@ -320,7 +343,11 @@ function MetricTooltip({
         {/* Benchmark — skip for Refund Rate since lower is better */}
         {!isRefund && (
           <div className="flex items-center justify-between gap-6 text-xs">
-            <span className="text-gray-400">Benchmark</span>
+            <span className="text-gray-400">
+              {/* Peer and target benchmarks answer different questions, so the
+                  tooltip has to say which one this axis used. */}
+              {metric.benchmarkKind === "peer" ? "Top performer" : "Target"}
+            </span>
             <span className="font-semibold text-violet-600">
               {metric.benchmarkUnit}
             </span>
@@ -366,7 +393,9 @@ export default function PerformanceRadar({
   const { currency } = useCurrency();
   const [sales, setSales] = useState<EmployeeSales | null>(null);
   const [billsData, setBillsData] = useState<EmployeeBills | null>(null);
-  const [totalCustomers, setTotalCustomers] = useState(50);
+  // Read only by the hidden Orders axis; kept so restoring it needs no
+  // re-plumbing of the tickets fetch below.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [totalOrders, setTotalOrders] = useState(0);
   const [aggregatedMetrics, setAggregatedMetrics] =
     useState<AggregatedMetrics | null>(null);
@@ -384,7 +413,7 @@ export default function PerformanceRadar({
       setLoading(true);
       setError(null);
       try {
-        const [salesRes, billsRes, customersRes, ticketsRes, aggregatedRes] =
+        const [salesRes, billsRes, ticketsRes, aggregatedRes] =
           await Promise.all([
             fetch(
               `/api/staff/sales-by-employee/${employeeId}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
@@ -392,7 +421,6 @@ export default function PerformanceRadar({
             fetch(
               `/api/staff/bills/${employeeId}?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
             ),
-            fetch("/api/customers"),
             fetch(
               `/api/staff/${employeeId}/tickets?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
             ),
@@ -410,14 +438,6 @@ export default function PerformanceRadar({
         if (ticketsRes.ok) {
           const ticketsJson = await ticketsRes.json();
           setTotalOrders(ticketsJson?.data?.totalCount ?? 0);
-        }
-
-        if (customersRes.ok) {
-          const customersJson = await customersRes.json();
-          const users = customersJson?.data?.users ?? [];
-          if (users.length > 0) {
-            setTotalCustomers(users.length);
-          }
         }
 
         const empData = salesJson?.data?.employeeData;
@@ -471,41 +491,60 @@ export default function PerformanceRadar({
 
     const totalRevenue = sales.totalRevenue;
     const totalSalesCount = sales.totalSales;
-    const totalOrdersCount = totalOrders;
+    // const totalOrdersCount = totalOrders;
     const avgOrderValue =
       totalSalesCount > 0 ? totalRevenue / totalSalesCount : 0;
     const customerCount = billsData.customerCount;
     const avgShiftMinutes = parseAvgShiftTime(avgTime);
     const refundRate = billsData.refundRate;
-    const ordersToSalesRatio =
-      totalSalesCount > 0 ? totalOrdersCount / totalSalesCount : 0;
+    // const ordersToSalesRatio =
+    //   totalSalesCount > 0 ? totalOrdersCount / totalSalesCount : 0;
 
-    // ── Benchmark (max) values ─────────────────────────────────────────────
-    const maxRevenue = Math.max(
+    // ── Benchmarks ─────────────────────────────────────────────────────────
+    // Volumes are scored against the best single employee in this range, not
+    // against the team total. Benchmarking against the sum capped every score
+    // at roughly 100/N — five equal employees each scored ~20 and the radar
+    // shrank whenever someone was hired.
+    //
+    // A team of one has no peer to compare against and would score 100 on
+    // every volume axis, so below that threshold the axes fall back to the
+    // employee's own value, which reads as "no comparison available" rather
+    // than as a perfect score.
+    const hasPeers = (aggregatedMetrics?.activeEmployeeCount ?? 0) >= 2;
+
+    const peerMax = (peerValue: number | undefined, ownValue: number) =>
+      Math.max(hasPeers ? (peerValue ?? 0) : 0, ownValue, 1);
+
+    const maxRevenue = peerMax(
+      aggregatedMetrics?.maxEmployeeRevenue,
       totalRevenue,
-      aggregatedMetrics?.totalRevenue ?? 0,
-      1,
     );
-    const maxSales = Math.max(
+    const maxSales = peerMax(
+      aggregatedMetrics?.maxEmployeeSales,
       totalSalesCount,
-      aggregatedMetrics?.totalBills ?? 0,
-      1,
     );
-    const maxOrders = Math.max(
-      totalOrdersCount,
-      aggregatedMetrics?.totalOrders ?? 0,
-      1,
+    // const maxOrders = peerMax(
+    //   aggregatedMetrics?.maxEmployeeOrders,
+    //   totalOrdersCount,
+    // );
+    const maxCustomerCount = peerMax(
+      aggregatedMetrics?.maxEmployeeCustomers,
+      customerCount,
     );
-    const maxAvgOrderValue = Math.max(avgOrderValue, 100, 1);
-    const maxCustomerCount = Math.max(customerCount, totalCustomers, 1);
-    const maxShiftMinutes = Math.max(avgShiftMinutes, 6000);
+
+    // Rates are scored against a fixed, configurable goal. The money one is
+    // per-currency: a flat 100 is trivial in NPR and demanding in USD, so the
+    // same constant produced opposite results per business.
+    const targetAvgOrderValue = avgOrderValueTarget(currency.code);
+    // const targetOrdersPerSale = PERFORMANCE_TARGETS.ordersPerSale;
+    const targetShiftMinutes = PERFORMANCE_TARGETS.avgShiftMinutes;
 
     const revenueScore = Math.min(100, (totalRevenue / maxRevenue) * 100);
     const salesScore = Math.min(100, (totalSalesCount / maxSales) * 100);
-    const ordersScore = Math.min(100, (totalOrdersCount / maxOrders) * 100);
+    // const ordersScore = Math.min(100, (totalOrdersCount / maxOrders) * 100);
     const avgOrderScore = Math.min(
       100,
-      (avgOrderValue / maxAvgOrderValue) * 100,
+      (avgOrderValue / targetAvgOrderValue) * 100,
     );
     const customerScore = Math.min(
       100,
@@ -513,10 +552,18 @@ export default function PerformanceRadar({
     );
     const shiftTimeScore = Math.min(
       100,
-      (avgShiftMinutes / maxShiftMinutes) * 100,
+      (avgShiftMinutes / targetShiftMinutes) * 100,
     );
     const refundScore = Math.max(0, 100 - refundRate * 100);
-    const ordToSalesScore = Math.min(100, (ordersToSalesRatio / 3) * 100);
+    // const ordToSalesScore = Math.min(
+    //   100,
+    //   (ordersToSalesRatio / targetOrdersPerSale) * 100,
+    // );
+
+    /** Suffix for the description, so the tooltip says what it was measured against. */
+    const vsPeer = hasPeers
+      ? " — scored against the top performer this period"
+      : " — no peer comparison available for this period";
 
     return [
       {
@@ -528,31 +575,38 @@ export default function PerformanceRadar({
           currency.symbol,
           currency.locale,
         ),
-        description: "Total revenue generated by the employee",
+        description: `Total revenue generated by the employee${vsPeer}`,
         benchmarkValue: maxRevenue,
         benchmarkUnit: formatCurrencySymbol(
           maxRevenue,
           currency.symbol,
           currency.locale,
         ),
+        benchmarkKind: "peer",
       },
-      {
-        label: "Orders",
-        score: Math.round(ordersScore),
-        rawValue: totalOrdersCount,
-        unit: formatOrders(totalOrdersCount),
-        description: "Total number of invoices/tickets taken",
-        benchmarkValue: maxOrders,
-        benchmarkUnit: formatOrders(maxOrders),
-      },
+      /* Hidden for now: totalOrders comes from the tickets endpoint, which
+         does not honour the page's date range, so this axis would score the
+         employee's all-time ticket count against a ranged peer benchmark.
+         Restore once the ticket count is range-scoped. */
+      // {
+      //   label: "Orders",
+      //   score: Math.round(ordersScore),
+      //   rawValue: totalOrdersCount,
+      //   unit: formatOrders(totalOrdersCount),
+      //   description: `Total number of invoices/tickets taken${vsPeer}`,
+      //   benchmarkValue: maxOrders,
+      //   benchmarkUnit: formatOrders(maxOrders),
+      //   benchmarkKind: "peer",
+      // },
       {
         label: "Sales",
         score: Math.round(salesScore),
         rawValue: totalSalesCount,
         unit: formatOrders(totalSalesCount),
-        description: "Total number of orders/bills handled",
+        description: `Total number of orders/bills handled${vsPeer}`,
         benchmarkValue: maxSales,
         benchmarkUnit: formatOrders(maxSales),
+        benchmarkKind: "peer",
       },
       {
         label: "Avg Sales",
@@ -563,32 +617,38 @@ export default function PerformanceRadar({
           currency.symbol,
           currency.locale,
         ),
-        description: "Revenue ÷ Orders — measures transaction quality",
-        benchmarkValue: maxAvgOrderValue,
+        description:
+          "Revenue ÷ Orders — measures transaction quality, against a fixed target",
+        benchmarkValue: targetAvgOrderValue,
         benchmarkUnit: formatCurrencySymbol(
-          maxAvgOrderValue,
+          targetAvgOrderValue,
           currency.symbol,
           currency.locale,
         ),
+        benchmarkKind: "target",
       },
-      {
-        label: "Ord-to-Sales",
-        score: Math.round(ordToSalesScore),
-        rawValue: ordersToSalesRatio,
-        unit: formatRatioValue(totalOrdersCount, totalSalesCount),
-        description:
-          "Orders ÷ Sales — measures how many tickets were raised per bill processed",
-        benchmarkValue: 3,
-        benchmarkUnit: "3.00x",
-      },
+      /* Hidden alongside Orders — this ratio divides the same unranged
+         ticket count by a ranged bill count, so it mixes two periods. */
+      // {
+      //   label: "Ord-to-Sales",
+      //   score: Math.round(ordToSalesScore),
+      //   rawValue: ordersToSalesRatio,
+      //   unit: formatRatioValue(totalOrdersCount, totalSalesCount),
+      //   description:
+      //     "Orders ÷ Sales — measures how many tickets were raised per bill processed",
+      //   benchmarkValue: targetOrdersPerSale,
+      //   benchmarkUnit: `${targetOrdersPerSale.toFixed(2)}x`,
+      //   benchmarkKind: "target",
+      // },
       {
         label: "Customers",
         score: Math.round(customerScore),
         rawValue: customerCount,
         unit: customerCount.toString(),
-        description: "Unique customers served by the employee",
+        description: `Unique customers served by the employee${vsPeer}`,
         benchmarkValue: maxCustomerCount,
         benchmarkUnit: maxCustomerCount.toString(),
+        benchmarkKind: "peer",
       },
       {
         label: "Shift Time",
@@ -596,9 +656,10 @@ export default function PerformanceRadar({
         rawValue: avgShiftMinutes,
         unit: formatAvgShiftTime(avgShiftMinutes),
         description:
-          "Average shift duration compared to the longest shift in the period",
-        benchmarkValue: maxShiftMinutes,
-        benchmarkUnit: formatAvgShiftTime(maxShiftMinutes),
+          "Average shift duration against a full working shift. Longer is not automatically better — read this as coverage, not productivity",
+        benchmarkValue: targetShiftMinutes,
+        benchmarkUnit: formatAvgShiftTime(targetShiftMinutes),
+        benchmarkKind: "target",
       },
       {
         label: "Refund Rate",
@@ -609,17 +670,11 @@ export default function PerformanceRadar({
           "Refunded Orders ÷ Total Orders — lower rate = higher score",
         benchmarkValue: 0, // lower is better — no meaningful "max benchmark"
         benchmarkUnit: "0.0%",
+        benchmarkKind: "target",
       },
     ];
-  }, [
-    sales,
-    billsData,
-    avgTime,
-    totalCustomers,
-    totalOrders,
-    aggregatedMetrics,
-    currency,
-  ]);
+    // totalOrders belongs here when the Orders axis is restored.
+  }, [sales, billsData, avgTime, aggregatedMetrics, currency]);
 
   // Handle hover for tooltip positioning
   const handleHover = (index: number | null, event?: React.MouseEvent) => {
@@ -648,8 +703,8 @@ export default function PerformanceRadar({
         className={`bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 mb-6 `}
       >
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
-            <Radar size={16} className="text-violet-500" />
+          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+            <Radar size={16} className="text-blue-500" />
           </div>
 
           <ComponentHeader
@@ -658,7 +713,7 @@ export default function PerformanceRadar({
           />
         </div>
         <div className="flex items-center justify-center py-12">
-          <Loader2 size={20} className="animate-spin text-violet-500" />
+          <Loader2 size={20} className="animate-spin text-blue-500" />
         </div>
       </div>
     );
@@ -670,8 +725,8 @@ export default function PerformanceRadar({
     return (
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 ">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
-            <Radar size={16} className="text-violet-500" />
+          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+            <Radar size={16} className="text-blue-500" />
           </div>
 
           <ComponentHeader
@@ -762,8 +817,8 @@ export default function PerformanceRadar({
     return (
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
-            <Radar size={16} className="text-violet-500" />
+          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+            <Radar size={16} className="text-blue-500" />
           </div>
 
           <ComponentHeader
@@ -800,8 +855,8 @@ export default function PerformanceRadar({
       {/* Header */}
       <div className="flex items-center justify-between ">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
-            <Radar size={16} className="text-violet-500" />
+          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+            <Radar size={16} className="text-blue-500" />
           </div>
 
           <ComponentHeader
@@ -819,13 +874,11 @@ export default function PerformanceRadar({
           >
             <Info size={15} className="text-gray-400" />
           </button>
-          <div className="flex items-center gap-1.5 bg-violet-50 px-3 py-1.5 rounded-lg">
+          <div className="flex items-center gap-1.5 bg-blue-50 px-3 py-1.5 rounded-lg">
             <span className="text-[11px] text-gray-500 font-medium">
               Avg Score
             </span>
-            <span className="text-sm font-bold text-violet-600">
-              {avgScore}
-            </span>
+            <span className="text-sm font-bold text-blue-600">{avgScore}</span>
           </div>
         </div>
       </div>

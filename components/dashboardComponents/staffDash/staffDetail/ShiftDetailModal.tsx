@@ -7,11 +7,18 @@ import {
   ArrowUpRight,
   Loader2,
   AlertTriangle,
+  Timer,
+  Wallet,
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import type { LucideIcon } from "lucide-react";
 import type { ShiftDetail } from "./staffDetailHelpers";
-import { parseNepalDateTime, extractTime } from "./staffDetailHelpers";
+import {
+  parseNepalDateTime,
+  extractTime,
+  formatShiftDuration,
+} from "./staffDetailHelpers";
 import ModalShell from "@/components/ui/ModalShell";
 
 interface ShiftDetailModalProps {
@@ -34,7 +41,15 @@ export default function ShiftDetailModal({
       open={open}
       onClose={onClose}
       title="Shift details"
-      subtitle={`${shiftDetail?.transactions?.length ?? 0} transactions recorded`}
+      subtitle={
+        shiftDetail
+          ? `${shiftDetail.transactions?.length ?? 0} ${
+              shiftDetail.transactions?.length === 1
+                ? "transaction"
+                : "transactions"
+            } recorded`
+          : "Loading this shift's activity"
+      }
       icon={Clock}
       iconColor="text-amber-600"
       iconBgColor="bg-amber-50"
@@ -70,153 +85,191 @@ export default function ShiftDetailModal({
 
 /* ── Shift Detail Content ── */
 
+/** "Mar 4, 09:15 AM", falling back to the raw clock time if unparseable. */
+function formatStamp(raw: string | undefined): string {
+  if (!raw) return "—";
+  return (
+    parseNepalDateTime(raw)?.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }) ?? extractTime(raw)
+  );
+}
+
+/** "pay-in" -> "Pay In". */
+function formatTxnType(type: string): string {
+  return type
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
 function ShiftDetailContent({ shiftDetail }: { shiftDetail: ShiftDetail }) {
   const { currency } = useCurrency();
+  const money = (amount: number) =>
+    formatCurrencySymbol(amount, currency.symbol, currency.locale);
+
+  const transactions = shiftDetail.transactions ?? [];
+  const duration = formatShiftDuration(
+    shiftDetail.openingTime,
+    shiftDetail.closingTime,
+  );
+
+  // Net movement in the drawer. Named for what it actually is - the old
+  // "Cash Difference" label reads as a till variance, which this is not.
+  const netCashChange = shiftDetail.closingCash - shiftDetail.openingCash;
+  const isUp = netCashChange >= 0;
+
   return (
-    <div>
-      {/* Key metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <DetailCard
-          label="Opening Cash"
-          value={formatCurrencySymbol(
-            shiftDetail.openingCash,
-            currency.symbol,
-            currency.locale,
-          )}
-          accent="text-emerald-600"
-        />
-        <DetailCard
-          label="Closing Cash"
-          value={formatCurrencySymbol(
-            shiftDetail.closingCash,
-            currency.symbol,
-            currency.locale,
-          )}
-          accent="text-blue-600"
-        />
-        <DetailCard
-          label="Opened At"
-          value={
-            shiftDetail.openingTime
-              ? (parseNepalDateTime(shiftDetail.openingTime)?.toLocaleString(
-                  "en-US",
-                  {
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  },
-                ) ?? extractTime(shiftDetail.openingTime))
-              : "—"
-          }
-          accent="text-gray-800"
-        />
-        <DetailCard
-          label="Closed At"
-          value={
-            shiftDetail.closingTime
-              ? (parseNepalDateTime(shiftDetail.closingTime)?.toLocaleString(
-                  "en-US",
-                  {
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  },
-                ) ?? extractTime(shiftDetail.closingTime))
-              : "—"
-          }
-          accent="text-gray-800"
-        />
+    <div className="space-y-5">
+      {/* Timing */}
+      <div>
+        <SectionLabel icon={Clock} tone="text-amber-500" bg="bg-amber-50">
+          Shift window
+        </SectionLabel>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+          <DetailCard
+            label="Opened At"
+            value={formatStamp(shiftDetail.openingTime)}
+          />
+          <DetailCard
+            label="Closed At"
+            value={formatStamp(shiftDetail.closingTime)}
+          />
+          <DetailCard
+            label="Total Shift Time"
+            /* Open shifts have no end yet; the dash matches the shifts table. */
+            value={duration ?? "—"}
+            icon={Timer}
+          />
+        </div>
       </div>
 
-      {/* Cash difference */}
-      {shiftDetail.closingTime && (
-        <div className="flex items-center gap-2 mb-5 p-3 bg-gray-50 rounded-xl border border-gray-100">
-          <div
-            className={`w-2 h-2 rounded-full ${
-              shiftDetail.closingCash - shiftDetail.openingCash >= 0
-                ? "bg-emerald-400"
-                : "bg-red-400"
-            }`}
+      {/* Cash */}
+      <div>
+        <SectionLabel icon={Wallet} tone="text-emerald-500" bg="bg-emerald-50">
+          Cash drawer
+        </SectionLabel>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+          <DetailCard
+            label="Opening Cash"
+            value={money(shiftDetail.openingCash)}
           />
-          <span className="text-xs text-gray-500">Cash Difference:</span>
-          <span
-            className={`text-sm font-bold ${
-              shiftDetail.closingCash - shiftDetail.openingCash >= 0
-                ? "text-emerald-600"
-                : "text-red-500"
-            }`}
-          >
-            {formatCurrencySymbol(
-              shiftDetail.closingCash - shiftDetail.openingCash,
-              currency.symbol,
-              currency.locale,
-            )}
-          </span>
+          <DetailCard
+            label="Closing Cash"
+            value={money(shiftDetail.closingCash)}
+          />
+          {shiftDetail.closingTime && (
+            <DetailCard
+              label="Net Cash Change"
+              value={`${isUp ? "+" : ""}${money(netCashChange)}`}
+              accent={isUp ? "text-emerald-600" : "text-red-500"}
+              icon={isUp ? ArrowDownLeft : ArrowUpRight}
+              iconClass={isUp ? "text-emerald-500" : "text-red-400"}
+            />
+          )}
         </div>
-      )}
+      </div>
 
       {/* Transactions */}
-      {shiftDetail.transactions?.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-5 h-5 rounded-md bg-purple-50 flex items-center justify-center">
-              <Receipt size={10} className="text-purple-500" />
+      <div>
+        <div className="mb-2.5 flex items-center gap-2">
+          <SectionLabel icon={Receipt} tone="text-purple-500" bg="bg-purple-50">
+            Shift Transactions
+          </SectionLabel>
+          <span className="ml-auto text-[10px] font-medium text-gray-400">
+            {transactions.length}{" "}
+            {transactions.length === 1 ? "entry" : "entries"}
+          </span>
+        </div>
+
+        {transactions.length === 0 ? (
+          /* Previously the whole block was hidden, so a shift with no
+             transactions ended abruptly after the cards with no explanation. */
+          <div className="rounded-xl border border-dashed border-gray-200 px-4 py-10 text-center">
+            <div className="mx-auto mb-2.5 flex h-11 w-11 items-center justify-center rounded-full bg-gray-50">
+              <Receipt size={18} className="text-gray-300" />
             </div>
-            <h4 className="text-xs font-semibold text-gray-700">
-              Shift Transactions
-            </h4>
-            <span className="text-[10px] text-gray-400 font-medium ml-auto">
-              {shiftDetail.transactions.length} entries
-            </span>
+            <p className="text-[13px] font-medium text-gray-500">
+              No transactions in this shift
+            </p>
+            <p className="mt-1 text-xs text-gray-400">
+              Pay ins, pay outs and sales will appear here.
+            </p>
           </div>
-          <div className="overflow-x-auto rounded-xl border border-gray-200">
-            <table className="w-full text-sm">
+        ) : (
+          <div className="overflow-x-auto ">
+            <table className="w-full min-w-[640px] text-sm">
               <thead>
-                <tr className="text-[10px] text-gray-400 uppercase tracking-wider bg-gray-50/80">
-                  <th className="text-left py-2.5 px-3 font-semibold">Time</th>
-                  <th className="text-left py-2.5 px-3 font-semibold">Type</th>
-                  <th className="text-left py-2.5 px-3 font-semibold">Note</th>
-                  <th className="text-left py-2.5 px-3 font-semibold">
+                <tr className="bg-gray-50/80 text-[10px] border-b border-gray-500 uppercase tracking-wider text-gray-500">
+                  <th className="px-3 py-2.5 text-center font-semibold">
+                    Invoice
+                  </th>
+                  <th className="px-3 py-2.5 text-left font-semibold">Note</th>
+                  <th className="px-3 py-2.5 text-right font-semibold">
+                    Amount{" "}
+                  </th>
+                  <th className="px-3 pl-2.5 text-center font-semibold">
                     Payment
                   </th>
-                  <th className="text-right py-2.5 px-3 font-semibold">
-                    Amount
+
+                  <th className="px-3 py-2.5 text-center font-semibold">
+                    Type
                   </th>
-                  <th className="text-center py-2.5 px-3 font-semibold">
-                    Invoice
+                  <th className="px-3 py-2.5 text-center font-semibold">
+                    Time
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {shiftDetail.transactions.map((txn) => {
+                {transactions.map((txn) => {
                   const txDate = parseNepalDateTime(txn.transactionTime);
                   const isPayIn = txn.transactionType === "pay-in";
                   const isPayOut = txn.transactionType === "pay-out";
                   return (
                     <tr
                       key={txn._id}
-                      className="border-t border-gray-50 last:border-0 hover:bg-gray-50/40 transition-colors"
+                      className="border-t border-gray-50 transition-colors last:border-0 hover:bg-gray-50/40"
                     >
-                      <td className="py-2.5 px-3 text-xs text-gray-600">
-                        {txDate
-                          ? txDate.toLocaleString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : extractTime(txn.transactionTime)}
+                      <td className="px-3 py-2.5 text-center">
+                        <span className="  px-2 py-0.5 font-mono text-[11px] text-gray-500">
+                          {txn.invoiceNo ? `#${txn.invoiceNo}` : "—"}
+                        </span>
                       </td>
-                      <td className="py-2.5 px-3">
+                      <td className="max-w-[220px] truncate px-3 py-2.5 text-xs text-gray-500">
+                        {txn.note || "—"}
+                      </td>
+
+                      <td
+                        className={`px-3 py-2.5 text-right text-xs font-bold tabular-nums ${
+                          isPayIn
+                            ? "text-emerald-600"
+                            : isPayOut
+                              ? "text-red-500"
+                              : "text-gray-900"
+                        }`}
+                      >
+                        {isPayIn ? "+" : isPayOut ? "-" : ""}
+                        {money(txn.transactionAmount)}
+                      </td>
+
+                      <td className="px-3 py-2.5 text-xs capitalize text-center text-gray-500">
+                        {txn.paymentMethod === "Qr Payment"
+                          ? "QR"
+                          : (txn.paymentMethod ?? "—")}
+                      </td>
+
+                      <td className="px-3 py-2.5 text-center ">
                         <span
-                          className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md ${
+                          className={`inline-flex items-center gap-1 whitespace-nowrap rounded-md px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${
                             isPayIn
-                              ? "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200"
+                              ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
                               : isPayOut
-                                ? "bg-red-50 text-red-700 ring-1 ring-inset ring-red-200"
-                                : "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-200"
+                                ? "bg-red-50 text-red-700 ring-red-200"
+                                : "bg-blue-50 text-blue-700 ring-blue-200"
                           }`}
                         >
                           {isPayIn ? (
@@ -226,29 +279,19 @@ function ShiftDetailContent({ shiftDetail }: { shiftDetail: ShiftDetail }) {
                           ) : (
                             <Receipt size={9} />
                           )}
-                          {txn.transactionType}
+                          {formatTxnType(txn.transactionType)}
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 text-xs text-gray-500">
-                        {txn.note || "—"}
-                      </td>
-                      <td className="py-2.5 px-3 text-xs text-gray-500 capitalize">
-                        {txn.paymentMethod ?? "—"}
-                      </td>
-                      <td
-                        className={`py-2.5 px-3 text-right text-xs font-bold ${isPayIn ? "text-emerald-600" : isPayOut ? "text-red-500" : "text-gray-900"}`}
-                      >
-                        {isPayIn ? "+" : isPayOut ? "-" : ""}
-                        {formatCurrencySymbol(
-                          txn.transactionAmount,
-                          currency.symbol,
-                          currency.locale,
-                        )}
-                      </td>
-                      <td className="py-2.5 px-3 text-center">
-                        <span className="text-[10px] font-mono text-gray-400 bg-gray-50 px-2 py-0.5 rounded-md">
-                          {txn.invoiceNo ? `#${txn.invoiceNo}` : "—"}
-                        </span>
+
+                      <td className="px-3 py-2.5 text-xs text-right tabular-nums text-gray-600">
+                        {txDate
+                          ? txDate.toLocaleString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : extractTime(txn.transactionTime)}
                       </td>
                     </tr>
                   );
@@ -256,8 +299,33 @@ function ShiftDetailContent({ shiftDetail }: { shiftDetail: ShiftDetail }) {
               </tbody>
             </table>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* Section label */
+
+function SectionLabel({
+  icon: Icon,
+  tone,
+  bg,
+  children,
+}: {
+  icon: LucideIcon;
+  tone: string;
+  bg: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mb-2.5 flex items-center gap-2">
+      <div
+        className={`flex h-5 w-5 items-center justify-center rounded-md ${bg}`}
+      >
+        <Icon size={11} className={tone} />
+      </div>
+      <h4 className="text-xs font-semibold text-gray-700">{children}</h4>
     </div>
   );
 }
@@ -268,18 +336,30 @@ function DetailCard({
   label,
   value,
   accent,
+  icon: Icon,
+  iconClass,
 }: {
   label: string;
   value: string;
   accent?: string;
+  icon?: LucideIcon;
+  iconClass?: string;
 }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-3.5">
-      <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-400">
+    <div className="rounded-xl border border-gray-100 bg-gray-50/60 p-3.5">
+      <p className="mb-1 truncate text-[10px] font-semibold uppercase tracking-[0.09em] text-gray-400">
         {label}
       </p>
-      <p className={`text-sm font-bold tabular-nums ${accent ?? "text-gray-900"}`}>
-        {value}
+      <p
+        className={`flex items-center gap-1.5 text-[15px] font-bold tabular-nums ${accent ?? "text-gray-900"}`}
+      >
+        {Icon && (
+          <Icon
+            size={13}
+            className={`shrink-0 ${iconClass ?? "text-gray-400"}`}
+          />
+        )}
+        <span className="truncate">{value}</span>
       </p>
     </div>
   );
