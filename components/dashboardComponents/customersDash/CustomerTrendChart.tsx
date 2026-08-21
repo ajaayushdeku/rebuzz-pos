@@ -164,7 +164,7 @@ export default function CustomerTrendChart({ data }: CustomerTrendProps) {
   const latest = displayData[displayData.length - 1];
 
   return (
-    <div className="bg-surface-card border-surface-border w-full min-w-0 rounded-2xl border p-5 shadow-sm transition-shadow duration-300 hover:shadow-md">
+    <div className=" w-full min-w-0 rounded-2xl p-5 shadow-sm transition-shadow duration-300 hover:shadow-md">
       {isEmpty && <SampleDataBadge />}
 
       {/* Header */}

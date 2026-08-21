@@ -148,7 +148,7 @@ export default function InventoryValueSummary({
   const renderCard = (card: Card) => (
     <div
       key={card.label}
-      className="bg-surface-card border-surface-border rounded-xl border p-4 shadow-sm transition-shadow duration-200 hover:shadow-md md:p-5"
+      className=" rounded-xl p-4 shadow-sm transition-shadow duration-200 hover:shadow-md md:p-5"
     >
       <div className="flex items-center justify-between gap-2">
         <span className="truncate text-xs font-medium text-gray-500 md:text-[13px]">
@@ -199,7 +199,7 @@ export default function InventoryValueSummary({
             <p className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold mb-2">
               Current stock (all products)
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {staticCards.map(renderCard)}
             </div>
           </div>
@@ -209,7 +209,7 @@ export default function InventoryValueSummary({
             <p className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold mb-2">
               For selected range
             </p>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {rangedCards.map(renderCard)}
             </div>
           </div>

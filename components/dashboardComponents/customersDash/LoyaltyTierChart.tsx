@@ -129,7 +129,7 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
   );
 
   return (
-    <div className="bg-surface-card border-surface-border w-full min-w-0 rounded-2xl border p-5 shadow-sm transition-shadow duration-300 hover:shadow-md">
+    <div className=" w-full min-w-0 rounded-2xl  p-5 shadow-sm transition-shadow duration-300 hover:shadow-md">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">

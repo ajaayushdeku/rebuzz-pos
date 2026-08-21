@@ -88,7 +88,7 @@ export default function CustomerSegmentationChart({
   }));
 
   return (
-    <div className="bg-surface-card border-surface-border w-full min-w-0 rounded-2xl border p-5 shadow-sm transition-shadow duration-300 hover:shadow-md">
+    <div className=" w-full min-w-0 rounded-2xl  p-5 shadow-sm transition-shadow duration-300 hover:shadow-md">
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sky-50">

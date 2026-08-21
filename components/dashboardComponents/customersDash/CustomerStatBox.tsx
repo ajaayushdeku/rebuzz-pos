@@ -26,7 +26,7 @@ export default function CustomerStatBox({
   bgColor,
 }: StatBoxProps) {
   return (
-    <div className="bg-surface-card border-surface-border rounded-xl border p-4 shadow-sm transition-shadow duration-200 hover:shadow-md md:p-5">
+    <div className=" rounded-xl  p-4 shadow-sm transition-shadow duration-200 hover:shadow-md md:p-5">
       <div className="flex items-center justify-between gap-2">
         <span className="truncate text-xs font-medium text-gray-500 md:text-[13px]">
           {label}
