@@ -265,7 +265,7 @@ export default function Transactions({
       `}</style>
 
       {/* ── Tabs — the rule runs edge to edge and the pill sits on top ── */}
-      <div className="relative flex justify-center my-4">
+      <div className="relative flex justify-center mb-4 mt-2">
         <span
           aria-hidden="true"
           className="absolute inset-x-0 top-1/2 h-px bg-gray-200"

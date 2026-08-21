@@ -39,7 +39,7 @@ const getYAxisTicks = (data: CompareSalesPoint[]): number[] => {
 
 // Sub-components
 const CustomBar = (props: BarShapeProps) => (
-  <Rectangle {...props} radius={[8, 8, 0, 0]} fill="#ce4d72" />
+  <Rectangle {...props} radius={[8, 8, 0, 0]} fill="#4d78ce" />
 );
 
 const CustomTooltip = ({

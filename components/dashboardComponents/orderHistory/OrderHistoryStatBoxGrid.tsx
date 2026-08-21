@@ -24,7 +24,7 @@ const OrderHistoryStatBoxGrid = ({
   isLoading = false,
 }: OrderHistoryStatBoxGridProps) => {
   return (
-    <div className="grid grid-cols-1 mb-4 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="py-2 grid grid-cols-1 mb-4 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((stat, index) => (
         <OrderHistoryStatBox
           key={index}

@@ -650,7 +650,7 @@ export default function CustomerDetailPage() {
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-gray-400">â€”</span>
+                              <span className="text-gray-400">-</span>
                             )}
                           </td>
 

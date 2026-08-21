@@ -117,7 +117,7 @@ export default function OrderHistoryPage() {
       </div>
 
       {/* ── Stats ── */}
-      <div className="mt-3">
+      <div className="mt-2">
         <OrderHistoryStats stats={stats} isLoading={loading} />
       </div>
 

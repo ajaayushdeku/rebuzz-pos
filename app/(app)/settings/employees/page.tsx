@@ -372,7 +372,7 @@ export default function StaffManagementPage() {
         </div>
 
         {/* ── Search + Filter ── */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-7 mt-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6 mt-6">
           <div className="relative flex-1">
             <Search
               size={14}

@@ -124,7 +124,7 @@ export default function CategorySettingsPage() {
         </div>
 
         {/* ── Search ──────────────────────────────────────── */}
-        <div className="relative mt-6">
+        <div className="relative mt-6 mb-8">
           <Search
             size={14}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -138,7 +138,7 @@ export default function CategorySettingsPage() {
         </div>
 
         {/* Category Table */}
-        <div className="bg-white rounded-xl p-5">
+        <div className="bg-white rounded-xl px-5 ">
           <CategoryTable
             categories={categories}
             search={search}

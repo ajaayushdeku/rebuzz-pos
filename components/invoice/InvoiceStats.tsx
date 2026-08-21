@@ -102,7 +102,7 @@ export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
   ];
 
   return (
-    <div className="bg-white py-2 mb-4">
+    <div className="relative bg-white py-2 mb-8">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {statItems.map((item) => {
           const displayValue =
@@ -143,7 +143,7 @@ export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
       </div>
 
       {/* Refresh & timestamp */}
-      <div className="flex items-center justify-between mt-4 pb-4 pl-2 ">
+      <div className="absolute left-0 bottom-[-18px] flex items-center justify-between  pl-2 ">
         <div className="flex items-center gap-2 text-xs text-gray-500">
           <span>
             As of {formattedDate}, {formattedTime}

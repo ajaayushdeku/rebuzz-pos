@@ -8,7 +8,12 @@ import toast from "react-hot-toast";
 import ModalShell from "@/components/ui/ModalShell";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { statusStyles, paymentMethods } from "@/lib/config/transaction";
+import {
+  statusStyles,
+  paymentMethods,
+  normalizePaymentMethod,
+  paymentMethodStyle,
+} from "@/lib/config/transaction";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -175,13 +180,18 @@ export default function CustomerHistoryModal({
                     : "completed";
                   const s = statusStyles[status] ?? statusStyles["completed"];
 
-                  const paymentMethod = (purchase.paymentMethod ?? "Cash") as
-                    | "Card"
-                    | "Cash"
-                    | "QR"
-                    | "Loyalty";
-                  const p =
-                    paymentMethods[paymentMethod] ?? paymentMethods["Cash"];
+                  // const paymentMethod = (purchase.paymentMethod ?? "Cash") as
+                  //   | "Card"
+                  //   | "Cash"
+                  //   | "QR"
+                  //   | "Loyalty";
+                  // const p =
+                  //   paymentMethods[paymentMethod] ?? paymentMethods["Cash"];
+
+                  const paymentMethod = normalizePaymentMethod(
+                    purchase.paymentMethod,
+                  );
+                  const p = paymentMethodStyle(purchase.paymentMethod);
 
                   return (
                     <tr
@@ -226,19 +236,17 @@ export default function CustomerHistoryModal({
                           <span className="text-gray-400">—</span>
                         )}
                       </td>
-                      <td className="py-3 px-3 text-gray-600">
+                      <td className="py-3 px-3 text-xs text-gray-600">
                         {purchase.ticketName || "—"}
                       </td>
                       <td className="py-3 px-3 text-center">
                         <span
                           className={`${p.badge} ${p.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
                         >
-                          {paymentMethod
-                            ?.toLowerCase()
-                            .replace(/\b\w/g, (char) => char.toUpperCase())}
+                          {paymentMethod}
                         </span>
                       </td>
-                      <td className="py-3 px-3 text-right font-semibold text-gray-900">
+                      <td className="py-3 px-3 text-right text-xs font-semibold text-gray-900">
                         {formatCurrencySymbol(
                           purchase.grandTotal ?? 0,
                           currency.symbol,
