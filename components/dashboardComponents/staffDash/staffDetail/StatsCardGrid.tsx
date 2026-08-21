@@ -21,10 +21,12 @@ import {
   ChevronUp,
   Timer,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import RangeTag from "@/components/ui/RangeTag";
+import StatCard, {
+  StatCardSkeleton,
+  type StatSpec,
+} from "@/components/ui/StatCard";
 import type { StaffOverview } from "./staffDetailHelpers";
 
 interface StatsCardGridProps {
@@ -37,18 +39,6 @@ interface StatsCardGridProps {
   onRetry?: () => void;
 }
 
-/** One tile's data. The grid is built from a list of these, not from JSX. */
-type StatSpec = {
-  key: string;
-  label: string;
-  value: string;
-  icon: LucideIcon;
-  iconColor: string;
-  bgColor: string;
-  /** Follows the page's date filter. Untagged figures ignore it. */
-  ranged: boolean;
-};
-
 function formatMinutesToHours(minutes: number): string {
   const hrs = Math.floor(minutes / 60);
   const mins = Math.round(minutes % 60);
@@ -56,45 +46,6 @@ function formatMinutesToHours(minutes: number): string {
     return `${hrs}h ${mins}m`;
   }
   return `${mins}m`;
-}
-
-const CARD =
-  "bg-surface-card border-surface-border rounded-xl border p-4 shadow-sm md:p-5";
-
-/**
- * Shape and spacing follow OverviewStatBox and CustomerStatBox, so every
- * figure tile in the app reads the same.
- */
-function StatCard({
-  label,
-  value,
-  icon: Icon,
-  iconColor,
-  bgColor,
-  ranged,
-}: Omit<StatSpec, "key">) {
-  return (
-    <div className={`${CARD} transition-shadow duration-200 hover:shadow-md`}>
-      <div className="flex items-center justify-between gap-2">
-        <span className="truncate text-xs font-medium text-gray-500 md:text-[13px]">
-          {label}
-        </span>
-        <div
-          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg md:h-8 md:w-8 ${bgColor}`}
-        >
-          <Icon size={15} className={iconColor} />
-        </div>
-      </div>
-
-      {/* Tag rides the value row so it costs no extra height. */}
-      <div className="mt-3 flex items-baseline justify-between gap-2 md:mt-4">
-        <p className="truncate text-xl font-bold tracking-tight tabular-nums text-gray-900 md:text-[22px]">
-          {value}
-        </p>
-        {ranged && <RangeTag />}
-      </div>
-    </div>
-  );
 }
 
 /** Toggles how many tiles are shown. Rendered once, used in both states. */
@@ -143,13 +94,7 @@ export default function StatsCardGrid({
       <div className="mb-6">
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {Array.from({ length: showOnlyOrders ? 1 : 4 }).map((_, i) => (
-            <div key={i} className={`${CARD} animate-pulse`}>
-              <div className="flex items-center justify-between gap-2">
-                <div className="h-3.5 w-20 rounded bg-gray-100" />
-                <div className="h-7 w-7 shrink-0 rounded-lg bg-gray-100 md:h-8 md:w-8" />
-              </div>
-              <div className="mt-3 h-6 w-24 rounded bg-gray-100 md:mt-4" />
-            </div>
+            <StatCardSkeleton key={i} />
           ))}
         </div>
       </div>
