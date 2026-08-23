@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Loader2, TrendingUp } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Loader2, TrendingUp, AlertTriangle } from "lucide-react";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatCurrencySymbol } from "@/utils/helper";
+import TablePagination from "@/components/ui/TablePagination";
 
 interface TopItem {
   itemId: string;
@@ -115,19 +118,62 @@ export interface EmployeeAnalytics {
   }[];
 }
 
-const MAX_ITEMS = 8;
+/** Rows per page. The list is paged rather than silently truncated. */
+const PAGE_SIZE = 8;
 
-function getBarColor(index: number, count: number, max: number): string {
-  const ratio = count / max;
+/**
+ * One row, whichever endpoint supplied it. The analytics API returns
+ * {productId, name, quantity, revenue}; the top-items fallback returns
+ * {itemId, itemName, totalQuantity}. Normalising here means the rows render
+ * once instead of twice — the two shapes used to drive two near-identical
+ * map() blocks.
+ */
+type TopItemRow = {
+  id: string;
+  name: string;
+  quantity: number;
+  revenue?: number;
+};
+
+/**
+ * Bars are banded by how the item compares with the best seller, which is what
+ * "fast vs slow movers" means. The top item is green by definition.
+ */
+function getBarColor(quantity: number, max: number): string {
+  const ratio = max > 0 ? quantity / max : 0;
   if (ratio >= 0.6) return "#22c55e"; // fast — green
   if (ratio >= 0.3) return "#3b82f6"; // normal — blue
   return "#f59e0b"; // slow — amber
+}
+
+/**
+ * Rank, name, bar, quantity. Rows and the axis share this template so the
+ * ticks line up under the bars — the label column used to be `w-15` (not a
+ * Tailwind size, so no width at all) while the axis reserved `w-24`, and the
+ * two never agreed.
+ */
+const ROW_GRID =
+  "grid grid-cols-[1.25rem_5.5rem_1fr_2.75rem] items-center gap-3 md:grid-cols-[1.25rem_7rem_1fr_4rem]";
+
+const CARD = "bg-white rounded-xl border border-gray-200 shadow-sm p-5";
+
+/** Header is identical in all four states; it used to be pasted into each. */
+function Header({ subHeader }: { subHeader: string }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50">
+        <TrendingUp size={16} className="text-emerald-500" />
+      </div>
+      <ComponentHeader title="Top Items Sold" subHeader={subHeader} />
+    </div>
+  );
 }
 
 export default function TopItemsSales({
   employeeId,
   dateRange,
 }: TopItemsSalesProps) {
+  const { currency } = useCurrency();
   const [items, setItems] = useState<TopItem[]>([]);
   const [topItems, setTopItems] = useState<TopItemEA[]>([]);
   const [noEmployeeAnalytics, setNoEmployeeAnalytics] =
@@ -135,6 +181,7 @@ export default function TopItemsSales({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reload, setReload] = useState(0);
+  const [page, setPage] = useState(0);
 
   // ── Load top items: try employee-analytics first, fall back to top-items ──
   useEffect(() => {
@@ -146,6 +193,9 @@ export default function TopItemsSales({
       setNoEmployeeAnalytics(false);
       setItems([]);
       setTopItems([]);
+      // A new employee or date range is a new list; page 3 of the old one is
+      // meaningless and would render empty.
+      setPage(0);
 
       try {
         // ── 1. Try employee analytics API ────────────────────────────────────
@@ -195,21 +245,29 @@ export default function TopItemsSales({
     loadTopItems();
   }, [employeeId, dateRange.startDate, dateRange.endDate, reload]);
 
-  // ── Loading state ─────────────────────────────────────────────────────────
+  // ── Normalise both shapes into one list ───────────────────────────────────
+  const rows: TopItemRow[] = useMemo(
+    () =>
+      noEmployeeAnalytics
+        ? items.map((item) => ({
+            id: item.itemId,
+            name: item.itemName,
+            quantity: item.totalQuantity,
+          }))
+        : topItems.map((item) => ({
+            id: item.productId,
+            name: item.name,
+            quantity: item.quantity,
+            revenue: item.revenue,
+          })),
+    [noEmployeeAnalytics, items, topItems],
+  );
 
+  // ── Loading state ─────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-            <TrendingUp size={16} className="text-emerald-500" />
-          </div>
-
-          <ComponentHeader
-            title="Top Items Sold"
-            subHeader=" Loading top selling items..."
-          />
-        </div>
+      <div className={CARD}>
+        <Header subHeader="Loading top selling items..." />
         <div className="flex items-center justify-center py-12">
           <Loader2 size={20} className="animate-spin text-emerald-500" />
         </div>
@@ -218,41 +276,18 @@ export default function TopItemsSales({
   }
 
   // ── Error state ───────────────────────────────────────────────────────────
-
   if (error) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-            <TrendingUp size={16} className="text-emerald-500" />
-          </div>
-
-          <ComponentHeader
-            title="Top Items Sold"
-            subHeader="Unable to load data"
-          />
-        </div>
-
-        <div className="text-center py-8">
-          <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3">
-            <svg
-              className="w-6 h-6 text-red-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
-              />
-            </svg>
+      <div className={CARD}>
+        <Header subHeader="Unable to load data" />
+        <div className="py-8 text-center">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
+            <AlertTriangle size={22} className="text-red-400" />
           </div>
           <p className="text-sm font-medium text-gray-500">{error}</p>
           <button
             onClick={() => setReload((n) => n + 1)}
-            className="mt-3 px-4 py-1.5 text-xs font-medium text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-colors"
+            className="mt-3 rounded-lg bg-emerald-500 px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-600"
           >
             Retry
           </button>
@@ -262,29 +297,18 @@ export default function TopItemsSales({
   }
 
   // ── Empty state ───────────────────────────────────────────────────────────
-  // if (items.length === 0) {
-  if (items.length === 0 && topItems.length === 0) {
+  if (rows.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-            <TrendingUp size={16} className="text-emerald-500" />
-          </div>
-
-          <ComponentHeader
-            title=" Top Items Sold"
-            subHeader=" Units sold per item – fast vs slow movers"
-          />
-        </div>
-
-        <div className="text-center py-8">
-          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+      <div className={CARD}>
+        <Header subHeader="Units sold per item – fast vs slow movers" />
+        <div className="py-8 text-center">
+          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
             <TrendingUp size={24} className="text-gray-500" />
           </div>
           <p className="text-sm font-medium text-gray-500">
             No sales data available
           </p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="mt-1 text-xs text-gray-400">
             No top items sold data for this period
           </p>
         </div>
@@ -293,93 +317,110 @@ export default function TopItemsSales({
   }
 
   // ── Render chart ──────────────────────────────────────────────────────────
-  const max = noEmployeeAnalytics
-    ? Math.max(...items.slice(0, MAX_ITEMS).map((i) => i.totalQuantity), 1)
-    : Math.max(...topItems.slice(0, MAX_ITEMS).map((i) => i.quantity), 1);
+  // Both derived from the whole list, not the page: bars stay comparable
+  // across pages, and the header total covers every item.
+  const max = Math.max(...rows.map((r) => r.quantity), 1);
+  const totalUnits = rows.reduce((sum, r) => sum + r.quantity, 0);
 
-  const itemRows = noEmployeeAnalytics
-    ? items.slice(0, MAX_ITEMS).map((item, idx) => {
-        const quantity = item.totalQuantity;
-        const pct = (quantity / max) * 100;
-        return (
-          <div key={item.itemId} className="flex items-center gap-3">
-            <span className="text-xs text-gray-500 w-15 text-right shrink-0 leading-tight truncate">
-              {item.itemName}
-            </span>
-            <div className="flex-1 bg-gray-100 rounded-full h-4 relative overflow-hidden">
-              <div
-                className="h-4 rounded-full transition-all duration-700"
-                style={{
-                  width: `${pct}%`,
-                  backgroundColor: getBarColor(idx, quantity, max),
-                }}
-              />
-            </div>
-            <span className="text-xs text-gray-400 w-8 text-right shrink-0">
-              {quantity}
-            </span>
-          </div>
-        );
-      })
-    : topItems.slice(0, MAX_ITEMS).map((item, idx) => {
-        const quantity = item.quantity;
-        const pct = (quantity / max) * 100;
-        return (
-          <div key={item.productId} className="flex items-center gap-3">
-            <span className="text-xs text-gray-500 w-15 text-right shrink-0 leading-tight truncate">
-              {item.name}
-            </span>
-            <div className="flex-1 bg-gray-100 rounded-full h-4 relative overflow-hidden">
-              <div
-                className="h-4 rounded-full transition-all duration-700"
-                style={{
-                  width: `${pct}%`,
-                  backgroundColor: getBarColor(idx, quantity, max),
-                }}
-              />
-            </div>
-            <span className="text-xs text-gray-400 w-8 text-right shrink-0">
-              {quantity}
-            </span>
-          </div>
-        );
-      });
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages - 1);
+  const pagedRows = rows.slice(
+    safePage * PAGE_SIZE,
+    (safePage + 1) * PAGE_SIZE,
+  );
+
+  // De-duplicated, so a small max (0,0,1,1,1) does not produce repeated
+  // React keys.
+  const axisTicks = Array.from(
+    new Set([0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(max * f))),
+  );
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 ">
-      <div className="flex items-center gap-3 mb-0.5">
-        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-          <TrendingUp size={16} className="text-emerald-500" />
-        </div>
+    <div className={CARD}>
+      <div className="flex items-start justify-between gap-3">
+        <Header subHeader="Units sold per item by the employee" />
 
-        <ComponentHeader
-          title="Top Items Sold"
-          subHeader="Units sold per item by the employee"
-        />
+        {/* The list is paged, so the total says how much it covers. */}
+        <div className="flex shrink-0 flex-col items-end">
+          <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+            Units
+          </span>
+          <p className="mt-0.5 text-base font-bold leading-tight tabular-nums text-gray-900">
+            {totalUnits.toLocaleString()}
+          </p>
+        </div>
       </div>
 
-      <div className="space-y-3 mt-6">{itemRows}</div>
+      <div className="mt-6 space-y-2.5">
+        {pagedRows.map((row, idx) => (
+          <div key={row.id} className={ROW_GRID}>
+            {/* Rank continues across pages — page 2 starts at 9, not 1. */}
+            <span className="text-[11px] font-semibold tabular-nums text-gray-300">
+              {safePage * PAGE_SIZE + idx + 1}
+            </span>
 
-      {/* X-axis */}
-      <div className="flex items-center gap-3 mt-4">
-        <div className="w-24 shrink-0" />
+            <span
+              className="min-w-0 truncate text-xs leading-tight text-gray-600"
+              title={row.name}
+            >
+              {row.name}
+            </span>
 
-        <div className="flex-1 flex justify-between">
-          {[
-            0,
-            Math.round(max * 0.25),
-            Math.round(max * 0.5),
-            Math.round(max * 0.75),
-            max,
-          ].map((v) => (
-            <span key={v} className="text-xs text-gray-400">
-              {v}
+            <div className="relative h-4 overflow-hidden rounded-full bg-gray-100">
+              <div
+                className="h-4 rounded-full transition-all duration-700"
+                style={{
+                  width: `${(row.quantity / max) * 100}%`,
+                  backgroundColor: getBarColor(row.quantity, max),
+                }}
+              />
+            </div>
+
+            <div className="text-right">
+              <span className="text-xs font-semibold tabular-nums text-gray-700">
+                {row.quantity.toLocaleString()}
+              </span>
+              {/* Only the analytics endpoint carries revenue. */}
+              {/* {row.revenue !== undefined && (
+                <span className="block truncate text-[10px] tabular-nums text-gray-400">
+                  {formatCurrencySymbol(
+                    row.revenue,
+                    currency.symbol,
+                    currency.locale,
+                  )}
+                </span>
+              )} */}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* X-axis — same grid, so the ticks sit under the bars */}
+      <div className={`${ROW_GRID} mt-4`}>
+        <span />
+        <span />
+        <div className="flex justify-between">
+          {axisTicks.map((tick, i) => (
+            <span
+              key={`${tick}-${i}`}
+              className="text-[10px] tabular-nums text-gray-400"
+            >
+              {tick}
             </span>
           ))}
         </div>
-
-        <div className="w-8 shrink-0" />
+        <span />
       </div>
+
+      {totalPages > 1 && (
+        <TablePagination
+          page={safePage}
+          totalPages={totalPages}
+          total={rows.length}
+          noun="items"
+          onPageChange={setPage}
+        />
+      )}
     </div>
   );
 }

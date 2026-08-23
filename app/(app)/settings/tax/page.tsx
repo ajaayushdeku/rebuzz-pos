@@ -14,10 +14,10 @@ import {
 import toast from "react-hot-toast";
 import { CreateTaxDialog } from "@/components/invoice/CreateTaxRate";
 import { GroupedTax, Tax } from "@/services/apiTaxes.client";
-import StandardTaxTable from "@/components/settingsComponents/taxes/StandardTaxTable";
-import GroupTaxTable from "@/components/settingsComponents/taxes/GroupTaxTable";
-import EditNormalTaxModal from "@/components/settingsComponents/taxes/EditNormalTaxModal";
-import EditGroupTaxModal from "@/components/settingsComponents/taxes/EditGroupTaxModal";
+import StandardTaxTable from "@/components/settingsComponents/staffs/taxes/StandardTaxTable";
+import GroupTaxTable from "@/components/settingsComponents/staffs/taxes/GroupTaxTable";
+import EditNormalTaxModal from "@/components/settingsComponents/staffs/taxes/EditNormalTaxModal";
+import EditGroupTaxModal from "@/components/settingsComponents/staffs/taxes/EditGroupTaxModal";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 
 type TabKey = "standard" | "group";

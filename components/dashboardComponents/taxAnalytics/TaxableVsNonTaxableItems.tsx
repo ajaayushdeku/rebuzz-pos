@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { DollarSign, Scale, TrendingUp, Sparkles } from "lucide-react";
+import { Scale, Sparkles, Box, Receipt } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import type {
   NameType,
@@ -287,7 +287,7 @@ const TaxableVsNonTaxableItems = ({
       label: "Taxable Item's Revenue",
       value: fmt(data.taxableRevenue),
       sub: `Catalogue · ${pct(data.taxableRevenue).toFixed(1)}% of revenue`,
-      icon: <DollarSign size={15} className="text-blue-600" />,
+      icon: <Box size={15} className="text-blue-600" />,
       iconBg: "bg-blue-50",
       accent: TAXABLE_COLOR,
     },
@@ -295,7 +295,7 @@ const TaxableVsNonTaxableItems = ({
       label: "Non-Taxable Item's Revenue",
       value: fmt(data.nonTaxableRevenue),
       sub: `Catalogue · ${pct(data.nonTaxableRevenue).toFixed(1)}% of revenue`,
-      icon: <DollarSign size={15} className="text-rose-500" />,
+      icon: <Box size={15} className="text-rose-500" />,
       iconBg: "bg-rose-50",
       accent: NON_TAXABLE_COLOR,
     },
@@ -303,7 +303,7 @@ const TaxableVsNonTaxableItems = ({
       label: "Tax Collected",
       value: fmt(data.taxableTaxAmount),
       sub: `Catalogue · effective rate ${effectiveRate.toFixed(1)}%`,
-      icon: <TrendingUp size={15} className="text-emerald-600" />,
+      icon: <Receipt size={15} className="text-emerald-600" />,
       iconBg: "bg-emerald-50",
       accent: "#10b981",
     },
@@ -338,7 +338,7 @@ const TaxableVsNonTaxableItems = ({
             sub: `Custom items · effective rate ${customEffectiveRate.toFixed(
               1,
             )}%`,
-            icon: <TrendingUp size={15} className="text-violet-600" />,
+            icon: <Receipt size={15} className="text-violet-600" />,
             iconBg: "bg-violet-50",
             accent: CUSTOM_COLOR,
           },

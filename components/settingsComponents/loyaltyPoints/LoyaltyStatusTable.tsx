@@ -22,7 +22,7 @@ export default function LoyaltyStatusTable({
   onDelete: (status: LoyaltyStatus) => void;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white py-2 px-2 shadow-sm">
       {/* Count header — the table gave no sense of how many tiers exist
           without counting the rows. */}
       <div className="flex items-center justify-between gap-2 border-b border-gray-200 px-4 py-3">
