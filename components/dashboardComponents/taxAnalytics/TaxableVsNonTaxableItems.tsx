@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { DollarSign, Receipt, Scale, TrendingUp } from "lucide-react";
+import { DollarSign, Scale, TrendingUp, Sparkles } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import type {
   NameType,
@@ -12,18 +12,15 @@ import type {
 } from "recharts/types/component/DefaultTooltipContent";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import { TaxableSplitSkeleton } from "./TaxAnalyticsSkeletons";
-
-interface TaxableBreakdown {
-  taxableRevenue: number;
-  taxableTaxAmount: number;
-  nonTaxableRevenue: number;
-  taxableItems: { name: string; revenue: number }[];
-  nonTaxableItems: { name: string; revenue: number }[];
-}
+import type {
+  TaxableBreakdown,
+  TaxBreakdownItem,
+} from "@/hooks/useTaxableBreakdown";
 
 const ITEMS_PER_PAGE = 5;
 const TAXABLE_COLOR = "#0ba2c0";
 const NON_TAXABLE_COLOR = "#ea1f5c";
+const CUSTOM_COLOR = "#ae8bff";
 
 const PieTooltip = ({
   active,
@@ -36,9 +33,9 @@ const PieTooltip = ({
   if (!active || !payload?.length) return null;
   const p = payload[0];
   return (
-    <div className="bg-white rounded-xl px-3 py-2 shadow-lg border border-gray-100 text-xs">
+    <div className="rounded-xl border border-gray-100 bg-white px-3 py-2 text-xs shadow-lg">
       <span className="text-gray-600">{p.name}: </span>
-      <span className="font-bold text-gray-800">
+      <span className="font-bold tabular-nums text-gray-800">
         {formatCurrencySymbol(
           Number(p.value) || 0,
           currency.symbol,
@@ -48,6 +45,102 @@ const PieTooltip = ({
     </div>
   );
 };
+
+/**
+ * One breakdown list. Taxable rows carry the tax they generated beneath the
+ * revenue — previously tax was only ever visible as a single business-wide
+ * total, so there was no way to see which items produced it.
+ *
+ * The heading lives in the tab bar above, so the list itself is just rows.
+ */
+function ItemList({
+  color,
+  items,
+  emptyLabel,
+  showTax,
+  showTaxableTag = false,
+}: {
+  color: string;
+  items: TaxBreakdownItem[];
+  emptyLabel: string;
+  showTax: boolean;
+  showTaxableTag?: boolean;
+}) {
+  const { currency } = useCurrency();
+  const fmt = (v: number) =>
+    formatCurrencySymbol(v, currency.symbol, currency.locale);
+
+  const [expanded, setExpanded] = useState(false);
+  const hasMore = items.length > ITEMS_PER_PAGE;
+  const visible = expanded ? items : items.slice(0, ITEMS_PER_PAGE);
+
+  if (visible.length === 0) {
+    return (
+      <p className="border-t border-gray-100 py-10 text-center text-xs text-gray-400">
+        {emptyLabel}
+      </p>
+    );
+  }
+
+  return (
+    <div className="divide-y divide-gray-50  border-t border-gray-100">
+      {visible.map((item) => (
+        <div
+          key={item.name}
+          className="flex items-start justify-between gap-2 px-3 py-2.5 text-xs transition-colors hover:bg-gray-50/60"
+        >
+          <div className="min-w-0">
+            <p className="truncate text-gray-700" title={item.name}>
+              {item.name}
+            </p>
+            <p className="mt-0.5 flex items-center gap-1.5 text-[10px] text-gray-400">
+              <span className="tabular-nums">
+                {item.count.toLocaleString()}{" "}
+                {item.count === 1 ? "unit" : "units"}
+              </span>
+              {showTaxableTag && (
+                <span
+                  className={`rounded px-1 py-px text-[9px] font-semibold uppercase tracking-wide ${
+                    item.taxable
+                      ? "bg-cyan-50 text-cyan-700"
+                      : "bg-gray-100 text-gray-500"
+                  }`}
+                >
+                  {item.taxable ? "Taxable" : "Non-taxable"}
+                </span>
+              )}
+            </p>
+          </div>
+
+          <div className="shrink-0 text-right">
+            <p className="font-semibold tabular-nums" style={{ color }}>
+              {fmt(item.revenue)}
+            </p>
+            {/* Tax generated — only meaningful where tax was charged. */}
+            {showTax && item.taxable && (
+              <p className="mt-0.5 text-[10px] tabular-nums text-emerald-600">
+                Tax: {fmt(item.tax)}
+              </p>
+            )}
+          </div>
+        </div>
+      ))}
+
+      {hasMore && (
+        <button
+          onClick={() => setExpanded((prev) => !prev)}
+          className="w-full py-2 text-xs font-semibold text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700"
+        >
+          {expanded
+            ? "Show less"
+            : `Show ${items.length - ITEMS_PER_PAGE} more`}
+        </button>
+      )}
+    </div>
+  );
+}
+
+type ListTab = "taxable" | "nonTaxable" | "custom";
 
 const TaxableVsNonTaxableItems = ({
   data,
@@ -62,102 +155,231 @@ const TaxableVsNonTaxableItems = ({
   const fmt = (v: number) =>
     formatCurrencySymbol(v, currency.symbol, currency.locale);
 
-  const totalRevenue = data.taxableRevenue + data.nonTaxableRevenue;
-  const taxablePct =
-    totalRevenue > 0 ? (data.taxableRevenue / totalRevenue) * 100 : 0;
-  const nonTaxablePct =
-    totalRevenue > 0 ? (data.nonTaxableRevenue / totalRevenue) * 100 : 0;
+  // The headline figures are catalogue-only, so the whole-business total has
+  // to add the custom side back on — otherwise a business selling nothing but
+  // custom items would read as having no revenue at all.
+  const catalogueRevenue = data.taxableRevenue + data.nonTaxableRevenue;
+  const customRevenue =
+    (data.customTaxableRevenue ?? 0) + (data.customNonTaxableRevenue ?? 0);
+  const totalRevenue = catalogueRevenue + customRevenue;
+
+  // Percentages are of the whole business, so the four revenue tiles sum to
+  // 100% between them.
+  const pct = (value: number) =>
+    totalRevenue > 0 ? (value / totalRevenue) * 100 : 0;
+
+  // Split the donut across everything — taxable vs non-taxable is the question
+  // the card is named for; the tiles below break it down by source.
+  const allTaxableRevenue =
+    data.taxableRevenue + (data.customTaxableRevenue ?? 0);
+  const allNonTaxableRevenue =
+    data.nonTaxableRevenue + (data.customNonTaxableRevenue ?? 0);
+  const taxablePct = pct(allTaxableRevenue);
+
   const effectiveRate =
     data.taxableRevenue > 0
       ? (data.taxableTaxAmount / data.taxableRevenue) * 100
       : 0;
+  const customEffectiveRate =
+    (data.customTaxableRevenue ?? 0) > 0
+      ? ((data.customTaxableTaxAmount ?? 0) /
+          (data.customTaxableRevenue ?? 1)) *
+        100
+      : 0;
 
-  const [showTaxableAll, setShowTaxableAll] = useState(false);
-  const [showNonTaxableAll, setShowNonTaxableAll] = useState(false);
+  const customItems = data.customItems ?? [];
+  const customTaxableCount =
+    data.customTaxableCount ?? customItems.filter((i) => i.taxable).length;
+  const customNonTaxableCount =
+    data.customNonTaxableCount ?? customItems.length - customTaxableCount;
 
-  const taxableHasMore = (data.taxableItems?.length ?? 0) > ITEMS_PER_PAGE;
-  const nonTaxableHasMore =
-    (data.nonTaxableItems?.length ?? 0) > ITEMS_PER_PAGE;
+  const [activeTab, setActiveTab] = useState<ListTab>("taxable");
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
-  const taxableItems = showTaxableAll
-    ? data.taxableItems
-    : (data.taxableItems?.slice(0, ITEMS_PER_PAGE) ?? []);
-  const nonTaxableItems = showNonTaxableAll
-    ? data.nonTaxableItems
-    : (data.nonTaxableItems?.slice(0, ITEMS_PER_PAGE) ?? []);
+  const tabs: Array<{
+    key: ListTab;
+    label: string;
+    count: number;
+    color: string;
+  }> = [
+    {
+      key: "taxable",
+      label: "Taxable Items",
+      count: data.taxableItems?.length ?? 0,
+      color: TAXABLE_COLOR,
+    },
+    {
+      key: "nonTaxable",
+      label: "Non-Taxable Items",
+      count: data.nonTaxableItems?.length ?? 0,
+      color: NON_TAXABLE_COLOR,
+    },
+    // The custom tab only exists when there is something in it.
+    ...(customItems.length > 0
+      ? [
+          {
+            key: "custom" as ListTab,
+            label: "Custom Items",
+            count: customItems.length,
+            color: CUSTOM_COLOR,
+          },
+        ]
+      : []),
+  ];
+
+  // Left/Right/Home/End move between tabs, per the WAI-ARIA tabs pattern.
+  const handleTabKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const current = tabs.findIndex((t) => t.key === activeTab);
+    let next: number | null = null;
+
+    if (e.key === "ArrowRight") next = (current + 1) % tabs.length;
+    if (e.key === "ArrowLeft") next = (current - 1 + tabs.length) % tabs.length;
+    if (e.key === "Home") next = 0;
+    if (e.key === "End") next = tabs.length - 1;
+    if (next === null) return;
+
+    e.preventDefault();
+    setActiveTab(tabs[next].key);
+    tabRefs.current[next]?.focus();
+  };
+
+  const activeList =
+    activeTab === "taxable"
+      ? {
+          items: data.taxableItems ?? [],
+          total: data.taxableRevenue,
+          color: TAXABLE_COLOR,
+          empty: "No taxable items",
+          showTax: true,
+          showTag: false,
+        }
+      : activeTab === "nonTaxable"
+        ? {
+            items: data.nonTaxableItems ?? [],
+            total: data.nonTaxableRevenue,
+            color: NON_TAXABLE_COLOR,
+            empty: "No non-taxable items",
+            showTax: false,
+            showTag: false,
+          }
+        : {
+            items: customItems,
+            total: customRevenue,
+            color: CUSTOM_COLOR,
+            empty: "No custom items",
+            showTax: true,
+            showTag: true,
+          };
 
   const pieData = [
-    { name: "Taxable", value: data.taxableRevenue, color: TAXABLE_COLOR },
+    { name: "Taxable", value: allTaxableRevenue, color: TAXABLE_COLOR },
     {
       name: "Non-Taxable",
-      value: data.nonTaxableRevenue,
+      value: allNonTaxableRevenue,
       color: NON_TAXABLE_COLOR,
     },
   ].filter((d) => d.value > 0);
 
+  // Custom tiles sit in the same grid as the headline three rather than in
+  // their own block, so all six read as one set of figures.
   const stats = [
     {
-      label: "Taxable Revenue",
+      label: "Taxable Item's Revenue",
       value: fmt(data.taxableRevenue),
-      sub: `${taxablePct.toFixed(1)}% of revenue`,
+      sub: `Catalogue · ${pct(data.taxableRevenue).toFixed(1)}% of revenue`,
       icon: <DollarSign size={15} className="text-blue-600" />,
       iconBg: "bg-blue-50",
+      accent: TAXABLE_COLOR,
     },
     {
-      label: "Non-Taxable Revenue",
+      label: "Non-Taxable Item's Revenue",
       value: fmt(data.nonTaxableRevenue),
-      sub: `${nonTaxablePct.toFixed(1)}% of revenue`,
-      icon: <Receipt size={15} className="text-gray-500" />,
-      iconBg: "bg-gray-100",
+      sub: `Catalogue · ${pct(data.nonTaxableRevenue).toFixed(1)}% of revenue`,
+      icon: <DollarSign size={15} className="text-rose-500" />,
+      iconBg: "bg-rose-50",
+      accent: NON_TAXABLE_COLOR,
     },
     {
       label: "Tax Collected",
       value: fmt(data.taxableTaxAmount),
-      sub: `Effective rate ${effectiveRate.toFixed(1)}%`,
+      sub: `Catalogue · effective rate ${effectiveRate.toFixed(1)}%`,
       icon: <TrendingUp size={15} className="text-emerald-600" />,
       iconBg: "bg-emerald-50",
+      accent: "#10b981",
     },
+    // Only shown once the range actually contains custom items. Kept apart
+    // from the catalogue figures above: a custom item's taxability comes from
+    // whether tax was charged on the invoice, not from a product setting.
+    ...(customItems.length > 0
+      ? [
+          {
+            label: "Custom Taxable Item's Revenue",
+            value: fmt(data.customTaxableRevenue ?? 0),
+            sub: `${customTaxableCount} ${
+              customTaxableCount === 1 ? "item" : "items"
+            } · ${pct(data.customTaxableRevenue ?? 0).toFixed(1)}% of revenue`,
+            icon: <Sparkles size={15} className="text-cyan-600" />,
+            iconBg: "bg-cyan-50",
+            accent: TAXABLE_COLOR,
+          },
+          {
+            label: "Custom Non-Taxable Item's Revenue",
+            value: fmt(data.customNonTaxableRevenue ?? 0),
+            sub: `${customNonTaxableCount} ${
+              customNonTaxableCount === 1 ? "item" : "items"
+            } · ${pct(data.customNonTaxableRevenue ?? 0).toFixed(1)}% of revenue`,
+            icon: <Sparkles size={15} className="text-rose-500" />,
+            iconBg: "bg-rose-50",
+            accent: NON_TAXABLE_COLOR,
+          },
+          {
+            label: "Custom Tax Collected",
+            value: fmt(data.customTaxableTaxAmount ?? 0),
+            sub: `Custom items · effective rate ${customEffectiveRate.toFixed(
+              1,
+            )}%`,
+            icon: <TrendingUp size={15} className="text-violet-600" />,
+            iconBg: "bg-violet-50",
+            accent: CUSTOM_COLOR,
+          },
+        ]
+      : []),
   ];
 
   return (
-    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6">
+    <div className="relative flex flex-col gap-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
       <div className="flex items-center gap-3">
-        <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-          style={{
-            background: "linear-gradient(90deg, #0ba2c0b9 50%, #ea1f5ccd 50%)",
-          }}
-        >
-          <Scale size={15} className="text-white" />
+        <div className="flex h-8 w-8 shrink-0 bg-blue-50 items-center justify-center rounded-lg">
+          <Scale size={15} className="text-blue-500" />
         </div>
         <ComponentHeader
-          title=" Taxable & Non-Taxable Items"
-          subHeader="Revenue generated by taxable vs non-taxable items"
+          title="Taxable & Non-Taxable Items"
+          subHeader="Revenue and tax generated by taxable vs non-taxable items"
         />
       </div>
 
       {isLoading ? (
         <TaxableSplitSkeleton />
       ) : isError ? (
-        <p className="text-sm text-red-400 text-center py-16">
+        <p className="py-16 text-center text-sm text-red-400">
           Failed to load taxable & non-taxable items
         </p>
       ) : totalRevenue === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
             <Scale size={24} className="text-gray-500" />
           </div>
           <p className="text-sm font-medium text-gray-500">
             No taxable & non-taxable items revenue data
           </p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="mt-1 text-xs text-gray-400">
             Taxable & Non-Taxable Items will appear here
           </p>
         </div>
       ) : (
         <>
           {/* Chart + stats */}
-          <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6 items-center">
+          <div className="grid grid-cols-1 items-center gap-6 lg:grid-cols-[220px_1fr]">
             {/* Donut */}
             <div className="relative h-44">
               <ResponsiveContainer width="100%" height="100%">
@@ -172,167 +394,137 @@ const TaxableVsNonTaxableItems = ({
                     dataKey="value"
                     nameKey="name"
                   >
-                    {pieData.map((d, i) => (
-                      <Cell key={i} fill={d.color} stroke="none" />
+                    {pieData.map((d) => (
+                      <Cell key={d.name} fill={d.color} stroke="none" />
                     ))}
                   </Pie>
                   <Tooltip content={<PieTooltip />} />
                 </PieChart>
               </ResponsiveContainer>
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">
                   Taxable
                 </span>
-                <span className="text-base font-bold text-gray-900">
+                <span className="text-base font-bold tabular-nums text-gray-900">
                   {taxablePct.toFixed(0)}%
                 </span>
               </div>
             </div>
 
-            {/* Stat tiles */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Stat tiles — label above the icon-and-figure row, so the
+                figure sits on the tile's baseline and the labels line up
+                across the grid regardless of icon size. */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               {stats.map((s) => (
                 <div
                   key={s.label}
-                  className="rounded-xl border border-gray-100 p-3.5"
+                  className="relative overflow-hidden rounded-xl border border-gray-100 py-4 px-5 transition-shadow hover:shadow-sm"
                 >
-                  <div className="flex items-center gap-2 mb-2">
+                  {/* Accent rail ties the tile to its colour in the donut
+                      and the tab bar. */}
+                  {/* {s.accent && (
+                    <span
+                      aria-hidden
+                      className="absolute inset-y-0 top-0 left-0 h-0.5 w-full"
+                      style={{ backgroundColor: s.accent }}
+                    />
+                  )} */}
+
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="min-w-0 truncate text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                      {s.label}
+                    </span>
                     <div
-                      className={`w-7 h-7 rounded-lg ${s.iconBg} flex items-center justify-center`}
+                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${s.iconBg}`}
                     >
                       {s.icon}
                     </div>
-                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-                      {s.label}
-                    </span>
                   </div>
-                  <p className="text-lg font-bold text-gray-900 truncate">
+
+                  <p className="mt-2 truncate text-lg font-bold tracking-tight tabular-nums text-gray-900">
                     {s.value}
                   </p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">{s.sub}</p>
+                  <p className="mt-0.5 truncate text-[10px] text-gray-400">
+                    {s.sub}
+                  </p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Item lists */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {/* Taxable */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full"
-                    style={{ backgroundColor: TAXABLE_COLOR }}
-                  />
-                  <span className="text-xs font-semibold text-gray-700">
-                    Taxable Items
-                  </span>
-                  <span className="text-[10px] text-gray-400 font-medium">
-                    ({data.taxableItems?.length ?? 0})
-                  </span>
-                </div>
-                <span
-                  className="text-xs font-semibold"
-                  style={{ color: TAXABLE_COLOR }}
-                >
-                  {fmt(data.taxableRevenue)}
-                </span>
+          {/* Item lists — one at a time, so the visible list gets the full
+              width instead of two cramped columns. */}
+          <div>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div
+                role="tablist"
+                aria-label="Item tax classification"
+                onKeyDown={handleTabKeyDown}
+                className="flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+              >
+                {tabs.map((tab, i) => {
+                  const selected = tab.key === activeTab;
+                  return (
+                    <button
+                      key={tab.key}
+                      ref={(el) => {
+                        tabRefs.current[i] = el;
+                      }}
+                      type="button"
+                      role="tab"
+                      id={`tax-items-tab-${tab.key}`}
+                      aria-selected={selected}
+                      aria-controls="tax-items-panel"
+                      tabIndex={selected ? 0 : -1}
+                      onClick={() => setActiveTab(tab.key)}
+                      className={`flex items-center gap-2 rounded-full px-4 py-1.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                        selected
+                          ? "bg-white font-bold text-blue-950 shadow-sm"
+                          : "font-semibold text-blue-800 hover:text-blue-950"
+                      }`}
+                    >
+                      <span
+                        className="h-2 w-2 shrink-0 rounded-full"
+                        style={{ backgroundColor: tab.color }}
+                      />
+                      {tab.label}
+                      <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#e4f2fe] px-1.5 py-px text-[10px] font-bold tabular-nums text-blue-950 ring-1 ring-blue-900/40">
+                        {tab.count}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
 
-              {taxableItems.length > 0 ? (
-                <div className="rounded-xl border border-gray-100 divide-y divide-gray-50">
-                  {taxableItems.map((item) => (
-                    <div
-                      key={item.name}
-                      className="flex items-center justify-between text-xs py-2 px-3 hover:bg-blue-50/40 transition-colors"
-                    >
-                      <span className="text-gray-700 truncate">
-                        {item.name}
-                      </span>
-                      <span
-                        className="font-semibold shrink-0 ml-2"
-                        style={{ color: TAXABLE_COLOR }}
-                      >
-                        {fmt(item.revenue)}
-                      </span>
-                    </div>
-                  ))}
-                  {taxableHasMore && (
-                    <button
-                      onClick={() => setShowTaxableAll(!showTaxableAll)}
-                      className="w-full text-xs font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-50 py-2 transition-colors"
-                    >
-                      {showTaxableAll
-                        ? "Show less"
-                        : `Show ${data.taxableItems.length - ITEMS_PER_PAGE} more`}
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <p className="text-xs text-gray-400 text-center py-6 rounded-xl border border-gray-100">
-                  No taxable items
-                </p>
-              )}
+              <span
+                className="text-sm font-bold tabular-nums"
+                style={{ color: activeList.color }}
+              >
+                {fmt(activeList.total)}
+              </span>
             </div>
 
-            {/* Non-Taxable */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full"
-                    style={{ backgroundColor: NON_TAXABLE_COLOR }}
-                  />
-                  <span className="text-xs font-semibold text-gray-700">
-                    Non-Taxable Items
-                  </span>
-                  <span className="text-[10px] text-gray-400 font-medium">
-                    ({data.nonTaxableItems?.length ?? 0})
-                  </span>
-                </div>
-                <span
-                  className="text-xs font-semibold"
-                  style={{ color: NON_TAXABLE_COLOR }}
-                >
-                  {fmt(data.nonTaxableRevenue)}
-                </span>
-              </div>
+            {activeTab === "custom" && (
+              <p className="mb-2 text-[11px] text-gray-400">
+                Added on an invoice rather than from the product catalogue —
+                classified by whether tax was charged.
+              </p>
+            )}
 
-              {nonTaxableItems.length > 0 ? (
-                <div className="rounded-xl border border-gray-100 divide-y divide-gray-50">
-                  {nonTaxableItems.map((item) => (
-                    <div
-                      key={item.name}
-                      className="flex items-center justify-between text-xs py-2 px-3 hover:bg-gray-50 transition-colors"
-                    >
-                      <span className="text-gray-700 truncate">
-                        {item.name}
-                      </span>
-                      <span
-                        className="font-semibold shrink-0 ml-2"
-                        style={{ color: NON_TAXABLE_COLOR }}
-                      >
-                        {fmt(item.revenue)}
-                      </span>
-                    </div>
-                  ))}
-                  {nonTaxableHasMore && (
-                    <button
-                      onClick={() => setShowNonTaxableAll(!showNonTaxableAll)}
-                      className="w-full text-xs font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-50 py-2 transition-colors"
-                    >
-                      {showNonTaxableAll
-                        ? "Show less"
-                        : `Show ${data.nonTaxableItems.length - ITEMS_PER_PAGE} more`}
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <p className="text-xs text-gray-400 text-center py-6 rounded-xl border border-gray-100">
-                  No non-taxable items
-                </p>
-              )}
+            <div
+              id="tax-items-panel"
+              role="tabpanel"
+              aria-labelledby={`tax-items-tab-${activeTab}`}
+              tabIndex={0}
+              className="focus-visible:outline-none"
+            >
+              <ItemList
+                color={activeList.color}
+                items={activeList.items}
+                emptyLabel={activeList.empty}
+                showTax={activeList.showTax}
+                showTaxableTag={activeList.showTag}
+              />
             </div>
           </div>
         </>

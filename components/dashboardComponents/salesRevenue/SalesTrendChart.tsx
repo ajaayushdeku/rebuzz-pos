@@ -56,7 +56,7 @@ const CustomTooltip = ({
       <div className="flex flex-row items-center justify-between gap-4">
         <span className="text-xs text-gray-600 capitalize">Revenue</span>
 
-        <span className="text-xs font-bold text-violet-800">
+        <span className="text-xs font-bold text-blue-800">
           {/* {formatCurrency(payload[0].value as number, currency)} */}
           {formatCurrencySymbol(
             payload[0].value as number,

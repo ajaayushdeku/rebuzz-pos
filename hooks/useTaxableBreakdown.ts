@@ -2,17 +2,51 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+/** One row in a breakdown list. */
+export interface TaxBreakdownItem {
+  name: string;
+  revenue: number;
+  tax: number;
+  count: number;
+  isCustom: boolean;
+  taxable: boolean;
+}
+
 export interface TaxableBreakdown {
+  /**
+   * Catalogue products **only**. Custom items are reported separately below,
+   * because their taxability is inferred from whether tax happened to be
+   * charged rather than configured on a product — mixing the two would hide
+   * how much of the split rests on that weaker signal.
+   */
   taxableRevenue: number;
   taxableTaxAmount: number;
   nonTaxableRevenue: number;
-  taxableItems: { name: string; revenue: number }[];
-  nonTaxableItems: { name: string; revenue: number }[];
+  nonTaxableTaxAmount: number;
+
+  /** Catalogue products only — custom ones live in `customItems`. */
+  taxableItems: TaxBreakdownItem[];
+  nonTaxableItems: TaxBreakdownItem[];
+
+  /** Items with no catalogue match, each tagged taxable / non-taxable. */
+  customItems: TaxBreakdownItem[];
+  customTaxableRevenue: number;
+  customTaxableTaxAmount: number;
+  customNonTaxableRevenue: number;
+  /** Tax recorded against custom items classified non-taxable — 0 by
+   *  definition, kept so a data inconsistency is visible rather than lost. */
+  customNonTaxableTaxAmount: number;
+  /** How many custom items fell on each side — for the tiles' sub-lines. */
+  customTaxableCount: number;
+  customNonTaxableCount: number;
 }
 
+/** A row of `/api/report/salesByItem`. */
 interface SalesItem {
   itemName: string;
-  totalRevenue: number;
+  totalRevenue?: number;
+  totalTax?: number;
+  count?: number;
 }
 
 interface RawProduct {
@@ -21,177 +55,203 @@ interface RawProduct {
   isTaxable?: boolean;
 }
 
-interface RawListBill {
-  invoiceNo?: number;
-  taxamt?: number;
-  isRefunded?: boolean;
-}
-
-// Bill-detail shapes (only what we read).
-interface RawBillLine {
-  product?: string;
-  productName?: string;
-  taxAmount?: number;
-  taxApplied?: boolean;
-}
-interface RawBillItemGroup {
-  item?: RawBillLine[];
-}
-interface RawDetailBill {
-  isRefunded?: boolean;
-  items?: RawBillItemGroup[];
-}
-
-const EMPTY: TaxableBreakdown = {
+export const EMPTY_TAX_BREAKDOWN: TaxableBreakdown = {
   taxableRevenue: 0,
   taxableTaxAmount: 0,
   nonTaxableRevenue: 0,
+  nonTaxableTaxAmount: 0,
   taxableItems: [],
   nonTaxableItems: [],
+  customItems: [],
+  customTaxableRevenue: 0,
+  customTaxableTaxAmount: 0,
+  customNonTaxableRevenue: 0,
+  customNonTaxableTaxAmount: 0,
+  customTaxableCount: 0,
+  customNonTaxableCount: 0,
 };
 
-// Cap detail requests used to classify custom products.
-const MAX_DETAILS = 400;
+/**
+ * Catalogue keys to try for one sales row, most specific first.
+ *
+ * salesByItem reports variants under decorated names — "Coke [Small/vanilla]",
+ * "Coke (small · vanilla) [small · vanilla]" — while the catalogue holds the
+ * parent, "Coke". Matching the raw string alone would file every variant as a
+ * custom item, so the suffixes are peeled off in turn. The undecorated name is
+ * tried first, because a product may genuinely be called "Jelly (s,m,l)".
+ */
+function catalogueKeys(itemName: string): string[] {
+  const keys: string[] = [];
+  const push = (value: string) => {
+    const key = value.trim().toLowerCase();
+    if (key && !keys.includes(key)) keys.push(key);
+  };
+
+  push(itemName);
+
+  // Drop a trailing "[…]" variant label.
+  const withoutBrackets = itemName.replace(/\s*\[[^\]]*\]\s*$/, "");
+  push(withoutBrackets);
+
+  // Then a trailing "(…)" option list.
+  push(withoutBrackets.replace(/\s*\([^)]*\)\s*$/, ""));
+
+  return keys;
+}
+
+const round2 = (value: number) => Math.round(value * 100) / 100;
 
 async function fetchTaxableBreakdown(
   startDate: string,
   endDate: string,
 ): Promise<TaxableBreakdown> {
-  // ── Sales by item (revenue per item name) ──
-  const salesRes = await fetch(
-    `/api/report/salesByItem?startDate=${startDate}&endDate=${endDate}`,
-    { cache: "no-store" },
-  );
+  // ── Sales and catalogue, fetched together ────────────────────────────────
+  // Neither depends on the other, so they run in parallel; the products call
+  // used to wait on the sales call for no reason.
+  const [salesRes, productsRes] = await Promise.all([
+    fetch(`/api/report/salesByItem?startDate=${startDate}&endDate=${endDate}`, {
+      cache: "no-store",
+    }),
+    fetch("/api/products", { cache: "no-store" }),
+  ]);
+
   if (!salesRes.ok) {
     throw new Error(`Failed to fetch sales: ${salesRes.status}`);
   }
-  const salesJson = await salesRes.json();
-  const salesItems: SalesItem[] = salesJson?.data ?? [];
-  if (salesItems.length === 0) return EMPTY;
-
-  // Merge duplicate item names.
-  const mergedRevenue = new Map<string, number>();
-  for (const item of salesItems) {
-    mergedRevenue.set(
-      item.itemName,
-      (mergedRevenue.get(item.itemName) ?? 0) + item.totalRevenue,
-    );
-  }
-
-  // ── Products (regular-product tax status — unchanged) ──
-  const productsRes = await fetch("/api/products", { cache: "no-store" });
   if (!productsRes.ok) {
     throw new Error(`Failed to fetch products: ${productsRes.status}`);
   }
-  const productsJson = await productsRes.json();
+
+  const [salesJson, productsJson] = await Promise.all([
+    salesRes.json(),
+    productsRes.json(),
+  ]);
+
+  const salesItems: SalesItem[] = salesJson?.data ?? [];
+  if (salesItems.length === 0) return EMPTY_TAX_BREAKDOWN;
+
+  // One row per (item, payment method), so the same item appears more than
+  // once — merge on name before classifying.
+  type Merged = { name: string; revenue: number; tax: number; count: number };
+  const merged = new Map<string, Merged>();
+
+  for (const item of salesItems) {
+    if (!item.itemName) continue;
+    const key = item.itemName.toLowerCase();
+    const existing = merged.get(key);
+
+    if (existing) {
+      existing.revenue += item.totalRevenue ?? 0;
+      existing.tax += item.totalTax ?? 0;
+      existing.count += item.count ?? 0;
+    } else {
+      merged.set(key, {
+        name: item.itemName,
+        revenue: item.totalRevenue ?? 0,
+        tax: item.totalTax ?? 0,
+        count: item.count ?? 0,
+      });
+    }
+  }
+
+  // ── Catalogue: taxability of regular products ────────────────────────────
   const rawProducts: RawProduct[] = productsJson?.data?.products ?? [];
 
-  const isTaxableMap = new Map<string, boolean>(); // lowerName → isTaxable
-  const knownNames = new Set<string>(); // lowercased product names
-  for (const p of rawProducts) {
-    if (p.name) {
-      const key = p.name.toLowerCase();
-      isTaxableMap.set(key, Boolean(p.isTaxable));
-      knownNames.add(key);
-    }
-  }
-
-  // ── Bills: total tax collected + per-item tax for custom products ──
-  let taxableTaxAmount = 0;
-  // Product names (lowercased) whose bill line had tax applied. Custom-product
-  // classification reads this since their taxability is set at invoice time.
-  const taxedNames = new Set<string>();
-
-  try {
-    const billsRes = await fetch(
-      `/api/tickets/bills?startDate=${startDate}&endDate=${endDate}&limit=5000`,
-      { cache: "no-store" },
-    );
-    if (billsRes.ok) {
-      const billsJson = await billsRes.json();
-      const bills: RawListBill[] = billsJson?.data?.bill ?? [];
-
-      const invoiceNos: number[] = [];
-      for (const bill of bills) {
-        if (bill.isRefunded) continue;
-        taxableTaxAmount += bill.taxamt ?? 0;
-        if (bill.invoiceNo != null) invoiceNos.push(bill.invoiceNo);
-      }
-
-      // Bill details give per-item tax — the source of truth for custom items.
-      const details = await Promise.all(
-        invoiceNos.slice(0, MAX_DETAILS).map(async (invoiceNo) => {
-          try {
-            const res = await fetch(`/api/transactions/${invoiceNo}`, {
-              cache: "no-store",
-            });
-            if (!res.ok) return null;
-            const json = await res.json();
-            return (json?.data?.bill ?? null) as RawDetailBill | null;
-          } catch {
-            return null;
-          }
-        }),
+  const isTaxableByName = new Map<string, boolean>();
+  for (const product of rawProducts) {
+    if (product.name) {
+      isTaxableByName.set(
+        product.name.toLowerCase(),
+        Boolean(product.isTaxable),
       );
-
-      for (const detail of details) {
-        if (!detail || detail.isRefunded) continue;
-        for (const group of detail.items ?? []) {
-          for (const line of group.item ?? []) {
-            const name = line.productName ?? "";
-            if (!name) continue;
-
-            // Record by name whether tax was applied on this line — trust the
-            // bill line's `taxApplied` flag (fall back to a positive amount).
-            const taxed =
-              line.taxApplied === true || (Number(line.taxAmount) || 0) > 0;
-            if (taxed) taxedNames.add(name.toLowerCase());
-          }
-        }
-      }
     }
-  } catch (err) {
-    console.error("Failed to fetch bills for tax breakdown:", err);
   }
 
-  // ── Classify each item into taxable / non-taxable ──
-  const taxableItems: { name: string; revenue: number }[] = [];
-  const nonTaxableItems: { name: string; revenue: number }[] = [];
+  // ── Classify ─────────────────────────────────────────────────────────────
+  const taxableItems: TaxBreakdownItem[] = [];
+  const nonTaxableItems: TaxBreakdownItem[] = [];
+  const customItems: TaxBreakdownItem[] = [];
+
   let taxableRevenue = 0;
+  let taxableTaxAmount = 0;
   let nonTaxableRevenue = 0;
+  let nonTaxableTaxAmount = 0;
+  let customTaxableRevenue = 0;
+  let customTaxableTaxAmount = 0;
+  let customNonTaxableRevenue = 0;
+  let customNonTaxableTaxAmount = 0;
+  let customTaxableCount = 0;
+  let customNonTaxableCount = 0;
 
-  for (const [itemName, revenue] of mergedRevenue) {
-    const lower = itemName.toLowerCase();
+  for (const entry of merged.values()) {
+    const matchedKey = catalogueKeys(entry.name).find((key) =>
+      isTaxableByName.has(key),
+    );
+    const isCustom = matchedKey === undefined;
 
-    let taxable: boolean;
-    if (knownNames.has(lower)) {
-      // Regular product — use the Products API `isTaxable` (existing logic).
-      taxable = isTaxableMap.get(lower) === true;
+    // Catalogue products follow their `isTaxable` flag. Custom items have no
+    // flag to follow — whether tax was charged on the invoice is the only
+    // record of their taxability, so a non-zero `totalTax` is the test.
+    const taxable = isCustom
+      ? entry.tax > 0
+      : isTaxableByName.get(matchedKey) === true;
+
+    const row: TaxBreakdownItem = {
+      name: entry.name,
+      revenue: round2(entry.revenue),
+      tax: round2(entry.tax),
+      count: entry.count,
+      isCustom,
+      taxable,
+    };
+
+    // Catalogue and custom totals are kept entirely apart — the headline
+    // taxable / non-taxable figures count catalogue products only.
+    if (isCustom) {
+      customItems.push(row);
+      if (taxable) {
+        customTaxableRevenue += entry.revenue;
+        customTaxableTaxAmount += entry.tax;
+        customTaxableCount += 1;
+      } else {
+        customNonTaxableRevenue += entry.revenue;
+        customNonTaxableTaxAmount += entry.tax;
+        customNonTaxableCount += 1;
+      }
+    } else if (taxable) {
+      taxableItems.push(row);
+      taxableRevenue += entry.revenue;
+      taxableTaxAmount += entry.tax;
     } else {
-      // Custom product — the bills are the source of truth: taxed if any of
-      // its bill lines had `taxApplied` set.
-      taxable = taxedNames.has(lower);
-    }
-
-    if (taxable) {
-      taxableRevenue += revenue;
-      taxableItems.push({ name: itemName, revenue });
-    } else {
-      nonTaxableRevenue += revenue;
-      nonTaxableItems.push({ name: itemName, revenue });
+      nonTaxableItems.push(row);
+      nonTaxableRevenue += entry.revenue;
+      nonTaxableTaxAmount += entry.tax;
     }
   }
 
-  taxableItems.sort((a, b) => b.revenue - a.revenue);
-  nonTaxableItems.sort((a, b) => b.revenue - a.revenue);
+  const byRevenue = (a: TaxBreakdownItem, b: TaxBreakdownItem) =>
+    b.revenue - a.revenue;
+  taxableItems.sort(byRevenue);
+  nonTaxableItems.sort(byRevenue);
+  // Taxable custom items first, then by revenue.
+  customItems.sort(
+    (a, b) => Number(b.taxable) - Number(a.taxable) || b.revenue - a.revenue,
+  );
 
-  // Custom products are folded into taxable / non-taxable above.
   return {
-    taxableRevenue: Math.round(taxableRevenue * 100) / 100,
-    taxableTaxAmount: Math.round(taxableTaxAmount * 100) / 100,
-    nonTaxableRevenue: Math.round(nonTaxableRevenue * 100) / 100,
+    taxableRevenue: round2(taxableRevenue),
+    taxableTaxAmount: round2(taxableTaxAmount),
+    nonTaxableRevenue: round2(nonTaxableRevenue),
+    nonTaxableTaxAmount: round2(nonTaxableTaxAmount),
     taxableItems,
     nonTaxableItems,
+    customItems,
+    customTaxableRevenue: round2(customTaxableRevenue),
+    customTaxableTaxAmount: round2(customTaxableTaxAmount),
+    customTaxableCount,
+    customNonTaxableCount,
+    customNonTaxableRevenue: round2(customNonTaxableRevenue),
+    customNonTaxableTaxAmount: round2(customNonTaxableTaxAmount),
   };
 }
 

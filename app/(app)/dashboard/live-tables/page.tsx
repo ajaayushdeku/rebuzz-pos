@@ -42,12 +42,12 @@ export default function LiveTablesPage() {
   const indoorTables = tables.filter((t) => t.zone === "indoor");
   const outdoorTables = tables.filter((t) => t.zone === "outdoor");
   const openTables = tables.filter((t) => t.status === "free").length;
-  const occupancyPct = indoorTables.length
-    ? Math.round(
-        (indoorTables.filter((t) => t.status === "occupied").length /
-          indoorTables.length) *
-          100,
-      )
+  const totalTables = indoorTables.length + outdoorTables.length;
+  const occupancyPct = totalTables
+    ? ((indoorTables.filter((t) => t.status === "occupied").length +
+        outdoorTables.filter((t) => t.status === "occupied").length) /
+        totalTables) *
+      100
     : 0;
 
   return (

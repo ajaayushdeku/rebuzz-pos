@@ -12,7 +12,13 @@ import {
   Trash2,
   Edit3,
   Diamond,
+  Gem,
+  Medal,
+  Award,
+  Check,
+  X,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +31,7 @@ import {
 } from "@/services/apiLoyaltyPoint";
 import { useBusiness } from "@/hooks/useBusiness";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 
 const inputClass =
   "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
@@ -68,6 +75,23 @@ const STATUS_COLORS: Record<
     label: "Platinum",
   },
 };
+
+/**
+ * Every tier used to render a Diamond, so Bronze and Diamond were the same
+ * glyph. Named tiers get something that reads like their rank; anything the
+ * business invents falls back to a generic badge.
+ */
+const TIER_ICONS: Record<string, LucideIcon> = {
+  bronze: Medal,
+  silver: Medal,
+  gold: Trophy,
+  platinum: Gem,
+  diamond: Diamond,
+};
+
+function tierIcon(name: string): LucideIcon {
+  return TIER_ICONS[name.trim().toLowerCase()] ?? Award;
+}
 
 // ── Mock Initial Statuses ───────────────────────────────────────────────────
 const MOCK_STATUSES: LoyaltyStatus[] = [
@@ -145,6 +169,10 @@ export default function LoyaltyPointPage() {
 
   // ── Loyalty Status State (mock) ──────────────────────────────────────────
   const [statuses, setStatuses] = useState<LoyaltyStatus[]>(MOCK_STATUSES);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [statusForm, setStatusForm] = useState<{
     name: string;
     minPoints: string;
@@ -294,15 +322,44 @@ export default function LoyaltyPointPage() {
     setStatusErrors({});
   };
 
-  const handleDeleteStatus = (id: string) => {
-    const status = statuses.find((s) => s.id === id);
+  /**
+   * Deleting a tier re-bands every customer sitting in it, so it goes
+   * through the app's shared confirmation rather than firing on one click.
+   */
+  const confirmDeleteStatus = () => {
+    if (!deleteTarget) return;
+    const { id, name } = deleteTarget;
+
     setStatuses((prev) => prev.filter((s) => s.id !== id));
     if (editingId === id) {
       setEditingId(null);
       setStatusForm({ name: "", minPoints: "" });
     }
-    toast.success(`Status "${status?.name}" removed`);
+    setDeleteTarget(null);
+    toast.success(`Status "${name}" removed`);
   };
+
+  /**
+   * Tiers are a ladder, so they read in threshold order regardless of the
+   * order they were added — which is also what makes each row's point range
+   * derivable from the next row's minimum.
+   */
+  const sortedStatuses = [...statuses].sort(
+    (a, b) => a.minPoints - b.minPoints,
+  );
+
+  /** Badge appearance for whatever is currently typed into the form. */
+  const previewTier = (() => {
+    const existing = editingId
+      ? statuses.find((s) => s.id === editingId)
+      : undefined;
+    const named = STATUS_COLORS[statusForm.name.trim().toLowerCase()];
+    return {
+      Icon: tierIcon(statusForm.name),
+      color: existing?.color ?? named?.color ?? "text-blue-700",
+      bgColor: existing?.bgColor ?? named?.bg ?? "bg-blue-100",
+    };
+  })();
 
   const handleCancelEdit = () => {
     setEditingId(null);
@@ -482,32 +539,40 @@ export default function LoyaltyPointPage() {
         {/* ── CUSTOMER LOYALTY STATUS SECTION ── */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div className="border-t pt-8">
-          <div className="mb-6">
-            <div className="flex flex-row items-center gap-3 mb-1">
-              <Trophy className="h-5 w-5 text-yellow-500" />
-              <ComponentHeader
-                title="Customer Loyalty Status"
-                subHeader="Define loyalty tiers (Bronze, Silver, Gold, Diamond, etc.) and
-              their point thresholds."
-              />
+          <div className="mb-6 flex items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-yellow-50">
+              <Trophy className="h-4 w-4 text-yellow-500" />
             </div>
+            <ComponentHeader
+              title="Customer Loyalty Status"
+              subHeader="Define loyalty tiers and the point thresholds a customer crosses to reach them."
+            />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             {/* ── Form Section (2 cols) ── */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+              {/* Sticky so the form stays reachable while a long tier list
+                  scrolls beside it. */}
+              <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-5 shadow-sm lg:sticky lg:top-6">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50">
                     {editingId ? (
                       <Edit3 className="h-4 w-4 text-blue-600" />
                     ) : (
                       <Plus className="h-4 w-4 text-blue-600" />
                     )}
                   </div>
-                  <p className="text-sm font-semibold text-gray-900">
-                    {editingId ? "Edit Status" : "Add New Status"}
-                  </p>
+                  <div className="min-w-0">
+                    <ComponentHeader
+                      title={editingId ? "Edit Status" : "Add New Status"}
+                      subHeader={
+                        editingId
+                          ? "Update this tier's name or threshold"
+                          : "Name the tier and set the points needed"
+                      }
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -566,19 +631,48 @@ export default function LoyaltyPointPage() {
                   )}
                 </div>
 
+                {/* Preview — the badge's icon and colour are derived from
+                    the name, so showing the result while typing beats
+                    discovering it after the row is added. */}
+                {statusForm.name.trim() && (
+                  <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50/60 px-3 py-2.5">
+                    <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                      Preview
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ring-current/25 ${previewTier.bgColor} ${previewTier.color}`}
+                      >
+                        <previewTier.Icon className="h-3 w-3" />
+                        {statusForm.name.trim()}
+                      </span>
+                      <span className="text-xs tabular-nums text-gray-400">
+                        from{" "}
+                        {Number(statusForm.minPoints || 0).toLocaleString()} pts
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-2 pt-1">
                   <Button
                     onClick={handleAddStatus}
-                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm h-9 px-4"
+                    className="h-9 flex-1 rounded-lg bg-blue-600 px-4 text-sm text-white hover:bg-blue-700"
                   >
+                    {editingId ? (
+                      <Check className="mr-1.5 h-4 w-4" />
+                    ) : (
+                      <Plus className="mr-1.5 h-4 w-4" />
+                    )}
                     {editingId ? "Update Status" : "Add Status"}
                   </Button>
                   {editingId && (
                     <Button
                       variant="outline"
                       onClick={handleCancelEdit}
-                      className="rounded-lg text-sm h-9 px-4"
+                      className="h-9 rounded-lg px-3 text-sm"
                     >
+                      <X className="h-4 w-4" />
                       Cancel
                     </Button>
                   )}
@@ -588,72 +682,129 @@ export default function LoyaltyPointPage() {
 
             {/* ── Table Section (3 cols) ── */}
             <div className="lg:col-span-3">
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                {/* Count header — the table gave no sense of how many tiers
+                    exist without counting the rows. */}
+                <div className="flex items-center justify-between gap-2 border-b border-gray-200 px-4 py-3">
+                  <p className="text-sm font-semibold text-gray-900">
+                    Loyalty Tiers
+                  </p>
+                  <span className="text-xs font-medium tabular-nums text-gray-400">
+                    {sortedStatuses.length}{" "}
+                    {sortedStatuses.length === 1 ? "tier" : "tiers"}
+                  </span>
+                </div>
+
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full min-w-[520px] text-sm">
                     <thead>
-                      <tr className="bg-gray-50 border-b border-gray-200">
-                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <tr className="border-b border-gray-100 text-[11px] uppercase tracking-wider text-gray-400">
+                        <th className="w-10 px-4 py-3 text-left font-semibold">
+                          Lvl
+                        </th>
+                        <th className="px-4 py-3 text-left font-semibold">
                           Status
                         </th>
-                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          Min Points
+                        <th className="px-4 py-3 text-left font-semibold">
+                          Point Range
                         </th>
-                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-right font-semibold">
                           Actions
                         </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {statuses.length === 0 ? (
+                      {sortedStatuses.length === 0 ? (
                         <tr>
-                          <td
-                            colSpan={3}
-                            className="px-4 py-8 text-center text-sm text-gray-400"
-                          >
-                            No loyalty statuses defined yet. Add one using the
-                            form.
+                          <td colSpan={4} className="px-4 py-10">
+                            <div className="flex flex-col items-center text-center">
+                              <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
+                                <Trophy size={22} className="text-gray-400" />
+                              </div>
+                              <p className="text-sm font-medium text-gray-500">
+                                No loyalty tiers yet
+                              </p>
+                              <p className="mt-1 text-xs text-gray-400">
+                                Add one with the form to start ranking
+                                customers.
+                              </p>
+                            </div>
                           </td>
                         </tr>
                       ) : (
-                        statuses.map((status) => (
-                          <tr
-                            key={status.id}
-                            className="hover:bg-gray-50 transition-colors"
-                          >
-                            <td className="px-4 py-3">
-                              <span
-                                className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${status.bgColor} ${status.color} border-current`}
-                              >
-                                <Diamond className="h-3 w-3" />
-                                {status.name}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-700 font-medium">
-                              {status.minPoints.toLocaleString()} pts
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                              <div className="flex items-center justify-end gap-1.5">
-                                <button
-                                  type="button"
-                                  onClick={() => handleEditStatus(status)}
-                                  className="p-1.5 rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                                  title="Edit"
+                        sortedStatuses.map((status, idx) => {
+                          const TierIcon = tierIcon(status.name);
+                          // The tier runs until the next one begins; the top
+                          // tier is open-ended.
+                          const next = sortedStatuses[idx + 1];
+                          const range = next
+                            ? `${status.minPoints.toLocaleString()} – ${(
+                                next.minPoints - 1
+                              ).toLocaleString()}`
+                            : `${status.minPoints.toLocaleString()}+`;
+
+                          return (
+                            <tr
+                              key={status.id}
+                              className={`transition-colors ${
+                                // Clicking Edit filled the form with no sign of
+                                // which row it came from.
+                                editingId === status.id
+                                  ? "bg-blue-50/60"
+                                  : "hover:bg-gray-50"
+                              }`}
+                            >
+                              <td className="px-4 py-3 text-xs font-semibold tabular-nums text-gray-300">
+                                {idx + 1}
+                              </td>
+                              <td className="px-4 py-3">
+                                <span
+                                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ring-current/25 ${status.bgColor} ${status.color}`}
                                 >
-                                  <Edit3 className="h-3.5 w-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteStatus(status.id)}
-                                  className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                                  title="Delete"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
+                                  <TierIcon className="h-3 w-3" />
+                                  {status.name}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className="text-sm font-medium tabular-nums text-gray-800">
+                                  {range}
+                                </span>
+                                <span className="ml-1 text-xs text-gray-400">
+                                  pts
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleEditStatus(status)}
+                                    className={`rounded-md p-1.5 transition-colors ${
+                                      editingId === status.id
+                                        ? "bg-blue-100 text-blue-600"
+                                        : "text-gray-400 hover:bg-blue-50 hover:text-blue-600"
+                                    }`}
+                                    title="Edit"
+                                  >
+                                    <Edit3 className="h-3.5 w-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setDeleteTarget({
+                                        id: status.id,
+                                        name: status.name,
+                                      })
+                                    }
+                                    className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                                    title="Delete"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })
                       )}
                     </tbody>
                   </table>
@@ -663,6 +814,20 @@ export default function LoyaltyPointPage() {
           </div>
         </div>
       </div>
+
+      <DeleteConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        icon={Trophy}
+        title="Delete loyalty tier?"
+        description={
+          deleteTarget
+            ? `“${deleteTarget.name}” will be removed from the tier ladder.`
+            : "This tier will be removed from the tier ladder."
+        }
+        warning="Customers in this tier will fall back to the next lowest one."
+        onConfirm={confirmDeleteStatus}
+      />
     </div>
   );
 }

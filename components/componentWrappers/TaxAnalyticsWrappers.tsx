@@ -7,7 +7,10 @@ import {
   type DateRangeValue,
 } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import TaxableVsNonTaxableItems from "@/components/dashboardComponents/taxAnalytics/TaxableVsNonTaxableItems";
-import { useTaxableBreakdown } from "@/hooks/useTaxableBreakdown";
+import {
+  useTaxableBreakdown,
+  EMPTY_TAX_BREAKDOWN,
+} from "@/hooks/useTaxableBreakdown";
 import { useHighestTaxItems } from "@/hooks/useHighestTaxItems";
 import { useTaxByCategory } from "@/hooks/useTaxByCategory";
 import HighestTaxGenerated from "@/components/dashboardComponents/taxAnalytics/HighestTaxGenerated";
@@ -69,15 +72,7 @@ export function TaxableVsNonTaxableWrapper({
 
   return (
     <TaxableVsNonTaxableItems
-      data={
-        data || {
-          taxableRevenue: 0,
-          taxableTaxAmount: 0,
-          nonTaxableRevenue: 0,
-          taxableItems: [],
-          nonTaxableItems: [],
-        }
-      }
+      data={data || EMPTY_TAX_BREAKDOWN}
       isLoading={isLoading}
       isError={isError}
     />
