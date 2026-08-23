@@ -33,10 +33,7 @@ export interface TaxableBreakdown {
   customTaxableRevenue: number;
   customTaxableTaxAmount: number;
   customNonTaxableRevenue: number;
-  /** Tax recorded against custom items classified non-taxable — 0 by
-   *  definition, kept so a data inconsistency is visible rather than lost. */
   customNonTaxableTaxAmount: number;
-  /** How many custom items fell on each side — for the tiles' sub-lines. */
   customTaxableCount: number;
   customNonTaxableCount: number;
 }
@@ -71,15 +68,7 @@ export const EMPTY_TAX_BREAKDOWN: TaxableBreakdown = {
   customNonTaxableCount: 0,
 };
 
-/**
- * Catalogue keys to try for one sales row, most specific first.
- *
- * salesByItem reports variants under decorated names — "Coke [Small/vanilla]",
- * "Coke (small · vanilla) [small · vanilla]" — while the catalogue holds the
- * parent, "Coke". Matching the raw string alone would file every variant as a
- * custom item, so the suffixes are peeled off in turn. The undecorated name is
- * tried first, because a product may genuinely be called "Jelly (s,m,l)".
- */
+/* Catalogue keys to try for one sales row, most specific first. */
 function catalogueKeys(itemName: string): string[] {
   const keys: string[] = [];
   const push = (value: string) => {

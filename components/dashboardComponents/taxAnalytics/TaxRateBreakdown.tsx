@@ -245,13 +245,8 @@ export default function TaxRateBreakdown() {
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6">
       <div className="flex items-center gap-3">
-        <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-          style={{
-            background: "linear-gradient(90deg, #2a9070c3 50%, #7c3aedbd 50%)",
-          }}
-        >
-          <Percent size={15} className="text-white" />
+        <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
+          <Percent size={15} className="text-green-500" />
         </div>
         <ComponentHeader
           title="Tax Breakdown"
