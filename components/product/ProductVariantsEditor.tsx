@@ -33,13 +33,7 @@ export const rowKey = (optionValues: string[]) => optionValues.join("/");
 export const usableOptions = (options: VariantOption[]) =>
   options.filter((o) => o.title.trim() && o.values.length > 0);
 
-/**
- * Every combination of the option values, in option order.
- *
- * Existing rows are matched by key so edits survive: adding a "large" size
- * keeps the prices already typed against small and medium, and removing a
- * value drops only its rows.
- */
+/* Every combination of the option values, in option order. */
 export function buildVariantRows(
   options: VariantOption[],
   existing: VariantRow[] = [],
@@ -152,13 +146,7 @@ function ValueTags({
   );
 }
 
-/**
- * Step one of the variant flow: the option groups.
- *
- * Options and the generated rows always move together — the rows are derived
- * from the options — so this owns both callbacks even though it only renders
- * the options.
- */
+/* Step one of the variant flow: the option groups. */
 export function VariantOptionsEditor({
   options,
   rows,
@@ -257,13 +245,7 @@ export function VariantOptionsEditor({
   );
 }
 
-/**
- * Step two of the variant flow: a card per generated combination.
- *
- * The options themselves are not editable here — they live on the previous
- * page — so they are restated read-only, which is what the cards below are
- * derived from.
- */
+/* Step two of the variant flow: a card per generated combination. */
 export function VariantRowsEditor({
   options,
   rows,
@@ -275,13 +257,7 @@ export function VariantRowsEditor({
   options: VariantOption[];
   rows: VariantRow[];
   currencySymbol: string;
-  /**
-   * Mirrors the product's "Track stock" switch. With it off, a variant has no
-   * stock to hold, so those two fields are hidden rather than sitting at 0 and
-   * inviting numbers that never get saved.
-   */
   showStock: boolean;
-  /** Keyed by row key. */
   errors?: Record<string, string>;
   onRowsChange: (rows: VariantRow[]) => void;
 }) {

@@ -354,7 +354,7 @@ export default function CreditsTable({
                     <tr
                       onClick={() =>
                         c.status !== "archived" &&
-                        router.push(`/invoices/${c.invoiceNo}`)
+                        router.push(`/records/credits/${c._id}`)
                       }
                       className={`border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors ${c.status !== "archived" ? "cursor-pointer" : ""}`}
                     >
@@ -500,9 +500,7 @@ export default function CreditsTable({
                                     <DropdownMenuItem
                                       className="rounded-lg cursor-pointer"
                                       onSelect={() =>
-                                        withInvoiceNo(c, (inv) =>
-                                          router.push(`/invoices/${inv}`),
-                                        )
+                                        router.push(`/records/credits/${c._id}`)
                                       }
                                     >
                                       View

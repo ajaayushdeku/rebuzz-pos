@@ -788,6 +788,19 @@ export default function InvoiceForm({
   // Payments only render once there's something to deduct.
   const showPaymentHistory = isCreditInvoice && paidPayments.length > 0;
 
+  /**
+   * Where the form returns to when the edit ends.
+   *
+   * A credit is edited from its own detail page, so leaving — whether by
+   * cancelling or by saving — belongs there. Routing to the invoice would drop
+   * the user on a page about the original ticket instead of the credit they
+   * were working on.
+   */
+  const returnHref =
+    isCreditInvoice && creditId
+      ? `/records/credits/${creditId}`
+      : `/invoices/${invoiceNumber}`;
+
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   const handleItemDiscountAdd = (itemId: string, discountId: string) => {
@@ -1126,7 +1139,7 @@ export default function InvoiceForm({
           queryClient.invalidateQueries({
             queryKey: ["credit-detail-by-id", creditId],
           });
-          router.push(`/invoices/${invoiceNumber}`);
+          router.push(returnHref);
         })
         .catch((err) => {
           toast.error(
@@ -1265,7 +1278,7 @@ export default function InvoiceForm({
             <Button
               type="button"
               variant="outline"
-              onClick={() => router.push(`/invoices/${invoiceNumber}`)}
+              onClick={() => router.push(returnHref)}
               className="border-gray-300 text-gray-600 hover:text-gray-800 px-6 py-3 rounded-lg"
             >
               Cancel

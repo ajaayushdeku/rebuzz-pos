@@ -183,6 +183,12 @@
     top: auto !important;
     width: 100% !important;
   }
+  /* The same units the PDF exporter refuses to cut through. Without this a
+     page break lands mid-row or splits the totals from their grand total. */
+  .invoice-print-root [data-pdf-block] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 }
 
 /* Hide number input spinners */
