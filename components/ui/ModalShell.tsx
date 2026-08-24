@@ -5,7 +5,6 @@ import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-/** Small uppercase section heading used across every modal. */
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-400">
@@ -13,11 +12,6 @@ export function SectionLabel({ children }: { children: React.ReactNode }) {
     </span>
   );
 }
-
-// ── Field styling ─────────────────────────────────────────────────────────
-// The input treatment the invoice modals use: 44px tall, rounded-xl, 13px
-// text, blue focus ring. Exported so every modal form shares one definition
-// rather than each re-declaring a near-identical class string that then drifts.
 
 export const modalInput =
   "h-11 w-full rounded-xl border bg-white px-3.5 text-[13px] outline-none transition focus:ring-2";
@@ -38,7 +32,6 @@ export const modalSelectTriggerIdle =
 export const modalSelectTriggerError =
   "border-red-300 focus-visible:border-red-400 focus-visible:ring-red-500/20";
 
-/** Footer button pair used across the modal forms. */
 export const modalGhostButton =
   "shrink-0 rounded-xl px-5 py-3 text-[13px] font-semibold text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50";
 export const modalPrimaryButton =
@@ -72,25 +65,16 @@ interface ModalShellProps {
   icon?: LucideIcon;
   iconColor?: string;
   iconBgColor?: string;
-  /** Blocks backdrop / Escape / close-button dismissal while work is running. */
   busy?: boolean;
-  /** Tailwind max-width. Default fits a single column of rows. */
+
   maxWidth?: string;
+  bodyMaxHeight?: string;
+  bodyMinHeight?: string;
   footer?: React.ReactNode;
-  /**
-   * Drops the header bar, leaving a floating close button. For centred layouts
-   * — confirmations — where the icon and title belong in the body, not in a
-   * left-aligned bar. `title` is still required: it stays the aria-label.
-   */
   hideHeader?: boolean;
   children: React.ReactNode;
 }
 
-/**
- * The one modal chrome: portal, backdrop, Escape, scroll lock, header, footer.
- * Every invoice modal renders its content inside this so spacing, type scale
- * and dismissal behaviour stay identical across the set.
- */
 export default function ModalShell({
   open,
   onClose,
@@ -101,6 +85,9 @@ export default function ModalShell({
   iconBgColor = "bg-blue-50",
   busy = false,
   maxWidth = "max-w-xl",
+
+  bodyMaxHeight = "max-h-[65vh]",
+  bodyMinHeight,
   footer,
   hideHeader = false,
   children,
@@ -136,8 +123,6 @@ export default function ModalShell({
         onClick={(e) => e.stopPropagation()}
         className={`relative w-full ${maxWidth} overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 duration-200`}
       >
-        {/* Headerless layouts still need a way out, so the close button floats
-            over the content instead of sitting in a bar. */}
         {hideHeader && !busy && (
           <button
             type="button"
@@ -149,7 +134,6 @@ export default function ModalShell({
           </button>
         )}
 
-        {/* Header */}
         {!hideHeader && (
           <div className="flex items-start justify-between border-b border-gray-100 px-6 py-4">
             <div className="flex min-w-0 items-center gap-3">
@@ -182,12 +166,12 @@ export default function ModalShell({
           </div>
         )}
 
-        {/* Content */}
-        <div className="max-h-[65vh] overflow-y-auto px-6 py-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div
+          className={`${bodyMaxHeight} ${bodyMinHeight} overflow-y-auto px-6 py-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}
+        >
           {children}
         </div>
 
-        {/* Footer */}
         {footer && (
           <div className="border-t border-gray-100 px-6 py-4 z-1">{footer}</div>
         )}
@@ -201,11 +185,9 @@ interface DocumentRowProps {
   icon: LucideIcon;
   label: string;
   description: string;
-  /** Present = the row behaves as a radio option. */
   selected?: boolean;
   onSelect?: () => void;
   disabled?: boolean;
-  /** Buttons shown on the right for action-style rows. */
   trailing?: React.ReactNode;
 }
 

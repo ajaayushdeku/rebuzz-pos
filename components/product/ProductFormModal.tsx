@@ -4,21 +4,27 @@ import { useState, useEffect, useRef } from "react";
 import {
   AlertCircle,
   ArrowDownRight,
+  ArrowLeft,
   ArrowUpRight,
   Check,
+  ChevronRight,
   ImageIcon,
   Loader2,
   Package,
   Plus,
+  SlidersHorizontal,
   Upload,
   X,
 } from "lucide-react";
 import { Product } from "@/lib/types/product";
 import ModalShell from "@/components/ui/ModalShell";
 import SelectMenu from "@/components/ui/SelectMenu";
-import ProductVariantsEditor, {
+import {
+  VariantOptionsEditor,
+  VariantRowsEditor,
   buildVariantRows,
   rowKey,
+  usableOptions,
   type VariantOption,
   type VariantRow,
 } from "@/components/product/ProductVariantsEditor";
@@ -38,7 +44,7 @@ const DOMAIN = {
   price: { rail: "bg-emerald-500", label: "text-emerald-700" },
   cost: { rail: "bg-amber-500", label: "text-amber-700" },
   stock: { rail: "bg-blue-500", label: "text-blue-700" },
-  discount: { rail: "bg-violet-500", label: "text-violet-700" },
+  discount: { rail: "bg-cyan-500", label: "text-cyan-700" },
 } as const;
 
 type ProductFormData = {
@@ -98,6 +104,79 @@ function Toggle({
         }`}
       />
     </button>
+  );
+}
+
+type Step = "details" | "options" | "variants";
+
+const STEPS: { id: Step; label: string }[] = [
+  { id: "details", label: "Product" },
+  { id: "options", label: "Options" },
+  { id: "variants", label: "Pricing" },
+];
+
+/**
+ * Where you are in the variant flow. Steps already behind you are buttons —
+ * going back a page should not mean hunting for the footer.
+ */
+function StepBar({
+  step,
+  onStep,
+  canPrice,
+}: {
+  step: Step;
+  onStep: (step: Step) => void;
+  /** Pricing is only reachable once the options produce combinations. */
+  canPrice: boolean;
+}) {
+  const current = STEPS.findIndex((s) => s.id === step);
+
+  return (
+    <nav aria-label="Product form steps" className="flex items-center gap-1">
+      {STEPS.map((s, i) => {
+        const isCurrent = i === current;
+        // Options is always open — the bar is only rendered once variants are
+        // on. Pricing waits until the options actually generate rows.
+        const reachable =
+          i < current ||
+          s.id === "options" ||
+          (s.id === "variants" && canPrice);
+
+        return (
+          <div key={s.id} className="flex items-center gap-1">
+            {i > 0 && (
+              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+            )}
+            <button
+              type="button"
+              disabled={isCurrent || !reachable}
+              onClick={() => onStep(s.id)}
+              aria-current={isCurrent ? "step" : undefined}
+              className={`inline-flex items-center gap-1.5 rounded-full py-1 pl-1 pr-2.5 text-[12px] font-semibold transition ${
+                isCurrent
+                  ? "bg-blue-50/90 text-cyan-700 ring-1 ring-inset ring-blue-100"
+                  : reachable
+                    ? "text-slate-500 hover:bg-slate-100"
+                    : "text-slate-300"
+              }`}
+            >
+              <span
+                className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${
+                  isCurrent
+                    ? "bg-cyan-600 text-white"
+                    : i < current
+                      ? "bg-slate-800 text-white"
+                      : "bg-slate-100 text-slate-400"
+                }`}
+              >
+                {i < current ? <Check className="h-3 w-3" /> : i + 1}
+              </span>
+              {s.label}
+            </button>
+          </div>
+        );
+      })}
+    </nav>
   );
 }
 
@@ -176,14 +255,8 @@ const inputErrorClass = `${inputBase} border-rose-300 focus:ring-rose-400`;
 interface ProductFormModalProps {
   open: boolean;
   onClose: () => void;
-  /** Pass an existing product for edit mode */
   product?: Product | null;
-  /** Pre-fill product name when creating */
   initialName?: string;
-  /**
-   * Callback fired after successful save (create or update).
-   * Not required — the modal handles its own toasts and invalidation.
-   */
   onSuccess?: (product: Product) => void;
 }
 
@@ -205,12 +278,6 @@ export default function ProductFormModal({
 
   const [form, setForm] = useState<ProductFormData>(INITIAL_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
-  /**
-   * Server-side failure for the whole submit, as opposed to `errors`, which is
-   * per-field client validation. Shown in the footer next to Save — the
-   * mutations use `mutateAsync` with no rejection handler, so before this a
-   * failed save surfaced nothing at all.
-   */
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
@@ -223,6 +290,7 @@ export default function ProductFormModal({
   const [variantErrors, setVariantErrors] = useState<Record<string, string>>(
     {},
   );
+  const [step, setStep] = useState<Step>("details");
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -291,6 +359,7 @@ export default function ProductFormModal({
           : loadedRows,
       );
       setVariantErrors({});
+      setStep("details");
     } else if (!product && open) {
       setForm({ ...INITIAL_FORM, name: initialName ?? "" });
       setErrors({});
@@ -301,6 +370,7 @@ export default function ProductFormModal({
       setOptions([]);
       setVariantRows([]);
       setVariantErrors({});
+      setStep("details");
     }
   }, [product, open]);
 
@@ -325,6 +395,7 @@ export default function ProductFormModal({
     setOptions([]);
     setVariantRows([]);
     setVariantErrors({});
+    setStep("details");
     if (imageInputRef.current) imageInputRef.current.value = "";
   };
 
@@ -334,7 +405,11 @@ export default function ProductFormModal({
   };
 
   // ── Validation ──
-  const validate = (): boolean => {
+  /**
+   * Returns the page the first problem is on, so a failed save can take the
+   * user to it — an error on a page they cannot see is a dead end.
+   */
+  const validate = (): { ok: boolean; step?: Step } => {
     const e: FormErrors = {};
     if (!form.name.trim()) e.name = "Product name is required.";
     if (form.price < 0) e.price = "Price cannot be negative.";
@@ -356,7 +431,7 @@ export default function ProductFormModal({
         toast.error("Give each option a name and at least one value");
         setErrors(e);
         setVariantErrors({});
-        return false;
+        return { ok: false, step: "options" };
       }
 
       for (const row of variantRows) {
@@ -375,12 +450,19 @@ export default function ProductFormModal({
 
     setErrors(e);
     setVariantErrors(ve);
-    return Object.keys(e).length === 0 && Object.keys(ve).length === 0;
+
+    if (Object.keys(e).length > 0) return { ok: false, step: "details" };
+    if (Object.keys(ve).length > 0) return { ok: false, step: "variants" };
+    return { ok: true };
   };
 
   const handleSave = async () => {
     setSubmitError(null);
-    if (!validate()) return;
+    const check = validate();
+    if (!check.ok) {
+      if (check.step) setStep(check.step);
+      return;
+    }
 
     // If user is creating a new category inline, create it first
     let categoryId = form.categoryId;
@@ -534,6 +616,31 @@ export default function ProductFormModal({
 
   const symbol = formatCurrencySymbolOnly(currency.symbol);
 
+  // The chrome follows the page: the header says where you are, not what the
+  // modal was opened for.
+  const HEADINGS: Record<Step, { title: string; subtitle: string }> = {
+    details: {
+      title: isEditMode ? "Update product" : "Create product",
+      subtitle: isEditMode
+        ? "Change this product's details, pricing and stock."
+        : "Add a product with its pricing, image and stock.",
+    },
+    options: {
+      title: "Variant options",
+      subtitle: "Name each option and list the values it can take.",
+    },
+    variants: {
+      title: "Variant pricing",
+      subtitle: "Set price, cost and stock for every combination.",
+    },
+  };
+  const heading = HEADINGS[step];
+
+  const namedOptions = usableOptions(options);
+  /** Pricing has something to price only once the options generate rows. */
+  const canPrice = namedOptions.length > 0 && variantRows.length > 0;
+  const variantErrorCount = Object.keys(variantErrors).length;
+
   // Live margin — both figures are on screen, so show what they add up to.
   const margin = form.price - form.costPrice;
   const marginPct =
@@ -544,14 +651,12 @@ export default function ProductFormModal({
       open={open}
       onClose={handleClose}
       busy={isPending}
-      title={isEditMode ? "Update product" : "Create product"}
-      subtitle={
-        isEditMode
-          ? "Change this product's details, pricing and stock."
-          : "Add a product with its pricing, image and stock."
-      }
+      title={heading.title}
+      subtitle={heading.subtitle}
       icon={Package}
-      maxWidth="max-w-2xl"
+      maxWidth="max-w-5xl"
+      bodyMaxHeight="max-h-[78vh]"
+      bodyMinHeight="min-h-[78vh]"
       footer={
         <div className="space-y-3">
           {/* Server-side failure for the whole submit — sits by the Save
@@ -569,35 +674,104 @@ export default function ProductFormModal({
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-2">
-            <button
-              type="button"
-              onClick={handleClose}
-              disabled={isPending}
-              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={isPending}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
-            >
-              {isPending && <Loader2 size={13} className="animate-spin" />}
-              {isPending
-                ? isEditMode
-                  ? "Updating..."
-                  : "Saving..."
-                : isEditMode
-                  ? "Update product"
-                  : "Save product"}
-            </button>
-          </div>
+          {/* Saving belongs to the product page. The variant pages carry a
+              Back / Done pair instead, so there is no way to save from a page
+              whose own validation has not been seen. */}
+          {step === "details" ? (
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleClose}
+                disabled={isPending}
+                className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={isPending}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+              >
+                {isPending && <Loader2 size={13} className="animate-spin" />}
+                {isPending
+                  ? isEditMode
+                    ? "Updating..."
+                    : "Saving..."
+                  : isEditMode
+                    ? "Update product"
+                    : "Save product"}
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-[11px] text-slate-400">
+                {step === "options"
+                  ? canPrice
+                    ? `${variantRows.length} combination${
+                        variantRows.length > 1 ? "s" : ""
+                      } ready to price`
+                    : "Name an option and add at least one value."
+                  : "Nothing is saved until you save the product."}
+              </p>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setStep(step === "variants" ? "options" : "details")
+                  }
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setStep(step === "options" ? "variants" : "details")
+                  }
+                  disabled={step === "options" && !canPrice}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-cyan-700 disabled:opacity-50"
+                >
+                  <Check className="h-3.5 w-3.5" />
+                  Done
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       }
     >
-      <div className="space-y-7">
+      {step !== "details" && (
+        <div className="space-y-5">
+          <StepBar step={step} onStep={setStep} canPrice={canPrice} />
+
+          {step === "options" ? (
+            <VariantOptionsEditor
+              options={options}
+              rows={variantRows}
+              onOptionsChange={setOptions}
+              onRowsChange={setVariantRows}
+            />
+          ) : (
+            <VariantRowsEditor
+              options={options}
+              rows={variantRows}
+              currencySymbol={symbol}
+              showStock={form.usesStocks}
+              errors={variantErrors}
+              onRowsChange={setVariantRows}
+            />
+          )}
+        </div>
+      )}
+
+      <div className={`space-y-7 ${step === "details" ? "" : "hidden"}`}>
+        {hasVariants && (
+          <StepBar step={step} onStep={setStep} canPrice={canPrice} />
+        )}
+
         {/* ── Image ── */}
         <Section title="Image">
           <div className="flex items-center gap-4">
@@ -798,7 +972,7 @@ export default function ProductFormModal({
           }
         >
           {hasVariants && (
-            <p className="rounded-lg bg-violet-50 px-3 py-2 text-[11px] leading-relaxed text-violet-700">
+            <p className="rounded-lg bg-blue-50 px-3 py-2 text-[11px] leading-relaxed text-cyan-700">
               Each variant carries its own price and cost, so these are set per
               row below.
             </p>
@@ -876,7 +1050,7 @@ export default function ProductFormModal({
                     }
                     className={`flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-[13px] transition ${
                       isSelected
-                        ? "border-violet-300 bg-violet-50/60"
+                        ? "border-blue-300 bg-blue-50/60"
                         : "border-slate-100 hover:border-slate-200 hover:bg-slate-50"
                     }`}
                   >
@@ -900,13 +1074,11 @@ export default function ProductFormModal({
                     <span
                       className={`flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border-2 ${
                         isSelected
-                          ? "border-violet-500 bg-violet-500"
+                          ? "border-blue-500 bg-blue-500"
                           : "border-slate-300"
                       }`}
                     >
-                      {isSelected && (
-                        <Check className="h-2.5 w-2.5 text-white" />
-                      )}
+                      {isSelected && <Check className="h-3 w-3 text-white" />}
                     </span>
                   </button>
                 );
@@ -967,7 +1139,7 @@ export default function ProductFormModal({
                   on extends it rather than opening a detached block. */}
             {form.usesStocks && hasVariants && (
               <div className="px-4 py-3">
-                <p className="rounded-lg bg-violet-50 px-3 py-2 text-[11px] leading-relaxed text-violet-700">
+                <p className="rounded-lg bg-blue-50 px-3 py-2 text-[11px] leading-relaxed text-cyan-700">
                   Stock is counted per variant, in the section below.
                 </p>
               </div>
@@ -1072,7 +1244,7 @@ export default function ProductFormModal({
             <div className="flex items-center justify-between gap-4 px-4 py-3">
               <div className="flex items-start gap-2.5">
                 <span
-                  className="mt-1 h-3.5 w-1 shrink-0 rounded-full bg-violet-500"
+                  className="mt-1 h-3.5 w-1 shrink-0 rounded-full bg-cyan-500"
                   aria-hidden="true"
                 />
                 <div>
@@ -1088,32 +1260,79 @@ export default function ProductFormModal({
                 checked={hasVariants}
                 onChange={(v) => {
                   setHasVariants(v);
-                  if (v && options.length === 0) {
-                    // Start with one empty option so there's somewhere to type.
-                    const first = {
-                      id: crypto.randomUUID(),
-                      title: "",
-                      values: [],
-                    };
-                    setOptions([first]);
-                    setVariantRows([]);
+                  if (v) {
+                    if (options.length === 0) {
+                      // Start with one empty option so there's somewhere to type.
+                      setOptions([
+                        { id: crypto.randomUUID(), title: "", values: [] },
+                      ]);
+                      setVariantRows([]);
+                    }
+                    // Straight through to the options page — that is where the
+                    // work is, and this page stays a page.
+                    setStep("options");
+                  } else {
+                    setVariantErrors({});
                   }
-                  if (!v) setVariantErrors({});
                 }}
               />
             </div>
 
+            {/* The editors live on their own pages; what stays here is a
+                summary of what they produced and the way back into them. */}
             {hasVariants && (
-              <div className="border-t border-slate-100 p-4">
-                <ProductVariantsEditor
-                  options={options}
-                  rows={variantRows}
-                  currencySymbol={symbol}
-                  showStock={form.usesStocks}
-                  errors={variantErrors}
-                  onOptionsChange={setOptions}
-                  onRowsChange={setVariantRows}
-                />
+              <div className="space-y-3 border-t border-slate-100 p-4">
+                {namedOptions.length > 0 ? (
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                    {namedOptions.map((option) => (
+                      <div
+                        key={option.id}
+                        className="flex items-baseline gap-1.5"
+                      >
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.06em] text-slate-400">
+                          {option.title}
+                        </span>
+                        <span className="text-[12px] capitalize text-slate-600">
+                          {option.values.join(" · ")}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[12px] text-slate-400">
+                    No options yet — add one to generate variants.
+                  </p>
+                )}
+
+                {variantErrorCount > 0 && (
+                  <p className="flex items-center gap-1.5 text-[11px] font-medium text-rose-600">
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                    {variantErrorCount} variant
+                    {variantErrorCount > 1 ? "s need" : " needs"} fixing on the
+                    pricing page.
+                  </p>
+                )}
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setStep("options")}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-slate-700 transition hover:bg-slate-50"
+                  >
+                    <SlidersHorizontal className="h-3.5 w-3.5" />
+                    Edit options
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStep("variants")}
+                    disabled={!canPrice}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-[12px] font-semibold text-cyan-700 transition hover:bg-blue-100 disabled:opacity-40"
+                  >
+                    Price {variantRows.length} variant
+                    {variantRows.length === 1 ? "" : "s"}
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
             )}
           </div>
