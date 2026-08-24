@@ -8,7 +8,7 @@
  */
 
 /** Title + subtitle stack, matching <ComponentHeader />. */
-function HeaderSkeleton({
+export function HeaderSkeleton({
   titleWidth = "w-44",
   subWidth = "w-72",
 }: {
@@ -24,7 +24,7 @@ function HeaderSkeleton({
 }
 
 /** Faux bar-chart body. */
-function BarsSkeleton({ heights }: { heights: number[] }) {
+export function BarsSkeleton({ heights }: { heights: number[] }) {
   return (
     <div className="w-full h-full flex items-end gap-2 pt-4">
       {heights.map((h, i) => (
@@ -38,7 +38,7 @@ function BarsSkeleton({ heights }: { heights: number[] }) {
   );
 }
 
-function LegendSkeleton({ items = 2 }: { items?: number }) {
+export function LegendSkeleton({ items = 2 }: { items?: number }) {
   return (
     <div className="flex items-center justify-center gap-6 mt-3">
       {Array.from({ length: items }).map((_, i) => (
@@ -225,9 +225,9 @@ export function ExpenseCardSkeleton({
 export function ExpenseAnalyticsSkeleton() {
   return (
     <div className="space-y-6">
-      <CashFlowTrendSkeleton />
-      <ExpensesByCategorySkeleton />
-      <MonthlyExpenseTrendSkeleton />
+      {/* <CashFlowTrendSkeleton /> */}
+      {/* <ExpensesByCategorySkeleton /> */}
+      {/* <MonthlyExpenseTrendSkeleton /> */}
       <BudgetVsActualSkeleton />
       <ExpenseBudgetGaugesSkeleton />
 

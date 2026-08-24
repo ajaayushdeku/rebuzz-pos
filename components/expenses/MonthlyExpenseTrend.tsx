@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import {
   BarChart,
   Bar,
@@ -18,30 +17,16 @@ import type {
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
 import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
-import { fetchTransactionsRange } from "@/services/apiExpense.client";
+import { useTrailingMonthsTransactions } from "@/hooks/useTrailingMonthsTransactions";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { ComponentHeader } from "../ComponentHeader";
-import { ChartColumnStacked } from "lucide-react";
+import { ChartColumnStacked, AlertTriangle } from "lucide-react";
+import CategoryLegend from "./CategoryLegend";
 
 /** Coerce a recharts payload value (number | string | array) to a number. */
 const toNumber = (v: ValueType | undefined): number =>
   typeof v === "number" ? v : Number(v) || 0;
-
-const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
 
 // Fallback palette for categories without a preset color.
 const FALLBACK_COLORS = [
@@ -118,51 +103,45 @@ export default function MonthlyExpenseTrend() {
   const getPurposeIcon = (purposeId: string) =>
     purposeLookup.get(purposeId)?.icon ?? "";
 
-  // Build the list of the last 6 months (including the current month)
-  const monthRange = useMemo(() => {
-    const now = new Date();
-    const months: { month: number; year: number }[] = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      months.push({ month: d.getMonth() + 1, year: d.getFullYear() });
-    }
-    return months;
-  }, []);
-
-  // Fetch all transactions for the last 6 months in parallel
-  const { data: rangeTransactions = [], isLoading } = useQuery({
-    queryKey: ["expense-transactions", "range", monthRange],
-    queryFn: () => fetchTransactionsRange(monthRange),
-    staleTime: 2 * 60 * 1000,
-  });
+  // Same fixed six-month window as the cash flow chart, from the same shared
+  // hook — so the two agree, share React Query's cache with ExpenseContext,
+  // and both refresh when a transaction is added.
+  const {
+    months: trailingMonths,
+    isLoading,
+    isError,
+    failedMonths,
+  } = useTrailingMonthsTransactions(6);
 
   // Stacked expense totals per category over the last 6 months.
   const { data, categories } = useMemo(() => {
-    const rows: Record<string, number | string>[] = [];
-    const byKey = new Map<string, Record<string, number | string>>();
-
-    for (const { month, year } of monthRange) {
-      const key = `${year}-${String(month).padStart(2, "0")}`;
-      const row = { month: MONTHS[month - 1], __key: key };
-      byKey.set(key, row);
-      rows.push(row);
-    }
-
     // Track per-category total with the purposeId so we can look up icon/color
     const catTotals = new Map<string, { amount: number; purposeId: string }>();
-    for (const t of rangeTransactions) {
-      if (t.kind !== "expense") continue;
-      const row = byKey.get(t.date.slice(0, 7));
-      if (!row) continue;
-      const name = getPurposeName(t.purposeId);
-      row[name] = ((row[name] as number) ?? 0) + t.amount;
-      const existing = catTotals.get(name);
-      if (existing) {
-        existing.amount += t.amount;
-      } else {
-        catTotals.set(name, { amount: t.amount, purposeId: t.purposeId });
+
+    // Each month arrives as its own result, so rows go straight into their
+    // month's bucket — no `date.slice(0, 7)` matching, which would silently
+    // drop everything if the API's date format ever changed.
+    const rows: Record<string, number | string>[] = trailingMonths.map((m) => {
+      const row: Record<string, number | string> = {
+        month: m.label,
+        __key: m.key,
+      };
+
+      for (const t of m.transactions) {
+        if (t.kind !== "expense") continue;
+        const name = getPurposeName(t.purposeId);
+        row[name] = ((row[name] as number) ?? 0) + t.amount;
+
+        const existing = catTotals.get(name);
+        if (existing) {
+          existing.amount += t.amount;
+        } else {
+          catTotals.set(name, { amount: t.amount, purposeId: t.purposeId });
+        }
       }
-    }
+
+      return row;
+    });
 
     // Largest categories first so the stack order is stable and meaningful.
     const cats = [...catTotals.entries()]
@@ -175,7 +154,7 @@ export default function MonthlyExpenseTrend() {
       }));
 
     return { data: rows, categories: cats };
-  }, [rangeTransactions, monthRange, getPurposeName, getPurposeIcon]);
+  }, [trailingMonths, getPurposeName, getPurposeIcon]);
 
   const fmtK = (v: number) => {
     return `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`;
@@ -183,19 +162,45 @@ export default function MonthlyExpenseTrend() {
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
-          <ChartColumnStacked size={15} className="text-violet-600" />
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
+            <ChartColumnStacked size={15} className="text-violet-600" />
+          </div>
+          <ComponentHeader
+            title="Monthly Expense Trend by Category"
+            subHeader="Stacked breakdown of expenses over the last 6 months"
+          />
         </div>
-        <ComponentHeader
-          title="Monthly Expense Trend by Category"
-          subHeader="Stacked breakdown of expenses over the last 6 months"
-        />
+
+        <span className="shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+          Last 6 months
+        </span>
       </div>
+
+      {failedMonths > 0 && !isError && (
+        <p className="flex items-center gap-1.5 text-[11px] text-amber-600">
+          <AlertTriangle size={12} className="shrink-0" />
+          {failedMonths} of 6 months could not be loaded — the chart is
+          incomplete.
+        </p>
+      )}
 
       {isLoading ? (
         <div className="py-16 text-center text-sm text-gray-400">
           Loading trend data…
+        </div>
+      ) : isError ? (
+        <div className="py-16 text-center">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
+            <AlertTriangle size={22} className="text-red-400" />
+          </div>
+          <p className="text-sm font-medium text-gray-500">
+            Could not load the expense trend
+          </p>
+          <p className="mt-1 text-xs text-gray-400">
+            None of the last six months could be fetched.
+          </p>
         </div>
       ) : categories.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
@@ -234,21 +239,7 @@ export default function MonthlyExpenseTrend() {
               cursor={{ fill: "rgba(0,0,0,0.03)" }}
             />
             <Legend
-              content={() => (
-                <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 mt-3">
-                  {categories.map((cat) => (
-                    <div key={cat.name} className="flex items-center gap-1.5">
-                      <span
-                        className="w-2.5 h-2.5 rounded-sm shrink-0"
-                        style={{ backgroundColor: cat.color }}
-                      />
-                      <span className="text-xs" style={{ color: cat.color }}>
-                        {cat.name}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
+              content={() => <CategoryLegend categories={categories} />}
             />
 
             {categories.map((cat, i) => (

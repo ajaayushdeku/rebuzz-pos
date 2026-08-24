@@ -1,7 +1,11 @@
 "use client";
 
 import { ExpenseTrackerProvider, useTracker } from "@/providers/ExpenseContext";
-import { ExpenseAnalyticsSkeleton } from "@/components/expenses/ExpenseAnalyticsSkeletons";
+import {
+  CashFlowTrendSkeleton,
+  ExpenseAnalyticsSkeleton,
+  MonthlyExpenseTrendSkeleton,
+} from "@/components/expenses/ExpenseAnalyticsSkeletons";
 import ExpenseBudgetGauges from "@/components/expenses/ExpenseBudgetGauges";
 import ExpensesByCategory from "@/components/expenses/ExpensesByCategory";
 import BudgetVsActual from "@/components/expenses/BudgetVsActual";
@@ -13,9 +17,11 @@ import HiddenCostLeaks from "@/components/expenses/HiddenCostLeaks";
 import ExpenseMonthYearFilter from "@/components/expenses/ExpenseMonthYearFilter";
 import BudgetForm from "@/components/expenses/BudgetForm";
 import ExpenseIncomeForm from "@/components/expenses/ExpenseIncomeForm";
+import { useCashFlowTrend } from "@/hooks/useCashFlowTrend";
 
 function ExpenseAnalyticsPage() {
   const { isLoading } = useTracker();
+  const { isLoading: isLast6monthLoading } = useCashFlowTrend();
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
@@ -37,14 +43,21 @@ function ExpenseAnalyticsPage() {
           </div>
         </div>
 
+        {isLast6monthLoading ? <CashFlowTrendSkeleton /> : <CashFlowTrend />}
+
+        {isLoading ? <ExpenseAnalyticsSkeleton /> : <ExpensesByCategory />}
+
+        {isLast6monthLoading ? (
+          <MonthlyExpenseTrendSkeleton />
+        ) : (
+          <MonthlyExpenseTrend />
+        )}
+
         {/* ── Charts & visual analytics ── */}
         {isLoading ? (
           <ExpenseAnalyticsSkeleton />
         ) : (
           <>
-            <CashFlowTrend />
-            <ExpensesByCategory />
-            <MonthlyExpenseTrend />
             <BudgetVsActual />
             <ExpenseBudgetGauges />
             <CostHealth />

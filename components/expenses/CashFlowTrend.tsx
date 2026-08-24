@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import {
   LineChart,
   Line,
@@ -16,30 +15,16 @@ import type {
   Payload,
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
-import { useTracker } from "@/providers/ExpenseContext";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "../ComponentHeader";
-import { ArrowLeftRight } from "lucide-react";
+import { ArrowLeftRight, AlertTriangle } from "lucide-react";
+import { useCashFlowTrend } from "@/hooks/useCashFlowTrend";
+import { CashFlowTrendSkeleton } from "./ExpenseAnalyticsSkeletons";
 
 /** Coerce a recharts payload value (number | string | array) to a number. */
 const toNumber = (v: ValueType | undefined): number =>
   typeof v === "number" ? v : Number(v) || 0;
-
-const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
 
 const CustomTooltip = ({
   active,
@@ -118,33 +103,12 @@ const CustomLegend = () => (
 
 export default function CashFlowTrend() {
   const { currency } = useCurrency();
-  const { transactions } = useTracker();
 
-  // Inflow = income, outflow = expenses — aggregated over the last 6 months.
-  const data = useMemo(() => {
-    const now = new Date();
-    const rows: { month: string; inflow: number; outflow: number }[] = [];
-    const byKey = new Map<string, (typeof rows)[number]>();
+  // Fixed six-month window — deliberately not the page's month/year filter.
+  // See useCashFlowTrend for why.
+  const { data, isLoading, isError, failedMonths } = useCashFlowTrend();
 
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      const row = { month: MONTHS[d.getMonth()], inflow: 0, outflow: 0 };
-      byKey.set(key, row);
-      rows.push(row);
-    }
-
-    for (const t of transactions) {
-      const row = byKey.get(t.date.slice(0, 7));
-      if (!row) continue;
-      if (t.kind === "income") row.inflow += t.amount;
-      else row.outflow += t.amount;
-    }
-
-    return rows;
-  }, [transactions]);
-
-  // const hasData = data.some((d) => d.inflow > 0 || d.outflow > 0);
+  const hasData = data.some((d) => d.inflow > 0 || d.outflow > 0);
 
   const fmtK = (v: number) => {
     return `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`;
@@ -161,64 +125,102 @@ export default function CashFlowTrend() {
         </p>
       </div> */}
 
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-          <ArrowLeftRight size={15} className="text-emerald-600" />
-        </div>
-        <ComponentHeader
-          title="Cash Flow Trend"
-          subHeader="Monthly comparison of cash inflows vs outflows"
-        />
-      </div>
-      {/* {!hasData ? (
-        <div className="py-16 text-center text-sm text-gray-400">
-          No income or expenses recorded yet.
-        </div>
-      ) : ( */}
-      <ResponsiveContainer width="100%" height={280}>
-        <LineChart
-          data={data}
-          margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
-        >
-          <CartesianGrid vertical={false} stroke="#f3f4f6" />
-          <XAxis
-            dataKey="month"
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: "#9ca3af", fontSize: 11 }}
-            dy={8}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50">
+            <ArrowLeftRight size={15} className="text-emerald-600" />
+          </div>
+          <ComponentHeader
+            title="Cash Flow Trend"
+            subHeader="Monthly comparison of cash inflows vs outflows"
           />
-          <YAxis
-            tickFormatter={fmtK}
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: "#9ca3af", fontSize: 11 }}
-            width={42}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend content={<CustomLegend />} />
+        </div>
 
-          <Line
-            type="monotone"
-            dataKey="inflow"
-            name="Cash Inflow"
-            stroke="#22c55e"
-            strokeWidth={2.5}
-            dot={{ r: 4, fill: "white", stroke: "#22c55e", strokeWidth: 2 }}
-            activeDot={{ r: 5 }}
-          />
-          <Line
-            type="monotone"
-            dataKey="outflow"
-            name="Cash Outflow"
-            stroke="#ef4444"
-            strokeWidth={2.5}
-            dot={{ r: 4, fill: "white", stroke: "#ef4444", strokeWidth: 2 }}
-            activeDot={{ r: 5 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-      {/* )} */}
+        {/* States plainly that this card ignores the page's month filter —
+            otherwise the fixed window looks like the filter is broken. */}
+        <span className="shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+          Last 6 months
+        </span>
+      </div>
+
+      {failedMonths > 0 && !isError && (
+        <p className="flex items-center gap-1.5 text-[11px] text-amber-600">
+          <AlertTriangle size={12} className="shrink-0" />
+          {failedMonths} of 6 months could not be loaded — the chart is
+          incomplete.
+        </p>
+      )}
+      {isLoading ? (
+        <CashFlowTrendSkeleton />
+      ) : isError ? (
+        <div className="py-16 text-center">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
+            <AlertTriangle size={22} className="text-red-400" />
+          </div>
+          <p className="text-sm font-medium text-gray-500">
+            Could not load cash flow
+          </p>
+          <p className="mt-1 text-xs text-gray-400">
+            None of the last six months could be fetched.
+          </p>
+        </div>
+      ) : !hasData ? (
+        <div className="py-16 text-center">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
+            <ArrowLeftRight size={22} className="text-gray-400" />
+          </div>
+          <p className="text-sm font-medium text-gray-500">
+            No income or expenses recorded
+          </p>
+          <p className="mt-1 text-xs text-gray-400">
+            Nothing was logged in the last six months.
+          </p>
+        </div>
+      ) : (
+        <ResponsiveContainer width="100%" height={280}>
+          <LineChart
+            data={data}
+            margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+          >
+            <CartesianGrid vertical={false} stroke="#f3f4f6" />
+            <XAxis
+              dataKey="month"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "#9ca3af", fontSize: 11 }}
+              dy={8}
+            />
+            <YAxis
+              tickFormatter={fmtK}
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "#9ca3af", fontSize: 11 }}
+              width={42}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend content={<CustomLegend />} />
+
+            <Line
+              type="monotone"
+              dataKey="inflow"
+              name="Cash Inflow"
+              stroke="#22c55e"
+              strokeWidth={2.5}
+              dot={{ r: 4, fill: "white", stroke: "#22c55e", strokeWidth: 2 }}
+              activeDot={{ r: 5 }}
+            />
+            <Line
+              type="monotone"
+              dataKey="outflow"
+              name="Cash Outflow"
+              stroke="#ef4444"
+              strokeWidth={2.5}
+              dot={{ r: 4, fill: "white", stroke: "#ef4444", strokeWidth: 2 }}
+              activeDot={{ r: 5 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      )}
     </div>
   );
 }

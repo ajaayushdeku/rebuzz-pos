@@ -18,7 +18,7 @@ import { parseNepalTime } from "@/lib/mappers/transaction";
 import { normalizePaymentMethod } from "@/lib/config/transaction";
 import type { CreditPayment } from "@/services/apiCredit.client";
 import InvoiceBillTable from "./InvoiceBillTable";
-import { formatCurrencySymbol } from "@/utils/helper";
+import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -709,8 +709,16 @@ function InvoiceContent({
             </div>
 
             <div className="flex flex-col  gap-2 items-end  tracking-wider">
-              <span> {billData?.currentPoint || "0"}</span>
-              <span> {billData?.totalPoints || "0"}</span>
+              <span>
+                {" "}
+                {formatAmount(billData?.currentPoint ?? 0, currency.locale) ||
+                  "0"}
+              </span>
+              <span>
+                {" "}
+                {formatAmount(billData?.totalPoints ?? 0, currency.locale) ||
+                  "0"}
+              </span>
             </div>
           </div>
         )}
