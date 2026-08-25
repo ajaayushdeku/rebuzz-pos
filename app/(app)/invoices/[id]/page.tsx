@@ -415,9 +415,9 @@ const InvoiceDetailPage = () => {
     );
   }
 
-  const handleSetInvoiceType = (type: "proforma" | "invoice" | "tax") => {
-    setInvoiceType(type);
-  };
+  // const handleSetInvoiceType = (type: "proforma" | "invoice" | "tax") => {
+  //   setInvoiceType(type);
+  // };
 
   const handleInvoiceTabKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     const current = INVOICE_TABS.findIndex((t) => t.key === invoiceType);
@@ -441,7 +441,7 @@ const InvoiceDetailPage = () => {
   const isCredited = invoice.paidStatus === "credited";
   const isCreditArchived = creditForInvoice?.status === "archived";
 
-  const isOverdue = !isPaid && !isRefunded;
+  // const isOverdue = !isPaid && !isRefunded;
 
   /**
    * Payments stop being editable once the invoice is settled — a paid or
@@ -477,6 +477,22 @@ const InvoiceDetailPage = () => {
     (sum, p) => sum + (p.paymentAmount ?? 0),
     0,
   );
+  /**
+   * A settled document is a record, not a draft — editing its items after the
+   * fact would put it out of step with what was actually charged.
+   *
+   * For a credited invoice the credit decides: it stays editable only while
+   * something is still owed, matching how the credit page reads its own state
+   * (completed by status, or by the dues reaching zero).
+   */
+  const isCreditCleared =
+    !!creditForInvoice &&
+    (creditForInvoice.status === "completed" || creditDue <= 0);
+
+  const canEditInvoice = creditForInvoice
+    ? !isCreditArchived && !isCreditCleared
+    : !isPaid && !isRefunded;
+
   // Amount due to display in the meta/payment sections.
   const amountDueDisplay = isCredited
     ? creditDue
@@ -497,12 +513,12 @@ const InvoiceDetailPage = () => {
         });
   };
 
-  const statusLabel = isRefunded ? "Refunded" : isPaid ? "Paid" : "Unpaid";
-  const statusColor = isRefunded
-    ? "bg-orange-100 text-orange-700 border-orange-200"
-    : isPaid
-      ? "bg-green-100 text-green-700 border-green-200"
-      : "bg-red-100 text-red-700 border-red-200";
+  // const statusLabel = isRefunded ? "Refunded" : isPaid ? "Paid" : "Unpaid";
+  // const statusColor = isRefunded
+  //   ? "bg-orange-100 text-orange-700 border-orange-200"
+  //   : isPaid
+  //     ? "bg-green-100 text-green-700 border-green-200"
+  //     : "bg-red-100 text-red-700 border-red-200";
 
   return (
     <div className="min-h-screen ">
@@ -579,7 +595,7 @@ const InvoiceDetailPage = () => {
               align="end"
               className="w-45 rounded-xl p-1 shadow-lg border-gray-200"
             >
-              {(!!creditForInvoice || !isPaid) && (
+              {canEditInvoice && (
                 <DropdownMenuItem
                   onClick={handleEditInvoice}
                   className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
@@ -828,7 +844,7 @@ const InvoiceDetailPage = () => {
                     GMT+5:45
                   </p>
                 </div>
-                {(!!creditForInvoice || !isPaid) && !isCreditArchived && (
+                {canEditInvoice && (
                   <button
                     onClick={handleEditInvoice}
                     className="text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-4 py-1.5 transition-colors shrink-0"

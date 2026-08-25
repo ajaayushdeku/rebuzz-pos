@@ -278,8 +278,10 @@ export default function CreditDetailPage() {
         state={state}
         createdAt={credit.creationDate || credit.createdAt}
         onBack={() => router.back()}
+        // Gone once the credit is settled or archived — its items are then a
+        // record of what was owed, not something still being agreed.
         onEditInvoice={
-          isArchived || invoiceNo == null
+          isArchived || state === "completed" || invoiceNo == null
             ? undefined
             : () => router.push(`/invoices/${invoiceNo}/edit`)
         }

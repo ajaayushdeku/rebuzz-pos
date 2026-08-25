@@ -134,7 +134,7 @@ export default function CreditDetailTopBar({
 
             {onDeleteCredit && (
               <>
-                <DropdownMenuSeparator className="my-1 bg-gray-100" />
+                {/* <DropdownMenuSeparator className="my-1 bg-gray-100" /> */}
                 <DropdownMenuItem
                   onClick={onDeleteCredit}
                   className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 text-sm"

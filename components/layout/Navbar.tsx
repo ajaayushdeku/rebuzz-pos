@@ -65,22 +65,27 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-600">
-            {currency.code} ( {currency.symbol} )
-          </span>{" "}
-          {/* <ServerEnvBadge className="sm:hidden xs:hidden" /> */}
-          <span
-            title={currency.code}
-            className="w-8 h-8 inline-flex items-center justify-center shrink-0 overflow-hidden  rounded-xs "
+          {/* The code and its flag read as one control — clicking either goes
+              to where the currency is actually changed. */}
+          <Link
+            href="/settings/currency"
+            title={`${currency.code} — change currency`}
+            aria-label={`Currency ${currency.code}. Change currency`}
+            className="flex items-center gap-2 rounded-lg px-1.5 py-1 cursor-pointer transition-colors hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`https://flagcdn.com/${flagCode}.svg`}
-              alt={currency.code}
-              className="max-w-full max-h-full object-contain"
-              loading="lazy"
-            />
-          </span>
+            <span className="text-xs text-gray-600">
+              {currency.code} ( {currency.symbol} )
+            </span>
+            <span className="w-8 h-8 inline-flex items-center justify-center shrink-0 overflow-hidden rounded-xs">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`https://flagcdn.com/${flagCode}.svg`}
+                alt=""
+                className="max-w-full max-h-full object-contain"
+                loading="lazy"
+              />
+            </span>
+          </Link>
           <div className="h-5 border-1  border-gray-200 mr-2" />
           <HelpButton />
           <User
