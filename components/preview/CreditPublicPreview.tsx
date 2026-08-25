@@ -6,7 +6,9 @@ import { Loader2 } from "lucide-react";
 
 import { useBusiness } from "@/hooks/useBusiness";
 import { fetchCreditDetail } from "@/services/apiCredit.client";
+import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
 import CreditDocumentViewer from "@/components/credit/detail/CreditDocumentViewer";
+import { creditState } from "@/components/credit/detail/creditDetailHelpers";
 import type { CreditDocumentType } from "@/components/credit/detail/CreditInvoiceDocument";
 
 /**
@@ -38,6 +40,18 @@ export default function CreditPublicPreview({
   const { data: business, isLoading: bizLoading } = useBusiness();
 
   const credit = detail?.credit ?? null;
+
+  /**
+   * A POS bill is only minted when the credit is settled at the till, so an
+   * ongoing or archived credit has nothing to fetch. Those render from the
+   * credit record alone.
+   */
+  const { data: billData } = useQuery({
+    queryKey: ["bill-detail", credit?.invoiceNo],
+    queryFn: () => getTransactionDetail(credit!.invoiceNo),
+    enabled: !!credit?.invoiceNo && creditState(credit) === "completed",
+    retry: false,
+  });
 
   // Only for the customer's tax id — everything else on the document comes
   // from the credit itself.
@@ -74,6 +88,7 @@ export default function CreditPublicPreview({
         payments={detail?.paymentHistory ?? []}
         businessProfile={business}
         customerProfile={customerProfile}
+        billData={billData ?? null}
       />
     </div>
   );

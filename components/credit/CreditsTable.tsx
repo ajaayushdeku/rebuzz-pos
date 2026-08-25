@@ -27,10 +27,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import CreditPaymentModal from "@/components/credit/CreditPaymentModal";
 import CreditPaymentHistory from "@/components/credit/CreditPaymentHistory";
-import EmailInvoiceModal from "@/components/invoice/modals/EmailInvoiceModal";
-import ExportPdfModal from "@/components/invoice/modals/ExportPdfModal";
-import PrintInvoiceModal from "@/components/invoice/modals/PrintInvoiceModal";
 import DeleteCreditModal from "@/components/invoice/modals/DeleteCreditModal";
+import CreditDocumentModals, {
+  type CreditDocumentAction,
+} from "@/components/credit/detail/CreditDocumentModals";
 import {
   archiveCredit,
   fetchCreditDetail,
@@ -80,10 +80,12 @@ export default function CreditsTable({
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<Credit | null>(null);
   const [archiving, setArchiving] = useState(false);
-  type DocTarget = { invoiceNo: number; creditId: string };
-  const [emailTarget, setEmailTarget] = useState<DocTarget | null>(null);
-  const [exportTarget, setExportTarget] = useState<DocTarget | null>(null);
-  const [printTarget, setPrintTarget] = useState<DocTarget | null>(null);
+  // Document actions are keyed by the credit itself — every one of them builds
+  // the credit's own document, so no invoice number is needed to open them.
+  const [docTarget, setDocTarget] = useState<{
+    creditId: string;
+    action: CreditDocumentAction;
+  } | null>(null);
   const pageSize = 10;
 
   const handleArchive = async () => {
@@ -548,19 +550,17 @@ export default function CreditsTable({
                                       </>
                                     )}
 
-                                    {/* Resend invoice */}
+                                    {/* Send / email the credit invoice */}
                                     <DropdownMenuItem
                                       className="rounded-lg cursor-pointer"
                                       onSelect={() =>
-                                        withInvoiceNo(c, (inv) =>
-                                          setEmailTarget({
-                                            invoiceNo: inv,
-                                            creditId: c._id,
-                                          }),
-                                        )
+                                        setDocTarget({
+                                          creditId: c._id,
+                                          action: "send",
+                                        })
                                       }
                                     >
-                                      Resend invoice
+                                      Send credit invoice
                                     </DropdownMenuItem>
 
                                     <DropdownMenuSeparator />
@@ -569,12 +569,10 @@ export default function CreditsTable({
                                     <DropdownMenuItem
                                       className="rounded-lg cursor-pointer"
                                       onSelect={() =>
-                                        withInvoiceNo(c, (inv) =>
-                                          setExportTarget({
-                                            invoiceNo: inv,
-                                            creditId: c._id,
-                                          }),
-                                        )
+                                        setDocTarget({
+                                          creditId: c._id,
+                                          action: "export",
+                                        })
                                       }
                                     >
                                       Export as PDF
@@ -584,12 +582,10 @@ export default function CreditsTable({
                                     <DropdownMenuItem
                                       className="rounded-lg cursor-pointer"
                                       onSelect={() =>
-                                        withInvoiceNo(c, (inv) =>
-                                          setPrintTarget({
-                                            invoiceNo: inv,
-                                            creditId: c._id,
-                                          }),
-                                        )
+                                        setDocTarget({
+                                          creditId: c._id,
+                                          action: "print",
+                                        })
                                       }
                                     >
                                       Print
@@ -681,23 +677,12 @@ export default function CreditsTable({
         }}
       />
 
-      {/* Resend invoice (email) / Export PDF / Print — reuse invoice modals.
-          The modals detect the credit by invoice number, so the payment history
-          and bill layout are consistent regardless of entry point. */}
-      <EmailInvoiceModal
-        open={emailTarget != null}
-        onClose={() => setEmailTarget(null)}
-        invoiceNo={emailTarget?.invoiceNo}
-      />
-      <ExportPdfModal
-        open={exportTarget != null}
-        onClose={() => setExportTarget(null)}
-        invoiceNo={exportTarget?.invoiceNo}
-      />
-      <PrintInvoiceModal
-        open={printTarget != null}
-        onClose={() => setPrintTarget(null)}
-        invoiceNo={printTarget?.invoiceNo}
+      {/* Send / export / print — the credit's own documents, the same ones the
+          credit detail page produces. */}
+      <CreditDocumentModals
+        creditId={docTarget?.creditId ?? null}
+        action={docTarget?.action ?? null}
+        onClose={() => setDocTarget(null)}
       />
 
       {/* Delete (archive) confirmation */}

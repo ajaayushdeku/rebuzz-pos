@@ -14,6 +14,7 @@ export interface Credit {
   updatedAt: string;
   dueAmount: number;
   invoiceNo: number;
+  ticketName?: string;
 }
 
 export interface CreditPayment {
@@ -43,7 +44,13 @@ export interface CreditItem {
   isTaxable: boolean;
   note: string | null;
   addons: unknown[];
-  discounts: unknown[];
+  discounts: {
+    discount: string;
+    name: string;
+    type: string;
+    rate: number;
+    _id: string;
+  }[];
 }
 
 export interface CreditDetail {

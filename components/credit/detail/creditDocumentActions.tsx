@@ -15,6 +15,7 @@ import type {
   CreditItem,
   CreditPayment,
 } from "@/services/apiCredit.client";
+import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
 import CreditInvoiceDocument, {
   CREDIT_DOCUMENT_TYPES,
   creditFileStem,
@@ -50,6 +51,7 @@ export function CreditDocumentsOffscreen({
   payments,
   businessProfile,
   customerProfile,
+  billData,
 }: {
   refs: CreditDocumentRefs;
   credit: Credit | null;
@@ -57,6 +59,7 @@ export function CreditDocumentsOffscreen({
   payments: CreditPayment[];
   businessProfile?: CreditDocumentBusiness | null;
   customerProfile?: CreditDocumentCustomer | null;
+  billData?: Transaction | null;
 }) {
   if (!credit) return null;
 
@@ -73,6 +76,7 @@ export function CreditDocumentsOffscreen({
             payments={payments}
             businessProfile={businessProfile}
             customerProfile={customerProfile}
+            billData={billData}
           />
         </div>
       ))}

@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { useBusiness } from "@/hooks/useBusiness";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { getTicketByInvoice } from "@/services/apiTicket.client";
+import { getTransactionDetail } from "@/services/dashboardServices/apiTransactionClient";
 import {
   archiveCredit,
   deleteCreditPayment,
@@ -98,6 +99,7 @@ export default function CreditDetailPage() {
 
   const credit = detail?.credit ?? null;
   const invoiceNo = credit?.invoiceNo;
+  const state = creditState(credit);
 
   // The preview documents are built from the ticket, so the credit's invoice
   // number is what unlocks them.
@@ -107,6 +109,18 @@ export default function CreditDetailPage() {
     enabled: invoiceNo != null,
   });
   const invoice: TicketInvoice | undefined = ticketData?.data?.Tickets;
+
+  /**
+   * A POS bill is only minted when the credit is settled at the till, so an
+   * ongoing or archived credit has nothing to fetch — asking would be a
+   * guaranteed 404. Those render from the credit record alone.
+   */
+  const { data: billData } = useQuery({
+    queryKey: ["bill-detail", invoiceNo],
+    queryFn: () => getTransactionDetail(invoiceNo!),
+    enabled: invoiceNo != null && state === "completed",
+    retry: false,
+  });
 
   const { data: customerProfile, isLoading: isCustomerLoading } = useQuery({
     queryKey: ["customer-lookup", invoice?.customerEmail, invoice?.phoneNumber],
@@ -122,7 +136,6 @@ export default function CreditDetailPage() {
   // ── Derived ─────────────────────────────────────────────────────────────
   const payments = detail?.paymentHistory ?? [];
   const paid = totalPaid(payments);
-  const state = creditState(credit);
   const due = credit?.dueAmount ?? 0;
   const customerName =
     credit?.user?.name ||
@@ -325,6 +338,7 @@ export default function CreditDetailPage() {
             payments={payments}
             businessProfile={business}
             customerProfile={customerProfile}
+            billData={billData ?? null}
           />
         </div>
       </div>
@@ -340,6 +354,7 @@ export default function CreditDetailPage() {
         payments={payments}
         businessProfile={business}
         customerProfile={customerProfile}
+        billData={billData ?? null}
       />
 
       {/* The receipt attaches the credit's own document — the invoice modal
@@ -352,6 +367,7 @@ export default function CreditDetailPage() {
         payments={payments}
         businessProfile={business}
         customerProfile={customerProfile}
+        billData={billData ?? null}
       />
 
       <SendReminderModal
@@ -417,6 +433,7 @@ export default function CreditDetailPage() {
         payments={payments}
         businessProfile={business}
         customerProfile={customerProfile}
+        billData={billData ?? null}
       />
 
       <CreditPrintModal
@@ -427,6 +444,7 @@ export default function CreditDetailPage() {
         payments={payments}
         businessProfile={business}
         customerProfile={customerProfile}
+        billData={billData ?? null}
       />
 
       <CreditCustomerPreviewModal

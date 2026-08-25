@@ -62,7 +62,7 @@ export default function CreditDetailTopBar({
         </button>
         <div>
           <h1 className="text-base font-bold text-gray-900">
-            Credit · {customerName}
+            Credit · {customerName} ·
             {invoiceNo != null && (
               <span className="text-gray-400 font-semibold"> #{invoiceNo}</span>
             )}
@@ -125,12 +125,12 @@ export default function CreditDetailTopBar({
 
             <DropdownMenuSeparator className="my-1 bg-gray-100" />
 
-            <DropdownMenuItem
+            {/* <DropdownMenuItem
               onClick={onOpenInvoice}
               className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
             >
               Open the invoice
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
 
             {onDeleteCredit && (
               <>

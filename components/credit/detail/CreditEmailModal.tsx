@@ -13,6 +13,7 @@ import type {
   CreditItem,
   CreditPayment,
 } from "@/services/apiCredit.client";
+import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
 import {
   buildCreditPdf,
   CreditDocumentsOffscreen,
@@ -44,6 +45,7 @@ export default function CreditEmailModal({
   payments,
   businessProfile,
   customerProfile,
+  billData,
 }: {
   open: boolean;
   onClose: () => void;
@@ -52,6 +54,7 @@ export default function CreditEmailModal({
   payments: CreditPayment[];
   businessProfile?: CreditDocumentBusiness | null;
   customerProfile?: (CreditDocumentCustomer & { email?: string }) | null;
+  billData?: Transaction | null;
 }) {
   const refs = useCreditDocumentRefs();
 
@@ -118,6 +121,7 @@ export default function CreditEmailModal({
         payments={payments}
         businessProfile={businessProfile}
         customerProfile={customerProfile}
+        billData={billData}
       />
 
       <ModalShell

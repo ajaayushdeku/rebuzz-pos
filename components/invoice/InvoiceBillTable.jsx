@@ -19,13 +19,13 @@ export default function InvoiceBillTable({ invoices }) {
             <TableHead className="text-black font-bold text-sm tracking-wider py-3  w-[40%]">
               Name
             </TableHead>
-            <TableHead className="text-black font-bold text-sm py-3 text-center racking-wider w-[20%]">
+            <TableHead className="text-black font-bold text-sm py-3 text-center tracking-wider w-[20%]">
               Quantity
             </TableHead>
-            <TableHead className="text-black font-bold text-sm py-3 text-center racking-wider w-[20%]">
+            <TableHead className="text-black font-bold text-sm py-3 text-center tracking-wider w-[20%]">
               Rate ( {currency.symbol} )
             </TableHead>
-            <TableHead className="text-black font-bold text-sm py-3 text-right racking-wider  w-[20%]">
+            <TableHead className="text-black font-bold text-sm py-3 text-right tracking-wider  w-[20%]">
               Amount ( {currency.symbol} )
             </TableHead>
           </TableRow>

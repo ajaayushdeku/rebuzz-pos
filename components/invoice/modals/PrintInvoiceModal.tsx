@@ -84,7 +84,12 @@ export default function PrintInvoiceModal({
         invoice &&
         createPortal(
           <div className="invoice-print-root">
+            {/* fluid + no minimum height: the print root is forced to the full
+                page width, so a fixed 794px column would print narrower than
+                the paper, and a 1200px floor would spill onto a second page. */}
             <InvoicePreview
+              fluid
+              minHeightPx={0}
               type={printType}
               invoice={invoice}
               customerProfile={customerProfile}

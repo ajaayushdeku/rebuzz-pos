@@ -5,6 +5,8 @@ import Image from "next/image";
 import businessLogo from "@/public/rebuzz.png";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { normalizePaymentMethod } from "@/lib/config/transaction";
+import { parseNepalTime } from "@/lib/mappers/transaction";
+import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
 import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
 import type {
   Credit,
@@ -77,6 +79,7 @@ export default function CreditInvoiceDocument({
   payments,
   businessProfile,
   customerProfile,
+  billData,
   documentRef,
   minHeightPx = 1200,
   isMobile = false,
@@ -87,18 +90,15 @@ export default function CreditInvoiceDocument({
   payments: CreditPayment[];
   businessProfile?: CreditDocumentBusiness | null;
   customerProfile?: CreditDocumentCustomer | null;
-  /** Set by the PDF exporter, which rasterises this node off-screen. */
+  /**
+   * The POS bill, when the credit has been settled through the till. It carries
+   * what the credit record cannot — bill number, cashier, payment mode and the
+   * paid-at timestamp — so this document presents the same facts as the
+   * invoice one.
+   */
+  billData?: Transaction | null;
   documentRef?: React.RefObject<HTMLDivElement | null>;
-  /**
-   * Minimum height in CSS pixels. On screen a tall sheet looks like a document;
-   * for PDF and print it must not exceed one page, or every short credit gains
-   * a second, near-empty page.
-   */
   minHeightPx?: number;
-  /**
-   * Receipt-shaped layout for the narrow preview. Same figures, stacked and
-   * centred — an A4 sheet scaled into a phone frame is unreadable.
-   */
   isMobile?: boolean;
 }) {
   const { currency } = useCurrency();
@@ -133,6 +133,42 @@ export default function CreditInvoiceDocument({
 
   const paymentLabel = (method?: string | null) =>
     `${normalizePaymentMethod(method)} Payment`;
+
+  // A bill's paidAt needs the Nepal-timezone correction, then formatting with
+  // `timeZone: "UTC"` so the result is identical on every machine. With no
+  // bill, the credit's own creation date stands in.
+  const formattedDate = billData?.paidAt
+    ? parseNepalTime(billData.paidAt).toLocaleString("en-US", {
+        timeZone: "UTC",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+    : new Date(
+        (credit.creationDate || credit.createdAt).replace(" ", "T"),
+      ).toLocaleString(undefined, {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+
+  const formattedCancelledDate = new Date(
+    billData?.updatedAt ?? credit.updatedAt,
+  ).toLocaleString(undefined, {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const isRefunded = billData?.status === "refunded";
 
   // ── Mobile layout — centred, compact ────────────────────────────────────
   if (isMobile) {
@@ -306,9 +342,9 @@ export default function CreditInvoiceDocument({
           page breaks snap to the boundary between two of them. */}
       <div data-pdf-block className="text-center mb-10">
         <h1 className="text-4xl font-bold tracking-wider">{TITLES[type]}</h1>
-        <p className="mt-2 text-sm font-semibold uppercase tracking-[0.2em] text-violet-700">
+        {/* <p className="mt-2 text-sm font-semibold uppercase tracking-[0.2em] text-violet-700">
           {CREDIT_STATE_LABEL[state]}
-        </p>
+        </p> */}
       </div>
 
       {/* ── Business info ──
@@ -368,30 +404,33 @@ export default function CreditInvoiceDocument({
       {/* ── Meta ── */}
       <div
         data-pdf-block
-        className="flex justify-between items-start text-sm mb-3 tracking-wider"
+        className="flex justify-between items-center text-sm mb-3 tracking-wider"
       >
         <div>
-          <p className="font-medium underline">{customerName}</p>
-          <p className="mt-1 text-gray-600">
-            Credited on{" "}
-            {formatDateLong(credit.creationDate || credit.createdAt)}
+          <p className="font-medium underline">
+            {billData?.invoiceName || credit?.ticketName || customerName}
           </p>
         </div>
 
-        <div className="text-right text-gray-600">
-          <p>Invoice No: {credit.invoiceNo}</p>
-          <p className="mt-1">
-            Credit Ref: {credit._id.slice(-8).toUpperCase()}
-          </p>
-        </div>
+        {billData ? (
+          <>
+            <p>Invoice No: {billData.invoiceNo || credit.invoiceNo}</p>
+            <p className="mt-1">Bill No: {billData.billNo || "N/A"}</p>
+          </>
+        ) : (
+          <div className="text-right text-gray-600">
+            {/* <p>Invoice No: {credit.invoiceNo}</p> */}
+            <p className="mt-1">Date: {formattedDate}</p>
+          </div>
+        )}
       </div>
 
       {/* ── Items ── */}
       <div className="w-full overflow-hidden">
         <table className="w-full border-collapse">
           <thead>
-            <tr data-pdf-block className="bg-gray-300/20">
-              <th className="text-left text-black font-bold text-sm tracking-wider py-3 w-[40%]">
+            <tr data-pdf-block className="bg-gray-300/20 border-b border-gray">
+              <th className="text-left text-black font-bold text-sm tracking-wider py-3 pl-2 w-[40%]">
                 Name
               </th>
               <th className="text-center text-black font-bold text-sm py-3 tracking-wider w-[20%]">
@@ -400,7 +439,7 @@ export default function CreditInvoiceDocument({
               <th className="text-center text-black font-bold text-sm py-3 tracking-wider w-[20%]">
                 Rate ( {currency.symbol} )
               </th>
-              <th className="text-right text-black font-bold text-sm py-3 tracking-wider w-[20%]">
+              <th className="text-right text-black font-bold text-sm py-3 tracking-wider w-[20%] pr-2">
                 Amount ( {currency.symbol} )
               </th>
             </tr>
@@ -420,23 +459,40 @@ export default function CreditInvoiceDocument({
 
             {items.map((item, index) => (
               <tr data-pdf-block key={`${item._id}-${index}`}>
-                <td className="py-2 text-sm text-black tracking-wider">
+                <td className="py-2 text-sm text-black tracking-wider pl-2">
                   {item.productName}
                   {item.note && (
                     <span className="block text-[12px] text-gray-500">
                       {item.note}
                     </span>
                   )}
-                  {item.discount > 0 && (
+                  {/* {item.discount > 0 && (
                     <span className="block text-[12px] text-red-500 tracking-wider">
                       − {fmt(item.discount)} OFF
                     </span>
+                  )} */}
+                  {item.discounts.length !== 0 && (
+                    <span className="block text-[12px] text-red-500/100 racking-wider">
+                      {item.discounts.map((disc, idx) => (
+                        <span key={idx} className="flex flex-col">
+                          - {disc?.name}:{" "}
+                          {disc?.type === "fixed"
+                            ? formatCurrencySymbol(
+                                Number(disc?.rate),
+                                currency.symbol,
+                                currency.locale,
+                              )
+                            : `${disc?.rate}%`}{" "}
+                          OFF{" "}
+                        </span>
+                      ))}
+                    </span>
                   )}
-                  {!item.isTaxable && (
+                  {/* {!item.isTaxable && (
                     <span className="block text-[11px] text-gray-400 tracking-wider">
                       Non-taxable
                     </span>
-                  )}
+                  )} */}
                 </td>
                 <td className="py-2 text-center text-sm text-black tracking-wider">
                   x {item.quantity}
@@ -444,7 +500,7 @@ export default function CreditInvoiceDocument({
                 <td className="py-2 text-center text-sm text-black tracking-wider">
                   {formatAmount(Number(item.unitPrice), currency.locale)}
                 </td>
-                <td className="py-2 text-right text-sm text-black tracking-wider">
+                <td className="py-2 text-right text-sm text-black tracking-wider pr-2">
                   {formatAmount(
                     item.quantity * item.unitPrice,
                     currency.locale,
@@ -526,20 +582,27 @@ export default function CreditInvoiceDocument({
       <div className="border-b border-dashed border-gray-400 my-6" />
 
       <div data-pdf-block className="bg-gray-50 py-4 px-2 rounded-lg text-sm">
-        <div className="flex justify-between items-start text-black-600">
+        <div className="flex justify-between items-start text-sm text-black-600">
           <div className="flex flex-col gap-2 tracking-wider">
-            <p>Paid so far: {fmt(paid)}</p>
-            <p>
-              Payments recorded: {paymentList.length}
-              {state === "archived" && (
-                <span className="text-gray-500"> · Archived</span>
-              )}
-            </p>
+            <p>Cashier: {billData?.generatedBy || "N/A"}</p>
+            {billData && <p>Counter: POS12</p>}
+            {/* <p>Status: {CREDIT_STATE_LABEL[state]}</p> */}
+
+            {isRefunded && (
+              <p className="text-red-500 font-medium">Cancelled Bill</p>
+            )}
           </div>
 
           <div className="flex flex-col items-end gap-2 tracking-wider">
-            <p>Status: {CREDIT_STATE_LABEL[state]}</p>
-            <p>Last updated: {formatDateLong(credit.updatedAt)}</p>
+            {billData && <p>Payment Mode: {billData.paymentMethod || "N/A"}</p>}
+
+            <p>Date: {formattedDate}</p>
+
+            {isRefunded && (
+              <p className="text-red-500 font-medium">
+                Date: {formattedCancelledDate}
+              </p>
+            )}
           </div>
         </div>
 

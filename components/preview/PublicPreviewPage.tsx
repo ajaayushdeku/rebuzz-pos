@@ -55,10 +55,15 @@ const PublicPreviewPage = ({ type }: { type: InvoiceType }) => {
   const { data: business, isLoading: bizLoading } = useBusiness();
 
   // Fetch bill/transaction data — works for paid invoices (404 for unpaid is handled silently)
+  // Same rule as the invoice detail page: no bill exists until the invoice has
+  // been through the till, so unpaid and outstanding credited ones skip it.
+  const hasBill =
+    invoice?.paidStatus === "paid" || invoice?.paidStatus === "refunded";
+
   const { data: billData, isLoading: billLoading } = useQuery({
     queryKey: ["bill-detail", invoice?.invoice],
     queryFn: () => getTransactionDetail(invoice!.invoice),
-    enabled: !!invoice?.invoice,
+    enabled: !!invoice?.invoice && hasBill,
     retry: false,
   });
 

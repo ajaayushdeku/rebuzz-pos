@@ -7,6 +7,7 @@ import type {
   CreditItem,
   CreditPayment,
 } from "@/services/apiCredit.client";
+import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
 import CreditInvoiceDocument, {
   CREDIT_DOCUMENT_TYPES,
   CREDIT_DOC_LABELS,
@@ -28,12 +29,14 @@ export default function CreditInvoicePreviews({
   payments,
   businessProfile,
   customerProfile,
+  billData,
 }: {
   credit: Credit;
   items: CreditItem[];
   payments: CreditPayment[];
   businessProfile?: CreditDocumentBusiness | null;
   customerProfile?: CreditDocumentCustomer | null;
+  billData?: Transaction | null;
 }) {
   const [documentType, setDocumentType] =
     useState<CreditDocumentType>("proforma");
@@ -120,6 +123,7 @@ export default function CreditInvoicePreviews({
             payments={payments}
             businessProfile={businessProfile}
             customerProfile={customerProfile}
+            billData={billData}
           />
         </div>
       ))}

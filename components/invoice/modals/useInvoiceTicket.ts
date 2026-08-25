@@ -160,10 +160,20 @@ export function useInvoiceDocumentData(
   );
   const { data: business } = useBusiness();
 
+  /**
+   * A bill exists only once the invoice has been through the till, so an
+   * unpaid or still-outstanding credited invoice has nothing to fetch — asking
+   * is a guaranteed 404. Refunded invoices keep theirs: the bill is what
+   * carries the refund. A completed credit with no POS bill is covered by the
+   * synthesised one below.
+   */
+  const hasBill =
+    invoice?.paidStatus === "paid" || invoice?.paidStatus === "refunded";
+
   const { data: realBillData } = useQuery({
     queryKey: ["bill-detail", invoice?.invoice],
     queryFn: () => getTransactionDetail(invoice!.invoice),
-    enabled: enabled && !!invoice?.invoice,
+    enabled: enabled && !!invoice?.invoice && hasBill,
     retry: false,
   });
 

@@ -84,6 +84,18 @@ interface InvoicePreviewProps {
   /** Renders the interactive preview chrome with a Desktop/Mobile toggle.
    *  Off by default so PDF/print/public rendering keep the raw document only. */
   withControls?: boolean;
+  /**
+   * Lets the document fill its container instead of sitting in a fixed 794px
+   * column. Printing wants this: the print root is forced to full page width,
+   * so a fixed column prints narrower than the paper it is on.
+   */
+  fluid?: boolean;
+  /**
+   * Minimum height in CSS pixels. A tall sheet reads as a document on screen,
+   * but for print it must not exceed one page or every short invoice gains a
+   * second, near-empty one.
+   */
+  minHeightPx?: number;
 }
 
 // ── Invoice document (shared by both modes) ────────────────────────────────
@@ -97,6 +109,7 @@ function InvoiceContent({
   payments,
   credit,
   isMobile,
+  minHeightPx = 1200,
 }: {
   type: InvoiceType;
   invoice: InvoiceData;
@@ -116,6 +129,7 @@ function InvoiceContent({
     };
   } | null;
   isMobile: boolean;
+  minHeightPx?: number;
 }) {
   const { currency } = useCurrency();
 
@@ -470,7 +484,10 @@ function InvoiceContent({
 
   // ── Desktop layout — full A4 document (existing UI) ─────────────────────
   return (
-    <div className="bg-white w-full min-h-[1200px] px-10 py-10 text-black border-[3px] border-blue-900 font-sans">
+    <div
+      style={{ minHeight: minHeightPx }}
+      className="bg-white w-full px-10 py-10 text-black border-[3px] border-blue-900 font-sans"
+    >
       {/* ───────────────── Header ───────────────── */}
       <div className="text-center mb-10">
         <h1 className="text-4xl font-bold  tracking-wider ">{invoiceTitle}</h1>
@@ -755,6 +772,8 @@ export default function InvoicePreview({
   payments,
   credit,
   withControls = false,
+  fluid = false,
+  minHeightPx,
 }: InvoicePreviewProps) {
   const router = useRouter();
   const [previewMode, setPreviewMode] = useState<PreviewMode>("desktop");
@@ -776,6 +795,7 @@ export default function InvoicePreview({
       payments={payments}
       credit={credit}
       isMobile={withControls ? isMobile : false}
+      minHeightPx={minHeightPx}
     />
   );
 
@@ -790,6 +810,7 @@ export default function InvoicePreview({
       payments={payments}
       credit={credit}
       isMobile={false}
+      minHeightPx={0}
     />
   );
 
@@ -903,9 +924,7 @@ export default function InvoicePreview({
       {printing &&
         createPortal(
           <div className="invoice-print-root">
-            <div className="bg-white w-[794px] mx-auto">
-              {printableDocument}
-            </div>
+            <div className="bg-white w-full">{printableDocument}</div>
           </div>,
           document.body,
         )}
@@ -915,7 +934,10 @@ export default function InvoicePreview({
   // Raw document — used for PDF export, screenshots, printing and public pages.
   if (!withControls) {
     return (
-      <div ref={invoiceRef} className="bg-white w-[794px] mx-auto">
+      <div
+        ref={invoiceRef}
+        className={fluid ? "bg-white w-full" : "bg-white w-[794px] mx-auto"}
+      >
         {content}
       </div>
     );

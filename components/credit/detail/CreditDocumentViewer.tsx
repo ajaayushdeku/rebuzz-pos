@@ -16,6 +16,7 @@ import type {
   CreditItem,
   CreditPayment,
 } from "@/services/apiCredit.client";
+import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
 import CreditInvoiceDocument, {
   creditFileStem,
   type CreditDocumentBusiness,
@@ -49,6 +50,7 @@ export default function CreditDocumentViewer({
   payments,
   businessProfile,
   customerProfile,
+  billData,
 }: {
   type: CreditDocumentType;
   credit: Credit;
@@ -56,6 +58,7 @@ export default function CreditDocumentViewer({
   payments: CreditPayment[];
   businessProfile?: CreditDocumentBusiness | null;
   customerProfile?: CreditDocumentCustomer | null;
+  billData?: Transaction | null;
 }) {
   const router = useRouter();
   const [previewMode, setPreviewMode] = useState<PreviewMode>("desktop");
@@ -72,6 +75,7 @@ export default function CreditDocumentViewer({
     payments,
     businessProfile,
     customerProfile,
+    billData,
   };
 
   const handleExportPdf = async () => {
@@ -122,12 +126,9 @@ export default function CreditDocumentViewer({
         typeof document !== "undefined" &&
         createPortal(
           <div className="invoice-print-root">
-            <div
-              className="bg-white mx-auto"
-              style={{ width: PDF_RENDER_WIDTH_PX }}
-            >
-              <CreditInvoiceDocument {...documentProps} minHeightPx={0} />
-            </div>
+            {/* Full width, like the credit print modal — the print root is
+                already forced to the page width. */}
+            <CreditInvoiceDocument {...documentProps} minHeightPx={0} />
           </div>,
           document.body,
         )}

@@ -71,11 +71,11 @@ export default function CreditDetailMeta({
               <span className="text-base font-bold text-blue-600">
                 {customerName}
               </span>
-              {customerPhone && (
+              {/* {customerPhone && (
                 <span className="text-[11px] text-gray-400 mb-0.5">
                   {customerPhone}
                 </span>
-              )}
+              )} */}
               {!!loyaltyPoint && loyaltyPoint > 0 && (
                 <p className="text-[10px] text-amber-500 font-medium whitespace-nowrap mb-0.5">
                   ★ {loyaltyPoint.toFixed(2)} Points
@@ -89,13 +89,15 @@ export default function CreditDetailMeta({
       <div className="flex flex-row gap-6">
         <div>
           <MetaLabel>Credit total</MetaLabel>
-          <p className="text-xl font-bold text-gray-800">{fmt(grandTotal)}</p>
+          <p className="text-xl font-semibold text-gray-800">
+            {fmt(grandTotal)}
+          </p>
         </div>
 
         {paidAmount > 0 && (
           <div>
             <MetaLabel>Paid so far</MetaLabel>
-            <p className="text-xl font-bold text-green-600">
+            <p className="text-xl font-semibold text-green-600">
               {fmt(paidAmount)}
             </p>
           </div>
@@ -104,7 +106,7 @@ export default function CreditDetailMeta({
         <div>
           <MetaLabel>Amount due</MetaLabel>
           <p
-            className={`text-xl font-bold ${
+            className={`text-xl font-semibold ${
               cleared ? "text-green-600" : "text-red-600"
             }`}
           >

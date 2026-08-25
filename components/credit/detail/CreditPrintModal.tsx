@@ -10,6 +10,7 @@ import type {
   CreditItem,
   CreditPayment,
 } from "@/services/apiCredit.client";
+import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
 import CreditInvoiceDocument, {
   CREDIT_DOCUMENT_TYPES,
   CREDIT_DOC_DESCRIPTIONS,
@@ -35,6 +36,7 @@ export default function CreditPrintModal({
   payments,
   businessProfile,
   customerProfile,
+  billData,
 }: {
   open: boolean;
   onClose: () => void;
@@ -43,6 +45,7 @@ export default function CreditPrintModal({
   payments: CreditPayment[];
   businessProfile?: CreditDocumentBusiness | null;
   customerProfile?: CreditDocumentCustomer | null;
+  billData?: Transaction | null;
 }) {
   const [printType, setPrintType] = useState<CreditDocumentType | null>(null);
 
@@ -97,6 +100,7 @@ export default function CreditPrintModal({
               payments={payments}
               businessProfile={businessProfile}
               customerProfile={customerProfile}
+              billData={billData}
             />
           </div>,
           document.body,

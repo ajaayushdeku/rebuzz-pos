@@ -149,11 +149,18 @@ const InvoiceDetailPage = () => {
 
   const customerProfile = customerData;
 
-  // Fetch bill/transaction data — works for paid invoices (404 for unpaid is handled silently)
+  /**
+   * A bill only exists once the invoice has been through the till, so asking
+   * for one on an unpaid or still-outstanding credited invoice is a guaranteed
+   * 404. Refunded invoices keep theirs — the bill is what carries the refund.
+   */
+  const hasBill =
+    invoice?.paidStatus === "paid" || invoice?.paidStatus === "refunded";
+
   const { data: billDataQuery } = useQuery({
     queryKey: ["bill-detail", invoice?.invoice],
     queryFn: () => getTransactionDetail(invoice!.invoice),
-    enabled: !!invoice?.invoice,
+    enabled: !!invoice?.invoice && hasBill,
     retry: false,
   });
   const displayBillData = billDataQuery ?? null;
@@ -502,7 +509,11 @@ const InvoiceDetailPage = () => {
           </button>
           <div>
             <h1 className="text-base font-bold text-gray-900">
-              {invoice.ticketName || "Invoice"} #{invoice?.invoice}
+              {invoice.ticketName || "Invoice"} ·
+              <span className="text-gray-400 font-semibold">
+                {" "}
+                #{invoice?.invoice}
+              </span>
             </h1>
             <p className="text-xs text-gray-400 mt-0.5">
               {isCreditArchived
@@ -1251,7 +1262,11 @@ const InvoiceDetailPage = () => {
             </div>
           </div>
 
-          {/* ── Active invoice preview ── */}
+          {/* ── Active invoice preview ──
+              `fluid` lets each document track the column it sits in. The
+              default is a fixed 794px sheet, which overflows the page once the
+              viewport is narrower than that — the credit documents have always
+              been fluid, which is why they fit. */}
           <div
             className={
               invoiceType === "proforma"
@@ -1260,6 +1275,7 @@ const InvoiceDetailPage = () => {
             }
           >
             <InvoicePreview
+              fluid
               type="proforma"
               invoice={invoice}
               customerProfile={customerProfile}
@@ -1293,6 +1309,7 @@ const InvoiceDetailPage = () => {
             }
           >
             <InvoicePreview
+              fluid
               type="invoice"
               invoice={invoice}
               customerProfile={customerProfile}
@@ -1324,6 +1341,7 @@ const InvoiceDetailPage = () => {
             }
           >
             <InvoicePreview
+              fluid
               type="tax"
               invoice={invoice}
               customerProfile={customerProfile}
