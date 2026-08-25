@@ -712,7 +712,7 @@ export default function InvoiceItemsSelector({
                 setDragOverId(null);
               }}
               className={cn(
-                "border-b-1 w-full hover:bg-blue-50/70 transition-colors",
+                "border-b-1 w-full align-top justify-start hover:bg-blue-50/70 transition-colors",
                 draggingId === item.id && "opacity-40",
                 dragOverId === item.id &&
                   draggingId !== item.id &&
@@ -744,7 +744,7 @@ export default function InvoiceItemsSelector({
                     nudgeRow(item.id, e.key === "ArrowUp" ? -1 : 1);
                   }}
                   onBlur={() => setDraggingId(null)}
-                  className="cursor-grab rounded p-0.5 pb-10 text-gray-300 transition hover:text-gray-500 active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  className="mt-1.5 cursor-grab rounded p-0.5 text-gray-300 transition hover:text-gray-500 active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 >
                   <GripVertical className="h-4 w-4" />
                 </button>
@@ -752,191 +752,198 @@ export default function InvoiceItemsSelector({
 
               {/* Product selector */}
               <TableCell className="w-[32%] min-w-[190px]">
-                <div className="relative flex items-center pb-10 gap-1">
-                  <Input
-                    value={item.name}
-                    onChange={(e) =>
-                      updateItem(item.id, "name", e.target.value)
-                    }
-                    placeholder="Product name"
-                    className="flex-1 h-8 text-xs bg-white"
-                  />
-                  <div className="w-full absolute top-2/3 left-0">
-                    {rowPills.length > 0 && (
-                      <>
-                        {/* Narrow: one dot per badge, full badge on hover/tap */}
-                        <div className="flex flex-wrap items-center gap-1.75 lg:gap-2  pl-1">
-                          {rowPills.map((pill) => {
-                            const pillId = `${item.id}:${pill.key}`;
-                            return (
-                              <PillDot
-                                key={pill.key}
-                                pill={pill}
-                                isOpen={expandedPill === pillId}
-                                onToggle={() =>
-                                  setExpandedPill((cur) =>
-                                    cur === pillId ? null : pillId,
-                                  )
-                                }
-                              />
-                            );
-                          })}
-                        </div>
-                      </>
-                    )}
+                {/* The pills sit under the selector in normal flow. Absolutely
+                    positioned, they needed a bottom pad on every cell in the
+                    row — which left a hole under any product that happens to
+                    carry no badges, and put them outside the row's hover. */}
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-1">
+                    <Input
+                      value={item.name}
+                      onChange={(e) =>
+                        updateItem(item.id, "name", e.target.value)
+                      }
+                      placeholder="Product name"
+                      className="flex-1 h-8 text-xs bg-white"
+                    />
+
+                    <Popover
+                      open={productPopoverRow === item.id}
+                      onOpenChange={(open) =>
+                        setProductPopoverRow(open ? item.id : null)
+                      }
+                    >
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8 shrink-0 border-gray-200"
+                        >
+                          <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-72 p-0" align="start">
+                        <Command>
+                          <CommandInput
+                            placeholder="Search product..."
+                            value={search}
+                            onValueChange={setSearch}
+                          />
+                          <CommandList>
+                            <CommandEmpty className="p-0">
+                              <div className="py-4 text-center text-xs">
+                                No product found.
+                              </div>
+                              <Button
+                                variant="secondary"
+                                className="w-full rounded-none border-t flex items-center justify-start gap-2 px-4 py-2 text-xs"
+                                onClick={() => openCreateModal(item.id)}
+                              >
+                                <Plus className="h-3 w-3" />
+                                <span>Create &ldquo;{search}&rdquo;</span>
+                              </Button>
+                            </CommandEmpty>
+                            <CommandGroup>
+                              {products
+                                .filter((product) => {
+                                  // Variant products hold stock on their variants,
+                                  // so skip the parent-level stock filter for them.
+                                  if (
+                                    product.variants &&
+                                    product.variants.length > 0
+                                  ) {
+                                    return true;
+                                  }
+                                  if (
+                                    product.usesStocks &&
+                                    product.inStock !== undefined
+                                  ) {
+                                    return product.inStock > 0;
+                                  }
+                                  return true;
+                                })
+                                .map((product) => {
+                                  const hasVariants =
+                                    product.variants &&
+                                    product.variants.length > 0;
+                                  // A variant product holds no stock of its own —
+                                  // its total is the sum across variants, which
+                                  // the variant picker then breaks back down per
+                                  // tile.
+                                  const stockCount = hasVariants
+                                    ? (product.variants ?? []).reduce(
+                                        (sum, v) => sum + (v.inStock ?? 0),
+                                        0,
+                                      )
+                                    : product.inStock;
+                                  // An aggregate has no meaningful low-stock
+                                  // threshold, so only a flat product can read as
+                                  // "low" here.
+                                  const level = stockLevel(
+                                    product.usesStocks,
+                                    stockCount,
+                                    hasVariants ? undefined : product.lowStock,
+                                  );
+                                  return (
+                                    <CommandItem
+                                      key={product.id}
+                                      value={product.name}
+                                      onSelect={() =>
+                                        handleProductSelect(
+                                          item.id,
+                                          product.name,
+                                        )
+                                      }
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-3.5 w-3.5",
+                                          item.name === product.name
+                                            ? "opacity-100"
+                                            : "opacity-0",
+                                        )}
+                                      />
+                                      <div className="flex flex-col flex-1">
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-sm">
+                                            {product.name}
+                                          </span>
+                                          {hasVariants && (
+                                            <span className="inline-flex items-center gap-0.5 text-[9px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200 font-medium whitespace-nowrap">
+                                              {/* <Layers size={5} /> */}
+                                              {product.variants?.length}{" "}
+                                              variants
+                                            </span>
+                                          )}
+                                          {level !== "untracked" && (
+                                            <span
+                                              className={cn(
+                                                "text-[9px] px-2 py-0.5 rounded-full border font-medium whitespace-nowrap tabular-nums",
+                                                STOCK_TONE[level],
+                                              )}
+                                            >
+                                              {stockLabel(
+                                                level,
+                                                stockCount ?? 0,
+                                                currency.locale,
+                                              )}
+                                            </span>
+                                          )}
+                                        </div>
+                                        <span className="text-[11px] text-muted-foreground">
+                                          {hasVariants
+                                            ? `From ${formatCurrencySymbol(
+                                                Math.min(
+                                                  ...(product.variants?.map(
+                                                    (v) => v.price,
+                                                  ) ?? [0]),
+                                                ),
+                                                currency.symbol,
+                                                currency.locale,
+                                              )}`
+                                            : formatCurrencySymbol(
+                                                product.price,
+                                                currency.symbol,
+                                                currency.locale,
+                                              )}
+                                        </span>
+                                      </div>
+                                    </CommandItem>
+                                  );
+                                })}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
 
-                  <Popover
-                    open={productPopoverRow === item.id}
-                    onOpenChange={(open) =>
-                      setProductPopoverRow(open ? item.id : null)
-                    }
-                  >
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8 shrink-0 border-gray-200"
-                      >
-                        <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-72 p-0" align="start">
-                      <Command>
-                        <CommandInput
-                          placeholder="Search product..."
-                          value={search}
-                          onValueChange={setSearch}
-                        />
-                        <CommandList>
-                          <CommandEmpty className="p-0">
-                            <div className="py-4 text-center text-xs">
-                              No product found.
-                            </div>
-                            <Button
-                              variant="secondary"
-                              className="w-full rounded-none border-t flex items-center justify-start gap-2 px-4 py-2 text-xs"
-                              onClick={() => openCreateModal(item.id)}
-                            >
-                              <Plus className="h-3 w-3" />
-                              <span>Create &ldquo;{search}&rdquo;</span>
-                            </Button>
-                          </CommandEmpty>
-                          <CommandGroup>
-                            {products
-                              .filter((product) => {
-                                // Variant products hold stock on their variants,
-                                // so skip the parent-level stock filter for them.
-                                if (
-                                  product.variants &&
-                                  product.variants.length > 0
-                                ) {
-                                  return true;
-                                }
-                                if (
-                                  product.usesStocks &&
-                                  product.inStock !== undefined
-                                ) {
-                                  return product.inStock > 0;
-                                }
-                                return true;
-                              })
-                              .map((product) => {
-                                const hasVariants =
-                                  product.variants &&
-                                  product.variants.length > 0;
-                                // A variant product holds no stock of its own —
-                                // its total is the sum across variants, which
-                                // the variant picker then breaks back down per
-                                // tile.
-                                const stockCount = hasVariants
-                                  ? (product.variants ?? []).reduce(
-                                      (sum, v) => sum + (v.inStock ?? 0),
-                                      0,
-                                    )
-                                  : product.inStock;
-                                // An aggregate has no meaningful low-stock
-                                // threshold, so only a flat product can read as
-                                // "low" here.
-                                const level = stockLevel(
-                                  product.usesStocks,
-                                  stockCount,
-                                  hasVariants ? undefined : product.lowStock,
-                                );
-                                return (
-                                  <CommandItem
-                                    key={product.id}
-                                    value={product.name}
-                                    onSelect={() =>
-                                      handleProductSelect(item.id, product.name)
-                                    }
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-3.5 w-3.5",
-                                        item.name === product.name
-                                          ? "opacity-100"
-                                          : "opacity-0",
-                                      )}
-                                    />
-                                    <div className="flex flex-col flex-1">
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-sm">
-                                          {product.name}
-                                        </span>
-                                        {hasVariants && (
-                                          <span className="inline-flex items-center gap-0.5 text-[9px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200 font-medium whitespace-nowrap">
-                                            {/* <Layers size={5} /> */}
-                                            {product.variants?.length} variants
-                                          </span>
-                                        )}
-                                        {level !== "untracked" && (
-                                          <span
-                                            className={cn(
-                                              "text-[9px] px-2 py-0.5 rounded-full border font-medium whitespace-nowrap tabular-nums",
-                                              STOCK_TONE[level],
-                                            )}
-                                          >
-                                            {stockLabel(
-                                              level,
-                                              stockCount ?? 0,
-                                              currency.locale,
-                                            )}
-                                          </span>
-                                        )}
-                                      </div>
-                                      <span className="text-[11px] text-muted-foreground">
-                                        {hasVariants
-                                          ? `From ${formatCurrencySymbol(
-                                              Math.min(
-                                                ...(product.variants?.map(
-                                                  (v) => v.price,
-                                                ) ?? [0]),
-                                              ),
-                                              currency.symbol,
-                                              currency.locale,
-                                            )}`
-                                          : formatCurrencySymbol(
-                                              product.price,
-                                              currency.symbol,
-                                              currency.locale,
-                                            )}
-                                      </span>
-                                    </div>
-                                  </CommandItem>
-                                );
-                              })}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                  {/* Narrow: one dot per badge, full badge on hover/tap */}
+                  {rowPills.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5 lg:gap-2 pl-1">
+                      {rowPills.map((pill) => {
+                        const pillId = `${item.id}:${pill.key}`;
+                        return (
+                          <PillDot
+                            key={pill.key}
+                            pill={pill}
+                            isOpen={expandedPill === pillId}
+                            onToggle={() =>
+                              setExpandedPill((cur) =>
+                                cur === pillId ? null : pillId,
+                              )
+                            }
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </TableCell>
 
               {/* Description */}
               <TableCell className="w-[24%] min-w-[150px]">
-                <div className="pb-10">
+                <div className={`${rowPills.length > 0 && "mb-7"}`}>
                   <Input
                     value={item.description}
                     onChange={(e) =>
@@ -950,7 +957,7 @@ export default function InvoiceItemsSelector({
 
               {/* Quantity */}
               <TableCell className="relative w-[84px] min-w-[84px]">
-                <div className=" relative pb-10">
+                <div className={`${rowPills.length > 0 && "mb-7"} relative`}>
                   <Input
                     type="number"
                     value={item.quantity}
@@ -964,8 +971,8 @@ export default function InvoiceItemsSelector({
                     )}
                   />
                   {stockErrors[item.id] && (
-                    <span className="absolute bottom-5 right-0 text-[8px] font-medium text-red-600 bg-red-50 px-1 py-0.5 rounded-full border border-red-200 whitespace-nowrap">
-                      Stock Exceeded
+                    <span className="absolute right-0 mt-1 block text-right text-[9px] font-medium text-red-600 whitespace-nowrap">
+                      Stock exceeded
                     </span>
                   )}
                 </div>
@@ -973,7 +980,9 @@ export default function InvoiceItemsSelector({
 
               {/* Unit price */}
               <TableCell className="w-[104px] min-w-[104px] relative ">
-                <div className="relative pb-10">
+                <div
+                  className={`${rowPills.length > 0 && !showDiscountedUnit && "mb-7"} ${showDiscountedUnit && "mb-3"}`}
+                >
                   <>
                     <span className="relative left-5 top-1/2 -translate-y-1/2 text-[14px] sm:text-[11px] text-slate-400">
                       {currency.symbol}
@@ -996,7 +1005,7 @@ export default function InvoiceItemsSelector({
                     />
                   </>
                   {showDiscountedUnit && (
-                    <p className="absolute -right-1.5 mt-1 text-right text-[13px] sm:text-[11px] font-semibold leading-none text-green-600 tabular-nums">
+                    <p className="mt-1 text-right text-[13px] sm:text-[11px] font-semibold leading-none text-green-600 tabular-nums">
                       {formatCurrencySymbolOnly(currency.symbol)}{" "}
                       {discountedUnit.toFixed(2)}
                     </p>
@@ -1006,7 +1015,7 @@ export default function InvoiceItemsSelector({
 
               {/* Row total */}
               <TableCell className="w-[132px] min-w-[120px] text-right font-semibold text-[12px] md:text-[14px] text-gray-800 tabular-nums">
-                <p className="pb-10">
+                <p className={`${rowPills.length > 0 && "mb-7"}`}>
                   {" "}
                   {formatCurrencySymbol(
                     (() => {
@@ -1047,7 +1056,9 @@ export default function InvoiceItemsSelector({
 
               {/* ── Taxable toggle ── */}
               <TableCell className="text-center w-[76px] min-w-[76px]">
-                <div className="flex justify-center pb-10">
+                <div
+                  className={`${rowPills.length > 0 && "mb-7"} flex justify-center`}
+                >
                   <button
                     type="button"
                     onClick={() => {
@@ -1078,7 +1089,7 @@ export default function InvoiceItemsSelector({
               {/* Delete */}
               <TableCell className="text-center w-[44px] min-w-[44px]">
                 <button
-                  className="text-gray-400 pb-10 hover:text-red-500 transition-colors shrink-0"
+                  className={`${rowPills.length > 0 && "mb-7"} text-gray-400 hover:text-red-500 transition-colors shrink-0`}
                   onClick={() =>
                     onItemsChange(items.filter((i) => i.id !== item.id))
                   }
