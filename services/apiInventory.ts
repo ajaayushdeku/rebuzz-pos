@@ -17,6 +17,8 @@ export type InventoryItem = {
   costPrice: number;
   price: number;
   categories?: string;
+  /** Ids of the master discounts applied to this product. */
+  discounts?: string[];
   /** Primary product image URL (from the products API), if any. */
   image?: string;
   /** Additional gallery image URLs (the `images` field). */
@@ -86,6 +88,11 @@ export async function fetchInventoryProducts(): Promise<InventoryItem[]> {
           costPrice: p.costPrice,
           price: typeof p.price === "number" ? p.price : 0,
           categories: p.categories,
+          discounts: Array.isArray(p.discounts)
+            ? p.discounts.filter(
+                (d: unknown): d is string => typeof d === "string",
+              )
+            : undefined,
           image:
             typeof p.image === "string" && p.image
               ? p.image

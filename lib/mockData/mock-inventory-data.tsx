@@ -21,6 +21,8 @@ export type InventoryItem = {
   costPrice: number;
   price: number;
   categories?: string;
+  /** Ids of the master discounts applied to this product. */
+  discounts?: string[];
   /** Primary product image URL (from the products API), if any. */
   image?: string;
   /** Additional gallery image URLs (the `images` field). */
