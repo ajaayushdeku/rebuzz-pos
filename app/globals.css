@@ -162,6 +162,17 @@
   display: none;
 }
 
+/* Hides the scrollbar on a shadcn <Table>'s own scroll container. The table
+   renders `[data-slot="table-container"]` around itself, so a `scrollbar-hide`
+   on the page's wrapper sits outside the element that actually scrolls. */
+.table-scroll-hidden [data-slot="table-container"] {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.table-scroll-hidden [data-slot="table-container"]::-webkit-scrollbar {
+  display: none;
+}
+
 /* ── Invoice print isolation ──────────────────────────────────────────────
    The print root is kept off-screen during normal viewing. When printing,
    everything else is hidden and only the invoice content is rendered. */

@@ -69,7 +69,7 @@ const DOT_TONE: Record<PillTone, string> = {
   danger: "bg-red-100 text-red-600 ring-red-300/70",
   warning: "bg-amber-100 text-amber-600 ring-amber-300/70",
   info: "bg-blue-100 text-blue-600 ring-blue-300/70",
-  tax: "bg-gray-100 text-slate-600 ring-slate-400/80",
+  tax: "bg-rose-100 text-rose-600 ring-rose-400/80",
 };
 
 function PillDot({
@@ -626,11 +626,11 @@ export default function InvoiceItemsSelector({
         icon: Receipt,
         label: `${activeTax.name} (${activeTax.rate}%) — ${formatCurrencySymbolOnly(currency.symbol)} ${taxAmount.toFixed(2)}`,
         element: (
-          <Badge className="flex items-center gap-1 bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs">
+          <Badge className="flex items-center gap-1 bg-rose-100 text-rose-700 hover:bg-rose-200 text-xs">
             <span className="text-[11px] font-semibold  tracking-wider leading-none">
               {activeTax.name}
             </span>
-            <span className="text-[11px] text-slate-500  tracking-wider leading-none">
+            <span className="text-[11px] text-rose-500  tracking-wider leading-none">
               ({activeTax.rate}%) :
             </span>
             <span className="text-[11px] font-medium  tracking-wider  leading-none">
@@ -645,7 +645,7 @@ export default function InvoiceItemsSelector({
             {/* X disables taxable on this item */}
             <button
               type="button"
-              className="ml-0.5 rounded-full hover:bg-violet-300 p-0.5 transition-colors"
+              className="ml-0.5 rounded-full hover:bg-rose-300 p-0.5 transition-colors"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -712,7 +712,7 @@ export default function InvoiceItemsSelector({
                 setDragOverId(null);
               }}
               className={cn(
-                "border-b-1 w-full align-top justify-start hover:bg-blue-50/70 transition-colors",
+                "border-b-1 w-full align-top justify-start hover:bg-blue-50/60 transition-colors",
                 draggingId === item.id && "opacity-40",
                 dragOverId === item.id &&
                   draggingId !== item.id &&

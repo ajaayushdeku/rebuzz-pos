@@ -44,11 +44,11 @@ export default function Sidebar() {
         isCollapsed ? "w-12" : "w-56",
       )}
     >
-      <div className="py-2 px-1 flex items-center justify-between gap-1">
+      <div className="py-2 px-1 flex items-center mt-2 justify-between gap-1">
         {!isCollapsed && (
           <Link href="/invoices/add">
             <Button
-              className="flex-1 bg-white text-blue-500  font-bold hover:bg-blue-100"
+              className="flex-1 bg-white text-blue-500   font-bold hover:bg-blue-100"
               size="sm"
             >
               <Plus className="w-2 h-2 mr-1 font-bold" />
@@ -70,7 +70,7 @@ export default function Sidebar() {
         </Button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto p-2">
+      <nav className="flex-1 overflow-y-auto px-2">
         <div className="space-y-1">
           {navigationConfig.map((item) => {
             const isSectionActive = activeSectionFromUrl?.label === item.label;
