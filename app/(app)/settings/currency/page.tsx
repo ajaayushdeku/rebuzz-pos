@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, Check, Coins } from "lucide-react";
+import { Search, Check } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import toast from "react-hot-toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
@@ -234,11 +234,11 @@ export default function CurrencyPage() {
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
       <div className="w-full mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-gray-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-gray-200">
           <div className="flex flex-row items-center gap-3">
-            <div className="w-9 h-9 bg-blue-100 rounded-lg flex flex-row items-center justify-center">
+            {/* <div className="w-9 h-9 bg-blue-100 rounded-lg flex flex-row items-center justify-center">
               <Coins size={16} className="text-blue-600" />
-            </div>
+            </div> */}
             <div>
               <h1 className="font-bold text-xl md:text-2xl truncate">
                 Change Currency
@@ -251,7 +251,7 @@ export default function CurrencyPage() {
         </div>
 
         {/* Current */}
-        <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-8 flex items-center gap-3">
+        <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
           <Flag
             countryCode={active?.countryCode ?? "np"}
             label={currency.code}

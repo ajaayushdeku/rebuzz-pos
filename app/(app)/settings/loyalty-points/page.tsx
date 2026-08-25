@@ -262,9 +262,9 @@ export default function LoyaltyPointPage() {
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
-      <div className="w-full mx-auto space-y-10">
+      <div className="w-full mx-auto ">
         {/* ── Header ─────────────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-gray-200">
           <div>
             <h1 className="font-bold text-xl md:text-2xl truncate">
               Loyalty Points
@@ -313,17 +313,19 @@ export default function LoyaltyPointPage() {
                     </p>
                     <p className="text-xs text-blue-500">Earn rate</p>
                   </div>
-                  <div>
-                    <p className="text-lg font-bold text-blue-800">
-                      {settings.basePoint}
-                    </p>
-                    <p className="text-xs text-blue-500">Base point</p>
-                  </div>
+
                   <div>
                     <p className="text-lg font-bold text-blue-800">
                       {settings.redeemLimit}%
                     </p>
                     <p className="text-xs text-blue-500">Redeem limit</p>
+                  </div>
+
+                  <div>
+                    <p className="text-lg font-bold text-blue-800">
+                      {settings.basePoint}
+                    </p>
+                    <p className="text-xs text-blue-500">Base point</p>
                   </div>
                 </div>
               </div>
@@ -374,15 +376,19 @@ export default function LoyaltyPointPage() {
                 <Label className="text-xs text-gray-500 mb-1.5 block">
                   Max points per invoice in percentage (%)
                 </Label>
-                <div className="max-w-xs">
+                <div className="relative max-w-xs">
                   <Input
                     type="number"
                     min={1}
+                    max={100}
                     value={form.redeemLimit}
                     onChange={(e) => set("redeemLimit", Number(e.target.value))}
                     className={`${inputClass} ${errors.redeemLimit ? "border-red-300 focus:ring-red-400" : ""}`}
                     placeholder="e.g. 50"
                   />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                    %
+                  </span>
                 </div>
                 {errors.redeemLimit && (
                   <p className="text-xs text-red-500 mt-1">

@@ -273,6 +273,7 @@ export default function CreditDetailPage() {
   return (
     <div className="min-h-screen">
       <CreditDetailTopBar
+        invoiceName={credit.ticketName ?? ""}
         invoiceNo={credit.invoiceNo}
         customerName={customerName}
         state={state}

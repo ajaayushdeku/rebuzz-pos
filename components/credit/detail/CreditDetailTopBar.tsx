@@ -24,6 +24,7 @@ import {
  * equivalent, and it lives here instead.
  */
 export default function CreditDetailTopBar({
+  invoiceName,
   invoiceNo,
   customerName,
   state,
@@ -36,6 +37,7 @@ export default function CreditDetailTopBar({
   onOpenInvoice,
   onDeleteCredit,
 }: {
+  invoiceName?: string;
   invoiceNo: number | undefined;
   customerName: string;
   state: CreditState;
@@ -51,7 +53,7 @@ export default function CreditDetailTopBar({
   onDeleteCredit?: () => void;
 }) {
   return (
-    <div className="sticky top-0 z-30 bg-white border-b border-gray-200 px-6 md:px-10 py-4 flex items-center justify-between">
+    <div className="sticky top-0 z-30 bg-white border-b border-gray-200 px-6 md:px-10 py-4 pt-6 flex items-center justify-between">
       <div className="flex items-center gap-4">
         <button
           onClick={onBack}
@@ -62,7 +64,7 @@ export default function CreditDetailTopBar({
         </button>
         <div>
           <h1 className="text-base font-bold text-gray-900">
-            Credit · {customerName} ·
+            {invoiceName || customerName} ·
             {invoiceNo != null && (
               <span className="text-gray-400 font-semibold"> #{invoiceNo}</span>
             )}
