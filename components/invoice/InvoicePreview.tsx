@@ -15,7 +15,10 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { InvoiceItemGroup } from "@/lib/types/invoice";
 import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
 import { parseNepalTime } from "@/lib/mappers/transaction";
-import { normalizePaymentMethod } from "@/lib/config/transaction";
+import {
+  normalizePaymentMethod,
+  paymentModeLabel,
+} from "@/lib/config/transaction";
 import type { CreditPayment } from "@/services/apiCredit.client";
 import InvoiceBillTable from "./InvoiceBillTable";
 import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
@@ -460,7 +463,10 @@ function InvoiceContent({
           <div className="flex justify-between">
             <span>Cashier: {billData?.generatedBy || "N/A"}</span>
             {billData && (
-              <span>Payment: {billData?.paymentMethod || "N/A"}</span>
+              <span>
+                Payment:{" "}
+                {paymentModeLabel(paymentList, billData?.paymentMethod)}
+              </span>
             )}
           </div>
           <div className="flex justify-between">
@@ -705,7 +711,10 @@ function InvoiceContent({
 
           <div className="flex flex-col items-end gap-2  tracking-wider">
             {billData && (
-              <p>Payment Mode: {billData?.paymentMethod || "N/A"}</p>
+              <p>
+                Payment Mode:{" "}
+                {paymentModeLabel(paymentList, billData?.paymentMethod)}
+              </p>
             )}
 
             <p>Date: {formattedDate}</p>

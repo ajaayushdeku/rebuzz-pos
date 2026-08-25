@@ -4,7 +4,10 @@ import Image from "next/image";
 
 import businessLogo from "@/public/rebuzz.png";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { normalizePaymentMethod } from "@/lib/config/transaction";
+import {
+  normalizePaymentMethod,
+  paymentModeLabel,
+} from "@/lib/config/transaction";
 import { parseNepalTime } from "@/lib/mappers/transaction";
 import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
 import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
@@ -594,7 +597,14 @@ export default function CreditInvoiceDocument({
           </div>
 
           <div className="flex flex-col items-end gap-2 tracking-wider">
-            {billData && <p>Payment Mode: {billData.paymentMethod || "N/A"}</p>}
+            {/* Shown whenever the credit has been paid at all — instalments
+                carry a method even before a POS bill exists. */}
+            {(billData || paymentList.length > 0) && (
+              <p>
+                Payment Mode:{" "}
+                {paymentModeLabel(paymentList, billData?.paymentMethod)}
+              </p>
+            )}
 
             <p>Date: {formattedDate}</p>
 
@@ -605,6 +615,26 @@ export default function CreditInvoiceDocument({
             )}
           </div>
         </div>
+
+        {billData && (
+          <div className="flex justify-between items-start text-sm text-black-600 mt-4 gap-2">
+            <div className="flex flex-col justify-between gap-2 tracking-wider">
+              <p>Current Point:</p>
+              <p>Total Points:</p>
+            </div>
+
+            <div className="flex flex-col gap-2 items-end tracking-wider">
+              <span>
+                {formatAmount(billData.currentPoint ?? 0, currency.locale) ||
+                  "0"}
+              </span>
+              <span>
+                {formatAmount(billData.totalPoints ?? 0, currency.locale) ||
+                  "0"}
+              </span>
+            </div>
+          </div>
+        )}
 
         <div className="text-center mt-10 text-xs text-gray-500 tracking-wider">
           <p>All rights reserved : Rebuzz POS by</p>

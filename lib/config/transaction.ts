@@ -68,6 +68,28 @@ export function normalizePaymentMethod(method?: string | null): PaymentMethod {
   return method as PaymentMethod;
 }
 
+/**
+ * How a document should name the way it was paid: "Cash", "QR", or "Cash & QR"
+ * when more than one was used.
+ *
+ * A credit settled in instalments can mix methods, but the bill records only
+ * the last one — so the payment history is the authority when there is one,
+ * and the bill's own method is the fallback.
+ */
+export function paymentModeLabel(
+  payments?: Array<{ paymentMethod?: string | null }> | null,
+  fallback?: string | null,
+): string {
+  const seen: string[] = [];
+  for (const payment of payments ?? []) {
+    const method = normalizePaymentMethod(payment.paymentMethod);
+    if (method && !seen.includes(method)) seen.push(method);
+  }
+
+  if (seen.length > 0) return seen.join(" & ");
+  return fallback ? normalizePaymentMethod(fallback) : "N/A";
+}
+
 /** Badge styling for any method, recognised or not. Never undefined. */
 export function paymentMethodStyle(method?: string | null): {
   cell: string;
