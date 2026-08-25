@@ -443,6 +443,14 @@ const InvoiceDetailPage = () => {
 
   const isOverdue = !isPaid && !isRefunded;
 
+  /**
+   * Payments stop being editable once the invoice is settled — a paid or
+   * refunded bill is a record of what happened, and changing an amount after
+   * the fact would put the document and the till out of step. Archived credits
+   * are read-only for the same reason.
+   */
+  const canEditPayments = !isPaid && !isRefunded && !isCreditArchived;
+
   // Build a Transaction-like object for the shared RefundModal.
   const refundTransaction: Transaction | null = isPaid
     ? {
@@ -1182,7 +1190,7 @@ const InvoiceDetailPage = () => {
                             Send a receipt
                           </button>
 
-                          {!isCreditArchived && (
+                          {canEditPayments && (
                             <>
                               <span className="text-gray-300">·</span>
                               <button

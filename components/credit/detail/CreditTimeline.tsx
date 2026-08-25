@@ -98,6 +98,13 @@ export default function CreditTimeline({
   // is kept for reference, not for further work.
   const editable = !isArchived;
 
+  /**
+   * A cleared credit's payments are what settled it — editing or removing one
+   * afterwards would reopen a balance the customer has already paid. Archived
+   * credits are read-only outright.
+   */
+  const canEditPayments = !isArchived && !isCleared;
+
   return (
     <div className="space-y-2">
       {/* ── Step 1: the credit was raised ── */}
@@ -356,7 +363,7 @@ export default function CreditTimeline({
                       Send a receipt
                     </button>
 
-                    {editable && (
+                    {canEditPayments && (
                       <>
                         <span className="text-gray-300">·</span>
                         <button
