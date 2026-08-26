@@ -18,8 +18,8 @@ import { FilterSelect } from "@/components/ui/FilterSelect";
 import { useCategories } from "@/hooks/useCategories";
 import { normalizeColor } from "@/services/category.client";
 
-const INITIAL_COUNT = 6;
-const LOAD_MORE_COUNT = 6;
+const INITIAL_COUNT = 8;
+const LOAD_MORE_COUNT = 8;
 
 // Item-based sorts (fields on the inventory item itself).
 type ItemSortKey =
