@@ -5,21 +5,15 @@ import User from "./User";
 import HelpButton from "./HelpButton";
 import MobileButton from "./MobileButton";
 import { useBusiness } from "@/hooks/useBusiness";
+import { useCurrency } from "@/providers/CurrencyContext";
 import ServerEnvBadge from "@/components/ServerEnvBadge";
 import Image from "next/image";
-import { useCurrency } from "@/providers/CurrencyContext";
-import { findCurrency } from "@/lib/config/currencies";
-import CountryFlag from "@/components/ui/CountryFlag";
 // import { Button } from "../ui/button";
 // import { Badge, Bell } from "lucide-react";
 
 export default function Navbar() {
   const { data: businessData } = useBusiness();
   const { currency } = useCurrency();
-  // Resolved from the same list the picker offers, so every currency it can
-  // select has a flag here — a local map would go stale the next time one is
-  // added.
-  const flagCode = findCurrency(currency.code)?.countryCode ?? "np";
 
   return (
     <nav className="w-full border-b bg-white z-200">
@@ -45,18 +39,19 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* The code and its flag read as one control — clicking either goes
-              to where the currency is actually changed. */}
+          {/* The symbol alone — it is what shows up on every figure in the
+              app, so it names the setting better than the code does. The code
+              is in the tooltip and for screen readers.
+
+              `min-w-9` rather than a fixed width: two-character symbols like
+              "Rs" and "kr" would otherwise be squeezed. */}
           <Link
             href="/settings/currency"
-            title={`${currency.code} — change currency`}
-            aria-label={`Currency ${currency.code}. Change currency`}
-            className="flex items-center gap-2 rounded-lg px-1.5 py-1 cursor-pointer transition-colors hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            title={`Currency: ${currency.code} — click to change`}
+            aria-label={`Change currency — currently ${currency.code}`}
+            className="flex h-8.5 min-w-9 cursor-pointer items-center justify-center bg-gray-50/70 rounded-md border border-none  text-[13px] font-semibold text-gray-700 transition-colors  hover:text-blue-600"
           >
-            <span className="text-xs text-gray-600">
-              {currency.code} ( {currency.symbol} )
-            </span>
-            <CountryFlag countryCode={flagCode} label="" className="h-6 w-6" />
+            {currency.symbol}
           </Link>
           <div className="h-5 border-1  border-gray-200 mr-2" />
           <HelpButton />

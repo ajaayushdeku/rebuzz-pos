@@ -61,39 +61,44 @@ export function CurrencyProvider({
   };
 
   /**
-   * The code currently in play, for the symbol lookup below.
+   * The currency in play, for the seeding effect below.
    *
-   * Held in a ref so the seeding effect can read it without listing `currency`
-   * as a dependency — that would re-run the fetch on every change.
+   * Held in a ref so the effect can read it without listing `currency` as a
+   * dependency — that would re-run the fetch on every change.
    */
-  const currentCodeRef = useRef(currency.code);
+  const currentRef = useRef(currency);
   useEffect(() => {
-    currentCodeRef.current = currency.code;
-  }, [currency.code]);
+    currentRef.current = currency;
+  }, [currency]);
 
   /**
    * Adopt the currency saved on the business.
    *
    * The cookie only records what was chosen on *this* device, so a fresh
    * browser would otherwise show the app default rather than the business's
-   * actual currency. The profile is the record; the cookie is a cache of it,
-   * and is what avoids a flash of the wrong symbol before this resolves.
+   * actual currency. The profile is the record; the cookie caches it so the
+   * first paint is right without waiting on this request.
    *
-   * The API stores a symbol, and symbols are ambiguous, so the code already in
-   * play breaks the tie — see `findCurrencyBySymbol`.
+   * The comparison is by **symbol**, because a symbol is all the API stores.
+   * A device on CAD and a business saved as "$" already agree — both print
+   * "$" — so nothing changes, and a deliberate choice of CAD is not quietly
+   * rewritten to USD. Only a genuinely different symbol moves the currency.
    */
   useEffect(() => {
     let cancelled = false;
 
     const seedFromProfile = async () => {
-      const symbol = await fetchSavedCurrencySymbol();
-      if (!symbol || cancelled) return;
+      const savedSymbol = await fetchSavedCurrencySymbol();
+      if (!savedSymbol || cancelled) return;
 
-      const saved = findCurrencyBySymbol(symbol, currentCodeRef.current);
-      if (!saved || saved.code === currentCodeRef.current) return;
+      // Same symbol as the one cached here — leave it alone.
+      if (savedSymbol === currentRef.current.symbol) return;
 
-      setCurrencyState(saved);
-      cacheLocally(saved.code);
+      const next = findCurrencyBySymbol(savedSymbol);
+      if (!next || next.code === currentRef.current.code) return;
+
+      setCurrencyState(next);
+      cacheLocally(next.code);
     };
 
     seedFromProfile();

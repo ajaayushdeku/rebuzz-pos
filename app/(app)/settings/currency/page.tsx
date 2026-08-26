@@ -8,18 +8,66 @@ import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import CountryFlag from "@/components/ui/CountryFlag";
 import { CURRENCY_OPTIONS, type CurrencyOption } from "@/lib/config/currencies";
 
+/**
+ * Shown above the full list, in this order.
+ *
+ * Nearly every business on the app uses one of these three, and finding them
+ * otherwise means scrolling past a hundred rows or knowing what to type.
+ */
+const POPULAR_CODES = ["NPR", "USD", "INR"];
+
+const POPULAR = POPULAR_CODES.map((code) =>
+  CURRENCY_OPTIONS.find((c) => c.code === code),
+).filter((c): c is CurrencyOption => Boolean(c));
+
+/**
+ * One selectable currency — flag, code and name, with the symbol on a rail
+ * down the right.
+ *
+ * Shared by the popular shortcuts and the full list so the two cannot drift
+ * apart visually.
+ */
+function CurrencyRow({
+  option,
+  onSelect,
+}: {
+  option: CurrencyOption;
+  onSelect: (code: string) => void;
+}) {
+  return (
+    <button
+      onClick={() => onSelect(option.code)}
+      className="flex w-full items-stretch gap-3 overflow-hidden rounded-lg border border-gray-100 text-left transition-colors hover:border-gray-200 hover:bg-gray-50"
+    >
+      <div className="flex min-w-0 flex-1 items-center gap-3 py-2.5 pl-3">
+        {/* The flag repeats the code beside it, so it is decorative to a
+            screen reader rather than read out twice. */}
+        <CountryFlag countryCode={option.countryCode} label="" />
+
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-gray-800">{option.code}</p>
+          <p className="truncate text-xs text-gray-600">
+            {option.name} — {option.country}
+          </p>
+        </div>
+      </div>
+
+      {/* Symbol rail — stretches the row's full height, so the column of
+          symbols reads as one strip down the list. */}
+      <span className="flex w-14 shrink-0 items-center justify-center self-stretch border-l border-gray-100 bg-gray-50/70 text-base text-[13px] font-semibold text-gray-600">
+        {option.symbol}
+      </span>
+    </button>
+  );
+}
+
 export default function CurrencyPage() {
-  const { currency, setCurrency } = useCurrency();
+  const { setCurrency } = useCurrency();
   const [search, setSearch] = useState("");
   const [confirmTarget, setConfirmTarget] = useState<CurrencyOption | null>(
     null,
   );
   const [saving, setSaving] = useState(false);
-
-  const active = useMemo(
-    () => CURRENCY_OPTIONS.find((c) => c.code === currency.code),
-    [currency.code],
-  );
 
   const filtered = useMemo(
     () =>
@@ -78,21 +126,6 @@ export default function CurrencyPage() {
           </div>
         </div>
 
-        {/* Current */}
-        <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
-          <CountryFlag
-            countryCode={active?.countryCode ?? "np"}
-            label={currency.code}
-            className="h-6 w-8"
-          />
-          <div>
-            <p className="text-xs text-blue-500 font-medium">Active Currency</p>
-            <p className="text-sm font-semibold text-blue-800">
-              {currency.code} — {active?.name}
-            </p>
-          </div>
-        </div>
-
         {/* Search */}
         <div className="relative mb-4">
           <Search
@@ -107,57 +140,42 @@ export default function CurrencyPage() {
           />
         </div>
 
-        <p className="mb-2 text-[11px] text-gray-400">
-          {filtered.length} of {CURRENCY_OPTIONS.length} currencies
-        </p>
+        {/* Popular — hidden while searching, where a fixed three rows above
+            the results would only be in the way. */}
+        {!search && (
+          <div className="mb-5">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+              Popular
+            </p>
+            <div className="space-y-1.5">
+              {POPULAR.map((c) => (
+                <CurrencyRow key={c.code} option={c} onSelect={handleSelect} />
+              ))}
+            </div>
+          </div>
+        )}
 
-        {/* List */}
+        <div className="mb-2 flex items-baseline justify-between">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+            {search ? "Results" : "All currencies"}
+          </p>
+          <p className="text-[11px] text-gray-400">
+            {filtered.length} of {CURRENCY_OPTIONS.length}
+          </p>
+        </div>
+
+        {/* List — the popular three appear here too, so the full list stays
+            complete rather than having three arbitrary gaps in it. */}
         <div className="space-y-1.5 max-h-96 overflow-y-auto pr-1">
-          {filtered.map((c) => {
-            const isActive = c.code === currency.code;
-            return (
-              <button
-                key={c.code}
-                onClick={() => handleSelect(c.code)}
-                className={`flex w-full items-stretch gap-3 overflow-hidden rounded-lg border text-left transition-colors ${
-                  isActive
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-100 hover:border-gray-200 hover:bg-gray-50"
-                }`}
-              >
-                <div className="flex min-w-0 flex-1 items-center gap-3 py-2.5 pl-3">
-                  {/* The flag repeats the code beside it, so it is decorative
-                      to a screen reader rather than read out twice. */}
-                  <CountryFlag countryCode={c.countryCode} label="" />
+          {filtered.map((c) => (
+            <CurrencyRow key={c.code} option={c} onSelect={handleSelect} />
+          ))}
 
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-gray-800">
-                      {c.code}
-                    </p>
-                    <p className="truncate text-xs text-gray-600">
-                      {c.name} — {c.country}
-                    </p>
-                  </div>
-                </div>
-
-                {isActive && (
-                  <Check size={15} className="mr-1 self-center text-blue-600" />
-                )}
-
-                {/* Symbol rail — stretches the row's full height, so the
-                    column of symbols reads as one strip down the list. */}
-                <span
-                  className={`flex w-14 shrink-0 items-center justify-center self-stretch border-l text-base text-[13px] font-semibold ${
-                    isActive
-                      ? "border-blue-200 bg-blue-100/60 text-blue-700"
-                      : "border-gray-100 bg-gray-50/70 text-gray-600"
-                  }`}
-                >
-                  {c.symbol}
-                </span>
-              </button>
-            );
-          })}
+          {filtered.length === 0 && (
+            <p className="py-8 text-center text-xs text-gray-400">
+              No currency matches “{search}”.
+            </p>
+          )}
         </div>
       </div>
 

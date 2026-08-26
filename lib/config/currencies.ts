@@ -31,7 +31,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "ALL",
-    symbol: "ALL",
+    symbol: "Lek",
     name: "Albanian Lek",
     country: "Albania",
     countryCode: "al",
@@ -39,7 +39,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "DZD",
-    symbol: "DZD",
+    symbol: "دج",
     name: "Algerian Dinar",
     country: "Algeria",
     countryCode: "dz",
@@ -52,14 +52,6 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
     country: "Angola",
     countryCode: "ao",
     locale: "en-AO",
-  },
-  {
-    code: "XCD",
-    symbol: "$",
-    name: "East Caribbean Dollar",
-    country: "Antigua & Barbuda",
-    countryCode: "ag",
-    locale: "en-AG",
   },
   {
     code: "ARS",
@@ -78,14 +70,6 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
     locale: "en-AM",
   },
   {
-    code: "AWG",
-    symbol: "AWG",
-    name: "Aruban Florin",
-    country: "Aruba",
-    countryCode: "aw",
-    locale: "en-AW",
-  },
-  {
     code: "AUD",
     symbol: "$",
     name: "Australian Dollar",
@@ -102,16 +86,8 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
     locale: "en-AZ",
   },
   {
-    code: "BSD",
-    symbol: "$",
-    name: "Bahamian Dollar",
-    country: "Bahamas",
-    countryCode: "bs",
-    locale: "en-BS",
-  },
-  {
     code: "BHD",
-    symbol: "BHD",
+    symbol: "BD",
     name: "Bahraini Dinar",
     country: "Bahrain",
     countryCode: "bh",
@@ -135,7 +111,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "BYN",
-    symbol: "BYN",
+    symbol: "Br",
     name: "Belarusian Ruble",
     country: "Belarus",
     countryCode: "by",
@@ -143,7 +119,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "BZD",
-    symbol: "$",
+    symbol: "BZ$",
     name: "Belize Dollar",
     country: "Belize",
     countryCode: "bz",
@@ -159,7 +135,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "BTN",
-    symbol: "BTN",
+    symbol: "Nu.",
     name: "Bhutanese Ngultrum",
     country: "Bhutan",
     countryCode: "bt",
@@ -167,7 +143,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "BOB",
-    symbol: "Bs",
+    symbol: "$b",
     name: "Bolivian Boliviano",
     country: "Bolivia",
     countryCode: "bo",
@@ -207,7 +183,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "BGN",
-    symbol: "BGN",
+    symbol: "лв",
     name: "Bulgarian Lev",
     country: "Bulgaria",
     countryCode: "bg",
@@ -215,7 +191,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "BIF",
-    symbol: "BIF",
+    symbol: "FBu",
     name: "Burundian Franc",
     country: "Burundi",
     countryCode: "bi",
@@ -244,14 +220,6 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
     country: "Canada",
     countryCode: "ca",
     locale: "en-CA",
-  },
-  {
-    code: "CVE",
-    symbol: "CVE",
-    name: "Cape Verdean Escudo",
-    country: "Cape Verde",
-    countryCode: "cv",
-    locale: "en-CV",
   },
   {
     code: "KYD",
@@ -286,16 +254,8 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
     locale: "en-CO",
   },
   {
-    code: "KMF",
-    symbol: "CF",
-    name: "Comorian Franc",
-    country: "Comoros",
-    countryCode: "km",
-    locale: "en-KM",
-  },
-  {
     code: "CDF",
-    symbol: "CDF",
+    symbol: "FC",
     name: "Congolese Franc",
     country: "Congo - Kinshasa",
     countryCode: "cd",
@@ -311,7 +271,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "CUP",
-    symbol: "$",
+    symbol: "$MN",
     name: "Cuban Peso",
     country: "Cuba",
     countryCode: "cu",
@@ -334,16 +294,8 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
     locale: "en-DK",
   },
   {
-    code: "DJF",
-    symbol: "DJF",
-    name: "Djiboutian Franc",
-    country: "Djibouti",
-    countryCode: "dj",
-    locale: "en-DJ",
-  },
-  {
     code: "DOP",
-    symbol: "$",
+    symbol: "RD$",
     name: "Dominican Peso",
     country: "Dominican Republic",
     countryCode: "do",
@@ -351,39 +303,15 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "EGP",
-    symbol: "E£",
+    symbol: "£",
     name: "Egyptian Pound",
     country: "Egypt",
     countryCode: "eg",
     locale: "en-EG",
   },
   {
-    code: "SVC",
-    symbol: "SVC",
-    name: "Salvadoran Colón",
-    country: "El Salvador",
-    countryCode: "sv",
-    locale: "en-SV",
-  },
-  {
-    code: "ERN",
-    symbol: "ERN",
-    name: "Eritrean Nakfa",
-    country: "Eritrea",
-    countryCode: "er",
-    locale: "en-ER",
-  },
-  {
-    code: "SZL",
-    symbol: "SZL",
-    name: "Swazi Lilangeni",
-    country: "Eswatini",
-    countryCode: "sz",
-    locale: "en-SZ",
-  },
-  {
     code: "ETB",
-    symbol: "ETB",
+    symbol: "Br",
     name: "Ethiopian Birr",
     country: "Ethiopia",
     countryCode: "et",
@@ -398,32 +326,8 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
     locale: "de-DE",
   },
   {
-    code: "FKP",
-    symbol: "£",
-    name: "Falkland Islands Pound",
-    country: "Falkland Islands",
-    countryCode: "fk",
-    locale: "en-FK",
-  },
-  {
-    code: "FJD",
-    symbol: "$",
-    name: "Fijian Dollar",
-    country: "Fiji",
-    countryCode: "fj",
-    locale: "en-FJ",
-  },
-  {
-    code: "XPF",
-    symbol: "CFPF",
-    name: "CFP Franc",
-    country: "French Polynesia",
-    countryCode: "pf",
-    locale: "en-PF",
-  },
-  {
     code: "GMD",
-    symbol: "GMD",
+    symbol: "D",
     name: "Gambian Dalasi",
     country: "Gambia",
     countryCode: "gm",
@@ -439,19 +343,11 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "GHS",
-    symbol: "GH₵",
+    symbol: "₵",
     name: "Ghanaian Cedi",
     country: "Ghana",
     countryCode: "gh",
     locale: "en-GH",
-  },
-  {
-    code: "GIP",
-    symbol: "£",
-    name: "Gibraltar Pound",
-    country: "Gibraltar",
-    countryCode: "gi",
-    locale: "en-GI",
   },
   {
     code: "GTQ",
@@ -479,19 +375,11 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "HTG",
-    symbol: "HTG",
+    symbol: "G",
     name: "Haitian Gourde",
     country: "Haiti",
     countryCode: "ht",
     locale: "en-HT",
-  },
-  {
-    code: "HNL",
-    symbol: "L",
-    name: "Honduran Lempira",
-    country: "Honduras",
-    countryCode: "hn",
-    locale: "en-HN",
   },
   {
     code: "HKD",
@@ -535,7 +423,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "IRR",
-    symbol: "IRR",
+    symbol: "﷼",
     name: "Iranian Rial",
     country: "Iran",
     countryCode: "ir",
@@ -543,7 +431,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "IQD",
-    symbol: "IQD",
+    symbol: "ع.د",
     name: "Iraqi Dinar",
     country: "Iraq",
     countryCode: "iq",
@@ -559,7 +447,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "JMD",
-    symbol: "$",
+    symbol: "J$",
     name: "Jamaican Dollar",
     country: "Jamaica",
     countryCode: "jm",
@@ -575,7 +463,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "JOD",
-    symbol: "JOD",
+    symbol: "د.أ",
     name: "Jordanian Dinar",
     country: "Jordan",
     countryCode: "jo",
@@ -591,7 +479,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "KES",
-    symbol: "KES",
+    symbol: "KSh",
     name: "Kenyan Shilling",
     country: "Kenya",
     countryCode: "ke",
@@ -599,7 +487,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "KWD",
-    symbol: "KWD",
+    symbol: "د.ك",
     name: "Kuwaiti Dinar",
     country: "Kuwait",
     countryCode: "kw",
@@ -607,7 +495,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "KGS",
-    symbol: "⃀",
+    symbol: "с",
     name: "Kyrgystani Som",
     country: "Kyrgyzstan",
     countryCode: "kg",
@@ -623,19 +511,11 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "LBP",
-    symbol: "L£",
+    symbol: "ل.ل",
     name: "Lebanese Pound",
     country: "Lebanon",
     countryCode: "lb",
     locale: "en-LB",
-  },
-  {
-    code: "LSL",
-    symbol: "LSL",
-    name: "Lesotho Loti",
-    country: "Lesotho",
-    countryCode: "ls",
-    locale: "en-LS",
   },
   {
     code: "LRD",
@@ -647,19 +527,11 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "LYD",
-    symbol: "LYD",
+    symbol: "ل.د",
     name: "Libyan Dinar",
     country: "Libya",
     countryCode: "ly",
     locale: "en-LY",
-  },
-  {
-    code: "MOP",
-    symbol: "MOP",
-    name: "Macanese Pataca",
-    country: "Macao SAR China",
-    countryCode: "mo",
-    locale: "en-MO",
   },
   {
     code: "MGA",
@@ -671,7 +543,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "MWK",
-    symbol: "MWK",
+    symbol: "MK",
     name: "Malawian Kwacha",
     country: "Malawi",
     countryCode: "mw",
@@ -687,19 +559,11 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "MVR",
-    symbol: "MVR",
+    symbol: "/-",
     name: "Maldivian Rufiyaa",
     country: "Maldives",
     countryCode: "mv",
     locale: "en-MV",
-  },
-  {
-    code: "MRU",
-    symbol: "MRU",
-    name: "Mauritanian Ouguiya",
-    country: "Mauritania",
-    countryCode: "mr",
-    locale: "en-MR",
   },
   {
     code: "MUR",
@@ -719,7 +583,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "MDL",
-    symbol: "MDL",
+    symbol: "L",
     name: "Moldovan Leu",
     country: "Moldova",
     countryCode: "md",
@@ -743,7 +607,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "MZN",
-    symbol: "MZN",
+    symbol: "MT",
     name: "Mozambican Metical",
     country: "Mozambique",
     countryCode: "mz",
@@ -751,7 +615,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "MMK",
-    symbol: "K",
+    symbol: "Ks",
     name: "Myanmar Kyat",
     country: "Myanmar (Burma)",
     countryCode: "mm",
@@ -798,16 +662,8 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
     locale: "en-NG",
   },
   {
-    code: "KPW",
-    symbol: "₩",
-    name: "North Korean Won",
-    country: "North Korea",
-    countryCode: "kp",
-    locale: "en-KP",
-  },
-  {
     code: "MKD",
-    symbol: "MKD",
+    symbol: "ден",
     name: "Macedonian Denar",
     country: "North Macedonia",
     countryCode: "mk",
@@ -823,7 +679,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "OMR",
-    symbol: "OMR",
+    symbol: "﷼",
     name: "Omani Rial",
     country: "Oman",
     countryCode: "om",
@@ -838,16 +694,8 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
     locale: "en-PK",
   },
   {
-    code: "PAB",
-    symbol: "PAB",
-    name: "Panamanian Balboa",
-    country: "Panama",
-    countryCode: "pa",
-    locale: "en-PA",
-  },
-  {
     code: "PGK",
-    symbol: "PGK",
+    symbol: "K",
     name: "Papua New Guinean Kina",
     country: "Papua New Guinea",
     countryCode: "pg",
@@ -863,7 +711,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "PEN",
-    symbol: "PEN",
+    symbol: "S/.",
     name: "Peruvian Sol",
     country: "Peru",
     countryCode: "pe",
@@ -887,7 +735,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "QAR",
-    symbol: "QAR",
+    symbol: "﷼",
     name: "Qatari Riyal",
     country: "Qatar",
     countryCode: "qa",
@@ -895,7 +743,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "RON",
-    symbol: "lei",
+    symbol: "L",
     name: "Romanian Leu",
     country: "Romania",
     countryCode: "ro",
@@ -911,31 +759,15 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "RWF",
-    symbol: "RF",
+    symbol: "FRw",
     name: "Rwandan Franc",
     country: "Rwanda",
     countryCode: "rw",
     locale: "en-RW",
   },
   {
-    code: "WST",
-    symbol: "WST",
-    name: "Samoan Tala",
-    country: "Samoa",
-    countryCode: "ws",
-    locale: "en-WS",
-  },
-  {
-    code: "STN",
-    symbol: "Db",
-    name: "São Tomé & Príncipe Dobra",
-    country: "São Tomé & Príncipe",
-    countryCode: "st",
-    locale: "en-ST",
-  },
-  {
     code: "SAR",
-    symbol: "SAR",
+    symbol: "﷼",
     name: "Saudi Riyal",
     country: "Saudi Arabia",
     countryCode: "sa",
@@ -943,7 +775,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "XOF",
-    symbol: "F CFA",
+    symbol: "FCFA",
     name: "West African CFA Franc",
     country: "Senegal",
     countryCode: "sn",
@@ -951,7 +783,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "RSD",
-    symbol: "RSD",
+    symbol: "Дин.",
     name: "Serbian Dinar",
     country: "Serbia",
     countryCode: "rs",
@@ -959,19 +791,11 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "SCR",
-    symbol: "SCR",
+    symbol: "Rs",
     name: "Seychellois Rupee",
     country: "Seychelles",
     countryCode: "sc",
     locale: "en-SC",
-  },
-  {
-    code: "SLE",
-    symbol: "SLE",
-    name: "Sierra Leonean Leone",
-    country: "Sierra Leone",
-    countryCode: "sl",
-    locale: "en-SL",
   },
   {
     code: "SGD",
@@ -982,16 +806,8 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
     locale: "en-SG",
   },
   {
-    code: "SBD",
-    symbol: "$",
-    name: "Solomon Islands Dollar",
-    country: "Solomon Islands",
-    countryCode: "sb",
-    locale: "en-SB",
-  },
-  {
     code: "SOS",
-    symbol: "SOS",
+    symbol: "S",
     name: "Somali Shilling",
     country: "Somalia",
     countryCode: "so",
@@ -1014,36 +830,12 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
     locale: "ko-KR",
   },
   {
-    code: "SSP",
-    symbol: "£",
-    name: "South Sudanese Pound",
-    country: "South Sudan",
-    countryCode: "ss",
-    locale: "en-SS",
-  },
-  {
     code: "LKR",
     symbol: "Rs",
     name: "Sri Lankan Rupee",
     country: "Sri Lanka",
     countryCode: "lk",
     locale: "si-LK",
-  },
-  {
-    code: "SHP",
-    symbol: "£",
-    name: "St. Helena Pound",
-    country: "St. Helena",
-    countryCode: "sh",
-    locale: "en-SH",
-  },
-  {
-    code: "SDG",
-    symbol: "SDG",
-    name: "Sudanese Pound",
-    country: "Sudan",
-    countryCode: "sd",
-    locale: "en-SD",
   },
   {
     code: "SRD",
@@ -1071,7 +863,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "SYP",
-    symbol: "£",
+    symbol: "LS",
     name: "Syrian Pound",
     country: "Syria",
     countryCode: "sy",
@@ -1079,7 +871,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "TWD",
-    symbol: "$",
+    symbol: "NT$",
     name: "New Taiwan Dollar",
     country: "Taiwan",
     countryCode: "tw",
@@ -1087,7 +879,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "TJS",
-    symbol: "TJS",
+    symbol: "SM",
     name: "Tajikistani Somoni",
     country: "Tajikistan",
     countryCode: "tj",
@@ -1095,7 +887,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "TZS",
-    symbol: "TZS",
+    symbol: "TSh",
     name: "Tanzanian Shilling",
     country: "Tanzania",
     countryCode: "tz",
@@ -1119,7 +911,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "TTD",
-    symbol: "$",
+    symbol: "TT$",
     name: "Trinidad & Tobago Dollar",
     country: "Trinidad & Tobago",
     countryCode: "tt",
@@ -1127,7 +919,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "TND",
-    symbol: "TND",
+    symbol: "د.ت",
     name: "Tunisian Dinar",
     country: "Tunisia",
     countryCode: "tn",
@@ -1143,7 +935,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "TMT",
-    symbol: "TMT",
+    symbol: "m",
     name: "Turkmenistani Manat",
     country: "Turkmenistan",
     countryCode: "tm",
@@ -1151,7 +943,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "UGX",
-    symbol: "UGX",
+    symbol: "USh",
     name: "Ugandan Shilling",
     country: "Uganda",
     countryCode: "ug",
@@ -1167,7 +959,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "AED",
-    symbol: "AED",
+    symbol: "د.إ",
     name: "United Arab Emirates Dirham",
     country: "United Arab Emirates",
     countryCode: "ae",
@@ -1191,7 +983,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "UYU",
-    symbol: "$",
+    symbol: "$U",
     name: "Uruguayan Peso",
     country: "Uruguay",
     countryCode: "uy",
@@ -1206,16 +998,8 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
     locale: "en-UZ",
   },
   {
-    code: "VUV",
-    symbol: "VUV",
-    name: "Vanuatu Vatu",
-    country: "Vanuatu",
-    countryCode: "vu",
-    locale: "en-VU",
-  },
-  {
     code: "VES",
-    symbol: "VES",
+    symbol: "Bs",
     name: "Venezuelan Bolívar",
     country: "Venezuela",
     countryCode: "ve",
@@ -1231,7 +1015,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "YER",
-    symbol: "YER",
+    symbol: "﷼",
     name: "Yemeni Rial",
     country: "Yemen",
     countryCode: "ye",
@@ -1247,7 +1031,7 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
   },
   {
     code: "ZWG",
-    symbol: "ZWG",
+    symbol: "$ZWL",
     name: "Zimbabwean Gold",
     country: "Zimbabwe",
     countryCode: "zw",
@@ -1260,12 +1044,17 @@ export const findCurrency = (code: string): CurrencyOption | undefined =>
   CURRENCY_OPTIONS.find((c) => c.code === code);
 
 /**
- * What a shared symbol most likely means.
+ * The one to pick when several currencies print the same symbol.
  *
- * Symbols are far from unique — 29 currencies here print as "$" — so a symbol
- * alone cannot identify one. These are the fallbacks for a device with no
- * local choice to go on; "Rs" resolves to NPR because that is this app's home
- * currency, not because it is alphabetically first.
+ * 18 of the currencies below render as "$", so a symbol on its own cannot name
+ * one. These are the head of each group — the currency that symbol most often
+ * means. They are listed explicitly rather than relying on array order, since
+ * CURRENCY_OPTIONS is sorted by country: the first "$" in it is the East
+ * Caribbean dollar, which is not what "$" usually means.
+ *
+ * Every symbol shared by more than one currency has an entry here. Where the
+ * group has no obvious head, the larger economy wins — a tie-break has to pick
+ * something, and the alternative is whichever country happens to sort first.
  */
 const SYMBOL_PRIMARY: Record<string, string> = {
   $: "USD",
@@ -1274,19 +1063,26 @@ const SYMBOL_PRIMARY: Record<string, string> = {
   Rs: "NPR",
   kr: "SEK",
   "₩": "KRW",
+  // U+FDFC is the generic rial sign — Iran, Oman, Qatar, Saudi Arabia, Yemen.
+  "﷼": "SAR",
+  // Both CFA francs print "FCFA"; the West African one covers eight countries
+  // to the Central African one's six.
+  FCFA: "XOF",
+  // Honduran lempira, Moldovan leu, Romanian leu.
+  L: "RON",
+  // Belarusian ruble and Ethiopian birr.
+  Br: "ETB",
 };
 
 /**
  * Resolve the symbol the API stores back to a currency.
  *
- * `preferredCode` wins whenever it is among the matches — it is the code
- * already in play locally, i.e. what this user last chose. Without it, a
- * business saved as "$" would be read back as whichever dollar happened to
- * sort first.
+ * Callers should compare symbols before calling this: a business saved as "$"
+ * and a device already on CAD agree, because CAD prints "$" too, and switching
+ * that device to USD would overwrite a deliberate choice with a guess.
  */
 export function findCurrencyBySymbol(
   symbol: string,
-  preferredCode?: string,
 ): CurrencyOption | undefined {
   const wanted = symbol.trim();
   if (!wanted) return undefined;
@@ -1294,11 +1090,6 @@ export function findCurrencyBySymbol(
   const matches = CURRENCY_OPTIONS.filter((c) => c.symbol === wanted);
   if (matches.length === 0) return undefined;
   if (matches.length === 1) return matches[0];
-
-  const preferred = preferredCode
-    ? matches.find((c) => c.code === preferredCode)
-    : undefined;
-  if (preferred) return preferred;
 
   const primary = SYMBOL_PRIMARY[wanted];
   return matches.find((c) => c.code === primary) ?? matches[0];
