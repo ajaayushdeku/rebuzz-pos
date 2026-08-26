@@ -8,38 +8,18 @@ import { useBusiness } from "@/hooks/useBusiness";
 import ServerEnvBadge from "@/components/ServerEnvBadge";
 import Image from "next/image";
 import { useCurrency } from "@/providers/CurrencyContext";
+import { findCurrency } from "@/lib/config/currencies";
+import CountryFlag from "@/components/ui/CountryFlag";
 // import { Button } from "../ui/button";
 // import { Badge, Bell } from "lucide-react";
-
-/** Currency code → ISO 3166-1 alpha-2 country code for the flagcdn flag. */
-const CURRENCY_FLAGS: Record<string, string> = {
-  NPR: "np",
-  USD: "us",
-  EUR: "eu",
-  GBP: "gb",
-  INR: "in",
-  AUD: "au",
-  CAD: "ca",
-  JPY: "jp",
-  CNY: "cn",
-  SGD: "sg",
-  AED: "ae",
-  SAR: "sa",
-  NZD: "nz",
-  KRW: "kr",
-  MYR: "my",
-  THB: "th",
-  PHP: "ph",
-  CHF: "ch",
-  SEK: "se",
-  HKD: "hk",
-  BRL: "br",
-};
 
 export default function Navbar() {
   const { data: businessData } = useBusiness();
   const { currency } = useCurrency();
-  const flagCode = CURRENCY_FLAGS[currency.code] ?? "np";
+  // Resolved from the same list the picker offers, so every currency it can
+  // select has a flag here — a local map would go stale the next time one is
+  // added.
+  const flagCode = findCurrency(currency.code)?.countryCode ?? "np";
 
   return (
     <nav className="w-full border-b bg-white z-200">
@@ -76,15 +56,7 @@ export default function Navbar() {
             <span className="text-xs text-gray-600">
               {currency.code} ( {currency.symbol} )
             </span>
-            <span className="w-8 h-8 inline-flex items-center justify-center shrink-0 overflow-hidden rounded-xs">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`https://flagcdn.com/${flagCode}.svg`}
-                alt=""
-                className="max-w-full max-h-full object-contain"
-                loading="lazy"
-              />
-            </span>
+            <CountryFlag countryCode={flagCode} label="" className="h-6 w-6" />
           </Link>
           <div className="h-5 border-1  border-gray-200 mr-2" />
           <HelpButton />

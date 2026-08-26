@@ -5,208 +5,25 @@ import { Search, Check } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import toast from "react-hot-toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
-
-const CURRENCIES = [
-  {
-    code: "NPR",
-    symbol: "Rs",
-    name: "Nepalese Rupee",
-    country: "Nepal",
-    countryCode: "np",
-  },
-  {
-    code: "USD",
-    symbol: "$",
-    name: "United States Dollar",
-    country: "United States",
-    countryCode: "us",
-  },
-  {
-    code: "INR",
-    symbol: "₹",
-    name: "Indian Rupee",
-    country: "India",
-    countryCode: "in",
-  },
-  {
-    code: "EUR",
-    symbol: "€",
-    name: "Euro",
-    country: "European Union",
-    countryCode: "eu",
-  },
-  {
-    code: "GBP",
-    symbol: "£",
-    name: "British Pound",
-    country: "United Kingdom",
-    countryCode: "gb",
-  },
-  {
-    code: "AUD",
-    symbol: "A$",
-    name: "Australian Dollar",
-    country: "Australia",
-    countryCode: "au",
-  },
-  {
-    code: "CAD",
-    symbol: "C$",
-    name: "Canadian Dollar",
-    country: "Canada",
-    countryCode: "ca",
-  },
-  {
-    code: "JPY",
-    symbol: "¥",
-    name: "Japanese Yen",
-    country: "Japan",
-    countryCode: "jp",
-  },
-  {
-    code: "CNY",
-    symbol: "¥",
-    name: "Chinese Yuan",
-    country: "China",
-    countryCode: "cn",
-  },
-  {
-    code: "SGD",
-    symbol: "S$",
-    name: "Singapore Dollar",
-    country: "Singapore",
-    countryCode: "sg",
-  },
-  {
-    code: "AED",
-    symbol: "د.إ",
-    name: "UAE Dirham",
-    country: "United Arab Emirates",
-    countryCode: "ae",
-  },
-  {
-    code: "SAR",
-    symbol: "﷼",
-    name: "Saudi Riyal",
-    country: "Saudi Arabia",
-    countryCode: "sa",
-  },
-  {
-    code: "NZD",
-    symbol: "NZ$",
-    name: "New Zealand Dollar",
-    country: "New Zealand",
-    countryCode: "nz",
-  },
-  {
-    code: "KRW",
-    symbol: "₩",
-    name: "South Korean Won",
-    country: "South Korea",
-    countryCode: "kr",
-  },
-  {
-    code: "MYR",
-    symbol: "RM",
-    name: "Malaysian Ringgit",
-    country: "Malaysia",
-    countryCode: "my",
-  },
-  {
-    code: "THB",
-    symbol: "฿",
-    name: "Thai Baht",
-    country: "Thailand",
-    countryCode: "th",
-  },
-  {
-    code: "PHP",
-    symbol: "₱",
-    name: "Philippine Peso",
-    country: "Philippines",
-    countryCode: "ph",
-  },
-  {
-    code: "CHF",
-    symbol: "CHF",
-    name: "Swiss Franc",
-    country: "Switzerland",
-    countryCode: "ch",
-  },
-  {
-    code: "SEK",
-    symbol: "kr",
-    name: "Swedish Krona",
-    country: "Sweden",
-    countryCode: "se",
-  },
-  {
-    code: "HKD",
-    symbol: "HK$",
-    name: "Hong Kong Dollar",
-    country: "Hong Kong",
-    countryCode: "hk",
-  },
-  {
-    code: "BRL",
-    symbol: "R$",
-    name: "Brazilian Real",
-    country: "Brazil",
-    countryCode: "br",
-  },
-];
-
-/**
- * Flag rendered from flagcdn's SVG, so it stays sharp at any size / pixel density.
- *
- * `object-contain` (not cover) matters: Nepal is taller than it is wide and
- * Switzerland is square, so cover would crop them. The neutral box behind the
- * image absorbs the letterboxing that contain leaves on odd ratios.
- */
-function Flag({
-  countryCode,
-  label,
-  className = "w-10 h-8",
-}: {
-  countryCode: string;
-  label: string;
-  className?: string;
-}) {
-  return (
-    <span
-      className={`${className} inline-flex items-center justify-center shrink-0 overflow-hidden `}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={`https://flagcdn.com/${countryCode}.svg`}
-        alt={label}
-        loading="lazy"
-        className="max-w-full max-h-full object-contain"
-      />
-    </span>
-  );
-}
+import CountryFlag from "@/components/ui/CountryFlag";
+import { CURRENCY_OPTIONS, type CurrencyOption } from "@/lib/config/currencies";
 
 export default function CurrencyPage() {
   const { currency, setCurrency } = useCurrency();
   const [search, setSearch] = useState("");
-  const [confirmTarget, setConfirmTarget] = useState<{
-    code: string;
-    symbol: string;
-    name: string;
-    country: string;
-    countryCode: string;
-  } | null>(null);
+  const [confirmTarget, setConfirmTarget] = useState<CurrencyOption | null>(
+    null,
+  );
   const [saving, setSaving] = useState(false);
 
   const active = useMemo(
-    () => CURRENCIES.find((c) => c.code === currency.code),
+    () => CURRENCY_OPTIONS.find((c) => c.code === currency.code),
     [currency.code],
   );
 
   const filtered = useMemo(
     () =>
-      CURRENCIES.filter(
+      CURRENCY_OPTIONS.filter(
         (c) =>
           c.name.toLowerCase().includes(search.toLowerCase()) ||
           c.code.toLowerCase().includes(search.toLowerCase()) ||
@@ -216,19 +33,30 @@ export default function CurrencyPage() {
   );
 
   const handleSelect = (code: string) => {
-    const found = CURRENCIES.find((c) => c.code === code);
+    const found = CURRENCY_OPTIONS.find((c) => c.code === code);
     if (found) setConfirmTarget(found);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!confirmTarget) return;
     setSaving(true);
-    // Apply immediately then reload so all rendered amounts refresh. The dialog
-    // stays open on its pending state until the reload takes over — closing it
-    // first would flash the list back for the moment before the page goes.
-    setCurrency(confirmTarget.code);
-    toast.success(`Currency changed to ${confirmTarget.code}`);
-    window.location.reload();
+
+    try {
+      // Saved to the business first — the context reverts itself if the API
+      // refuses, so a reload would otherwise show the old currency back.
+      await setCurrency(confirmTarget.code);
+      toast.success(`Currency changed to ${confirmTarget.code}`);
+
+      // The dialog stays on its pending state until the reload takes over;
+      // closing first would flash the list back for a moment.
+      window.location.reload();
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to change currency",
+      );
+      setSaving(false);
+      setConfirmTarget(null);
+    }
   };
 
   return (
@@ -252,10 +80,10 @@ export default function CurrencyPage() {
 
         {/* Current */}
         <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
-          <Flag
+          <CountryFlag
             countryCode={active?.countryCode ?? "np"}
             label={currency.code}
-            className="w-9 h-6"
+            className="h-6 w-8"
           />
           <div>
             <p className="text-xs text-blue-500 font-medium">Active Currency</p>
@@ -274,10 +102,14 @@ export default function CurrencyPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search currencies..."
+            placeholder="Search by currency, code or country..."
             className="w-full pl-8 pr-3 py-2 text-[13px] border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
+
+        <p className="mb-2 text-[11px] text-gray-400">
+          {filtered.length} of {CURRENCY_OPTIONS.length} currencies
+        </p>
 
         {/* List */}
         <div className="space-y-1.5 max-h-96 overflow-y-auto pr-1">
@@ -287,31 +119,42 @@ export default function CurrencyPage() {
               <button
                 key={c.code}
                 onClick={() => handleSelect(c.code)}
-                className={`w-full flex items-center gap-4 px-3 py-2.5 rounded-lg border text-left transition-colors ${
+                className={`flex w-full items-stretch gap-3 overflow-hidden rounded-lg border text-left transition-colors ${
                   isActive
                     ? "border-blue-500 bg-blue-50"
                     : "border-gray-100 hover:border-gray-200 hover:bg-gray-50"
                 }`}
               >
-                <Flag
-                  countryCode={c.countryCode}
-                  label={c.code}
-                  className="w-8 h-6"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-gray-800">
+                <div className="flex min-w-0 flex-1 items-center gap-3 py-2.5 pl-3">
+                  {/* The flag repeats the code beside it, so it is decorative
+                      to a screen reader rather than read out twice. */}
+                  <CountryFlag countryCode={c.countryCode} label="" />
+
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-gray-800">
                       {c.code}
-                    </span>
-                    <span className="text-xs text-gray-400">{c.symbol}</span>
+                    </p>
+                    <p className="truncate text-xs text-gray-600">
+                      {c.name} — {c.country}
+                    </p>
                   </div>
-                  <p className="text-xs text-gray-400 truncate">
-                    {c.country} — {c.name}
-                  </p>
                 </div>
+
                 {isActive && (
-                  <Check size={15} className="text-blue-600 shrink-0" />
+                  <Check size={15} className="mr-1 self-center text-blue-600" />
                 )}
+
+                {/* Symbol rail — stretches the row's full height, so the
+                    column of symbols reads as one strip down the list. */}
+                <span
+                  className={`flex w-14 shrink-0 items-center justify-center self-stretch border-l text-base text-[13px] font-semibold ${
+                    isActive
+                      ? "border-blue-200 bg-blue-100/60 text-blue-700"
+                      : "border-gray-100 bg-gray-50/70 text-gray-600"
+                  }`}
+                >
+                  {c.symbol}
+                </span>
               </button>
             );
           })}
@@ -327,10 +170,10 @@ export default function CurrencyPage() {
         // the whole point of the prompt.
         badge={
           confirmTarget ? (
-            <Flag
+            <CountryFlag
               countryCode={confirmTarget.countryCode}
               label={confirmTarget.code}
-              className="mb-3 h-12 w-20 "
+              className="mb-3 h-12 w-16"
             />
           ) : undefined
         }
