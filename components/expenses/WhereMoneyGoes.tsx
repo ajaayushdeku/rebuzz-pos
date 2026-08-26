@@ -9,11 +9,18 @@ import { getPurposeIcon } from "@/lib/purpose-icons";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "../ComponentHeader";
+import { ExpenseCardSkeleton } from "./ExpenseAnalyticsSkeletons";
 
 export default function WhereMoneyGoes() {
   const { currency } = useCurrency();
-  const { transactions, previousTransactions, expensePurposes, month, year } =
-    useTracker();
+  const {
+    transactions,
+    previousTransactions,
+    expensePurposes,
+    month,
+    year,
+    isLoading,
+  } = useTracker();
 
   // Build purposeId → { name, icon } lookup
   const purposeLookup = useMemo(() => {
@@ -113,6 +120,21 @@ export default function WhereMoneyGoes() {
   const fmtRs = (v: number) => {
     return `${formatCurrencySymbol(v, currency.symbol, currency.locale)}`;
   };
+
+  if (isLoading)
+    return (
+      <>
+        {" "}
+        <div className="flex flex-col gap-2 animate-pulse">
+          <div className="h-4 w-48 bg-gray-200 rounded" />
+          <div className="h-3 w-72 bg-gray-100 rounded mb-3" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ExpenseCardSkeleton rows={4} titleWidth="w-36" />
+            <ExpenseCardSkeleton rows={4} titleWidth="w-32" />
+          </div>
+        </div>
+      </>
+    );
 
   return (
     <div className="flex flex-col gap-2 mt-4">

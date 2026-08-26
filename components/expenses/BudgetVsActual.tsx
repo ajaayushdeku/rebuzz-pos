@@ -7,6 +7,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "../ComponentHeader";
 import { ChartColumnBig, Info } from "lucide-react";
+import { BudgetVsActualSkeleton } from "./ExpenseAnalyticsSkeletons";
 
 function getPctStyle(pct: number): string {
   if (pct >= 100) return "bg-amber-100 text-amber-700";
@@ -48,7 +49,7 @@ const VarianceBadge = ({ variance }: { variance: number }) => {
 
 export default function BudgetVsActual() {
   const { currency } = useCurrency();
-  const { transactions, budgets, expensePurposes } = useTracker();
+  const { transactions, budgets, expensePurposes, isLoading } = useTracker();
 
   // Build purposeId → { name, icon } lookup
   const purposeLookup = useMemo(() => {
@@ -92,6 +93,13 @@ export default function BudgetVsActual() {
       };
     });
   }, [transactions, budgets, getPurposeName, getPurposeIconStr]);
+
+  if (isLoading)
+    return (
+      <>
+        <BudgetVsActualSkeleton />
+      </>
+    );
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">

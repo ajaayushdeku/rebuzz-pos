@@ -124,3 +124,143 @@ export function TaxableSplitSkeleton() {
     </div>
   );
 }
+
+/** The grouped bars a month gets in the trend chart, at a plausible spread. */
+const TREND_BAR_HEIGHTS = [
+  [55, 38],
+  [72, 44],
+  [48, 30],
+  [86, 60],
+  [64, 41],
+  [78, 52],
+];
+
+/**
+ * Body skeleton for <MonthlyTaxTrendChart /> — six months of grouped bars
+ * sitting on an axis, so the shape is recognisable before the data lands.
+ */
+export function TaxTrendChartSkeleton() {
+  return (
+    <div className="h-[280px] flex flex-col animate-pulse">
+      <div className="flex-1 flex items-end justify-between gap-3 px-2">
+        {TREND_BAR_HEIGHTS.map(([a, b], i) => (
+          <div key={i} className="flex-1 flex items-end justify-center gap-1">
+            <div
+              className="w-1/3 bg-gray-200 rounded-t"
+              style={{ height: `${a}%` }}
+            />
+            <div
+              className="w-1/3 bg-gray-100 rounded-t"
+              style={{ height: `${b}%` }}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Axis + legend */}
+      <div className="h-px bg-gray-100 mt-2" />
+      <div className="flex justify-between px-2 mt-2">
+        {TREND_BAR_HEIGHTS.map((_, i) => (
+          <div key={i} className="h-2.5 w-8 bg-gray-100 rounded" />
+        ))}
+      </div>
+      <div className="flex items-center justify-center gap-4 mt-3">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-sm bg-gray-200" />
+            <div className="h-2.5 w-14 bg-gray-100 rounded" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Body skeleton for <TaxRateBreakdown /> — two side-by-side donut-and-list
+ * groups, matching the regular / grouped split the card renders.
+ */
+export function TaxRateBreakdownSkeleton() {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-pulse">
+      {Array.from({ length: 2 }).map((_, group) => (
+        <div key={group}>
+          <div className="h-2.5 w-32 bg-gray-100 rounded mb-4" />
+
+          <div className="flex items-center gap-5">
+            {/* Donut */}
+            <div className="relative w-28 h-28 shrink-0">
+              <div className="absolute inset-0 rounded-full bg-gray-200" />
+              <div className="absolute inset-[22%] rounded-full bg-white" />
+            </div>
+
+            {/* Legend rows */}
+            <div className="flex-1 space-y-2.5">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-sm bg-gray-200 shrink-0" />
+                  <div className="h-3 w-20 bg-gray-100 rounded" />
+                  <div className="h-3 w-14 bg-gray-200 rounded ml-auto" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Body skeleton for <WhatChangedAndWhy /> — a headline figure over the
+ * this-month / last-month comparison rows.
+ */
+export function TaxComparisonSkeleton({ rows = 4 }: { rows?: number }) {
+  return (
+    <div className="space-y-4 animate-pulse">
+      <div className="flex items-baseline gap-3">
+        <div className="h-7 w-32 bg-gray-200 rounded" />
+        <div className="h-4 w-20 bg-gray-100 rounded" />
+      </div>
+
+      <div className="space-y-2.5">
+        {Array.from({ length: rows }).map((_, i) => (
+          <div
+            key={i}
+            className="flex items-center justify-between gap-3 border-b border-gray-50 pb-2.5 last:border-0"
+          >
+            <div className="h-3 w-36 bg-gray-100 rounded" />
+            <div className="flex items-center gap-3 shrink-0">
+              <div className="h-3.5 w-16 bg-gray-200 rounded" />
+              <div className="h-3 w-12 bg-gray-100 rounded" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Body skeleton for figure cards — <IncomeTaxProvision /> and the like: a
+ * headline amount over a short list of contributing lines.
+ */
+export function TaxFigureCardSkeleton({ rows = 3 }: { rows?: number }) {
+  return (
+    <div className="space-y-4 animate-pulse">
+      <div className="space-y-2">
+        <div className="h-2.5 w-28 bg-gray-100 rounded" />
+        <div className="h-8 w-40 bg-gray-200 rounded" />
+      </div>
+
+      <div className="space-y-2.5 pt-1">
+        {Array.from({ length: rows }).map((_, i) => (
+          <div key={i} className="flex items-center justify-between gap-3">
+            <div className="h-3 w-32 bg-gray-100 rounded" />
+            <div className="h-3.5 w-20 bg-gray-200 rounded" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

@@ -29,7 +29,26 @@ import {
 } from "@/components/componentWrappers/TaxAnalyticsWrappers";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import ChartSkeleton from "@/components/ui/chartskeleton";
-import TaxRateBreakdown from "@/components/dashboardComponents/taxAnalytics/TaxRateBreakdown";
+
+/**
+ * One panel, isolated.
+ *
+ * The error boundary is the part that earns its keep today: every wrapper on
+ * this page fetches independently, and without a boundary one throwing takes
+ * the whole page down with it. Only a single panel was wrapped before.
+ *
+ * The Suspense boundary is inert while the wrappers use `useQuery`, which
+ * reports `isLoading` rather than suspending. It is here so that moving a
+ * wrapper to `useSuspenseQuery` — or splitting it into its own lazily imported
+ * module — starts streaming with no further change to this page.
+ */
+function Panel({ children }: { children: React.ReactNode }) {
+  return (
+    <ChartErrorBoundary>
+      <Suspense fallback={<ChartSkeleton />}>{children}</Suspense>
+    </ChartErrorBoundary>
+  );
+}
 
 function getDefaultDateRange(): DateRangeValue {
   const today = new Date();
@@ -66,79 +85,112 @@ export default function TaxAnalyticsPage() {
 
       <div className="space-y-6 mt-6">
         {/* Taxable vs Non-Taxable - full width */}
-        <TaxableVsNonTaxableWrapper
-          startDate={dateRange.startDate}
-          endDate={dateRange.endDate}
-        />
+        <Panel>
+          <TaxableVsNonTaxableWrapper
+            startDate={dateRange.startDate}
+            endDate={dateRange.endDate}
+          />
+        </Panel>
 
         {/* Tax Breakdown (by applied rate) - full width */}
-        <TaxRatedBreakdownWrapper />
+        <Panel>
+          <TaxRatedBreakdownWrapper />
+        </Panel>
 
         {/* Grid for remaining cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Highest Tax Generated */}
-          <HighestTaxGeneratedWrapper
-            startDate={dateRange.startDate}
-            endDate={dateRange.endDate}
-          />
+          <Panel>
+            <HighestTaxGeneratedWrapper
+              startDate={dateRange.startDate}
+              endDate={dateRange.endDate}
+            />
+          </Panel>
 
           {/* Tax by Category */}
-          <TaxByCategoryWrapper
-            startDate={dateRange.startDate}
-            endDate={dateRange.endDate}
-          />
+          <Panel>
+            <TaxByCategoryWrapper
+              startDate={dateRange.startDate}
+              endDate={dateRange.endDate}
+            />
+          </Panel>
         </div>
 
         {/* Tax on Refunded Bills - full width */}
-        <TaxOnRefundedBillsWrapper
-          startDate={dateRange.startDate}
-          endDate={dateRange.endDate}
-        />
+        <Panel>
+          <TaxOnRefundedBillsWrapper
+            startDate={dateRange.startDate}
+            endDate={dateRange.endDate}
+          />
+        </Panel>
 
-        <WhatYouActuallyOweWrapper />
-        <VatStatsWrapper />
+        <Panel>
+          <WhatYouActuallyOweWrapper />
+        </Panel>
+
+        <Panel>
+          <VatStatsWrapper />
+        </Panel>
 
         {/* What Changed & Why + Taxable vs Exempt - full width */}
-        <ChartErrorBoundary>
-          <Suspense fallback={<ChartSkeleton />}>
-            <WhatChangedAndWhyWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
+        <Panel>
+          <WhatChangedAndWhyWrapper />
+        </Panel>
 
         {/* VAT Trend Charts - 2 column grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <MonthlyTaxTrendChartWrapper />
-          <VATTrendChartWrapper />
+          <Panel>
+            <MonthlyTaxTrendChartWrapper />
+          </Panel>
+          <Panel>
+            <VATTrendChartWrapper />
+          </Panel>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-          <VAT20ReturnSummaryWrapper />
-          <FilingCalendarWrapper />
+          <Panel>
+            <VAT20ReturnSummaryWrapper />
+          </Panel>
+          <Panel>
+            <FilingCalendarWrapper />
+          </Panel>
         </div>
 
         {/* Supplementary tax cards - 3 column grid */}
         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1">
-          <TDSOnRentWrapper />
+          <Panel>
+            <TDSOnRentWrapper />
+          </Panel>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-          <VATUnclaimedBackWrapper />
-          <NoVATPurchasesWrapper />
+          <Panel>
+            <VATUnclaimedBackWrapper />
+          </Panel>
+          <Panel>
+            <NoVATPurchasesWrapper />
+          </Panel>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1">
-          <TDSReceivableWrapper />
+          <Panel>
+            <TDSReceivableWrapper />
+          </Panel>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1">
           <h2 className="flex flex-row items-center text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">
             Income Tax <div className="h-px flex-1 bg-gray-200 ml-3" />
           </h2>
-          <IncomeTaxProvisionWrapper />
+          <Panel>
+            <IncomeTaxProvisionWrapper />
+          </Panel>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1">
-          <AdvanceTaxInstallmentsWrapper />
+          <Panel>
+            <AdvanceTaxInstallmentsWrapper />
+          </Panel>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1">
@@ -146,11 +198,15 @@ export default function TaxAnalyticsPage() {
             Reconciliation & Audit
             <div className="h-px flex-1 bg-gray-200 ml-3" />
           </h2>
-          <TaxReconciliationWrapper />
+          <Panel>
+            <TaxReconciliationWrapper />
+          </Panel>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1">
-          <TaxAuditLogWrapper />
+          <Panel>
+            <TaxAuditLogWrapper />
+          </Panel>
         </div>
       </div>
     </div>

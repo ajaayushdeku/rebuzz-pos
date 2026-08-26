@@ -23,6 +23,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { ComponentHeader } from "../ComponentHeader";
 import { ChartColumnStacked, AlertTriangle } from "lucide-react";
 import CategoryLegend from "./CategoryLegend";
+import { MonthlyExpenseTrendSkeleton } from "./ExpenseAnalyticsSkeletons";
 
 /** Coerce a recharts payload value (number | string | array) to a number. */
 const toNumber = (v: ValueType | undefined): number =>
@@ -160,6 +161,13 @@ export default function MonthlyExpenseTrend() {
     return `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`;
   };
 
+  if (isLoading)
+    return (
+      <>
+        <MonthlyExpenseTrendSkeleton />
+      </>
+    );
+
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3">
@@ -186,11 +194,7 @@ export default function MonthlyExpenseTrend() {
         </p>
       )}
 
-      {isLoading ? (
-        <div className="py-16 text-center text-sm text-gray-400">
-          Loading trend data…
-        </div>
-      ) : isError ? (
+      {isError ? (
         <div className="py-16 text-center">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
             <AlertTriangle size={22} className="text-red-400" />

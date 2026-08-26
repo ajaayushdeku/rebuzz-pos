@@ -314,7 +314,7 @@ function FixedVariableDonut({
 
 export default function CostHealth() {
   const { currency } = useCurrency();
-  const { transactions, expensePurposes, summary } = useTracker();
+  const { transactions, expensePurposes, summary, isLoading } = useTracker();
 
   // Build purposeId → { name, icon } lookup
   const purposeLookup = useMemo(() => {
@@ -410,6 +410,27 @@ export default function CostHealth() {
   const canLoadMore = visibleCount < cards.length;
   const canHide = visibleCount > 4;
 
+  if (isLoading)
+    return (
+      <>
+        {/* CostHealth — 4-up stat tiles */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 animate-pulse">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3"
+            >
+              <div className="flex items-center justify-between">
+                <div className="h-3 w-20 bg-gray-100 rounded" />
+                <div className="w-4 h-4 bg-gray-200 rounded" />
+              </div>
+              <div className="h-6 w-24 bg-gray-200 rounded" />
+            </div>
+          ))}
+        </div>
+      </>
+    );
+
   return (
     <div className="flex flex-col gap-8 mt-4">
       {/* ======================================================
@@ -454,7 +475,7 @@ export default function CostHealth() {
 
             {/* Load More / Hide buttons */}
             {cards.length > 4 && (
-              <div className="flex items-center justify-center gap-3 mt-5">
+              <div className="flex items-center justify-center gap-3 mt-4">
                 {canLoadMore && (
                   <button
                     onClick={() =>
@@ -462,10 +483,10 @@ export default function CostHealth() {
                         Math.min(prev + 4, cards.length),
                       )
                     }
-                    className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors"
+                    className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-gray-600 hover:text-blue-500 transition-colors cursor-pointer"
                   >
                     <ChevronDown size={14} /> Load More
-                    <span className="text-xs text-blue-400">
+                    <span className="text-xs text-gray-400">
                       ( {cards.length - visibleCount} more )
                     </span>
                   </button>
@@ -475,7 +496,7 @@ export default function CostHealth() {
                     onClick={() =>
                       setVisibleCount((prev) => Math.max(prev - 4, 4))
                     }
-                    className="px-4 py-2 rounded-lg border border-gray-200 bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed flex flex-row items-center gap-1"
+                    className="px-4 py-2 text-xs font-medium text-gray-500 hover:text-gray-700  transition disabled:opacity-50 disabled:cursor-not-allowed flex flex-row items-center gap-1 cursor-pointer"
                   >
                     <ChevronUp size={14} /> Hide
                   </button>

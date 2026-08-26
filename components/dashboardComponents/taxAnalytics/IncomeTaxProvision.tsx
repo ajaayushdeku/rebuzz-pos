@@ -1,10 +1,11 @@
 "use client";
 
-import { Info, ArrowRight, Loader2, Landmark } from "lucide-react";
+import { Info, ArrowRight, Landmark } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { TaxFigureCardSkeleton } from "./TaxAnalyticsSkeletons";
 
 // Statutory corporate income tax rate (Nepal). This is a government rate, not a
 // business metric — no API provides it, so it's a fixed constant.
@@ -69,10 +70,7 @@ export default function IncomeTaxProvision() {
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-10 text-gray-400">
-          <Loader2 size={18} className="animate-spin" />
-          <span className="ml-2 text-sm">Loading provision...</span>
-        </div>
+        <TaxFigureCardSkeleton />
       ) : isError ? (
         <div className="py-10 text-center text-sm text-red-400">
           Couldn&apos;t load income tax provision. Please try again.

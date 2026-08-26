@@ -114,6 +114,13 @@ export default function CashFlowTrend() {
     return `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`;
   };
 
+  if (isLoading)
+    return (
+      <>
+        <CashFlowTrendSkeleton />
+      </>
+    );
+
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
       {/* <div>
@@ -150,9 +157,7 @@ export default function CashFlowTrend() {
           incomplete.
         </p>
       )}
-      {isLoading ? (
-        <CashFlowTrendSkeleton />
-      ) : isError ? (
+      {isError ? (
         <div className="py-16 text-center">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
             <AlertTriangle size={22} className="text-red-400" />

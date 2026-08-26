@@ -19,6 +19,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { useMonthlyTaxTrend } from "@/hooks/useMonthlyTaxTrend";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { TaxTrendChartSkeleton } from "./TaxAnalyticsSkeletons";
 
 const RATE_COLORS = [
   "#6366f1",
@@ -98,9 +99,7 @@ export default function MonthlyTaxTrendChart() {
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center h-[280px]">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        </div>
+        <TaxTrendChartSkeleton />
       ) : isError ? (
         <div className="flex items-center justify-center h-[280px] text-sm text-red-400">
           Failed to load tax trend

@@ -17,6 +17,7 @@ import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
 import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { ComponentHeader } from "../ComponentHeader";
+import { ExpenseBudgetGaugesSkeleton } from "./ExpenseAnalyticsSkeletons";
 
 // ── Radial gauge built with SVG ───────────────────────────────────────────
 
@@ -92,7 +93,7 @@ function RadialGauge({
 
 export default function ExpenseBudgetGauges() {
   const { currency } = useCurrency();
-  const { transactions, budgets, expensePurposes } = useTracker();
+  const { transactions, budgets, expensePurposes, isLoading } = useTracker();
 
   // Build purposeId → { name } lookup
   const purposeLookup = useMemo(() => {
@@ -196,11 +197,18 @@ export default function ExpenseBudgetGauges() {
     },
   ];
 
+  if (isLoading)
+    return (
+      <>
+        <ExpenseBudgetGaugesSkeleton />
+      </>
+    );
+
   return (
     <div className="relative flex flex-col gap-4">
       {/* Cost Health */}
       {/* Gauges card */}
-      <div className=" bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+      <div className=" bg-white rounded-2xl border border-gray-200 shadow-sm px-5 pt-5 pb-3">
         <div className="mb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -266,10 +274,10 @@ export default function ExpenseBudgetGauges() {
                         Math.min(prev + 5, gauges.length),
                       )
                     }
-                    className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors"
+                    className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-gray-600 hover:text-blue-500 transition-colors cursor-pointer"
                   >
                     <ChevronDown size={14} /> Load More
-                    <span className="text-xs text-blue-400">
+                    <span className="text-xs text-gray-400">
                       ( {gauges.length - visibleCount} more )
                     </span>
                   </button>
@@ -279,7 +287,7 @@ export default function ExpenseBudgetGauges() {
                     onClick={() =>
                       setVisibleCount((prev) => Math.max(prev - 5, 5))
                     }
-                    className="px-4 py-2 rounded-lg border border-gray-200 bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed flex flex-row items-center gap-1"
+                    className="px-4 py-2 text-xs font-medium text-gray-500 hover:text-gray-700  transition disabled:opacity-50 disabled:cursor-not-allowed flex flex-row items-center gap-1 cursor-pointer"
                   >
                     <ChevronUp size={14} /> Hide
                   </button>

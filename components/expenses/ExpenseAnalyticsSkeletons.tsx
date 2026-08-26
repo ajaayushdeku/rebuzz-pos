@@ -225,9 +225,9 @@ export function ExpenseCardSkeleton({
 export function ExpenseAnalyticsSkeleton() {
   return (
     <div className="space-y-6">
-      {/* <CashFlowTrendSkeleton /> */}
-      {/* <ExpensesByCategorySkeleton /> */}
-      {/* <MonthlyExpenseTrendSkeleton /> */}
+      {/* <CashFlowTrendSkeleton />
+      <ExpensesByCategorySkeleton />
+      <MonthlyExpenseTrendSkeleton /> */}
       <BudgetVsActualSkeleton />
       <ExpenseBudgetGaugesSkeleton />
 

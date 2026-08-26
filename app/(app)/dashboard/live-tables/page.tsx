@@ -1,19 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import dynamic from "next/dynamic";
 import { useQueryClient } from "@tanstack/react-query";
-import { LayoutGrid, Map, Loader2, Utensils, Armchair } from "lucide-react";
+import { LayoutGrid, Map, Utensils, Armchair } from "lucide-react";
 
 import type { LiveTable } from "@/lib/mockData/mock-live-tables";
 import { useLiveTables, useTableLiveSales } from "@/hooks/useLiveTables";
 import { LIVE_TABLES_KEY } from "@/hooks/useLiveTables";
 import LiveStatBar from "@/components/dashboardComponents/liveTables/LiveStatBar";
-import FloorPlanView from "@/components/dashboardComponents/liveTables/FloorPlanVIew";
-import GridView from "@/components/dashboardComponents/liveTables/GridView";
-import TableDetail from "@/components/dashboardComponents/liveTables/TableDetail";
-import AddTableModal from "@/components/dashboardComponents/liveTables/AddTableModal";
 import TableTicketCards from "@/components/dashboardComponents/liveTables/TableTicketCards";
 import HeaderActionButton from "@/components/ui/HeaderActionButton";
+import {
+  FloorPlanSkeleton,
+  GridViewSkeleton,
+  LiveTablesSkeleton,
+} from "@/components/dashboardComponents/liveTables/LiveTablesSkeletons";
+
+/**
+ * Loaded on demand, which is what gives `<Suspense>` something to catch here.
+ *
+ * `useQuery` never suspends — it reports `isLoading` and renders — so a
+ * Suspense boundary around a fetching component would never show its fallback.
+ * A dynamic import does suspend.
+ *
+ * The two views are mutually exclusive, so the one you are not looking at need
+ * never be downloaded; the floor plan in particular carries the drag-and-drop
+ * layout code. The modals are closed on arrival, so neither belongs in the
+ * first payload.
+ */
+const FloorPlanView = dynamic(
+  () => import("@/components/dashboardComponents/liveTables/FloorPlanVIew"),
+);
+const GridView = dynamic(
+  () => import("@/components/dashboardComponents/liveTables/GridView"),
+);
+const TableDetail = dynamic(
+  () => import("@/components/dashboardComponents/liveTables/TableDetail"),
+);
+const AddTableModal = dynamic(
+  () => import("@/components/dashboardComponents/liveTables/AddTableModal"),
+);
 
 type Tab = "floor" | "grid";
 
@@ -102,10 +129,7 @@ export default function LiveTablesPage() {
           </div>
 
           {isLoading ? (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 flex flex-col items-center justify-center gap-3 text-gray-400">
-              <Loader2 className="h-6 w-6 animate-spin" />
-              <p className="text-sm">Loading tables…</p>
-            </div>
+            <LiveTablesSkeleton />
           ) : isError ? (
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 flex flex-col items-center justify-center gap-1.5 text-center">
               <p className="text-sm font-medium text-red-500">
@@ -137,25 +161,31 @@ export default function LiveTablesPage() {
               )}
 
               {/* ── Views ── */}
-              {tab === "floor" ? (
-                <FloorPlanView
-                  indoorTables={indoorTables}
-                  outdoorTables={outdoorTables}
-                  selectedTableId={selectedTable?.id ?? null}
-                  onSelectTable={setSelectedTable}
-                  onViewDetails={setDetailTable}
-                />
-              ) : (
-                <GridView
-                  tables={tables}
-                  selectedTableId={selectedTable?.id ?? null}
-                  onSelectTable={setSelectedTable}
-                  onEditTable={handleEditTable}
-                  onTableDeleted={handleTableCreated}
-                  onTableChanged={handleTableCreated}
-                  onViewDetails={setDetailTable}
-                />
-              )}
+              <Suspense
+                fallback={
+                  tab === "floor" ? <FloorPlanSkeleton /> : <GridViewSkeleton />
+                }
+              >
+                {tab === "floor" ? (
+                  <FloorPlanView
+                    indoorTables={indoorTables}
+                    outdoorTables={outdoorTables}
+                    selectedTableId={selectedTable?.id ?? null}
+                    onSelectTable={setSelectedTable}
+                    onViewDetails={setDetailTable}
+                  />
+                ) : (
+                  <GridView
+                    tables={tables}
+                    selectedTableId={selectedTable?.id ?? null}
+                    onSelectTable={setSelectedTable}
+                    onEditTable={handleEditTable}
+                    onTableDeleted={handleTableCreated}
+                    onTableChanged={handleTableCreated}
+                    onViewDetails={setDetailTable}
+                  />
+                )}
+              </Suspense>
 
               {/* ── Assigned tickets ──
                   Lives here rather than inside GridView so a table picked on
@@ -173,23 +203,34 @@ export default function LiveTablesPage() {
         </div>
       </div>
 
-      {/* ── Table detail (modal) ── */}
-      <TableDetail
-        table={detailTable}
-        open={!!detailTable}
-        onClose={() => setDetailTable(null)}
-      />
+      {/* ── Table detail (modal) ──
+          Rendered only while open: a dynamic import is only fetched once the
+          component is actually mounted, so a session that never opens a modal
+          never downloads it. */}
+      {detailTable && (
+        <Suspense fallback={null}>
+          <TableDetail
+            table={detailTable}
+            open={!!detailTable}
+            onClose={() => setDetailTable(null)}
+          />
+        </Suspense>
+      )}
 
-      <AddTableModal
-        key={editingTable?._id ?? "new"}
-        open={addModalOpen}
-        onClose={() => {
-          setAddModalOpen(false);
-          setEditingTable(null);
-        }}
-        onCreated={handleTableCreated}
-        editingTable={editingTable}
-      />
+      {addModalOpen && (
+        <Suspense fallback={null}>
+          <AddTableModal
+            key={editingTable?._id ?? "new"}
+            open={addModalOpen}
+            onClose={() => {
+              setAddModalOpen(false);
+              setEditingTable(null);
+            }}
+            onCreated={handleTableCreated}
+            editingTable={editingTable}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

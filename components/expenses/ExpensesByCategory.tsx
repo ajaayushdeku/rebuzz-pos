@@ -13,6 +13,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
 import { ComponentHeader } from "../ComponentHeader";
 import { ChartPie, ChevronDown, ChevronUp } from "lucide-react";
+import { ExpensesByCategorySkeleton } from "./ExpenseAnalyticsSkeletons";
 
 interface SliceData {
   purpose: string;
@@ -52,7 +53,7 @@ const CustomTooltip = ({
 
 /** Donut breakdown of expenses by category (purpose), from the tracker store. */
 export default function ExpensesByCategory() {
-  const { transactions, expensePurposes } = useTracker();
+  const { transactions, expensePurposes, isLoading } = useTracker();
   const { currency } = useCurrency();
 
   // ── Legend scroll-aware arrow ──────────────────────────────────────────
@@ -115,6 +116,13 @@ export default function ExpensesByCategory() {
     window.addEventListener("resize", updateLegendScroll);
     return () => window.removeEventListener("resize", updateLegendScroll);
   }, [updateLegendScroll, expenseByPurpose]);
+
+  if (isLoading)
+    return (
+      <>
+        <ExpensesByCategorySkeleton />
+      </>
+    );
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">

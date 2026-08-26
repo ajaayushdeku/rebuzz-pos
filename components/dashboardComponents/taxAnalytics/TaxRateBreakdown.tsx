@@ -12,6 +12,7 @@ import { formatCurrencySymbol } from "@/utils/helper";
 import { useMonthlyTaxTrend, type TaxTotal } from "@/hooks/useMonthlyTaxTrend";
 import { Percent } from "lucide-react";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { TaxRateBreakdownSkeleton } from "./TaxAnalyticsSkeletons";
 
 const GREEN_COLORS = [
   "#059669",
@@ -255,9 +256,7 @@ export default function TaxRateBreakdown() {
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-16">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        </div>
+        <TaxRateBreakdownSkeleton />
       ) : isError ? (
         <p className="text-sm text-red-400 text-center py-16">
           Failed to load tax breakdown
