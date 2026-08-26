@@ -1258,3 +1258,48 @@ export const CURRENCY_OPTIONS: CurrencyOption[] = [
 /** Lookup by ISO 4217 code. */
 export const findCurrency = (code: string): CurrencyOption | undefined =>
   CURRENCY_OPTIONS.find((c) => c.code === code);
+
+/**
+ * What a shared symbol most likely means.
+ *
+ * Symbols are far from unique — 29 currencies here print as "$" — so a symbol
+ * alone cannot identify one. These are the fallbacks for a device with no
+ * local choice to go on; "Rs" resolves to NPR because that is this app's home
+ * currency, not because it is alphabetically first.
+ */
+const SYMBOL_PRIMARY: Record<string, string> = {
+  $: "USD",
+  "£": "GBP",
+  "¥": "JPY",
+  Rs: "NPR",
+  kr: "SEK",
+  "₩": "KRW",
+};
+
+/**
+ * Resolve the symbol the API stores back to a currency.
+ *
+ * `preferredCode` wins whenever it is among the matches — it is the code
+ * already in play locally, i.e. what this user last chose. Without it, a
+ * business saved as "$" would be read back as whichever dollar happened to
+ * sort first.
+ */
+export function findCurrencyBySymbol(
+  symbol: string,
+  preferredCode?: string,
+): CurrencyOption | undefined {
+  const wanted = symbol.trim();
+  if (!wanted) return undefined;
+
+  const matches = CURRENCY_OPTIONS.filter((c) => c.symbol === wanted);
+  if (matches.length === 0) return undefined;
+  if (matches.length === 1) return matches[0];
+
+  const preferred = preferredCode
+    ? matches.find((c) => c.code === preferredCode)
+    : undefined;
+  if (preferred) return preferred;
+
+  const primary = SYMBOL_PRIMARY[wanted];
+  return matches.find((c) => c.code === primary) ?? matches[0];
+}

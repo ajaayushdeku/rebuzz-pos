@@ -1,8 +1,14 @@
 "use client";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { CurrencyConfig, storeConfig } from "@/lib/config/store";
-import { CURRENCY_OPTIONS } from "@/lib/config/currencies";
-import { updateCurrency } from "@/services/apiCurrency.client";
+import {
+  CURRENCY_OPTIONS,
+  findCurrencyBySymbol,
+} from "@/lib/config/currencies";
+import {
+  fetchSavedCurrencySymbol,
+  updateCurrency,
+} from "@/services/apiCurrency.client";
 
 export type { CurrencyConfig } from "@/lib/config/store";
 
@@ -53,6 +59,50 @@ export function CurrencyProvider({
     document.cookie = `currency=${code}; path=/; max-age=${60 * 60 * 24 * 365}`;
     localStorage.setItem("currency", code);
   };
+
+  /**
+   * The code currently in play, for the symbol lookup below.
+   *
+   * Held in a ref so the seeding effect can read it without listing `currency`
+   * as a dependency — that would re-run the fetch on every change.
+   */
+  const currentCodeRef = useRef(currency.code);
+  useEffect(() => {
+    currentCodeRef.current = currency.code;
+  }, [currency.code]);
+
+  /**
+   * Adopt the currency saved on the business.
+   *
+   * The cookie only records what was chosen on *this* device, so a fresh
+   * browser would otherwise show the app default rather than the business's
+   * actual currency. The profile is the record; the cookie is a cache of it,
+   * and is what avoids a flash of the wrong symbol before this resolves.
+   *
+   * The API stores a symbol, and symbols are ambiguous, so the code already in
+   * play breaks the tie — see `findCurrencyBySymbol`.
+   */
+  useEffect(() => {
+    let cancelled = false;
+
+    const seedFromProfile = async () => {
+      const symbol = await fetchSavedCurrencySymbol();
+      if (!symbol || cancelled) return;
+
+      const saved = findCurrencyBySymbol(symbol, currentCodeRef.current);
+      if (!saved || saved.code === currentCodeRef.current) return;
+
+      setCurrencyState(saved);
+      cacheLocally(saved.code);
+    };
+
+    seedFromProfile();
+    return () => {
+      cancelled = true;
+    };
+    // Once per mount: the business's currency is not expected to change
+    // underneath a session that is not the one changing it.
+  }, []);
 
   const setCurrency = async (code: string) => {
     const found = CURRENCIES.find((c) => c.code === code);
