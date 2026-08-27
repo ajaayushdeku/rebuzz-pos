@@ -3,7 +3,11 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "@/app/globals.css";
 
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { Toaster } from "react-hot-toast";
+
+import { ACCESS_DENIED_PATH } from "@/lib/auth/roles";
+import { isDeniedSession } from "@/lib/auth/verifyAdmin";
 
 import { QueryProvider } from "@/providers/QueryProvider";
 import { SidebarProvider } from "@/providers/SidebarProvider";
@@ -36,6 +40,16 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const cookieStore = await cookies();
+
+  // The authoritative half of the role gate. The middleware turns away any
+  // session whose role cookie says staff, but that cookie is written by this
+  // app and so can be edited in a browser; the token cannot be. This asks the
+  // backend who the token belongs to, and wraps every page under (app).
+  const token = cookieStore.get("token")?.value;
+  if (token && (await isDeniedSession(token))) {
+    redirect(ACCESS_DENIED_PATH);
+  }
+
   const currencyCode = cookieStore.get("currency")?.value;
   return (
     <div className={`${geistSans.variable} ${geistMono.variable} antialiased`}>

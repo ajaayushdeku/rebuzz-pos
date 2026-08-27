@@ -11,6 +11,7 @@ import { useSidebar } from "@/providers/SidebarProvider";
 import { Button } from "../ui/button";
 import SidebarItem from "./SidebarItem";
 import SidebarSection from "./SidebarSection";
+import SidebarPlanCard from "./SidebarPlanCard";
 import Link from "next/link";
 import { navigationConfig } from "@/lib/config/navigation";
 
@@ -41,7 +42,7 @@ export default function Sidebar() {
         // by the navbar height, so a full viewport height would overhang the
         // bottom of the screen and push the scrollable nav out of reach.
         "border-r bg-background h-full flex flex-col transition-all duration-300",
-        isCollapsed ? "w-12" : "w-56",
+        isCollapsed ? "w-12" : "w-64",
       )}
     >
       <div className="py-2 px-1 flex items-center mt-2 justify-between gap-1">
@@ -70,7 +71,7 @@ export default function Sidebar() {
         </Button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-2">
+      <nav className="flex-1 overflow-y-auto px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="space-y-1">
           {navigationConfig.map((item) => {
             const isSectionActive = activeSectionFromUrl?.label === item.label;
@@ -98,6 +99,10 @@ export default function Sidebar() {
           })}
         </div>
       </nav>
+
+      {/* Pinned to the bottom of the flex column — the nav above is flex-1, so
+          the current plan always sits at the foot of the sidebar. */}
+      <SidebarPlanCard />
     </aside>
   );
 }

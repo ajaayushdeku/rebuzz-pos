@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { ROLE_COOKIE } from "@/lib/auth/roles";
+
 /**
  * Multi-account session store.
  *
@@ -68,6 +70,25 @@ export function setToken(res: NextResponse, token: string) {
 
 export function clearToken(res: NextResponse) {
   res.cookies.set(TOKEN_COOKIE, "", { ...cookieBase, maxAge: 0 });
+}
+
+/**
+ * Mirror the session's role into its own cookie.
+ *
+ * The token is opaque to us, so the middleware has no way to tell an admin's
+ * session from a staff one without asking the backend on every navigation.
+ * This cookie is that answer, cached. It is written only where the token is
+ * written, and cleared wherever the token is cleared, so the two cannot drift.
+ *
+ * It is a cache, not the authority: the layout re-checks the role against the
+ * profile endpoint, which is what catches a cookie somebody set by hand.
+ */
+export function setRole(res: NextResponse, role: string | undefined) {
+  res.cookies.set(ROLE_COOKIE, role ?? "", cookieBase);
+}
+
+export function clearRole(res: NextResponse) {
+  res.cookies.set(ROLE_COOKIE, "", { ...cookieBase, maxAge: 0 });
 }
 
 export function clearAccounts(res: NextResponse) {

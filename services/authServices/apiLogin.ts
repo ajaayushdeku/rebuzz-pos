@@ -8,7 +8,13 @@ type LoginPayload = {
 
 type ApiResult<T = unknown> =
   | { success: true; data: T }
-  | { success: false; error: string };
+  /**
+   * `forbidden` marks the one failure that is not about the credentials: the
+   * password was right and the account is simply not allowed in. The caller
+   * shows the reason on its own page rather than as a form error, so it is
+   * kept separate from `error` instead of being matched on wording.
+   */
+  | { success: false; error: string; forbidden?: boolean };
 
 const extractError = (data: {
   data: string | { message?: string } | Record<string, string>;
@@ -37,6 +43,7 @@ const loginUser = async (
       return {
         success: false,
         error: data?.error ?? data?.message,
+        forbidden: res.status === 403 && data?.forbidden === true,
         // `Request failed with status ${res.status}`,
       };
     }

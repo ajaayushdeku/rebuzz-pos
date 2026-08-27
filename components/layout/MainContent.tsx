@@ -14,7 +14,7 @@ export default function MainContent({
     <main
       className={cn(
         "pt-(--navbar-height) transition-all duration-300",
-        isCollapsed ? "md:pl-12" : "md:pl-56",
+        isCollapsed ? "md:pl-12" : "md:pl-64",
       )}
     >
       {children}

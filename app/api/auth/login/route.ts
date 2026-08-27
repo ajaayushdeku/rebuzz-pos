@@ -5,7 +5,9 @@ import {
   readAccounts,
   writeAccounts,
   upsertActiveAccount,
+  setRole,
 } from "@/lib/auth/accounts";
+import { isAdminRole } from "@/lib/auth/roles";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
@@ -40,10 +42,29 @@ export const POST = async (req: NextRequest) => {
       );
     }
 
+    // ── Role gate ──
+    //
+    // Checked before anything is written, so a non-admin leaves with no token
+    // cookie, no role cookie and no entry in the account switcher. The
+    // credentials were valid — the backend issued a token — but that token
+    // never reaches the browser, so there is nothing to block later.
+    if (!isAdminRole(responseLogin.data.role)) {
+      return NextResponse.json(
+        {
+          error: "This account is not allowed to use the POS.",
+          forbidden: true,
+          role: responseLogin.data.role,
+        },
+        { status: 403 },
+      );
+    }
+
     const response = NextResponse.json({
       ok: true,
       data: responseLogin.data,
     });
+
+    setRole(response, responseLogin.data.role);
 
     response.cookies.set("token", responseLogin.data.token, {
       httpOnly: true,

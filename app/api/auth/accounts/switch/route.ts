@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
-import { readAccounts, writeAccounts, setToken } from "@/lib/auth/accounts";
+import {
+  readAccounts,
+  writeAccounts,
+  setToken,
+  setRole,
+} from "@/lib/auth/accounts";
+import { isAdminRole } from "@/lib/auth/roles";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
@@ -12,6 +18,18 @@ export const POST = async (req: NextRequest) => {
 
   if (!target) {
     return NextResponse.json({ error: "Account not found" }, { status: 404 });
+  }
+
+  // Same gate as login. A saved account predating the role check, or one whose
+  // role changed since, must not become the active session.
+  if (!isAdminRole(target.role)) {
+    return NextResponse.json(
+      {
+        error: "This account is not allowed to use the POS.",
+        forbidden: true,
+      },
+      { status: 403 },
+    );
   }
 
   // Validate the saved token before switching. A stored token may have expired
@@ -38,6 +56,7 @@ export const POST = async (req: NextRequest) => {
   const res = NextResponse.json({ ok: true, id: target.id });
   // Copy the chosen account's saved token into the active `token` cookie.
   setToken(res, target.token);
+  setRole(res, target.role);
   // Persist any refreshed business name alongside the new active account.
   const accounts = store.accounts.map((a) =>
     a.id === target.id ? { ...a, businessName } : a,

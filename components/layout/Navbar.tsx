@@ -22,7 +22,7 @@ export default function Navbar() {
           <MobileButton />
           <Link
             href="/"
-            className="text-xl px-3 font-bold tracking-tight text-blue-600 transition-opacity hover:opacity-80 flex flex-row items-center gap-2"
+            className="text-xl px-3 font-bold tracking-tight text-blue-600 transition-opacity hover:opacity-80 flex flex-row items-center gap-1"
           >
             <Image
               src="/rebuzz.png"
@@ -31,8 +31,9 @@ export default function Navbar() {
               height={32}
               className="rounded-lg"
             />
-            <span className="text-gray-900 text-lg font-bold tracking-tight">
-              ReBuzz
+            <span className="text-lg font-bold tracking-tight">
+              <span style={{ color: "#244074" }}>Re</span>
+              <span style={{ color: "#E26924" }}>Buzz</span>
             </span>
           </Link>
           <ServerEnvBadge className="hidden sm:inline-flex" />

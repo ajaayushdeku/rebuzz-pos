@@ -23,7 +23,11 @@ export const sendResetToken = async (
     if (!res.ok) {
       return {
         success: false,
-        error: data?.error ?? data?.message ?? "Failed to send reset email",
+        error:
+          data?.error ??
+          data?.message ??
+          data.data.user ??
+          "Failed to send reset email",
       };
     }
 
@@ -35,6 +39,7 @@ export const sendResetToken = async (
           data?.data?.message ??
           data?.data ??
           data?.message ??
+          data.data.user ??
           "Failed to send reset email",
       };
     }

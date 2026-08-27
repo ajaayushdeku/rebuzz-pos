@@ -10,7 +10,12 @@ const nextConfig: NextConfig = {
   },
   images: {
     deviceSizes: [640, 768, 1024, 1280],
-    formats: ["image/avif", "image/webp"],
+    // WebP only. AVIF encoding never completes here — a single 34px logo
+    // variant hung for minutes, so every <Image> that had no cached variant
+    // yet rendered blank while the browser waited on it. WebP encodes the
+    // same file in well under a second and every browser that takes AVIF
+    // takes WebP too, so the fallback costs a few kilobytes, not support.
+    formats: ["image/webp"],
     remotePatterns: [
       {
         protocol: "https",

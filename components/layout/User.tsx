@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -86,6 +87,14 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
       if (json?.expired) {
         const email = encodeURIComponent(json.label ?? "");
         window.location.assign(`/login?add=1&email=${email}`);
+        return;
+      }
+
+      // Refused for its role. The switch is a no-op, so say why rather than
+      // leaving the menu looking like the click missed.
+      if (json?.forbidden) {
+        toast.error(json.error ?? "That account cannot use the POS.");
+        setBusyId(null);
         return;
       }
 

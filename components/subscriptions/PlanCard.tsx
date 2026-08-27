@@ -1,21 +1,24 @@
 "use client";
 
 import { useId, useState } from "react";
-import { Check, Printer } from "lucide-react";
+import {
+  Check,
+  Crown,
+  Gem,
+  Leaf,
+  Printer,
+  type LucideIcon,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { PRINTER_FEATURE, type Plan } from "@/lib/config/plans";
+import { PRINTER_FEATURE, type Plan, type PlanId } from "@/lib/config/plans";
 
-/**
- * One plan.
- *
- * Hiding below `md` is done in CSS rather than by rendering conditionally, so
- * the three cards are always in the DOM: a resize then has nothing to mount,
- * and neither the tab state nor a printer toggle has to survive a remount.
- *
- * The highlight is `md:` only. On a narrow screen the selected card is the
- * only one shown, so ringing it would be marking the obvious.
- */
+const PLAN_ICONS: Record<PlanId, LucideIcon> = {
+  free: Leaf,
+  yearly: Gem,
+  lifetime: Crown,
+};
+
 export default function PlanCard({
   plan,
   isSelected,
@@ -24,21 +27,20 @@ export default function PlanCard({
 }: {
   plan: Plan;
   isSelected: boolean;
-  /** The plan the business is on today; its button is inert. */
   isCurrent: boolean;
   onChoose: (plan: Plan, withPrinter: boolean) => void;
 }) {
   const printerLabelId = useId();
   const [withPrinter, setWithPrinter] = useState(false);
 
-  // The toggle only means anything on a plan that offers the bundle, so a
-  // stale `true` on a plan without one can never leak into the feature list.
   const addon = plan.printerAddon;
   const printerOn = Boolean(addon) && withPrinter;
 
   const features = printerOn
     ? [...plan.features, PRINTER_FEATURE]
     : plan.features;
+
+  const PlanIcon = PLAN_ICONS[plan.id] ?? Gem;
 
   return (
     <div
@@ -57,14 +59,22 @@ export default function PlanCard({
           </span>
         ) : null}
 
-        <h2 className="text-xl font-bold text-gray-900">{plan.name}</h2>
-        <p className="mt-0.5 text-xs text-gray-500">{plan.tagline}</p>
+        <div className="flex items-center gap-3 ">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+            <PlanIcon className="h-5 w-5" />
+          </span>
+
+          <div className="min-w-0 ">
+            <h2 className="truncate text-xl font-bold text-gray-900">
+              {plan.name}
+            </h2>
+            <p className="w-full mt-0.5 text-xs text-gray-500">
+              {plan.tagline}
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Price. The old figure is set at the same size as the period beside
-          it, so the discount reads as a footnote to the price rather than
-          competing with it. `items-baseline` keeps all three sitting on one
-          line however much they differ in size. */}
       <div className="mb-5 flex flex-wrap items-baseline gap-x-2 gap-y-1.5">
         <span className="text-3xl font-bold text-gray-900">{plan.price}</span>
 
@@ -83,10 +93,6 @@ export default function PlanCard({
         ) : null}
       </div>
 
-      {/* Printer bundle — shown only on the plan whose tab is selected, so the
-          toggle never appears twice (once for Yearly and again for Lifetime).
-          It sits directly under the list, so switching it on adds its line
-          immediately above the toggle that added it. */}
       {addon && isSelected ? (
         <div
           className={cn(
@@ -149,8 +155,6 @@ export default function PlanCard({
         What&lsquo;s included
       </span>
 
-      {/* flex-1 pushes everything below to the bottom, so the buttons line up
-          across the row even when the feature lists differ in length. */}
       <ul className="mb-4 flex-1 space-y-2.5">
         {features.map((feature) => (
           <li key={feature} className="flex items-start gap-2">

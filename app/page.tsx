@@ -158,7 +158,7 @@ const Page = async () => {
     <div className="min-h-screen bg-white">
       {/* ── Navbar ── */}
       <nav className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-100 px-6 md:px-16 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <Image
             src="/rebuzz.png"
             alt="ReBuzz Logo"
@@ -166,8 +166,9 @@ const Page = async () => {
             height={32}
             className="rounded-lg"
           />
-          <span className="text-gray-900 text-lg font-bold tracking-tight">
-            ReBuzz
+          <span className="text-lg font-bold tracking-tight">
+            <span style={{ color: "#244074" }}>Re</span>
+            <span style={{ color: "#E26924" }}>Buzz</span>
           </span>
           <ServerEnvBadge className="ml-1" />
         </div>

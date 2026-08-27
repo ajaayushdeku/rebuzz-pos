@@ -4,9 +4,9 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 
 import { PLANS, type Plan, type PlanId } from "@/lib/config/plans";
-import PlanTabs from "@/components/subscription/PlanTabs";
-import PlanCard from "@/components/subscription/PlanCard";
-import PlanFaq from "@/components/subscription/PlanFaq";
+import PlanTabs from "@/components/subscriptions/PlanTabs";
+import PlanCard from "@/components/subscriptions/PlanCard";
+import PlanFaq from "@/components/subscriptions/PlanFaq";
 
 /**
  * The plan the business is on today.

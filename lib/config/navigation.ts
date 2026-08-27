@@ -169,8 +169,8 @@ export const navigationConfig: NavigationItem[] = [
   // than about running the shop.
   {
     type: "single",
-    label: "Subscription",
+    label: "Subscriptions",
     icon: Gem,
-    href: "/subscription",
+    href: "/subscriptions",
   },
 ];
