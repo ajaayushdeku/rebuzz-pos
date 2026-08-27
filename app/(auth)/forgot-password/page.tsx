@@ -276,7 +276,7 @@ export default function ForgotPasswordPage() {
       <main className="relative flex flex-1 justify-center mt-12 px-6 pb-14">
         <div className="w-full max-w-3xl">
           {/* ═══════ STEP 1: Email ═══════ */}
-          {step === "reset" && (
+          {step === "email" && (
             <>
               <StepRail current={1} />
 
@@ -355,7 +355,7 @@ export default function ForgotPasswordPage() {
           )}
 
           {/* ═══════ STEP 2: OTP + New Password ═══════ */}
-          {step === "done" && (
+          {step === "reset" && (
             <>
               <StepRail current={2} />
 
@@ -564,7 +564,7 @@ export default function ForgotPasswordPage() {
           )}
 
           {/* ═══════ STEP 3: Done ═══════ */}
-          {step === "email" && (
+          {step === "done" && (
             <>
               <StepRail current={3} tone="green" />
 
