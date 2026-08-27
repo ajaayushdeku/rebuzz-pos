@@ -23,6 +23,7 @@ import {
   Award,
   ScanEye,
   Coins,
+  Gem,
   Landmark,
   PieChart,
   Wallet,
@@ -162,5 +163,14 @@ export const navigationConfig: NavigationItem[] = [
     label: "Receipt AI",
     icon: ScanEye,
     href: "/bizexpense",
+  },
+
+  // Last on purpose: it is the one item here that is about the account rather
+  // than about running the shop.
+  {
+    type: "single",
+    label: "Subscription",
+    icon: Gem,
+    href: "/subscription",
   },
 ];
