@@ -161,6 +161,56 @@ export function resolvePlanId(subscriptionType?: string | null): PlanId | null {
   return null;
 }
 
+/**
+ * The colour family for a plan.
+ *
+ * Split out from `planBadge` so the sidebar card and the navbar badge cannot
+ * disagree about what a tier looks like — both branch on the same
+ * `resolvePlanId`, and an unrecognised value gets the same treatment in both.
+ * The badge needs pill classes and the card needs a tile and a bare icon
+ * colour, which is the only reason these are two functions rather than one.
+ */
+export function planTone(subscriptionType?: string | null): {
+  /** Icon tile: fill and icon colour together. */
+  tile: string;
+  /** Icon colour alone, plus its hover, for the collapsed rail. */
+  icon: string;
+} {
+  const raw = (subscriptionType ?? "").trim();
+
+  switch (resolvePlanId(raw)) {
+    case "lifetime":
+      return {
+        tile: "bg-amber-100 text-amber-700",
+        icon: "text-amber-600 hover:bg-amber-100 hover:text-amber-700",
+      };
+    case "yearly":
+      return {
+        tile: "bg-blue-100 text-blue-700",
+        icon: "text-blue-500 hover:bg-blue-100 hover:text-blue-600",
+      };
+    case "free":
+      return {
+        tile: "bg-gray-100 text-gray-600",
+        icon: "text-gray-500 hover:bg-gray-100 hover:text-gray-700",
+      };
+  }
+
+  // Nothing recorded is the free tier, exactly as the badge reads it.
+  if (!raw) {
+    return {
+      tile: "bg-gray-100 text-gray-600",
+      icon: "text-gray-500 hover:bg-gray-100 hover:text-gray-700",
+    };
+  }
+
+  // A plan the backend added since — the badge's cyan.
+  return {
+    tile: "bg-blue-100 text-cyan-700",
+    icon: "text-cyan-600 hover:bg-blue-100 hover:text-cyan-700",
+  };
+}
+
 export function planBadge(subscriptionType?: string | null): {
   label: string;
   /** Tailwind classes for the badge, keyed to how much the plan is worth. */

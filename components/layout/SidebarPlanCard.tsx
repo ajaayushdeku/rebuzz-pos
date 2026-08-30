@@ -3,7 +3,12 @@
 import Link from "next/link";
 import { Crown, Gem, Leaf, type LucideIcon } from "lucide-react";
 
-import { findPlan, resolvePlanId, type PlanId } from "@/lib/config/plans";
+import {
+  findPlan,
+  planTone,
+  resolvePlanId,
+  type PlanId,
+} from "@/lib/config/plans";
 import { useSubscriptionType } from "@/hooks/useSubscriptionType";
 import { useSidebar } from "@/providers/SidebarProvider";
 
@@ -30,6 +35,9 @@ export default function SidebarPlanCard() {
    */
   const name = plan?.name ?? (subscriptionType?.trim() || "Free");
   const Icon = planId ? PLAN_ICONS[planId] : Gem;
+
+  // Same colour the navbar badge gives this plan.
+  const tone = planTone(subscriptionType);
 
   /**
    * Nothing is claimed until the answer is in.
@@ -70,7 +78,7 @@ export default function SidebarPlanCard() {
         href="/subscriptions"
         title={`Current plan: ${name}`}
         aria-label={`Current plan: ${name}`}
-        className="mb-2 mx-auto flex h-8 w-8 items-center justify-center rounded-md text-blue-500 transition-colors hover:bg-blue-100 hover:text-blue-600"
+        className={`mb-2 mx-auto flex h-8 w-8 items-center justify-center rounded-md transition-colors ${tone.icon}`}
       >
         <Icon className="h-4 w-4 shrink-0" />
       </Link>
@@ -78,33 +86,39 @@ export default function SidebarPlanCard() {
   }
 
   return (
-    <div className="px-2 pb-2">
+    <div>
       <Link
         href="/subscriptions"
         onClick={closeMobile}
-        className="block rounded-lg border border-gray-200 bg-white p-2.5 transition-colors hover:border-blue-300 hover:bg-blue-50/60"
+        className="block  border-t border-gray-200 bg-white py-2.5 pl-3 transition-colors hover:border-blue-300 hover:bg-blue-50/60"
       >
-        <div className="flex items-center gap-2.5">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-50 text-blue-600">
-            <Icon className="h-4 w-4" />
+        <div className="flex items-center gap-3.5">
+          <span
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${tone.tile}`}
+          >
+            <Icon size={24} />
           </span>
 
           <span className="min-w-0">
             <span className="block text-[10px] font-semibold uppercase tracking-wide text-gray-400">
               Current plan
             </span>
-            <span className="block truncate text-sm font-semibold text-gray-900">
+            <span className="block flex flex-col gap-0 truncate text-sm font-semibold text-gray-900">
               {name}
+              {/* A lifetime plan has nothing to upgrade to, but the card
+                  still links somewhere worth going — so it says what the link
+                  does rather than vanishing and leaving the row looking
+                  truncated. */}
+              <p
+                className={`text-left text-[11px] font-medium ${planId === "lifetime" ? "text-amber-700" : "text-blue-600"} hover:underline `}
+              >
+                {planId === "lifetime"
+                  ? "View plan details"
+                  : "View plans & upgrade"}
+              </p>
             </span>
           </span>
         </div>
-
-        {/* Only a plan that can still be upgraded says so. */}
-        {planId !== "lifetime" && (
-          <p className="mt-2 text-[11px] font-medium text-blue-600">
-            View plans &amp; upgrade
-          </p>
-        )}
       </Link>
     </div>
   );
