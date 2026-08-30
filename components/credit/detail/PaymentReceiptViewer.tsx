@@ -116,7 +116,7 @@ export default function PaymentReceiptViewer({
       <div className="relative flex items-center justify-between gap-2 border-b border-gray-200 bg-blue-100 px-5 py-3 print:hidden">
         <div className="flex flex-col items-start gap-1 text-[11px] text-gray-400">
           <span className="font-medium text-blue-600">RECEIPT</span>
-          <span className="hidden lg:inline-block">
+          <span className="hidden lg:inline-block text-blue-500">
             Payment {context.index} of {context.total} on invoice #
             {credit.invoiceNo}
           </span>
@@ -150,19 +150,16 @@ export default function PaymentReceiptViewer({
             onClick={() => router.push(backHref)}
             className="shrink-0 cursor-pointer rounded-2xl border-[3px] border-blue-200 px-3 py-1.5 bg-blue-50 items-center justify-center text-sm font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:text-blue-700 cursor-pointer"
           >
-            Go back to {credit.ticketName || `Invoice #${credit.invoiceNo}`}
+            Back to{" "}
+            {credit.ticketName
+              ? `${credit.ticketName} #${credit.invoiceNo}`
+              : `Invoice #${credit.invoiceNo}`}
           </button>
         </div>
       </div>
 
       {/* Canvas */}
       <div className="flex flex-col items-center justify-center overflow-x-auto bg-blue-50 py-6">
-        {/* The receipt itself, centred and no wider than the card it draws.
-            The border belongs to the document, so this frame carries only the
-            shadow — two nested outlines would read as a card inside a card.
-            Width is a max, not a fixed size, so it shrinks on a phone rather
-            than forcing a sideways scroll; there is no device toggle here to
-            fall back on. */}
         <div
           className="mb-6 w-full overflow-hidden rounded-md "
           style={{ maxWidth: `${RECEIPT_CARD_WIDTH_PX}px` }}
