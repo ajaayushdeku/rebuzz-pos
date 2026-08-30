@@ -962,7 +962,7 @@ export default function InvoicePreview({
       {/* Preview header */}
       <div className=" relative bg-blue-100 border-b border-gray-200 px-5 py-3 flex items-center justify-between gap-2 print:hidden">
         <div className="flex flex-col items-left gap-1 text-[11px] text-gray-400">
-          <span className="font-medium text-gray-500">PREVIEW MODE</span>
+          <span className="font-medium text-blue-500">PREVIEW MODE</span>
 
           <span className="hidden lg:inline-block">
             You are previewing how your customer will see this invoice.
