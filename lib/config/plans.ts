@@ -134,35 +134,60 @@ export const PLANS: Plan[] = [
  * than being flattened to "Free" — a business paying for something should
  * never see a badge saying otherwise.
  */
-export function planBadge(subscriptionType?: string | null): {
-  label: string;
-  /** Tailwind classes for the badge, keyed to how much the plan is worth. */
-  className: string;
-} {
-  const raw = (subscriptionType ?? "").trim();
-  const lower = raw.toLowerCase();
+/**
+ * Which plan an API `subscriptionType` means.
+ *
+ * The matching is loose because this app does not own the value: "annual",
+ * "yearly" and "1_YEAR" are the same plan. Returns null when nothing is
+ * recorded or the value is one nobody here anticipated — callers must decide
+ * what to do with that rather than being handed a confident "free", which
+ * would tell a paying business it is on the free tier.
+ */
+export function resolvePlanId(subscriptionType?: string | null): PlanId | null {
+  const lower = (subscriptionType ?? "").trim().toLowerCase();
+  if (!lower) return null;
 
-  if (lower.includes("life") || lower.includes("perm")) {
-    return {
-      label: "LIFETIME",
-      className: "bg-amber-100 text-amber-700 hover:bg-amber-100",
-    };
-  }
-
+  if (lower.includes("life") || lower.includes("perm")) return "lifetime";
   if (
     lower.includes("year") ||
     lower.includes("annual") ||
     lower.includes("premium") ||
     lower.includes("pro")
   ) {
-    return {
-      label: "YEARLY",
-      className: "bg-blue-100 text-blue-700 hover:bg-blue-100",
-    };
+    return "yearly";
+  }
+  if (lower.includes("free") || lower.includes("starter")) return "free";
+
+  return null;
+}
+
+export function planBadge(subscriptionType?: string | null): {
+  label: string;
+  /** Tailwind classes for the badge, keyed to how much the plan is worth. */
+  className: string;
+} {
+  const raw = (subscriptionType ?? "").trim();
+
+  switch (resolvePlanId(raw)) {
+    case "lifetime":
+      return {
+        label: "LIFETIME",
+        className: "bg-amber-100 text-amber-700 hover:bg-amber-100",
+      };
+    case "yearly":
+      return {
+        label: "YEARLY",
+        className: "bg-blue-100 text-blue-700 hover:bg-blue-100",
+      };
+    case "free":
+      return {
+        label: "STARTER",
+        className: "bg-gray-100 text-gray-600 hover:bg-gray-100",
+      };
   }
 
-  // No plan recorded, or one that plainly says free. Both are the free tier.
-  if (!raw || lower.includes("free") || lower.includes("starter")) {
+  // Nothing recorded at all is the free tier.
+  if (!raw) {
     return {
       label: "STARTER",
       className: "bg-gray-100 text-gray-600 hover:bg-gray-100",

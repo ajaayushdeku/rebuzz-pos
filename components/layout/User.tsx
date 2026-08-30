@@ -28,6 +28,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "../ui/badge";
 import { planBadge } from "@/lib/config/plans";
+import { useSubscriptionType } from "@/hooks/useSubscriptionType";
 
 interface UserProps {
   initialBusinessName: string;
@@ -59,25 +60,8 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
   const [busyId, setBusyId] = useState<string | null>(null); // switching/removing
   const [loggingOut, setLoggingOut] = useState(false);
 
-  /**
-   * The plan the badge names.
-   *
-   * Read from the profile rather than the login response: the login payload is
-   * only as fresh as the last sign-in, so a business that upgraded mid-session
-   * would keep seeing its old tier until it logged out.
-   */
-  const { data: subscriptionType } = useQuery({
-    queryKey: ["profile-subscription"],
-    queryFn: async () => {
-      const res = await fetch("/api/profile");
-      if (!res.ok) return null;
-      const json = await res.json();
-      const value = json?.data?.user?.subscriptionType;
-      return typeof value === "string" ? value : null;
-    },
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
-  });
+  // Shared with the sidebar plan card — see `useSubscriptionType`.
+  const { subscriptionType } = useSubscriptionType();
 
   const plan = planBadge(subscriptionType);
 
