@@ -13,6 +13,8 @@ import {
   ChevronDown,
   Circle,
   CreditCard,
+  Eye,
+  EyeOff,
   FileText,
   Mail,
   Plus,
@@ -76,6 +78,8 @@ const InvoiceDetailPage = () => {
     "proforma" | "invoice" | "tax"
   >("proforma");
 
+  // Whether the business PAN shows on the previewed documents.
+  const [showPan, setShowPan] = useState(true);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isSendInvoiceModalOpen, setIsSendInvoiceModalOpen] = useState(false);
   const [isExportPdfOpen, setIsExportPdfOpen] = useState(false);
@@ -130,8 +134,7 @@ const InvoiceDetailPage = () => {
     queryKey: ["customer-lookup", invoice?.customerEmail, invoice?.phoneNumber],
     queryFn: async () => {
       const creditUser = creditForInvoice?.user as
-        | { phone?: string }
-        | undefined;
+        { phone?: string } | undefined;
       const identifier =
         invoice?.customerEmail || creditUser?.phone || invoice?.phoneNumber;
       if (!identifier) return null;
@@ -580,6 +583,26 @@ const InvoiceDetailPage = () => {
               <Circle size={6} className="fill-red-400" /> OFF
             </span>
           </div>
+
+          {/* Sits left of More actions because it changes what the preview
+              shows rather than doing something to the invoice. Pressed = the
+              PAN is on the document, which is the default. */}
+          <button
+            type="button"
+            onClick={() => setShowPan((on) => !on)}
+            aria-pressed={showPan}
+            title={
+              showPan ? "Hide PAN on the document" : "Show PAN on the document"
+            }
+            className={`flex items-center gap-1.5 rounded-full border px-2 sm:px-3 py-1.5 text-xs font-semibold transition-colors ${
+              showPan
+                ? "border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100"
+                : "border-gray-200 text-gray-500 hover:bg-gray-50"
+            }`}
+          >
+            {showPan ? <Eye size={15} /> : <EyeOff size={15} />}
+            <span className="hidden lg:inline">PAN</span>
+          </button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -1305,6 +1328,7 @@ const InvoiceDetailPage = () => {
               customerProfile={customerProfile}
               businessProfile={business}
               billData={displayBillData}
+              showPan={showPan}
               payments={creditDetail?.paymentHistory}
               credit={
                 creditForInvoice
@@ -1339,6 +1363,7 @@ const InvoiceDetailPage = () => {
               customerProfile={customerProfile}
               businessProfile={business}
               billData={displayBillData}
+              showPan={showPan}
               payments={creditDetail?.paymentHistory}
               credit={
                 creditForInvoice
@@ -1371,6 +1396,7 @@ const InvoiceDetailPage = () => {
               customerProfile={customerProfile}
               businessProfile={business}
               billData={displayBillData}
+              showPan={showPan}
               payments={creditDetail?.paymentHistory}
               credit={
                 creditForInvoice

@@ -73,9 +73,11 @@ export default function SidebarPlanCard() {
           </span>
         </div>
 
-        <p className="mt-2 text-[11px] font-medium text-blue-600">
-          View plans &amp; upgrade
-        </p>
+        {plan.name !== "Lifetime" && (
+          <p className="mt-2 text-[11px] font-medium text-blue-600">
+            View plans &amp; upgrade
+          </p>
+        )}
       </Link>
     </div>
   );

@@ -86,6 +86,7 @@ export default function CreditInvoiceDocument({
   documentRef,
   minHeightPx = 1200,
   isMobile = false,
+  showPan = true,
 }: {
   type: CreditDocumentType;
   credit: Credit;
@@ -103,6 +104,14 @@ export default function CreditInvoiceDocument({
   documentRef?: React.RefObject<HTMLDivElement | null>;
   minHeightPx?: number;
   isMobile?: boolean;
+  /**
+   * Whether the business PAN is printed in the header.
+   *
+   * On by default: a tax document that quietly dropped its registration number
+   * would be the wrong thing to ship silently. The detail pages turn it off for
+   * businesses that would rather not show it.
+   */
+  showPan?: boolean;
 }) {
   const { currency } = useCurrency();
   const fmt = (v: number) =>
@@ -372,9 +381,11 @@ export default function CreditInvoiceDocument({
           <p className="text-base mt-1">
             {businessProfile?.address || "Nepal"}
           </p>
-          <p className="text-sm mt-1 text-black-600">
-            PAN: {businessProfile?.panNumber || "609699393"}
-          </p>
+          {showPan ? (
+            <p className="text-sm mt-1 text-black-600">
+              PAN: {businessProfile?.panNumber || "609699393"}
+            </p>
+          ) : null}
         </div>
       </div>
 

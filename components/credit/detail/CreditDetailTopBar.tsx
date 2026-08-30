@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ChevronDown, FileText } from "lucide-react";
+import { ArrowLeft, ChevronDown, Eye, EyeOff, FileText } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -36,6 +36,8 @@ export default function CreditDetailTopBar({
   onPrint,
   onOpenInvoice,
   onDeleteCredit,
+  showPan,
+  onTogglePan,
 }: {
   invoiceName?: string;
   invoiceNo: number | undefined;
@@ -51,6 +53,9 @@ export default function CreditDetailTopBar({
   onOpenInvoice: () => void;
   /** Absent once archived — a credit archives only once. */
   onDeleteCredit?: () => void;
+  /** Whether the business PAN is currently printed on the documents. */
+  showPan: boolean;
+  onTogglePan: () => void;
 }) {
   return (
     <div className="sticky top-0 z-30 bg-white border-b border-gray-200 px-6 md:px-10 py-4 pt-6 flex items-center justify-between">
@@ -77,6 +82,26 @@ export default function CreditDetailTopBar({
       </div>
 
       <div className="flex items-center gap-2">
+        {/* Sits left of More actions because it changes what the preview
+            shows rather than doing something to the invoice. Pressed = the PAN
+            is on the document, which is the default. */}
+        <button
+          type="button"
+          onClick={onTogglePan}
+          aria-pressed={showPan}
+          title={
+            showPan ? "Hide PAN on the document" : "Show PAN on the document"
+          }
+          className={`flex items-center gap-1.5 rounded-full border px-2 sm:px-3 py-1.5 text-xs font-semibold transition-colors ${
+            showPan
+              ? "border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100"
+              : "border-gray-200 text-gray-500 hover:bg-gray-50"
+          }`}
+        >
+          {showPan ? <Eye size={15} /> : <EyeOff size={15} />}
+          <span className="hidden lg:inline">PAN</span>
+        </button>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-1.5 border border-gray-200 rounded-full px-2 sm:px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">

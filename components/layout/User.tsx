@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "../ui/badge";
+import { planBadge } from "@/lib/config/plans";
 
 interface UserProps {
   initialBusinessName: string;
@@ -57,6 +58,28 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
   const queryClient = useQueryClient();
   const [busyId, setBusyId] = useState<string | null>(null); // switching/removing
   const [loggingOut, setLoggingOut] = useState(false);
+
+  /**
+   * The plan the badge names.
+   *
+   * Read from the profile rather than the login response: the login payload is
+   * only as fresh as the last sign-in, so a business that upgraded mid-session
+   * would keep seeing its old tier until it logged out.
+   */
+  const { data: subscriptionType } = useQuery({
+    queryKey: ["profile-subscription"],
+    queryFn: async () => {
+      const res = await fetch("/api/profile");
+      if (!res.ok) return null;
+      const json = await res.json();
+      const value = json?.data?.user?.subscriptionType;
+      return typeof value === "string" ? value : null;
+    },
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  const plan = planBadge(subscriptionType);
 
   const { data: accounts = [] } = useQuery<Account[]>({
     queryKey: ["auth-accounts"],
@@ -156,7 +179,7 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
   };
 
   return (
-    <div className="bg-blue-100 rounded-xl p-0.5">
+    <div className="border border-[3px] border-blue-100 bg-blue-100/30 rounded-xl p-0.5">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -164,12 +187,12 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
             className="flex items-center gap-2 md:px-2 px-1"
           >
             {businessLogo ? (
-              <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 border border-gray-200">
+              <div className="w-8 h-8 rounded-full overflow-hidden bg-white shrink-0 border border-blue-200">
                 <Image
                   src={businessLogo}
                   alt="Business logo"
-                  width={28}
-                  height={28}
+                  width={30}
+                  height={30}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -181,8 +204,11 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
             <span className="font-medium text-gray-600">
               {initialBusinessName}{" "}
             </span>
-            <Badge variant="secondary" className="hidden md:block">
-              STARTER
+            <Badge
+              variant="secondary"
+              className={`hidden md:block ${plan.className}`}
+            >
+              {plan.label}
             </Badge>
             <ChevronDown className="h-4 w-4 text-gray-600" />
           </Button>

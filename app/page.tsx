@@ -95,6 +95,7 @@ import {
   Zap,
 } from "lucide-react";
 import NavbarWelcome from "@/components/NavbarWelcome";
+import HomeUserMenu from "@/components/HomeUserMenu";
 import ServerEnvBadge from "@/components/ServerEnvBadge";
 
 const FEATURES = [
@@ -185,6 +186,11 @@ const Page = async () => {
                 <ArrowRight size={14} />
               </Link>
             </Button>
+
+            {/* Rightmost, as it is in the app navbar — switching account or
+                signing out is the last thing in the row, not something to
+                reach past the primary action for. */}
+            <HomeUserMenu />
           </div>
         ) : (
           <div className="flex items-center gap-2 md:gap-3">

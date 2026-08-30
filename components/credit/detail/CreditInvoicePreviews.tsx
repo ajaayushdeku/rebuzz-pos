@@ -30,6 +30,7 @@ export default function CreditInvoicePreviews({
   businessProfile,
   customerProfile,
   billData,
+  showPan = true,
 }: {
   credit: Credit;
   items: CreditItem[];
@@ -37,6 +38,8 @@ export default function CreditInvoicePreviews({
   businessProfile?: CreditDocumentBusiness | null;
   customerProfile?: CreditDocumentCustomer | null;
   billData?: Transaction | null;
+  /** Passed straight through to each document's header. */
+  showPan?: boolean;
 }) {
   const [documentType, setDocumentType] =
     useState<CreditDocumentType>("proforma");
@@ -124,6 +127,7 @@ export default function CreditInvoicePreviews({
             businessProfile={businessProfile}
             customerProfile={customerProfile}
             billData={billData}
+            showPan={showPan}
           />
         </div>
       ))}

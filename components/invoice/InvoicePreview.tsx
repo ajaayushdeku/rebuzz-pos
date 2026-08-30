@@ -84,6 +84,14 @@ interface InvoicePreviewProps {
       email: string;
     };
   } | null;
+  /**
+   * Whether the business PAN is printed in the header.
+   *
+   * On by default: a tax document that quietly dropped its registration number
+   * would be the wrong thing to ship silently. The detail pages turn it off for
+   * businesses that would rather not show it.
+   */
+  showPan?: boolean;
   /** Renders the interactive preview chrome with a Desktop/Mobile toggle.
    *  Off by default so PDF/print/public rendering keep the raw document only. */
   withControls?: boolean;
@@ -113,6 +121,7 @@ function InvoiceContent({
   credit,
   isMobile,
   minHeightPx = 1200,
+  showPan = true,
 }: {
   type: InvoiceType;
   invoice: InvoiceData;
@@ -133,6 +142,7 @@ function InvoiceContent({
   } | null;
   isMobile: boolean;
   minHeightPx?: number;
+  showPan?: boolean;
 }) {
   const { currency } = useCurrency();
 
@@ -524,9 +534,11 @@ function InvoiceContent({
             {businessProfile?.address || "Nepal"}
           </p>
 
-          <p className="text-sm mt-1 text-black-600">
-            PAN: {businessProfile?.panNumber || "609699393"}
-          </p>
+          {showPan ? (
+            <p className="text-sm mt-1 text-black-600">
+              PAN: {businessProfile?.panNumber || "609699393"}
+            </p>
+          ) : null}
         </div>
       </div>
 
@@ -783,6 +795,7 @@ export default function InvoicePreview({
   withControls = false,
   fluid = false,
   minHeightPx,
+  showPan = true,
 }: InvoicePreviewProps) {
   const router = useRouter();
   const [previewMode, setPreviewMode] = useState<PreviewMode>("desktop");
@@ -805,6 +818,7 @@ export default function InvoicePreview({
       credit={credit}
       isMobile={withControls ? isMobile : false}
       minHeightPx={minHeightPx}
+      showPan={showPan}
     />
   );
 

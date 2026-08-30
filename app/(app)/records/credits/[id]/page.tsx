@@ -62,6 +62,9 @@ export default function CreditDetailPage() {
   const { data: business } = useBusiness();
 
   const [isSendInvoiceOpen, setIsSendInvoiceOpen] = useState(false);
+  // Whether the business PAN shows on the previewed documents. Kept on the
+  // page rather than in the top bar so the previews below can read it too.
+  const [showPan, setShowPan] = useState(true);
   const [isEmailInvoiceOpen, setIsEmailInvoiceOpen] = useState(false);
   // The payment whose receipt is being sent. Holding the payment rather
   // than a boolean is what makes the receipt specific to the row clicked.
@@ -292,6 +295,8 @@ export default function CreditDetailPage() {
             ? undefined
             : () => router.push(`/invoices/${invoiceNo}/edit`)
         }
+        showPan={showPan}
+        onTogglePan={() => setShowPan((on) => !on)}
         onPreviewAsCustomer={() => setIsCustomerPreviewOpen(true)}
         onExportPdf={() => setIsExportPdfOpen(true)}
         onPrint={() => setIsPrintOpen(true)}
@@ -348,6 +353,7 @@ export default function CreditDetailPage() {
             businessProfile={business}
             customerProfile={customerProfile}
             billData={billData ?? null}
+            showPan={showPan}
           />
         </div>
       </div>

@@ -125,6 +125,57 @@ export const PLANS: Plan[] = [
   },
 ];
 
+/**
+ * What the navbar badge shows for a subscription.
+ *
+ * The API's `subscriptionType` is a free-form string and this app does not own
+ * it, so the match is deliberately loose: "annual", "yearly" and "1_YEAR" all
+ * mean the same plan, and a value nobody anticipated is shown as-is rather
+ * than being flattened to "Free" — a business paying for something should
+ * never see a badge saying otherwise.
+ */
+export function planBadge(subscriptionType?: string | null): {
+  label: string;
+  /** Tailwind classes for the badge, keyed to how much the plan is worth. */
+  className: string;
+} {
+  const raw = (subscriptionType ?? "").trim();
+  const lower = raw.toLowerCase();
+
+  if (lower.includes("life") || lower.includes("perm")) {
+    return {
+      label: "LIFETIME",
+      className: "bg-amber-100 text-amber-700 hover:bg-amber-100",
+    };
+  }
+
+  if (
+    lower.includes("year") ||
+    lower.includes("annual") ||
+    lower.includes("premium") ||
+    lower.includes("pro")
+  ) {
+    return {
+      label: "YEARLY",
+      className: "bg-blue-100 text-blue-700 hover:bg-blue-100",
+    };
+  }
+
+  // No plan recorded, or one that plainly says free. Both are the free tier.
+  if (!raw || lower.includes("free") || lower.includes("starter")) {
+    return {
+      label: "STARTER",
+      className: "bg-gray-100 text-gray-600 hover:bg-gray-100",
+    };
+  }
+
+  // Something the backend added since. Show it rather than guess.
+  return {
+    label: raw.toUpperCase(),
+    className: "bg-blue-100 text-cyan-700 hover:bg-blue-100",
+  };
+}
+
 export const findPlan = (id: PlanId): Plan | undefined =>
   PLANS.find((p) => p.id === id);
 
