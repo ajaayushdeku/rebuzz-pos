@@ -370,6 +370,7 @@ export default function CreditDetailPage() {
         businessProfile={business}
         customerProfile={customerProfile}
         billData={billData ?? null}
+        showPan={showPan}
       />
 
       {/* The receipt attaches the credit's own document — the invoice modal
@@ -395,6 +396,7 @@ export default function CreditDetailPage() {
         businessProfile={business}
         customerProfile={customerProfile}
         billData={billData ?? null}
+        showPan={showPan}
       />
 
       <SendReminderModal
@@ -461,6 +463,7 @@ export default function CreditDetailPage() {
         businessProfile={business}
         customerProfile={customerProfile}
         billData={billData ?? null}
+        showPan={showPan}
       />
 
       <CreditPrintModal
@@ -472,6 +475,7 @@ export default function CreditDetailPage() {
         businessProfile={business}
         customerProfile={customerProfile}
         billData={billData ?? null}
+        showPan={showPan}
       />
 
       <CreditCustomerPreviewModal

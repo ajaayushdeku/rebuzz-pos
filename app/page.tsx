@@ -158,8 +158,8 @@ const Page = async () => {
   return (
     <div className="min-h-screen bg-white">
       {/* ── Navbar ── */}
-      <nav className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-100 px-6 md:px-16 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-1">
+      <nav className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-gray-100 bg-white/90 px-1 py-3 backdrop-blur-md sm:px-6 ">
+        <div className="flex min-w-0 items-center gap-1.5">
           <Image
             src="/rebuzz.png"
             alt="ReBuzz Logo"
@@ -175,14 +175,20 @@ const Page = async () => {
         </div>
 
         {token ? (
-          <div className="flex items-center gap-4">
-            <NavbarWelcome />
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            {/* Below `lg` the greeting is the first thing to go: the account
+                menu names the business anyway, so the row keeps the two
+                controls rather than the sentence. */}
+            <span className="hidden lg:inline">
+              <NavbarWelcome />
+            </span>
             <Button
               asChild
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5 py-2 text-sm font-semibold"
+              className=" rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700 sm:px-5"
             >
               <Link href="/dashboard" className="flex items-center gap-1.5">
-                Go to Dashboard
+                <span className="hidden sm:inline">Go to Dashboard</span>
+                <span className="sm:hidden">Dashboard</span>
                 <ArrowRight size={14} />
               </Link>
             </Button>
@@ -193,17 +199,17 @@ const Page = async () => {
             <HomeUserMenu />
           </div>
         ) : (
-          <div className="flex items-center gap-2 md:gap-3">
+          <div className="flex shrink-0 items-center gap-2 md:gap-3">
             <Button
               asChild
               variant="ghost"
-              className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl px-4 py-2 text-sm font-medium"
+              className="h-10 rounded-xl px-4 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900"
             >
               <Link href="/login">Log in</Link>
             </Button>
             <Button
               asChild
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 md:px-5 py-2 text-sm font-semibold"
+              className="h-10 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700 md:px-5"
             >
               <Link href="/signup">
                 <span className="hidden sm:inline">Get started free</span>

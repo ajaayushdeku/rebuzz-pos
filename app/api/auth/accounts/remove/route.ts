@@ -6,11 +6,14 @@ import {
   clearToken,
   setRole,
   clearRole,
+  setCurrencyCookie,
+  clearCurrencyCookie,
   clearAccounts,
   resolveActiveId,
   TOKEN_COOKIE,
 } from "@/lib/auth/accounts";
 import { isAdminRole } from "@/lib/auth/roles";
+import { currencyCodeForToken } from "@/lib/auth/sessionCurrency";
 
 /**
  * Remove a saved account from this device. If the removed account was active,
@@ -44,6 +47,7 @@ export const POST = async (req: NextRequest) => {
     clearAccounts(res);
     clearToken(res);
     clearRole(res);
+    clearCurrencyCookie(res);
     return res;
   }
 
@@ -53,12 +57,21 @@ export const POST = async (req: NextRequest) => {
       // and end the session rather than picking one that would be bounced.
       clearToken(res);
       clearRole(res);
+      clearCurrencyCookie(res);
       writeAccounts(res, { accounts: remaining, activeId: null });
       return res;
     }
 
     setToken(res, fallback.token);
     setRole(res, fallback.role);
+
+    // The session moved to another account, so its currency moves with it.
+    const currencyCode = await currencyCodeForToken(fallback.token);
+    if (currencyCode) {
+      setCurrencyCookie(res, currencyCode);
+    } else {
+      clearCurrencyCookie(res);
+    }
     writeAccounts(res, { accounts: remaining, activeId: fallback.id });
   } else {
     writeAccounts(res, { accounts: remaining, activeId });

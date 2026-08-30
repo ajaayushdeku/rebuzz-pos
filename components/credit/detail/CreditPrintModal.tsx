@@ -37,6 +37,7 @@ export default function CreditPrintModal({
   businessProfile,
   customerProfile,
   billData,
+  showPan = true,
 }: {
   open: boolean;
   onClose: () => void;
@@ -46,6 +47,8 @@ export default function CreditPrintModal({
   businessProfile?: CreditDocumentBusiness | null;
   customerProfile?: CreditDocumentCustomer | null;
   billData?: Transaction | null;
+  /** Whether the business PAN is printed on the documents. */
+  showPan?: boolean;
 }) {
   const [printType, setPrintType] = useState<CreditDocumentType | null>(null);
 
@@ -101,6 +104,7 @@ export default function CreditPrintModal({
               businessProfile={businessProfile}
               customerProfile={customerProfile}
               billData={billData}
+              showPan={showPan}
             />
           </div>,
           document.body,

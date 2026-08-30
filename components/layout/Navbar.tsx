@@ -22,7 +22,7 @@ export default function Navbar() {
           <MobileButton />
           <Link
             href="/"
-            className="text-xl px-3 font-bold tracking-tight text-blue-600 transition-opacity hover:opacity-80 flex flex-row items-center gap-1"
+            className="text-xl px-3 font-bold tracking-tight text-blue-600 transition-opacity hover:opacity-80 flex flex-row items-center gap-1.5"
           >
             <Image
               src="/rebuzz.png"

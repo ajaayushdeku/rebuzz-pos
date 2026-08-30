@@ -46,6 +46,7 @@ export default function CreditEmailModal({
   businessProfile,
   customerProfile,
   billData,
+  showPan = true,
 }: {
   open: boolean;
   onClose: () => void;
@@ -55,6 +56,8 @@ export default function CreditEmailModal({
   businessProfile?: CreditDocumentBusiness | null;
   customerProfile?: (CreditDocumentCustomer & { email?: string }) | null;
   billData?: Transaction | null;
+  /** Whether the business PAN is printed on the documents. */
+  showPan?: boolean;
 }) {
   const refs = useCreditDocumentRefs();
 
@@ -122,6 +125,7 @@ export default function CreditEmailModal({
         businessProfile={businessProfile}
         customerProfile={customerProfile}
         billData={billData}
+        showPan={showPan}
       />
 
       <ModalShell

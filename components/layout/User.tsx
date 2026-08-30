@@ -179,38 +179,38 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
   };
 
   return (
-    <div className="border border-[3px] border-blue-100 bg-blue-100/30 rounded-xl p-0.5">
+    <div className="rounded-xl border-[3px] border-blue-100 bg-blue-100/30 ">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
+          {/* `h-auto` because the shared Button sets a fixed height that the
+              32px avatar overflows once there is padding around it. */}
           <Button
             variant="ghost"
-            className="flex items-center gap-2 md:px-2 px-1"
+            className="flex h-auto items-center gap-2.5 rounded-lg px-2 py-0.5"
           >
             {businessLogo ? (
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-white shrink-0 border border-blue-200">
+              <span className="h-7 w-7 shrink-0 overflow-hidden rounded-full border border-blue-200 bg-white">
                 <Image
                   src={businessLogo}
                   alt="Business logo"
                   width={30}
                   height={30}
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                 />
-              </div>
+              </span>
             ) : (
-              <span className="w-7 h-7 rounded-full bg-blue-600 text-white text-[11px] font-semibold flex items-center justify-center shrink-0">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[11px] font-semibold text-white hover:text-underline cursor-pointer">
                 {initials(initialBusinessName)}
               </span>
             )}
-            <span className="font-medium text-gray-600">
-              {initialBusinessName}{" "}
+
+            {/* The name is the first thing to give up room on a narrow
+                screen — the avatar identifies the account well enough. */}
+            <span className="hidden max-w-[9rem] truncate text-[14px] font-medium text-gray-700 sm:inline hover:underline cursor-pointer tracking-wide">
+              {initialBusinessName}
             </span>
-            <Badge
-              variant="secondary"
-              className={`hidden md:block ${plan.className}`}
-            >
-              {plan.label}
-            </Badge>
-            <ChevronDown className="h-4 w-4 text-gray-600" />
+
+            <ChevronDown className="h-4 w-4 shrink-0 text-gray-500" />
           </Button>
         </DropdownMenuTrigger>
 
@@ -233,9 +233,21 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
               </span>
             )}
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-gray-800 truncate">
-                {initialBusinessName}
-              </p>
+              {/* The plan reads better here than on the trigger: beside the
+                  business it names, and out of a row that has to survive a
+                  phone. `min-w-0` on the name lets it truncate so the badge
+                  keeps its width. */}
+              <div className="flex items-center gap-1.5">
+                <p className="min-w-0 truncate text-sm font-semibold text-gray-800">
+                  {initialBusinessName}
+                </p>
+                <Badge
+                  variant="secondary"
+                  className={`shrink-0 px-1.5 py-0 text-[9px] font-semibold tracking-wide ${plan.className}`}
+                >
+                  {plan.label}
+                </Badge>
+              </div>
               {activeAccount && (
                 <p className="text-[11px] text-gray-400 truncate">
                   {activeAccount.label}

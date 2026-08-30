@@ -52,6 +52,7 @@ export function CreditDocumentsOffscreen({
   businessProfile,
   customerProfile,
   billData,
+  showPan = true,
 }: {
   refs: CreditDocumentRefs;
   credit: Credit | null;
@@ -60,6 +61,8 @@ export function CreditDocumentsOffscreen({
   businessProfile?: CreditDocumentBusiness | null;
   customerProfile?: CreditDocumentCustomer | null;
   billData?: Transaction | null;
+  /** Whether the business PAN is printed on the documents. */
+  showPan?: boolean;
 }) {
   if (!credit) return null;
 
@@ -77,6 +80,7 @@ export function CreditDocumentsOffscreen({
             businessProfile={businessProfile}
             customerProfile={customerProfile}
             billData={billData}
+            showPan={showPan}
           />
         </div>
       ))}

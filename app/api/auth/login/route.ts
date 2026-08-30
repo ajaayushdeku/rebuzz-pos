@@ -6,8 +6,11 @@ import {
   writeAccounts,
   upsertActiveAccount,
   setRole,
+  setCurrencyCookie,
+  clearCurrencyCookie,
 } from "@/lib/auth/accounts";
 import { isAdminRole } from "@/lib/auth/roles";
+import { currencyCodeForToken } from "@/lib/auth/sessionCurrency";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
@@ -65,6 +68,16 @@ export const POST = async (req: NextRequest) => {
     });
 
     setRole(response, responseLogin.data.role);
+
+    // A device that has held another business's session still has its currency
+    // cookie. Reset it here so the first render after signing in is this
+    // account's currency, not the last one's.
+    const currencyCode = await currencyCodeForToken(responseLogin.data.token);
+    if (currencyCode) {
+      setCurrencyCookie(response, currencyCode);
+    } else {
+      clearCurrencyCookie(response);
+    }
 
     response.cookies.set("token", responseLogin.data.token, {
       httpOnly: true,

@@ -1,6 +1,10 @@
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
-import { clearAccounts, clearRole } from "@/lib/auth/accounts";
+import {
+  clearAccounts,
+  clearRole,
+  clearCurrencyCookie,
+} from "@/lib/auth/accounts";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
@@ -36,6 +40,9 @@ export const POST = async (req: NextRequest) => {
   // it behind would let the middleware read a role for a session that no
   // longer exists.
   clearRole(response);
+
+  // The currency belonged to the session, not the device.
+  clearCurrencyCookie(response);
 
   // Full sign-out clears every saved account too. To sign out of just one
   // account while staying in another, use "Remove" in the account switcher.

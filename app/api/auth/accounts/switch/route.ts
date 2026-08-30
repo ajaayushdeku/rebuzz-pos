@@ -5,8 +5,11 @@ import {
   writeAccounts,
   setToken,
   setRole,
+  setCurrencyCookie,
+  clearCurrencyCookie,
 } from "@/lib/auth/accounts";
 import { isAdminRole } from "@/lib/auth/roles";
+import { currencyCodeForToken } from "@/lib/auth/sessionCurrency";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
@@ -53,10 +56,22 @@ export const POST = async (req: NextRequest) => {
     // Transient/network error — allow the switch rather than blocking on it.
   }
 
+  // The currency cookie caches the *previous* account's currency, so it is
+  // re-read for the account being switched into. Without this the new business
+  // shows the old one's symbol until the client seeding effect catches up, and
+  // stays wrong for good if that request fails.
+  const currencyCode = await currencyCodeForToken(target.token);
+
   const res = NextResponse.json({ ok: true, id: target.id });
   // Copy the chosen account's saved token into the active `token` cookie.
   setToken(res, target.token);
   setRole(res, target.role);
+
+  if (currencyCode) {
+    setCurrencyCookie(res, currencyCode);
+  } else {
+    clearCurrencyCookie(res);
+  }
   // Persist any refreshed business name alongside the new active account.
   const accounts = store.accounts.map((a) =>
     a.id === target.id ? { ...a, businessName } : a,

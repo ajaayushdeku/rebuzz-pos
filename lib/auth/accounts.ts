@@ -18,6 +18,7 @@ import { ROLE_COOKIE } from "@/lib/auth/roles";
  */
 
 export const TOKEN_COOKIE = "token";
+export const CURRENCY_COOKIE = "currency";
 export const ACCOUNTS_COOKIE = "pos_accounts";
 export const MAX_ACCOUNTS = 5;
 
@@ -89,6 +90,32 @@ export function setRole(res: NextResponse, role: string | undefined) {
 
 export function clearRole(res: NextResponse) {
   res.cookies.set(ROLE_COOKIE, "", { ...cookieBase, maxAge: 0 });
+}
+
+/**
+ * The active account's currency, cached for the first server render.
+ *
+ * Deliberately NOT httpOnly, unlike every other cookie here: the currency
+ * settings page writes this one from the browser with `document.cookie`, and
+ * an httpOnly cookie would silently ignore that write.
+ *
+ * It has no account in it, so it belongs to whichever session is current —
+ * every route that changes the active account must set or clear it.
+ */
+export function setCurrencyCookie(res: NextResponse, code: string) {
+  res.cookies.set(CURRENCY_COOKIE, code, {
+    ...cookieBase,
+    httpOnly: false,
+    maxAge: 60 * 60 * 24 * 365,
+  });
+}
+
+export function clearCurrencyCookie(res: NextResponse) {
+  res.cookies.set(CURRENCY_COOKIE, "", {
+    ...cookieBase,
+    httpOnly: false,
+    maxAge: 0,
+  });
 }
 
 export function clearAccounts(res: NextResponse) {

@@ -18,12 +18,15 @@ interface PrintInvoiceModalProps {
   open: boolean;
   onClose: () => void;
   invoiceNo: string | number | undefined;
+  /** Whether the business PAN is printed on the documents. */
+  showPan?: boolean;
 }
 
 export default function PrintInvoiceModal({
   open,
   onClose,
   invoiceNo,
+  showPan = true,
 }: PrintInvoiceModalProps) {
   const { invoice, customerProfile, business, billData, payments, credit } =
     useInvoiceDocumentData(invoiceNo, open);
@@ -94,6 +97,7 @@ export default function PrintInvoiceModal({
               invoice={invoice}
               customerProfile={customerProfile}
               businessProfile={business}
+              showPan={showPan}
               billData={billData}
               payments={payments}
               // credit={credit}

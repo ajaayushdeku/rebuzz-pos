@@ -23,12 +23,15 @@ interface ExportPdfModalProps {
   open: boolean;
   onClose: () => void;
   invoiceNo: string | number | undefined;
+  /** Whether the business PAN is printed on the documents. */
+  showPan?: boolean;
 }
 
 export default function ExportPdfModal({
   open,
   onClose,
   invoiceNo,
+  showPan = true,
 }: ExportPdfModalProps) {
   const { invoice, customerProfile, business, billData, payments, credit } =
     useInvoiceDocumentData(invoiceNo, open);
@@ -75,6 +78,7 @@ export default function ExportPdfModal({
               invoice={invoice}
               customerProfile={customerProfile}
               businessProfile={business}
+              showPan={showPan}
               billData={billData}
               payments={payments}
               credit={

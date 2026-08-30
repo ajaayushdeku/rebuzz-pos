@@ -1424,6 +1424,7 @@ const InvoiceDetailPage = () => {
         open={isSendInvoiceModalOpen}
         onClose={() => setIsSendInvoiceModalOpen(false)}
         invoiceNo={id as string}
+        showPan={showPan}
       />
 
       {/* Email receipt — opened from a payment's "Send a receipt" */}
@@ -1431,6 +1432,7 @@ const InvoiceDetailPage = () => {
         open={isEmailInvoiceOpen}
         onClose={() => setIsEmailInvoiceOpen(false)}
         invoiceNo={id as string}
+        showPan={showPan}
       />
 
       {/* Refund confirmation modal */}
@@ -1525,12 +1527,14 @@ const InvoiceDetailPage = () => {
         open={isExportPdfOpen}
         onClose={() => setIsExportPdfOpen(false)}
         invoiceNo={id as string}
+        showPan={showPan}
       />
 
       <PrintInvoiceModal
         open={isPrintOpen}
         onClose={() => setIsPrintOpen(false)}
         invoiceNo={id as string}
+        showPan={showPan}
       />
 
       <CustomerPreviewModal

@@ -26,12 +26,15 @@ interface EmailInvoiceModalProps {
   open: boolean;
   onClose: () => void;
   invoiceNo: string | number | undefined;
+  /** Whether the business PAN is printed on the documents. */
+  showPan?: boolean;
 }
 
 export default function EmailInvoiceModal({
   open,
   onClose,
   invoiceNo,
+  showPan = true,
 }: EmailInvoiceModalProps) {
   const { invoice, customerProfile, business, billData, payments, credit } =
     useInvoiceDocumentData(invoiceNo, open);
@@ -137,6 +140,7 @@ export default function EmailInvoiceModal({
               invoice={invoice}
               customerProfile={customerProfile}
               businessProfile={business}
+              showPan={showPan}
               billData={billData}
               payments={payments}
               // credit={credit}

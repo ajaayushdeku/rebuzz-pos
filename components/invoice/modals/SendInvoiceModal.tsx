@@ -35,6 +35,8 @@ interface SendInvoiceModalProps {
   open: boolean;
   onClose: () => void;
   invoiceNo: string | number | undefined;
+  /** Whether the business PAN is printed on the documents. */
+  showPan?: boolean;
 }
 
 /** Square icon button used for the per-row actions. */
@@ -73,6 +75,7 @@ export default function SendInvoiceModal({
   open,
   onClose,
   invoiceNo,
+  showPan = true,
 }: SendInvoiceModalProps) {
   const { invoice, customerProfile, business, billData, payments, credit } =
     useInvoiceDocumentData(invoiceNo, open);
@@ -214,6 +217,7 @@ export default function SendInvoiceModal({
               invoice={invoice}
               customerProfile={customerProfile}
               businessProfile={business}
+              showPan={showPan}
               billData={billData}
               payments={payments}
               // credit={credit}

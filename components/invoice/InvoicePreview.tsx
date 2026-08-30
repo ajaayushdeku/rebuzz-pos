@@ -502,7 +502,7 @@ function InvoiceContent({
   return (
     <div
       style={{ minHeight: minHeightPx }}
-      className="bg-white w-full px-10 py-10 text-black border-[3px] border-blue-900 font-sans"
+      className="bg-white w-full px-10 py-10 text-black border-[3px] rounded-md border-gray-200 font-sans"
     >
       {/* ───────────────── Header ───────────────── */}
       <div className="text-center mb-10">

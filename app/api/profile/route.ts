@@ -22,6 +22,7 @@ export const GET = async () => {
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
+      cache: "no-store",
     },
   });
 
