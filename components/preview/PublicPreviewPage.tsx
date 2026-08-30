@@ -88,7 +88,7 @@ const PublicPreviewPage = ({ type }: { type: InvoiceType }) => {
     return <div className="p-20 text-center">Invoice not found.</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 ">
+    <div className="min-h-screen bg-blue-50">
       <InvoicePreview
         type={type}
         invoice={invoice}

@@ -81,7 +81,8 @@ export default function CreditTimeline({
   onSendInvoice: () => void;
   onSendReminder: () => void;
   onRecordPayment: () => void;
-  onSendReceipt: () => void;
+  /** Receives the payment whose row was clicked, not the credit. */
+  onSendReceipt: (payment: CreditPayment) => void;
   onEditPayment: (payment: CreditPayment) => void;
   onRemovePayment: (payment: CreditPayment) => void;
 }) {
@@ -359,7 +360,10 @@ export default function CreditTimeline({
                     was made using a {p.paymentMethod || "cash"}.
                   </p>
                   <div className="flex items-center gap-1.5 mt-1 text-blue-600 font-semibold">
-                    <button onClick={onSendReceipt} className="hover:underline">
+                    <button
+                      onClick={() => onSendReceipt(p)}
+                      className="hover:underline"
+                    >
                       Send a receipt
                     </button>
 

@@ -338,7 +338,7 @@ export default function CreditInvoiceDocument({
     <div
       ref={documentRef}
       style={{ minHeight: minHeightPx }}
-      className="bg-white w-full px-10 py-10 text-black border-[3px] border-blue-900 font-sans"
+      className="bg-white w-full px-10 py-10 text-black border-[3px] rounded-md border-gray-200 font-sans"
     >
       {/* ── Header ──
           data-pdf-block marks a unit the PDF exporter must not cut through;

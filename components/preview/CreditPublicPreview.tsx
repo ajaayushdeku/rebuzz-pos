@@ -80,7 +80,7 @@ export default function CreditPublicPreview({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-blue-50">
       <CreditDocumentViewer
         type={type}
         credit={credit}

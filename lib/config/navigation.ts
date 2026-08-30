@@ -75,7 +75,11 @@ export const navigationConfig: NavigationItem[] = [
     label: "Dashboard",
     icon: Gauge,
     items: [
-      { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
+      {
+        label: "Overview",
+        href: "/dashboard",
+        icon: LayoutDashboard,
+      },
       {
         label: "Sales & Revenue",
         href: "/dashboard/sales-revenue",
@@ -96,7 +100,11 @@ export const navigationConfig: NavigationItem[] = [
         href: "/dashboard/expenses",
         icon: PieChart,
       },
-      { label: "Inventory", href: "/dashboard/inventory", icon: Boxes },
+      {
+        label: "Inventory",
+        href: "/dashboard/inventory",
+        icon: Boxes,
+      },
       {
         label: "Live Tables",
         href: "/dashboard/live-tables",
@@ -107,7 +115,11 @@ export const navigationConfig: NavigationItem[] = [
         href: "/dashboard/employee",
         icon: BriefcaseBusiness,
       },
-      { label: "Customers", href: "/dashboard/customers", icon: UsersRound },
+      {
+        label: "Customers",
+        href: "/dashboard/customers",
+        icon: UsersRound,
+      },
     ],
   },
   {
@@ -115,8 +127,16 @@ export const navigationConfig: NavigationItem[] = [
     label: "Sales & Payments",
     icon: Banknote,
     items: [
-      { label: "Invoices", href: "/records/invoices", icon: FileText },
-      { label: "Expenses", href: "/records/expenses", icon: Wallet },
+      {
+        label: "Invoices",
+        href: "/records/invoices",
+        icon: FileText,
+      },
+      {
+        label: "Expenses",
+        href: "/records/expenses",
+        icon: Wallet,
+      },
       {
         label: "Credits",
         href: "/records/credits",
@@ -127,8 +147,16 @@ export const navigationConfig: NavigationItem[] = [
         href: "/records/order-history",
         icon: History,
       },
-      { label: "Customers", href: "/records/customers", icon: ContactRound },
-      { label: "Products", href: "/records/products", icon: Package },
+      {
+        label: "Customers",
+        href: "/records/customers",
+        icon: ContactRound,
+      },
+      {
+        label: "Products",
+        href: "/records/products",
+        icon: Package,
+      },
     ],
   },
 
@@ -143,18 +171,46 @@ export const navigationConfig: NavigationItem[] = [
     label: "Settings",
     icon: Settings,
     items: [
-      { label: "Business", href: "/settings/business", icon: Building2 },
+      {
+        label: "Business",
+        href: "/settings/business",
+        icon: Building2,
+      },
       {
         label: "Change Password",
         href: "/settings/change-password",
         icon: Lock,
       },
-      { label: "Manage Employees", href: "/settings/employees", icon: UserCog },
-      { label: "Currency", href: "/settings/currency", icon: Coins },
-      { label: "Tax", href: "/settings/tax", icon: Receipt },
-      { label: "Discount", href: "/settings/discount", icon: BadgePercent },
-      { label: "Category", href: "/settings/category", icon: Tag },
-      { label: "Loyalty Point", href: "/settings/loyalty-points", icon: Award },
+      {
+        label: "Manage Employees",
+        href: "/settings/employees",
+        icon: UserCog,
+      },
+      {
+        label: "Currency",
+        href: "/settings/currency",
+        icon: Coins,
+      },
+      {
+        label: "Tax",
+        href: "/settings/tax",
+        icon: Receipt,
+      },
+      {
+        label: "Discount",
+        href: "/settings/discount",
+        icon: BadgePercent,
+      },
+      {
+        label: "Category",
+        href: "/settings/category",
+        icon: Tag,
+      },
+      {
+        label: "Loyalty Point",
+        href: "/settings/loyalty-points",
+        icon: Award,
+      },
     ],
   },
 
@@ -165,8 +221,6 @@ export const navigationConfig: NavigationItem[] = [
     href: "/bizexpense",
   },
 
-  // Last on purpose: it is the one item here that is about the account rather
-  // than about running the shop.
   {
     type: "single",
     label: "Subscriptions",

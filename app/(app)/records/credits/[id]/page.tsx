@@ -36,6 +36,7 @@ import EditPaymentModal from "@/components/invoice/modals/EditPaymentModal";
 import CreditExportPdfModal from "@/components/credit/detail/CreditExportPdfModal";
 import CreditPrintModal from "@/components/credit/detail/CreditPrintModal";
 import CreditEmailModal from "@/components/credit/detail/CreditEmailModal";
+import PaymentReceiptModal from "@/components/credit/detail/PaymentReceiptModal";
 import CreditSendModal from "@/components/credit/detail/CreditSendModal";
 import CreditCustomerPreviewModal from "@/components/credit/detail/CreditCustomerPreviewModal";
 import ErrorState from "@/components/ui/ErrorState";
@@ -62,6 +63,11 @@ export default function CreditDetailPage() {
 
   const [isSendInvoiceOpen, setIsSendInvoiceOpen] = useState(false);
   const [isEmailInvoiceOpen, setIsEmailInvoiceOpen] = useState(false);
+  // The payment whose receipt is being sent. Holding the payment rather
+  // than a boolean is what makes the receipt specific to the row clicked.
+  const [receiptPayment, setReceiptPayment] = useState<CreditPayment | null>(
+    null,
+  );
   const [isExportPdfOpen, setIsExportPdfOpen] = useState(false);
   const [isPrintOpen, setIsPrintOpen] = useState(false);
   const [isCustomerPreviewOpen, setIsCustomerPreviewOpen] = useState(false);
@@ -320,7 +326,7 @@ export default function CreditDetailPage() {
             onSendInvoice={() => setIsSendInvoiceOpen(true)}
             onSendReminder={handleSendReminder}
             onRecordPayment={() => setIsCreditPaymentOpen(true)}
-            onSendReceipt={() => setIsEmailInvoiceOpen(true)}
+            onSendReceipt={(p) => setReceiptPayment(p)}
             onEditPayment={(p) => setPaymentToEdit(p)}
             onRemovePayment={(p) =>
               setPaymentToRemove({
@@ -362,6 +368,18 @@ export default function CreditDetailPage() {
 
       {/* The receipt attaches the credit's own document — the invoice modal
           would attach the original ticket instead. */}
+      {/* One payment's receipt — copy link, download, email or open the
+          customer preview. */}
+      <PaymentReceiptModal
+        open={!!receiptPayment}
+        onClose={() => setReceiptPayment(null)}
+        credit={credit}
+        payment={receiptPayment}
+        payments={payments}
+        businessProfile={business}
+        customerProfile={customerProfile}
+      />
+
       <CreditEmailModal
         open={isEmailInvoiceOpen}
         onClose={() => setIsEmailInvoiceOpen(false)}

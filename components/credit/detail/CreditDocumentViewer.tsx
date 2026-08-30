@@ -134,7 +134,7 @@ export default function CreditDocumentViewer({
         )}
 
       {/* Preview header */}
-      <div className="relative bg-gray-50 border-b border-gray-200 px-5 py-3 flex items-center justify-between gap-2 print:hidden">
+      <div className="relative bg-blue-100 border-b border-gray-200 px-5 py-3 flex items-center justify-between gap-2 print:hidden">
         <div className="flex flex-col items-start gap-1 text-[11px] text-gray-400">
           <span className="font-medium text-gray-500">PREVIEW MODE</span>
           <span className="hidden lg:inline-block">
@@ -142,7 +142,7 @@ export default function CreditDocumentViewer({
           </span>
         </div>
 
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center bg-white border border-gray-200 rounded-xl p-1 gap-1 shrink-0">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center bg-white border border-blue-200 rounded-xl p-1 gap-1 shrink-0">
           {PREVIEW_MODES.map(({ label, value, icon: Icon }) => (
             <button
               key={value}
@@ -152,7 +152,7 @@ export default function CreditDocumentViewer({
               className={`flex flex-col items-center justify-center gap-1 min-w-[72px] px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
                 previewMode === value
                   ? "bg-blue-600 text-white shadow-sm"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                  : "text-gray-500 hover:text-blue-700 hover:bg-blue-50"
               }`}
             >
               <Icon size={16} />
@@ -161,42 +161,46 @@ export default function CreditDocumentViewer({
           ))}
         </div>
 
-        <button
-          type="button"
-          onClick={() => router.push(`/records/credits/${credit._id}`)}
-          className="text-sm font-semibold cursor-pointer text-blue-600 hover:text-blue-700 border-[3px] border-blue-200 hover:border-blue-300 rounded-2xl px-3 py-1.5 transition-colors"
-        >
-          Go Back to Rebuzz
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Print and export act on the whole preview, so they live in the
+              header with the other controls rather than over the canvas. */}
+          <div className="flex shrink-0 items-center gap-2 print:hidden">
+            <button
+              type="button"
+              onClick={() => setPrinting(true)}
+              className="flex items-center gap-2 rounded-lg border border-[3px] border-blue-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-gray-700 transition-all hover:border-blue-300 hover:bg-gray-50 cursor-pointer"
+            >
+              <Printer size={16} />
+              <span className="hidden lg:inline-block">Print</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleExportPdf}
+              disabled={isExporting}
+              className="flex items-center gap-2 rounded-lg border border-[3px] border-blue-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-gray-700 transition-all hover:border-blue-300 hover:bg-gray-50 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <Download size={16} />
+              <span className="hidden lg:inline-block">
+                {isExporting ? "Exporting..." : "Export as PDF"}
+              </span>
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => router.push(`/records/credits/${credit._id}`)}
+            className="shrink-0 cursor-pointer rounded-2xl border-[3px] border-blue-200 px-3 py-1.5 bg-blue-50 items-center justify-center text-sm font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:text-blue-700"
+          >
+            Go back to {credit.ticketName || `Invoice #${credit.invoiceNo}`}
+          </button>
+        </div>
       </div>
 
       {/* Canvas */}
       <div
-        className="bg-gray-100/60 py-2 flex flex-col items-center justify-center transition-all duration-300 ease-in-out overflow-x-auto"
+        className="bg-blue-50 py-6 flex flex-col items-center justify-center transition-all duration-300 ease-in-out overflow-x-auto"
         style={{ minHeight: isMobile ? "600px" : "800px" }}
       >
-        <div className="flex items-center justify-center gap-3 py-4 print:hidden">
-          <button
-            type="button"
-            onClick={() => setPrinting(true)}
-            className="flex items-center gap-2 px-5 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
-          >
-            <Printer size={16} />
-            <span className="hidden lg:inline-block">Print</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleExportPdf}
-            disabled={isExporting}
-            className="flex items-center gap-2 px-5 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            <Download size={16} />
-            <span className="hidden lg:inline-block">
-              {isExporting ? "Exporting..." : "Export as PDF"}
-            </span>
-          </button>
-        </div>
-
         <div
           className="overflow-hidden shadow-lg transition-all duration-300 ease-in-out"
           style={{
