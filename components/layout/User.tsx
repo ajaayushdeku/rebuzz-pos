@@ -43,6 +43,21 @@ type Account = {
   active: boolean;
 };
 
+/** How much of the business name the trigger shows before it trails off. */
+const NAME_LIMIT = 8;
+
+/**
+ * The name as the trigger prints it.
+ *
+ * Cut by character rather than by CSS width: a `truncate` clip lands wherever
+ * the column happens to end, so the same account read differently at every
+ * breakpoint. A fixed count keeps the button one predictable width.
+ */
+function shortName(name: string): string {
+  const clean = name.trim();
+  return clean.length > NAME_LIMIT ? `${clean.slice(0, NAME_LIMIT)}...` : clean;
+}
+
 /** Two-letter initials from a label (email/phone/business name). */
 function initials(text: string): string {
   const clean = text.trim();
@@ -183,15 +198,19 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
                 />
               </span>
             ) : (
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[11px] font-semibold text-white hover:text-underline cursor-pointer">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[11px] font-semibold text-white hover:text-underline cursor-pointer">
                 {initials(initialBusinessName)}
               </span>
             )}
 
             {/* The name is the first thing to give up room on a narrow
-                screen — the avatar identifies the account well enough. */}
-            <span className="hidden max-w-[9rem] truncate text-[14px] font-medium text-gray-700 sm:inline hover:underline cursor-pointer tracking-wide">
-              {initialBusinessName}
+                screen — the avatar identifies the account well enough. The
+                full name is in the dropdown, and in the title for a hover. */}
+            <span
+              title={initialBusinessName}
+              className="hidden cursor-pointer text-[13px] font-medium tracking-wide text-gray-700 hover:underline sm:inline"
+            >
+              {shortName(initialBusinessName)}
             </span>
 
             <ChevronDown className="h-4 w-4 shrink-0 text-gray-500" />

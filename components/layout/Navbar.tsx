@@ -54,7 +54,7 @@ export default function Navbar() {
           >
             {currency.symbol}
           </Link>
-          <div className="h-5 border-1  border-gray-200 mr-2" />
+          <div className="h-5 border-1  border-gray-200 mx-2" />
           <HelpButton />
           <User
             initialBusinessName={businessData?.businessName || "My Business"}

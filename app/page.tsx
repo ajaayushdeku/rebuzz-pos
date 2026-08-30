@@ -1,85 +1,3 @@
-// import Link from "next/link";
-// import Image from "next/image";
-// import { cookies } from "next/headers";
-
-// import { Button } from "@/components/ui/button";
-// import InvoiceSs from "@/public/InvoiceScreenshot.png";
-
-// const Page = async () => {
-//   const cookieStore = await cookies();
-//   const token = cookieStore.get("token")?.value;
-
-//   return (
-//     <div className="min-h-screen bg-gray-100">
-//       {/* NAVBAR */}
-//       <nav className="flex items-center justify-between px-6 md:px-16 py-6">
-//         <h1 className="text-blue-950 text-lg md:text-xl font-bold">ReBuzz</h1>
-
-//         {token ? (
-//           <div>
-//             {/* <Button className="border-0 hover:bg-gray-100 hover:text-blue-600 bg-gray-100 text-blue-900 font-semibold px-4 md:px-8"> */}
-//             <Button className="bg-blue-600 hover:bg-blue-700 px-4 md:px-8 py-2 md:py-4 font-semibold rounded-3xl">
-//               <Link href={"/dashboard"}>
-//                 <span className="text-base md:text-lg">Get Back</span>
-//               </Link>
-//             </Button>
-//           </div>
-//         ) : (
-//           <div className="flex items-center gap-2 md:gap-4">
-//             <Button className="border-0 hover:bg-gray-100 hover:text-blue-600 bg-gray-100 text-blue-900 font-semibold px-4 md:px-8">
-//               <Link href="/login">
-//                 <span className="text-base md:text-lg">Log in</span>
-//               </Link>
-//             </Button>
-
-//             <Button className="bg-blue-600 hover:bg-blue-700 px-4 md:px-8 py-3 md:py-6 font-semibold rounded-3xl">
-//               <Link href="/signup">
-//                 <span className="hidden md:block text-lg">
-//                   Get started for free
-//                 </span>
-//                 <span className="md:hidden text-base">Sign up</span>
-//               </Link>
-//             </Button>
-//           </div>
-//         )}
-//       </nav>
-
-//       {/* BODY */}
-//       <div className="flex flex-col items-center text-center px-6 md:px-16 space-y-4 pb-16">
-//         <h2 className="text-blue-900 font-semibold text-sm md:text-base tracking-wide">
-//           SIMPLE MONEY MANAGEMENT SOLUTION
-//         </h2>
-
-//         <h1 className="text-blue-900 text-3xl sm:text-4xl md:text-5xl font-semibold max-w-2xl">
-//           Manage your money like a boss
-//         </h1>
-
-//         <p className="text-blue-900 text-base md:text-xl max-w-xl md:max-w-2xl">
-//           Rebuzz lets small business owners like you create beautiful invoices,
-//           accept online payments, and make accounting easy — all in one place.
-//         </p>
-
-//         <Button className="bg-orange-500 hover:bg-orange-600 px-8 py-6 text-blue-900 text-base md:text-lg font-semibold rounded-3xl">
-//           <Link href="/signup">Get started for free</Link>
-//         </Button>
-
-//         <div className="w-full max-w-4xl rounded-xl shadow-sm overflow-hidden mt-4">
-//           <Image
-//             src={InvoiceSs}
-//             placeholder="blur"
-//             quality={80}
-//             width={800}
-//             alt="Screenshot of rebuzz app"
-//             className="w-full h-auto"
-//           />
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Page;
-
 import Link from "next/link";
 import Image from "next/image";
 import { cookies } from "next/headers";
@@ -92,18 +10,29 @@ import {
   ShieldCheck,
   ArrowRight,
   CheckCircle2,
+  Coins,
+  FileText,
+  Landmark,
   Zap,
 } from "lucide-react";
 import NavbarWelcome from "@/components/NavbarWelcome";
 import HomeUserMenu from "@/components/HomeUserMenu";
 import ServerEnvBadge from "@/components/ServerEnvBadge";
 
+/**
+ * The feature grid.
+ *
+ * `wide` marks the one card that leads the row — a grid of four identical
+ * tiles gives the eye nowhere to start, so the first one takes double width
+ * and carries a longer line.
+ */
 const FEATURES = [
   {
     icon: Receipt,
     title: "Smart Invoicing",
     description:
-      "Create professional invoices in seconds with automatic tax and discount calculations.",
+      "Create professional invoices in seconds with automatic tax and discount calculations — proforma, invoice and tax invoice from the same sale.",
+    wide: true,
   },
   {
     icon: CreditCard,
@@ -125,6 +54,20 @@ const FEATURES = [
   },
 ];
 
+/**
+ * The band under the hero.
+ *
+ * Specifics rather than round numbers: every line here is something the
+ * product actually does, which is what makes a strip like this read as
+ * substance instead of decoration.
+ */
+const CAPABILITIES = [
+  { icon: Coins, label: "Multi-currency", value: "127 supported" },
+  { icon: CreditCard, label: "Payments", value: "Cash, card, QR & loyalty" },
+  { icon: FileText, label: "Documents", value: "Invoice, tax & receipts" },
+  { icon: Landmark, label: "Tax", value: "Nepal-ready VAT & PAN" },
+];
+
 const GUEST_HIGHLIGHTS = [
   "No setup fees — free to get started",
   "Works on any device",
@@ -139,26 +82,26 @@ const AUTH_HIGHLIGHTS = [
   "View business analytics",
 ];
 
-// const UserData = () => {
-//   const { data: profile, isLoading } = useQuery({
-//     queryKey: ["profile"],
-//     queryFn: fetchUserData,
-//   });
-
-//   return { profile, isLoading };
-// };
+/** Faint graph paper behind the hero, fading out before it meets the content. */
+const GRID_STYLE: React.CSSProperties = {
+  backgroundImage:
+    "linear-gradient(to right, rgb(226 232 240 / 0.7) 1px, transparent 1px)," +
+    "linear-gradient(to bottom, rgb(226 232 240 / 0.7) 1px, transparent 1px)",
+  backgroundSize: "56px 56px",
+  maskImage:
+    "radial-gradient(ellipse 70% 60% at 50% 0%, #000 55%, transparent 100%)",
+  WebkitMaskImage:
+    "radial-gradient(ellipse 70% 60% at 50% 0%, #000 55%, transparent 100%)",
+};
 
 const Page = async () => {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
-  // const userData = UserData();
-  // console.log("User Info:", userData);
-
   return (
     <div className="min-h-screen bg-white">
       {/* ── Navbar ── */}
-      <nav className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-gray-100 bg-white/90 px-1 py-3 backdrop-blur-md sm:px-6 ">
+      <nav className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-gray-100 bg-white/90 px-4 py-3 backdrop-blur-md sm:px-6 ">
         <div className="flex min-w-0 items-center gap-1.5">
           <Image
             src="/rebuzz.png"
@@ -182,9 +125,21 @@ const Page = async () => {
             <span className="hidden lg:inline">
               <NavbarWelcome />
             </span>
+            {/* Beside the greeting it belongs to: the two together are who
+                you are signed in as, which the rule then separates from the
+                action the page wants you to take. */}
+            <HomeUserMenu />
+
+            {/* <span
+              aria-hidden
+              className="hidden h-7 w-px shrink-0 bg-gray-200 sm:block"
+            /> */}
+
+            <div className="h-5 border-1  border-gray-200 mx-2" />
+
             <Button
               asChild
-              className=" rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700 sm:px-5"
+              className="h-8 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700 sm:px-5"
             >
               <Link href="/dashboard" className="flex items-center gap-1.5">
                 <span className="hidden sm:inline">Go to Dashboard</span>
@@ -192,11 +147,6 @@ const Page = async () => {
                 <ArrowRight size={14} />
               </Link>
             </Button>
-
-            {/* Rightmost, as it is in the app navbar — switching account or
-                signing out is the last thing in the row, not something to
-                reach past the primary action for. */}
-            <HomeUserMenu />
           </div>
         ) : (
           <div className="flex shrink-0 items-center gap-2 md:gap-3">
@@ -220,135 +170,192 @@ const Page = async () => {
         )}
       </nav>
 
-      {/* ── Hero ── */}
-      <section className="px-6 md:px-16 pt-16 md:pt-24 pb-12 text-center max-w-5xl mx-auto">
-        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-100 rounded-full px-3 py-1 mb-6">
-          <Zap size={11} />
-          Built for Nepal&lsquo;s businesses
-        </span>
-        <h1 className="text-gray-900 text-4xl sm:text-5xl md:text-6xl font-bold leading-tight tracking-tight max-w-3xl mx-auto">
-          {token ? (
-            <>
-              Welcome back to <span className="text-blue-600">ReBuzz POS</span>
-            </>
-          ) : (
-            <>
-              Run your business <span className="text-blue-600">smarter</span>,
-              not harder
-            </>
-          )}
-        </h1>
+      {/* ── Hero ──
+          Given a ground of its own — grid, wash and a fade back to white — so
+          the fold has weight instead of being text floating on a blank page.
+          The screenshot lives inside it rather than in a section below, which
+          is what turns the two into one composition. */}
+      <section className="relative overflow-hidden border-b border-gray-100 bg-slate-50/60">
+        <div aria-hidden className="absolute inset-0" style={GRID_STYLE} />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-40 left-1/2 h-[34rem] w-[64rem] -translate-x-1/2 rounded-full bg-blue-200/25 blur-3xl"
+        />
+        {/* Fades the ground out under the screenshot so the next section
+            starts on clean white with no seam. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-gradient-to-b from-transparent to-white"
+        />
 
-        <p className="text-gray-500 text-base md:text-lg mt-5 max-w-xl mx-auto leading-relaxed">
-          {token
-            ? "Monitor sales, manage inventory, track expenses, and grow your business from a single dashboard."
-            : "Rebuzz POS helps small business owners create invoices, track inventory, accept payments, and understand their numbers — all in one clean dashboard."}
-        </p>
+        <div className="relative mx-auto max-w-6xl px-6 pt-16 md:px-16 md:pt-24">
+          <div className="text-center">
+            <span className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-blue-100 bg-white/80 px-3 py-1 text-xs font-semibold text-blue-600 shadow-sm backdrop-blur">
+              <Zap size={11} />
+              Built for Nepal&lsquo;s businesses
+            </span>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
-          {token ? (
-            <>
-              <Button
-                asChild
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-7 py-3 text-base font-semibold w-full sm:w-auto"
-              >
-                <Link href="/sales-revenue" className="flex items-center gap-2">
-                  Manage Sales
-                  <ArrowRight size={16} />
-                </Link>
-              </Button>
+            <h1 className="mx-auto max-w-4xl text-balance text-4xl font-bold leading-[1.05] tracking-tighter text-gray-900 sm:text-5xl md:text-6xl lg:text-[4.25rem]">
+              {token ? (
+                <>
+                  Welcome back to{" "}
+                  <span className="text-blue-600">ReBuzz POS</span>
+                </>
+              ) : (
+                <>
+                  Run your business{" "}
+                  <span className="text-blue-600">smarter</span>, not harder
+                </>
+              )}
+            </h1>
 
-              <Button
-                asChild
-                variant="outline"
-                className="border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl px-7 py-3 text-base font-medium w-full sm:w-auto"
-              >
-                <Link href="/dashboard/growth-tracker">View Reports</Link>
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                asChild
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-7 py-3 text-base font-semibold w-full sm:w-auto"
-              >
-                <Link href="/signup" className="flex items-center gap-2">
-                  Start for free
-                  <ArrowRight size={16} />
-                </Link>
-              </Button>
+            <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-gray-500 md:text-lg">
+              {token
+                ? "Monitor sales, manage inventory, track expenses, and grow your business from a single dashboard."
+                : "Rebuzz POS helps small business owners create invoices, track inventory, accept payments, and understand their numbers — all in one clean dashboard."}
+            </p>
 
-              <Button
-                asChild
-                variant="outline"
-                className="border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl px-7 py-3 text-base font-medium w-full sm:w-auto"
-              >
-                <Link href="/login">Sign in to your account</Link>
-              </Button>
-            </>
-          )}
-        </div>
+            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              {token ? (
+                <>
+                  <Button
+                    asChild
+                    className="h-12 w-full rounded-xl bg-blue-600 px-7 text-base font-semibold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-700 hover:shadow-blue-600/30 sm:w-auto"
+                  >
+                    <Link
+                      href="/sales-revenue"
+                      className="flex items-center gap-2"
+                    >
+                      Manage Sales
+                      <ArrowRight size={16} />
+                    </Link>
+                  </Button>
 
-        {/* Highlights */}
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-6">
-          {(token ? AUTH_HIGHLIGHTS : GUEST_HIGHLIGHTS).map((item) => (
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="h-12 w-full rounded-xl border-gray-200 bg-white px-7 text-base font-medium text-gray-700 hover:bg-gray-50 sm:w-auto"
+                  >
+                    <Link href="/dashboard/growth-tracker">View Reports</Link>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    asChild
+                    className="h-12 w-full rounded-xl bg-blue-600 px-7 text-base font-semibold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-700 hover:shadow-blue-600/30 sm:w-auto"
+                  >
+                    <Link href="/signup" className="flex items-center gap-2">
+                      Start for free
+                      <ArrowRight size={16} />
+                    </Link>
+                  </Button>
+
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="h-12 w-full rounded-xl border-gray-200 bg-white px-7 text-base font-medium text-gray-700 hover:bg-gray-50 sm:w-auto"
+                  >
+                    <Link href="/login">Sign in to your account</Link>
+                  </Button>
+                </>
+              )}
+            </div>
+
+            <div className="mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+              {(token ? AUTH_HIGHLIGHTS : GUEST_HIGHLIGHTS).map((item) => (
+                <div
+                  key={item}
+                  className="flex items-center gap-1.5 text-sm text-gray-500"
+                >
+                  <CheckCircle2 size={13} className="shrink-0 text-green-500" />
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* App screenshot — the payoff for the headline, so it sits in the
+              same section rather than being announced separately. */}
+          <div className="relative mx-auto mt-14 max-w-5xl pb-16 md:mt-20 md:pb-24">
             <div
-              key={item}
-              className="flex items-center gap-1.5 text-sm text-gray-500"
-            >
-              <CheckCircle2 size={13} className="text-green-500 shrink-0" />
-              {item}
+              aria-hidden
+              className="pointer-events-none absolute -inset-x-8 -top-4 bottom-16 rounded-[2rem] bg-blue-600/10 blur-2xl"
+            />
+            <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl shadow-gray-900/10 ring-1 ring-gray-900/5">
+              <div className="flex items-center gap-1.5 border-b border-gray-200 bg-gray-50 px-4 py-2.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
+                <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
+                <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
+                <span className="ml-3 rounded-md bg-white px-2 py-0.5 text-[11px] text-gray-400 ring-1 ring-gray-200">
+                  rebuzzpos.com
+                </span>
+              </div>
+              <Image
+                src={InvoiceSs}
+                placeholder="blur"
+                quality={85}
+                width={1000}
+                alt="Rebuzz POS dashboard screenshot"
+                className="h-auto w-full"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Capability band ── */}
+      <section className="border-b border-gray-100 px-6 py-10 md:px-16">
+        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-4">
+          {CAPABILITIES.map(({ icon: Icon, label, value }) => (
+            <div key={label} className="flex items-start gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                <Icon size={17} />
+              </span>
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                  {label}
+                </p>
+                <p className="mt-0.5 text-sm font-semibold text-gray-900">
+                  {value}
+                </p>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── App screenshot ── */}
-      <section className="px-6 md:px-16 pb-16 max-w-5xl mx-auto">
-        <div className="rounded-2xl border border-gray-200 shadow-xl overflow-hidden ring-1 ring-gray-100">
-          <div className="bg-gray-100 px-4 py-2.5 flex items-center gap-1.5 border-b border-gray-200">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
-            <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
-            <span className="w-2.5 h-2.5 rounded-full bg-green-400" />
-            <span className="text-xs text-gray-400 ml-2">rebuzzpos.com</span>
-          </div>
-          <Image
-            src={InvoiceSs}
-            placeholder="blur"
-            quality={85}
-            width={1000}
-            alt="Rebuzz POS dashboard screenshot"
-            className="w-full h-auto"
-          />
-        </div>
-      </section>
-
       {/* ── Features ── */}
-      <section className="bg-gray-50 border-t border-gray-100 px-6 md:px-16 py-16">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-gray-900 text-2xl md:text-3xl font-bold">
+      <section className="bg-gray-50/70 px-6 py-20 md:px-16">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-12 max-w-2xl">
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600">
+              What you get
+            </p>
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
               Everything you need to grow
             </h2>
-            <p className="text-gray-500 mt-3 text-sm md:text-base max-w-lg mx-auto">
+            <p className="mt-4 text-base leading-relaxed text-gray-500">
               A complete toolkit for managing sales, staff, customers, and
-              inventory.
+              inventory — without stitching four tools together.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {FEATURES.map(({ icon: Icon, title, description }) => (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURES.map(({ icon: Icon, title, description, wide }) => (
               <div
                 key={title}
-                className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow duration-200"
+                className={`group rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-600/5 ${
+                  wide ? "sm:col-span-2" : ""
+                }`}
               >
-                <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center mb-4">
-                  <Icon size={18} className="text-blue-600" />
+                <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white">
+                  <Icon size={19} />
                 </div>
-                <h3 className="text-gray-900 font-semibold text-sm mb-1.5">
+                <h3 className="text-base font-semibold text-gray-900">
                   {title}
                 </h3>
-                <p className="text-gray-500 text-xs leading-relaxed">
+                <p className="mt-2 text-sm leading-relaxed text-gray-500">
                   {description}
                 </p>
               </div>
@@ -357,49 +364,135 @@ const Page = async () => {
         </div>
       </section>
 
-      {/* ── CTA ── */}
-      <section className="px-6 md:px-16 py-16 text-center">
-        <div className="max-w-xl mx-auto">
-          <h2 className="text-gray-900 text-2xl md:text-3xl font-bold">
-            {token
-              ? "Continue growing your business"
-              : "Ready to simplify your business?"}
-          </h2>
+      {/* ── Closing CTA ──
+          A dark panel rather than more centred text on white: the page ends on
+          something that looks like a decision, not another paragraph. */}
+      <section className="px-6 py-20 md:px-16">
+        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-gray-900 px-8 py-16 text-center md:px-16">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -left-24 -top-24 h-80 w-80 rounded-full bg-blue-500/20 blur-3xl"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-32 -right-20 h-96 w-96 rounded-full bg-blue-400/10 blur-3xl"
+          />
 
-          <p className="text-gray-500 mt-3 text-sm md:text-base">
-            {token
-              ? "Access your dashboard, review reports, manage inventory, and track business performance in real time."
-              : "Join businesses already using Rebuzz POS to save time and grow faster."}
-          </p>
+          <div className="relative mx-auto max-w-2xl">
+            <h2 className="text-3xl font-bold tracking-tight text-white md:text-4xl">
+              {token
+                ? "Continue growing your business"
+                : "Ready to simplify your business?"}
+            </h2>
 
-          <Button
-            asChild
-            className="mt-7 bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-8 py-3 text-base font-semibold"
-          >
-            <Link
-              href={token ? "/dashboard" : "/signup"}
-              className="flex items-center gap-2"
+            <p className="mt-4 text-base leading-relaxed text-gray-400">
+              {token
+                ? "Access your dashboard, review reports, manage inventory, and track business performance in real time."
+                : "Join businesses already using Rebuzz POS to save time and grow faster."}
+            </p>
+
+            <Button
+              asChild
+              className="mt-9 h-12 rounded-xl bg-white px-8 text-base font-semibold text-gray-900 shadow-lg transition-colors hover:bg-gray-100"
             >
-              {token ? "Open Dashboard" : "Get started for free"}
-              <ArrowRight size={16} />
-            </Link>
-          </Button>
+              <Link
+                href={token ? "/dashboard" : "/signup"}
+                className="flex items-center gap-2"
+              >
+                {token ? "Open Dashboard" : "Get started for free"}
+                <ArrowRight size={16} />
+              </Link>
+            </Button>
+
+            {!token && (
+              <p className="mt-4 text-xs text-gray-500">
+                Free to start · No card required
+              </p>
+            )}
+          </div>
         </div>
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-gray-100 px-6 md:px-16 py-6 flex flex-col sm:flex-row items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 bg-blue-600 rounded-md flex items-center justify-center">
-            <Zap size={10} className="text-white" />
+      <footer className="border-t border-gray-100 px-6 py-10 md:px-16">
+        <div className="mx-auto flex max-w-6xl flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+          <div className="max-w-xs">
+            <div className="flex items-center gap-1.5">
+              <Image
+                src="/rebuzz.png"
+                alt=""
+                width={26}
+                height={26}
+                className="rounded-md"
+              />
+              <span className="text-base font-bold tracking-tight">
+                <span style={{ color: "#244074" }}>Re</span>
+                <span style={{ color: "#E26924" }}>Buzz</span>
+              </span>
+            </div>
+            <p className="mt-3 text-xs leading-relaxed text-gray-400">
+              Invoicing, inventory and payments for small businesses — in one
+              dashboard.
+            </p>
           </div>
-          <span className="text-sm font-semibold text-gray-700">
-            ReBuzz POS
-          </span>
+
+          <div className="flex gap-14">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                Product
+              </p>
+              <ul className="mt-3 space-y-2 text-xs text-gray-500">
+                <li>
+                  <Link
+                    href="/subscriptions"
+                    className="transition-colors hover:text-blue-600"
+                  >
+                    Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href={token ? "/dashboard" : "/login"}
+                    className="transition-colors hover:text-blue-600"
+                  >
+                    Dashboard
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                Account
+              </p>
+              <ul className="mt-3 space-y-2 text-xs text-gray-500">
+                <li>
+                  <Link
+                    href="/login"
+                    className="transition-colors hover:text-blue-600"
+                  >
+                    Log in
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/signup"
+                    className="transition-colors hover:text-blue-600"
+                  >
+                    Create account
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
-        <p className="text-xs text-gray-400">
-          © {new Date().getFullYear()} ReBuzz. All rights reserved.
-        </p>
+
+        <div className="mx-auto mt-10 flex max-w-6xl flex-col items-center justify-between gap-2 border-t border-gray-100 pt-6 sm:flex-row">
+          <p className="text-xs text-gray-400">
+            © {new Date().getFullYear()} ReBuzz. All rights reserved.
+          </p>
+          <p className="text-xs text-gray-400">Brand Builder Pvt Ltd</p>
+        </div>
       </footer>
     </div>
   );
