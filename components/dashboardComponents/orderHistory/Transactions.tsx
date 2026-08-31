@@ -42,9 +42,15 @@ type TabKey = "completed" | "refunded" | "all";
 export default function Transactions({
   transactions: initialTransactions,
   isLoading = false,
+  onRefunded,
 }: {
   transactions: Transaction[];
   isLoading?: boolean;
+  /**
+   * Fired after a refund goes through, so the page can re-read its figures.
+   * The row below flips on its own, but the stat cards are the parent's.
+   */
+  onRefunded?: () => void;
 }) {
   const router = useRouter();
   const { currency } = useCurrency();
@@ -137,6 +143,11 @@ export default function Transactions({
 
       toast.success(`Order ${refundTarget.id} refunded successfully`);
       setRefundTarget(null);
+
+      // The optimistic flip above only covers this row. Revenue, the refund
+      // total and the refund rate all move with it, and those are computed
+      // server-side from the whole bill list — so the page re-reads them.
+      onRefunded?.();
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Failed to refund transaction",

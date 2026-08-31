@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   DateRangeFilter,
   type DateRangeValue,
@@ -29,12 +29,45 @@ function getDefaultDateRange(): DateRangeValue {
   return { startDate: start, endDate: end };
 }
 
+/**
+ * Both requests for one date range.
+ *
+ * Returns the data rather than writing it, so the effect below and the refresh
+ * the table triggers can share it without also sharing a loading flag — the
+ * refresh has to be silent, since the row it follows has already updated and
+ * blanking the cards would read as a step backwards.
+ *
+ * `no-store` on both: the routes no longer cache, but the browser would still
+ * reuse its own copy of an identical GET, which is the same staleness one
+ * layer up.
+ */
+async function loadOrderHistory(range: DateRangeValue): Promise<{
+  transactions: Transaction[];
+  stats: StatsData | null;
+}> {
+  const query = `startDate=${range.startDate}&endDate=${range.endDate}`;
+
+  const [transRes, statsRes] = await Promise.all([
+    fetch(`/api/order-history/transactions?${query}`, { cache: "no-store" }),
+    fetch(`/api/order-history/stats?${query}`, { cache: "no-store" }),
+  ]);
+
+  return {
+    transactions: transRes.ok ? ((await transRes.json())?.data ?? []) : [],
+    stats: statsRes.ok ? ((await statsRes.json())?.data ?? null) : null,
+  };
+}
+
 export default function OrderHistoryPage() {
   const defaults = getDefaultDateRange();
   const [dateRange, setDateRange] = useState<DateRangeValue>({
     startDate: defaults.startDate,
     endDate: defaults.endDate,
   });
+
+  // Destructured so both the effect and `refresh` depend on the two strings
+  // rather than the object, which is a fresh reference on every render.
+  const { startDate, endDate } = dateRange;
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [stats, setStats] = useState<StatsData | null>(null);
@@ -43,57 +76,48 @@ export default function OrderHistoryPage() {
   useEffect(() => {
     let cancelled = false;
 
-    const fetchData = async () => {
+    const run = async () => {
       setLoading(true);
       try {
-        // `no-store` on the client too: the routes no longer cache, but the
-        // browser would still reuse its own copy of an identical GET, which
-        // is the same staleness one layer up.
-        const [transRes, statsRes] = await Promise.all([
-          fetch(
-            `/api/order-history/transactions?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
-            { cache: "no-store" },
-          ),
-          fetch(
-            `/api/order-history/stats?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
-            { cache: "no-store" },
-          ),
-        ]);
-
+        const data = await loadOrderHistory({ startDate, endDate });
         if (cancelled) return;
-
-        if (transRes.ok) {
-          const transJson = await transRes.json();
-
-          setTransactions(transJson?.data ?? []);
-        } else {
-          setTransactions([]);
-        }
-
-        if (statsRes.ok) {
-          const statsJson = await statsRes.json();
-          setStats(statsJson?.data ?? null);
-        } else {
-          setStats(null);
-        }
+        setTransactions(data.transactions);
+        setStats(data.stats);
       } catch {
         if (!cancelled) {
           setTransactions([]);
           setStats(null);
         }
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       }
     };
 
-    fetchData();
+    run();
 
     return () => {
       cancelled = true;
     };
-  }, [dateRange.startDate, dateRange.endDate]);
+  }, [startDate, endDate]);
+
+  /**
+   * Re-read the figures without a loading state.
+   *
+   * Called after a refund: the table has already flipped that row itself, so
+   * what is left to correct is the revenue, refund total and refund rate,
+   * which the server computes from the whole bill list. A failure leaves what
+   * is on screen alone rather than blanking a page that is still broadly
+   * right.
+   */
+  const refresh = useCallback(async () => {
+    try {
+      const data = await loadOrderHistory({ startDate, endDate });
+      setTransactions(data.transactions);
+      setStats(data.stats);
+    } catch {
+      // Keep what is showing.
+    }
+  }, [startDate, endDate]);
 
   const isEmpty = !transactions || transactions.length === 0;
   // const displayData = isEmpty ? mockTransactions : transactions;
@@ -126,7 +150,14 @@ export default function OrderHistoryPage() {
         <OrderHistoryStats stats={stats} isLoading={loading} />
       </div>
 
-      <Transactions transactions={transactions} isLoading={loading} />
+      {/* A refund re-reads the figures without a loading flash — the row
+          flips optimistically inside the table, so blanking the cards would
+          be a step backwards. */}
+      <Transactions
+        transactions={transactions}
+        isLoading={loading}
+        onRefunded={refresh}
+      />
     </div>
   );
 }
