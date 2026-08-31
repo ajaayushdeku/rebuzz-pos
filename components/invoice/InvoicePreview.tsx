@@ -956,6 +956,15 @@ export default function InvoicePreview({
     </>
   );
 
+  const NAME_LIMIT = 8;
+
+  const shortName = (name: string): string => {
+    const clean = name.trim();
+    return clean.length > NAME_LIMIT
+      ? `${clean.slice(0, NAME_LIMIT)}...`
+      : clean;
+  };
+
   // Raw document — used for PDF export, screenshots, printing and public pages.
   if (!withControls) {
     return (
@@ -989,14 +998,16 @@ export default function InvoicePreview({
             <button
               key={value}
               onClick={() => setPreviewMode(value)}
-              className={`flex flex-col items-center justify-center gap-1 min-w-[72px] px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
+              className={`flex flex-row items-center justify-center gap-2 min-w-[50px] md:min-w-[72px] px-2 md:px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
                 previewMode === value
                   ? "bg-blue-600 text-white shadow-sm"
                   : "text-gray-500 hover:text-blue-700 hover:bg-blue-50"
               }`}
             >
-              <Icon size={16} />
-              <span className="hidden lg:inline-block">{label}</span>
+              <Icon size={20} />
+              <span className="hidden font-bold text-[13px] lg:inline-block">
+                {label}
+              </span>
             </button>
           ))}
         </div>
@@ -1006,9 +1017,12 @@ export default function InvoicePreview({
 
           <button
             onClick={() => router.push(`/invoices/${invoice.invoice}`)}
-            className="shrink-0 cursor-pointer rounded-2xl border-[3px] border-blue-200 px-3 py-1.5 bg-blue-50 items-center justify-center text-sm font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:text-blue-700"
+            className="shrink-0 cursor-pointer rounded-2xl border-[3px] border-blue-200 px-3 py-1.5 bg-blue-50 items-center justify-center text-[13px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:text-blue-700"
           >
-            Go back to {invoice.ticketName || `Invoice #${invoice.invoice}`}
+            Back to{" "}
+            {invoice.ticketName
+              ? `${shortName(invoice.ticketName)} · #${invoice.invoice}`
+              : `Invoice #${invoice.invoice}`}
           </button>
         </div>
       </div>

@@ -105,6 +105,15 @@ export default function CreditDocumentViewer({
     };
   }, [printing]);
 
+  const NAME_LIMIT = 8;
+
+  const shortName = (name?: string | null): string => {
+    const clean = (name ?? "").trim();
+    return clean.length > NAME_LIMIT
+      ? `${clean.slice(0, NAME_LIMIT)}...`
+      : clean;
+  };
+
   return (
     <div className="w-full bg-white border border-gray-200 overflow-hidden shadow-sm">
       {/* Off-screen A4 copy: the export source, and the print body when
@@ -149,14 +158,16 @@ export default function CreditDocumentViewer({
               type="button"
               onClick={() => setPreviewMode(value)}
               aria-pressed={previewMode === value}
-              className={`flex flex-col items-center justify-center gap-1 min-w-[72px] px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
+              className={`flex flex-row items-center justify-center gap-2 min-w-[50px] md:min-w-[72px] px-2 md:px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
                 previewMode === value
                   ? "bg-blue-600 text-white shadow-sm"
                   : "text-gray-500 hover:text-blue-700 hover:bg-blue-50"
               }`}
             >
               <Icon size={16} />
-              <span className="hidden lg:inline-block">{label}</span>
+              <span className="hidden font-bold text-[13px] lg:inline-block">
+                {label}
+              </span>
             </button>
           ))}
         </div>
@@ -189,9 +200,11 @@ export default function CreditDocumentViewer({
           <button
             type="button"
             onClick={() => router.push(`/records/credits/${credit._id}`)}
-            className="shrink-0 cursor-pointer rounded-2xl border-[3px] border-blue-200 px-3 py-1.5 bg-blue-50 items-center justify-center text-sm font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:text-blue-700"
+            className="shrink-0 cursor-pointer rounded-2xl border-[3px] border-blue-200 px-3 py-1.5 bg-blue-50 items-center justify-center text-[13px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:text-blue-700"
           >
-            Go back to {credit.ticketName || `Invoice #${credit.invoiceNo}`}
+            Back to{" "}
+            {`${shortName(credit.ticketName)} · ${credit.invoiceNo && `#${credit.invoiceNo}`}` ||
+              `Invoice #${credit.invoiceNo}`}
           </button>
         </div>
       </div>
