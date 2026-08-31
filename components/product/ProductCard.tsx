@@ -490,11 +490,11 @@ export default function ProductCard({
                   {item.usesStocks && (
                     <>
                       <StatRow
-                        label="Stock value (sell)"
+                        label="In-Stock value (sell)"
                         value={fmt(item.price * item.inStock)}
                       />
                       <StatRow
-                        label="Stock value (cost)"
+                        label="In-Stock value (cost)"
                         value={fmt(item.costPrice * item.inStock)}
                       />
                     </>

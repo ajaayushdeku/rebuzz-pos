@@ -1,20 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Crown, Gem, Leaf, type LucideIcon } from "lucide-react";
+import { Crown, Gem, Leaf, Printer, type LucideIcon } from "lucide-react";
 
-import {
-  findPlan,
-  planTone,
-  resolvePlanId,
-  type PlanId,
-} from "@/lib/config/plans";
+import { parseSubscription, planTone, type PlanTier } from "@/lib/config/plans";
 import { useSubscriptionType } from "@/hooks/useSubscriptionType";
 import { useSidebar } from "@/providers/SidebarProvider";
 
-const PLAN_ICONS: Record<PlanId, LucideIcon> = {
+const TIER_ICONS: Record<PlanTier, LucideIcon> = {
   free: Leaf,
-  yearly: Gem,
+  standard: Gem,
   lifetime: Crown,
 };
 
@@ -22,19 +17,21 @@ export default function SidebarPlanCard() {
   const { subscriptionType, isLoading } = useSubscriptionType();
   const { isCollapsed, closeMobile } = useSidebar();
 
-  const planId = resolvePlanId(subscriptionType);
-  const plan = planId ? findPlan(planId) : undefined;
+  const { tier, hasPrinter, label, raw } = parseSubscription(subscriptionType);
 
   /**
    * What the card calls the plan.
    *
-   * A value the resolver does not recognise is shown as it came rather than
-   * flattened to "Free" — the card used to claim the free tier for anything it
-   * could not match, which is the one thing it must never tell a paying
-   * business. Only a genuinely empty `subscriptionType` reads as Free.
+   * `label` spells out the tier and its billing period — "Standard ·
+   * Semi-annual" — because on this card the period is the useful half: it is
+   * what says when the next bill lands.
+   *
+   * A tier the parser does not recognise is shown as it came rather than
+   * flattened to "Free", which is the one thing this card must never tell a
+   * paying business.
    */
-  const name = plan?.name ?? (subscriptionType?.trim() || "Free");
-  const Icon = planId ? PLAN_ICONS[planId] : Gem;
+  const name = tier ? label : raw || "Free";
+  const Icon = tier ? TIER_ICONS[tier] : Gem;
 
   // Same colour the navbar badge gives this plan.
   const tone = planTone(subscriptionType);
@@ -104,15 +101,28 @@ export default function SidebarPlanCard() {
               Current plan
             </span>
             <span className="block flex flex-col gap-0 truncate text-sm font-semibold text-gray-900">
-              {name}
+              <span className="flex items-center gap-1.5">
+                <span className="truncate">{name}</span>
+                {/* The printer bundle rides on top of a tier rather than being
+                    one, so it gets a mark of its own instead of lengthening
+                    the plan name. */}
+                {hasPrinter && (
+                  <span
+                    title="Includes the printer bundle"
+                    className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-gray-100 text-gray-500"
+                  >
+                    <Printer size={10} />
+                  </span>
+                )}
+              </span>
               {/* A lifetime plan has nothing to upgrade to, but the card
                   still links somewhere worth going — so it says what the link
                   does rather than vanishing and leaving the row looking
                   truncated. */}
               <p
-                className={`text-left text-[11px] font-medium ${planId === "lifetime" ? "text-amber-700" : "text-blue-600"} hover:underline `}
+                className={`text-left text-[11px] font-medium ${tier === "lifetime" ? "text-amber-700" : "text-blue-600"} hover:underline `}
               >
-                {planId === "lifetime"
+                {tier === "lifetime"
                   ? "View plan details"
                   : "View plans & upgrade"}
               </p>

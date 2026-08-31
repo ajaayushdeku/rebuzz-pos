@@ -135,40 +135,95 @@ export const PLANS: Plan[] = [
  * never see a badge saying otherwise.
  */
 /**
- * Which plan an API `subscriptionType` means.
+ * What the backend records against an account, as its own vocabulary.
  *
- * The matching is loose because this app does not own the value: "annual",
- * "yearly" and "1_YEAR" are the same plan. Returns null when nothing is
- * recorded or the value is one nobody here anticipated — callers must decide
- * what to do with that rather than being handed a confident "free", which
- * would tell a paying business it is on the free tier.
+ * Deliberately separate from `PlanId`, which is what the pricing page *sells*.
+ * The API has eleven states — three tiers, four billing periods and a printer
+ * bundle — and squeezing those into the three offered plans is what made
+ * "Standard-monthly" read as no plan at all.
+ *
+ *   Free
+ *   Standard-monthly | -quarterly | -semi-annual | -annual
+ *   Lifetime
+ *   …and a `-printer` variant of every paid one.
  */
-export function resolvePlanId(subscriptionType?: string | null): PlanId | null {
-  const lower = (subscriptionType ?? "").trim().toLowerCase();
-  if (!lower) return null;
+export type PlanTier = "free" | "standard" | "lifetime";
+export type BillingPeriod = "monthly" | "quarterly" | "semi-annual" | "annual";
 
-  if (lower.includes("life") || lower.includes("perm")) return "lifetime";
-  if (
-    lower.includes("year") ||
-    lower.includes("annual") ||
-    lower.includes("premium") ||
-    lower.includes("pro")
-  ) {
-    return "yearly";
+export interface SubscriptionInfo {
+  /** Null when the value is one this app does not recognise. */
+  tier: PlanTier | null;
+  /** Only ever set on the standard tier. */
+  period: BillingPeriod | null;
+  /** The `-printer` bundle. */
+  hasPrinter: boolean;
+  /** Ready to print: "Free", "Standard · Semi-annual", "Lifetime". */
+  label: string;
+  /** Exactly what the API said, for anything unrecognised. */
+  raw: string;
+}
+
+const PERIOD_LABELS: Record<BillingPeriod, string> = {
+  monthly: "Monthly",
+  quarterly: "Quarterly",
+  "semi-annual": "Semi-annual",
+  annual: "Annual",
+};
+
+/**
+ * Order matters: "Standard-semi-annual" contains "annual", so the longer
+ * pattern has to be tried first or every semi-annual account reads as annual —
+ * a different plan at a different price.
+ */
+const PERIOD_PATTERNS: [BillingPeriod, RegExp][] = [
+  ["semi-annual", /semi[-_\s]?annual|half[-_\s]?year/],
+  ["annual", /annual|year/],
+  ["quarterly", /quarter/],
+  ["monthly", /month/],
+];
+
+/**
+ * Read an API `subscriptionType`.
+ *
+ * The matching is loose because this app does not own the value — it is a
+ * string the backend may extend. An unrecognised tier comes back as null with
+ * `raw` intact, so callers can show what was actually recorded rather than
+ * telling a paying business it is on the free plan.
+ */
+export function parseSubscription(
+  subscriptionType?: string | null,
+): SubscriptionInfo {
+  const raw = (subscriptionType ?? "").trim();
+  const lower = raw.toLowerCase();
+
+  const hasPrinter = /printer/.test(lower);
+
+  let tier: PlanTier | null = null;
+  if (/life|perm/.test(lower)) tier = "lifetime";
+  else if (/standard|premium|\bpro\b/.test(lower)) tier = "standard";
+  else if (!raw || /free|starter|basic/.test(lower)) tier = "free";
+
+  let period: BillingPeriod | null = null;
+  if (tier === "standard") {
+    period = PERIOD_PATTERNS.find(([, re]) => re.test(lower))?.[0] ?? null;
   }
-  if (lower.includes("free") || lower.includes("starter")) return "free";
 
-  return null;
+  let label: string;
+  if (tier === "free") label = "Free";
+  else if (tier === "lifetime") label = "Lifetime";
+  else if (tier === "standard") {
+    label = period ? `Standard \u00b7 ${PERIOD_LABELS[period]}` : "Standard";
+  } else label = raw;
+
+  return { tier, period, hasPrinter, label, raw };
 }
 
 /**
- * The colour family for a plan.
+ * The colour family for a tier.
  *
- * Split out from `planBadge` so the sidebar card and the navbar badge cannot
- * disagree about what a tier looks like — both branch on the same
- * `resolvePlanId`, and an unrecognised value gets the same treatment in both.
- * The badge needs pill classes and the card needs a tile and a bare icon
- * colour, which is the only reason these are two functions rather than one.
+ * Shared by the navbar badge and the sidebar card so the two cannot disagree
+ * about what a tier looks like. The printer bundle does not change the colour —
+ * it is an add-on to a tier, not a tier of its own.
  */
 export function planTone(subscriptionType?: string | null): {
   /** Icon tile: fill and icon colour together. */
@@ -176,15 +231,13 @@ export function planTone(subscriptionType?: string | null): {
   /** Icon colour alone, plus its hover, for the collapsed rail. */
   icon: string;
 } {
-  const raw = (subscriptionType ?? "").trim();
-
-  switch (resolvePlanId(raw)) {
+  switch (parseSubscription(subscriptionType).tier) {
     case "lifetime":
       return {
         tile: "bg-amber-100 text-amber-700",
         icon: "text-amber-600 hover:bg-amber-100 hover:text-amber-700",
       };
-    case "yearly":
+    case "standard":
       return {
         tile: "bg-blue-100 text-blue-700",
         icon: "text-blue-500 hover:bg-blue-100 hover:text-blue-600",
@@ -196,52 +249,43 @@ export function planTone(subscriptionType?: string | null): {
       };
   }
 
-  // Nothing recorded is the free tier, exactly as the badge reads it.
-  if (!raw) {
-    return {
-      tile: "bg-gray-100 text-gray-600",
-      icon: "text-gray-500 hover:bg-gray-100 hover:text-gray-700",
-    };
-  }
-
-  // A plan the backend added since — the badge's cyan.
+  // A tier the backend added since — visible, and plainly not one of ours.
   return {
     tile: "bg-blue-100 text-cyan-700",
     icon: "text-cyan-600 hover:bg-blue-100 hover:text-cyan-700",
   };
 }
 
+/**
+ * The navbar badge.
+ *
+ * Tier only. The billing period and the printer bundle are detail the sidebar
+ * card has room for; a pill in a nav row does not, and "STANDARD-SEMI-ANNUAL"
+ * would push the rest of the row off a phone.
+ */
 export function planBadge(subscriptionType?: string | null): {
   label: string;
   /** Tailwind classes for the badge, keyed to how much the plan is worth. */
   className: string;
 } {
-  const raw = (subscriptionType ?? "").trim();
+  const { tier, raw } = parseSubscription(subscriptionType);
 
-  switch (resolvePlanId(raw)) {
+  switch (tier) {
     case "lifetime":
       return {
         label: "LIFETIME",
         className: "bg-amber-100 text-amber-700 hover:bg-amber-100",
       };
-    case "yearly":
+    case "standard":
       return {
-        label: "YEARLY",
+        label: "STANDARD",
         className: "bg-blue-100 text-blue-700 hover:bg-blue-100",
       };
     case "free":
       return {
-        label: "STARTER",
+        label: "FREE",
         className: "bg-gray-100 text-gray-600 hover:bg-gray-100",
       };
-  }
-
-  // Nothing recorded at all is the free tier.
-  if (!raw) {
-    return {
-      label: "STARTER",
-      className: "bg-gray-100 text-gray-600 hover:bg-gray-100",
-    };
   }
 
   // Something the backend added since. Show it rather than guess.
