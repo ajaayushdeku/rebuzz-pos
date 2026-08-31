@@ -346,11 +346,15 @@ export default function CustomerTable({
 
                   <td className="py-3 px-4 text-xs text-center">
                     <div
-                      className="gap-1.5"
+                      className="gap-1.5 items-center"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <span className="font-semibold text-gray-800">
-                        {formatAmount(customer.loyaltyPoint, currency.locale)}
+                      <span className="font-semibold text-gray-800 ">
+                        {/* {formatAmount(customer.loyaltyPoint, currency.locale)}{" "} */}
+                        {(customer.loyaltyPoint ?? 0).toLocaleString()}
+                        <span className=" ml-1 text-[9px] text-gray-400">
+                          pts
+                        </span>
                       </span>
 
                       <button

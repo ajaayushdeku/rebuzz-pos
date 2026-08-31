@@ -1,7 +1,7 @@
 import {
-  COLOR_KEYS,
   FALLBACK_TIER_STYLE,
   STATUS_COLORS,
+  TIER_PALETTE,
   type LoyaltyStatus,
 } from "@/components/settingsComponents/loyaltyPoints/loyaltyStatusConfig";
 
@@ -26,28 +26,23 @@ export interface LoyaltyTierPayload {
  *
  * A tier the app knows by name keeps its established colour — gold is always
  * the gold swatch, wherever it sits in the ladder. Anything a business invents
- * takes the next unused colour from the palette, and falls back to blue once
- * they are all spoken for, so two tiers are never the same shade by accident.
+ * takes the next unused swatch from the palette, so two tiers are never the
+ * same shade by accident until all twenty are spoken for.
  */
 function styleFor(name: string, taken: Set<string>) {
   const known = STATUS_COLORS[name.trim().toLowerCase()];
   if (known) return { color: known.color, bgColor: known.bg };
 
-  const freeKey = COLOR_KEYS.find(
-    (k) => !taken.has(k) && STATUS_COLORS[k] !== undefined,
-  );
-  if (!freeKey) {
+  const free = TIER_PALETTE.find((swatch) => !taken.has(swatch.key));
+  if (!free) {
     return {
       color: FALLBACK_TIER_STYLE.color,
       bgColor: FALLBACK_TIER_STYLE.bg,
     };
   }
 
-  taken.add(freeKey);
-  return {
-    color: STATUS_COLORS[freeKey].color,
-    bgColor: STATUS_COLORS[freeKey].bg,
-  };
+  taken.add(free.key);
+  return { color: free.color, bgColor: free.bg };
 }
 
 /**
@@ -62,8 +57,8 @@ export function mapTiers(raw: RawLoyaltyTier[]): LoyaltyStatus[] {
   // gold swatch from a tier actually called gold further down the list.
   const taken = new Set<string>(
     raw
-      .map((t) => t.name.trim().toLowerCase())
-      .filter((n) => STATUS_COLORS[n] !== undefined),
+      .map((t) => STATUS_COLORS[t.name.trim().toLowerCase()]?.key)
+      .filter((key): key is string => key !== undefined),
   );
 
   return raw.map((t) => {

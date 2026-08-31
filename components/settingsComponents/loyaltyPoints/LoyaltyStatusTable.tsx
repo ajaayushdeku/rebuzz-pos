@@ -1,8 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { Trophy, Edit3, Trash2 } from "lucide-react";
 import { type LoyaltyStatus, pointRange } from "./loyaltyStatusConfig";
 import TierBadge from "./TierBadge";
+import TablePagination from "@/components/ui/TablePagination";
+
+const PAGE_SIZE = 10;
 
 /**
  * The tier ladder. Rows arrive already sorted by threshold, so each one's
@@ -21,6 +25,15 @@ export default function LoyaltyStatusTable({
   onEdit: (status: LoyaltyStatus) => void;
   onDelete: (status: LoyaltyStatus) => void;
 }) {
+  const [page, setPage] = useState(0);
+
+  const totalPages = Math.max(1, Math.ceil(statuses.length / PAGE_SIZE));
+  // Clamped, so deleting the last tier on the last page cannot strand the
+  // view on an empty one.
+  const safePage = Math.min(page, totalPages - 1);
+  const start = safePage * PAGE_SIZE;
+  const visible = statuses.slice(start, start + PAGE_SIZE);
+
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white py-2 px-2 shadow-sm">
       {/* Count header — the table gave no sense of how many tiers exist
@@ -62,7 +75,12 @@ export default function LoyaltyStatusTable({
                 </td>
               </tr>
             ) : (
-              statuses.map((status, idx) => {
+              visible.map((status, i) => {
+                // Position in the whole ladder, not on the page: the level
+                // number and the range's upper bound both come from where the
+                // tier sits overall, so page two must keep counting from 11
+                // and read its first range against page one's last tier.
+                const idx = start + i;
                 const isEditing = editingId === status.id;
 
                 return (
@@ -119,6 +137,18 @@ export default function LoyaltyStatusTable({
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="px-2">
+          <TablePagination
+            page={safePage}
+            totalPages={totalPages}
+            total={statuses.length}
+            noun="tiers"
+            onPageChange={setPage}
+          />
+        </div>
+      )}
     </div>
   );
 }

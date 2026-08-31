@@ -4,12 +4,25 @@ import { useState } from "react";
 import { Trophy, Check, Info, Loader2, Plus } from "lucide-react";
 import ModalShell, {
   modalInput,
-  modalInputIdle,
   modalInputError,
   modalGhostButton,
 } from "@/components/ui/ModalShell";
-import { type LoyaltyStatus, STATUS_COLORS } from "./loyaltyStatusConfig";
+import {
+  FALLBACK_TIER_STYLE,
+  type LoyaltyStatus,
+  STATUS_COLORS,
+} from "./loyaltyStatusConfig";
 import TierBadge from "./TierBadge";
+
+/**
+ * The idle field, in this modal's rose rather than the shared blue.
+ *
+ * Local rather than a second export from ModalShell: this is one screen's
+ * accent, and two conflicting `focus:ring-*` utilities on the same element
+ * would resolve by stylesheet order rather than by which was written last.
+ */
+const roseInputIdle =
+  "border-gray-200 focus:border-rose-400 focus:ring-rose-500/20";
 
 export interface LoyaltyStatusDraft {
   name: string;
@@ -97,8 +110,9 @@ export default function LoyaltyStatusModal({
   // editing it keeps the tier's existing colour, since renaming does not
   // reassign one.
   const named = STATUS_COLORS[name.trim().toLowerCase()];
-  const previewColor = editing?.color ?? named?.color ?? "text-blue-700";
-  const previewBg = editing?.bgColor ?? named?.bg ?? "bg-blue-100";
+  const previewColor =
+    editing?.color ?? named?.color ?? FALLBACK_TIER_STYLE.color;
+  const previewBg = editing?.bgColor ?? named?.bg ?? FALLBACK_TIER_STYLE.bg;
 
   return (
     <ModalShell
@@ -111,8 +125,8 @@ export default function LoyaltyStatusModal({
           : "Name the tier and set the points needed to reach it"
       }
       icon={Trophy}
-      iconColor="text-blue-600"
-      iconBgColor="bg-blue-50"
+      iconColor="text-rose-600"
+      iconBgColor="bg-rose-50"
       maxWidth="max-w-xl"
       footer={
         <div className="flex items-center gap-2.5">
@@ -128,7 +142,7 @@ export default function LoyaltyStatusModal({
             type="button"
             onClick={handleSubmit}
             disabled={isSaving}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-[13px] font-bold text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-rose-600 py-3 text-[13px] font-bold text-white shadow-md transition hover:bg-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSaving ? (
               <>
@@ -178,7 +192,7 @@ export default function LoyaltyStatusModal({
             }}
             placeholder="e.g. Platinum"
             className={`${modalInput} ${
-              errors.name ? modalInputError : modalInputIdle
+              errors.name ? modalInputError : roseInputIdle
             }`}
           />
           {errors.name && (
@@ -201,7 +215,7 @@ export default function LoyaltyStatusModal({
             }}
             placeholder="e.g. 10000"
             className={`${modalInput} tabular-nums ${
-              errors.minPoints ? modalInputError : modalInputIdle
+              errors.minPoints ? modalInputError : roseInputIdle
             }`}
           />
           {errors.minPoints && (
@@ -210,8 +224,8 @@ export default function LoyaltyStatusModal({
         </div>
 
         {name.trim() && (
-          <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50/60 px-3.5 py-3">
-            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+          <div className="rounded-xl border border-dashed border-rose-200 bg-rose-50/50 px-3.5 py-3">
+            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-rose-400">
               Preview
             </p>
             <div className="flex items-center gap-2">
