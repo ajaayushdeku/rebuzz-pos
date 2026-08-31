@@ -293,7 +293,7 @@ export default function CreditDetailPage() {
         onEditInvoice={
           isArchived || state === "completed" || invoiceNo == null
             ? undefined
-            : () => router.push(`/invoices/${invoiceNo}/edit`)
+            : () => router.push(`/records/credits/${creditId}/edit`)
         }
         showPan={showPan}
         onTogglePan={() => setShowPan((on) => !on)}
@@ -327,7 +327,9 @@ export default function CreditDetailPage() {
             state={state}
             currency={currency}
             deletingPaymentId={deletingPaymentId}
-            onEditInvoice={() => router.push(`/invoices/${invoiceNo}/edit`)}
+            onEditInvoice={() =>
+              router.push(`/records/credits/${creditId}/edit`)
+            }
             onSendInvoice={() => setIsSendInvoiceOpen(true)}
             onSendReminder={handleSendReminder}
             onRecordPayment={() => setIsCreditPaymentOpen(true)}

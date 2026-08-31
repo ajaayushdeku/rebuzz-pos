@@ -31,11 +31,7 @@ import DeleteCreditModal from "@/components/invoice/modals/DeleteCreditModal";
 import CreditDocumentModals, {
   type CreditDocumentAction,
 } from "@/components/credit/detail/CreditDocumentModals";
-import {
-  archiveCredit,
-  fetchCreditDetail,
-  type Credit,
-} from "@/services/apiCredit.client";
+import { archiveCredit, type Credit } from "@/services/apiCredit.client";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -107,25 +103,6 @@ export default function CreditsTable({
 
   const fmt = (v: number) =>
     formatCurrencySymbol(v, currency.symbol, currency.locale);
-
-  // The by-status (completed/archived) list may omit invoiceNo, so resolve it
-  // from the credit detail on demand before opening an invoice-scoped action.
-  const withInvoiceNo = async (c: Credit, run: (invoiceNo: number) => void) => {
-    let invoiceNo: number | null = c.invoiceNo ?? null;
-    if (invoiceNo == null) {
-      try {
-        const detail = await fetchCreditDetail(c._id);
-        invoiceNo = detail.credit?.invoiceNo ?? null;
-      } catch {
-        invoiceNo = null;
-      }
-    }
-    if (invoiceNo == null) {
-      toast.error("Invoice number not found for this credit");
-      return;
-    }
-    run(invoiceNo);
-  };
 
   // "X of Y" per customer — ordinal of this credit among the customer's
   // UNPAID credits (due remaining). Settled credits are excluded.
@@ -522,21 +499,27 @@ export default function CreditsTable({
                                         : "View payment history"}
                                     </DropdownMenuItem>
 
-                                    {/* Edit Credited Invoice */}
-                                    {!cleared && (
-                                      <DropdownMenuItem
-                                        className="rounded-lg cursor-pointer"
-                                        onSelect={() =>
-                                          withInvoiceNo(c, (inv) =>
+                                    {/* Edit Credited Invoice — the credit's own
+                                        edit route, so no invoice-number lookup
+                                        is needed to get there. Hidden on the
+                                        archived and completed tables for the
+                                        same reason the detail page hides it:
+                                        a settled credit is a record, not a
+                                        draft. */}
+                                    {!cleared &&
+                                      creditStatus !== "completed" &&
+                                      creditStatus !== "archived" && (
+                                        <DropdownMenuItem
+                                          className="rounded-lg cursor-pointer"
+                                          onSelect={() =>
                                             router.push(
-                                              `/invoices/${inv}/edit`,
-                                            ),
-                                          )
-                                        }
-                                      >
-                                        Edit
-                                      </DropdownMenuItem>
-                                    )}
+                                              `/records/credits/${c._id}/edit`,
+                                            )
+                                          }
+                                        >
+                                          Edit
+                                        </DropdownMenuItem>
+                                      )}
 
                                     {!cleared && (
                                       <>
