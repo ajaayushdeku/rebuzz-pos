@@ -83,7 +83,7 @@ export default function LoyaltyStatusTable({
                       />
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className="text-sm font-medium tabular-nums text-gray-800">
+                      <span className="text-[13px] font-medium tracking-wide  tabular-nums text-gray-800">
                         {pointRange(status, statuses[idx + 1])}
                       </span>
                       <span className="ml-1 text-xs text-gray-400">pts</span>

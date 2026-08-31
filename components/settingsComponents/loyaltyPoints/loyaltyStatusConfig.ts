@@ -75,6 +75,25 @@ export function sortByThreshold(statuses: LoyaltyStatus[]): LoyaltyStatus[] {
   return [...statuses].sort((a, b) => a.minPoints - b.minPoints);
 }
 
+/**
+ * The tier a point total falls into.
+ *
+ * The highest tier the customer has reached — the ladder is a set of floors,
+ * so the answer is the last one they are at or above. Returns undefined when
+ * the business has no tiers, or when its lowest floor is above this customer,
+ * which is a real state: a ladder starting at 300 says nothing about someone
+ * on 40.
+ */
+export function tierForPoints(
+  points: number,
+  tiers: LoyaltyStatus[],
+): LoyaltyStatus | undefined {
+  return sortByThreshold(tiers).reduce<LoyaltyStatus | undefined>(
+    (reached, tier) => (points >= tier.minPoints ? tier : reached),
+    undefined,
+  );
+}
+
 /** "0 – 499" for a tier with a successor, "5,000+" for the top one. */
 export function pointRange(
   status: LoyaltyStatus,

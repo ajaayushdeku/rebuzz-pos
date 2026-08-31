@@ -6,7 +6,7 @@ import { ArrowLeft, User } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { useCustomersList } from "@/hooks/useCustomersList";
-import { getCustomerImageUrl, getLoyaltyStatus } from "@/lib/types/customer";
+import { getCustomerImageUrl } from "@/lib/types/customer";
 import { Button } from "@/components/ui/button";
 import EditCustomerModal from "@/components/customer/EditCustomerModal";
 import LoyaltyPointModal from "@/components/customer/LoyaltyPointModal";
@@ -85,7 +85,9 @@ export default function CustomerDetailPage() {
     );
   }
 
-  const loyaltyStatus = getLoyaltyStatus(customer.loyaltyPoint);
+  // Already banded by `mapRawCustomerToCustomer` against the business's own
+  // ladder — re-deriving here would put the built-in thresholds back.
+  const loyaltyStatus = customer.loyaltyStatus;
   const imageUrl = getCustomerImageUrl(customer.image);
 
   // ── Stats derived from history ───────────────────────────────────────────

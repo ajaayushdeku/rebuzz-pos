@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Loader2, Gift, Coins, ArrowDownUp, Trophy, Plus } from "lucide-react";
+import {
+  Loader2,
+  Gift,
+  Coins,
+  ArrowDownUp,
+  Trophy,
+  Plus,
+  Info,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,46 +30,15 @@ import LoyaltyStatusModal, {
 } from "@/components/settingsComponents/loyaltyPoints/LoyaltyStatusModal";
 import {
   type LoyaltyStatus,
-  STATUS_COLORS,
-  COLOR_KEYS,
-  FALLBACK_TIER_STYLE,
   sortByThreshold,
 } from "@/components/settingsComponents/loyaltyPoints/loyaltyStatusConfig";
+import {
+  useLoyaltyTiers,
+  useLoyaltyTierMutations,
+} from "@/hooks/useLoyaltyTiers";
 
 const inputClass =
   "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
-
-// ── Mock Initial Statuses ───────────────────────────────────────────────────
-const MOCK_STATUSES: LoyaltyStatus[] = [
-  {
-    id: "1",
-    name: "Bronze",
-    minPoints: 0,
-    color: "text-orange-700",
-    bgColor: "bg-orange-100",
-  },
-  {
-    id: "2",
-    name: "Silver",
-    minPoints: 500,
-    color: "text-gray-600",
-    bgColor: "bg-gray-100",
-  },
-  {
-    id: "3",
-    name: "Gold",
-    minPoints: 1500,
-    color: "text-yellow-700",
-    bgColor: "bg-yellow-100",
-  },
-  {
-    id: "4",
-    name: "Platinum",
-    minPoints: 5000,
-    color: "text-indigo-700",
-    bgColor: "bg-indigo-100",
-  },
-];
 
 function FieldCard({
   icon: Icon,
@@ -105,8 +82,23 @@ export default function LoyaltyPointPage() {
     Partial<Record<keyof LoyaltyPointPayload, boolean>>
   >({});
 
-  // ── Loyalty Status State (mock) ──────────────────────────────────────────
-  const [statuses, setStatuses] = useState<LoyaltyStatus[]>(MOCK_STATUSES);
+  // ── Loyalty Status State ─────────────────────────────────────────────────
+  //
+  // The ladder lives on the server now. Every write re-reads it rather than
+  // patching locally: a tier's place in the ladder depends on every other
+  // tier's threshold, and the ids come back from the API.
+  const {
+    data: statuses = [],
+    isLoading: tiersLoading,
+    error: tiersError,
+  } = useLoyaltyTiers();
+  const {
+    create: createTier,
+    update: updateTier,
+    remove: removeTier,
+    isSaving: savingTier,
+    isDeleting: deletingTier,
+  } = useLoyaltyTierMutations();
   const [deleteTarget, setDeleteTarget] = useState<{
     id: string;
     name: string;
@@ -209,56 +201,74 @@ export default function LoyaltyPointPage() {
     setEditingStatus(null);
   };
 
-  /** Handles both paths — the modal reports a validated draft either way. */
-  const handleSubmitStatus = ({ name, minPoints }: LoyaltyStatusDraft) => {
-    if (editingStatus) {
-      setStatuses((prev) =>
-        prev.map((s) =>
-          s.id === editingStatus.id ? { ...s, name, minPoints } : s,
-        ),
-      );
-      toast.success(`Status "${name}" updated`);
-    } else {
-      // Hand out the first palette colour no existing tier is using.
-      const usedColors = statuses.map((s) => s.color);
-      const availableKey = COLOR_KEYS.find(
-        (k) => !usedColors.includes(STATUS_COLORS[k]?.color ?? ""),
-      );
-      const style = availableKey
-        ? STATUS_COLORS[availableKey]
-        : FALLBACK_TIER_STYLE;
+  /**
+   * Handles both paths — the modal reports a validated draft either way.
+   *
+   * `minPoint` goes out as a string because that is what the endpoint takes;
+   * it comes back as a number, which `mapTiers` normalises.
+   */
+  const handleSubmitStatus = async ({
+    name,
+    minPoints,
+  }: LoyaltyStatusDraft) => {
+    const payload = { name, minPoint: String(minPoints) };
 
-      setStatuses((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          name,
-          minPoints,
-          color: style.color,
-          bgColor: style.bg,
-        },
-      ]);
-      toast.success(`Status "${name}" added`);
+    try {
+      if (editingStatus) {
+        await updateTier.mutateAsync({ id: editingStatus.id, payload });
+        toast.success(`Status "${name}" updated`);
+      } else {
+        await createTier.mutateAsync(payload);
+        toast.success(`Status "${name}" added`);
+      }
+      closeStatusModal();
+    } catch (err) {
+      // The modal stays open with what was typed, so a rejected name or a
+      // clashing threshold can be corrected rather than re-entered.
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Failed to save the loyalty status",
+      );
     }
-
-    closeStatusModal();
   };
 
   /**
    * Deleting a tier re-bands every customer sitting in it, so it goes
    * through the app's shared confirmation rather than firing on one click.
    */
-  const confirmDeleteStatus = () => {
+  const confirmDeleteStatus = async () => {
     if (!deleteTarget) return;
     const { id, name } = deleteTarget;
 
-    setStatuses((prev) => prev.filter((s) => s.id !== id));
-    if (editingStatus?.id === id) closeStatusModal();
-    setDeleteTarget(null);
-    toast.success(`Status "${name}" removed`);
+    try {
+      await removeTier.mutateAsync(id);
+      if (editingStatus?.id === id) closeStatusModal();
+      setDeleteTarget(null);
+      toast.success(`Status "${name}" removed`);
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Failed to delete the loyalty status",
+      );
+    }
   };
 
   const sortedStatuses = sortByThreshold(statuses);
+
+  /**
+   * The lowest rung, when the ladder does not start at 0.
+   *
+   * A ladder with no rung at zero leaves every customer below its first
+   * threshold unbanded — they show as "No tier" rather than being quietly
+   * rounded down into the bottom one. That is a legitimate choice, so this
+   * says what it means rather than blocking it.
+   */
+  const missingZeroFloor =
+    sortedStatuses.length > 0 && sortedStatuses[0].minPoints > 0
+      ? sortedStatuses[0].minPoints
+      : null;
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
@@ -451,21 +461,65 @@ export default function LoyaltyPointPage() {
 
             <Button
               onClick={openAddStatus}
-              className="shrink-0 rounded-lg bg-blue-600 text-sm text-white hover:bg-blue-700"
+              disabled={tiersLoading || !!tiersError}
+              className="shrink-0 rounded-lg bg-blue-600 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Plus className="mr-1.5 h-4 w-4" />
               Add Tier
             </Button>
           </div>
 
-          <LoyaltyStatusTable
-            statuses={sortedStatuses}
-            editingId={editingStatus?.id ?? null}
-            onEdit={openEditStatus}
-            onDelete={(status) =>
-              setDeleteTarget({ id: status.id, name: status.name })
-            }
-          />
+          {missingZeroFloor !== null && (
+            <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-3">
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+              <p className="text-[13px] leading-relaxed text-amber-800">
+                No tier starts at 0 points. Customers with fewer than{" "}
+                <span className="font-semibold">
+                  {missingZeroFloor.toLocaleString()}
+                </span>{" "}
+                points will show as{" "}
+                <span className="font-semibold">No tier</span> — add a tier with
+                a minimum of 0 to cover everyone.
+              </p>
+            </div>
+          )}
+
+          {/* The ladder is remote now, so it has the three states any fetched
+              list needs — and an empty one says what to do rather than
+              rendering a table with no rows. */}
+          {tiersLoading ? (
+            <div className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 py-12 text-sm text-gray-400">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Loading loyalty tiers
+            </div>
+          ) : tiersError ? (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-6 text-center">
+              <p className="text-sm text-red-600">
+                {tiersError instanceof Error
+                  ? tiersError.message
+                  : "Failed to load loyalty tiers."}
+              </p>
+            </div>
+          ) : sortedStatuses.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-gray-200 px-4 py-12 text-center">
+              <p className="text-sm font-medium text-gray-700">
+                No loyalty tiers yet
+              </p>
+              <p className="mt-1 text-xs text-gray-400">
+                Add one to start banding customers by the points they have
+                earned.
+              </p>
+            </div>
+          ) : (
+            <LoyaltyStatusTable
+              statuses={sortedStatuses}
+              editingId={editingStatus?.id ?? null}
+              onEdit={openEditStatus}
+              onDelete={(status) =>
+                setDeleteTarget({ id: status.id, name: status.name })
+              }
+            />
+          )}
         </div>
       </div>
 
@@ -474,6 +528,8 @@ export default function LoyaltyPointPage() {
         editing={editingStatus}
         onClose={closeStatusModal}
         onSubmit={handleSubmitStatus}
+        isSaving={savingTier}
+        missingZeroFloor={missingZeroFloor}
       />
 
       <DeleteConfirmDialog
@@ -486,8 +542,13 @@ export default function LoyaltyPointPage() {
             ? `“${deleteTarget.name}” will be removed from the tier ladder.`
             : "This tier will be removed from the tier ladder."
         }
-        warning="Customers in this tier will fall back to the next lowest one."
+        warning={
+          deleteTarget && deleteTarget.id === sortedStatuses[0]?.id
+            ? "Customers in this tier will have no tier until another one starts at their point total."
+            : "Customers in this tier will fall back to the next lowest one."
+        }
         onConfirm={confirmDeleteStatus}
+        isPending={deletingTier}
       />
     </div>
   );

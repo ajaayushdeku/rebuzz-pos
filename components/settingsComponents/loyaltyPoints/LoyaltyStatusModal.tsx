@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Trophy, Check, Plus } from "lucide-react";
+import { Trophy, Check, Info, Loader2, Plus } from "lucide-react";
 import ModalShell, {
   modalInput,
   modalInputIdle,
@@ -26,12 +26,22 @@ export default function LoyaltyStatusModal({
   editing,
   onClose,
   onSubmit,
+  isSaving = false,
+  missingZeroFloor = null,
 }: {
   open: boolean;
   /** The tier being edited, or null to add a new one. */
   editing: LoyaltyStatus | null;
   onClose: () => void;
   onSubmit: (draft: LoyaltyStatusDraft) => void;
+  /** True while the tier is being written to the API. */
+  isSaving?: boolean;
+  /**
+   * The ladder's lowest threshold, when it is above 0 — so the form can say
+   * what that leaves uncovered while a minimum is being chosen. Null when the
+   * ladder already starts at 0, or has no rungs yet.
+   */
+  missingZeroFloor?: number | null;
 }) {
   const isEdit = !!editing;
 
@@ -41,6 +51,16 @@ export default function LoyaltyStatusModal({
     name?: string;
     minPoints?: string;
   }>({});
+
+  /**
+   * The gap hint, hidden once this form would close it.
+   *
+   * Repeating "no tier starts at 0" while the user is typing 0 into the very
+   * field that fixes it would be nagging rather than informing.
+   */
+  const showZeroHint =
+    missingZeroFloor !== null &&
+    !(minPoints.trim() !== "" && Number(minPoints) === 0);
 
   /**
    * Seed from `editing` the first time this render pass sees a new target.
@@ -93,28 +113,58 @@ export default function LoyaltyStatusModal({
       icon={Trophy}
       iconColor="text-blue-600"
       iconBgColor="bg-blue-50"
-      maxWidth="max-w-md"
+      maxWidth="max-w-xl"
       footer={
         <div className="flex items-center gap-2.5">
-          <button type="button" onClick={onClose} className={modalGhostButton}>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isSaving}
+            className={`${modalGhostButton} disabled:cursor-not-allowed disabled:opacity-60`}
+          >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleSubmit}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-[13px] font-bold text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+            disabled={isSaving}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-[13px] font-bold text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isEdit ? (
-              <Check className="h-4 w-4" />
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {isEdit ? "Updating..." : "Adding..."}
+              </>
             ) : (
-              <Plus className="h-4 w-4" />
+              <>
+                {isEdit ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Plus className="h-4 w-4" />
+                )}
+                {isEdit ? "Update Tier" : "Add Tier"}
+              </>
             )}
-            {isEdit ? "Update Tier" : "Add Tier"}
           </button>
         </div>
       }
     >
       <div className="space-y-4">
+        {showZeroHint && (
+          <div className="flex items-center  gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5">
+            <Info className=" h-4.5 w-4.5 shrink-0 text-amber-600" />
+            <p className="text-[12px] leading-relaxed text-amber-800">
+              Your lowest tier starts at{" "}
+              <span className="font-semibold">
+                {missingZeroFloor.toLocaleString()}
+              </span>{" "}
+              points. Use a minimum of <span className="font-semibold">0</span>{" "}
+              here to band customers below that — otherwise they stay on{" "}
+              <strong>No tier</strong>.
+            </p>
+          </div>
+        )}
+
         <div>
           <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.06em] text-gray-400">
             Status Name
