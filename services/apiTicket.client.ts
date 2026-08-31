@@ -25,7 +25,10 @@ const toUpdateItem = (item: any) => {
   const variantId = item.variantId ?? item.variantItems?._id;
 
   return {
-    id: item.id,
+    // Omitted entirely when the line has no catalogue product behind it — a
+    // custom line is described by its name and price. Sending `id: ""` would
+    // claim a product that does not exist.
+    ...(item.id ? { id: item.id } : {}),
     name:
       (item.name ?? "").replace(/\s*\([^()]*\)\s*$/, "").trim() || item.name,
     unitPrice: item.unitPrice ?? 0,
@@ -74,8 +77,12 @@ export const updateTicket = async ({
     // ✅ include discount fields — same as create
     discount: ticketData.discount ?? 0,
     totalDiscount: ticketData.totalDiscount ?? 0,
+    // A row counts as real once it has a name. It used to need a product id
+    // too, which quietly discarded every custom line — the row is on screen,
+    // the save reports success, and the item was never in the request. A line
+    // the backend cannot accept should come back as an error, not vanish.
     items: (ticketData.items ?? [])
-      .filter((item: any) => item.id && item.name)
+      .filter((item: any) => (item.name ?? "").trim())
       .map(toUpdateItem),
   };
 

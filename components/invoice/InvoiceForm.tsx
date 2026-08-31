@@ -102,6 +102,20 @@ function findProduct(
 }
 
 /**
+ * Whether a catalogue entry is the "Custom" placeholder.
+ *
+ * A custom line is not an off-catalogue product — it points at a real
+ * inventory item called "Custom" and carries its own name and price on the
+ * line itself, typed in when the line was added (see `InvoiceItemsSelector`,
+ * which spots it the same way). So the product resolves, and mapping straight
+ * off it would replace what was typed with the placeholder's own name and
+ * price. These lines take their stored values instead.
+ */
+function isCustomProduct(product: Product | undefined | null): boolean {
+  return (product?.name ?? "").trim().toLowerCase() === "custom";
+}
+
+/**
  * All variants of a product, flattened and normalized. Tolerates both the raw
  * API object and an already-flattened array, so this keeps working whether or
  * not `useProductsList` normalizes upstream.
@@ -281,6 +295,66 @@ function rawDiscountIds(rawDiscounts: any[] | undefined): string[] {
     .filter(Boolean);
 }
 
+/**
+ * Recover the LIST price a stored net price was derived from.
+ *
+ * Both APIs store the discounted figure — a burger listed at 200 with 20 off
+ * is stored as 180. A line that resolves to a live product sidesteps this by
+ * reading `product.price`, but a custom line has no usable product price to
+ * read (the "Custom" placeholder's own price is unrelated), so its stored 180
+ * used to land straight in the price column. The form then discounted it
+ * again for display, showing 160 under a struck-through 180 — the same
+ * discount counted twice.
+ *
+ * Inverting `netUnitPrice`: with P the summed percentage rates and F the
+ * summed fixed rates,
+ *
+ *     net  = price - price * P/100 - F
+ *     price = (net + F) / (1 - P/100)
+ *
+ * Rates come from the stored line where it carries them, and from the master
+ * list otherwise. With neither, the net price is returned untouched — a wrong
+ * guess at the list price would be worse than showing what was stored.
+ */
+type RawDiscountEntry =
+  string | { discount?: string; _id?: string; type?: string; rate?: number };
+
+function listUnitPrice(
+  net: number,
+  rawDiscounts: RawDiscountEntry[] | undefined,
+  masters: Array<{ _id: string; type?: string; rate?: number }>,
+): number {
+  let fixed = 0;
+  let percent = 0;
+
+  for (const entry of rawDiscounts ?? []) {
+    const id =
+      typeof entry === "string" ? entry : (entry?.discount ?? entry?._id);
+    const master = masters.find((m) => m._id === id);
+
+    const type =
+      (typeof entry === "object" ? entry?.type : undefined) ?? master?.type;
+    const rate =
+      (typeof entry === "object" && typeof entry?.rate === "number"
+        ? entry.rate
+        : undefined) ?? master?.rate;
+
+    if (typeof rate !== "number" || rate <= 0) continue;
+    if (type === "percentage") percent += rate;
+    else fixed += rate;
+  }
+
+  if (percent === 0 && fixed === 0) return net;
+
+  // 100% or more off leaves nothing to divide by — the original is
+  // unrecoverable from a net of zero, so keep what was stored.
+  const divisor = 1 - percent / 100;
+  if (divisor <= 0) return net;
+
+  const list = (net + fixed) / divisor;
+  return Number.isFinite(list) && list > 0 ? Math.round(list * 100) / 100 : net;
+}
+
 /** `items` is an array of GROUPS, each holding an `item` array. Flatten all. */
 function flattenTicketItems(ticket: any): any[] {
   return (ticket?.items ?? []).flatMap((group: any) => group?.item ?? []);
@@ -319,13 +393,20 @@ function ticketProductIdOf(ticket: any): string | undefined {
  * details all reflect the product as it is today, not as it was invoiced.
  * Quantity, and the discounts the user actually applied, come from the ticket.
  */
-function mapRawItem(raw: any, products: Product[]): InvoiceItem {
+function mapRawItem(
+  raw: any,
+  products: Product[],
+  masters: Array<{ _id: string; type?: string; rate?: number }> = [],
+): InvoiceItem {
   const quantity = raw.quantity ?? 1;
   const discounts = rawDiscountIds(raw.discounts);
   const product = findProduct(products, raw.product);
 
-  // Product no longer in the list (custom or deleted) — keep what was stored.
-  if (!product) {
+  // Nothing to map off: the product is gone from the list, or it is the
+  // "Custom" placeholder whose name and price live on the line. Either way the
+  // stored values are the truth. `raw.product` is still carried through, so a
+  // custom line keeps pointing at the placeholder when it saves.
+  if (!product || isCustomProduct(product)) {
     const storedVariantId = rawVariantId(raw.variantItems);
     return {
       id: raw._id ?? crypto.randomUUID(),
@@ -333,7 +414,8 @@ function mapRawItem(raw: any, products: Product[]): InvoiceItem {
       name: raw.productName ?? "",
       description: raw.description ?? "",
       quantity,
-      price: raw.unitPrice ?? 0,
+      // The stored figure is net; the column shows list.
+      price: listUnitPrice(raw.unitPrice ?? 0, raw.discounts, masters),
       discounts,
       taxes: [],
       isTaxable: raw.isTaxable ?? false,
@@ -444,7 +526,11 @@ function mapRawItem(raw: any, products: Product[]): InvoiceItem {
  * still exists; only quantity and the applied discounts come from the credit.
  * Same rule as `mapRawItem` on the ticket side.
  */
-function mapCreditItem(item: CreditItem, products: Product[]): InvoiceItem {
+function mapCreditItem(
+  item: CreditItem,
+  products: Product[],
+  masters: Array<{ _id: string; type?: string; rate?: number }> = [],
+): InvoiceItem {
   const raw = item as any;
   const storedVariantId = rawVariantId(raw.variantItems);
   const quantity = item.quantity ?? 1;
@@ -458,7 +544,10 @@ function mapCreditItem(item: CreditItem, products: Product[]): InvoiceItem {
     name: item.productName ?? "",
     description: "",
     quantity,
-    price: item.unitPrice ?? 0,
+    // The credit API stores the DISCOUNTED unit price, and its update endpoint
+    // expects LIST prices back — so this is not display-only here: sending the
+    // stored net would have the backend discount it a second time.
+    price: listUnitPrice(item.unitPrice ?? 0, raw.discounts, masters),
     discounts,
     taxes: [],
     isTaxable: item.isTaxable ?? false,
@@ -478,7 +567,13 @@ function mapCreditItem(item: CreditItem, products: Product[]): InvoiceItem {
       : {}),
   };
 
-  if (!product) return stored;
+  // Same rule as `mapRawItem`: a gone product and the "Custom" placeholder
+  // both leave the stored snapshot as the only description of the line.
+  //
+  // For a custom line this does mean showing the credit's stored unit price,
+  // which is net of discounts — but the alternative is the placeholder's own
+  // price, which has nothing to do with what was charged.
+  if (!product || isCustomProduct(product)) return stored;
 
   const productId = product.id ?? (product as any)._id;
   const { variant, variantId } = resolveVariant(product, {
@@ -551,7 +646,8 @@ export default function InvoiceForm({
   const { mutate: saveTicket, isPending: isCreating } = useCreateTicket();
   const { mutate: updateTicket, isPending: isUpdating } = useUpdateTicket();
   const { data: products = [] } = useProductsList();
-  const { data: masterDiscounts = [] } = useDiscounts();
+  const { data: masterDiscounts = [], isLoading: discountsLoading } =
+    useDiscounts();
   const { data: taxData } = useTaxes();
 
   // `updateCreditItems` is a plain promise with no pending flag of its own, so
@@ -596,10 +692,11 @@ export default function InvoiceForm({
   // effect below re-maps against the live product data once it arrives.
   const [items, setItems] = useState<InvoiceItem[]>(() => {
     if (isCreditInvoice && creditItems.length > 0) {
-      return creditItems.map((c) => mapCreditItem(c, []));
+      return creditItems.map((c) => mapCreditItem(c, [], masterDiscounts));
     }
     const rawItems = flattenTicketItems(tickets);
-    if (rawItems.length) return rawItems.map((raw) => mapRawItem(raw, []));
+    if (rawItems.length)
+      return rawItems.map((raw) => mapRawItem(raw, [], masterDiscounts));
     return [{ id: crypto.randomUUID(), ...DEFAULT_ITEM }];
   });
 
@@ -642,14 +739,23 @@ export default function InvoiceForm({
   // This matters most for credits: their stored unitPrice is the DISCOUNTED
   // figure, so without this pass the price column shows a net amount.
   useEffect(() => {
-    if (hasUpdatedItemsFromProducts.current || !products.length) return;
+    // Waits for the discounts query too: the re-map runs once, and without
+    // the rates a line's list price cannot be recovered from its stored net.
+    if (
+      hasUpdatedItemsFromProducts.current ||
+      !products.length ||
+      discountsLoading
+    )
+      return;
 
     if (isCreditInvoice) {
       // Credit invoices re-map from the CREDIT's items, never the ticket's.
       const rawCredit = rawCreditItemsRef.current;
       if (!rawCredit?.length) return;
 
-      const mappedCredit = rawCredit.map((c) => mapCreditItem(c, products));
+      const mappedCredit = rawCredit.map((c) =>
+        mapCreditItem(c, products, masterDiscounts),
+      );
       setItems(mappedCredit);
       rememberOriginals(mappedCredit);
       hasUpdatedItemsFromProducts.current = true;
@@ -659,11 +765,13 @@ export default function InvoiceForm({
     const rawItems = rawTicketItemsRef.current;
     if (!rawItems?.length) return;
 
-    const mapped = rawItems.map((raw: any) => mapRawItem(raw, products));
+    const mapped = rawItems.map((raw: any) =>
+      mapRawItem(raw, products, masterDiscounts),
+    );
     setItems(mapped);
     rememberOriginals(mapped);
     hasUpdatedItemsFromProducts.current = true;
-  }, [products, isCreditInvoice]);
+  }, [products, isCreditInvoice, masterDiscounts, discountsLoading]);
 
   const [selectedDiscountIds, setSelectedDiscountIds] = useState<string[]>([]);
   const [customDiscounts, setCustomDiscounts] = useState<CustomDiscount[]>(
@@ -907,9 +1015,14 @@ export default function InvoiceForm({
    * but the item carries the parent's name — the variant is identified by
    * `variantItems`. Falls back to stripping the trailing "(label)" when the
    * product isn't in the list.
+   *
+   * A custom line is the other exception: its name was typed on the line, so
+   * sending the "Custom" placeholder's name instead would write the typed one
+   * away on the first save — the same loss this pair of fixes is about, only
+   * on the way out rather than the way in.
    */
   const baseProductName = (item: InvoiceItem, product?: Product) => {
-    if (product?.name) return product.name;
+    if (product?.name && !isCustomProduct(product)) return product.name;
     const stripped = item.name?.replace(/\s*\([^()]*\)\s*$/, "").trim();
     return stripped || item.name || "";
   };
@@ -997,6 +1110,25 @@ export default function InvoiceForm({
    * ticket, its existing subdocument `_id` is reused so the backend updates
    * that row instead of orphaning it.
    */
+  /**
+   * The "Custom" catalogue entry, if this business has one.
+   *
+   * A custom line still belongs to that product as far as the API is
+   * concerned — only its name and price are the line's own. Resolved once
+   * here so both payload builders can fall back to it.
+   */
+  const customProduct = products.find(isCustomProduct);
+
+  /**
+   * The product id to send for a line.
+   *
+   * A line that lost its `productId` — an older custom row, a restored draft —
+   * is still a custom line, so it goes out against the placeholder rather than
+   * with no product at all, which the API rejects.
+   */
+  const outgoingProductId = (item: InvoiceItem) =>
+    item.productId || (customProduct?.id ?? "");
+
   const buildDiscountPayload = (item: InvoiceItem) => {
     const rawDiscounts: any[] = rawFor(item)?.discounts ?? [];
 
@@ -1091,7 +1223,7 @@ export default function InvoiceForm({
           const discounts = buildCreditDiscountPayload(item);
 
           return {
-            id: item.productId || item.id,
+            id: outgoingProductId(item) || item.id,
             name: baseProductName(item, product),
             quantity: item.quantity,
             unitPrice:
@@ -1185,7 +1317,7 @@ export default function InvoiceForm({
       }
 
       return {
-        id: item.productId,
+        id: outgoingProductId(item),
         // Base product name — the variant lives in `variantItems`.
         name: baseProductName(item, product),
         quantity: item.quantity,

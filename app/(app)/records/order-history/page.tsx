@@ -46,12 +46,17 @@ export default function OrderHistoryPage() {
     const fetchData = async () => {
       setLoading(true);
       try {
+        // `no-store` on the client too: the routes no longer cache, but the
+        // browser would still reuse its own copy of an identical GET, which
+        // is the same staleness one layer up.
         const [transRes, statsRes] = await Promise.all([
           fetch(
             `/api/order-history/transactions?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
+            { cache: "no-store" },
           ),
           fetch(
             `/api/order-history/stats?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
+            { cache: "no-store" },
           ),
         ]);
 

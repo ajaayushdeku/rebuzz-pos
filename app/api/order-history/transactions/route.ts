@@ -14,7 +14,10 @@ async function fetchAllUsers(): Promise<RawUser[]> {
   try {
     const res = await fetch(`${BASE}/business/users/roles/user`, {
       headers: await authHeaders(),
-      next: { revalidate: 300 },
+      // Same reasoning as the bill list: the key carries no account, so a
+      // cached staff list could cross businesses on a shared device. Names
+      // change rarely, but not being wrong matters more than a cache hit.
+      cache: "no-store" as const,
     });
     if (!res.ok) return [];
     const json = await res.json();
@@ -41,7 +44,13 @@ export async function GET(request: NextRequest) {
     const [billRes, users] = await Promise.all([
       fetch(url, {
         headers: await authHeaders(),
-        next: { revalidate: 60 },
+        // No caching. `revalidate` here would hold the bill list in Next's
+        // Data Cache, so a payment or refund taken a moment ago would not show
+        // until the window elapsed — no client refetch can reach past it. The
+        // cache key is also the URL alone, with the token only in the headers,
+        // so on a device that switches business one account could be served
+        // another's bills.
+        cache: "no-store" as const,
       }),
       fetchAllUsers(),
     ]);
@@ -67,8 +76,7 @@ export async function GET(request: NextRequest) {
     // Enrich each transaction with the customer name from the lookup
     const enriched = transactions.map((t) => {
       const bill = data.data.bill.find((b) => `ORD-${b.invoiceNo}` === t.id) as
-        | BillWithCustomerId
-        | undefined;
+        BillWithCustomerId | undefined;
 
       const customerId = bill?.customerId;
       const customerName = customerId

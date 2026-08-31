@@ -544,51 +544,66 @@ export default function InvoiceItemsSelector({
     }
 
     // Discounts
-    item.discounts.forEach((dId) => {
-      const d = masterDiscounts.find((m) => m._id === dId);
-      if (!d) return;
+    //
+    // A custom row is blank when it appears — no name of its own, no price —
+    // and every discount on it would read "- 0.00 off" until something is
+    // typed: a badge that states nothing and has to be re-read the moment a
+    // figure lands. So a custom row waits until one of its fields has been
+    // filled in. A catalogue product arrives with both, so it shows straight
+    // away, as it always did.
+    const isCustomRow =
+      (product?.name ?? "").trim().toLowerCase() === "custom" ||
+      !item.productId;
+    const typedName = (item.name ?? "").trim().toLowerCase();
+    const rowHasInput =
+      item.price > 0 || (typedName !== "" && typedName !== "custom");
 
-      const amount =
-        d.type === "percentage"
-          ? (item.quantity * item.price * d.rate) / 100
-          : d.rate * item.quantity;
+    if (!isCustomRow || rowHasInput) {
+      item.discounts.forEach((dId) => {
+        const d = masterDiscounts.find((m) => m._id === dId);
+        if (!d) return;
 
-      pills.push({
-        key: `discount-${dId}`,
-        tone: "info",
-        icon: d.type === "percentage" ? Percent : DollarSignIcon,
-        label: `${d.name} — ${formatCurrencySymbolOnly(currency.symbol)} ${amount.toFixed(2)} off`,
-        element: (
-          <Badge className="flex items-center gap-1 bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs">
-            <span className="text-[11px] tracking-wider font-semibold leading-none">
-              {d.name}
-            </span>
-            {d.type === "percentage" ? (
-              <>
-                <span className="text-[11px] font-semibold  tracking-wider text-blue-500 leading-none">
-                  ({d.rate}%) :
-                </span>
-                <span className="text-[11px] font-semibold  tracking-wider leading-none">
-                  - {formatCurrencySymbolOnly(currency.symbol)}{" "}
-                  {amount.toFixed(2)}
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="text-[11px] font-semibold  tracking-wider text-blue-500 leading-none">
-                  ({formatCurrencySymbolOnly(currency.symbol)} {d.rate} off) :
-                </span>
-                <span className="text-[11px] font-semibold  tracking-wider leading-none">
-                  -{" "}
-                  {formatCurrencySymbol(
-                    Number(amount),
-                    currency.symbol,
-                    currency.locale,
-                  )}{" "}
-                </span>
-              </>
-            )}
-            {/* <button
+        const amount =
+          d.type === "percentage"
+            ? (item.quantity * item.price * d.rate) / 100
+            : d.rate * item.quantity;
+
+        pills.push({
+          key: `discount-${dId}`,
+          tone: "info",
+          icon: d.type === "percentage" ? Percent : DollarSignIcon,
+          label: `${d.name} — ${formatCurrencySymbolOnly(currency.symbol)} ${amount.toFixed(2)} off`,
+          element: (
+            <Badge className="flex items-center gap-1 bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs">
+              <span className="text-[11px] tracking-wider font-semibold leading-none">
+                {d.name}
+              </span>
+              {d.type === "percentage" ? (
+                <>
+                  <span className="text-[11px] font-semibold  tracking-wider text-blue-500 leading-none">
+                    ({d.rate}%) :
+                  </span>
+                  <span className="text-[11px] font-semibold  tracking-wider leading-none">
+                    - {formatCurrencySymbolOnly(currency.symbol)}{" "}
+                    {amount.toFixed(2)}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="text-[11px] font-semibold  tracking-wider text-blue-500 leading-none">
+                    ({formatCurrencySymbolOnly(currency.symbol)} {d.rate} off) :
+                  </span>
+                  <span className="text-[11px] font-semibold  tracking-wider leading-none">
+                    -{" "}
+                    {formatCurrencySymbol(
+                      Number(amount),
+                      currency.symbol,
+                      currency.locale,
+                    )}{" "}
+                  </span>
+                </>
+              )}
+              {/* <button
               type="button"
               className="ml-0.5 rounded-full hover:bg-blue-300 p-0.5 transition-colors"
               onClick={(e) => {
@@ -599,10 +614,11 @@ export default function InvoiceItemsSelector({
             >
               <X className="w-2.5 h-2.5" />
             </button> */}
-          </Badge>
-        ),
+            </Badge>
+          ),
+        });
       });
-    });
+    }
 
     // Tax — only when product isTaxable AND global tax active
     if (item.isTaxable && activeTax) {
@@ -1201,9 +1217,24 @@ export default function InvoiceItemsSelector({
           isCustom={productDetailModal.isCustom}
           onConfirm={(name, price) => {
             onItemsChange(
-              items.map((i) =>
-                i.id === productDetailModal.itemId ? { ...i, name, price } : i,
-              ),
+              items.map((i) => {
+                if (i.id !== productDetailModal.itemId) return i;
+
+                // A custom line still belongs to the "Custom" product as
+                // far as the API is concerned, so a row that reached here
+                // without an id is pinned to it — otherwise it would be sent
+                // with no product at all.
+                const custom = products.find(
+                  (p) => p.name.trim().toLowerCase() === "custom",
+                );
+
+                return {
+                  ...i,
+                  name,
+                  price,
+                  productId: i.productId || (custom?.id ?? ""),
+                };
+              }),
             );
           }}
         />

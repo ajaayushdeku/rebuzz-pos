@@ -18,7 +18,13 @@ export async function GET(request: NextRequest) {
 
     const res = await fetch(url, {
       headers,
-      next: { revalidate: 60 },
+      // No caching. `revalidate` here would hold the bill list in Next's
+      // Data Cache, so a payment or refund taken a moment ago would not show
+      // until the window elapsed — no client refetch can reach past it. The
+      // cache key is also the URL alone, with the token only in the headers,
+      // so on a device that switches business one account could be served
+      // another's bills.
+      cache: "no-store" as const,
     });
 
     if (!res.ok) {

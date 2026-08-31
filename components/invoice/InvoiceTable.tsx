@@ -551,8 +551,29 @@ export default function InvoiceTable({
                                   }
 
                                   // ── Map items ──
-                                  const rawItems =
-                                    ticket.items?.[0]?.item ?? [];
+                                  //
+                                  // Everything here comes off the ticket's own
+                                  // items rather than being looked up against
+                                  // the inventory: a duplicate should reproduce
+                                  // the invoice that was raised, including the
+                                  // discounts and taxability it was raised
+                                  // with, even if the product has been changed
+                                  // since.
+                                  //
+                                  // `items` is an array of GROUPS, each holding
+                                  // an `item` array — reading only `[0]` lost
+                                  // every line after the first product group.
+                                  const rawItems = (
+                                    (ticket.items as Array<
+                                      Record<string, unknown>
+                                    >) ?? []
+                                  ).flatMap(
+                                    (group) =>
+                                      (group?.item as Array<
+                                        Record<string, unknown>
+                                      >) ?? [],
+                                  );
+
                                   const mappedItems = rawItems.map(
                                     (item: Record<string, unknown>) => ({
                                       id: crypto.randomUUID(),
@@ -562,11 +583,25 @@ export default function InvoiceTable({
                                         (item.description as string) ?? "",
                                       quantity: (item.quantity as number) ?? 1,
                                       price: (item.unitPrice as number) ?? 0,
+                                      // A stored discount is a subdocument:
+                                      // `_id` is its own id and `discount`
+                                      // holds the master id the picker is
+                                      // keyed by. Taking `_id` meant no
+                                      // duplicated discount ever matched, so
+                                      // they vanished from the row and from
+                                      // the payload.
                                       discounts: (
                                         (item.discounts as Array<
                                           Record<string, unknown>
                                         >) ?? []
-                                      ).map((d) => (d._id ?? d) as string),
+                                      )
+                                        .map((d) =>
+                                          typeof d === "string"
+                                            ? d
+                                            : ((d?.discount ??
+                                                d?._id) as string),
+                                        )
+                                        .filter(Boolean),
                                       taxes: [],
                                       isTaxable:
                                         (item.isTaxable as boolean) ?? false,
