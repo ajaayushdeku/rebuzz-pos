@@ -24,7 +24,7 @@ import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
-import { useLoyaltyTiers } from "@/hooks/useLoyaltyTiers";
+import { useTierStyle } from "@/hooks/useLoyaltyTiers";
 
 const TIER_STYLES: Record<string, string> = {
   // Not a tier, so it is deliberately the quietest thing in the column —
@@ -108,17 +108,7 @@ export default function CustomerTable({
    * implementation to keep in step. What the customer cannot carry is how the
    * settings page paints that tier, which is what this is for.
    */
-  const { data: loyaltyTiers = [] } = useLoyaltyTiers();
-  const tierStyle = useMemo(() => {
-    const byName = new Map<string, { color: string; bgColor: string }>();
-    for (const tier of loyaltyTiers) {
-      byName.set(tier.name.trim().toLowerCase(), {
-        color: tier.color,
-        bgColor: tier.bgColor,
-      });
-    }
-    return byName;
-  }, [loyaltyTiers]);
+  const tierStyle = useTierStyle();
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null,
   );
@@ -214,8 +204,6 @@ export default function CustomerTable({
     ) : (
       <ArrowUpDown className="h-3 w-3 opacity-30" />
     );
-
-  console.log("Customers:", customers);
 
   return (
     <>
@@ -328,9 +316,7 @@ export default function CustomerTable({
                       // No configured colour — an unconfigured business, or
                       // the moment before the ladder loads — leaves TierBadge
                       // on its own palette, so the column never goes blank.
-                      const style = tierStyle.get(
-                        customer.loyaltyStatus.trim().toLowerCase(),
-                      );
+                      const style = tierStyle(customer.loyaltyStatus);
                       return (
                         <TierBadge
                           tier={customer.loyaltyStatus}

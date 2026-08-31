@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import RangeTag from "@/components/ui/RangeTag";
 
@@ -9,7 +10,11 @@ import RangeTag from "@/components/ui/RangeTag";
 export type StatSpec = {
   key: string;
   label: string;
-  value: string;
+  /**
+   * ReactNode rather than string so a card can carry a unit inside the figure
+   * — "1,240 pts" reads as one value, and a separate line would not.
+   */
+  value: ReactNode;
   icon: LucideIcon;
   iconColor: string;
   bgColor: string;

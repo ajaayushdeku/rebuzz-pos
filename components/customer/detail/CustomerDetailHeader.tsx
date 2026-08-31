@@ -8,6 +8,7 @@ import {
   whatsappLink,
 } from "@/components/customer/CustomerTable";
 import { TIER_BG, TIER_RING } from "./customerDetailHelpers";
+import { useTierStyle } from "@/hooks/useLoyaltyTiers";
 
 export default function CustomerDetailHeader({
   customer,
@@ -22,6 +23,16 @@ export default function CustomerDetailHeader({
   onBack: () => void;
   onViewPhoto?: () => void;
 }) {
+  // A configured tier brings its own colour; its ring is derived from the text
+  // colour rather than from a second per-tier map, so the two cannot disagree.
+  const tierStyle = useTierStyle();
+  const style = tierStyle(loyaltyStatus);
+  const badgeClass = style
+    ? `${style.bgColor} ${style.color} ring-current/20`
+    : `${TIER_BG[loyaltyStatus] ?? "bg-gray-100 text-gray-600"} ${
+        TIER_RING[loyaltyStatus] ?? "ring-gray-200"
+      }`;
+
   return (
     <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
       <div className="flex min-w-0 items-center gap-3">
@@ -54,7 +65,7 @@ export default function CustomerDetailHeader({
 
       <div className="flex shrink-0 items-center gap-3">
         <span
-          className={`rounded-full px-3 py-1.5 text-xs font-bold shadow-sm ring-2 ${TIER_BG[loyaltyStatus]} ${TIER_RING[loyaltyStatus]}`}
+          className={`rounded-full px-3 py-1.5 text-xs font-bold shadow-sm ring-2 ${badgeClass}`}
         >
           {loyaltyStatus}
         </span>

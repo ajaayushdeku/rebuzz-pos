@@ -45,7 +45,12 @@ export default function CustomerDetailStats({
     {
       key: "loyalty",
       label: "Loyalty Points",
-      value: customer.loyaltyPoint.toLocaleString(),
+      value: (
+        <>
+          {customer.loyaltyPoint.toLocaleString()}
+          <span className="ml-1 text-[11px] text-gray-400">pts</span>
+        </>
+      ),
       icon: Star,
       iconColor: "text-amber-500",
       bgColor: "bg-amber-50",

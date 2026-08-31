@@ -15,14 +15,14 @@ import {
 import TierBadge from "./TierBadge";
 
 /**
- * The idle field, in this modal's rose rather than the shared blue.
+ * The idle field, in this modal's cyan rather than the shared blue.
  *
  * Local rather than a second export from ModalShell: this is one screen's
  * accent, and two conflicting `focus:ring-*` utilities on the same element
  * would resolve by stylesheet order rather than by which was written last.
  */
-const roseInputIdle =
-  "border-gray-200 focus:border-rose-400 focus:ring-rose-500/20";
+const cyanInputIdle =
+  "border-gray-200 focus:border-cyan-400 focus:ring-cyan-500/20";
 
 export interface LoyaltyStatusDraft {
   name: string;
@@ -125,8 +125,8 @@ export default function LoyaltyStatusModal({
           : "Name the tier and set the points needed to reach it"
       }
       icon={Trophy}
-      iconColor="text-rose-600"
-      iconBgColor="bg-rose-50"
+      iconColor="text-cyan-600"
+      iconBgColor="bg-cyan-50"
       maxWidth="max-w-xl"
       footer={
         <div className="flex items-center gap-2.5">
@@ -142,7 +142,7 @@ export default function LoyaltyStatusModal({
             type="button"
             onClick={handleSubmit}
             disabled={isSaving}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-rose-600 py-3 text-[13px] font-bold text-white shadow-md transition hover:bg-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-cyan-600 py-3 text-[13px] font-bold text-white shadow-md transition hover:bg-cyan-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSaving ? (
               <>
@@ -192,7 +192,7 @@ export default function LoyaltyStatusModal({
             }}
             placeholder="e.g. Platinum"
             className={`${modalInput} ${
-              errors.name ? modalInputError : roseInputIdle
+              errors.name ? modalInputError : cyanInputIdle
             }`}
           />
           {errors.name && (
@@ -215,7 +215,7 @@ export default function LoyaltyStatusModal({
             }}
             placeholder="e.g. 10000"
             className={`${modalInput} tabular-nums ${
-              errors.minPoints ? modalInputError : roseInputIdle
+              errors.minPoints ? modalInputError : cyanInputIdle
             }`}
           />
           {errors.minPoints && (
@@ -224,8 +224,8 @@ export default function LoyaltyStatusModal({
         </div>
 
         {name.trim() && (
-          <div className="rounded-xl border border-dashed border-rose-200 bg-rose-50/50 px-3.5 py-3">
-            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-rose-400">
+          <div className="rounded-xl border border-dashed border-cyan-200 bg-cyan-50/50 px-3.5 py-3">
+            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-cyan-400">
               Preview
             </p>
             <div className="flex items-center gap-2">

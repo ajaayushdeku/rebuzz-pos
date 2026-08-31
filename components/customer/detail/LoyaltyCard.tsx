@@ -8,6 +8,7 @@ import { ComponentHeader } from "@/components/ComponentHeader";
 import DetailRow from "./DetailRow";
 import { DETAIL_CARD, CardHeader } from "./DetailCardShell";
 import { TIER_BG } from "./customerDetailHelpers";
+import { useTierStyle } from "@/hooks/useLoyaltyTiers";
 
 export default function LoyaltyCard({
   customer,
@@ -23,6 +24,15 @@ export default function LoyaltyCard({
   onEdit: () => void;
 }) {
   const { currency } = useCurrency();
+
+  // The tier's own colour from the loyalty settings, so this pill matches the
+  // ladder in settings and the badge in the customers table.
+  const tierStyle = useTierStyle();
+  const style = tierStyle(loyaltyStatus);
+  const tierClass = style
+    ? `${style.bgColor} ${style.color}`
+    : (TIER_BG[loyaltyStatus] ?? "bg-gray-100 text-gray-600");
+
   const money = (amount: number) =>
     formatCurrencySymbol(amount, currency.symbol, currency.locale);
 
@@ -80,7 +90,7 @@ export default function LoyaltyCard({
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <span
-              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold ${TIER_BG[loyaltyStatus]}`}
+              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold ${tierClass}`}
             >
               {loyaltyStatus}
             </span>
@@ -89,7 +99,8 @@ export default function LoyaltyCard({
                 Loyalty Points
               </p>
               <p className="truncate text-2xl font-bold tabular-nums text-gray-900">
-                {customer.loyaltyPoint.toLocaleString()}
+                {customer.loyaltyPoint.toLocaleString()}{" "}
+                <span className=" text-[11px] text-gray-400">pts</span>
               </p>
             </div>
           </div>

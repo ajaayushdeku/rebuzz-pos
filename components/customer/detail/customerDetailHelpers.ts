@@ -1,5 +1,7 @@
 /** Shared types, tier styling and date parsing for the customer detail page. */
 
+import { NO_TIER } from "@/lib/types/customer";
+
 export type PurchaseHistoryItem = {
   grandTotal: number;
   paidAt?: string;
@@ -18,7 +20,14 @@ export type PurchaseHistoryResponse = {
 
 // ── Tier badge styling ─────────────────────────────────────────────────────
 
+/**
+ * Fallback badge colours, for a business with no ladder configured and for the
+ * render before one loads. A configured tier is painted with the colour the
+ * loyalty settings gave it — see `useTierStyle`.
+ */
 export const TIER_BG: Record<string, string> = {
+  // Not a tier, so it stays the quietest thing on the card.
+  [NO_TIER]: "bg-gray-100 text-gray-500",
   Bronze: "bg-amber-100 text-amber-800",
   Silver: "bg-slate-200 text-slate-800",
   Gold: "bg-yellow-100 text-yellow-800",
@@ -26,6 +35,7 @@ export const TIER_BG: Record<string, string> = {
 };
 
 export const TIER_RING: Record<string, string> = {
+  [NO_TIER]: "ring-gray-200",
   Bronze: "ring-amber-200",
   Silver: "ring-slate-300",
   Gold: "ring-yellow-300",

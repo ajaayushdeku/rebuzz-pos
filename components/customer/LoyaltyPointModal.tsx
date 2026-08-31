@@ -73,8 +73,8 @@ export default function LoyaltyPointModal({
           : "Adjust the customer's points balance"
       }
       icon={Star}
-      iconColor="text-green-600"
-      iconBgColor="bg-green-50"
+      iconColor="text-cyan-600"
+      iconBgColor="bg-cyan-50"
       maxWidth="max-w-lg"
       footer={
         <div className="flex items-center gap-2.5">
@@ -90,7 +90,7 @@ export default function LoyaltyPointModal({
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className={`${modalPrimaryButton} bg-green-600/80 hover:bg-green-700`}
+            className={`${modalPrimaryButton} bg-cyan-600/80 hover:bg-cyan-700`}
           >
             {saving ? (
               <>
@@ -110,10 +110,10 @@ export default function LoyaltyPointModal({
       <div className="space-y-6">
         {/* Current balance */}
         {customer && (
-          <div className="flex items-center justify-between rounded-xl border border-green-100 bg-green-50/60 px-4 py-3">
+          <div className="flex items-center justify-between rounded-xl border border-cyan-100 bg-cyan-50/60 px-4 py-3">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-100">
-                <Star size={15} className="text-green-500" />
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-cyan-100">
+                <Star size={15} className="text-cyan-500" />
               </div>
               <div className="min-w-0">
                 <p className="text-[13px] font-medium leading-tight text-gray-900">
@@ -124,9 +124,9 @@ export default function LoyaltyPointModal({
                 </p>
               </div>
             </div>
-            <p className="text-xl font-bold text-green-700/80 tabular-nums">
+            <p className="text-xl font-bold text-cyan-700/80 tabular-nums">
               {(customer.loyaltyPoint ?? 0).toLocaleString()}{" "}
-              <span className=" text-[11px] text-green-600/80">pts</span>
+              <span className=" text-[11px] text-cyan-600/80">pts</span>
             </p>
           </div>
         )}
@@ -134,7 +134,7 @@ export default function LoyaltyPointModal({
         <div>
           <SectionLabel>Loyalty points</SectionLabel>
           <div className="relative mt-2">
-            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] text-green-400">
+            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] text-cyan-400">
               ★
             </span>
             <input
