@@ -227,7 +227,7 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
 
             <div className="h-5 border-1  border-gray-200 mx-2" />
 
-            <div className="flex items-center gap-0.5 rounded-lg border border-gray-200 p-0.5">
+            <div className="flex items-center gap-0.5 rounded-lg border border-gray-200 p-0.5 ">
               {ORDERS.map(({ id, label, icon, hint }) => (
                 <button
                   key={id}
@@ -240,7 +240,7 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
                   }}
                   aria-pressed={order === id}
                   title={hint}
-                  className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold transition-colors ${
+                  className={`flex items-center gap-1 rounded-md px-2 py-2 text-[11px] font-bold transition-colors ${
                     order === id
                       ? "bg-blue-600 text-white"
                       : "text-gray-500 hover:bg-blue-100 hover:text-blue-700"
@@ -272,7 +272,7 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
           </p>
         </div>
       ) : (
-        <div className="mt-4 h-44 mt-10 sm:h-56 md:h-64">
+        <div className="mt-4 h-44 sm:h-56 md:h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={visible}
@@ -280,7 +280,7 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
               margin={{
                 top: 0,
                 right: 44,
-                left: 10,
+                left: 0,
                 bottom: 0,
               }}
               barCategoryGap="30%"

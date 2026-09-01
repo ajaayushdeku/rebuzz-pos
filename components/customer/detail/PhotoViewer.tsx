@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
+import { useLockAppScroll } from "@/hooks/useLockAppScroll";
 
 /** Full-size photo lightbox. */
 export default function PhotoViewer({
@@ -25,15 +26,10 @@ export default function PhotoViewer({
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKeyDown);
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = previousOverflow;
-    };
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, [open, onClose]);
+
+  useLockAppScroll(open);
 
   if (!open || !src) return null;
 

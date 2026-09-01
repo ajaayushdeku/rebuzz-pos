@@ -13,6 +13,7 @@ import {
 } from "@/services/apiLoyaltyPoint";
 import { useInvoiceTicket } from "./useInvoiceTicket";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { useLockAppScroll } from "@/hooks/useLockAppScroll";
 
 interface RecordPaymentModalProps {
   open: boolean;
@@ -98,13 +99,10 @@ export default function RecordPaymentModal({
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKeyDown);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = prevOverflow;
-    };
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, [open, onClose]);
+
+  useLockAppScroll(open);
 
   // Reset form & load loyalty settings whenever the modal opens for an invoice.
   useEffect(() => {

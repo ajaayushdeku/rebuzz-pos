@@ -114,20 +114,19 @@ const Page = async () => {
             <span style={{ color: "#244074" }}>Re</span>
             <span style={{ color: "#E26924" }}>Buzz</span>
           </span>
-          <ServerEnvBadge className="ml-1" />
+          {/* <ServerEnvBadge className="ml-1" /> */}
         </div>
 
         {token ? (
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-            {/* Below `lg` the greeting is the first thing to go: the account
-                menu names the business anyway, so the row keeps the two
-                controls rather than the sentence. */}
+            <ServerEnvBadge className="ml-1" />
+
+            <div className="h-5 border-1  border-gray-200 mx-2" />
+
             <span className="hidden lg:inline">
               <NavbarWelcome />
             </span>
-            {/* Beside the greeting it belongs to: the two together are who
-                you are signed in as, which the rule then separates from the
-                action the page wants you to take. */}
+
             <HomeUserMenu />
 
             {/* <span
@@ -150,6 +149,10 @@ const Page = async () => {
           </div>
         ) : (
           <div className="flex shrink-0 items-center gap-2 md:gap-3">
+            <ServerEnvBadge className="ml-1" />
+
+            <div className="h-5 border-1  border-gray-200 mx-2" />
+
             <Button
               asChild
               variant="ghost"

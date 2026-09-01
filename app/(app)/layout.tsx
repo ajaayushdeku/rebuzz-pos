@@ -51,8 +51,20 @@ export default async function RootLayout({
   }
 
   const currencyCode = cookieStore.get("currency")?.value;
+
+  /*
+   * The shell is exactly the viewport and does not scroll: the navbar and the
+   * sidebar are fixed, and `MainContent` scrolls inside it. The window then
+   * has no scrollbar to lose when a modal locks the page — losing it was
+   * shifting the whole layout sideways as the gutter vanished.
+   *
+   * Scoped to this shell rather than set on `html`/`body`, which the preview,
+   * auth and onboarding routes share and still want to scroll normally.
+   */
   return (
-    <div className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+    <div
+      className={`${geistSans.variable} ${geistMono.variable} antialiased h-dvh overflow-hidden`}
+    >
       <TooltipProvider delayDuration={200}>
         <Toaster />
         <SidebarProvider>

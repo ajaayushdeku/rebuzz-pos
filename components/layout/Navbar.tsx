@@ -36,16 +36,14 @@ export default function Navbar() {
               <span style={{ color: "#E26924" }}>Buzz</span>
             </span>
           </Link>
-          <ServerEnvBadge className="hidden sm:inline-flex" />
+          {/* <ServerEnvBadge className="hidden sm:inline-flex" /> */}
         </div>
 
         <div className="flex items-center gap-2">
-          {/* The symbol alone — it is what shows up on every figure in the
-              app, so it names the setting better than the code does. The code
-              is in the tooltip and for screen readers.
+          <ServerEnvBadge className="ml-1" />
 
-              `min-w-9` rather than a fixed width: two-character symbols like
-              "Rs" and "kr" would otherwise be squeezed. */}
+          <div className="h-5 border-1  border-gray-200 mx-2" />
+
           <Link
             href="/settings/currency"
             title={`Currency: ${currency.code} — click to change`}
@@ -54,8 +52,11 @@ export default function Navbar() {
           >
             {currency.symbol}
           </Link>
+
           <div className="h-5 border-1  border-gray-200 mx-2" />
+
           <HelpButton />
+
           <User
             initialBusinessName={businessData?.businessName || "My Business"}
             businessLogo={businessData?.logo ?? null}

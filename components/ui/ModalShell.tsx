@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useLockAppScroll } from "@/hooks/useLockAppScroll";
 
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -101,13 +102,10 @@ export default function ModalShell({
       if (e.key === "Escape" && !busy) onClose();
     };
     document.addEventListener("keydown", onKeyDown);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = prevOverflow;
-    };
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, [open, busy, onClose]);
+
+  useLockAppScroll(open);
 
   if (!open || !mounted) return null;
 

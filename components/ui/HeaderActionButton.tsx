@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 
 /**
  * The two looks page headers use.
@@ -10,17 +9,31 @@ import { Button } from "@/components/ui/button";
  * `dashed` — the secondary "create something elsewhere" action on the
  *            dashboards ("Create Order", "Add Stock"), whose dashed outline
  *            reads as a placeholder you fill rather than a committed action.
+ *            Its text is `blue-600` rather than `blue-500`: the lighter shade
+ *            fell below 4.5:1 against white.
  */
 export type HeaderActionVariant = "solid" | "dashed";
 
 const VARIANT: Record<HeaderActionVariant, string> = {
-  solid: "bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-500",
+  solid:
+    "bg-blue-600 text-white shadow-sm hover:bg-blue-700 active:bg-blue-800",
   dashed:
-    "border-[1px]  border-dashed  border-blue-400 bg-transparent text-blue-500 font-semibold hover:border-blue-500 hover:bg-blue-100 hover:text-blue-500 focus-visible:ring-blue-400",
+    "border-dashed border-blue-300 bg-white text-blue-600 hover:border-blue-400 hover:bg-blue-50 active:bg-blue-100",
 };
 
+/**
+ * Everything the shared `Button` used to supply, now that this renders a plain
+ * `<button>`: layout, the focus ring, the press nudge and the disabled state.
+ *
+ * `border border-transparent` matters — without it `solid` would be two pixels
+ * shorter and narrower than `dashed`, which carries a real border. `h-9`
+ * matches the `DateRangeFilter` trigger these stand beside in most headers.
+ */
 const BASE =
-  "flex cursor-pointer items-center gap-2 rounded-lg text-sm focus-visible:ring-2 focus-visible:ring-offset-2";
+  "inline-flex h-9 shrink-0 cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-transparent px-3.5 text-sm font-semibold transition-colors outline-none focus-visible:border-blue-500 focus-visible:ring-[3px] focus-visible:ring-blue-500/30 active:translate-y-px disabled:pointer-events-none disabled:opacity-50";
+
+/** Square below `lg`, so an icon-only button is not a wide pill with a dot in it. */
+const ICON_ONLY = "max-lg:w-9 max-lg:px-0";
 
 type HeaderActionButtonProps = {
   /** Button text. Hidden below `lg` when `hideLabelOnMobile` is set. */
@@ -60,7 +73,12 @@ export default function HeaderActionButton({
   hideLabelOnMobile = false,
   className,
 }: HeaderActionButtonProps) {
-  const classes = cn(BASE, VARIANT[variant], className);
+  const classes = cn(
+    BASE,
+    VARIANT[variant],
+    hideLabelOnMobile && ICON_ONLY,
+    className,
+  );
 
   const content = (
     <>
@@ -73,17 +91,23 @@ export default function HeaderActionButton({
 
   if (href) {
     return (
-      <Button asChild className={classes} disabled={disabled}>
-        {/* title carries the label for the icon-only breakpoint. */}
-        <Link href={href} title={label}>
-          {content}
-        </Link>
-      </Button>
+      // The link is the control itself. Wrapping it in a <button> would nest
+      // interactive content, which is invalid and swallows the navigation.
+      // An anchor takes no `disabled` attribute either, so that state has to
+      // be spelled out in classes.
+      <Link
+        href={href}
+        title={label}
+        aria-disabled={disabled || undefined}
+        className={cn(classes, disabled && "pointer-events-none opacity-50")}
+      >
+        {content}
+      </Link>
     );
   }
 
   return (
-    <Button
+    <button
       type="button"
       onClick={onClick}
       disabled={disabled}
@@ -91,6 +115,6 @@ export default function HeaderActionButton({
       className={classes}
     >
       {content}
-    </Button>
+    </button>
   );
 }

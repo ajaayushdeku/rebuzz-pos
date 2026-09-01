@@ -20,6 +20,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { useCategories } from "@/hooks/useCategories";
 import { normalizeColor } from "@/services/category.client";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { useLockAppScroll } from "@/hooks/useLockAppScroll";
 
 /**
  * Colour is a code here, not decoration: each data domain owns one hue, and it
@@ -137,14 +138,7 @@ export default function ProductDetailModal({
   }, [open, onClose]);
 
   // Stop the page behind the overlay from scrolling with it.
-  useEffect(() => {
-    if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [open]);
+  useLockAppScroll(open);
 
   const category = useMemo(
     () => categories.find((c) => c._id === product?.categories),

@@ -134,6 +134,22 @@
   }
 }
 
+/* Inside the app shell the viewport is not what scrolls, so a page asking for
+   `min-h-screen` overflows its container by exactly the navbar height and
+   earns a permanent 57px scrollbar on every page. Within the scroller,
+   "screen" is the scroller.
+
+   `calc` rather than `100%`: a percentage min-height resolves against the
+   parent's height, so it would quietly do nothing for any page that nests its
+   root a level or two deep. Two class selectors, so this beats Tailwind's own
+   utility. */
+[data-app-scroll] .min-h-screen {
+  min-height: calc(100dvh - var(--navbar-height));
+}
+[data-app-scroll] .h-screen {
+  height: calc(100dvh - var(--navbar-height));
+}
+
 /* Custom thin scrollbar for horizontally scrollable card rows */
 .scrollbar-custom {
   scrollbar-width: thin;

@@ -23,6 +23,7 @@ import {
 } from "@/services/product/apiProduct.client";
 import { useInvalidateInventory } from "@/hooks/useInventory";
 import toast from "react-hot-toast";
+import { useLockAppScroll } from "@/hooks/useLockAppScroll";
 
 type Props = {
   open: boolean;
@@ -177,14 +178,7 @@ export default function ProductStockEditModal({
   }, [open, onOpenChange]);
 
   // Stop the page behind the overlay from scrolling with it.
-  useEffect(() => {
-    if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [open]);
+  useLockAppScroll(open);
 
   // search
   const filteredItems = useMemo(() => {

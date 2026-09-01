@@ -16,6 +16,7 @@ import {
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import type { Credit } from "@/services/apiCredit.client";
+import { useLockAppScroll } from "@/hooks/useLockAppScroll";
 
 const PAYMENT_METHODS = [
   { value: "cash", label: "Cash", icon: Banknote },
@@ -78,13 +79,10 @@ export default function CreditPaymentModal({
       if (e.key === "Escape" && !saving) onClose();
     };
     document.addEventListener("keydown", onKeyDown);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = prevOverflow;
-    };
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, [open, saving, onClose]);
+
+  useLockAppScroll(open);
 
   if (!open || !mounted || !credit) return null;
 
