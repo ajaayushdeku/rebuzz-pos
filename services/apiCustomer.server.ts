@@ -4,6 +4,7 @@ import {
   RawCustomerListResponse,
 } from "@/lib/types/customer";
 import { authHeaders } from "./authServices/session";
+import { fetchLoyaltyTiersServer, toTierBands } from "./apiLoyaltyTier.server";
 import axios from "axios";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -25,5 +26,10 @@ export const fetchCustomers = async (): Promise<Customer[]> => {
 
   const data: RawCustomerListResponse = res.data;
 
-  return data.data.users.map((rawItem) => mapRawCustomerToCustomer(rawItem));
+  // Banded against the business's own tiers — without them every customer
+  // comes back as "No tier", since there is no built-in ladder any more.
+  const tiers = toTierBands(await fetchLoyaltyTiersServer());
+  return data.data.users.map((rawItem) =>
+    mapRawCustomerToCustomer(rawItem, tiers),
+  );
 };

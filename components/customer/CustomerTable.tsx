@@ -14,7 +14,6 @@ import {
   Users,
 } from "lucide-react";
 import { Customer } from "./customer-columns";
-import { NO_TIER } from "@/lib/types/customer";
 import CustomerDetailModal from "./CustomerDetailModal";
 import EditCustomerModal from "./EditCustomerModal";
 import LoyaltyPointModal from "./LoyaltyPointModal";
@@ -26,31 +25,26 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
 import { useTierStyle } from "@/hooks/useLoyaltyTiers";
 
-const TIER_STYLES: Record<string, string> = {
-  // Not a tier, so it is deliberately the quietest thing in the column —
-  // it reads as "not banded yet" rather than as a rank of its own.
-  [NO_TIER]: "bg-gray-50 text-gray-500 border-gray-200",
-  Bronze: "bg-amber-100 text-amber-800 border-amber-200",
-  Silver: "bg-slate-200 text-slate-800 border-slate-300",
-  Gold: "bg-yellow-100 text-yellow-800 border-yellow-300",
-  Platinum: "bg-indigo-100 text-indigo-800 border-indigo-300",
-};
+/**
+ * Not a tier, so it is deliberately the quietest thing in the column — it
+ * reads as "not banded" rather than as a rank of its own. Every real tier is
+ * painted by the loyalty settings, so there is no table of names here.
+ */
+const NO_TIER_STYLE = "bg-gray-50 text-gray-500 border-gray-200";
 
 /**
  * One tier badge.
  *
  * `className` carries the colours the loyalty settings assigned to that tier,
  * so a business's own tier names are painted the same here as they are on the
- * settings page. `TIER_STYLES` remains the fallback for the four names this
- * app knew before the ladder was configurable, and for anything unmatched.
+ * settings page. Without one — "No tier", or the render before the ladder
+ * loads — the badge stays neutral rather than guessing at a colour.
  */
 function TierBadge({ tier, className }: { tier: string; className?: string }) {
   return (
     <span
       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
-        className ??
-        TIER_STYLES[tier] ??
-        "bg-gray-100 text-gray-700 border-gray-200"
+        className ?? NO_TIER_STYLE
       }`}
     >
       {tier}

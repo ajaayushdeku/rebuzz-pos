@@ -18,8 +18,10 @@ import { formatCurrencySymbol } from "@/utils/helper";
 import CustomerFormModal from "@/components/invoice/CustomerFormModal";
 import CustomerHistoryModal from "@/components/dashboardComponents/customersDash/CustomerHistoryModal";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { useTierStyle } from "@/hooks/useLoyaltyTiers";
+import type { LoyaltyTier } from "@/lib/types/customer";
 
-export type LoyaltyTier = "Gold" | "Silver" | "Bronze" | "Platinum" | "None";
+export type { LoyaltyTier };
 
 export type TopCustomer = {
   rank: number;
@@ -37,34 +39,18 @@ export type TopCustomersProps = {
   topCustomers: TopCustomer[];
 };
 
-export const tierStyles: Record<LoyaltyTier, { cell: string; badge: string }> =
-  {
-    Gold: {
-      cell: "text-yellow-800",
-      badge: "bg-yellow-200",
-    },
-    Silver: {
-      cell: "text-gray-800",
-      badge: "bg-gray-200",
-    },
-    Bronze: {
-      cell: "text-amber-800",
-      badge: "bg-amber-100",
-    },
-    Platinum: {
-      cell: "text-indigo-800",
-      badge: "bg-indigo-200",
-    },
-    None: {
-      cell: "text-gray-800",
-      badge: "bg-gray-200",
-    },
-  };
+/**
+ * For a tier with no colour of its own — "No tier", or the render before the
+ * ladder loads. There is no table of tier names here any more: the names are
+ * the business's, so the colours have to come from its loyalty settings.
+ */
+const NEUTRAL_TIER = "bg-gray-100 text-gray-600";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
 export default function TopCustomer({ topCustomers }: TopCustomersProps) {
   const { currency } = useCurrency();
+  const tierStyle = useTierStyle();
   const [search, setSearch] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [page, setPage] = useState(0);
@@ -261,9 +247,12 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                   </td>
                   <td className="py-3 px-4 text-center">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-semibold ${
-                        tierStyles[customer.loyaltyTier].badge
-                      } ${tierStyles[customer.loyaltyTier].cell}`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-semibold ${(() => {
+                        const style = tierStyle(customer.loyaltyTier);
+                        return style
+                          ? `${style.bgColor} ${style.color}`
+                          : NEUTRAL_TIER;
+                      })()}`}
                     >
                       {customer.loyaltyTier}
                     </span>

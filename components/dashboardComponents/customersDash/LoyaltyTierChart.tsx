@@ -1,4 +1,5 @@
 "use client";
+import { createElement, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -16,12 +17,50 @@ import type {
   Payload,
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
-import { Award } from "lucide-react";
+import { ArrowUp01, Award, List } from "lucide-react";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import TablePagination from "@/components/ui/TablePagination";
+
+/**
+ * Bars per page.
+ *
+ * A ladder can run to twenty tiers, and twenty bars in a 16rem plot are
+ * hairlines. A handful is about what this height reads comfortably, and a
+ * typical ladder is shorter than that, so most businesses never see the pager.
+ */
+const PAGE_SIZE = 5;
+
+/** How the bars can be ordered. */
+const ORDERS = [
+  {
+    id: "threshold" as const,
+    label: "By points",
+    icon: ArrowUp01,
+    hint: "Order the tiers by the points needed to reach them",
+  },
+  {
+    id: "listed" as const,
+    label: "Tiers list",
+    icon: List,
+    hint: "Order the tiers as the loyalty settings list them",
+  },
+];
 
 export interface TierData {
   tier: string;
   members: number;
+  /**
+   * The colour the loyalty settings gave this tier.
+   *
+   * Supplied by the server, which reads the ladder anyway to count the
+   * members — this chart renders inside a server tree and cannot read it.
+   */
+  color?: string;
+  /**
+   * The tier's minimum points, for the threshold ordering. Absent on a row
+   * that is not a rung of the ladder.
+   */
+  minPoints?: number;
 }
 export interface TierDataProps {
   data: TierData[];
@@ -35,18 +74,14 @@ interface CustomTooltipProps {
 }
 
 /**
- * Metallic-but-legible. The literal metal colours for silver (#cdcdcd) and
- * gold (#f7dd46) were too pale to read as filled bars on a white card, so both
- * are pulled a few steps darker while keeping the association.
+ * For a row with no colour of its own.
+ *
+ * There is no map of tier names to colours here any more: tier names are the
+ * business's, so a built-in Bronze/Silver/Gold/Platinum palette could only
+ * ever colour four names it happened to guess right. The colour arrives with
+ * the row instead, assigned by the same palette the settings page uses.
  */
-const TIER_COLORS: Record<string, string> = {
-  Bronze: "#d97706",
-  Silver: "#94a3b8",
-  Gold: "#eab308",
-  Platinum: "#936eff",
-};
-
-const FALLBACK_COLOR = "#60a5fa";
+const FALLBACK_COLOR = "#a1a1aa";
 
 /**
  * A round step whose multiples cover `max` in roughly four intervals.
@@ -71,8 +106,8 @@ const CustomTooltip = ({
   total,
 }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
-    const tierName = (label as string) ?? "";
-    const color = TIER_COLORS[tierName] ?? FALLBACK_COLOR;
+    const row = (payload[0] as { payload?: TierData }).payload;
+    const color = row?.color ?? FALLBACK_COLOR;
     const members = payload[0].value as number;
     const share = total > 0 ? (members / total) * 100 : 0;
 
@@ -102,24 +137,47 @@ const CustomTooltip = ({
 
 // Rounded right-side corners only for horizontal bars with tier-specific color
 const CustomBar = (props: BarShapeProps) => {
-  const tierName = props.payload?.tier ?? "";
-  const color = TIER_COLORS[tierName] ?? FALLBACK_COLOR;
-  return <Rectangle {...props} radius={[0, 6, 6, 0]} fill={color} />;
+  const row = props.payload as TierData | undefined;
+  return (
+    <Rectangle
+      {...props}
+      radius={[0, 6, 6, 0]}
+      fill={row?.color ?? FALLBACK_COLOR}
+    />
+  );
 };
 
 export default function LoyaltyTierChart({ data }: TierDataProps) {
+  const [order, setOrder] = useState<"threshold" | "listed">("threshold");
+  const [page, setPage] = useState(0);
+
   // Empty covers "no tiers returned" and "tiers returned but nobody in them" —
   // both render an unreadable, all-zero chart.
   const isEmpty =
     !data || data.length === 0 || data.every((d) => d.members === 0);
   const displayData = data ?? [];
 
+  const ordered =
+    order === "threshold"
+      ? [...displayData].sort((a, b) => (b.members ?? 0) - (a.members ?? 0))
+      : displayData;
+
+  const totalPages = Math.max(1, Math.ceil(ordered.length / PAGE_SIZE));
+  // Clamped, so a shorter ladder cannot leave the view on an empty page.
+  const safePage = Math.min(page, totalPages - 1);
+  const visible = ordered.slice(
+    safePage * PAGE_SIZE,
+    (safePage + 1) * PAGE_SIZE,
+  );
+
   const totalMembers = displayData.reduce(
     (sum, d) => sum + (d.members ?? 0),
     0,
   );
 
-  // Dynamic X-axis based on actual data
+  // Scaled against every tier, not just this page: a domain that rebased per
+  // page would make a bar of 10 on one page look longer than a bar of 12 on
+  // the next.
   const maxMembers = Math.max(...displayData.map((d) => d.members), 1);
   const step = niceStep(maxMembers);
   const xDomain = Math.ceil(maxMembers / step) * step;
@@ -127,6 +185,17 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
     { length: Math.round(xDomain / step) + 1 },
     (_, i) => i * step,
   );
+
+  // Tier names are typed by the business, so the axis gutter is sized to the
+  // longest one rather than to the four built-in names it used to assume — and
+  // capped, so one long name cannot crowd out the bars. Measured across every
+  // tier, like the domain: a gutter that resized per page would shift the
+  // whole plot sideways as the reader steps through it.
+  const longestLabel = displayData.reduce(
+    (longest, d) => Math.max(longest, d.tier.length),
+    0,
+  );
+  const yAxisWidth = Math.min(120, Math.max(62, longestLabel * 7 + 12));
 
   return (
     <div className=" w-full min-w-0 rounded-2xl  p-5 shadow-sm transition-shadow duration-300 hover:shadow-md">
@@ -143,15 +212,47 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
         </div>
 
         {/* Enrolled total — the chart shows the split but never the size of
-            the programme it is splitting. */}
+            the programme it is splitting. Counts every tier, not just the
+            page on screen. */}
         {!isEmpty && (
-          <div className="flex shrink-0 flex-col items-end">
-            <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
-              Enrolled
-            </span>
-            <p className="mt-0.5 text-base font-bold leading-tight tabular-nums text-gray-900">
-              {totalMembers.toLocaleString()}
-            </p>
+          <div className="flex shrink-0 items-center gap-3">
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                Enrolled
+              </span>
+              <p className="mt-0.5 text-base font-bold leading-tight tabular-nums text-gray-900">
+                {totalMembers.toLocaleString()}
+              </p>
+            </div>
+
+            <div className="h-5 border-1  border-gray-200 mx-2" />
+
+            <div className="flex items-center gap-0.5 rounded-lg border border-gray-200 p-0.5">
+              {ORDERS.map(({ id, label, icon, hint }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => {
+                    setOrder(id);
+                    // Page one under the new order: holding page three while
+                    // the rows reshuffle lands on tiers nobody asked for.
+                    setPage(0);
+                  }}
+                  aria-pressed={order === id}
+                  title={hint}
+                  className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold transition-colors ${
+                    order === id
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-500 hover:bg-blue-100 hover:text-blue-700"
+                  }`}
+                >
+                  {/* createElement rather than aliasing into a capitalised
+                      binding, which reads as defining a component in render. */}
+                  {createElement(icon, { size: 12 })}
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -166,15 +267,15 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
             No loyalty tier data
           </p>
           <p className="max-w-[15rem] text-xs text-gray-400">
-            Tier breakdown appears once customers are enrolled in the loyalty
-            program.
+            Tier breakdown appears once tiers are set up in loyalty settings and
+            customers are enrolled.
           </p>
         </div>
       ) : (
         <div className="mt-4 h-44 mt-10 sm:h-56 md:h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={displayData}
+              data={visible}
               layout="vertical"
               margin={{
                 top: 0,
@@ -209,7 +310,7 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
                   fontSize: 12,
                   fontWeight: 600,
                 }}
-                width={62}
+                width={yAxisWidth}
               />
 
               <Tooltip
@@ -234,6 +335,17 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
             </BarChart>
           </ResponsiveContainer>
         </div>
+      )}
+
+      {/* Outside the plot's fixed-height box, which the pager would overflow. */}
+      {!isEmpty && totalPages > 1 && (
+        <TablePagination
+          page={safePage}
+          totalPages={totalPages}
+          total={ordered.length}
+          noun="tiers"
+          onPageChange={setPage}
+        />
       )}
     </div>
   );

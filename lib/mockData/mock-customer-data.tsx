@@ -1,16 +1,8 @@
 import { AtRiskCustomer } from "@/components/dashboardComponents/customersDash/AtRiskCustomer";
 import { SegmentData } from "@/components/dashboardComponents/customersDash/CustomerSegmentationChart";
 import { CustomerTrendData } from "@/components/dashboardComponents/customersDash/CustomerTrendChart";
-import { TierData } from "@/components/dashboardComponents/customersDash/LoyaltyTierChart";
 import { TopCustomer } from "@/components/dashboardComponents/customersDash/TopCustomer";
 import { CustomerApiResponse } from "@/lib/dashboardstats";
-
-export const mockTierData: TierData[] = [
-  { tier: "Bronze", members: 480 },
-  { tier: "Silver", members: 220 },
-  { tier: "Gold", members: 112 },
-  { tier: "Platinum", members: 30 },
-];
 
 export const mockCustomerSegmentationData: SegmentData[] = [
   { name: "Active", value: 1020 },
@@ -25,11 +17,11 @@ export const mockCustomerStats: CustomerApiResponse = {
 };
 export const mockCustomerTrendData: CustomerTrendData[] = [
   { month: "Sep", active: 150, inactive: 55, new: 20, newActive: 60 },
-  { month: "Oct", active: 160, inactive: 70, new:15,newActive:45 },
-  { month: "Nov", active: 162, inactive: 58 ,new:35,newActive:45 },
-  { month: "Dec", active: 170, inactive: 125 , new:23,newActive:56},
-  { month: "Jan", active: 175, inactive: 100, new:34, newActive:35 },
-  { month: "Feb", active: 210, inactive: 85 ,new:62,newActive:45},
+  { month: "Oct", active: 160, inactive: 70, new: 15, newActive: 45 },
+  { month: "Nov", active: 162, inactive: 58, new: 35, newActive: 45 },
+  { month: "Dec", active: 170, inactive: 125, new: 23, newActive: 56 },
+  { month: "Jan", active: 175, inactive: 100, new: 34, newActive: 35 },
+  { month: "Feb", active: 210, inactive: 85, new: 62, newActive: 45 },
 ];
 
 export const mockTopCustomers: TopCustomer[] = [

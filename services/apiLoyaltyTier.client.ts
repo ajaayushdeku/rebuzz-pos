@@ -31,18 +31,19 @@ export interface LoyaltyTierPayload {
  */
 function styleFor(name: string, taken: Set<string>) {
   const known = STATUS_COLORS[name.trim().toLowerCase()];
-  if (known) return { color: known.color, bgColor: known.bg };
+  if (known) return { color: known.color, bgColor: known.bg, hex: known.hex };
 
   const free = TIER_PALETTE.find((swatch) => !taken.has(swatch.key));
   if (!free) {
     return {
       color: FALLBACK_TIER_STYLE.color,
       bgColor: FALLBACK_TIER_STYLE.bg,
+      hex: FALLBACK_TIER_STYLE.hex,
     };
   }
 
   taken.add(free.key);
-  return { color: free.color, bgColor: free.bg };
+  return { color: free.color, bgColor: free.bg, hex: free.hex };
 }
 
 /**
@@ -62,13 +63,14 @@ export function mapTiers(raw: RawLoyaltyTier[]): LoyaltyStatus[] {
   );
 
   return raw.map((t) => {
-    const { color, bgColor } = styleFor(t.name, taken);
+    const { color, bgColor, hex } = styleFor(t.name, taken);
     return {
       id: t._id,
       name: t.name,
       minPoints: Number(t.minPoint) || 0,
       color,
       bgColor,
+      hex,
     };
   });
 }

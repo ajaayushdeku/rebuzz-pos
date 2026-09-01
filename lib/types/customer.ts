@@ -72,47 +72,33 @@ export interface IndividualCustomer {
 export const NO_TIER = "No tier";
 
 /**
- * The ladder used when the business has none configured.
- *
- * Kept as the fallback rather than deleted: a business that has not set its
- * tiers up still needs its customers banded somehow, and every caller that
- * cannot reach the settings — server renders, dashboard aggregates — lands
- * here.
- */
-const TIER_THRESHOLDS: { min: number; max: number; tier: LoyaltyTier }[] = [
-  { min: 0, max: 499, tier: "Bronze" },
-  { min: 500, max: 999, tier: "Silver" },
-  { min: 1000, max: 2999, tier: "Gold" },
-  { min: 3000, max: Infinity, tier: "Platinum" },
-];
-
-/**
  * The tier a point total falls into.
  *
- * `tiers` is the business's configured ladder. Given one, the answer is the
- * highest rung the customer has reached — a ladder is a set of floors — or
- * `NO_TIER` when they are below all of them.
+ * `tiers` is the business's configured ladder, and the only source of tier
+ * names there is. The answer is the highest rung the customer has reached — a
+ * ladder is a set of floors.
  *
- * Only a business with no ladder at all falls back to the built-in
- * thresholds. Reaching for those when a ladder exists but does not cover a
- * customer would answer a question the business has deliberately left open.
+ * `NO_TIER` when the ladder is empty, absent, or starts above this customer.
+ * There is deliberately no built-in Bronze/Silver/Gold/Platinum scale to fall
+ * back on: those were this app's invention, and showing a business a tier it
+ * never created — or banding its customers by thresholds it never chose —
+ * answers a question it has not been asked.
+ *
+ * `tiers` stays optional for the callers that map a customer for their name
+ * and contact details alone, where fetching the ladder would buy nothing.
  */
 export function getLoyaltyStatus(
   points: number,
   tiers?: LoyaltyTierBand[],
 ): LoyaltyTier {
-  if (tiers?.length) {
-    const reached = [...tiers]
-      .sort((a, b) => a.minPoints - b.minPoints)
-      .reduce<LoyaltyTierBand | undefined>(
-        (best, tier) => (points >= tier.minPoints ? tier : best),
-        undefined,
-      );
-    return reached ? reached.name : NO_TIER;
-  }
+  const reached = [...(tiers ?? [])]
+    .sort((a, b) => a.minPoints - b.minPoints)
+    .reduce<LoyaltyTierBand | undefined>(
+      (best, tier) => (points >= tier.minPoints ? tier : best),
+      undefined,
+    );
 
-  const match = TIER_THRESHOLDS.find((t) => points >= t.min && points <= t.max);
-  return match?.tier ?? "Bronze";
+  return reached ? reached.name : NO_TIER;
 }
 
 /**

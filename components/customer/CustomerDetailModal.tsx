@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Mail, Phone, FileText, ShoppingBag, DollarSign } from "lucide-react";
 import type { Customer } from "./customer-columns";
+import { useTierStyle } from "@/hooks/useLoyaltyTiers";
 
 interface CustomerDetailModalProps {
   customer: Customer | null;
@@ -15,12 +16,8 @@ interface CustomerDetailModalProps {
   onClose: () => void;
 }
 
-const TIER_BG: Record<string, string> = {
-  Bronze: "bg-amber-100 text-amber-800",
-  Silver: "bg-slate-200 text-slate-800",
-  Gold: "bg-yellow-100 text-yellow-800",
-  Platinum: "bg-indigo-100 text-indigo-800",
-};
+/** For a tier with no colour of its own — see `useTierStyle`. */
+const NEUTRAL_TIER = "bg-gray-100 text-gray-500";
 
 const DetailRow = ({
   icon,
@@ -47,7 +44,13 @@ export default function CustomerDetailModal({
   open,
   onClose,
 }: CustomerDetailModalProps) {
+  // Before the early return: a hook called conditionally would break the call
+  // order React matches state against.
+  const tierStyle = useTierStyle();
   if (!customer) return null;
+
+  const style = tierStyle(customer.loyaltyStatus);
+  const tierClass = style ? `${style.bgColor} ${style.color}` : NEUTRAL_TIER;
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -69,9 +72,7 @@ export default function CustomerDetailModal({
           {/* Loyalty section */}
           <div className="flex items-center gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
             <div
-              className={`text-xs font-bold px-3 py-1 rounded-full ${
-                TIER_BG[customer.loyaltyStatus]
-              }`}
+              className={`text-xs font-bold px-3 py-1 rounded-full ${tierClass}`}
             >
               {customer.loyaltyStatus}
             </div>

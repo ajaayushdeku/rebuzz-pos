@@ -7,7 +7,7 @@ import {
   WhatsAppIcon,
   whatsappLink,
 } from "@/components/customer/CustomerTable";
-import { TIER_BG, TIER_RING } from "./customerDetailHelpers";
+import { NO_TIER_STYLE } from "./customerDetailHelpers";
 import { useTierStyle } from "@/hooks/useLoyaltyTiers";
 
 export default function CustomerDetailHeader({
@@ -29,9 +29,7 @@ export default function CustomerDetailHeader({
   const style = tierStyle(loyaltyStatus);
   const badgeClass = style
     ? `${style.bgColor} ${style.color} ring-current/20`
-    : `${TIER_BG[loyaltyStatus] ?? "bg-gray-100 text-gray-600"} ${
-        TIER_RING[loyaltyStatus] ?? "ring-gray-200"
-      }`;
+    : `${NO_TIER_STYLE.bg} ${NO_TIER_STYLE.ring}`;
 
   return (
     <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">

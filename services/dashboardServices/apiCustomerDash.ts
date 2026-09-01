@@ -4,17 +4,19 @@ import { CustomerTrendData } from "@/components/dashboardComponents/customersDas
 import { TierData } from "@/components/dashboardComponents/customersDash/LoyaltyTierChart";
 import { TopCustomer } from "@/components/dashboardComponents/customersDash/TopCustomer";
 import { CustomerApiResponse } from "@/lib/dashboardstats";
-import { getLoyaltyStatus } from "@/lib/types/customer";
+import { getLoyaltyStatus, NO_TIER } from "@/lib/types/customer";
 import { authHeaders } from "../authServices/session";
+import { fetchLoyaltyTiersServer, toTierBands } from "../apiLoyaltyTier.server";
+import { FALLBACK_TIER_STYLE } from "@/components/settingsComponents/loyaltyPoints/loyaltyStatusConfig";
 
 import {
   mockAtRiskCustomers,
   mockCustomerSegmentationData,
   mockCustomerStats,
   mockCustomerTrendData,
-  mockTierData,
   mockTopCustomers,
 } from "@/lib/mockData/mock-customer-data";
+// import { fetchLoyaltyTiers } from "../apiLoyaltyTier.client";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
@@ -74,6 +76,25 @@ function monthRange(date: Date): { start: string; end: string; label: string } {
   };
 }
 
+/**
+ * Every read below is `no-store`, not a revalidate window.
+ *
+ * Two reasons, and the second is the serious one:
+ *
+ * 1. A five-minute window meant a bill taken a minute ago was missing from the
+ *    leaderboard and the stat cards until it expired, with nothing on screen
+ *    to say the figures were old.
+ * 2. Next keys its data cache on the URL, not on the request headers. The
+ *    session travels in `Authorization`, so every business asks for the same
+ *    `/business/users/roles/user` — and after an account switch one business
+ *    would be served the customers, bills and history cached for another.
+ *
+ * The cost is real: `getTopCustomers` reads one history per customer, and none
+ * of those are cached now. If this page gets slow, the fix is to ask the API
+ * for an aggregate rather than to put a shared cache back in front of
+ * per-account data.
+ */
+
 // ── Shared fetchers ───────────────────────────────────────────────────────
 
 async function fetchBillsInRange(
@@ -84,7 +105,7 @@ async function fetchBillsInRange(
     `${BASE}/business/report?startDate=${startDate}&endDate=${endDate}&limit=5000`,
     {
       headers: await authHeaders(),
-      next: { revalidate: 300 },
+      cache: "no-store",
     },
   );
   if (!res.ok) {
@@ -98,7 +119,7 @@ async function fetchBillsInRange(
 async function fetchAllUsers(): Promise<RawUser[]> {
   const res = await fetch(`${BASE}/business/users/roles/user`, {
     headers: await authHeaders(),
-    next: { revalidate: 300 },
+    cache: "no-store",
   });
   if (!res.ok) {
     console.error(`fetchAllUsers failed: ${res.status}`);
@@ -128,7 +149,7 @@ export async function getCustomerStats(
       fetchBillsInRange(effectiveStart, effectiveEnd),
       fetch(
         `${BASE}/business/report/salesByItem?startDate=${effectiveStart}&endDate=${effectiveEnd}`,
-        { headers: await authHeaders(), next: { revalidate: 300 } },
+        { headers: await authHeaders(), cache: "no-store" },
       ).then((r) => r.json()),
     ]);
 
@@ -388,31 +409,63 @@ export async function getCustomerTrendData(): Promise<CustomerTrendData[]> {
 
 // ── getLoyaltyTierData ────────────────────────────────────────────────────
 
+/**
+ * Members per tier, from the business's own ladder.
+ *
+ * The bars are the configured tiers, so the chart says the same thing as the
+ * customers table and the loyalty settings page. Each row also carries the
+ * colour that tier was given: this data is assembled on the server, and the
+ * chart renders inside a server tree where it cannot read the ladder itself.
+ *
+ * Tiers with nobody in them are kept — "no one has reached Platinum" is a
+ * finding, and dropping the row would make the ladder look shorter than it is.
+ * A business with no tiers configured gets no rows at all, and the chart says
+ * so; inventing four bars it never asked for would be worse than an empty
+ * state.
+ */
 export async function getLoyaltyTierData(): Promise<TierData[]> {
   try {
-    const users = await fetchAllUsers();
+    const [users, tiers] = await Promise.all([
+      fetchAllUsers(),
+      fetchLoyaltyTiersServer(),
+    ]);
+    if (tiers.length === 0) return [];
 
-    const counts: Record<string, number> = {
-      Bronze: 0,
-      Silver: 0,
-      Gold: 0,
-      Platinum: 0,
-    };
+    const bands = toTierBands(tiers);
 
+    const counts = new Map<string, number>();
     for (const user of users) {
-      const tier = getLoyaltyStatus(user.loyaltyPoint ?? 0);
-      counts[tier] = (counts[tier] ?? 0) + 1;
+      const tier = getLoyaltyStatus(user.loyaltyPoint ?? 0, bands);
+      counts.set(tier, (counts.get(tier) ?? 0) + 1);
     }
 
-    return [
-      { tier: "Bronze", members: counts.Bronze },
-      { tier: "Silver", members: counts.Silver },
-      { tier: "Gold", members: counts.Gold },
-      { tier: "Platinum", members: counts.Platinum },
-    ];
+    // Left in the order the API returned, which the chart offers as one of its
+    // two orderings; it sorts by threshold itself for the other. Each row
+    // carries its threshold so that sort needs nothing from the server.
+    const rows: TierData[] = tiers.map((tier) => ({
+      tier: tier.name,
+      members: counts.get(tier.name) ?? 0,
+      color: tier.hex,
+      minPoints: tier.minPoints,
+    }));
+
+    // Only when the ladder leaves a gap at the bottom and someone is in it.
+    // Below every threshold by construction, so a negative minimum keeps it
+    // first under either ordering — it is not a rung, so it sits outside them.
+    const unbanded = counts.get(NO_TIER) ?? 0;
+    if (unbanded > 0) {
+      rows.unshift({
+        tier: NO_TIER,
+        members: unbanded,
+        color: FALLBACK_TIER_STYLE.hex,
+        minPoints: -1,
+      });
+    }
+
+    return rows;
   } catch (err) {
     console.error("getLoyaltyTierData error:", err);
-    return mockTierData;
+    return [];
   }
 }
 
@@ -503,7 +556,7 @@ export async function getTopCustomers(): Promise<TopCustomer[]> {
             `${BASE}/business/users/${user._id}/history`,
             {
               headers: await authHeaders(),
-              next: { revalidate: 300 },
+              cache: "no-store",
             },
           );
           if (!res.ok) return null;
@@ -558,6 +611,8 @@ export async function getTopCustomers(): Promise<TopCustomer[]> {
     // Filter only active customers this month
     const activeUsers = users.filter((u) => spendMap.has(u._id));
 
+    const tierBands = toTierBands(await fetchLoyaltyTiersServer());
+
     const ranked = activeUsers
       .map((user) => {
         const totalSpent =
@@ -571,9 +626,7 @@ export async function getTopCustomers(): Promise<TopCustomer[]> {
           numVisits,
           loyaltyPoints,
           totalSpent,
-          loyaltyTier: getLoyaltyStatus(
-            loyaltyPoints,
-          ) as TopCustomer["loyaltyTier"],
+          loyaltyTier: getLoyaltyStatus(loyaltyPoints, tierBands),
           id: user._id,
         };
       })

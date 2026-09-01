@@ -7,7 +7,7 @@ import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import DetailRow from "./DetailRow";
 import { DETAIL_CARD, CardHeader } from "./DetailCardShell";
-import { TIER_BG } from "./customerDetailHelpers";
+import { NO_TIER_STYLE } from "./customerDetailHelpers";
 import { useTierStyle } from "@/hooks/useLoyaltyTiers";
 
 export default function LoyaltyCard({
@@ -31,7 +31,7 @@ export default function LoyaltyCard({
   const style = tierStyle(loyaltyStatus);
   const tierClass = style
     ? `${style.bgColor} ${style.color}`
-    : (TIER_BG[loyaltyStatus] ?? "bg-gray-100 text-gray-600");
+    : NO_TIER_STYLE.bg;
 
   const money = (amount: number) =>
     formatCurrencySymbol(amount, currency.symbol, currency.locale);
