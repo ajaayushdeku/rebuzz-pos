@@ -207,17 +207,12 @@ export default function ProductCard({
     ? (normalizeColor(category.color) ?? undefined)
     : undefined;
 
-  /**
-   * The same hue, dropped toward black for the label.
-   *
-   * Category colours are the business's own and plenty of them are pale — a
-   * yellow or lime chip printed its name in that colour on a 12%-alpha tint of
-   * itself, which is barely legible. Mixing in black keeps the category
-   * recognisable while giving the text something to sit against, and
-   * `color-mix` does it without parsing whatever format the colour arrives in.
-   */
   const categoryTextColor = categoryColor
     ? `color-mix(in oklab, ${categoryColor}, black 45%)`
+    : undefined;
+
+  const categoryBoderColor = categoryColor
+    ? `color-mix(in oklab, ${categoryColor}, black 20%)`
     : undefined;
 
   // Only live discounts count — a disabled one takes nothing off the price.
@@ -359,7 +354,7 @@ export default function ProductCard({
                   style={{
                     color: categoryTextColor,
                     backgroundColor: `${categoryColor}20`,
-                    borderColor: categoryColor,
+                    borderColor: categoryBoderColor,
                   }}
                 >
                   {category?.name}
@@ -377,14 +372,6 @@ export default function ProductCard({
             </span>
           </div>
 
-          {/* Everything below the name collapses, so a shelf of cards stays
-              scannable and the detail is one click away. The status badge sits
-              on the image, so stock state is still readable while collapsed. */}
-          {/* Animating to a content height nobody measured: a one-row grid
-              can transition between 0fr and 1fr, which max-height cannot do
-              without a guessed ceiling. The panel stays mounted so there is
-              something to transition — `inert` keeps its buttons out of the
-              tab order and off screen readers while it is closed. */}
           <div
             id={panelId}
             inert={!isExpanded}

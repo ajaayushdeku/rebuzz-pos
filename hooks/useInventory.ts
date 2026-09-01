@@ -22,53 +22,49 @@ async function fetchInventoryClient(): Promise<InventoryItem[]> {
   return (
     raw
       // .filter((p: any) => p && typeof p.costPrice === "number" && p.costPrice > 0)
-      .map(
-        (p: any): InventoryItem => ({
-          id: p._id,
-          name: p.name ?? "Unnamed Product",
-          unit: p.soldBy ?? "each",
-          inStock: typeof p.inStock === "number" ? p.inStock : 0,
-          lowStock: typeof p.lowStock === "number" ? p.lowStock : 0,
-          usesStocks: Boolean(p.usesStocks),
-          isTaxable: Boolean(p.isTaxable),
-          isAvailable:
-            p.isAvailable !== undefined ? Boolean(p.isAvailable) : true,
-          orderedCount: typeof p.orderedCount === "number" ? p.orderedCount : 0,
-          costPrice: p.costPrice,
-          price: typeof p.price === "number" ? p.price : 0,
-          categories: p.categories,
-          discounts: Array.isArray(p.discounts)
-            ? p.discounts.filter(
-                (d: unknown): d is string => typeof d === "string",
-              )
+      .map((p: any): InventoryItem => ({
+        id: p._id,
+        name: p.name ?? "Unnamed Product",
+        unit: p.soldBy ?? "each",
+        inStock: typeof p.inStock === "number" ? p.inStock : 0,
+        lowStock: typeof p.lowStock === "number" ? p.lowStock : 0,
+        usesStocks: Boolean(p.usesStocks),
+        isTaxable: Boolean(p.isTaxable),
+        isAvailable:
+          p.isAvailable !== undefined ? Boolean(p.isAvailable) : true,
+        orderedCount: typeof p.orderedCount === "number" ? p.orderedCount : 0,
+        costPrice: p.costPrice,
+        price: typeof p.price === "number" ? p.price : 0,
+        categories: p.categories,
+        discounts: Array.isArray(p.discounts)
+          ? p.discounts.filter(
+              (d: unknown): d is string => typeof d === "string",
+            )
+          : undefined,
+        image:
+          typeof p.image === "string" && p.image
+            ? p.image
+            : (p.images?.[0] ?? undefined),
+        images: Array.isArray(p.images)
+          ? p.images.filter((s: unknown): s is string => typeof s === "string")
+          : undefined,
+        variants:
+          Array.isArray(p.variants?.variantItems) &&
+          p.variants.variantItems.length > 0
+            ? p.variants.variantItems.map((v: Record<string, unknown>) => ({
+                id: String(v._id ?? ""),
+                optionValues: Array.isArray(v.optionValues)
+                  ? (v.optionValues as string[])
+                  : [],
+                price: typeof v.price === "number" ? v.price : 0,
+                costPrice: typeof v.costPrice === "number" ? v.costPrice : 0,
+                inStock: typeof v.inStock === "number" ? v.inStock : 0,
+                lowStock: typeof v.lowStock === "number" ? v.lowStock : 0,
+                isAvailable:
+                  v.isAvailable !== undefined ? Boolean(v.isAvailable) : true,
+              }))
             : undefined,
-          image:
-            typeof p.image === "string" && p.image
-              ? p.image
-              : (p.images?.[0] ?? undefined),
-          images: Array.isArray(p.images)
-            ? p.images.filter(
-                (s: unknown): s is string => typeof s === "string",
-              )
-            : undefined,
-          variants:
-            Array.isArray(p.variants?.variantItems) &&
-            p.variants.variantItems.length > 0
-              ? p.variants.variantItems.map((v: Record<string, unknown>) => ({
-                  id: String(v._id ?? ""),
-                  optionValues: Array.isArray(v.optionValues)
-                    ? (v.optionValues as string[])
-                    : [],
-                  price: typeof v.price === "number" ? v.price : 0,
-                  costPrice: typeof v.costPrice === "number" ? v.costPrice : 0,
-                  inStock: typeof v.inStock === "number" ? v.inStock : 0,
-                  lowStock: typeof v.lowStock === "number" ? v.lowStock : 0,
-                  isAvailable:
-                    v.isAvailable !== undefined ? Boolean(v.isAvailable) : true,
-                }))
-              : undefined,
-        }),
-      )
+      }))
   );
 }
 
@@ -134,6 +130,13 @@ export interface ProductTotals {
   productCount: number;
   /** Variants across all products; products without variants contribute 0. */
   variantCount: number;
+  /**
+   * Products and variants holding a negative count, left out of the valuation
+   * above. Reported rather than swallowed: a negative balance is a
+   * bookkeeping error somebody has to go and fix, and clamping it in silence
+   * would make the totals look right while the record stayed wrong.
+   */
+  negativeStockCount: number;
 }
 
 /**
@@ -149,19 +152,49 @@ export interface ProductTotals {
  * A product WITH variants carries its price and stock on the variants (the
  * base row reads 0), so value comes from the variants while the parent is
  * still counted exactly once.
+ *
+ * Two things are deliberately worth nothing here:
+ *
+ * A **negative count** is not a quantity — there is no shelf holding minus
+ * eight burgers, and nothing in the shop is worth `-8 × price`. Left in, one
+ * product at -50 units cancels another at +50 and the total lands on a
+ * plausible figure that is wrong in two places at once, with nothing on the
+ * card to show it. The rest of the app already reads negative as empty
+ * (`getStockStatus` returns "out" at `<= 0`, `getBarPercent` clamps at zero),
+ * so these totals were the outlier. They are counted in
+ * `negativeStockCount` instead, which the summary shows.
+ *
+ * An **untracked product** has no count to value. Its `inStock` is whatever
+ * happens to be stored against it — often a stale figure from before stock
+ * tracking was turned off — and valuing it states an amount of stock the
+ * business has said it does not keep. It still counts toward `productCount`:
+ * it is a product, it just has no stock value.
  */
 export function computeProductTotals(items: InventoryItem[]): ProductTotals {
   let totalSellingPrice = 0;
   let totalCostPrice = 0;
   let productCount = 0;
   let variantCount = 0;
+  let negativeStockCount = 0;
+
+  /** The units this row can be valued at, and whether its count was invalid. */
+  const valuableStock = (raw: unknown): number => {
+    const stock = typeof raw === "number" ? raw : 0;
+    if (stock < 0) {
+      negativeStockCount += 1;
+      return 0;
+    }
+    return stock;
+  };
 
   for (const p of items) {
     const hasVariants = Array.isArray(p.variants) && p.variants.length > 0;
+    // Untracked products are counted but never valued.
+    const tracked = p.usesStocks;
 
     if (hasVariants) {
       for (const v of p.variants!) {
-        const stock = typeof v.inStock === "number" ? v.inStock : 0;
+        const stock = tracked ? valuableStock(v.inStock) : 0;
         totalSellingPrice +=
           (typeof v.price === "number" ? v.price : 0) * stock;
         totalCostPrice +=
@@ -170,7 +203,7 @@ export function computeProductTotals(items: InventoryItem[]): ProductTotals {
       productCount += 1; // the parent, counted once
       variantCount += p.variants!.length;
     } else {
-      const stock = typeof p.inStock === "number" ? p.inStock : 0;
+      const stock = tracked ? valuableStock(p.inStock) : 0;
       totalSellingPrice += (typeof p.price === "number" ? p.price : 0) * stock;
       totalCostPrice +=
         (typeof p.costPrice === "number" ? p.costPrice : 0) * stock;
@@ -183,6 +216,7 @@ export function computeProductTotals(items: InventoryItem[]): ProductTotals {
     totalCostPrice: Math.round(totalCostPrice * 100) / 100,
     productCount,
     variantCount,
+    negativeStockCount,
   };
 }
 

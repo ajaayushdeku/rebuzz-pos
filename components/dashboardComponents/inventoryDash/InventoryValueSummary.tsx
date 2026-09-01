@@ -10,6 +10,7 @@ import {
   DollarSign,
   LineChart,
   ShoppingCart,
+  TriangleAlert,
 } from "lucide-react";
 import {
   useProductTotalsQuery,
@@ -45,6 +46,7 @@ export default function InventoryValueSummary({
   const potentialMargin = totalSelling - totalCost;
   const productCount = data?.productCount ?? 0;
   const variantCount = data?.variantCount ?? 0;
+  const negativeStockCount = data?.negativeStockCount ?? 0;
 
   // Date-ranged revenue, net profit & order count summed across all products.
   const { totalRevenue, totalNetProfit, totalOrderCount } = useMemo(() => {
@@ -63,7 +65,22 @@ export default function InventoryValueSummary({
     iconBg: string;
     loading: boolean;
     ranged: boolean;
+    /** Shown under the figure — what this number leaves out, and why. */
+    note?: string;
   };
+
+  /**
+   * A negative count is left out of the valuation, so the two cards it would
+   * have changed say so. Without this the figure would simply be different
+   * from what a business gets adding its own product list up, with nothing to
+   * explain the gap.
+   */
+  const negativeNote =
+    negativeStockCount > 0
+      ? `${negativeStockCount} item${
+          negativeStockCount > 1 ? "s" : ""
+        } with negative stock excluded`
+      : undefined;
 
   // Date-ranged metrics.
   const rangedCards: Card[] = [
@@ -102,6 +119,7 @@ export default function InventoryValueSummary({
       iconBg: "bg-emerald-50",
       loading: isLoading,
       ranged: false,
+      note: negativeNote,
     },
     {
       label: "Total Cost Price",
@@ -110,6 +128,7 @@ export default function InventoryValueSummary({
       iconBg: "bg-amber-50",
       loading: isLoading,
       ranged: false,
+      note: negativeNote,
     },
     {
       label: "Potential Margin",
@@ -171,6 +190,13 @@ export default function InventoryValueSummary({
         )}
         {card.ranged && <RangeTag />}
       </div>
+
+      {card.note && !card.loading && (
+        <p className="mt-1.5 flex items-start gap-1 text-[10px] leading-snug text-amber-600">
+          <TriangleAlert size={11} className="mt-px shrink-0" />
+          {card.note}
+        </p>
+      )}
     </div>
   );
 

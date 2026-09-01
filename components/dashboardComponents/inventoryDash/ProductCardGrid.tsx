@@ -32,7 +32,10 @@ type ItemSortKey =
 
 // Sales-based sorts (revenue / net profit for the selected range).
 type SalesSortKey =
-  "revenue-desc" | "revenue-asc" | "profit-desc" | "profit-asc";
+  | "revenue-desc"
+  | "revenue-asc"
+  | "profit-desc"
+  | "profit-asc";
 
 type SortKey = "default" | ItemSortKey | SalesSortKey;
 
@@ -138,12 +141,6 @@ const ProductCardGrid = ({
   );
 
   // Per-product revenue, net profit & order count for the selected range.
-  //
-  // Keyed by name *tokens* rather than the raw name. salesByItem names variant
-  // rows with bracket notation — "Jelly [s,m,l]", "EGG [Soft Boil]" — but the
-  // spacing isn't consistent: one row arrives as "Jelly [red, blue ,pink]"
-  // while joining optionValues here produces "Jelly [red,blue,pink]". An exact
-  // compare misses that row; sorted alphanumeric words match it.
   const { data: sales } = useSalesByItemQuery(startDate, endDate);
   const salesMap = useMemo(() => {
     const map = new Map<string, SaleFigures>();
@@ -404,10 +401,12 @@ const ProductCardGrid = ({
               key={cat._id ?? cat.name}
               type="button"
               onClick={() => setSelectedCategory(cat._id)}
-              className="px-4 py-1.5 rounded-full border text-xs font-medium transition-all duration-200 bg-white border-gray-200 text-gray-700 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-600"
+              className={`px-4 py-1.5 rounded-full border text-xs font-medium transition-all duration-200 bg-white border-gray-200 text-gray-700 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-600 ${isActive ? `border-[2px]` : ""}`}
               style={{
-                color: isActive ? categoryColor : undefined,
-                backgroundColor: isActive ? `${categoryColor}30` : undefined,
+                color: isActive
+                  ? `color-mix(in oklab, ${categoryColor}, black 45%)`
+                  : undefined,
+                backgroundColor: isActive ? `${categoryColor}20` : undefined,
                 borderColor: isActive ? categoryColor : undefined,
               }}
             >
@@ -430,11 +429,15 @@ const ProductCardGrid = ({
                 key={cat._id ?? cat.name}
                 type="button"
                 onClick={() => setSelectedCategory(cat._id)}
-                className="px-4 py-1.5 rounded-full border text-xs font-semibold transition-all duration-200 bg-white border-gray-200 text-gray-700 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-600"
+                className={`px-4 py-1.5 rounded-full border text-xs font-semibold transition-all duration-200 bg-white border-gray-200 text-gray-700 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-600 ${isActive ? `border-[2px]` : ""}`}
                 style={{
-                  color: isActive ? categoryColor : undefined,
+                  color: isActive
+                    ? `color-mix(in oklab, ${categoryColor}, black 45%)`
+                    : undefined,
                   backgroundColor: isActive ? `${categoryColor}20` : undefined,
-                  borderColor: isActive ? categoryColor : undefined,
+                  borderColor: isActive
+                    ? `color-mix(in oklab, ${categoryColor}, black 15%)`
+                    : undefined,
                 }}
               >
                 {cat.name}

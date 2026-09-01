@@ -407,18 +407,24 @@ export default function ProductTable({
                             <TaxBadge taxable={product.isTaxable} />
                           </td>
                           <td className="py-2.5 px-4 text-center">
-                            <div className="flex items-center justify-center gap-1.5">
-                              <Package className="h-3.5 w-3.5 text-blue-400" />
-                              <span className="text-sm font-medium tabular-nums text-gray-600">
-                                {variant.inStock ?? 0}
+                            {!product.usesStocks ? (
+                              <span className="text-xs text-gray-400">
+                                Not tracked
                               </span>
-                              {variant.lowStock !== undefined &&
-                                variant.lowStock > 0 && (
-                                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 font-semibold border border-amber-200">
-                                    Low: {variant.lowStock}
-                                  </span>
-                                )}
-                            </div>
+                            ) : (
+                              <div className="flex items-center justify-center gap-1.5">
+                                <Package className="h-3.5 w-3.5 text-blue-400" />
+                                <span className="text-sm font-medium tabular-nums text-gray-600">
+                                  {variant.inStock ?? 0}
+                                </span>
+                                {variant.lowStock !== undefined &&
+                                  variant.lowStock > 0 && (
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 font-semibold border border-amber-200">
+                                      Low: {variant.lowStock}
+                                    </span>
+                                  )}
+                              </div>
+                            )}
                           </td>
                           <td className="py-2.5 px-4">
                             <div
