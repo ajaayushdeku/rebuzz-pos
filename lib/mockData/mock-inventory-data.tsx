@@ -3,7 +3,9 @@ export type StockStatus =
   | "warning"
   | "critical"
   | "out"
-  | "overstock";
+  | "overstock"
+  /** The business does not count this product. Not a level — the absence of one. */
+  | "untracked";
 
 /** Soft ceiling a product's stock is measured against. */
 export const MAX_STOCK = 5000;
@@ -45,14 +47,19 @@ export type InventoryItem = {
  * Severity first: an empty shelf outranks everything, then a shelf over the
  * ceiling, then the low-stock thresholds.
  *
+ *   untracked → the business does not count this one
  *   out       → nothing left
  *   overstock → at or above MAX_STOCK, capital sitting still
  *   critical  → at or below the product's own lowStock threshold
  *   warning   → within twice that threshold, approaching it
  *   healthy   → everything else
+ *
+ * `untracked` used to come back as `healthy`, which said the shelf was fine
+ * when nobody was looking at it — and put a green "In Stock" reading on a
+ * product with no stock figure behind it.
  */
 export function getStockStatus(item: InventoryItem): StockStatus {
-  if (!item.usesStocks) return "healthy";
+  if (!item.usesStocks) return "untracked";
 
   if (item.inStock <= 0) return "out";
   if (item.inStock >= MAX_STOCK) return "overstock";

@@ -41,13 +41,19 @@ export default function InventoryAlerts({ items }: { items: InventoryItem[] }) {
   };
 
   for (const item of items) {
+    // A product the business does not count has no "out" and no "low" to
+    // report — its zero means "not counted", not "empty shelf". That covers
+    // its variants too: a variant's stock figure only means anything when the
+    // parent product tracks stock, and the loop below would otherwise mark
+    // them all out of stock.
+    if (!item.usesStocks) continue;
+
     if (item.variants && item.variants.length > 0) {
       for (const v of item.variants) {
         const variantItem: InventoryItem = {
           ...item,
           inStock: v.inStock,
           lowStock: v.lowStock,
-          usesStocks: true,
         };
         collect(
           v.optionValues.length > 0
@@ -56,7 +62,7 @@ export default function InventoryAlerts({ items }: { items: InventoryItem[] }) {
           variantItem,
         );
       }
-    } else if (item.usesStocks) {
+    } else {
       collect(item.name, item);
     }
   }

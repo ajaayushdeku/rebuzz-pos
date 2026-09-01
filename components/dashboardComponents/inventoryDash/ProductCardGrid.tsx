@@ -32,10 +32,7 @@ type ItemSortKey =
 
 // Sales-based sorts (revenue / net profit for the selected range).
 type SalesSortKey =
-  | "revenue-desc"
-  | "revenue-asc"
-  | "profit-desc"
-  | "profit-asc";
+  "revenue-desc" | "revenue-asc" | "profit-desc" | "profit-asc";
 
 type SortKey = "default" | ItemSortKey | SalesSortKey;
 
@@ -180,7 +177,10 @@ const ProductCardGrid = ({
             costPrice: v.costPrice,
             inStock: v.inStock,
             lowStock: v.lowStock,
-            usesStocks: true,
+            // Inherited, not assumed: a variant's stock figure only means
+            // something when the product it belongs to is counted, and
+            // hardcoding this put untracked variants in the "tracked" tab.
+            usesStocks: item.usesStocks,
             isAvailable: v.isAvailable,
             variants: undefined,
           });

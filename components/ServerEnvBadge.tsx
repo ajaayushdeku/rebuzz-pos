@@ -68,7 +68,7 @@ export default function ServerEnvBadge({
   return (
     <span
       title={API_URL || "No API URL configured"}
-      className={`inline-flex items-center gap-2 md:gap-1.5 rounded-full border px-2.5 py-1.5 md:py-0.5 text-xs font-bold whitespace-nowrap ${env.className} ${className}`}
+      className={`inline-flex items-center gap-2 md:gap-1.5 rounded-full border px-2.5 py-1.5 md:py-0.5 text-xs font-semibold whitespace-nowrap ${env.className} ${className}`}
     >
       {/* Pulsing status dot — the ring reads as "connected and live" the way a
           stream indicator does. Held still when the OS asks for less motion. */}

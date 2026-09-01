@@ -227,7 +227,7 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
 
             <div className="h-5 border-1  border-gray-200 mx-2" />
 
-            <div className="flex items-center gap-0.5 rounded-lg border border-gray-200 p-0.5 ">
+            <div className="flex items-center gap-0.5 rounded-lg bg-[#e4f2fe]  p-0.5 ">
               {ORDERS.map(({ id, label, icon, hint }) => (
                 <button
                   key={id}
@@ -240,14 +240,12 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
                   }}
                   aria-pressed={order === id}
                   title={hint}
-                  className={`flex items-center gap-1 rounded-md px-2 py-2 text-[11px] font-bold transition-colors ${
+                  className={`flex items-center gap-2 rounded-lg px-2 py-2 text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] cursor-pointer ${
                     order === id
-                      ? "bg-blue-600 text-white"
-                      : "text-gray-500 hover:bg-blue-100 hover:text-blue-700"
+                      ? "bg-white font-bold text-blue-950 shadow-sm"
+                      : "font-semibold text-blue-800 hover:text-blue-950"
                   }`}
                 >
-                  {/* createElement rather than aliasing into a capitalised
-                      binding, which reads as defining a component in render. */}
                   {createElement(icon, { size: 12 })}
                   {label}
                 </button>

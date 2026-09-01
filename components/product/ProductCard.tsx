@@ -84,6 +84,21 @@ const statusConfig = {
     card: "border-indigo-300 bg-indigo-50/50 hover:border-indigo-400",
     count: "text-indigo-600",
   },
+
+  /**
+   * Not a stock level, so it is deliberately the quietest tile in the grid —
+   * no colour to imply a reading, and a dashed edge that says there is no
+   * shelf being counted here rather than a shelf that happens to be fine.
+   */
+  untracked: {
+    bar: "bg-slate-300",
+    badge: "bg-slate-100 text-slate-600",
+    label: "Not Tracked",
+    icon: "♾️",
+    text: "text-slate-500",
+    card: "border-dashed border-gray-300 bg-gray-50/60 hover:border-gray-400",
+    count: "text-gray-400",
+  },
 };
 
 /**
@@ -178,10 +193,9 @@ export default function ProductCard({
   const { data: allDiscounts = [] } = useDiscounts();
 
   const isOut = status === "out";
-  // Untracked products shouldn't be tinted — there's no stock story to tell.
-  const cardTone = item.usesStocks
-    ? cfg.card
-    : "border-gray-200 bg-white hover:border-gray-300";
+  // `untracked` carries its own card treatment now, so every status is read
+  // off the one config rather than special-cased here.
+  const cardTone = cfg.card;
 
   // Resolve the category id stored on the product to its name + colour.
   const category = useMemo(
@@ -191,6 +205,19 @@ export default function ProductCard({
 
   const categoryColor = category
     ? (normalizeColor(category.color) ?? undefined)
+    : undefined;
+
+  /**
+   * The same hue, dropped toward black for the label.
+   *
+   * Category colours are the business's own and plenty of them are pale — a
+   * yellow or lime chip printed its name in that colour on a 12%-alpha tint of
+   * itself, which is barely legible. Mixing in black keeps the category
+   * recognisable while giving the text something to sit against, and
+   * `color-mix` does it without parsing whatever format the colour arrives in.
+   */
+  const categoryTextColor = categoryColor
+    ? `color-mix(in oklab, ${categoryColor}, black 45%)`
     : undefined;
 
   // Only live discounts count — a disabled one takes nothing off the price.
@@ -301,25 +328,25 @@ export default function ProductCard({
             </div>
           )}
 
-          {/* Status badge overlay */}
-          {item.usesStocks && (
-            <span
-              className={`absolute top-2 left-2 text-[10px] font-semibold px-2 py-0.5 rounded-full ${cfg.badge}`}
-            >
-              {cfg.icon} {cfg.label}
-            </span>
-          )}
+          {/* Status badge overlay. Untracked products carry one too: without
+              it their card was silent while collapsed, and an unlabelled card
+              reads as an ordinary in-stock one. */}
+          <span
+            className={`absolute top-2 left-2 text-[10px] font-semibold px-2 py-0.5 rounded-full ${cfg.badge}`}
+          >
+            {cfg.icon} {cfg.label}
+          </span>
         </button>
 
         {/* ── Body ── */}
         <div className="p-3 flex flex-col flex-1">
           {/* Name + taxable pill */}
           <div className="flex  justify-between gap-2 mb-2">
-            <h3 className="text-[13px] font-semibold text-gray-800 leading-snug line-clamp-2 flex-1 min-w-0">
+            <h3 className="text-[13px]  font-semibold text-gray-800 leading-snug line-clamp-2 flex-1 min-w-0">
               {item.name}
             </h3>
 
-            <span className="flex flex-row gap-1">
+            <span className="flex flex-row h-fit gap-1">
               {item.isTaxable && (
                 <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-semibold shrink-0">
                   Taxable
@@ -330,7 +357,7 @@ export default function ProductCard({
                 <span
                   className="text-[10px] px-2 py-0.5 rounded-full border font-semibold shrink-0"
                   style={{
-                    color: categoryColor,
+                    color: categoryTextColor,
                     backgroundColor: `${categoryColor}20`,
                     borderColor: categoryColor,
                   }}
@@ -430,9 +457,20 @@ export default function ProductCard({
                     </div>
                   </>
                 ) : (
-                  <span className="text-xs text-gray-400">
-                    Stock not tracked
-                  </span>
+                  // The counted products show a number, a bar and a threshold
+                  // here. Saying plainly that there is nothing to count beats
+                  // leaving the same space blank, which reads as missing data.
+                  <div className="flex items-center gap-2 rounded-lg border border-dashed border-gray-300 bg-white/60 px-2.5 py-2">
+                    <span className="text-sm leading-none">{cfg.icon}</span>
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-semibold text-gray-600">
+                        Stock not tracked
+                      </p>
+                      <p className="text-[10px] text-gray-400">
+                        Always sellable — no count is kept
+                      </p>
+                    </div>
+                  </div>
                 )}
               </div>
 
