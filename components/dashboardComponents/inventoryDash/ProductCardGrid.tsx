@@ -401,7 +401,7 @@ const ProductCardGrid = ({
               key={cat._id ?? cat.name}
               type="button"
               onClick={() => setSelectedCategory(cat._id)}
-              className={`px-4 py-1.5 rounded-full border text-xs font-medium transition-all duration-200 bg-white border-gray-200 text-gray-700 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-600 ${isActive ? `border-[2px]` : ""}`}
+              className="px-4 py-1.5 rounded-full border text-xs font-medium transition-all duration-200 bg-white border-gray-200 text-gray-700 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-600"
               style={{
                 color: isActive
                   ? `color-mix(in oklab, ${categoryColor}, black 45%)`
@@ -429,7 +429,7 @@ const ProductCardGrid = ({
                 key={cat._id ?? cat.name}
                 type="button"
                 onClick={() => setSelectedCategory(cat._id)}
-                className={`px-4 py-1.5 rounded-full border text-xs font-semibold transition-all duration-200 bg-white border-gray-200 text-gray-700 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-600 ${isActive ? `border-[2px]` : ""}`}
+                className="px-4 py-1.5 rounded-full border text-xs font-semibold transition-all duration-200 bg-white border-gray-200 text-gray-700 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-600"
                 style={{
                   color: isActive
                     ? `color-mix(in oklab, ${categoryColor}, black 45%)`

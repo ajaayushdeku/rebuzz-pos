@@ -46,6 +46,25 @@ export interface OfferFormState {
   usesLimit: number;
   itemScope: ItemScope;
   category: string;
+  /**
+   * The sentence a "Custom offer" deal shows to customers. It is the offer's
+   * headline in the preview, so it is the customer's words rather than an
+   * internal name — `cardName` stays the private label staff search by.
+   */
+  customDeal: string;
+  /** The product given away by a "Free item" deal — what they GET, not what the offer applies to. */
+  freeItemId: string;
+
+  // ── Conditions (step 2) ──
+  /** The bill has to reach this before the offer applies. 0 = no minimum. */
+  minSpend: number;
+  /**
+   * The most a percentage deal may take off one bill. Percentage-only: a flat
+   * Rs discount already has a ceiling, which is the discount itself.
+   */
+  maxCap: number;
+  /** Whether this offer may be combined with another. */
+  stackable: boolean;
   sendTriggers: string[];
   festival: string;
   festivalTab: FestivalTab;
@@ -76,6 +95,11 @@ const INITIAL_STATE: OfferFormState = {
   usesLimit: 1,
   itemScope: "all",
   category: "",
+  customDeal: "",
+  freeItemId: "",
+  minSpend: 0,
+  maxCap: 0,
+  stackable: false,
   sendTriggers: [],
   festival: "",
   festivalTab: "all",
