@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { ComponentHeader } from "../ComponentHeader";
 
 /**
  * One numbered step of the builder.
@@ -31,7 +32,7 @@ export default function OfferStepCard({
 
       <div className="min-w-0 flex-1 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:p-6">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
+          {/* <div className="min-w-0">
             <h2 className="text-base font-bold text-blue-600 md:text-lg">
               <span className="mr-1.5 text-gray-400 sm:hidden">{step}.</span>
               {title}
@@ -39,7 +40,9 @@ export default function OfferStepCard({
             {subtitle && (
               <p className="mt-1 text-[13px] text-gray-500">{subtitle}</p>
             )}
-          </div>
+          </div> */}
+
+          <ComponentHeader title={title} subHeader={subtitle} />
           {action}
         </div>
 

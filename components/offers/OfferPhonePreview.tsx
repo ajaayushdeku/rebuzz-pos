@@ -1,11 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { createElement, useState } from "react";
 import {
   BadgeCheck,
+  BadgePercent,
   BatteryMedium,
-  Check,
+  CalendarCheck,
+  CalendarDays,
+  Clock,
+  Layers,
+  type LucideIcon,
   MessageSquare,
+  ShoppingBag,
+  Tag,
+  User,
   Receipt,
   SignalHigh,
   Smartphone,
@@ -19,9 +27,39 @@ import { useBusiness } from "@/hooks/useBusiness";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { offerCopy } from "./offerDealConfig";
+import { toBsLabel } from "@/lib/nepaliDate";
 
 /** The order a Rs-savings example is worked against. */
 const SAMPLE_ORDER = 1000;
+
+/** "18:13" as a customer reads it. */
+function formatTime(value: string): string {
+  const [h, m] = value.split(":").map(Number);
+  if (Number.isNaN(h) || Number.isNaN(m)) return value;
+  const suffix = h < 12 ? "AM" : "PM";
+  const hour = h % 12 === 0 ? 12 : h % 12;
+  return `${hour}:${String(m).padStart(2, "0")} ${suffix}`;
+}
+
+/**
+ * "2026-09-12" as "27 Bhadra 2083 BS".
+ *
+ * The customer reading this card is reading it in Nepal, so the deadline is
+ * quoted in the calendar they keep. Falls back to the Gregorian date when the
+ * conversion is unavailable rather than printing nothing.
+ */
+function formatDate(value: string): string {
+  const bs = toBsLabel(value);
+  if (bs) return bs;
+
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
 
 const CHANNELS = [
   {
@@ -61,7 +99,7 @@ function PhoneFrame({
   center?: boolean;
 }) {
   return (
-    <div className="mx-auto w-full max-w-[320px] rounded-[2.5rem] border-[6px] border-gray-900 bg-white shadow-xl">
+    <div className="mx-auto w-full max-w-[320px] rounded-[2rem] border-[6px] border-gray-900 bg-white shadow-xl">
       <div className="relative flex items-center justify-between rounded-t-[1.75rem] px-4 pb-1 pt-2.5 text-[11px] font-semibold text-gray-900">
         <span>9:41</span>
         <span className="absolute left-1/2 top-1.5 h-4 w-16 -translate-x-1/2 rounded-full bg-gray-900" />
@@ -75,8 +113,6 @@ function PhoneFrame({
 
       <div
         className={`min-h-[460px] rounded-b-[1.85rem] bg-gray-50 px-3 pb-5 pt-2 ${
-          // A feed reads from the top of the screen; a single message or a
-          // receipt sits in the middle of one, which is where they are found.
           center ? "flex flex-col justify-center" : ""
         }`}
       >
@@ -105,14 +141,6 @@ function MerchantRow({ name }: { name: string }) {
   );
 }
 
-/**
- * The live preview of the offer being built, across the three places a
- * customer can meet it.
- *
- * Every field on the form reaches the customer through one of these, so the
- * preview is the form's real output — the merchant is writing this, not a
- * database row.
- */
 export default function OfferPhonePreview() {
   const { form } = useOfferForm();
   const { data: products = [] } = useProductsList();
@@ -136,9 +164,6 @@ export default function OfferPhonePreview() {
     currency: currency.symbol,
   });
 
-  // Worked savings, for the two deals whose value can actually be worked out
-  // on a sample bill. A BOGO or a free item depends on what is in the basket,
-  // so quoting a figure there would be making one up.
   const rawSaving =
     form.discount > 0 && form.discountKind === "percentage"
       ? (SAMPLE_ORDER * form.discount) / 100
@@ -146,34 +171,62 @@ export default function OfferPhonePreview() {
         ? Math.min(form.discount, SAMPLE_ORDER)
         : 0;
 
-  /**
-   * The cap is a promise about the most the business will ever give away, so
-   * the preview has to honour it. Advertising "− Rs 150" against a Rs 100 cap
-   * would show the merchant a discount their own till is going to refuse.
-   */
   const saving = form.maxCap > 0 ? Math.min(rawSaving, form.maxCap) : rawSaving;
   const capped = form.maxCap > 0 && rawSaving > form.maxCap;
 
+  const terms: { icon: LucideIcon; text: string }[] = [
+    form.minSpend > 0 && {
+      icon: ShoppingBag,
+      text: `Minimum order spend ${money(form.minSpend)}`,
+    },
+    form.maxCap > 0 && {
+      icon: BadgePercent,
+      text: `Maximum discount ${money(form.maxCap)}`,
+    },
+    form.repeatingDays.length > 0 &&
+      form.repeatingDays.length < 7 && {
+        icon: CalendarDays,
+        text: `Available on ${form.repeatingDays.join(", ")}`,
+      },
+    form.startTime &&
+      form.endTime && {
+        icon: Clock,
+        text: `Valid ${formatTime(form.startTime)} – ${formatTime(form.endTime)}`,
+      },
+    form.endDate && {
+      icon: CalendarCheck,
+      text: `Valid until ${formatDate(form.endDate)}`,
+    },
+    form.usesLimit > 0 && {
+      icon: User,
+      text: `Limit ${form.usesLimit} per customer`,
+    },
+    form.stackable && {
+      icon: Layers,
+      text: "Combinable with other offers",
+    },
+  ].filter(Boolean) as { icon: LucideIcon; text: string }[];
+
   /**
-   * The small print, built from step 2.
+   * The two conditions worth the characters in a text message.
    *
-   * Every condition a customer could be turned away by belongs here — a term
-   * the merchant set but the card never shows is one the customer meets at
-   * the counter instead.
+   * An SMS is charged by length and read in a second, so it carries what
+   * decides whether the offer applies — the spend and the deadline — and
+   * leaves the rest to the app card.
    */
-  const terms = [
-    form.minSpend > 0 && `Valid on orders over ${money(form.minSpend)}`,
-    form.usesLimit > 0 && `Limit ${form.usesLimit} per customer`,
-    form.maxCap > 0 && `Maximum discount ${money(form.maxCap)}`,
-    // Only when it is on: "cannot be combined" is the norm, and a card that
-    // lists what the offer does not do reads as a warning rather than a term.
-    form.stackable && "Can be combined with other offers",
-  ].filter(Boolean) as string[];
+  const smsFinePrint = [
+    form.minSpend > 0 && `Minimum spend ${money(form.minSpend)}`,
+    form.endDate && `Valid till ${formatDate(form.endDate)}`,
+  ]
+    .filter(Boolean)
+    .join(". ");
 
   return (
     <div className="space-y-4">
-      {/* Channel tabs */}
-      <div className="flex items-center gap-1 rounded-xl bg-gray-100 p-1">
+      {/* Channel tabs. Held to the phone's own width so the two read as one
+          object — a switch wider than the thing it switches looks like it
+          belongs to the page instead. */}
+      <div className="mx-auto flex max-w-[320px] items-center justify-center gap-1 rounded-xl bg-[#e4f2fe] p-1">
         {CHANNELS.map(({ id, label, icon: Icon, tint }) => {
           const active = channel === id;
           return (
@@ -182,11 +235,18 @@ export default function OfferPhonePreview() {
               type="button"
               onClick={() => setChannel(id)}
               aria-pressed={active}
-              className={`flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-[12px] font-medium transition-colors ${
+              className={`flex items-center gap-2 rounded-lg px-3.25 py-2 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
                 active
                   ? "bg-white text-gray-900 shadow-sm"
                   : "text-gray-500 hover:text-gray-700"
               }`}
+
+              //  className={cn(
+              //             "flex items-center gap-2 rounded-lg px-5 py-2 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe]",
+              //             active
+              //               ? "bg-white text-gray-900 shadow-sm"
+              //               : "text-gray-500 hover:text-gray-700",
+              //           )}
             >
               {/* The icon keeps its channel colour on every tab — it is what
                   the three are told apart by at a glance. */}
@@ -260,20 +320,33 @@ export default function OfferPhonePreview() {
                 Terms &amp; details
               </p>
               {terms.length > 0 && (
-                <ul className="mt-2 space-y-1.5">
-                  {terms.map((term) => (
+                <ul className="mt-2 space-y-2">
+                  {terms.map(({ icon, text }) => (
                     <li
-                      key={term}
-                      className="flex items-start gap-1.5 text-[11px] leading-snug text-gray-600"
+                      key={text}
+                      className="flex items-start gap-2 text-[11px] leading-snug text-gray-600"
                     >
-                      <Check
-                        size={11}
-                        className="mt-0.5 shrink-0 text-emerald-500"
-                      />
-                      {term}
+                      {/* createElement rather than a capitalised binding,
+                          which reads as defining a component in render. */}
+                      {createElement(icon, {
+                        size: 13,
+                        className: "mt-px shrink-0 text-gray-400",
+                      })}
+                      {text}
                     </li>
                   ))}
                 </ul>
+              )}
+
+              {/* A code nobody can read off the card is a code nobody uses. */}
+              {form.hasKey && (
+                <div className="mt-3 flex items-center justify-between gap-2 border-t border-gray-100 pt-2.5">
+                  <span className="text-[11px] text-gray-500">Promo code:</span>
+                  <span className="inline-flex items-center gap-1.5 rounded-md bg-gray-900 px-2.5 py-1 font-mono text-[11px] font-bold tracking-wider text-white">
+                    <Tag size={11} />
+                    {form.hasKey}
+                  </span>
+                </div>
               )}
             </div>
 
@@ -308,15 +381,9 @@ export default function OfferPhonePreview() {
               <p className="mt-1 text-[13px] font-bold text-emerald-600">
                 {headline}.
               </p>
-              {/* The condition that decides whether the offer applies at all,
-                  so a message that omits it is one the customer can act on and
-                  then be turned away. */}
-              {form.minSpend > 0 && (
-                <p className="mt-1.5 text-[11px] text-gray-500">
-                  On orders over{" "}
-                  <span className="font-semibold text-gray-700">
-                    {money(form.minSpend)}
-                  </span>
+              {smsFinePrint && (
+                <p className="mt-1 text-[12px] leading-relaxed text-gray-700">
+                  {smsFinePrint}.
                 </p>
               )}
               {form.hasKey && (

@@ -1,13 +1,14 @@
 "use client";
 
+import { useState } from "react";
+import { ListChecks, Smartphone } from "lucide-react";
+
+import { cn } from "@/lib/utils";
 import { OfferFormProvider } from "@/providers/OfferFormContext";
-import OfferStepCard from "@/components/offers/OfferStepCard";
 import OfferDeal from "@/components/offers/OfferDeal";
 import OfferConditions from "@/components/offers/OfferConditions";
-import OfferDetails from "@/components/offers/OfferDetails";
-import OfferAudience from "@/components/offers/OfferAudience";
-import OfferSchedule from "@/components/offers/OfferSchedule";
-import OfferChannels from "@/components/offers/OfferChannels";
+import OfferWhenItRuns from "@/components/offers/OfferWhenItRuns";
+import OfferPromoCode from "@/components/offers/OfferPromoCode";
 import OfferPhonePreview from "@/components/offers/OfferPhonePreview";
 import OfferFooterActions from "@/components/offers/OfferFooterActions";
 
@@ -20,60 +21,114 @@ import OfferFooterActions from "@/components/offers/OfferFooterActions";
  * writes the words their customers read instead of filling in fields and
  * hoping.
  */
+/** The two halves of the page, for screens too narrow to hold both. */
+const VIEWS = [
+  { id: "build" as const, label: "Build offer", icon: ListChecks },
+  { id: "preview" as const, label: "Preview", icon: Smartphone },
+];
+
 function OfferBuilder() {
+  /**
+   * Which half is on screen below `xl`.
+   *
+   * Stacked, the preview sits a full page below the form, so the one thing it
+   * exists for — watching the offer change as you type — stops happening. A
+   * switch keeps it one tap away instead.
+   */
+  const [view, setView] = useState<"build" | "preview">("build");
+
   return (
-    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       <div className="mx-auto w-full">
         {/* Header */}
-        <div className="mb-6 border-b border-gray-200 pb-5">
-          <h1 className="text-2xl font-bold text-blue-600 md:text-[28px]">
-            Create an offer
-          </h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Fill this in once. We&apos;ll show you exactly how it looks to your
-            customers.
-          </p>
+        <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+          <div>
+            <h1 className="font-bold text-xl md:text-2xl truncate">
+              Create an offer
+            </h1>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Fill this in once. We&apos;ll show you exactly how it looks to
+              your customers.
+            </p>
+          </div>
+
+          {/* Only below xl, where the two columns stack. Wide enough and both
+              are on screen at once, so a switch would be a control with
+              nothing to switch. */}
+          <div className="flex  items-center gap-1 rounded-xl bg-[#e4f2fe]  p-1 xl:hidden">
+            {VIEWS.map(({ id, label, icon: Icon }) => {
+              const active = view === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setView(id)}
+                  aria-pressed={active}
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg px-5 py-2 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe]",
+                    active
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700",
+                  )}
+                >
+                  <Icon size={15} />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[1fr_380px]">
+        {/*
+        <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+           
+              <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+                <div>
+                  <h1 className="font-bold text-xl md:text-2xl truncate">
+                    Dashboard Overview
+                  </h1>
+                  {!isLoading && (
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      Welcome back, {profile?.name}. Here&lsquo;s what&lsquo;s happening
+                      with Rebuzz POS
+                    </p>
+                  )}
+                </div>
+        
+                <div className="flex items-center gap-2">
+                  <HeaderActionButton
+                    variant="dashed"
+                    icon={Plus}
+                    label="Create Order"
+                    href="/invoices/add"
+                  />
+                </div>
+              </div> */}
+
+        <div className="grid grid-cols-1 items-start pt-4 gap-6 xl:grid-cols-[1fr_380px]">
           {/* Left: the four steps */}
-          <div className="space-y-5">
+          <div
+            className={cn("space-y-5 xl:block", view === "build" || "hidden")}
+          >
             <OfferDeal />
 
             <OfferConditions />
 
-            <OfferStepCard
-              step={3}
-              title="Who gets it, and when"
-              subtitle="Pick the customers and the dates this offer runs."
-            >
-              <div className="space-y-6">
-                {/* Parked here until steps 3 and 4 have designs of their own —
-                    the offer's private name and its promo code still have to
-                    live somewhere for a save to work. */}
-                <OfferDetails />
-                <div className="border-t border-gray-100 pt-6">
-                  <OfferAudience />
-                </div>
-                <div className="border-t border-gray-100 pt-6">
-                  <OfferSchedule />
-                </div>
-              </div>
-            </OfferStepCard>
+            <OfferWhenItRuns />
 
-            <OfferStepCard
-              step={4}
-              title="How customers hear about it"
-              subtitle="Choose where this offer is shown."
-            >
-              <OfferChannels />
-            </OfferStepCard>
+            <OfferPromoCode />
+
+            <OfferFooterActions />
           </div>
 
           {/* Right: the customer's view */}
-          <div className="space-y-4 xl:sticky xl:top-4">
+          <div
+            className={cn(
+              "xl:sticky xl:top-4 xl:block",
+              view === "preview" || "hidden",
+            )}
+          >
             <OfferPhonePreview />
-            <OfferFooterActions />
           </div>
         </div>
       </div>

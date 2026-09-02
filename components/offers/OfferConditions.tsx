@@ -123,7 +123,7 @@ export default function OfferConditions() {
         >
           <span
             className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-              form.stackable ? "translate-x-5.5" : "translate-x-0.5"
+              form.stackable ? "translate-x-[0px]" : "translate-x-[-20px]"
             }`}
           />
         </button>

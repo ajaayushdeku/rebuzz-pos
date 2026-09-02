@@ -178,3 +178,46 @@ export function offerCopy(args: {
       };
   }
 }
+
+/**
+ * The deal as one short phrase — "23% off on the whole bill".
+ *
+ * The preview headline sells the offer to a customer; this describes it back
+ * to the person building it, so it stays terse and drops the "Get".
+ */
+export function dealSummary(args: {
+  dealId: string;
+  amount: number;
+  scope: ItemScope;
+  category: string;
+  itemName?: string;
+  freeItemName?: string;
+  customDeal: string;
+  currency: string;
+}): string | null {
+  if (!args.dealId) return null;
+
+  const where = scopePhrase(args.scope, args.category, args.itemName);
+  const on = args.scope === "all" ? "on the whole bill" : `on ${where}`;
+
+  switch (args.dealId) {
+    case "percentage":
+      return `${args.amount || 0}% off ${on}`;
+    case "rupee":
+      return `${args.currency} ${args.amount || 0} off ${on}`;
+    case "bogo":
+      return `Buy one get one free ${on}`;
+    case "free-item":
+      return args.freeItemName
+        ? `Free ${args.freeItemName} ${on}`
+        : `A free item ${on}`;
+    case "combo":
+      return args.customDeal.trim() || `Combo deal ${on}`;
+    case "bonus":
+      return `Bonus loyalty points ${on}`;
+    case "custom":
+      return args.customDeal.trim() || "Your custom offer";
+    default:
+      return null;
+  }
+}

@@ -65,6 +65,16 @@ export interface OfferFormState {
   maxCap: number;
   /** Whether this offer may be combined with another. */
   stackable: boolean;
+
+  // ── Schedule (step 3) ──
+  /**
+   * The window within each day the offer is live, as "HH:MM" 24-hour strings.
+   * Both empty means all day, which is why they are strings rather than a
+   * pair of numbers with a zero that would read as midnight.
+   */
+  startTime: string;
+  endTime: string;
+
   sendTriggers: string[];
   festival: string;
   festivalTab: FestivalTab;
@@ -100,6 +110,8 @@ const INITIAL_STATE: OfferFormState = {
   minSpend: 0,
   maxCap: 0,
   stackable: false,
+  startTime: "",
+  endTime: "",
   sendTriggers: [],
   festival: "",
   festivalTab: "all",
