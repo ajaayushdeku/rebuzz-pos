@@ -17,6 +17,7 @@ import type {
   CreditPayment,
 } from "@/services/apiCredit.client";
 import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
+import PhoneFrame from "@/components/ui/PhoneFrame";
 import CreditInvoiceDocument, {
   creditFileStem,
   type CreditDocumentBusiness,
@@ -158,10 +159,10 @@ export default function CreditDocumentViewer({
               type="button"
               onClick={() => setPreviewMode(value)}
               aria-pressed={previewMode === value}
-              className={`flex flex-row items-center justify-center gap-2 min-w-[50px] md:min-w-[72px] px-2 md:px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
                 previewMode === value
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-gray-500 hover:text-blue-700 hover:bg-blue-50"
+                  ? " bg-blue-600/80  font-bold text-white shadow-sm"
+                  : "font-semibold text-blue-600/80 hover:text-blue-950 cursor-pointer"
               }`}
             >
               <Icon size={16} />
@@ -179,7 +180,7 @@ export default function CreditDocumentViewer({
             <button
               type="button"
               onClick={() => setPrinting(true)}
-              className="flex items-center gap-2 rounded-lg border border-[3px] border-blue-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-gray-700 transition-all hover:border-blue-300 hover:bg-gray-50 cursor-pointer"
+              className="flex items-center gap-2 rounded-lg border border-[3px] border-blue-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-gray-700 transition-all hover:border-blue-300 hover:bg-blue-50 cursor-pointer"
             >
               <Printer size={16} />
               <span className="hidden lg:inline-block">Print</span>
@@ -188,7 +189,7 @@ export default function CreditDocumentViewer({
               type="button"
               onClick={handleExportPdf}
               disabled={isExporting}
-              className="flex items-center gap-2 rounded-lg border border-[3px] border-blue-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-gray-700 transition-all hover:border-blue-300 hover:bg-gray-50 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex items-center gap-2 rounded-lg border border-[3px] border-blue-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-gray-700 transition-all hover:border-blue-300 hover:bg-blue-50 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Download size={16} />
               <span className="hidden lg:inline-block">
@@ -214,20 +215,16 @@ export default function CreditDocumentViewer({
         className="bg-blue-50 py-6 flex flex-col items-center justify-center transition-all duration-300 ease-in-out overflow-x-auto"
         style={{ minHeight: isMobile ? "600px" : "800px" }}
       >
-        <div
-          className="overflow-hidden shadow-lg transition-all duration-300 ease-in-out"
-          style={{
-            width: isMobile ? "375px" : `${PDF_RENDER_WIDTH_PX}px`,
-            borderRadius: isMobile ? "24px" : "4px",
-            border: isMobile ? "8px solid #1f2937" : "1px solid #e5e7eb",
-          }}
+        <PhoneFrame
+          active={isMobile}
+          width={isMobile ? 375 : PDF_RENDER_WIDTH_PX}
         >
           <CreditInvoiceDocument
             {...documentProps}
             isMobile={isMobile}
             minHeightPx={isMobile ? 0 : PDF_RENDER_HEIGHT_PX}
           />
-        </div>
+        </PhoneFrame>
       </div>
     </div>
   );

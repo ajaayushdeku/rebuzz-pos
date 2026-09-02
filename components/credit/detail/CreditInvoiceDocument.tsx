@@ -189,7 +189,7 @@ export default function CreditInvoiceDocument({
         ref={documentRef}
         className="bg-white w-full min-h-full font-sans text-gray-900 text-sm"
       >
-        <div className="h-1.5 bg-gray-800" />
+        {/* <div className="h-1.5 bg-gray-800" /> */}
 
         {/* Business hero */}
         <div className="text-center px-5 pt-6 pb-4 border-b border-dashed border-gray-300">

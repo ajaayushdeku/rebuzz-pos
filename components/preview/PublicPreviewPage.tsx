@@ -72,8 +72,11 @@ const PublicPreviewPage = ({ type }: { type: InvoiceType }) => {
   const payments = creditDetail?.paymentHistory ?? [];
 
   const handlePreviewBack = () => {
-    // Scroll to top of the page when back is clicked from preview
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // The page scrolls inside its own container now, so scrolling the window
+    // would move nothing.
+    document
+      .querySelector("[data-app-scroll]")
+      ?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // console.log("Bill Data:", billData);
@@ -88,42 +91,48 @@ const PublicPreviewPage = ({ type }: { type: InvoiceType }) => {
     return <div className="p-20 text-center">Invoice not found.</div>;
 
   return (
-    <div className="min-h-screen bg-blue-50">
-      <InvoicePreview
-        type={type}
-        invoice={invoice}
-        withControls
-        businessProfile={business}
-        customerProfile={customerProfile}
-        billData={billData ?? null}
-        payments={payments}
-        // credit={
-        //   creditForInvoice
-        //     ? {
-        //         total: creditForInvoice.total,
-        //         grandTotal: creditForInvoice.grandTotal,
-        //         taxamt: creditForInvoice.taxamt,
-        //         user: creditForInvoice.user,
-        //       }
-        //     : null
-        // }
+    <div className="h-dvh overflow-hidden bg-blue-50">
+      {/* The page is exactly the viewport and does not scroll; the document
+          below scrolls inside it. That keeps the window free of a scrollbar
+          that appears and disappears as modals lock the page, and it is what
+          `useLockAppScroll` freezes when one opens — hence the marker. */}
+      <div data-app-scroll className="scrollbar-hide h-full overflow-y-auto">
+        <InvoicePreview
+          type={type}
+          invoice={invoice}
+          withControls
+          businessProfile={business}
+          customerProfile={customerProfile}
+          billData={billData ?? null}
+          payments={payments}
+          // credit={
+          //   creditForInvoice
+          //     ? {
+          //         total: creditForInvoice.total,
+          //         grandTotal: creditForInvoice.grandTotal,
+          //         taxamt: creditForInvoice.taxamt,
+          //         user: creditForInvoice.user,
+          //       }
+          //     : null
+          // }
 
-        credit={
-          creditForInvoice
-            ? {
-                total: creditForInvoice.total,
-                grandTotal: creditForInvoice.grandTotal,
-                taxamt: creditForInvoice.taxamt,
-                user: {
-                  _id: creditForInvoice.user?._id ?? "",
-                  name: creditForInvoice.user?.name ?? "",
-                  phone: creditForInvoice.user?.phone ?? "",
-                  email: creditForInvoice.user?.email ?? "",
-                },
-              }
-            : null
-        }
-      />
+          credit={
+            creditForInvoice
+              ? {
+                  total: creditForInvoice.total,
+                  grandTotal: creditForInvoice.grandTotal,
+                  taxamt: creditForInvoice.taxamt,
+                  user: {
+                    _id: creditForInvoice.user?._id ?? "",
+                    name: creditForInvoice.user?.name ?? "",
+                    phone: creditForInvoice.user?.phone ?? "",
+                    email: creditForInvoice.user?.email ?? "",
+                  },
+                }
+              : null
+          }
+        />
+      </div>
     </div>
   );
 };

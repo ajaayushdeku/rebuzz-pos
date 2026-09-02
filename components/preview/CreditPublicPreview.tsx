@@ -80,16 +80,22 @@ export default function CreditPublicPreview({
   }
 
   return (
-    <div className="min-h-screen bg-blue-50">
-      <CreditDocumentViewer
-        type={type}
-        credit={credit}
-        items={detail?.items ?? []}
-        payments={detail?.paymentHistory ?? []}
-        businessProfile={business}
-        customerProfile={customerProfile}
-        billData={billData ?? null}
-      />
+    <div className="h-dvh overflow-hidden bg-blue-50">
+      {/* The page is exactly the viewport and does not scroll; the document
+          below scrolls inside it. That keeps the window free of a scrollbar
+          that appears and disappears as modals lock the page, and it is what
+          `useLockAppScroll` freezes when one opens — hence the marker. */}
+      <div data-app-scroll className="scrollbar-hide h-full overflow-y-auto">
+        <CreditDocumentViewer
+          type={type}
+          credit={credit}
+          items={detail?.items ?? []}
+          payments={detail?.paymentHistory ?? []}
+          businessProfile={business}
+          customerProfile={customerProfile}
+          billData={billData ?? null}
+        />
+      </div>
     </div>
   );
 }

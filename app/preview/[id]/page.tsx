@@ -73,15 +73,21 @@ export default function PublicPreviewPage() {
     return <div className="p-20 text-center">Invoice not found.</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4">
-      <div className="max-w-4xl mx-auto">
-        <InvoicePreview
-          type={isProforma ? "proforma" : "invoice"}
-          invoice={invoice}
-          businessProfile={business}
-          customerProfile={customerProfile}
-          billData={billData}
-        />
+    <div className="h-dvh overflow-hidden bg-gray-50 py-10 px-4">
+      {/* The page is exactly the viewport and does not scroll; the document
+          below scrolls inside it. That keeps the window free of a scrollbar
+          that appears and disappears as modals lock the page, and it is what
+          `useLockAppScroll` freezes when one opens — hence the marker. */}
+      <div data-app-scroll className="scrollbar-hide h-full overflow-y-auto">
+        <div className="max-w-4xl mx-auto">
+          <InvoicePreview
+            type={isProforma ? "proforma" : "invoice"}
+            invoice={invoice}
+            businessProfile={business}
+            customerProfile={customerProfile}
+            billData={billData}
+          />
+        </div>
       </div>
     </div>
   );

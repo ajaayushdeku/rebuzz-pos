@@ -83,15 +83,21 @@ export default function ReceiptPublicPreview() {
   }
 
   return (
-    <div className="min-h-screen bg-blue-50">
-      <PaymentReceiptViewer
-        credit={credit}
-        payment={payment}
-        context={receiptContext(payments, payment)}
-        businessProfile={business}
-        customerProfile={customerProfile}
-        backHref={`/records/credits/${credit._id}`}
-      />
+    <div className="h-dvh overflow-hidden bg-blue-50">
+      {/* The page is exactly the viewport and does not scroll; the document
+          below scrolls inside it. That keeps the window free of a scrollbar
+          that appears and disappears as modals lock the page, and it is what
+          `useLockAppScroll` freezes when one opens — hence the marker. */}
+      <div data-app-scroll className="scrollbar-hide h-full overflow-y-auto">
+        <PaymentReceiptViewer
+          credit={credit}
+          payment={payment}
+          context={receiptContext(payments, payment)}
+          businessProfile={business}
+          customerProfile={customerProfile}
+          backHref={`/records/credits/${credit._id}`}
+        />
+      </div>
     </div>
   );
 }

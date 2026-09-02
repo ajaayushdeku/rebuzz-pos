@@ -21,6 +21,7 @@ import {
 } from "@/lib/config/transaction";
 import type { CreditPayment } from "@/services/apiCredit.client";
 import InvoiceBillTable from "./InvoiceBillTable";
+import PhoneFrame from "@/components/ui/PhoneFrame";
 import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
 
 // ── Types ─────────────────────────────────────────────────────────────────
@@ -247,7 +248,7 @@ function InvoiceContent({
   if (isMobile) {
     return (
       <div className="bg-white w-full min-h-full font-sans text-gray-900 text-sm">
-        <div className="h-1.5 bg-gray-800" />
+        {/* <div className="h-1.5 bg-gray-800" /> */}
 
         {/* Business name hero */}
         <div className="text-center px-5 pt-6 pb-4 border-b border-dashed border-gray-300">
@@ -999,13 +1000,13 @@ export default function InvoicePreview({
             <button
               key={value}
               onClick={() => setPreviewMode(value)}
-              className={`flex flex-row items-center justify-center gap-2 min-w-[50px] md:min-w-[72px] px-2 md:px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
                 previewMode === value
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-gray-500 hover:text-blue-700 hover:bg-blue-50"
+                  ? " bg-blue-600/80  font-bold text-white shadow-sm"
+                  : "font-semibold text-blue-600/80 hover:text-blue-950 cursor-pointer"
               }`}
             >
-              <Icon size={20} />
+              <Icon size={16} />
               <span className="hidden font-bold text-[13px] lg:inline-block">
                 {label}
               </span>
@@ -1033,17 +1034,17 @@ export default function InvoicePreview({
         className="bg-blue-50 py-6 flex flex-col items-center justify-center transition-all duration-300 ease-in-out overflow-x-auto"
         style={{ minHeight: isMobile ? "600px" : "800px" }}
       >
-        <div
-          ref={invoiceRef}
-          className="overflow-hidden shadow-lg transition-all duration-300 ease-in-out"
-          style={{
-            width: isMobile ? "375px" : "794px",
-            borderRadius: isMobile ? "24px" : "4px",
-            border: isMobile ? "8px solid #1f2937" : "1px solid #e5e7eb",
-          }}
-        >
-          {content}
-        </div>
+        {/* The ref sits on the document itself, never on the handset around
+            it — anything that captured this node would otherwise put a bezel
+            and a 9:41 status bar into the customer's invoice. */}
+        {/* The ref sits on the document itself, never on the handset around
+            it — anything that captured this node would otherwise put a bezel
+            and a 9:41 status bar into the customer's invoice. */}
+        <PhoneFrame active={isMobile} width={isMobile ? 375 : 794}>
+          <div ref={invoiceRef} className="bg-white">
+            {content}
+          </div>
+        </PhoneFrame>
       </div>
     </div>
   );
