@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Trophy, Check, Info, Loader2, Plus } from "lucide-react";
+import {
+  AlertTriangle,
+  Trophy,
+  Check,
+  Info,
+  Loader2,
+  Plus,
+} from "lucide-react";
 import ModalShell, {
   modalInput,
   modalInputError,
@@ -41,6 +48,7 @@ export default function LoyaltyStatusModal({
   onSubmit,
   isSaving = false,
   missingZeroFloor = null,
+  tiers = [],
 }: {
   open: boolean;
   /** The tier being edited, or null to add a new one. */
@@ -49,6 +57,12 @@ export default function LoyaltyStatusModal({
   onSubmit: (draft: LoyaltyStatusDraft) => void;
   /** True while the tier is being written to the API. */
   isSaving?: boolean;
+  /**
+   * The ladder as it stands, so this form can refuse a threshold another tier
+   * already owns. Two rungs at the same height are not a ladder: the banding
+   * would have to pick one of them arbitrarily.
+   */
+  tiers?: LoyaltyStatus[];
   /**
    * The ladder's lowest threshold, when it is above 0 — so the form can say
    * what that leaves uncovered while a minimum is being chosen. Null when the
@@ -90,11 +104,27 @@ export default function LoyaltyStatusModal({
     setErrors({});
   }
 
+  /**
+   * The tier already sitting on the typed threshold, if any.
+   *
+   * Excludes the one being edited — saving Gold at its own 750 is not a
+   * clash. Found as the field is typed rather than on submit, so the answer
+   * arrives while the number is still being chosen.
+   */
+  const clash =
+    minPoints.trim() === "" || isNaN(Number(minPoints))
+      ? undefined
+      : tiers.find(
+          (t) => t.id !== editing?.id && t.minPoints === Number(minPoints),
+        );
+
   const validate = (): boolean => {
     const next: typeof errors = {};
     if (!name.trim()) next.name = "Status name is required";
     if (!minPoints || isNaN(Number(minPoints)) || Number(minPoints) < 0) {
       next.minPoints = "Enter a valid minimum points (0 or more)";
+    } else if (clash) {
+      next.minPoints = `${clash.name} already starts at ${clash.minPoints.toLocaleString()} points`;
     }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -141,7 +171,9 @@ export default function LoyaltyStatusModal({
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={isSaving}
+            // Blocked outright rather than left to fail on submit: the reason
+            // is already on screen beside the field that caused it.
+            disabled={isSaving || !!clash}
             className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-cyan-600 py-3 text-[13px] font-bold text-white shadow-md transition hover:bg-cyan-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSaving ? (
@@ -215,11 +247,22 @@ export default function LoyaltyStatusModal({
             }}
             placeholder="e.g. 10000"
             className={`${modalInput} tabular-nums ${
-              errors.minPoints ? modalInputError : cyanInputIdle
+              errors.minPoints || clash ? modalInputError : cyanInputIdle
             }`}
           />
-          {errors.minPoints && (
+          {errors.minPoints ? (
             <p className="mt-1 text-xs text-red-500">{errors.minPoints}</p>
+          ) : (
+            clash && (
+              <p className="mt-1.5 flex items-start gap-1.5 text-xs text-red-500">
+                <AlertTriangle className="mt-px h-3.5 w-3.5 shrink-0" />
+                <span>
+                  <span className="font-semibold">{clash.name}</span> already
+                  starts at {clash.minPoints.toLocaleString()} points. Pick a
+                  different threshold.
+                </span>
+              </p>
+            )
           )}
         </div>
 

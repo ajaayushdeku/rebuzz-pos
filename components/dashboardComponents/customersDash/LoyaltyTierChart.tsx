@@ -281,7 +281,7 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
                 left: 0,
                 bottom: 0,
               }}
-              barCategoryGap="30%"
+              barCategoryGap="15%"
             >
               <CartesianGrid horizontal={false} stroke="#f3f4f6" />
 

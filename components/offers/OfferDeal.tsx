@@ -147,7 +147,7 @@ export default function OfferDeal() {
   return (
     <OfferStepCard
       step={1}
-      title="The deal"
+      title="The Deal"
       subtitle="Choose what discount or freebie your customers receive."
       icon={Tag}
       iconBg="bg-emerald-100"

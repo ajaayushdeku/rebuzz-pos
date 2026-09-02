@@ -25,7 +25,7 @@ export default function SidebarItem({
 
   const baseClass = cn(
     "flex items-center gap-3 px-3 py-2 rounded-md text-foreground text-sm font-medium transition-colors",
-    "hover:bg-blue-200 hover:text-blue-600",
+    "hover:bg-blue-50 hover:text-blue-600",
     isActive && "bg-accent text-accent-foreground",
   );
 

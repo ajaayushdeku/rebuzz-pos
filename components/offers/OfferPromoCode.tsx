@@ -72,7 +72,7 @@ export default function OfferPromoCode() {
     <>
       <OfferStepCard
         step={4}
-        title="Promo code"
+        title="Promo Code"
         subtitle="Optional custom code customers type at checkout."
         icon={Ticket}
         iconBg="bg-amber-100"

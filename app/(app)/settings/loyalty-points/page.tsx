@@ -530,6 +530,7 @@ export default function LoyaltyPointPage() {
         onSubmit={handleSubmitStatus}
         isSaving={savingTier}
         missingZeroFloor={missingZeroFloor}
+        tiers={statuses}
       />
 
       <DeleteConfirmDialog

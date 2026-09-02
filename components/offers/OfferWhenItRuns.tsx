@@ -81,7 +81,7 @@ export default function OfferWhenItRuns() {
   return (
     <OfferStepCard
       step={3}
-      title="When it runs"
+      title="When It Runs"
       subtitle="Pick a festival occasion or choose custom start and end dates."
       icon={CalendarClock}
       iconBg="bg-violet-100"

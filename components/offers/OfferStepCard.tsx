@@ -36,11 +36,11 @@ export default function OfferStepCard({
 }) {
   return (
     <div className="relative flex items-start gap-3 sm:gap-4">
-      <span className="absolute left-[-15px] mt-5 hidden h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200 text-[13px] font-bold text-gray-500 sm:flex">
+      <span className="absolute left-[-15px] mt-5 hidden h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200 text-[13px] font-bold text-gray-600 sm:flex">
         {step}
       </span>
 
-      <div className="min-w-0 flex-1 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:px-6 md:py-4">
+      <div className="min-w-0 flex-1 rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm md:px-6 md:py-4">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           {/* <div className="min-w-0">
             <h2 className="text-base font-bold text-blue-600 md:text-lg">
