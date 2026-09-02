@@ -470,9 +470,9 @@ export default function LoyaltyPointPage() {
           </div>
 
           {missingZeroFloor !== null && (
-            <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-3">
+            <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-2 text-sm">
               <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-              <p className="text-[13px] leading-relaxed text-amber-800">
+              <p className="text-[12px] leading-relaxed text-amber-800">
                 No tier starts at 0 points. Customers with fewer than{" "}
                 <span className="font-semibold">
                   {missingZeroFloor.toLocaleString()}

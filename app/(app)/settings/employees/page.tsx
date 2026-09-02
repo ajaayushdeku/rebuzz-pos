@@ -42,7 +42,49 @@ type StaffMember = {
   isEmployee?: boolean;
   isDeactivated?: boolean;
   emailVerified?: boolean;
+  /** Whether this employee's bills print without being asked to. */
+  canAutoPrint?: boolean;
 };
+
+/**
+ * One employee's auto-print switch.
+ *
+ * Disabled while its own request is in flight rather than spinning the whole
+ * table: the other rows are independent, and locking them would make one slow
+ * response look like a broken page.
+ */
+function AutoPrintToggle({
+  enabled,
+  saving,
+  name,
+  onToggle,
+}: {
+  enabled: boolean;
+  saving: boolean;
+  name: string;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={enabled}
+      aria-label={`Auto print for ${name || "employee"}`}
+      title={enabled ? "Auto print is on" : "Auto print is off"}
+      disabled={saving}
+      onClick={onToggle}
+      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 ${
+        saving ? "cursor-wait opacity-60" : "cursor-pointer"
+      } ${enabled ? "bg-blue-600" : "bg-gray-300"}`}
+    >
+      <span
+        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${
+          enabled ? "translate-x-[19px]" : "translate-x-[3px]"
+        }`}
+      />
+    </button>
+  );
+}
 
 const emptyForm: StaffFormData = {
   name: "",
@@ -151,6 +193,10 @@ export default function StaffManagementPage() {
 
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  /** Rows with an auto-print request in flight, so each toggle waits alone. */
+  const [autoPrintSaving, setAutoPrintSaving] = useState<Set<string>>(
+    new Set(),
+  );
 
   // The row behind the open confirmation. Resolved once here rather than
   // looked up inline, so the name and email can't disagree with each other.
@@ -284,6 +330,57 @@ export default function StaffManagementPage() {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setDeleting(false);
+    }
+  };
+
+  // ── Auto print ────────────────────────────────────────────────────────────
+  /**
+   * Flip an employee's auto-print, showing the new state straight away.
+   *
+   * The row is updated before the request and put back if it fails, rather
+   * than re-fetching the whole list: a toggle that sits still for a round trip
+   * gets clicked twice, and the second click asks for the opposite of what the
+   * first one did.
+   */
+  const toggleAutoPrint = async (member: StaffMember) => {
+    const next = !member.canAutoPrint;
+
+    setAutoPrintSaving((prev) => new Set(prev).add(member._id));
+    setStaff((prev) =>
+      prev.map((s) =>
+        s._id === member._id ? { ...s, canAutoPrint: next } : s,
+      ),
+    );
+
+    try {
+      const res = await fetch(`/api/staff/${member._id}/autoprint`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ canAutoPrint: next }),
+      });
+      if (!res.ok)
+        throw new Error(await readError(res, "Failed to update auto print"));
+
+      toast.success(
+        next
+          ? `Auto print enabled for ${member.name || "employee"}`
+          : `Auto print disabled for ${member.name || "employee"}`,
+      );
+    } catch (err) {
+      setStaff((prev) =>
+        prev.map((s) =>
+          s._id === member._id
+            ? { ...s, canAutoPrint: member.canAutoPrint }
+            : s,
+        ),
+      );
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setAutoPrintSaving((prev) => {
+        const nextSet = new Set(prev);
+        nextSet.delete(member._id);
+        return nextSet;
+      });
     }
   };
 
@@ -463,6 +560,9 @@ export default function StaffManagementPage() {
                 <th className="text-center pb-3 pt-3 px-4 font-medium">
                   Status
                 </th>
+                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                  Auto print
+                </th>
                 <th className="text-right pb-3 pt-3 px-4 font-medium">
                   Actions
                 </th>
@@ -471,7 +571,7 @@ export default function StaffManagementPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-16">
+                  <td colSpan={8} className="text-center py-16">
                     <div className="flex items-center justify-center gap-2 text-gray-400">
                       <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
                       <span className="text-sm">Loading staff...</span>
@@ -481,7 +581,7 @@ export default function StaffManagementPage() {
               ) : paged.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="text-center py-2 text-sm text-gray-400"
                   >
                     <div className="flex flex-col items-center justify-center py-12">
@@ -531,6 +631,21 @@ export default function StaffManagementPage() {
                     </td>
                     <td className="py-3 px-4 text-xs text-center">
                       <StatusBadge deactivated={staffMember.isDeactivated} />
+                    </td>
+
+                    {/* Auto print */}
+                    <td
+                      className="py-3 px-4 text-center"
+                      // The row opens the employee elsewhere; a switch that
+                      // navigated away as it was flipped would be unusable.
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <AutoPrintToggle
+                        enabled={!!staffMember.canAutoPrint}
+                        saving={autoPrintSaving.has(staffMember._id)}
+                        name={staffMember.name}
+                        onToggle={() => toggleAutoPrint(staffMember)}
+                      />
                     </td>
                     <td className="py-3 px-4">
                       <div
