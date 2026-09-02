@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useMemo, Fragment } from "react";
 import { useRouter } from "next/navigation";
@@ -60,7 +60,7 @@ export default function CreditsTable({
   actionsMode?: "full" | "delete-only" | "none";
   creditStatus?: "completed" | "archived";
   showStatusFilter?: boolean;
-  /** Loading/error for the query feeding `credits` — surfaced inside the table. */
+  /** Loading/error for the query feeding `credits` â€” surfaced inside the table. */
   isLoading?: boolean;
   error?: unknown;
 }) {
@@ -69,14 +69,21 @@ export default function CreditsTable({
   const queryClient = useQueryClient();
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const [showAllPaymentHistory, setShowAllPaymentHistory] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [page, setPage] = useState(0);
   const [paymentTarget, setPaymentTarget] = useState<Credit | null>(null);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  /**
+   * Which rows have their payment history open.
+   *
+   * One set rather than a global flag plus a single open row: those were two
+   * sources of truth combined with `||`, so a row could never be closed while
+   * the global switch was on â€” the row's own control had nothing it could
+   * change. The switch now fills and empties this set like any other control.
+   */
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [archiveTarget, setArchiveTarget] = useState<Credit | null>(null);
   const [archiving, setArchiving] = useState(false);
-  // Document actions are keyed by the credit itself — every one of them builds
+  // Document actions are keyed by the credit itself â€” every one of them builds
   // the credit's own document, so no invoice number is needed to open them.
   const [docTarget, setDocTarget] = useState<{
     creditId: string;
@@ -104,7 +111,7 @@ export default function CreditsTable({
   const fmt = (v: number) =>
     formatCurrencySymbol(v, currency.symbol, currency.locale);
 
-  // "X of Y" per customer — ordinal of this credit among the customer's
+  // "X of Y" per customer â€” ordinal of this credit among the customer's
   // UNPAID credits (due remaining). Settled credits are excluded.
   const unpaidByCustomer = useMemo(() => {
     const byUser = new Map<string, Credit[]>();
@@ -155,6 +162,33 @@ export default function CreditsTable({
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const paged = sorted.slice(page * pageSize, (page + 1) * pageSize);
 
+  /**
+   * The switch reads the rows rather than holding its own flag, so hiding one
+   * row's history flips it off â€” which is the truth, and stops the switch
+   * claiming everything is open while something is not.
+   */
+  const allExpanded =
+    paged.length > 0 && paged.every((c) => expandedIds.has(c._id));
+
+  const toggleAllHistory = () => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      for (const c of paged) {
+        if (allExpanded) next.delete(c._id);
+        else next.add(c._id);
+      }
+      return next;
+    });
+  };
+
+  const toggleHistory = (id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
+  };
+
   const toggleSort = (key: string) => {
     setSortConfig((prev) =>
       prev?.key === key && prev.direction === "asc"
@@ -197,40 +231,33 @@ export default function CreditsTable({
           <button
             type="button"
             role="switch"
-            aria-checked={showAllPaymentHistory}
-            onClick={() => {
-              setShowAllPaymentHistory((prev) => !prev);
-              setPage(0);
-            }}
+            aria-checked={allExpanded}
+            onClick={toggleAllHistory}
             className="inline-flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-white transition-colors hover:bg-gray-50 cursor-pointer"
           >
             <History
               size={14}
               className={`transition-colors ${
-                showAllPaymentHistory ? "text-blue-600" : "text-gray-400"
+                allExpanded ? "text-blue-600" : "text-gray-400"
               }`}
             />
             <span
               className={`text-[13px] font-medium transition-colors ${
-                showAllPaymentHistory ? "text-blue-700" : "text-gray-600"
+                allExpanded ? "text-blue-700" : "text-gray-600"
               }`}
             >
-              {showAllPaymentHistory
-                ? "Hide payment history"
-                : "View payment history"}
+              {allExpanded ? "Hide payment history" : "View payment history"}
             </span>
 
             {/* Toggle switch */}
             <span
               className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 ${
-                showAllPaymentHistory ? "bg-blue-600" : "bg-gray-300"
+                allExpanded ? "bg-blue-600" : "bg-gray-300"
               }`}
             >
               <span
                 className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${
-                  showAllPaymentHistory
-                    ? "translate-x-[19px]"
-                    : "translate-x-[3px]"
+                  allExpanded ? "translate-x-[19px]" : "translate-x-[3px]"
                 }`}
               />
             </span>
@@ -326,8 +353,7 @@ export default function CreditsTable({
               paged.map((c) => {
                 const cleared = (c.dueAmount ?? 0) <= 0;
                 const ubc = unpaidByCustomer.get(c._id);
-                const isExpanded =
-                  showAllPaymentHistory || expandedId === c._id;
+                const isExpanded = expandedIds.has(c._id);
                 return (
                   <Fragment key={c._id}>
                     <tr
@@ -335,7 +361,7 @@ export default function CreditsTable({
                         c.status !== "archived" &&
                         router.push(`/records/credits/${c._id}`)
                       }
-                      className={`border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors ${c.status !== "archived" ? "cursor-pointer" : ""}`}
+                      className={`${isExpanded ? "" : "border-b border-gray-50 "}last:border-0 hover:bg-gray-50 transition-colors ${c.status !== "archived" ? "cursor-pointer" : ""}`}
                     >
                       {/* Status */}
                       <td className="py-3.5 px-4">
@@ -488,18 +514,14 @@ export default function CreditsTable({
                                     {/* View payment history */}
                                     <DropdownMenuItem
                                       className="rounded-lg cursor-pointer"
-                                      onSelect={() =>
-                                        setExpandedId((prev) =>
-                                          prev === c._id ? null : c._id,
-                                        )
-                                      }
+                                      onSelect={() => toggleHistory(c._id)}
                                     >
                                       {isExpanded
                                         ? "Hide payment history"
                                         : "View payment history"}
                                     </DropdownMenuItem>
 
-                                    {/* Edit Credited Invoice — the credit's own
+                                    {/* Edit Credited Invoice â€” the credit's own
                                         edit route, so no invoice-number lookup
                                         is needed to get there. Hidden on the
                                         archived and completed tables for the
@@ -593,7 +615,7 @@ export default function CreditsTable({
                     </tr>
 
                     {isExpanded && (
-                      <tr className="bg-gray-50/60">
+                      <tr className=" border-b border-gray-300">
                         <td colSpan={colCount} className="px-4 pb-3">
                           <CreditPaymentHistory creditId={c._id} />
                         </td>
@@ -623,7 +645,7 @@ export default function CreditsTable({
         </button>
 
         <span className="text-xs text-gray-400 font-medium">
-          Page {page + 1} of {totalPages} · {sorted.length} credits
+          Page {page + 1} of {totalPages} Â· {sorted.length} credits
         </span>
 
         <button
@@ -660,7 +682,7 @@ export default function CreditsTable({
         }}
       />
 
-      {/* Send / export / print — the credit's own documents, the same ones the
+      {/* Send / export / print â€” the credit's own documents, the same ones the
           credit detail page produces. */}
       <CreditDocumentModals
         creditId={docTarget?.creditId ?? null}
