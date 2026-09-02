@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { ClipboardList, Copy, Wand2 } from "lucide-react";
+import { ClipboardList, Copy, Ticket, Wand2 } from "lucide-react";
 
 import { useOfferForm } from "@/providers/OfferFormContext";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -74,6 +74,9 @@ export default function OfferPromoCode() {
         step={4}
         title="Promo code"
         subtitle="Optional custom code customers type at checkout."
+        icon={Ticket}
+        iconBg="bg-amber-100"
+        iconColor="text-amber-600"
       >
         <label className="mb-1.5 block text-[13px] font-medium text-gray-700">
           Code
@@ -95,7 +98,7 @@ export default function OfferPromoCode() {
           <button
             type="button"
             onClick={generate}
-            className="inline-flex h-12 cursor-pointer items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-[13px] font-semibold text-emerald-700 transition-colors hover:bg-emerald-100"
+            className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-[13px] font-semibold text-emerald-700 transition-colors hover:bg-emerald-100"
           >
             <Wand2 size={15} />
             Generate
@@ -105,7 +108,7 @@ export default function OfferPromoCode() {
             type="button"
             onClick={copy}
             disabled={!form.hasKey}
-            className="inline-flex h-12 cursor-pointer items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 text-[13px] font-semibold text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 text-[13px] font-semibold text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Copy size={15} />
             {copied ? "Copied" : "Copy"}
@@ -117,24 +120,24 @@ export default function OfferPromoCode() {
           Four steps of separate controls are hard to hold in the head at once,
           so this is the last chance to notice the offer says something other
           than what was meant. */}
-      <div className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 sm:ml-12">
+      <div className="flex items-start gap-3 w-full rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 ">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white">
           <ClipboardList size={17} className="text-emerald-600" />
         </span>
         <div className="min-w-0">
-          <p className="text-[13px] font-bold text-gray-800">
+          <p className="text-[13px] font-bold text-green-800">
             Your offer so far
           </p>
-          <p className="mt-0.5 text-[13px] leading-relaxed text-gray-700">
+          <p className=" text-[13px] leading-relaxed text-green-700">
             {summary.length > 0 ? (
               summary.map((part, i) => (
                 <span key={part}>
-                  {i > 0 && <span className="text-gray-400"> · </span>}
+                  {i > 0 && <span className="text-green-400"> · </span>}
                   <span className={i === 0 ? "font-semibold" : ""}>{part}</span>
                 </span>
               ))
             ) : (
-              <span className="text-gray-400">
+              <span className="text-green-400">
                 Pick a deal in step 1 to start building your offer.
               </span>
             )}

@@ -240,16 +240,7 @@ export default function OfferPhonePreview() {
                   ? "bg-white text-gray-900 shadow-sm"
                   : "text-gray-500 hover:text-gray-700"
               }`}
-
-              //  className={cn(
-              //             "flex items-center gap-2 rounded-lg px-5 py-2 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe]",
-              //             active
-              //               ? "bg-white text-gray-900 shadow-sm"
-              //               : "text-gray-500 hover:text-gray-700",
-              //           )}
             >
-              {/* The icon keeps its channel colour on every tab — it is what
-                  the three are told apart by at a glance. */}
               <Icon size={14} className={tint} />
               {label}
             </button>

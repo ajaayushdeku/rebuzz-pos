@@ -2,6 +2,7 @@
 
 import { useOfferForm } from "@/providers/OfferFormContext";
 import { useCurrency } from "@/providers/CurrencyContext";
+import { SlidersHorizontal } from "lucide-react";
 import OfferStepCard from "./OfferStepCard";
 
 const FIELD =
@@ -71,6 +72,9 @@ export default function OfferConditions() {
       step={2}
       title="Conditions"
       subtitle="All optional. Leave blank for no limit."
+      icon={SlidersHorizontal}
+      iconBg="bg-blue-100"
+      iconColor="text-blue-600"
     >
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <LimitField

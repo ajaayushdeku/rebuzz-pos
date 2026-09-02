@@ -19,7 +19,7 @@ export default function OfferFooterActions() {
         type="button"
         onClick={() => toast.success("Saved as draft")}
         disabled={isSaving}
-        className="h-12 cursor-pointer rounded-xl bg-gray-100 px-6 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+        className="h-10 cursor-pointer rounded-xl bg-gray-100 px-6 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
       >
         Save as draft
       </button>
@@ -28,7 +28,7 @@ export default function OfferFooterActions() {
         type="button"
         onClick={handleSave}
         disabled={isSaving}
-        className="h-12 cursor-pointer rounded-xl bg-emerald-600 px-6 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+        className="h-10 cursor-pointer rounded-xl bg-emerald-600 px-6 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isSaving ? "Creating..." : "Create offer"}
       </button>

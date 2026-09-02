@@ -83,6 +83,9 @@ export default function OfferWhenItRuns() {
       step={3}
       title="When it runs"
       subtitle="Pick a festival occasion or choose custom start and end dates."
+      icon={CalendarClock}
+      iconBg="bg-violet-100"
+      iconColor="text-violet-600"
     >
       {/* Occasions */}
       <div>
@@ -98,7 +101,7 @@ export default function OfferWhenItRuns() {
                 // label, and there has to be a way to take it back off.
                 onClick={() => chooseFestival(f.id)}
                 aria-pressed={active}
-                className={`inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg border px-3 text-[13px] font-medium transition-colors ${
+                className={`inline-flex h-8 cursor-pointer items-center gap-2 rounded-lg border px-3 text-[12px] font-medium transition-colors ${
                   active
                     ? "border-emerald-500 bg-emerald-50 text-emerald-800"
                     : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
@@ -181,7 +184,7 @@ export default function OfferWhenItRuns() {
                 type="button"
                 onClick={() => toggleDay(day)}
                 aria-pressed={active}
-                className={`h-11 w-14 cursor-pointer rounded-lg text-[13px] font-medium transition-colors ${
+                className={`h-10 w-14 cursor-pointer rounded-lg text-[13px] font-medium transition-colors ${
                   active
                     ? "bg-gray-900 text-white"
                     : "border border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100"

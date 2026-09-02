@@ -1,7 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, ChevronsUpDown, Plus, Search, Sparkles } from "lucide-react";
+import {
+  Check,
+  ChevronsUpDown,
+  Plus,
+  Search,
+  Sparkles,
+  Tag,
+} from "lucide-react";
 
 import { useOfferForm } from "@/providers/OfferFormContext";
 import { useProductsList } from "@/hooks/useProductsList";
@@ -142,6 +149,9 @@ export default function OfferDeal() {
       step={1}
       title="The deal"
       subtitle="Choose what discount or freebie your customers receive."
+      icon={Tag}
+      iconBg="bg-emerald-100"
+      iconColor="text-emerald-600"
       action={
         <button
           type="button"
@@ -263,7 +273,7 @@ export default function OfferDeal() {
                 type="button"
                 onClick={() => updateField("itemScope", scope.id)}
                 aria-pressed={active}
-                className={`h-10 cursor-pointer rounded-lg px-4 text-[13px] font-semibold transition-colors ${
+                className={`h-8 cursor-pointer rounded-lg px-4 text-[13px] font-semibold transition-colors ${
                   active
                     ? "bg-emerald-700 text-white"
                     : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
