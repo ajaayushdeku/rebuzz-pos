@@ -38,30 +38,31 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        // h-full, not h-screen: both mounts are fixed containers already inset
-        // by the navbar height, so a full viewport height would overhang the
-        // bottom of the screen and push the scrollable nav out of reach.
-        "border-r bg-background h-full flex flex-col transition-all duration-300",
+        "border-r bg-background h-full flex flex-col overflow-hidden transition-[width] duration-300 ease-in-out",
         isCollapsed ? "w-12" : "w-64",
       )}
     >
-      <div className="py-2 px-1 flex items-center mt-2 justify-between gap-1">
+      <div
+        className={`my-2 flex items-center justify-between gap-1 px-1 py-2 border-b border-gray-100 transition-[width] duration-300 ease-in-out ${isCollapsed ? "justify-center " : "justify-between"}`}
+      >
         {!isCollapsed && (
-          <Link href="/invoices/add">
+          <Link href="/invoices/add" className="min-w-0  ml-2">
             <Button
-              className="flex-1 bg-white text-blue-500   font-bold hover:bg-blue-100"
+              className="w-full text-left animate-in fade-in-0 bg-white font-bold text-blue-500 duration-300 hover:bg-blue-100"
               size="sm"
             >
               <Plus className="w-2 h-2 mr-1 font-bold" />
-              <span className="text-[16px]">Create new</span>
+              <span className="whitespace-nowrap text-[16px]">Create new</span>
             </Button>
           </Link>
         )}
+
         <Button
           variant="ghost"
           size="icon"
-          className="shrink-0 h-8 w-8 text-blue-500 hover:text-blue-400"
+          className={`h-8 w-8 shrink-0 ${isCollapsed ? "ml-1" : "mr-2"} cursor-pointer text-blue-500 hover:text-blue-600`}
           onClick={toggle}
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (
             <PanelLeftOpen className="h-4 w-4 hidden md:block" />
@@ -71,7 +72,7 @@ export default function Sidebar() {
         </Button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="space-y-1">
           {navigationConfig.map((item) => {
             const isSectionActive = activeSectionFromUrl?.label === item.label;

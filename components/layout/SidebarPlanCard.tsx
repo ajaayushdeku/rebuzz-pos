@@ -1,7 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Crown, Gem, Leaf, Printer, type LucideIcon } from "lucide-react";
+import {
+  ArrowUpRight,
+  ChevronRight,
+  Crown,
+  Gem,
+  Leaf,
+  Printer,
+  type LucideIcon,
+} from "lucide-react";
 
 import { parseSubscription, planTone, type PlanTier } from "@/lib/config/plans";
 import { useSubscriptionType } from "@/hooks/useSubscriptionType";
@@ -82,54 +90,64 @@ export default function SidebarPlanCard() {
     );
   }
 
-  return (
-    <div>
-      <Link
-        href="/subscriptions"
-        onClick={closeMobile}
-        className="block  border-t border-gray-200 bg-white py-2.5 pl-3 transition-colors hover:border-blue-300 hover:bg-blue-50/60"
-      >
-        <div className="flex items-center gap-3.5">
-          <span
-            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${tone.tile}`}
-          >
-            <Icon size={24} />
-          </span>
+  /**
+   * A lifetime plan has nothing to upgrade to, so the card offers to show the
+   * plan rather than to change it — the destination is the same page either
+   * way, but the promise it makes is not.
+   */
+  const isLifetime = tier === "lifetime";
+  const action = isLifetime ? "View plan details" : "View plans & upgrade";
+  const ActionIcon = isLifetime ? ChevronRight : ArrowUpRight;
 
-          <span className="min-w-0">
-            <span className="block text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-              Current plan
-            </span>
-            <span className="block flex flex-col gap-0 truncate text-sm font-semibold text-gray-900">
-              <span className="flex items-center gap-1.5">
-                <span className="truncate">{name}</span>
-                {/* The printer bundle rides on top of a tier rather than being
-                    one, so it gets a mark of its own instead of lengthening
-                    the plan name. */}
-                {hasPrinter && (
-                  <span
-                    title="Includes the printer bundle"
-                    className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-gray-100 text-gray-500"
-                  >
-                    <Printer size={10} />
-                  </span>
-                )}
-              </span>
-              {/* A lifetime plan has nothing to upgrade to, but the card
-                  still links somewhere worth going — so it says what the link
-                  does rather than vanishing and leaving the row looking
-                  truncated. */}
-              <p
-                className={`text-left text-[11px] font-medium ${tier === "lifetime" ? "text-amber-700" : "text-blue-600"} hover:underline `}
-              >
-                {tier === "lifetime"
-                  ? "View plan details"
-                  : "View plans & upgrade"}
-              </p>
-            </span>
+  return (
+    <Link
+      href="/subscriptions"
+      onClick={closeMobile}
+      title={`Current plan: ${name}. ${action}`}
+      className="group flex items-center gap-3 whitespace-nowrap border-t border-gray-200 bg-white px-3 py-2.5 transition-colors hover:bg-blue-50/60"
+    >
+      <span
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${tone.tile}`}
+      >
+        <Icon size={18} />
+      </span>
+
+      <span className="min-w-0 flex-1">
+        <span className="block text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+          Current plan
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="truncate text-[13px] font-semibold text-gray-900">
+            {name}
           </span>
-        </div>
-      </Link>
-    </div>
+          {/* The printer bundle rides on top of a tier rather than being one,
+              so it gets a mark of its own instead of lengthening the name. */}
+          {hasPrinter && (
+            <span
+              title="Includes the printer bundle"
+              className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-gray-100 text-gray-500"
+            >
+              <Printer size={10} />
+            </span>
+          )}
+        </span>
+      </span>
+
+      {/* The third line of text this replaces said what the card already is —
+          a link to the plans page. As an icon it keeps the affordance and
+          gives the plan name the whole width. A span, not a button: a button
+          inside an anchor is invalid, and the whole row is already the link.
+          Its wording survives in `title` and `aria-label` above. */}
+      <span
+        aria-hidden
+        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors ${
+          isLifetime
+            ? "text-amber-600 group-hover:bg-amber-50"
+            : "text-blue-600 group-hover:bg-blue-100"
+        }`}
+      >
+        <ActionIcon size={16} />
+      </span>
+    </Link>
   );
 }

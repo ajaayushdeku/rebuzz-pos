@@ -28,7 +28,8 @@ export default function SidebarSection({
   const isAnyActive = items.some((item) => pathname === item.href);
   const { toggle } = useSidebar();
   const baseClass = cn(
-    "flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm font-medium text-foreground transition-colors duration-200",
+    // See SidebarItem: the label must not wrap while the rail is animating.
+    "flex items-center gap-3 w-full whitespace-nowrap px-3 py-2 rounded-md text-sm font-medium text-foreground transition-colors duration-200",
     "hover:bg-blue-50 hover:text-blue-600",
     isAnyActive && !isOpen && "bg-blue-50 text-blue-600",
   );
@@ -55,7 +56,9 @@ export default function SidebarSection({
     <div className="mb-1">
       <button onClick={onToggle} className={baseClass}>
         <Icon className="w-4 h-4 shrink-0" />
-        <span className="flex-1 text-left">{label}</span>
+        <span className="flex-1 animate-in fade-in-0 text-left duration-300">
+          {label}
+        </span>
         {isOpen ? (
           <ChevronDown className="w-4 h-4 shrink-0" />
         ) : (
@@ -73,7 +76,7 @@ export default function SidebarSection({
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors",
+                  "flex items-center gap-2 whitespace-nowrap px-3 py-2 rounded-md text-sm transition-colors",
                   isActive
                     ? "bg-blue-50 text-blue-600 font-medium"
                     : "text-muted-foreground hover:bg-accent hover:text-blue-600",

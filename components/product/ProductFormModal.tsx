@@ -658,7 +658,7 @@ export default function ProductFormModal({
       bodyMaxHeight="max-h-[78vh]"
       bodyMinHeight="min-h-[78vh]"
       footer={
-        <div className="space-y-3">
+        <div className="space-y-3 absolute bottom-0 left-0 right-0 z-10 border-t border-slate-200 bg-white px-6 py-4">
           {/* Server-side failure for the whole submit — sits by the Save
               button so the reason is where the retry is. Per-field validation
               still renders under its own control. */}
