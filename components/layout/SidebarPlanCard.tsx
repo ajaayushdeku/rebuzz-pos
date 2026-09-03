@@ -90,11 +90,6 @@ export default function SidebarPlanCard() {
     );
   }
 
-  /**
-   * A lifetime plan has nothing to upgrade to, so the card offers to show the
-   * plan rather than to change it — the destination is the same page either
-   * way, but the promise it makes is not.
-   */
   const isLifetime = tier === "lifetime";
   const action = isLifetime ? "View plan details" : "View plans & upgrade";
   const ActionIcon = isLifetime ? ChevronRight : ArrowUpRight;
@@ -120,8 +115,7 @@ export default function SidebarPlanCard() {
           <span className="truncate text-[13px] font-semibold text-gray-900">
             {name}
           </span>
-          {/* The printer bundle rides on top of a tier rather than being one,
-              so it gets a mark of its own instead of lengthening the name. */}
+
           {hasPrinter && (
             <span
               title="Includes the printer bundle"
@@ -133,11 +127,6 @@ export default function SidebarPlanCard() {
         </span>
       </span>
 
-      {/* The third line of text this replaces said what the card already is —
-          a link to the plans page. As an icon it keeps the affordance and
-          gives the plan name the whole width. A span, not a button: a button
-          inside an anchor is invalid, and the whole row is already the link.
-          Its wording survives in `title` and `aria-label` above. */}
       <span
         aria-hidden
         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors ${

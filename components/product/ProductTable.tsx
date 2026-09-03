@@ -17,16 +17,64 @@ import {
   CornerDownRight,
 } from "lucide-react";
 import { Product } from "@/lib/types/product";
+import { initials } from "@/lib/utils";
 import ProductDetailModal from "./ProductDetailModal";
 import ProductFormModal from "./ProductFormModal";
 import DeleteProductModal from "./DeleteProductModal";
 import LoadingState from "@/components/ui/LoadingState";
+import PhotoViewer from "@/components/ui/PhotoViewer";
 import { useDeleteProduct } from "@/hooks/useProducts";
 import toast from "react-hot-toast";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
-const COLUMN_COUNT = 7;
+const COLUMN_COUNT = 8;
+
+/**
+ * A product's picture, or its initials.
+ *
+ * Square rather than the round avatar customers get: these are things, not
+ * people, and the two lists sit a click apart. The initials are a real
+ * fallback rather than a generic box icon — at a glance down the column they
+ * still tell one unphotographed product from another.
+ */
+function ProductThumb({
+  name,
+  src,
+  onOpen,
+}: {
+  name: string;
+  src?: string | null;
+  /** Opens the photo full-size. Not wired to the initials fallback, so the
+   *  cursor never promises a picture that is not there. */
+  onOpen?: () => void;
+}) {
+  // Reset by key when the row's product changes, so a broken image on one
+  // product does not suppress the next one's photo.
+  const [failed, setFailed] = useState(false);
+
+  if (src && !failed) {
+    return (
+      /* eslint-disable-next-line @next/next/no-img-element */
+      <img
+        src={src}
+        alt={name}
+        onError={() => setFailed(true)}
+        onClick={onOpen}
+        title={onOpen ? "View photo" : undefined}
+        className={`h-9 w-9 shrink-0 rounded-md border border-gray-200 bg-gray-50 object-cover ${
+          onOpen ? "cursor-pointer transition hover:brightness-90" : ""
+        }`}
+      />
+    );
+  }
+
+  return (
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-gray-100 to-gray-200 text-[11px] font-bold text-gray-500">
+      {initials(name)}
+    </span>
+  );
+}
 
 export default function ProductTable({
   products,
@@ -47,6 +95,11 @@ export default function ProductTable({
   const [page, setPage] = useState(0);
   /** Product ids whose variant rows are showing. */
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  /** The photo being shown full-size, if any. */
+  const [photoTarget, setPhotoTarget] = useState<{
+    src: string | null;
+    name: string;
+  } | null>(null);
   const pageSize = 10;
 
   const fmt = (v: number) =>
@@ -200,11 +253,17 @@ export default function ProductTable({
 
       {/* ── Table ────────────────────────────────────────── */}
       <div className="bg-white overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <table className="w-full text-sm min-w-[900px]">
+        <table className="w-full text-sm min-w-[1000px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
-              <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+              {/* <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
                 S.No
+              </th> */}
+              {/* No label: the column is one thumbnail wide, and "Image" over
+                  it would be wider than the thing it names. */}
+              {/* <th className="w-12 pb-3 pt-3 px-4 font-medium" /> */}
+              <th className=" text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600">
+                Profile
               </th>
               <th
                 className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
@@ -275,8 +334,30 @@ export default function ProductTable({
                       isExpanded ? "bg-blue-50/40" : "hover:bg-gray-50"
                     }`}
                   >
-                    <td className="py-3 px-4 text-gray-400 text-xs">
+                    {/* <td className="py-3 px-4 text-gray-400 text-xs">
                       {start + idx + 1}
+                    </td> */}
+                    {/* The row opens the product's detail modal; the photo
+                        opens the photo. Without stopping propagation the click
+                        would do both. */}
+                    <td
+                      className="py-3 px-4"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <ProductThumb
+                        // Keyed by the row's product: without it, paging
+                        // reuses the same component instance and a failed
+                        // image would keep the next product's photo hidden.
+                        key={product.id}
+                        name={product.name}
+                        src={product.image}
+                        onOpen={() =>
+                          setPhotoTarget({
+                            src: product.image ?? null,
+                            name: product.name,
+                          })
+                        }
+                      />
                     </td>
                     <td className="py-3 px-4">
                       <span className="flex items-center gap-2">
@@ -383,6 +464,11 @@ export default function ProductTable({
                           onClick={() => handleRowClick(product)}
                           className="cursor-pointer border-b border-gray-50 bg-gray-50/50 transition-colors last:border-0 hover:bg-gray-100/70"
                         >
+                          {/* <td className="py-2.5 px-4" /> */}
+                          {/* A variant has no picture of its own — it shares
+                              the product's — so the column stays empty rather
+                              than repeating the parent's thumbnail down the
+                              group. */}
                           <td className="py-2.5 px-4" />
                           <td className="py-2.5 px-4">
                             <span className="flex items-center gap-1.5 pl-6">
@@ -511,6 +597,13 @@ export default function ProductTable({
         onClose={() => setDeleteTarget(null)}
         deleting={deleteMutation.isPending}
         onConfirm={confirmDelete}
+      />
+
+      <PhotoViewer
+        open={!!photoTarget}
+        src={photoTarget?.src ?? null}
+        alt={photoTarget?.name ?? ""}
+        onClose={() => setPhotoTarget(null)}
       />
     </>
   );

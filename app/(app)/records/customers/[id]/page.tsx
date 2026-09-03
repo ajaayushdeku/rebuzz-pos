@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -17,7 +17,7 @@ import CustomerDetailStats from "@/components/customer/detail/CustomerDetailStat
 import CustomerInfoCard from "@/components/customer/detail/CustomerInfoCard";
 import LoyaltyCard from "@/components/customer/detail/LoyaltyCard";
 import OrderHistorySection from "@/components/customer/detail/OrderHistorySection";
-import PhotoViewer from "@/components/customer/detail/PhotoViewer";
+import PhotoViewer from "@/components/ui/PhotoViewer";
 import type {
   PurchaseHistoryItem,
   PurchaseHistoryResponse,
@@ -37,7 +37,7 @@ export default function CustomerDetailPage() {
 
   const customer = customers.find((c) => c.id === customerId);
 
-  // ── Order history ────────────────────────────────────────────────────────
+  // â”€â”€ Order history â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (!customerId) return;
 
@@ -86,11 +86,11 @@ export default function CustomerDetailPage() {
   }
 
   // Already banded by `mapRawCustomerToCustomer` against the business's own
-  // ladder — re-deriving here would put the built-in thresholds back.
+  // ladder â€” re-deriving here would put the built-in thresholds back.
   const loyaltyStatus = customer.loyaltyStatus;
   const imageUrl = getCustomerImageUrl(customer.image);
 
-  // ── Stats derived from history ───────────────────────────────────────────
+  // â”€â”€ Stats derived from history â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const validHistory = history.filter((p) => !p.isRefunded);
   const totalSpent = validHistory.reduce(
     (sum, p) => sum + (p.grandTotal ?? 0),
@@ -146,7 +146,7 @@ export default function CustomerDetailPage() {
         />
       </div>
 
-      {/* ── Modals ── */}
+      {/* â”€â”€ Modals â”€â”€ */}
       <EditCustomerModal
         customer={customer}
         open={editOpen}

@@ -8,6 +8,23 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Up to two initials from a name — "Aayush Shrestha" → "AS".
+ *
+ * The first and *last* words rather than the first two, because a middle name
+ * is the least identifying part: "Ram Bahadur Thapa" reads as RT, not RB.
+ * Falls back to "?" so a blank name renders a placeholder rather than an empty
+ * circle.
+ */
+export function initials(name?: string | null): string {
+  const words = (name ?? "").trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "?";
+
+  const first = words[0][0];
+  const last = words.length > 1 ? words[words.length - 1][0] : "";
+  return `${first}${last}`.toUpperCase();
+}
+
 export const formatDuration = (seconds: number): string => {
   if (seconds < 60) return `${seconds}s`;
   const mins = Math.floor(seconds / 60);

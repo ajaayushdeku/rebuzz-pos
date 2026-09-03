@@ -14,11 +14,14 @@ import {
   Users,
 } from "lucide-react";
 import { Customer } from "./customer-columns";
+import { getCustomerImageUrl } from "@/lib/types/customer";
+import { CustomerAvatar } from "./CustomerAvatar";
 import CustomerDetailModal from "./CustomerDetailModal";
 import EditCustomerModal from "./EditCustomerModal";
 import LoyaltyPointModal from "./LoyaltyPointModal";
 import DeleteCustomerModal from "./DeleteCustomerModal";
 import LoadingState from "@/components/ui/LoadingState";
+import PhotoViewer from "@/components/ui/PhotoViewer";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -116,6 +119,11 @@ export default function CustomerTable({
   const [page, setPage] = useState(0);
   const [deleteConfirm, setDeleteConfirm] = useState<Customer | null>(null);
   const [deleting, setDeleting] = useState(false);
+  /** The photo being shown full-size, if any. */
+  const [photoTarget, setPhotoTarget] = useState<{
+    src: string | null;
+    name: string;
+  } | null>(null);
   const queryClient = useQueryClient();
   const pageSize = 10;
 
@@ -221,11 +229,17 @@ export default function CustomerTable({
       {/* Table â€” horizontally scrollable on mobile */}
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
       <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        <table className="w-full text-sm min-w-[800px]">
+        <table className="w-full text-sm min-w-[1000px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
-              <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+              {/* <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
                 S.No
+              </th> */}
+              {/* No label: the column is one 32px avatar wide, and "Photo"
+                  over it would be wider than the thing it names. */}
+              {/* <th className="w-12 pb-3 pt-3 px-4 font-medium" /> */}
+              <th className=" text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600">
+                Profile
               </th>
               <th
                 className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
@@ -260,14 +274,14 @@ export default function CustomerTable({
                 tables. */}
             {isLoading ? (
               <tr>
-                <td colSpan={8}>
+                <td colSpan={9}>
                   <LoadingState message="Loading customers..." />
                 </td>
               </tr>
             ) : paged.length === 0 ? (
               <tr>
                 <td
-                  colSpan={8}
+                  colSpan={9}
                   className="text-center py-2 text-sm text-gray-400"
                 >
                   <div className="flex flex-col items-center justify-center py-12">
@@ -290,8 +304,32 @@ export default function CustomerTable({
                   onClick={() => handleRowClick(customer)}
                   className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
                 >
-                  <td className="py-3 px-4 text-gray-400 text-xs">
+                  {/* <td className="py-3 px-4 text-gray-400 text-xs">
                     {page * pageSize + idx + 1}
+                  </td> */}
+
+                  {/* The row opens the customer; the photo opens the photo.
+                      Without stopping propagation the click would do both,
+                      and the navigation would win. */}
+                  <td
+                    className="py-3 px-4"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <CustomerAvatar
+                      src={getCustomerImageUrl(customer.image)}
+                      name={customer.name}
+                      className="h-9 w-9"
+                      textClass="text-[11px]"
+                      // `CustomerAvatar` only wires this up when it has a real
+                      // photo, so the initials fallback keeps a plain cursor
+                      // rather than promising a picture that is not there.
+                      onClick={() =>
+                        setPhotoTarget({
+                          src: getCustomerImageUrl(customer.image),
+                          name: customer.name,
+                        })
+                      }
+                    />
                   </td>
 
                   <td className="py-3 px-4">
@@ -478,6 +516,13 @@ export default function CustomerTable({
         onClose={() => setDeleteConfirm(null)}
         deleting={deleting}
         onConfirm={handleDelete}
+      />
+
+      <PhotoViewer
+        open={!!photoTarget}
+        src={photoTarget?.src ?? null}
+        alt={photoTarget?.name ?? ""}
+        onClose={() => setPhotoTarget(null)}
       />
     </>
   );

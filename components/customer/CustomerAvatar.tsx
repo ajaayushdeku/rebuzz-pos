@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { initials } from "@/lib/utils";
+
 /**
  * A round avatar that shows a photo when available, otherwise falls back to the
  * person's initial. Used for customers (with image) and staff (initial only).
@@ -40,11 +42,11 @@ export function CustomerAvatar({
 
   return (
     <div
-      className={`rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold ${textClass} ${className}`}
+      className={`rounded-full bg-gradient-to-br from-green-300 to-green-400 flex items-center justify-center text-white font-bold ${textClass} ${className}`}
     >
-      {/* `name` is optional on Customer, and a blank name would otherwise
-          render an empty circle — fall back to "?" for both cases. */}
-      {(name?.trim().charAt(0) || "?").toUpperCase()}
+      {/* Two initials where the name has them: one letter puts every Aayush,
+          Anil and Asha in the list behind the same "A". */}
+      {initials(name)}
     </div>
   );
 }
