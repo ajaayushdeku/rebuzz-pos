@@ -79,7 +79,7 @@ const OverviewStatBox = ({
   }
 
   return (
-    <div className={`${CARD} transition-shadow duration-200 hover:shadow-md`}>
+    <div className={`${CARD} transition-shadow font-sans duration-200 hover:shadow-md`}>
       {/* Label + icon */}
       <div className="flex items-center justify-between gap-2">
         <span className="truncate text-xs font-medium text-gray-500 md:text-[13px]">
@@ -93,7 +93,7 @@ const OverviewStatBox = ({
       </div>
 
       {/* Value */}
-      <p className="mt-3 truncate text-xl font-bold tracking-tight text-gray-900 tabular-nums md:mt-4 md:text-[22px]">
+      <p className="mt-3 truncate text-xl font-bold tracking-wide text-gray-900 tabular-nums md:mt-4 md:text-[22px] font-sans">
         {formattedValue}
       </p>
 

@@ -203,9 +203,7 @@ export const formatVariantName = (
     if (!explicit) values = trailing[2];
   }
 
-  const parts = (
-    Array.isArray(values) ? values : (values ?? "").split(/[/·,]/)
-  )
+  const parts = (Array.isArray(values) ? values : (values ?? "").split(/[/·,]/))
     .map((v) => v.trim())
     .filter(Boolean)
     .map((v) => v.charAt(0).toUpperCase() + v.slice(1));

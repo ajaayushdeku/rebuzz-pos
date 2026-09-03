@@ -445,7 +445,7 @@ export default function CreditInvoiceDocument({
       <div className="w-full overflow-hidden">
         <table className="w-full border-collapse">
           <thead>
-            <tr data-pdf-block className="bg-gray-300/20 border-b border-gray">
+            <tr data-pdf-block className=" border-b border-gray">
               <th className="text-left text-black font-bold text-sm tracking-wider py-3 pl-2 w-[40%]">
                 Name
               </th>
@@ -531,7 +531,7 @@ export default function CreditInvoiceDocument({
       <div className="border-b border-dotted border-gray-300 mt-3 mb-3" />
 
       {/* ── Totals ── */}
-      <div data-pdf-block className="space-y-3 text-sm">
+      <div data-pdf-block className="space-y-3 text-sm px-2">
         <div className="flex justify-between">
           <p className="text-gray-700 tracking-wider">Subtotal</p>
           <p className="font-medium tracking-wider">
@@ -554,15 +554,15 @@ export default function CreditInvoiceDocument({
         )}
 
         <div className="flex justify-between pt-2 border-t border-dotted border-gray-300">
-          <p className="font-bold text-base tracking-wider">Total Payable</p>
-          <p className="font-bold text-base tracking-wider">
+          <p className="font-bold  tracking-wider">Total Payable</p>
+          <p className="font-bold  tracking-wider">
             {fmt(Number(credit.grandTotal ?? 0))}
           </p>
         </div>
       </div>
 
       {/* ── Payments received ── */}
-      <div data-pdf-block className="mt-2 text-sm">
+      <div data-pdf-block className="mt-2 text-sm px-2">
         {paymentList.length > 0 ? (
           <div className="space-y-1.5">
             {paymentList.map((p) => (
@@ -587,10 +587,8 @@ export default function CreditInvoiceDocument({
         )}
 
         <div className="flex justify-between pt-3 mt-3 border-t border-dashed border-gray-400 tracking-wider">
-          <p className="font-bold text-base">
-            Amount Due ({currency.symbol || "NPR"}):
-          </p>
-          <p className="font-bold text-base">{fmt(amountDue)}</p>
+          <p className="font-bold">Amount Due ({currency.symbol || "NPR"}):</p>
+          <p className="font-bold">{fmt(amountDue)}</p>
         </div>
       </div>
 

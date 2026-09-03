@@ -1,6 +1,6 @@
 "use client";
 
-import { formatCurrencySymbol } from "@/utils/helper";
+import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
 import type { CurrencyConfig } from "@/providers/CurrencyContext";
 import {
   CREDIT_STATE_LABEL,
@@ -77,8 +77,11 @@ export default function CreditDetailMeta({
                 </span>
               )} */}
               {!!loyaltyPoint && loyaltyPoint > 0 && (
-                <p className="text-[10px] text-amber-500 font-medium whitespace-nowrap mb-0.5">
-                  ★ {loyaltyPoint.toFixed(2)} Points
+                <p className="text-[10px] text-amber-500 font-medium whitespace-nowrap mb-0.5 font-sans">
+                  ★ {formatAmount(loyaltyPoint, currency.locale)}{" "}
+                  <span className=" text-[8px] text-amber-400 font-medium whitespace-nowrap mb-0.5">
+                    pts
+                  </span>
                 </p>
               )}
             </div>
@@ -86,10 +89,10 @@ export default function CreditDetailMeta({
         </div>
       </div>
 
-      <div className="flex flex-row gap-6">
+      <div className="flex flex-row gap-6 font-sans">
         <div>
           <MetaLabel>Credit total</MetaLabel>
-          <p className="text-xl font-semibold text-gray-800">
+          <p className="text-xl text-right font-semibold text-gray-800">
             {fmt(grandTotal)}
           </p>
         </div>
@@ -97,7 +100,7 @@ export default function CreditDetailMeta({
         {paidAmount > 0 && (
           <div>
             <MetaLabel>Paid so far</MetaLabel>
-            <p className="text-xl font-semibold text-green-600">
+            <p className="text-xl text-right font-semibold text-green-600">
               {fmt(paidAmount)}
             </p>
           </div>
@@ -106,7 +109,7 @@ export default function CreditDetailMeta({
         <div>
           <MetaLabel>Amount due</MetaLabel>
           <p
-            className={`text-xl font-semibold ${
+            className={`text-xl text-right font-semibold ${
               cleared ? "text-green-600" : "text-red-600"
             }`}
           >

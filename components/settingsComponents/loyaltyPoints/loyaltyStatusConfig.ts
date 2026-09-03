@@ -1,3 +1,5 @@
+import { useCurrency } from "@/providers/CurrencyContext";
+import { formatNumber } from "@/utils/helper";
 import { Trophy, Diamond, Gem, Medal, Award } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -85,7 +87,12 @@ export const STATUS_COLORS: Record<string, TierSwatch> = {
  */
 export const TIER_PALETTE: TierSwatch[] = [
   ...Object.values(STATUS_COLORS),
-  { key: "rose", color: "text-rose-700", bg: "bg-rose-100 border-rose-200", hex: "#f43f5e" },
+  {
+    key: "rose",
+    color: "text-rose-700",
+    bg: "bg-rose-100 border-rose-200",
+    hex: "#f43f5e",
+  },
   {
     key: "emerald",
     color: "text-emerald-700",
@@ -104,17 +111,42 @@ export const TIER_PALETTE: TierSwatch[] = [
     bg: "bg-amber-100 border-amber-200",
     hex: "#f59e0b",
   },
-  { key: "sky", color: "text-sky-700", bg: "bg-sky-100 border-sky-200", hex: "#0ea5e9" },
+  {
+    key: "sky",
+    color: "text-sky-700",
+    bg: "bg-sky-100 border-sky-200",
+    hex: "#0ea5e9",
+  },
   {
     key: "fuchsia",
     color: "text-fuchsia-700",
     bg: "bg-fuchsia-100 border-fuchsia-200",
     hex: "#d946ef",
   },
-  { key: "lime", color: "text-lime-700", bg: "bg-lime-100 border-lime-200", hex: "#84cc16" },
-  { key: "blue", color: "text-blue-700", bg: "bg-blue-100 border-blue-200", hex: "#3b82f6" },
-  { key: "red", color: "text-red-700", bg: "bg-red-100 border-red-200", hex: "#ef4444" },
-  { key: "teal", color: "text-teal-700", bg: "bg-teal-100 border-teal-200", hex: "#14b8a6" },
+  {
+    key: "lime",
+    color: "text-lime-700",
+    bg: "bg-lime-100 border-lime-200",
+    hex: "#84cc16",
+  },
+  {
+    key: "blue",
+    color: "text-blue-700",
+    bg: "bg-blue-100 border-blue-200",
+    hex: "#3b82f6",
+  },
+  {
+    key: "red",
+    color: "text-red-700",
+    bg: "bg-red-100 border-red-200",
+    hex: "#ef4444",
+  },
+  {
+    key: "teal",
+    color: "text-teal-700",
+    bg: "bg-teal-100 border-teal-200",
+    hex: "#14b8a6",
+  },
   {
     key: "purple",
     color: "text-purple-700",
@@ -127,7 +159,12 @@ export const TIER_PALETTE: TierSwatch[] = [
     bg: "bg-green-100 border-green-200",
     hex: "#22c55e",
   },
-  { key: "pink", color: "text-pink-700", bg: "bg-pink-100 border-pink-200", hex: "#ec4899" },
+  {
+    key: "pink",
+    color: "text-pink-700",
+    bg: "bg-pink-100 border-pink-200",
+    hex: "#ec4899",
+  },
   {
     key: "slate",
     color: "text-slate-700",
@@ -205,7 +242,10 @@ export function pointRange(
   status: LoyaltyStatus,
   next: LoyaltyStatus | undefined,
 ): string {
+  // This utility is called from the component rendering the range.
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { currency } = useCurrency();
   return next
-    ? `${status.minPoints.toLocaleString()} – ${(next.minPoints - 1).toLocaleString()}`
-    : `${status.minPoints.toLocaleString()}+`;
+    ? `${formatNumber(status.minPoints, currency.locale)} – ${formatNumber(next.minPoints - 1, currency.locale)}`
+    : `${formatNumber(status.minPoints, currency.locale)}+`;
 }

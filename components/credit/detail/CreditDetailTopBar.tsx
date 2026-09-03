@@ -15,14 +15,6 @@ import {
   type CreditState,
 } from "./creditDetailHelpers";
 
-/**
- * Sticky header for a credit.
- *
- * The action set is the invoice page's minus the ones a credit cannot take:
- * there is no "move to credit" (it is one), no refund (nothing was settled
- * through the POS) and no invoice delete — archiving the credit is the
- * equivalent, and it lives here instead.
- */
 export default function CreditDetailTopBar({
   invoiceName,
   invoiceNo,

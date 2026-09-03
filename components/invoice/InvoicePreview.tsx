@@ -604,7 +604,7 @@ function InvoiceContent({
       <div className="border-b border-dotted border-gray-300 mt-3 mb-3" />
 
       {/* ───────────────── Totals ───────────────── */}
-      <div className="space-y-3 text-sm">
+      <div className="space-y-3 text-sm px-2">
         <div className="flex justify-between">
           <p className="text-gray-700 tracking-wider">Subtotal</p>
           <p className="font-medium  tracking-wider">
@@ -656,11 +656,11 @@ function InvoiceContent({
           </div>
         )}
 
-        <div className="flex justify-between pt-2  border-t border-dotted border-gray-300">
-          <p className="font-bold text-base tracking-wider">
+        <div className="flex justify-between pt-2   border-t border-dotted border-gray-300">
+          <p className="font-bold  tracking-wider">
             {billData ? "Grand Total" : "Total Payable"}
           </p>
-          <p className="font-bold text-base  tracking-wider ">
+          <p className="font-bold  tracking-wider ">
             {formatCurrencySymbol(
               Number(displayGrandTotal),
               currency.symbol,
@@ -672,7 +672,7 @@ function InvoiceContent({
 
       {/* ───────────────── Payments received (credited) ───────────────── */}
       {paymentList.length > 0 && (
-        <div className="mt-2 text-sm">
+        <div className="mt-2 text-sm px-2">
           <div className="space-y-1.5">
             {paymentList.map((p) => (
               <div
@@ -695,7 +695,7 @@ function InvoiceContent({
             ))}
           </div>
           <div className="flex justify-between pt-3 mt-3 border-t border-dashed border-gray-400  tracking-wider">
-            <p className="font-bold text-base">
+            <p className="font-bold ">
               Amount Due ({currency.symbol || "NPR"}):
             </p>
             <p className="font-bold text-base">

@@ -13,6 +13,8 @@ import ModalShell, {
   modalGhostButton,
   modalPrimaryButton,
 } from "@/components/ui/ModalShell";
+import { formatAmount } from "@/utils/helper";
+import { useCurrency } from "@/providers/CurrencyContext";
 
 /**
  * Update a customer's loyalty points. Shared by the customers table and the
@@ -27,6 +29,7 @@ export default function LoyaltyPointModal({
   open: boolean;
   onClose: () => void;
 }) {
+  const { currency } = useCurrency();
   const queryClient = useQueryClient();
   const [points, setPoints] = useState(String(customer?.loyaltyPoint ?? 0));
   const [saving, setSaving] = useState(false);
@@ -125,7 +128,7 @@ export default function LoyaltyPointModal({
               </div>
             </div>
             <p className="text-xl font-bold text-cyan-700/80 tabular-nums">
-              {(customer.loyaltyPoint ?? 0).toLocaleString()}{" "}
+              {formatAmount(customer.loyaltyPoint ?? 0, currency.locale)}{" "}
               <span className=" text-[11px] text-cyan-600/80">pts</span>
             </p>
           </div>

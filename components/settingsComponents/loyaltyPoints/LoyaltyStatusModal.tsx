@@ -20,6 +20,8 @@ import {
   STATUS_COLORS,
 } from "./loyaltyStatusConfig";
 import TierBadge from "./TierBadge";
+import { formatNumber } from "@/utils/helper";
+import { useCurrency } from "@/providers/CurrencyContext";
 
 /**
  * The idle field, in this modal's cyan rather than the shared blue.
@@ -70,6 +72,7 @@ export default function LoyaltyStatusModal({
    */
   missingZeroFloor?: number | null;
 }) {
+  const { currency } = useCurrency();
   const isEdit = !!editing;
 
   const [name, setName] = useState("");
@@ -277,8 +280,8 @@ export default function LoyaltyStatusModal({
                 color={previewColor}
                 bgColor={previewBg}
               />
-              <span className="text-xs tabular-nums text-gray-400">
-                from {Number(minPoints || 0).toLocaleString()} pts
+              <span className="text-xs tabular-nums text-gray-600">
+                from {formatNumber(Number(minPoints) || 0, currency.locale)} pts
               </span>
             </div>
           </div>

@@ -3,7 +3,7 @@
 import { Star, DollarSign, ShoppingBag, CreditCard } from "lucide-react";
 import type { Customer } from "@/lib/types/customer";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrencySymbol } from "@/utils/helper";
+import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
 import StatCard, {
   StatCardSkeleton,
   type StatSpec,
@@ -47,7 +47,7 @@ export default function CustomerDetailStats({
       label: "Loyalty Points",
       value: (
         <>
-          {customer.loyaltyPoint.toLocaleString()}
+          {formatAmount(customer.loyaltyPoint ?? 0, currency.locale)}
           <span className="ml-1 text-[11px] text-gray-400">pts</span>
         </>
       ),

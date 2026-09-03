@@ -57,7 +57,7 @@ import RemovePaymentModal from "@/components/invoice/modals/RemovePaymentModal";
 import EditPaymentModal from "@/components/invoice/modals/EditPaymentModal";
 import DeleteInvoiceModal from "@/components/invoice/modals/DeleteInvoiceModal";
 import MoveToCreditModal from "@/components/invoice/modals/MoveToCreditModal";
-import { formatCurrencySymbol } from "@/utils/helper";
+import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
 
 type InvoiceTypeKey = "proforma" | "invoice" | "tax";
 
@@ -134,7 +134,8 @@ const InvoiceDetailPage = () => {
     queryKey: ["customer-lookup", invoice?.customerEmail, invoice?.phoneNumber],
     queryFn: async () => {
       const creditUser = creditForInvoice?.user as
-        { phone?: string } | undefined;
+        | { phone?: string }
+        | undefined;
       const identifier =
         invoice?.customerEmail || creditUser?.phone || invoice?.phoneNumber;
       if (!identifier) return null;
@@ -795,8 +796,15 @@ const InvoiceDetailPage = () => {
                         )} */}
                       </div>
                       {customerProfile?.loyaltyPoint > 0 && (
-                        <p className="text-[10px] text-amber-500 font-medium whitespace-nowrap mb-0.5">
-                          ★ {customerProfile.loyaltyPoint.toFixed(2)} Points
+                        <p className="text-[10px] text-amber-500 font-medium whitespace-nowrap mb-0.5 font-sans">
+                          ★{" "}
+                          {formatAmount(
+                            customerProfile.loyaltyPoint,
+                            currency.locale,
+                          )}{" "}
+                          <span className=" text-[8px] text-amber-400 font-medium whitespace-nowrap mb-0.5">
+                            pts
+                          </span>
                         </p>
                       )}
                     </div>
@@ -806,10 +814,10 @@ const InvoiceDetailPage = () => {
             </div>
             <div className="flex flex-row justify-content gap-6">
               <div>
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
+                <p className="text-[10px] text-right font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
                   Amount due
                 </p>
-                <p className="text-xl font-bold text-gray-800">
+                <p className="text-xl font-bold font-sans text-gray-800">
                   {displayBillData && displayBillData.status === "refunded" ? (
                     <span className="text-orange-600 font-semibold">
                       {currency.symbol} 0.00

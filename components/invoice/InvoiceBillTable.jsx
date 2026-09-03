@@ -15,7 +15,7 @@ export default function InvoiceBillTable({ invoices }) {
     <div className="w-full overflow-hidden">
       <Table className="w-full border-collapse">
         <TableHeader>
-          <TableRow className="bg-gray-300/20 rounded-xl">
+          <TableRow className=" rounded-xl">
             <TableHead className="text-black font-bold text-sm tracking-wider py-3  w-[40%]">
               Name
             </TableHead>

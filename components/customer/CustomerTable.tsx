@@ -298,7 +298,7 @@ export default function CustomerTable({
                 </td>
               </tr>
             ) : (
-              paged.map((customer, idx) => (
+              paged.map((customer) => (
                 <tr
                   key={customer.id}
                   onClick={() => handleRowClick(customer)}
@@ -369,7 +369,10 @@ export default function CustomerTable({
                     >
                       <span className="font-semibold text-gray-800 ">
                         {/* {formatAmount(customer.loyaltyPoint, currency.locale)}{" "} */}
-                        {(customer.loyaltyPoint ?? 0).toLocaleString()}
+                        {formatAmount(
+                          customer.loyaltyPoint ?? 0,
+                          currency.locale,
+                        )}
                         <span className=" ml-1 text-[9px] text-gray-400">
                           pts
                         </span>
@@ -465,7 +468,7 @@ export default function CustomerTable({
         </button>
 
         <span className="text-xs text-gray-400 font-medium">
-          Page {page + 1} of {totalPages} Â· {sorted.length} customers
+          Page {page + 1} of {totalPages} · {sorted.length} customers
         </span>
 
         <button

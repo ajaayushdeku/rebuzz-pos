@@ -3,7 +3,7 @@
 import { Star, ShoppingBag, DollarSign, Pencil } from "lucide-react";
 import type { Customer } from "@/lib/types/customer";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrencySymbol } from "@/utils/helper";
+import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import DetailRow from "./DetailRow";
 import { DETAIL_CARD, CardHeader } from "./DetailCardShell";
@@ -99,7 +99,7 @@ export default function LoyaltyCard({
                 Loyalty Points
               </p>
               <p className="truncate text-2xl font-bold tabular-nums text-gray-900">
-                {customer.loyaltyPoint.toLocaleString()}{" "}
+                {formatAmount(customer.loyaltyPoint ?? 0, currency.locale)}{" "}
                 <span className=" text-[11px] text-gray-400">pts</span>
               </p>
             </div>
