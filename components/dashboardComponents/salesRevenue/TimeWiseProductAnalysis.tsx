@@ -3,7 +3,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Timer } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrencySymbol, formatVariantName } from "@/utils/helper";
+import {
+  formatCurrencySymbol,
+  formatNumber,
+  formatVariantName,
+} from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
 
 type TimePeriod = "morning" | "lunch" | "afternoon" | "evening";
@@ -118,8 +122,7 @@ async function buildTimeWiseProducts(
   }));
 
   const perWindow = WINDOWS.map(
-    () =>
-      new Map<string, { name: string; units: number; revenue: number }>(),
+    () => new Map<string, { name: string; units: number; revenue: number }>(),
   );
 
   for (const { hour, items } of withItems) {
@@ -239,10 +242,10 @@ export default function TimeWiseProductAnalysis({
               </h3>
 
               <div className="mt-4 flex items-center justify-between pt-3 border-t border-gray-50">
-                <span className="text-xs text-gray-400">
-                  {item.unitsSold} units sold
+                <span className="text-xs text-gray-400 tracking-wide">
+                  {formatNumber(item.unitsSold, currency.locale)} units sold
                 </span>
-                <span className="text-xs font-semibold text-green-600">
+                <span className="text-xs font-semibold text-green-600 tracking-wide">
                   {fmt(item.revenue)}
                 </span>
               </div>

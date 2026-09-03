@@ -195,7 +195,7 @@ export default function TargetTrackerCard() {
       {isLoading ? (
         <div className="h-9 w-32 bg-gray-100 rounded-md animate-pulse mb-4" />
       ) : (
-        <p className="text-3xl font-bold text-gray-900 tracking-tight mb-4">
+        <p className="text-3xl font-bold text-gray-900 tracking-wide mb-4">
           {fmt(achieved)}
         </p>
       )}
@@ -218,7 +218,7 @@ export default function TargetTrackerCard() {
             <span className="flex items-center gap-1.5">
               Goal:
               <div className="relative">
-                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none">
+                <span className="absolute left-2 top-1/2 -translate-y-1/2  text-gray-400 text-xs pointer-events-none">
                   {currency.symbol}
                 </span>
                 <input
@@ -233,7 +233,7 @@ export default function TargetTrackerCard() {
                     if (e.key === "Escape") cancelEdit();
                   }}
                   placeholder="0"
-                  className="w-24 border border-gray-200 rounded-md pl-5 pr-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
+                  className="w-24 border border-gray-200 rounded-md pl-7 pr-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
                 />
               </div>
               <button
@@ -265,7 +265,7 @@ export default function TargetTrackerCard() {
               onClick={startEdit}
               disabled={isLoading || isError}
               title="Click to edit target"
-              className="inline-flex items-center gap-1 hover:text-gray-700 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1 hover:text-gray-700 transition-colors disabled:opacity-50 tracking-wide"
             >
               {hasTarget ? `Goal: ${fmt(target)}` : "Set a goal"}
               <Pencil size={11} className="opacity-50" />
@@ -297,7 +297,7 @@ export default function TargetTrackerCard() {
             </span>
           ) : (
             <>
-              <span className="font-semibold text-gray-700">
+              <span className="font-semibold tracking-wide text-gray-700">
                 {fmt(remaining)}
               </span>{" "}
               remaining to hit target
@@ -305,7 +305,7 @@ export default function TargetTrackerCard() {
           )}
         </span>
         {hasTarget && (
-          <span className="text-gray-400 font-medium">
+          <span className="text-gray-400 tracking-wide font-medium">
             {fmt(achieved)} of {fmt(target)}
           </span>
         )}

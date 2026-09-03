@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { TopProduct } from "./top-product-columns";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol, formatNumber } from "@/utils/helper";
 import { getPercentColor } from "@/lib/utils";
 import { useTopProducts } from "@/hooks/useTopProducts";
 import { ComponentHeader } from "@/components/ComponentHeader";
@@ -231,11 +231,11 @@ export default function TopProducts({
                       </span>
                     </td>
 
-                    <td className="py-3 px-4 text-center font-semibold text-xs text-gray-900">
-                      {product.count}
+                    <td className="py-3 px-4 text-center font-semibold text-xs text-gray-900 tracking-wide">
+                      {formatNumber(product.count, currency.locale)}
                     </td>
 
-                    <td className="py-3 px-4 text-right font-semibold text-xs text-gray-900">
+                    <td className="py-3 px-4 text-right font-semibold text-xs text-gray-900 tracking-wide">
                       {/* {formatCurrency(product.revenue, currency)} */}
                       {formatCurrencySymbol(
                         product.revenue,
@@ -244,7 +244,7 @@ export default function TopProducts({
                       )}
                     </td>
 
-                    <td className="py-3 px-4 text-right font-semibold text-xs text-green-600">
+                    <td className="py-3 px-4 text-right font-semibold text-xs text-green-600 tracking-wide">
                       {/* {formatCurrency(product.netProfit, currency)} */}
                       {formatCurrencySymbol(
                         product.netProfit,

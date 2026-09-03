@@ -18,6 +18,7 @@ import { getDaysColor } from "@/lib/utils";
 import { useSlowProducts } from "@/hooks/useSlowProducts";
 import { FilterSelect } from "@/components/ui/FilterSelect";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { formatNumber } from "@/utils/helper";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -262,8 +263,8 @@ export default function SlowProducts({
                       </span>
                     </td>
 
-                    <td className="py-3 px-4 text-right text-xs text-gray-500">
-                      {product.stockAmount} units
+                    <td className="py-3 px-4 text-right text-xs tracking-wide text-gray-500">
+                      {formatNumber(product.stockAmount)} units
                     </td>
                   </tr>
                 );

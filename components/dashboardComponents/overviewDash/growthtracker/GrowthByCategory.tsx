@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { ArrowUpRight, ArrowDownRight, Minus, TrendingUp } from "lucide-react";
 
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol, formatNumber } from "@/utils/helper";
 import { useSalesByCategory } from "@/hooks/useSalesByCategory";
 import { ComponentHeader } from "@/components/ComponentHeader";
 
@@ -89,23 +89,19 @@ export default function GrowthByCategory() {
     return result.sort((a, b) => (b.growth ?? 0) - (a.growth ?? 0));
   }, [currentQuery.data, previousQuery.data]);
 
-  // Returns the base bar fill percentage (capped at 100%) based on current vs previous revenue.
-  // When previous is 0, uses 100% to represent "new" revenue.
-  const baseBarPercent = (current: number, previous: number): number => {
-    if (previous > 0) {
-      return Math.min(100, (current / previous) * 100);
-    }
-    return current > 0 ? 100 : 0;
-  };
-
-  // Returns the overfill percentage (excess current revenue beyond previous).
-  // Only non-zero when current > previous and previous > 0.
-  const overfillPercent = (current: number, previous: number): number => {
-    if (previous > 0 && current > previous) {
-      return ((current - previous) / previous) * 100;
-    }
-    return 0;
-  };
+  /**
+   * The biggest category this period, which every bar is drawn against.
+   *
+   * The bars used to encode current-over-previous, so a category that doubled
+   * from Rs 200 and one that doubled from Rs 2,000,000 drew the same bar, and
+   * anything past +100% was clipped by the track it overflowed. Scaling to the
+   * largest category instead makes the bars comparable down the column: length
+   * is size, and the badge beside it is direction. Two facts, one each.
+   */
+  const maxCurrent = useMemo(
+    () => rows.reduce((max, r) => Math.max(max, r.current), 0),
+    [rows],
+  );
 
   const fmt = (value: number) =>
     formatCurrencySymbol(value, currency.symbol, currency.locale);
@@ -137,8 +133,15 @@ export default function GrowthByCategory() {
         </div>
         <ComponentHeader
           title="Growth by Category"
-          subHeader=" Month-over-month revenue growth per product category"
+          subHeader="Revenue growth per product category"
         />
+
+        {/* The comparison the whole panel rests on. It was only in the code
+            before, so every percentage on screen was against an unstated
+            baseline. */}
+        <span className="ml-auto shrink-0 rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-semibold text-gray-500">
+          Last 30 days vs previous 30
+        </span>
       </div>
 
       {isLoading ? (
@@ -169,8 +172,8 @@ export default function GrowthByCategory() {
         </div>
       ) : (
         <>
-          <div className="space-y-4">
-            {rows.slice(0, loadMoreCategory).map((row) => {
+          <div className="space-y-5">
+            {rows.slice(0, loadMoreCategory).map((row, index) => {
               const positive = row.growth !== null && row.growth > 0;
               const negative = row.growth !== null && row.growth < 0;
 
@@ -195,49 +198,52 @@ export default function GrowthByCategory() {
                   ? row.current > 0
                     ? "New"
                     : "—"
-                  : `${row.growth > 0 ? "+" : ""}${row.growth.toFixed(1)}%`;
+                  : `${row.growth > 0 ? "+" : ""}${formatNumber(row.growth)}%`;
 
-              const index = rows.indexOf(row);
               const isNew = animatingIndexes.has(index);
+              const share =
+                maxCurrent > 0 ? (row.current / maxCurrent) * 100 : 0;
 
               return (
                 <div
                   key={row.name}
-                  className={`space-y-1.5 ${isNew ? "animate-slideDown" : ""}`}
+                  className={isNew ? "animate-slideDown" : undefined}
                 >
-                  {/* Top row: name + growth badge */}
+                  {/* Name and direction */}
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-xs font-medium text-gray-800 truncate">
+                    <span className="truncate text-[13px] font-semibold text-gray-800">
                       {row.name}
                     </span>
                     <div
-                      className={`flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-semibold shrink-0 ${badgeStyle}`}
+                      className={`flex shrink-0 items-center gap-0.5 rounded-full px-2 py-0.5 text-[11px] font-semibold tracking-wide tabular-nums ${badgeStyle}`}
                     >
                       <TrendIcon size={12} />
                       <span>{badgeLabel}</span>
                     </div>
                   </div>
 
-                  {/* Progress bar */}
-                  <div className="relative w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
-                    {/* Base bar: current revenue relative to previous */}
-                    <div
-                      className={`absolute top-0 left-0 h-2.5 rounded-full transition-all duration-700 ${barColor}`}
-                      style={{
-                        width: `${baseBarPercent(row.current, row.previous)}%`,
-                      }}
-                    />
-                    {/* Overfill bar: excess when current > previous */}
-                    {overfillPercent(row.current, row.previous) > 0 && (
+                  {/* Size, and the revenue it stands for. The figure was
+                      computed but never rendered before, which left a bar with
+                      no number to anchor it. */}
+                  <div className="mt-2 flex items-center gap-3">
+                    <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-gray-100">
                       <div
-                        className={`absolute top-0 left-0 h-2 rounded-full transition-all duration-700 bg-blue-500`}
-                        style={{
-                          width: `${overfillPercent(row.current, row.previous)}%`,
-                          left: `${baseBarPercent(row.current, row.previous)}%`,
-                        }}
+                        className={`h-full rounded-full transition-all duration-700 ${barColor}`}
+                        style={{ width: `${share}%` }}
                       />
-                    )}
+                    </div>
+                    <span className="w-24 shrink-0 text-right text-[12px] font-semibold tabular-nums text-gray-800 tracking-wide">
+                      {fmt(row.current)}
+                    </span>
                   </div>
+
+                  {/* What it is being compared against — a percentage with no
+                      baseline on screen is a number nobody can check. */}
+                  <p className="mt-1 text-[11px] tabular-nums tracking-wide text-gray-400">
+                    {row.previous > 0
+                      ? `from ${fmt(row.previous)} last period`
+                      : "nothing sold last period"}
+                  </p>
                 </div>
               );
             })}

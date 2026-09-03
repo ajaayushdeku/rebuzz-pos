@@ -83,7 +83,7 @@ export default function GrowthTrackCard({
 
       {/* Current month */}
       <div className="mt-3 flex items-baseline gap-1.5 md:mt-4">
-        <p className="truncate text-xl font-bold tracking-tight text-gray-900 tabular-nums md:text-[22px]">
+        <p className="truncate text-xl font-bold tracking-wide text-gray-900 tabular-nums md:text-[22px] ">
           {formatValue(value)}
         </p>
         {currentLabel && (
@@ -101,7 +101,7 @@ export default function GrowthTrackCard({
           <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-gray-400">
             prev:
           </span>
-          <span className="truncate tabular-nums">
+          <span className="truncate  tracking-wide tabular-nums">
             {formatValue(prev)}{" "}
             {previousLabel && (
               <span className="shrink-0 rounded-md bg-gray-100 ml-1 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500">

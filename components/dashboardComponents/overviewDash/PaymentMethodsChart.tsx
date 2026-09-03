@@ -1,6 +1,6 @@
 "use client";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol, formatNumber } from "@/utils/helper";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import type {
   NameType,
@@ -83,7 +83,7 @@ const CustomTooltip = ({
             {" "}
             <span className="text-xs text-gray-500 items-left">Sales</span>
             <span className="text-xs font-bold text-gray-600">
-              {formatCurrencySymbol(sales, currency.symbol, currency.locale)}
+              {formatNumber(sales)}
             </span>
           </div>
         </div>
@@ -235,13 +235,26 @@ const PaymentMethodsChart = ({
                       />
                     </div>
 
-                    <span className="text-xs font-semibold text-gray-700 w-20 text-right">
+                    {/* The figure the bar is drawing. A bar shows which rows
+                        lead; only the number says by how much, and reading it
+                        off a 7rem track is guesswork. Fixed width and tabular
+                        digits so the amounts beside it stay in one column.
+                        A share that rounds to 0.0% but is not zero is shown as
+                        "<0.1%" rather than as nothing. */}
+                    <span className="w-11 shrink-0 text-right text-[11px] font-medium tabular-nums text-gray-500">
+                      {entry.percentage > 0 && entry.percentage < 0.1
+                        ? "<0.1"
+                        : entry.percentage.toFixed(1)}
+                      %
+                    </span>
+
+                    {/* <span className="text-xs font-semibold text-gray-700 w-28 text-right">
                       {formatCurrencySymbol(
                         entry.totalRevenue,
                         currency.symbol,
                         currency.locale,
                       )}
-                    </span>
+                    </span> */}
                   </div>
                 </div>
               ))}
