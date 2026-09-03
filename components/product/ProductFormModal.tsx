@@ -16,7 +16,9 @@ import {
   Upload,
   X,
 } from "lucide-react";
+import Link from "next/link";
 import { Product } from "@/lib/types/product";
+import { FREE_PRODUCT_LIMIT } from "@/lib/config/plans";
 import ModalShell from "@/components/ui/ModalShell";
 import SelectMenu from "@/components/ui/SelectMenu";
 import {
@@ -258,6 +260,13 @@ interface ProductFormModalProps {
   product?: Product | null;
   initialName?: string;
   onSuccess?: (product: Product) => void;
+  /**
+   * The account is on Free and has used every product it allows.
+   *
+   * Passed only by the add flow. Editing an existing product is never blocked
+   * — the limit is on how many products exist, and an edit does not add one.
+   */
+  limitReached?: boolean;
 }
 
 export default function ProductFormModal({
@@ -266,6 +275,7 @@ export default function ProductFormModal({
   product,
   initialName,
   onSuccess,
+  limitReached = false,
 }: ProductFormModalProps) {
   const { currency } = useCurrency();
 
@@ -645,6 +655,66 @@ export default function ProductFormModal({
   const margin = form.price - form.costPrice;
   const marginPct =
     form.costPrice > 0 ? Math.round((margin / form.costPrice) * 100) : null;
+
+  /**
+   * The Free plan is full.
+   *
+   * Shown in place of the form rather than as a banner above it: a form the
+   * user can fill in and then not save is worse than no form at all. Every
+   * hook above has already run, so this return is safe to take conditionally.
+   */
+  if (limitReached) {
+    return (
+      <ModalShell
+        open={open}
+        onClose={onClose}
+        title="Product limit reached"
+        subtitle={`The Free plan includes ${FREE_PRODUCT_LIMIT} products.`}
+        icon={Package}
+        maxWidth="max-w-lg"
+        footer={
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={onClose}
+              className="shrink-0 rounded-xl px-5 py-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-100"
+            >
+              Close
+            </button>
+            <Link
+              href="/subscriptions"
+              onClick={onClose}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-[13px] font-bold text-white shadow-md transition hover:bg-blue-700"
+            >
+              View plans
+            </Link>
+          </div>
+        }
+      >
+        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5">
+          <AlertCircle size={16} className="mt-0.5 shrink-0 text-amber-600" />
+          <div className="space-y-1.5 text-[13px] leading-relaxed text-amber-900">
+            <p>
+              You have used all{" "}
+              <span className="font-semibold">{FREE_PRODUCT_LIMIT}</span>{" "}
+              products your Free plan allows, so a new one cannot be added.
+            </p>
+            <p className="text-amber-800/90">
+              Upgrading lifts the limit. Nothing you already have is affected —
+              your products, their variants and their stock stay exactly as they
+              are, and you can keep editing them.
+            </p>
+          </div>
+        </div>
+
+        <p className="mt-3 text-[12px] leading-relaxed text-slate-500">
+          Variants do not count toward the limit — only base products do. If a
+          new line is a size or a flavour of something you already sell, add it
+          as a variant of that product instead.
+        </p>
+      </ModalShell>
+    );
+  }
 
   return (
     <ModalShell

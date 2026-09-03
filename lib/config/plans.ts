@@ -12,6 +12,18 @@
 export type PlanId = "free" | "yearly" | "lifetime";
 
 /**
+ * How many products the Free plan allows.
+ *
+ * Base products only — a product's variants are part of it, not separate
+ * entries, so a shop with 20 products and 60 variants is inside the limit.
+ *
+ * Declared here rather than at the point it is enforced: the free plan's
+ * feature list below quotes this number, and the two saying different things
+ * is exactly the kind of promise a business notices.
+ */
+export const FREE_PRODUCT_LIMIT = 20;
+
+/**
  * A price cut on a plan.
  *
  * Both halves are written out rather than derived: the saving is what the
@@ -61,7 +73,7 @@ export const PLANS: Plan[] = [
     price: "Rs 0",
     period: "forever",
     features: [
-      "Limited to 20 products",
+      `Limited to ${FREE_PRODUCT_LIMIT} products`,
       "Sales Processing with Multiple Payment Options",
       "Advanced Inventory Management",
       "Unlimilted Sales Reporting and Analytics",
