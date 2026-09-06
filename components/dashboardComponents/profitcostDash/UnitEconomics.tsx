@@ -26,7 +26,7 @@ export default function UnitEconomics({ data }: { data: UnitEconomicsData }) {
     color: string;
   }[] = [
     {
-      label: "Avg Profit /\nItem Sale",
+      label: "Avg Profit / Item Sale",
       value: money(data.avgProfitPerItem),
       icon: DollarSign,
       color: "text-blue-500",
@@ -73,7 +73,10 @@ export default function UnitEconomics({ data }: { data: UnitEconomicsData }) {
         <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
           <Calculator size={15} className="text-emerald-600" />
         </div>
-        <ComponentHeader title="Unit Economics" subHeader="" />
+        <ComponentHeader
+          title="Unit Economics"
+          subHeader="What one item, one order and one labour hour earn"
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-5 mt-6 ">

@@ -1,9 +1,8 @@
 "use client";
 
-import { Lock, Gauge } from "lucide-react";
+import { Gauge } from "lucide-react";
 import { primeCostMock } from "@/lib/mockData/mock-primecost";
 import {
-  LineChart,
   Line,
   XAxis,
   YAxis,
@@ -69,7 +68,7 @@ export default function PrimeCostTracker() {
     return `${value.toFixed(0)}%`;
   };
 
-  const yTicks = [50, 57, 64, 71, 75];
+  const yTicks = [15, 35, 55, 75];
   const yMax = 75;
 
   return (
@@ -91,7 +90,7 @@ export default function PrimeCostTracker() {
       </div>
 
       {/* Current Prime Cost */}
-      <div className="mb-6">
+      <div className="mb-0">
         <p className="text-xs text-gray-500 mb-1">Current Prime Cost</p>
         <div className="flex items-baseline gap-2">
           <p className="text-3xl font-bold text-green-600">
@@ -123,7 +122,7 @@ export default function PrimeCostTracker() {
               tickLine={false}
               tick={{ fill: "#9ca3af", fontSize: 12 }}
               ticks={yTicks}
-              domain={[50, yMax]}
+              domain={[0, yMax]}
               width={52}
             />
 
