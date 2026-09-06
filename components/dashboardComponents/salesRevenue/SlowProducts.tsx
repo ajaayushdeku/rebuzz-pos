@@ -9,7 +9,6 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  RefreshCcw,
   PackageCheck,
   TrendingDown,
 } from "lucide-react";

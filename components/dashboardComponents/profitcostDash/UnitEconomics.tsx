@@ -1,6 +1,5 @@
 "use client";
 
-import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import {
   ShoppingCart,
   DollarSign,
@@ -11,58 +10,58 @@ import {
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import type { UnitEconomicsData } from "@/services/dashboardServices/apiProfitCost";
 
-export interface UnitEconomics {
-  avgProfitPerTransaction: number;
-  avgBasketSize: number;
-  avgCostPerItem: number;
-  profitPerLaborHour: number;
-}
-
-export const unitEconomicsMock: UnitEconomics = {
-  avgProfitPerTransaction: 14.5,
-  avgBasketSize: 2.8,
-  avgCostPerItem: 1.85,
-  profitPerLaborHour: 48.5,
-};
-
-export default function UnitEconomics() {
+export default function UnitEconomics({ data }: { data: UnitEconomicsData }) {
   const { currency } = useCurrency();
 
-  const metrics = [
+  const money = (value: number) =>
+    formatCurrencySymbol(value, currency.symbol, currency.locale);
+
+  const metrics: {
+    label: string;
+    value: string;
+    sub?: string;
+    icon: typeof DollarSign;
+    color: string;
+  }[] = [
     {
-      label: "Avg Profit /\nTransaction",
-      value: formatCurrencySymbol(
-        unitEconomicsMock.avgProfitPerTransaction,
-        currency.symbol,
-        currency.locale,
-      ),
+      label: "Avg Profit /\nItem Sale",
+      value: money(data.avgProfitPerItem),
       icon: DollarSign,
       color: "text-blue-500",
     },
     {
-      label: "Avg Basket Size",
-      value: `${unitEconomicsMock.avgBasketSize} items`,
+      // Was "Avg Basket Size", showing a bare item count. A basket is a
+      // retail-cart idea; what this POS actually closes is an order, and the
+      // figure an order is judged by is its value. The item count stays as the
+      // secondary line — it explains the value rather than replacing it.
+      label: "Avg Order Size",
+      value: money(data.avgOrderSize),
+      // One decimal, deliberately not formatNumber — that helper pins
+      // maximumFractionDigits to 0, which would round 2.8 items to "3" and
+      // throw away the only interesting part of the figure.
+      sub: `${data.avgItemsPerOrder.toFixed(1)} items per order`,
       icon: ShoppingCart,
       color: "text-violet-500",
     },
     {
       label: "Avg Cost / Item",
-      value: formatCurrencySymbol(
-        unitEconomicsMock.avgCostPerItem,
-        currency.symbol,
-        currency.locale,
-      ),
+      value: money(data.avgCostPerItem),
       icon: Tag,
       color: "text-orange-500",
     },
     {
       label: "Profit / Labor Hr",
-      value: formatCurrencySymbol(
-        unitEconomicsMock.profitPerLaborHour,
-        currency.symbol,
-        currency.locale,
-      ),
+      // Null means no shift was recorded in this range, which is not the same
+      // as earning nothing per hour — say so rather than print a measured-
+      // looking zero.
+      value:
+        data.profitPerLaborHour === null ? "—" : money(data.profitPerLaborHour),
+      sub:
+        data.profitPerLaborHour === null
+          ? "no shifts recorded in this range"
+          : undefined,
       icon: UserRound,
       color: "text-emerald-500",
     },
@@ -70,8 +69,6 @@ export default function UnitEconomics() {
 
   return (
     <div className="relative  w-full rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-      <LockDimFeactureOverlay component_name="Unit Economics" />
-
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
           <Calculator size={15} className="text-emerald-600" />
@@ -79,13 +76,13 @@ export default function UnitEconomics() {
         <ComponentHeader title="Unit Economics" subHeader="" />
       </div>
 
-      <div className="grid grid-cols-2 gap-5">
-        {metrics.map((item, index) => {
+      <div className="grid grid-cols-2 gap-5 mt-6 ">
+        {metrics.map((item) => {
           const Icon = item.icon;
 
           return (
             <div
-              key={index}
+              key={item.label}
               className="rounded-2xl border border-gray-100 bg-white px-5 py-5 transition-shadow hover:shadow-sm"
             >
               <div className="flex items-start gap-2">
@@ -99,9 +96,18 @@ export default function UnitEconomics() {
                 </p>
               </div>
 
-              <p className="mt-5 font-bold tracking-tight text-gray-900">
-                {item.value}
-              </p>
+              {/* Reserved space keeps the four value rows on one baseline
+                  whether or not a card carries a secondary line. */}
+              <div className="mt-5 min-h-[2.6rem]">
+                <p className="font-bold tracking-tight tabular-nums text-gray-900">
+                  {item.value}
+                </p>
+                {item.sub && (
+                  <p className="mt-0.5 text-[11px] leading-4 tabular-nums text-gray-400">
+                    {item.sub}
+                  </p>
+                )}
+              </div>
             </div>
           );
         })}

@@ -7,6 +7,7 @@ import { getPurposeIcon } from "@/lib/purpose-icons";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "../ComponentHeader";
+import { isFixedCost } from "@/lib/costClassification";
 import {
   Activity,
   ChevronDown,
@@ -43,37 +44,6 @@ function getBarColor(status: CostHealthStatus): string {
     : status === "At limit"
       ? "#f59e0b"
       : "#ef4444";
-}
-
-// Icons that represent fixed costs (don't change much month to month)
-const FIXED_ICON_KEYS = new Set([
-  "home",
-  "lightbulb",
-  "school",
-  "monitor_heart",
-  "smartphone",
-  "book",
-]);
-
-function isFixedCost(icon: string, name: string): boolean {
-  const iconKey = (icon || "").toLowerCase();
-  if (FIXED_ICON_KEYS.has(iconKey)) return true;
-  const nameKey = (name || "").toLowerCase();
-  if (
-    nameKey.includes("rent") ||
-    nameKey.includes("housing") ||
-    nameKey.includes("utilities") ||
-    nameKey.includes("insurance") ||
-    nameKey.includes("subscription") ||
-    nameKey.includes("phone") ||
-    nameKey.includes("internet") ||
-    nameKey.includes("education") ||
-    nameKey.includes("health") ||
-    nameKey.includes("salary")
-  ) {
-    return true;
-  }
-  return false;
 }
 
 // Default target % for each cost category as share of revenue

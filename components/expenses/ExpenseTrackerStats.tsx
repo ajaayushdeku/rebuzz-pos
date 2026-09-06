@@ -79,7 +79,9 @@ export default function ExpenseTrackerStats() {
                 <item.icon size={16} className={item.iconColor} />
               </div>
             </div>
-            <p className={`text-lg font-bold truncate ${item.valueColor}`}>
+            <p
+              className={`text-lg font-bold tracking-wide truncate ${item.valueColor}`}
+            >
               {item.prefix}
               {formatCurrencySymbol(
                 item.value,

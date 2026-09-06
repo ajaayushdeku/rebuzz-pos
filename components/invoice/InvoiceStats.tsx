@@ -129,7 +129,9 @@ export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
                   <item.icon size={16} className={item.iconColor} />
                 </div>
               </div>
-              <p className={`text-lg font-bold truncate ${item.valueColor}`}>
+              <p
+                className={`text-lg font-bold tracking-wide truncate  ${item.valueColor}`}
+              >
                 {displayValue}
               </p>
               {item.subText && (

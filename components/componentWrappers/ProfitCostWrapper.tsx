@@ -12,6 +12,7 @@ import {
   getProfitPerProduct,
   getProfitStats,
   getDayTimeProfitData,
+  getUnitEconomics,
 } from "@/services/dashboardServices/apiProfitCost";
 
 import ProfitPerProduct from "../dashboardComponents/profitcostDash/ProfitPerProduct";
@@ -94,11 +95,19 @@ export function PrimeCostTrackerWrapper() {
 }
 
 export function BreakEvenMarginSafetyWrapper() {
+  // No date props: the card owns its own month picker, like the Sankey.
   return <BreakEvenMarginSafety />;
 }
 
-export function UnitEconomicsWrapper() {
-  return <UnitEconomics />;
+export async function UnitEconomicsWrapper({
+  startDate,
+  endDate,
+}: {
+  startDate: string;
+  endDate: string;
+}) {
+  const data = await getUnitEconomics(startDate, endDate);
+  return <UnitEconomics data={data} />;
 }
 
 export async function DayTimeProfitHeatmapWrapper({

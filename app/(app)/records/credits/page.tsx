@@ -149,7 +149,6 @@ export default function Page() {
           />
         ) : (
           <>
-
             {/* Stats — always reflect all credits, regardless of the selected tab */}
             <div className="bg-white py-2 mb-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -179,7 +178,7 @@ export default function Page() {
                         </div>
                       </div>
                       <p
-                        className={`text-lg font-bold truncate ${item.valueColor}`}
+                        className={`text-lg font-bold truncate tracking-wide ${item.valueColor}`}
                       >
                         {displayValue}
                       </p>
