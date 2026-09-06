@@ -36,7 +36,7 @@ export default function StatBox({
           <Icon size={16} className={iconColor ?? "text-gray-500"} />
         </div>
       </div>
-      <p className="text-lg font-bold text-gray-900 truncate">
+      <p className="text-lg font-bold text-gray-900 tracking-wide truncate">
         {formatValue(value)}
       </p>
     </div>

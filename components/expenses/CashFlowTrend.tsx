@@ -57,7 +57,7 @@ const CustomTooltip = ({
             />
             <span className="text-gray-500">{String(entry.name)}</span>
           </div>
-          <span className="font-bold text-gray-800">
+          <span className="font-bold text-gray-800 tracking-wide">
             {fmtK(toNumber(entry.value))}
           </span>
         </div>
@@ -65,7 +65,7 @@ const CustomTooltip = ({
       <div className="border-t border-gray-100 pt-1.5 mt-1.5 flex justify-between">
         <span className="text-gray-400">Net</span>
         <span
-          className={`font-bold ${net >= 0 ? "text-green-600" : "text-red-500"}`}
+          className={`font-bold tracking-wide ${net >= 0 ? "text-green-600" : "text-red-500"}`}
         >
           {net >= 0 ? "+" : ""}
           {fmtK(net)}

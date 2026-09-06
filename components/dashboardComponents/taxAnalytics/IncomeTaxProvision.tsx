@@ -84,7 +84,7 @@ export default function IncomeTaxProvision() {
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
                 Net Profit (Pre-Tax)
               </p>
-              <p className="text-2xl font-bold text-white">
+              <p className="text-xl md:text-2xl font-bold text-white tracking-wide">
                 {fmtRs(netProfitPreTax)}
               </p>
               <p className="text-[11px] text-gray-500 mt-1">
@@ -94,7 +94,7 @@ export default function IncomeTaxProvision() {
 
             {/* Arrow + rate */}
             <div className="flex flex-col items-center justify-center gap-1 px-2 shrink-0">
-              <p className="text-xs font-semibold text-gray-400">
+              <p className="text-xs font-semibold text-gray-400 tracking-wide">
                 ×{ANNUAL_TAX_RATE}%
               </p>
               <ArrowRight size={16} className="text-gray-500" />
@@ -105,7 +105,7 @@ export default function IncomeTaxProvision() {
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
                 Annual Tax Rate
               </p>
-              <p className="text-3xl font-bold text-white">
+              <p className="text-2xl md:text-3xl font-bold text-white tracking-wide">
                 {ANNUAL_TAX_RATE}%
               </p>
               <p className="text-[11px] text-gray-500 mt-1">
@@ -123,7 +123,7 @@ export default function IncomeTaxProvision() {
               <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-2">
                 Net Profit (After Tax)
               </p>
-              <p className="text-2xl font-bold text-emerald-400">
+              <p className="text-xl md:text-2xl font-bold text-emerald-400 tracking-wide">
                 {fmtRs(netProfitAfterTax)}
               </p>
               <p className="text-[11px] text-emerald-600 mt-1">
@@ -138,7 +138,7 @@ export default function IncomeTaxProvision() {
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
                 Annual Provision
               </p>
-              <p className="text-xl font-bold text-white">
+              <p className="text-lg md:text-xl font-bold text-white tracking-wide">
                 {fmtRs(annualProvision)}
               </p>
               <p className="text-[11px] text-gray-500 mt-1">
@@ -149,7 +149,7 @@ export default function IncomeTaxProvision() {
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
                 Monthly Accrual
               </p>
-              <p className="text-xl font-bold text-amber-400">
+              <p className="text-lg md:text-xl font-bold text-amber-400 tracking-wide">
                 {fmtRs(monthlyAccrual)}
               </p>
               <p className="text-[11px] text-gray-500 mt-1">

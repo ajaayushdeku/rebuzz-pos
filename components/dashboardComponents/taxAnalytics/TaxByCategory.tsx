@@ -68,13 +68,13 @@ const CustomTooltip = ({
       </div>
       <div className="flex items-center justify-between gap-4 text-xs mb-1">
         <span className="text-gray-500">Tax</span>
-        <span className="font-bold text-amber-600">
+        <span className="font-bold text-amber-600 tracking-wide">
           {formatCurrencySymbol(item.amount, currency.symbol, currency.locale)}
         </span>
       </div>
       <div className="flex items-center justify-between gap-4 text-xs">
         <span className="text-gray-500">Products</span>
-        <span className="font-semibold text-gray-700">{item.productCount}</span>
+        <span className="font-semibold text-gray-700 tracking-wide">{item.productCount}</span>
       </div>
     </div>
   );
@@ -169,7 +169,7 @@ const TaxByCategory = ({
                 <p className="text-[10px] uppercase tracking-wide text-gray-400 font-medium">
                   Total tax by Category
                 </p>
-                <p className="text-base font-bold text-gray-800 truncate">
+                <p className="text-base font-bold text-gray-800 truncate tracking-wide">
                   {fmt(totalTax)}
                 </p>
               </div>
@@ -180,7 +180,7 @@ const TaxByCategory = ({
                 <p className="text-[10px] uppercase tracking-wide text-gray-400 font-medium">
                   Categories
                 </p>
-                <p className="text-sm font-bold text-gray-700">
+                <p className="text-sm font-bold text-gray-700 tracking-wide">
                   {totalCategories}
                 </p>
               </div>

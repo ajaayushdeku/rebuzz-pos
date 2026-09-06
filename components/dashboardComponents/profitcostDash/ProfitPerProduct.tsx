@@ -234,14 +234,14 @@ export default function ProfitPerProduct({
                       {product.name}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-right font-semibold text-xs text-gray-900">
+                  <td className="py-3 px-4 text-right tracking-wide font-semibold text-xs text-gray-900">
                     {formatCurrencySymbol(
                       product.revenue,
                       currency.symbol,
                       currency.locale,
                     )}
                   </td>
-                  <td className="py-3 px-4 text-right font-semibold text-xs text-red-600">
+                  <td className="py-3 px-4 text-right tracking-wide font-semibold text-xs text-red-600">
                     -
                     {formatCurrencySymbol(
                       product.cogs,
@@ -251,7 +251,7 @@ export default function ProfitPerProduct({
                   </td>
 
                   <td
-                    className={`py-3 px-4 text-right text-xs font-semibold  ${getProfitColor(product.profit)}`}
+                    className={`py-3 px-4 text-right tracking-wide text-xs font-semibold  ${getProfitColor(product.profit)}`}
                   >
                     {formatCurrencySymbol(
                       product.profit,
@@ -260,7 +260,7 @@ export default function ProfitPerProduct({
                     )}
                   </td>
 
-                  <td className="py-3 px-4 text-xs text-right">
+                  <td className="py-3 px-4 text-xs tracking-wide text-right">
                     <span
                       className={`font-semibold ${getMarginColor(product.margin)}`}
                     >

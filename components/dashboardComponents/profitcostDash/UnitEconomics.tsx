@@ -102,7 +102,7 @@ export default function UnitEconomics({ data }: { data: UnitEconomicsData }) {
               {/* Reserved space keeps the four value rows on one baseline
                   whether or not a card carries a secondary line. */}
               <div className="mt-5 min-h-[2.6rem]">
-                <p className="font-bold tracking-tight tabular-nums text-gray-900">
+                <p className="font-bold tracking-wide tabular-nums text-gray-900">
                   {item.value}
                 </p>
                 {item.sub && (

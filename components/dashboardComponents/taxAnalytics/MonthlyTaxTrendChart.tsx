@@ -56,7 +56,7 @@ const CustomTooltip = ({
             />
             <span className="text-gray-500">{entry.name}</span>
           </div>
-          <span className="font-bold text-gray-800">
+          <span className="font-bold text-gray-800 tracking-wide">
             {formatCurrencySymbol(
               Number(entry.value) || 0,
               currency.symbol,
@@ -67,7 +67,7 @@ const CustomTooltip = ({
       ))}
       <div className="border-t border-gray-100 mt-2 pt-1.5 flex justify-between">
         <span className="text-gray-400">Total</span>
-        <span className="font-bold text-gray-900">
+        <span className="font-bold text-gray-900 tracking-wide">
           {formatCurrencySymbol(total, currency.symbol, currency.locale)}
         </span>
       </div>

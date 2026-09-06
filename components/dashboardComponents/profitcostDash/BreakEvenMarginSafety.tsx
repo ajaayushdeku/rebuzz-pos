@@ -159,7 +159,7 @@ export default function BreakEvenMarginSafety() {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <p className="text-xs text-gray-500 mb-1">Break-even Point</p>
-          <p className="text-2xl font-bold tabular-nums text-gray-900">
+          <p className="text-2xl font-bold tracking-wide tabular-nums text-gray-900">
             {hasBreakEven ? money(breakEvenPoint) : "—"}
           </p>
         </div>
@@ -167,7 +167,7 @@ export default function BreakEvenMarginSafety() {
         <div className="text-right">
           <p className="text-xs text-gray-500 mb-1">Margin of Safety</p>
           <p
-            className={`text-2xl font-bold tabular-nums ${
+            className={`text-2xl font-bold tracking-wide tabular-nums ${
               !hasBreakEven
                 ? "text-gray-400"
                 : isSafe
@@ -202,9 +202,11 @@ export default function BreakEvenMarginSafety() {
           {/* Labels — the right-hand figure is the axis end, not revenue. It
               previously printed axisMax / 1.2, understating the scale by 20%. */}
           <div className="flex justify-between mt-2 text-xs text-gray-500">
-            <span>{money(0)}</span>
-            <span className="text-gray-400">Current: {money(revenue)}</span>
-            <span>{money(Math.round(axisMax))}</span>
+            <span className="tracking-wide">{money(0)}</span>
+            <span className="text-gray-400 tracking-wide">
+              Current: {money(revenue)}
+            </span>
+            <span className="tracking-wide">{money(Math.round(axisMax))}</span>
           </div>
 
           <div
@@ -231,19 +233,19 @@ export default function BreakEvenMarginSafety() {
       <div className="mt-6 grid grid-cols-3 gap-3 border-t border-gray-100 pt-4">
         <div>
           <p className="text-[11px] text-gray-400">Fixed costs</p>
-          <p className="mt-0.5 text-sm font-semibold tabular-nums text-gray-800">
+          <p className="mt-0.5 text-sm font-semibold tracking-wide tabular-nums text-gray-800">
             {money(fixedCosts)}
           </p>
         </div>
         <div>
           <p className="text-[11px] text-gray-400">Variable costs</p>
-          <p className="mt-0.5 text-sm font-semibold tabular-nums text-gray-800">
+          <p className="mt-0.5 text-sm font-semibold tracking-wide tabular-nums text-gray-800">
             {money(variableCosts)}
           </p>
         </div>
         <div>
           <p className="text-[11px] text-gray-400">Contribution margin</p>
-          <p className="mt-0.5 text-sm font-semibold tabular-nums text-gray-800">
+          <p className="mt-0.5 text-sm font-semibold tracking-wide tabular-nums text-gray-800">
             {(contributionMarginRatio * 100).toFixed(1)}%
           </p>
         </div>

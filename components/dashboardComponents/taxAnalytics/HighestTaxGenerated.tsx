@@ -71,13 +71,13 @@ const CustomTooltip = ({
       </div>
       <div className="flex items-center justify-between gap-4 text-xs mb-1">
         <span className="text-gray-500">Tax generated</span>
-        <span className="font-bold text-amber-600">
+        <span className="font-bold text-amber-600 tracking-wide">
           {formatCurrencySymbol(item.amount, currency.symbol, currency.locale)}
         </span>
       </div>
       <div className="flex items-center justify-between gap-4 text-xs">
         <span className="text-gray-500">Order Counts</span>
-        <span className="font-semibold text-gray-700">{item.count}</span>
+        <span className="font-semibold text-gray-700 tracking-wide">{item.count}</span>
       </div>
     </div>
   );
@@ -177,7 +177,7 @@ const HighestTaxGenerated = ({
                 <p className="text-[10px] uppercase tracking-wide text-gray-400 font-medium">
                   Total tax Generated
                 </p>
-                <p className="text-base font-bold text-gray-800 truncate">
+                <p className="text-base font-bold text-gray-800 tracking-wide truncate">
                   {fmt(totalTax)}
                 </p>
               </div>
@@ -188,7 +188,7 @@ const HighestTaxGenerated = ({
                 <p className="text-[10px] uppercase tracking-wide text-gray-400 font-medium">
                   Items
                 </p>
-                <p className="text-sm font-bold text-gray-700">
+                <p className="text-sm font-bold tracking-wide text-gray-700">
                   {sorted.length}
                 </p>
               </div>
@@ -197,7 +197,7 @@ const HighestTaxGenerated = ({
                 <p className="text-[10px] uppercase tracking-wide text-gray-400 font-medium">
                   Items Order Count
                 </p>
-                <p className="text-sm font-bold text-gray-700">
+                <p className="text-sm font-bold tracking-wide text-gray-700">
                   {totalTransactions}
                 </p>
               </div>

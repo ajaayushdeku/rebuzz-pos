@@ -236,7 +236,7 @@ export default function RefundAnalysis({
                     <span className="font-semibold text-xs text-gray-900">
                       {item.name}
                     </span>
-                    <span className="text-gray-400 text-xs ml-2">
+                    <span className="text-gray-400 text-xs ml-2 tracking-wide">
                       #{item.invoiceNo}
                     </span>
                   </td>
@@ -253,7 +253,7 @@ export default function RefundAnalysis({
                     </span>
                   </td>
 
-                  <td className="py-3 px-4 text-right font-semibold text-xs text-red-600">
+                  <td className="py-3 px-4 text-right font-semibold text-xs tracking-wide text-red-600">
                     {/* -{formatCurrency(item.loss, currency)} */}-
                     {formatCurrencySymbol(
                       item.loss,

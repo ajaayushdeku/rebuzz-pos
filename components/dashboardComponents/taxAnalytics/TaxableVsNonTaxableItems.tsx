@@ -35,7 +35,7 @@ const PieTooltip = ({
   return (
     <div className="rounded-xl border border-gray-100 bg-white px-3 py-2 text-xs shadow-lg">
       <span className="text-gray-600">{p.name}: </span>
-      <span className="font-bold tabular-nums text-gray-800">
+      <span className="font-bold tabular-nums tracking-wide text-gray-800">
         {formatCurrencySymbol(
           Number(p.value) || 0,
           currency.symbol,
@@ -94,7 +94,7 @@ function ItemList({
               {item.name}
             </p>
             <p className="mt-0.5 flex items-center gap-1.5 text-[10px] text-gray-400">
-              <span className="tabular-nums">
+              <span className="tabular-nums tracking-wide">
                 {item.count.toLocaleString()}{" "}
                 {item.count === 1 ? "unit" : "units"}
               </span>
@@ -112,7 +112,7 @@ function ItemList({
             </p>
           </div>
 
-          <div className="shrink-0 text-right">
+          <div className="shrink-0 text-right tracking-wide">
             <p className="font-semibold tabular-nums" style={{ color }}>
               {fmt(item.revenue)}
             </p>
@@ -441,7 +441,7 @@ const TaxableVsNonTaxableItems = ({
                     </div>
                   </div>
 
-                  <p className="mt-2 truncate text-lg font-bold tracking-tight tabular-nums text-gray-900">
+                  <p className="mt-2 truncate text-lg font-bold tracking-wide tabular-nums text-gray-900">
                     {s.value}
                   </p>
                   <p className="mt-0.5 truncate text-[10px] text-gray-400">
@@ -488,7 +488,7 @@ const TaxableVsNonTaxableItems = ({
                         style={{ backgroundColor: tab.color }}
                       />
                       {tab.label}
-                      <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#e4f2fe] px-1.5 py-px text-[10px] font-bold tabular-nums text-blue-950 ring-1 ring-blue-900/40">
+                      <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#e4f2fe] px-1.5 py-px text-[10px] font-bold tabular-nums tracking-wide text-blue-950 ring-1 ring-blue-900/40">
                         {tab.count}
                       </span>
                     </button>
@@ -497,7 +497,7 @@ const TaxableVsNonTaxableItems = ({
               </div>
 
               <span
-                className="text-sm font-bold tabular-nums"
+                className="text-sm font-bold tracking-wide tabular-nums"
                 style={{ color: activeList.color }}
               >
                 {fmt(activeList.total)}

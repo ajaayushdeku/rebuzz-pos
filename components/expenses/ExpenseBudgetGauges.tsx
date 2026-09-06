@@ -75,7 +75,7 @@ function RadialGauge({
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className={`text-lg font-bold ${textColor}`}>{pct}%</span>
+          <span className={`text-lg font-bold tracking-wide ${textColor}`}>{pct}%</span>
         </div>
       </div>
 
@@ -83,7 +83,7 @@ function RadialGauge({
         <p className="text-[10px] text-gray-300  uppercase tracking-widest">
           Actual / Budget
         </p>
-        <p className="text-xs text-gray-500  font-bold text-gray-400 mt-0.5">
+        <p className="text-xs text-gray-500 tracking-wide  font-bold text-gray-400 mt-0.5">
           {fmtK(actual)} / {fmtK(budget)}
         </p>
       </div>
@@ -312,7 +312,7 @@ export default function ExpenseBudgetGauges() {
               </p>
               <span className={`${stat.color}`}>{stat.icon}</span>
             </div>
-            <p className="text-xl font-bold text-gray-900">{stat.display}</p>
+            <p className="text-xl font-bold text-gray-900 tracking-wide">{stat.display}</p>
           </div>
         ))}
       </div>

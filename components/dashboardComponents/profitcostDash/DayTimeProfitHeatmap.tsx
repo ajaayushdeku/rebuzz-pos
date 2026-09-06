@@ -151,7 +151,7 @@ export default function DayTimeProfitHeatmap({
                       <Tooltip key={`${day}-${label}`}>
                         <TooltipTrigger asChild>
                           <div
-                            className={`h-10 rounded flex items-center justify-center text-[10px] font-medium cursor-default ${getColor(profit)} ${getTextColor(profit)}`}
+                            className={`h-10 rounded flex items-center justify-center text-[10px] font-medium tracking-wide cursor-default ${getColor(profit)} ${getTextColor(profit)}`}
                           >
                             {profit >= 10000
                               ? `${currency.symbol} ${formatCompactNumber(profit, currency.locale)}`
@@ -169,7 +169,7 @@ export default function DayTimeProfitHeatmap({
                             </span>
                             <span>
                               Avg Profit:{" "}
-                              <strong>
+                              <strong className="tracking-wide">
                                 {" "}
                                 {formatCurrencySymbol(
                                   profit,

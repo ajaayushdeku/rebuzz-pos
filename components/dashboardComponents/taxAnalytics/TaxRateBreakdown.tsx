@@ -49,7 +49,7 @@ const PieTooltip = ({
   return (
     <div className="bg-white rounded-xl px-3 py-2 shadow-lg border border-gray-100 text-xs">
       <span className="text-gray-600">{p.name}: </span>
-      <span className="font-bold text-gray-800">
+      <span className="font-bold text-gray-800 tracking-wide">
         {formatCurrencySymbol(
           Number(p.value) || 0,
           currency.symbol,
@@ -131,7 +131,7 @@ function BreakdownSection({
               <span className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">
                 Total
               </span>
-              <span className="text-xs font-bold text-gray-900">
+              <span className="text-xs font-bold tracking-wide text-gray-900">
                 {fmt(total)}
               </span>
             </div>
@@ -165,11 +165,11 @@ function BreakdownSection({
                         </span>
                       </div>
 
-                      <span className="text-xs text-indigo-500 font-semibold text-right">
+                      <span className="text-xs text-indigo-500 tracking-wide font-semibold text-right">
                         {fmt(t.base)}
                       </span>
 
-                      <span className="text-xs font-bold text-green-600 text-right">
+                      <span className="text-xs font-bold text-green-600  tracking-wide text-right">
                         {fmt(t.collected)}
                       </span>
 
@@ -183,7 +183,7 @@ function BreakdownSection({
                             }}
                           />
                         </div>
-                        <span className="text-xs font-semibold text-gray-500 w-10 text-right shrink-0">
+                        <span className="text-xs font-semibold text-gray-500 w-10 text-right tracking-wide shrink-0">
                           {pct.toFixed(1)}%
                         </span>
                       </div>
@@ -195,7 +195,7 @@ function BreakdownSection({
               <div className="grid grid-cols-[1.4fr_1fr_1fr_1.2fr] gap-2 items-center pt-2.5 mt-1 border-t border-gray-100">
                 <span className="text-xs text-gray-500 font-medium">Total</span>
                 <span />
-                <span className="text-xs font-bold text-gray-900 text-right">
+                <span className="text-xs font-bold text-gray-900 tracking-wide text-right">
                   {fmt(total)}
                 </span>
                 <span className="text-xs font-semibold text-gray-500 text-right">

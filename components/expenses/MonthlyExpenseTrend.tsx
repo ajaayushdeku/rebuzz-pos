@@ -72,14 +72,14 @@ const CustomTooltip = ({
             />
             <span className="text-gray-500">{String(entry.dataKey)}</span>
           </div>
-          <span className="font-semibold text-gray-800">
+          <span className="font-semibold text-gray-800 tracking-wide">
             {fmtK(toNumber(entry.value))}
           </span>
         </div>
       ))}
       <div className="border-t border-gray-100 pt-1.5 mt-1.5 flex justify-between">
         <span className="text-gray-400">Total</span>
-        <span className="font-bold text-gray-900">{fmtK(total)}</span>
+        <span className="font-bold text-gray-900 tracking-wide yb">{fmtK(total)}</span>
       </div>
     </div>
   );

@@ -149,13 +149,13 @@ export default function WhatChangedAndWhy() {
               <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">
                 Last Month
               </p>
-              <p className="text-xl font-bold text-gray-500">
+              <p className="text-xl font-bold text-gray-500 tracking-wide">
                 {fmt(data.lastMonth)}
               </p>
             </div>
 
             {/* Change pill — center */}
-            <div className="flex-1 flex justify-center">
+            <div className="flex-1 flex justify-center tracking-wide">
               <div
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${
                   increased
@@ -177,7 +177,7 @@ export default function WhatChangedAndWhy() {
               <p className="text-[10px] font-semibold text-blue-200 uppercase tracking-widest mb-0.5">
                 This Month
               </p>
-              <p className="text-2xl font-bold text-white leading-none">
+              <p className="text-2xl font-bold text-white leading-none tracking-wide">
                 {fmt(data.thisMonth)}
               </p>
             </div>

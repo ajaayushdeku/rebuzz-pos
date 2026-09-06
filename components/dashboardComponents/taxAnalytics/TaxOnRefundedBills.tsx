@@ -73,14 +73,14 @@ const TaxOnRefundedBills = ({
                 </span>
               </div>
 
-              <p className="text-lg font-bold text-red-700">
+              <p className="text-lg font-bold text-red-700 tracking-wide">
                 {formatCurrencySymbol(
                   totalRefundedAmount,
                   currency.symbol,
                   currency.locale,
                 )}
               </p>
-              <p className="text-[10px] text-red-500 mt-1">
+              <p className="text-[10px] text-red-500 mt-1 tracking-wide">
                 {data.length} {data.length === 1 ? "bill" : "bills"}
               </p>
             </div>
@@ -95,14 +95,14 @@ const TaxOnRefundedBills = ({
                 </p>
               </div>
 
-              <p className="text-lg font-bold text-orange-700">
+              <p className="text-lg font-bold text-orange-700 tracking-wide">
                 {formatCurrencySymbol(
                   totalTaxRefunded,
                   currency.symbol,
                   currency.locale,
                 )}
               </p>
-              <p className="text-[10px] text-orange-500 mt-1">
+              <p className="text-[10px] text-orange-500 mt-1 tracking-wide">
                 {totalRefundedAmount > 0
                   ? `${((totalTaxRefunded / totalRefundedAmount) * 100).toFixed(1)}%`
                   : "0%"}{" "}
@@ -119,7 +119,7 @@ const TaxOnRefundedBills = ({
                   Avg. Tax Refund
                 </p>
               </div>
-              <p className="text-lg font-bold text-blue-700">
+              <p className="text-lg font-bold text-blue-700 tracking-wide">
                 {formatCurrencySymbol(
                   avgRefundTaxAmount,
                   currency.symbol,
@@ -150,7 +150,7 @@ const TaxOnRefundedBills = ({
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className="text-sm font-semibold text-gray-900 truncate">
+                          <h4 className="text-sm font-semibold text-gray-900 tracking-wide truncate">
                             ORD-{bill.billNumber}
                           </h4>
                         </div>
@@ -179,7 +179,7 @@ const TaxOnRefundedBills = ({
                         </div>
                       </div>
                     </div>
-                    <div className="text-right shrink-0">
+                    <div className="text-right shrink-0 tracking-wide">
                       <p className="text-sm font-bold text-red-600 mb-1">
                         -
                         {formatCurrencySymbol(

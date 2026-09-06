@@ -200,7 +200,7 @@ export default function WhereMoneyGoes() {
                         </span>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-bold text-gray-900">
+                        <p className="text-sm font-bold text-gray-900 tracking-wide">
                           {fmtRs(cat.amount)}
                         </p>
                         {isFlat ? (
@@ -208,7 +208,7 @@ export default function WhereMoneyGoes() {
                         ) : (
                           <span className="flex items-end justify-end gap-1">
                             <p
-                              className={`text-[11px] font-semibold ${isUp ? "text-red-500" : "text-green-500"}`}
+                              className={`text-[11px] font-semibold tracking-wide ${isUp ? "text-red-500" : "text-green-500"}`}
                             >
                               {isUp ? "↑" : "↓"} {Math.abs(cat.changePct)}%
                             </p>{" "}

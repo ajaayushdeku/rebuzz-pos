@@ -41,10 +41,10 @@ const CustomTooltip = ({
   return (
     <div className="bg-white rounded-xl px-3 py-2 shadow-lg border border-gray-100">
       <p className="text-gray-500 text-xs mb-0.5">{entry.purpose}</p>
-      <p className="font-bold text-sm" style={{ color: entry.color }}>
+      <p className="font-bold text-sm tracking-wide" style={{ color: entry.color }}>
         {formatCurrencySymbol(entry.amount, currency.symbol, currency.locale)}
       </p>
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-gray-400 tracking-wide">
         {entry.pct.toFixed(0)}% of expenses
       </p>
     </div>
@@ -247,10 +247,10 @@ export default function ExpensesByCategory() {
                       }}
                     />
                   </div>
-                  <span className="text-xs font-semibold text-gray-700 w-10 text-right shrink-0">
+                  <span className="text-xs font-semibold text-gray-700 w-10 text-right shrink-0 tracking-wide">
                     {entry.pct.toFixed(2)}%
                   </span>
-                  <span className="text-xs text-gray-400 w-24 text-right shrink-0">
+                  <span className="text-xs text-gray-400 w-24 text-right shrink-0 tracking-wide">
                     {formatCurrencySymbol(
                       entry.amount,
                       currency.symbol,

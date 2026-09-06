@@ -151,7 +151,7 @@ function CostHealthCard({ card }: { card: CostCard }) {
         </div>
 
         {/* Percentage + amount */}
-        <div className="flex flex-col">
+        <div className="flex flex-col tracking-wide">
           <span className="text-3xl font-bold tracking-tight text-gray-950">
             {card.pct.toFixed(1)}%
           </span>
@@ -252,8 +252,8 @@ function FixedVariableDonut({
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-gray-800" />
             <span className="text-xs font-semibold text-gray-800 flex flex-row items-center gap-2">
-              <span> Fixed costs {fixedPct.toFixed(2)}%</span>
-              <span className="font-semibold text-gray-500">
+              <span className="tracking-wide"> Fixed costs {fixedPct.toFixed(2)}%</span>
+              <span className="font-semibold text-gray-500 tracking-wide">
                 {fmtRs(fixedAmount)}
               </span>
             </span>
@@ -518,7 +518,7 @@ export default function CostHealth() {
                   <p className="text-sm text-gray-500 font-medium mb-2">
                     Total spend
                   </p>
-                  <p className="text-3xl font-bold tracking-tight text-gray-950">
+                  <p className="text-3xl font-bold tracking-wide text-gray-950">
                     {fmtRs(overview.totalSpend)}
                   </p>
                   <div className="flex items-center gap-1.5 mt-2">
@@ -549,7 +549,7 @@ export default function CostHealth() {
                     </p>
                   </p>
                   <p
-                    className={`text-3xl font-bold tracking-tight ${
+                    className={`text-3xl font-bold tracking-wide ${
                       overview.netProfit >= 0
                         ? "text-emerald-600"
                         : "text-red-500"
@@ -558,7 +558,7 @@ export default function CostHealth() {
                     {fmtRs(overview.netProfit)}
                   </p>
 
-                  <p className="text-sm font-medium text-gray-500 mt-1">
+                  <p className="text-sm font-medium text-gray-500 tracking-wide mt-1">
                     {overview.netProfitMarginPct}% margin
                   </p>
                 </div>
@@ -588,7 +588,7 @@ export default function CostHealth() {
                   <p className="text-[10px] text-gray-400 uppercase tracking-wide">
                     Total spend
                   </p>
-                  <p className="text-sm font-bold text-gray-800">
+                  <p className="text-sm font-bold text-gray-800 tracking-wide">
                     {fmtRs(overview.totalSpend)}
                   </p>
                 </div>
@@ -602,7 +602,7 @@ export default function CostHealth() {
                   <p className="text-[10px] text-gray-400 uppercase tracking-wide">
                     Fixed costs
                   </p>
-                  <p className="text-sm font-bold text-gray-800">
+                  <p className="text-sm font-bold text-gray-800 tracking-wide">
                     {fmtRs(overview.fixedAmount)}
                   </p>
                 </div>
@@ -616,7 +616,7 @@ export default function CostHealth() {
                   <p className="text-[10px] text-gray-400 uppercase tracking-wide">
                     Variable costs
                   </p>
-                  <p className="text-sm font-bold text-gray-800">
+                  <p className="text-sm font-bold text-gray-800 tracking-wide">
                     {fmtRs(overview.variableAmount)}
                   </p>
                 </div>
@@ -641,7 +641,7 @@ export default function CostHealth() {
                   <p className="text-[10px] text-gray-400 uppercase tracking-wide">
                     Net profit
                   </p>
-                  <p className="text-sm font-bold text-gray-800">
+                  <p className="text-sm font-bold text-gray-800 tracking-wide">
                     {fmtRs(overview.netProfit)}
                   </p>
                 </div>

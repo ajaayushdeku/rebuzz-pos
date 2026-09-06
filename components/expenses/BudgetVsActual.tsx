@@ -30,7 +30,7 @@ const VarianceBadge = ({ variance }: { variance: number }) => {
   const over = variance > 0;
   return (
     <span
-      className={`inline-flex items-center gap-1 text-[11px] font-semibold rounded-full px-2.5 py-0.5 border ${
+      className={`inline-flex items-center gap-1 text-[10px] md:text-[11px] tracking-wide font-semibold rounded-full px-2.5 py-0.5 border ${
         over
           ? "bg-red-50 text-red-600 border-red-200"
           : "bg-green-50 text-green-600 border-green-200"
@@ -181,7 +181,7 @@ export default function BudgetVsActual() {
                 </div>
 
                 {/* Actual */}
-                <span className="text-xs font-bold text-gray-900 text-right">
+                <span className="text-xs font-bold text-gray-900 tracking-wide text-right">
                   {formatCurrencySymbol(
                     row.actual,
                     currency.symbol,
@@ -190,7 +190,7 @@ export default function BudgetVsActual() {
                 </span>
 
                 {/* Budget */}
-                <span className="text-xs text-gray-400 text-right">
+                <span className="text-xs text-gray-400 tracking-wide text-right">
                   {formatCurrencySymbol(
                     row.budget,
                     currency.symbol,
@@ -215,7 +215,7 @@ export default function BudgetVsActual() {
                     />
                   </div>
                   <span
-                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0 ${getPctStyle(row.pct)}`}
+                    className={`text-[10px] tracking-wide font-bold px-1.5 py-0.5 rounded-md shrink-0 ${getPctStyle(row.pct)}`}
                   >
                     {row.pct}%
                   </span>
