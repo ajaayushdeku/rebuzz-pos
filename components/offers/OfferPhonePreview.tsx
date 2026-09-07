@@ -378,9 +378,9 @@ export default function OfferPhonePreview() {
               )}
             </div>
 
-            <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-700">
+            {/* <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-700">
               🍽 Dine-in
-            </span>
+            </span> */}
           </div>
         )}
 

@@ -1,23 +1,56 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, EyeOff, KeyRound, Sparkles, TriangleAlert } from "lucide-react";
+import {
+  Check,
+  Eye,
+  EyeOff,
+  KeyRound,
+  Loader2,
+  ShieldCheck,
+  Sparkles,
+  Trash2,
+  TriangleAlert,
+} from "lucide-react";
 import { GEMINI_STROKE } from "./googlePalette";
 import GeminiGradientDefs from "./GeminiGradientDefs";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { useAiKeyStatus, useRemoveAiKey, useSaveAiKey } from "@/hooks/useAiKey";
 
 /**
- * The Gemini API key form.
+ * Add, replace or remove the business's own Gemini API key.
  *
- * Presentation only for now — nothing is sent anywhere and nothing is stored.
- * The field is built as write-only from the start (typed value held just long
- * enough to submit, never read back from a server) so that wiring it later is
- * a matter of filling in the submit handler rather than reworking how the
- * credential is handled.
+ * The field is write-only: it starts empty even when a key is saved, and what
+ * is stored is shown only as the mask the server derives. Nothing here can
+ * read a key back — no endpoint in the chain returns one.
  */
 export default function GeminiKeyForm() {
+  const { data: status, isLoading, error: statusError } = useAiKeyStatus();
+  const save = useSaveAiKey();
+  const remove = useRemoveAiKey();
+
   const [apiKey, setApiKey] = useState("");
   const [revealed, setRevealed] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+
+  const configured = status?.configured ?? false;
+  const actionError = save.error ?? remove.error;
+
+  const handleSave = () => {
+    const key = apiKey.trim();
+    if (!key || save.isPending) return;
+
+    setJustSaved(false);
+    save.mutate(key, {
+      onSuccess: () => {
+        // Cleared at once: there is no reason for a live credential to sit in
+        // component state, or in the DOM, after it has been stored.
+        setApiKey("");
+        setRevealed(false);
+        setJustSaved(true);
+      },
+    });
+  };
 
   /**
    * Deliberately not a prefix check.
@@ -35,6 +68,15 @@ export default function GeminiKeyForm() {
   const trimmed = apiKey.trim();
   const looksWrong =
     trimmed.length > 0 && (/\s/.test(trimmed) || trimmed.length < 20);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2 rounded-2xl border border-gray-200 bg-white p-6 text-sm text-gray-400">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        Loading key status…
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
@@ -60,12 +102,41 @@ export default function GeminiKeyForm() {
           />
         </div>
 
+        {configured && (
+          <div className="mt-5 flex items-center justify-between gap-3 rounded-xl border border-green-200 bg-green-50 px-3.5 py-3">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <ShieldCheck className="h-4 w-4 shrink-0 text-green-600" />
+              <div className="min-w-0">
+                <p className="text-[12px] font-semibold text-green-800">
+                  Key saved and verified
+                </p>
+                <p className="truncate font-mono text-[11px] text-green-700">
+                  {status?.maskedKey ?? "••••"}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => remove.mutate()}
+              disabled={remove.isPending}
+              className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {remove.isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="h-3.5 w-3.5" />
+              )}
+              Remove
+            </button>
+          </div>
+        )}
+
         <div className="mt-6">
           <label
             htmlFor="gemini-key"
             className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.06em] text-gray-400"
           >
-            API key
+            {configured ? "Replace key" : "API key"}
           </label>
 
           <div className="relative">
@@ -113,34 +184,56 @@ export default function GeminiKeyForm() {
           <div className="mt-4 flex items-center gap-2.5">
             <button
               type="button"
-              disabled
-              title="Saving is not connected yet"
+              onClick={handleSave}
+              disabled={!apiKey.trim() || looksWrong || save.isPending}
               // Solid Google blue rather than the gradient: white 13px bold
               // over the sweep crosses the yellow stop at 1.71:1, illegible
               // exactly where it is brightest. #1967D2 measures 5.37:1 and
-              // still reads as Google. The gradient stays on the hairline,
-              // where nothing sits on top of it.
-
-              className="h-9 shrink-0 cursor-not-allowed rounded-xl bg-[#1967D2] px-5 text-[13px] font-bold text-white opacity-50"
+              // still reads as Google.
+              className="flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-xl bg-[#1967D2] px-5 text-[13px] font-bold text-white transition hover:bg-[#1557b0] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Save key
+              {save.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Checking with Google…
+                </>
+              ) : (
+                "Save key"
+              )}
             </button>
             <button
               type="button"
               onClick={() => setApiKey("")}
-              disabled={!apiKey}
+              disabled={!apiKey || save.isPending}
               className="h-9 shrink-0 cursor-pointer rounded-xl border border-gray-200 bg-white px-4 text-[13px] font-medium text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Clear
             </button>
           </div>
 
-          {/* Said plainly rather than left for someone to discover by pressing
-            Save and watching nothing happen. */}
-          <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800">
-            Saving isn&apos;t connected yet — this form is the interface only.
-            Nothing you type here is stored or sent anywhere.
-          </p>
+          {justSaved && !actionError && (
+            <p className="mt-3 flex items-center gap-1.5 text-xs text-green-600">
+              <Check className="h-3.5 w-3.5 shrink-0" />
+              Verified with Google and saved.
+            </p>
+          )}
+
+          {/* The service's codes arrive already turned into sentences, so an
+              exhausted quota reads differently from a bad key — each needs a
+              different fix. */}
+          {actionError && (
+            <p className="mt-3 flex items-start gap-1.5 text-xs text-red-500">
+              <TriangleAlert className="mt-px h-3.5 w-3.5 shrink-0" />
+              <span>{(actionError as Error).message}</span>
+            </p>
+          )}
+
+          {statusError && !actionError && (
+            <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800">
+              <TriangleAlert className="mt-px h-3.5 w-3.5 shrink-0" />
+              <span>{(statusError as Error).message}</span>
+            </p>
+          )}
         </div>
       </div>
     </div>
