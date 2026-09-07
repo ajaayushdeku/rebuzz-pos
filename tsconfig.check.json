@@ -1,5 +1,9 @@
 {
+  "//": "Typecheck config: `npx tsc -p tsconfig.check.json --noEmit`. Kept separate from tsconfig.json so a full check never writes tsbuildinfo or fights the dev server's incremental state.",
+  "//next-env": "next-env.d.ts must NOT be excluded — it declares the image modules, and without it every `@/public/*.png` import reports TS2307.",
   "extends": "./tsconfig.json",
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", ".next", "next-env.d.ts"]
+  "compilerOptions": {
+    "incremental": false
+  },
+  "exclude": ["node_modules", ".next"]
 }
