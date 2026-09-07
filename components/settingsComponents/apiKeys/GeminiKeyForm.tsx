@@ -32,6 +32,7 @@ export default function GeminiKeyForm() {
   const [apiKey, setApiKey] = useState("");
   const [revealed, setRevealed] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
+  const [confirmingRemove, setConfirmingRemove] = useState(false);
 
   const configured = status?.configured ?? false;
   const actionError = save.error ?? remove.error;
@@ -41,6 +42,7 @@ export default function GeminiKeyForm() {
     if (!key || save.isPending) return;
 
     setJustSaved(false);
+    setConfirmingRemove(false);
     save.mutate(key, {
       onSuccess: () => {
         // Cleared at once: there is no reason for a live credential to sit in
@@ -116,19 +118,44 @@ export default function GeminiKeyForm() {
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => remove.mutate()}
-              disabled={remove.isPending}
-              className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {remove.isPending ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
+            {/* Two steps, because one click would destroy a credential that
+                cannot be recovered from here or from Google. Neutral until
+                armed, so the destructive colour means "this will happen next"
+                rather than decorating a button that is always present. */}
+            {confirmingRemove ? (
+              <div className="flex shrink-0 items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => remove.mutate()}
+                  disabled={remove.isPending}
+                  className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-red-600 px-2.5 py-1.5 text-[12px] font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {remove.isPending ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-3.5 w-3.5" />
+                  )}
+                  Confirm
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmingRemove(false)}
+                  disabled={remove.isPending}
+                  className="cursor-pointer rounded-lg px-2 py-1.5 text-[12px] font-medium text-gray-500 transition hover:text-gray-700"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setConfirmingRemove(true)}
+                className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-gray-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+              >
                 <Trash2 className="h-3.5 w-3.5" />
-              )}
-              Remove
-            </button>
+                Remove
+              </button>
+            )}
           </div>
         )}
 
@@ -182,6 +209,22 @@ export default function GeminiKeyForm() {
             </p>
           )}
 
+          {/* Replacing overwrites the stored key in place — there is no undo,
+              and Google will not show the old one again either, so a typo here
+              loses a working key at both ends. Stated before the click. */}
+          {configured && apiKey.trim() && !looksWrong && (
+            <p className="mt-2.5 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800">
+              <TriangleAlert className="mt-px h-3.5 w-3.5 shrink-0" />
+              <span>
+                This replaces your saved key{" "}
+                <span className="font-mono font-semibold">
+                  {status?.maskedKey ?? "••••"}
+                </span>
+                . It can&apos;t be undone.
+              </span>
+            </p>
+          )}
+
           <div className="mt-4 flex items-center gap-2.5">
             <button
               type="button"
@@ -196,8 +239,10 @@ export default function GeminiKeyForm() {
               {save.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Saving…
+                  {configured ? "Replacing…" : "Saving…"}
                 </>
+              ) : configured ? (
+                "Replace key"
               ) : (
                 "Save key"
               )}

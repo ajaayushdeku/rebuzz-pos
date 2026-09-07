@@ -26,8 +26,12 @@ export default function Page() {
 
       {/* The form leads and the guide sits beside it on wide screens; on
           narrow ones the guide falls below, so the field is still the first
-          thing reached. */}
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+          thing reached.
+
+          `items-start` because grid items stretch to the row's height by
+          default — the form was being pulled to the full height of the two
+          guide cards, leaving a tall empty panel under its last control. */}
+      <div className="mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <GeminiKeyForm />
         <GeminiKeyGuide />
       </div>
