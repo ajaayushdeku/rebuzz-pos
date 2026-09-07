@@ -62,8 +62,9 @@ export default function GeminiKeyForm() {
    * Only what is always true is checked: a key is one unbroken token, and it
    * is long.
    *
-   * Whether a key actually works is a question only Google can answer, so the
-   * real check is the test call made when it is saved.
+   * Whether a key actually works is a question only Google can answer. That
+   * check is paused server-side for now, so a key that passes this shape test
+   * is stored without being tried — it may still fail when an AI feature runs.
    */
   const trimmed = apiKey.trim();
   const looksWrong =
@@ -71,7 +72,7 @@ export default function GeminiKeyForm() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 rounded-2xl border border-gray-200 bg-white p-6 text-sm text-gray-400">
+      <div className="flex justify-center items-center gap-2 rounded-2xl border border-gray-200 bg-white p-6 text-sm text-gray-400">
         <Loader2 className="h-4 w-4 animate-spin" />
         Loading key status…
       </div>
@@ -108,7 +109,7 @@ export default function GeminiKeyForm() {
               <ShieldCheck className="h-4 w-4 shrink-0 text-green-600" />
               <div className="min-w-0">
                 <p className="text-[12px] font-semibold text-green-800">
-                  Key saved and verified
+                  Key saved
                 </p>
                 <p className="truncate font-mono text-[11px] text-green-700">
                   {status?.maskedKey ?? "••••"}
@@ -195,7 +196,7 @@ export default function GeminiKeyForm() {
               {save.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Checking with Google…
+                  Saving…
                 </>
               ) : (
                 "Save key"
@@ -214,7 +215,7 @@ export default function GeminiKeyForm() {
           {justSaved && !actionError && (
             <p className="mt-3 flex items-center gap-1.5 text-xs text-green-600">
               <Check className="h-3.5 w-3.5 shrink-0" />
-              Verified with Google and saved.
+              Saved.
             </p>
           )}
 
