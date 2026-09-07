@@ -2,7 +2,7 @@
 
 import { useOfferForm } from "@/providers/OfferFormContext";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { SlidersHorizontal } from "lucide-react";
+import { Lock, SlidersHorizontal } from "lucide-react";
 import OfferStepCard from "./OfferStepCard";
 
 const FIELD =
@@ -73,8 +73,7 @@ export default function OfferConditions() {
       title="Conditions"
       subtitle="All optional. Leave blank for no limit."
       icon={SlidersHorizontal}
-      iconBg="bg-blue-100"
-      iconColor="text-blue-600"
+      accent="blue"
     >
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <LimitField
@@ -105,31 +104,36 @@ export default function OfferConditions() {
         </div>
       )}
 
-      <div className="mt-6 flex items-center justify-between gap-4 border-t border-gray-100 pt-5">
+      {/* Locked, not hidden.
+          Shown so the capability is discoverable and the layout does not shift
+          when it lands, but dimmed and inert throughout — the same treatment
+          the invoice detail page gives its scheduled reminders: opacity on the
+          whole group, `cursor-not-allowed`, and the control itself `disabled`
+          so it cannot be reached by keyboard or click either. */}
+      <div
+        aria-hidden
+        className="mt-6 flex cursor-not-allowed items-center justify-between gap-4 border-t border-gray-100 pt-5 opacity-50"
+      >
         <div className="min-w-0">
-          <p className="text-[13px] font-semibold text-gray-800">
+          <p className="flex items-center gap-1.5 text-[13px] font-semibold text-gray-500">
+            <Lock size={12} className="shrink-0" />
             Can be used with other offers
           </p>
           <p className="mt-0.5 text-[11px] text-gray-400">
-            most owners keep offers separate
+            Coming soon — offers currently apply one at a time
           </p>
         </div>
 
         <button
           type="button"
           role="switch"
-          aria-checked={form.stackable}
-          aria-label="Can be used with other offers"
-          onClick={() => updateField("stackable", !form.stackable)}
-          className={`relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors ${
-            form.stackable ? "bg-blue-600" : "bg-gray-200"
-          }`}
+          aria-checked={false}
+          disabled
+          tabIndex={-1}
+          aria-label="Can be used with other offers — coming soon"
+          className="relative h-6 w-11 shrink-0 cursor-not-allowed rounded-full bg-gray-200"
         >
-          <span
-            className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-              form.stackable ? "translate-x-[0px]" : "translate-x-[-20px]"
-            }`}
-          />
+          <span className="absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow" />
         </button>
       </div>
     </OfferStepCard>

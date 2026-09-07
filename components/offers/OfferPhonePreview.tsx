@@ -8,7 +8,7 @@ import {
   CalendarCheck,
   CalendarDays,
   Clock,
-  Layers,
+  Link2,
   type LucideIcon,
   MessageSquare,
   ShoppingBag,
@@ -26,7 +26,9 @@ import { useProductsList } from "@/hooks/useProductsList";
 import { useBusiness } from "@/hooks/useBusiness";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { offerCopy } from "./offerDealConfig";
+import { audiencePhrase, offerCopy, offerLink } from "./offerDealConfig";
+import QRCode from "react-qr-code";
+import { useLoyaltyTiers } from "@/hooks/useLoyaltyTiers";
 import { toBsLabel } from "@/lib/nepaliDate";
 
 /** The order a Rs-savings example is worked against. */
@@ -144,6 +146,10 @@ function MerchantRow({ name }: { name: string }) {
 export default function OfferPhonePreview() {
   const { form } = useOfferForm();
   const { data: products = [] } = useProductsList();
+  const { data: tiers = [] } = useLoyaltyTiers();
+
+  // MOCK while the short-link service is pending — see offerLink.
+  const offerUrl = offerLink(form.hasKey);
   const { data: business } = useBusiness();
   const { currency } = useCurrency();
   const [channel, setChannel] = useState<Channel>("feed");
@@ -156,12 +162,16 @@ export default function OfferPhonePreview() {
   const { badge, headline } = offerCopy({
     dealId: form.discountKind,
     amount: form.discount,
-    scope: form.itemScope,
-    category: form.category,
-    itemName: products.find((p) => p.id === form.productId)?.name,
     freeItemName: products.find((p) => p.id === form.freeItemId)?.name,
     customDeal: form.customDeal,
     currency: currency.symbol,
+  });
+
+  // Printed on its own line rather than folded into the headline, so a
+  // customer sees who the offer is for before trying to redeem it.
+  const audienceLine = audiencePhrase({
+    audience: form.audience,
+    tierName: tiers.find((t) => t.id === form.audienceTierId)?.name,
   });
 
   const rawSaving =
@@ -201,10 +211,6 @@ export default function OfferPhonePreview() {
       icon: User,
       text: `Limit ${form.usesLimit} per customer`,
     },
-    form.stackable && {
-      icon: Layers,
-      text: "Combinable with other offers",
-    },
   ].filter(Boolean) as { icon: LucideIcon; text: string }[];
 
   /**
@@ -226,7 +232,7 @@ export default function OfferPhonePreview() {
       {/* Channel tabs. Held to the phone's own width so the two read as one
           object — a switch wider than the thing it switches looks like it
           belongs to the page instead. */}
-      <div className="mx-auto flex max-w-[320px] items-center justify-center gap-1 rounded-xl bg-[#e4f2fe] p-1">
+      <div className="mx-auto flex max-w-[320px] items-center justify-center  rounded-xl bg-[#e4f2fe] p-1">
         {CHANNELS.map(({ id, label, icon: Icon, tint }) => {
           const active = channel === id;
           return (
@@ -260,6 +266,11 @@ export default function OfferPhonePreview() {
               <p className="mt-3 text-lg font-bold leading-snug text-white">
                 {headline}
               </p>
+              {audienceLine && (
+                <p className="mt-1.5 text-[11px] font-medium text-white/80">
+                  {audienceLine}
+                </p>
+              )}
             </div>
 
             {saving > 0 && (
@@ -339,6 +350,32 @@ export default function OfferPhonePreview() {
                   </span>
                 </div>
               )}
+
+              {/* Link and code side by side: the link is what you tap on
+                  your own phone, the QR is what you hold up for someone else
+                  to scan — showing a friend, or a staff member at the till. */}
+              {offerUrl && (
+                <div className="mt-2 flex items-center gap-2.5 rounded-lg bg-blue-50 p-2.5">
+                  <div className="shrink-0 rounded bg-white p-1.5">
+                    <QRCode
+                      value={offerUrl}
+                      size={256}
+                      level="M"
+                      style={{ height: 52, width: 52 }}
+                      viewBox="0 0 256 256"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-1 text-[10px] font-semibold text-blue-700">
+                      <Link2 size={10} className="shrink-0" />
+                      Tap or scan
+                    </p>
+                    <span className="mt-0.5 block truncate text-[10px] text-blue-600">
+                      {offerUrl.replace(/^https:\/\//, "")}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-700">
@@ -372,6 +409,11 @@ export default function OfferPhonePreview() {
               <p className="mt-1 text-[13px] font-bold text-emerald-600">
                 {headline}.
               </p>
+              {audienceLine && (
+                <p className="mt-0.5 text-[11px] text-gray-500">
+                  {audienceLine}.
+                </p>
+              )}
               {smsFinePrint && (
                 <p className="mt-1 text-[12px] leading-relaxed text-gray-700">
                   {smsFinePrint}.
@@ -383,6 +425,13 @@ export default function OfferPhonePreview() {
                   <span className="font-bold tracking-wider text-gray-700">
                     {form.hasKey}
                   </span>
+                </p>
+              )}
+              {/* Bare and underlined, the way a phone renders a link it has
+                  detected in a message body — not styled as a button. */}
+              {offerUrl && (
+                <p className="mt-1 break-all text-[11px] text-blue-600 underline">
+                  {offerUrl}
                 </p>
               )}
 
@@ -432,6 +481,27 @@ export default function OfferPhonePreview() {
                 {money(SAMPLE_ORDER - saving)}
               </span>
             </div>
+
+            {/* The QR belongs here and only here: a receipt is paper, and
+                scanning it is the only way the code survives leaving the
+                table. White quiet zone around it because a scanner needs the
+                margin as much as the pattern. */}
+            {offerUrl && (
+              <div className="mt-4 flex flex-col items-center border-t border-dashed border-gray-300 pt-4">
+                <div className="rounded bg-white p-2">
+                  <QRCode
+                    value={offerUrl}
+                    size={256}
+                    level="M"
+                    style={{ height: 84, width: 84 }}
+                    viewBox="0 0 256 256"
+                  />
+                </div>
+                <p className="mt-2 text-center text-[9px] uppercase tracking-wider text-gray-500">
+                  Scan for this offer
+                </p>
+              </div>
+            )}
 
             <p className="mt-4 text-center text-[11px] text-amber-600">
               Thank you for visiting!

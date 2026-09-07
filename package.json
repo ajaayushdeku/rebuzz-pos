@@ -37,6 +37,7 @@
     "react-error-boundary": "^6.1.1",
     "react-hook-form": "^7.75.0",
     "react-hot-toast": "^2.6.0",
+    "react-qr-code": "^2.2.0",
     "recharts": "^3.9.2",
     "resend": "^6.12.4",
     "shadcn": "^4.6.0",

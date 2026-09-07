@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import {
   Check,
   ChevronsUpDown,
+  Lock,
   Plus,
   Search,
   Sparkles,
@@ -13,7 +14,7 @@ import {
 import { useOfferForm } from "@/providers/OfferFormContext";
 import { useProductsList } from "@/hooks/useProductsList";
 import OfferStepCard from "./OfferStepCard";
-import { DEAL_KINDS, SCOPES, dealById } from "./offerDealConfig";
+import { AUDIENCES, DEAL_KINDS, dealById } from "./offerDealConfig";
 
 const FIELD =
   "h-11 w-full rounded-xl border border-gray-200 bg-white text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20";
@@ -131,8 +132,7 @@ function ProductPicker({
 export default function OfferDeal() {
   const { form, updateField } = useOfferForm();
   const selected = dealById(form.discountKind);
-  const needsSentence =
-    form.discountKind === "custom" || form.discountKind === "combo";
+  const needsSentence = form.discountKind === "custom";
 
   const chooseDeal = (id: string) => {
     const deal = dealById(id);
@@ -150,8 +150,7 @@ export default function OfferDeal() {
       title="The Deal"
       subtitle="Choose what discount or freebie your customers receive."
       icon={Tag}
-      iconBg="bg-emerald-100"
-      iconColor="text-emerald-600"
+      accent="emerald"
       action={
         <button
           type="button"
@@ -224,8 +223,7 @@ export default function OfferDeal() {
         </div>
       )}
 
-      {/* A custom offer has no shape of its own, and a combo's shape lives in
-          the wording ("2 momos + a Coke"), so both are described in a
+      {/* A custom offer has no shape of its own, so it is described in a
           sentence. Set apart from the plain fields because this one is the
           headline the customer actually reads. */}
       {needsSentence && (
@@ -261,53 +259,39 @@ export default function OfferDeal() {
         </div>
       )}
 
-      {/* Applies to */}
-      <div className="mt-6 border-t border-gray-100 pt-5">
-        <p className={LABEL}>Applies to</p>
+      {/* Who it's for — locked.
+          Shown rather than hidden so the capability is discoverable and the
+          step does not change shape when it lands, but dimmed and inert
+          throughout: opacity on the group, `cursor-not-allowed`, every control
+          `disabled` and out of the tab order, and `aria-hidden` so it is not
+          announced as something that can be chosen. Same treatment as the
+          scheduled reminders on the invoice detail page. */}
+      <div
+        aria-hidden
+        className="mt-6 cursor-not-allowed border-t border-gray-100 pt-5 opacity-50"
+      >
+        <p className="mb-1.5 flex items-center gap-1.5 text-[13px] font-medium text-gray-500">
+          <Lock size={12} className="shrink-0" />
+          Who can use this
+        </p>
+
         <div className="flex flex-wrap gap-2">
-          {SCOPES.map((scope) => {
-            const active = form.itemScope === scope.id;
-            return (
-              <button
-                key={scope.id}
-                type="button"
-                onClick={() => updateField("itemScope", scope.id)}
-                aria-pressed={active}
-                className={`h-8 cursor-pointer rounded-lg px-4 text-[13px] font-semibold transition-colors ${
-                  active
-                    ? "bg-emerald-700 text-white"
-                    : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                {scope.label}
-              </button>
-            );
-          })}
+          {AUDIENCES.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              disabled
+              tabIndex={-1}
+              className="h-8 cursor-not-allowed rounded-lg border border-gray-200 bg-white px-4 text-[13px] font-semibold text-gray-500"
+            >
+              {option.label}
+            </button>
+          ))}
         </div>
 
-        {form.itemScope === "category" && (
-          <div className="mt-4 max-w-sm">
-            <label className={LABEL}>Category name</label>
-            <input
-              type="text"
-              value={form.category}
-              onChange={(e) => updateField("category", e.target.value)}
-              placeholder="e.g. MoMo &amp; Noodles"
-              className={`${FIELD} px-3.5`}
-            />
-          </div>
-        )}
-
-        {form.itemScope === "specific" && (
-          <div className="mt-4 max-w-sm">
-            <label className={LABEL}>Which item?</label>
-            <ProductPicker
-              value={form.productId}
-              onChange={(id) => updateField("productId", id)}
-              placeholder="Choose an item..."
-            />
-          </div>
-        )}
+        <p className="mt-2.5 text-[12px] text-gray-400">
+          Coming soon — offers currently apply to every customer.
+        </p>
       </div>
     </OfferStepCard>
   );

@@ -17,7 +17,14 @@ export type OfferSegment = string;
 
 export type PromoMode = "auto" | "custom";
 export type UsesPerCustomer = "unlimited" | "once" | "limit";
-export type ItemScope = "all" | "category" | "specific";
+/**
+ * Who an offer is for.
+ *
+ * Replaces the old item scope: an offer is now targeted by customer rather
+ * than by what is on the bill.
+ */
+export type CustomerAudience =
+  "all" | "first-time" | "loyalty-tier" | "birthday";
 export type FestivalTab = "all" | "nepali" | "hindu" | "intl";
 export type ActiveHours = "all-day" | "happy" | "lunch" | "evening";
 
@@ -44,8 +51,9 @@ export interface OfferFormState {
   promoMode: PromoMode;
   usesPerCustomer: UsesPerCustomer;
   usesLimit: number;
-  itemScope: ItemScope;
-  category: string;
+  audience: CustomerAudience;
+  /** The tier id an audience of "loyalty-tier" targets. */
+  audienceTierId: string;
   /**
    * The sentence a "Custom offer" deal shows to customers. It is the offer's
    * headline in the preview, so it is the customer's words rather than an
@@ -63,8 +71,6 @@ export interface OfferFormState {
    * Rs discount already has a ceiling, which is the discount itself.
    */
   maxCap: number;
-  /** Whether this offer may be combined with another. */
-  stackable: boolean;
 
   // ── Schedule (step 3) ──
   /**
@@ -103,13 +109,12 @@ const INITIAL_STATE: OfferFormState = {
   promoMode: "auto",
   usesPerCustomer: "unlimited",
   usesLimit: 1,
-  itemScope: "all",
-  category: "",
+  audience: "all",
+  audienceTierId: "",
   customDeal: "",
   freeItemId: "",
   minSpend: 0,
   maxCap: 0,
-  stackable: false,
   startTime: "",
   endTime: "",
   sendTriggers: [],

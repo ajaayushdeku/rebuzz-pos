@@ -107,8 +107,16 @@ function OfferBuilder() {
 
         <div className="grid grid-cols-1 items-start pt-4 gap-6 xl:grid-cols-[1fr_380px]">
           {/* Left: the four steps */}
+          {/* min-w-0 because a `1fr` track is `minmax(auto, 1fr)`, and that
+              `auto` floor is the item's min-content width. Without it any wide
+              descendant — a nowrap row, a long code, an input's intrinsic size
+              — pushes the whole column past its share and the page slides
+              sideways. */}
           <div
-            className={cn("space-y-5 xl:block", view === "build" || "hidden")}
+            className={cn(
+              "min-w-0 space-y-5 xl:block",
+              view === "build" || "hidden",
+            )}
           >
             <OfferDeal />
 
@@ -124,7 +132,7 @@ function OfferBuilder() {
           {/* Right: the customer's view */}
           <div
             className={cn(
-              "xl:sticky xl:top-4 xl:block",
+              "min-w-0 xl:sticky xl:top-4 xl:block",
               view === "preview" || "hidden",
             )}
           >

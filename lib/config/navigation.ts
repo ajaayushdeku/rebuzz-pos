@@ -1,4 +1,5 @@
 import {
+  KeyRound,
   CreditCard,
   Receipt,
   Gauge,
@@ -210,6 +211,11 @@ export const navigationConfig: NavigationItem[] = [
         label: "Loyalty Point",
         href: "/settings/loyalty-points",
         icon: Award,
+      },
+      {
+        label: "API Keys",
+        href: "/settings/api-keys",
+        icon: KeyRound,
       },
     ],
   },
