@@ -61,7 +61,12 @@ async function forward(
     // The service's error codes carry the meaning — GEMINI_KEY_INVALID needs a
     // different fix from GEMINI_QUOTA_EXCEEDED — so they pass through intact.
     return NextResponse.json(
-      { error: json?.error ?? "Request failed" },
+      {
+        error: json?.error ?? "Request failed",
+        // Present when the model was the problem: the names this key can
+        // actually use, so the message can name them instead of guessing.
+        available: json?.available ?? undefined,
+      },
       { status: res.status },
     );
   }

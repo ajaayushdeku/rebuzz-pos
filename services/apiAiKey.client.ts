@@ -40,8 +40,18 @@ const MESSAGES: Record<string, string> = {
     "Couldn't verify your account just now. Try again in a moment.",
 };
 
-function toMessage(code: unknown): string {
+function toMessage(code: unknown, available?: unknown): string {
   if (typeof code !== "string") return "Something went wrong.";
+
+  // A model failure is only actionable if the alternatives are named.
+  if (
+    code === "GEMINI_MODEL_UNAVAILABLE" &&
+    Array.isArray(available) &&
+    available.length > 0
+  ) {
+    return `${MESSAGES[code]} Available to your key: ${available.join(", ")}.`;
+  }
+
   return MESSAGES[code] ?? code;
 }
 
@@ -55,7 +65,7 @@ const EMPTY: AiKeyStatus = {
 export const fetchAiKeyStatus = async (): Promise<AiKeyStatus> => {
   const res = await fetch("/api/settings/ai", { cache: "no-store" });
   const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(toMessage(json?.error));
+  if (!res.ok) throw new Error(toMessage(json?.error, json?.available));
   return json?.data ?? EMPTY;
 };
 
@@ -66,7 +76,7 @@ export const saveAiKey = async (apiKey: string): Promise<AiKeyStatus> => {
     body: JSON.stringify({ apiKey }),
   });
   const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(toMessage(json?.error));
+  if (!res.ok) throw new Error(toMessage(json?.error, json?.available));
   return json?.data ?? EMPTY;
 };
 

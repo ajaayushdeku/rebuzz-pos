@@ -63,7 +63,7 @@ const FACTS: { icon: typeof Lock; title: string; body: string }[] = [
   {
     icon: Wallet,
     title: "It uses your own quota",
-    body: "AI features run on your Google account, not ours. Google offers a free tier that covers normal use; heavy use is billed to you by Google.",
+    body: "AI features run on your Google account, not ours. Google's free tier covers the Flash models we use; Pro models need billing enabled on your Google account, and heavy use is billed to you by Google.",
   },
   {
     icon: Lock,
