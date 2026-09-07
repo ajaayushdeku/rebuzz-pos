@@ -45,10 +45,24 @@ async function forward(
       body: body === undefined ? undefined : JSON.stringify(body),
       cache: "no-store",
     });
-  } catch {
+  } catch (error) {
     // Distinguished from a real failure: the usual cause is the service simply
     // not running, and "AI service unavailable" is a far better prompt than a
     // generic error that sends someone debugging the form.
+    //
+    // The cause is logged rather than swallowed. A bare catch here turns every
+    // network problem into the same sentence, so a DNS failure, a refused
+    // connection and a bad URL all look identical — and the one thing needed
+    // to tell them apart is the thing being discarded.
+    const cause =
+      (error as { cause?: { code?: string; message?: string } })?.cause ?? {};
+    console.error(
+      `[ai-settings] ${method} ${AI_SERVICE_URL} failed:`,
+      (error as Error)?.message,
+      "| cause:",
+      cause.code ?? cause.message ?? "(none)",
+    );
+
     return NextResponse.json(
       { error: "AI service is unreachable — is it running?" },
       { status: 503 },
