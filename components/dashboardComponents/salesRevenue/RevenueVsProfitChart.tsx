@@ -20,7 +20,7 @@ import type {
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
 
-import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { CurrencyConfig, useCurrency } from "@/providers/CurrencyContext";
 import { useRevenueVsProfit } from "@/hooks/useRevenueVsProfit";
 import { ChevronLeft, ChevronRight, ChartColumnBig } from "lucide-react";
@@ -157,7 +157,7 @@ export default function RevenueVsProfitChart({
   }, [totalPages]);
 
   const formatYAxis = (value: number): string =>
-    `${currency.symbol} ${formatCompactNumber(value, currency.locale)}`;
+    formatCompactCurrency(value, currency.symbol, currency.locale);
 
   // ── Dynamic Y-axis that handles negative profit ──
   const allValues =

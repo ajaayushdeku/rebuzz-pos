@@ -24,7 +24,10 @@ export type UsesPerCustomer = "unlimited" | "once" | "limit";
  * than by what is on the bill.
  */
 export type CustomerAudience =
-  "all" | "first-time" | "loyalty-tier" | "birthday";
+  | "all"
+  | "first-time"
+  | "loyalty-tier"
+  | "birthday";
 export type FestivalTab = "all" | "nepali" | "hindu" | "intl";
 export type ActiveHours = "all-day" | "happy" | "lunch" | "evening";
 
@@ -44,6 +47,7 @@ export interface OfferFormState {
   note: string;
   enabled: boolean;
   productId: string;
+  productVariantId?: string; // optional variant of the product
 
   // ── UI-only state (presentational, NOT sent to the API) ──
   template: string;
@@ -62,6 +66,7 @@ export interface OfferFormState {
   customDeal: string;
   /** The product given away by a "Free item" deal — what they GET, not what the offer applies to. */
   freeItemId: string;
+  freeItemVariantId?: string; // optional variant of the free item
 
   // ── Conditions (step 2) ──
   /** The bill has to reach this before the offer applies. 0 = no minimum. */

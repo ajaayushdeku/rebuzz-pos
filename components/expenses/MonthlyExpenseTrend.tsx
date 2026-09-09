@@ -18,7 +18,7 @@ import type {
 } from "recharts/types/component/DefaultTooltipContent";
 import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
 import { useTrailingMonthsTransactions } from "@/hooks/useTrailingMonthsTransactions";
-import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { ComponentHeader } from "../ComponentHeader";
 import { ChartColumnStacked, AlertTriangle } from "lucide-react";
@@ -79,7 +79,9 @@ const CustomTooltip = ({
       ))}
       <div className="border-t border-gray-100 pt-1.5 mt-1.5 flex justify-between">
         <span className="text-gray-400">Total</span>
-        <span className="font-bold text-gray-900 tracking-wide yb">{fmtK(total)}</span>
+        <span className="font-bold text-gray-900 tracking-wide yb">
+          {fmtK(total)}
+        </span>
       </div>
     </div>
   );
@@ -158,7 +160,7 @@ export default function MonthlyExpenseTrend() {
   }, [trailingMonths, getPurposeName, getPurposeIcon]);
 
   const fmtK = (v: number) => {
-    return `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`;
+    return formatCompactCurrency(v, currency.symbol, currency.locale);
   };
 
   if (isLoading)

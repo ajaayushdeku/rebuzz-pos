@@ -19,7 +19,7 @@ import {
 import type { MenuCategory } from "@/lib/mockData/mock-profitcost-advanced";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import { Grid2x2 } from "lucide-react";
 
@@ -158,7 +158,7 @@ export default function MenuEngineeringMatrix() {
               domain={[0, 9]}
               ticks={[0, 2, 4, 6, 8]}
               tickFormatter={(v) =>
-                `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`
+                formatCompactCurrency(v, currency.symbol, currency.locale)
               }
               axisLine={false}
               tickLine={false}

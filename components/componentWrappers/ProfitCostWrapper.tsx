@@ -13,6 +13,9 @@ import {
   getProfitStats,
   getDayTimeProfitData,
   getUnitEconomics,
+  getScenarioBaseline,
+  getProfitWaterfall,
+  getProfitVariance,
 } from "@/services/dashboardServices/apiProfitCost";
 
 import ProfitPerProduct from "../dashboardComponents/profitcostDash/ProfitPerProduct";
@@ -49,7 +52,7 @@ export async function ProfitStatsWrapper({
     }));
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 mt-4">
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:gap-3 lg:grid-cols-4 mt-4">
       <ProfitCostStatBoxGrid stats={stats} />
     </div>
   );
@@ -86,8 +89,15 @@ export function RefundBreakdownWrapper() {
   return <RefundBreakdown />;
 }
 
-export function WhatIfScenarioPlannerWrapper() {
-  return <WhatIfScenarioPlanner />;
+export async function WhatIfScenarioPlannerWrapper({
+  startDate,
+  endDate,
+}: {
+  startDate: string;
+  endDate: string;
+}) {
+  const baseline = await getScenarioBaseline(startDate, endDate);
+  return <WhatIfScenarioPlanner baseline={baseline} />;
 }
 
 export function PrimeCostTrackerWrapper() {
@@ -175,12 +185,22 @@ export function MenuEngineeringMatrixWrapper() {
   return <MenuEngineeringMatrix />;
 }
 
-export function ProfitWaterfallBridgeWrapper() {
-  return <ProfitWaterfallBridge />;
+export async function ProfitWaterfallBridgeWrapper({
+  startDate,
+  endDate,
+}: {
+  startDate: string;
+  endDate: string;
+}) {
+  const data = await getProfitWaterfall(startDate, endDate);
+  return <ProfitWaterfallBridge data={data} />;
 }
 
-export function ProfitVarianceBridgeWrapper() {
-  return <ProfitVarianceBridge />;
+// No date props: this card fixes itself to this calendar month against the
+// last, so the page's range would have nothing to change.
+export async function ProfitVarianceBridgeWrapper() {
+  const data = await getProfitVariance();
+  return <ProfitVarianceBridge data={data} />;
 }
 
 export function RevenueFlowSankeyWrapper() {

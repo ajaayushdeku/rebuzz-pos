@@ -106,6 +106,34 @@ function Field({
   );
 }
 
+/**
+ * A titled group of details.
+ *
+ * The five fields were one undifferentiated grid, which reads as a form to be
+ * filled rather than a profile to be understood. Grouping them by what they
+ * are for — who to contact, where the business is, what the taxman needs —
+ * gives the eye somewhere to land.
+ */
+function Section({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="border-t border-gray-100 px-6 py-5">
+      <div className="mb-4">
+        <h3 className="text-[13px] font-bold text-gray-900">{title}</h3>
+        <p className="mt-0.5 text-[11px] text-gray-400">{description}</p>
+      </div>
+      <div className="grid gap-5 sm:grid-cols-2">{children}</div>
+    </div>
+  );
+}
+
 function ProfileSkeleton() {
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
@@ -240,6 +268,30 @@ export default function BusinessSettingsPage() {
   // Preview beats the saved logo while a new file is staged.
   const displayLogo = logoPreview ?? business?.logo ?? null;
 
+  /**
+   * How much of the profile is filled in.
+   *
+   * These details are printed on invoices and receipts, so a missing one is
+   * not cosmetic — a bill without a PAN number is a bill a customer cannot
+   * claim against. Counting them turns "Not set" from a grey word into
+   * something the page is visibly asking for.
+   */
+  const filledCount = business
+    ? (
+        [
+          business.businessName,
+          business.owner,
+          business.phoneNumber,
+          business.address,
+          business.accurateLocation,
+          business.panNumber,
+        ] as (string | number | null | undefined)[]
+      ).filter((v) => v !== null && v !== undefined && String(v).trim() !== "")
+        .length
+    : 0;
+  const totalFields = 6;
+  const isComplete = filledCount === totalFields;
+
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
       <div className="mx-auto w-full">
@@ -272,19 +324,41 @@ export default function BusinessSettingsPage() {
         ) : (
           /* ── One card, two modes — so nothing is shown twice ── */
           <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-            {/* Identity */}
-            <div className="flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
-              <div className="group relative h-20 w-20 shrink-0">
-                <div className="h-20 w-20 overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+            {/* Identity.
+                This is the business's own page and the profile it describes is
+                what customers see on every receipt, so it leads the card —
+                centred, with the mark first. */}
+            <div className="relative flex flex-col items-center gap-4 overflow-hidden px-6 pb-6 pt-10 text-center">
+              {/* Something for the mark to sit on.
+                  Not the coloured band again — that competed with the logo and
+                  turned the top of the card into a header bar. This is ambient
+                  instead: a blurred wash of the app's own blues behind the
+                  circle, and two faint rings spreading from it, so the eye is
+                  drawn to the centre without anything hard-edged arriving. */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute left-1/2 top-2 h-44 w-44 -translate-x-1/2 rounded-full bg-gradient-to-br from-blue-400/30 via-indigo-400/20 to-violet-400/30 blur-3xl"
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute left-1/2 top-6 h-44 w-44 -translate-x-1/2 rounded-full border border-gray-200/70"
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute left-1/2 top-1 h-54 w-54 -translate-x-1/2 rounded-full border border-gray-100"
+              />
+
+              <div className="group relative z-10 h-36 w-36 shrink-0">
+                <div className="h-36 w-36 overflow-hidden rounded-full border-4 border-white bg-white shadow-md ring-1 ring-gray-200/80">
                   <Image
                     src={displayLogo || businessLogo}
                     alt=""
-                    width={80}
-                    height={80}
+                    width={144}
+                    height={144}
                     className={
                       displayLogo
                         ? "h-full w-full object-cover"
-                        : "h-full w-full object-contain p-2"
+                        : "h-full w-full object-contain p-6"
                     }
                     unoptimized={!!logoPreview}
                     priority
@@ -298,9 +372,9 @@ export default function BusinessSettingsPage() {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     aria-label="Change business logo"
-                    className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/45 text-white opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                    className="absolute inset-0 flex items-center justify-center rounded-full bg-black/45 text-white opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer"
                   >
-                    <Camera size={18} />
+                    <Camera size={22} />
                   </button>
                 )}
 
@@ -313,10 +387,10 @@ export default function BusinessSettingsPage() {
                 />
               </div>
 
-              <div className="min-w-0 flex-1">
+              <div className="relative z-10 w-full min-w-0 max-w-md">
                 {editing ? (
                   <>
-                    <label className="mb-1.5 flex items-center gap-1.5">
+                    <label className="mb-1.5 flex items-center justify-center gap-1.5">
                       <Building2 className="h-3.5 w-3.5 text-gray-400" />
                       <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-400">
                         Business name
@@ -339,12 +413,33 @@ export default function BusinessSettingsPage() {
                   </>
                 ) : (
                   <>
-                    <h2 className="truncate text-xl font-bold text-gray-900">
+                    <h2 className="truncate text-[22px] font-bold leading-tight text-gray-900">
                       {business?.businessName || "My Business"}
                     </h2>
-                    <span className="mt-1.5 inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-semibold text-blue-700">
-                      {business?.businessType || "Business"}
-                    </span>
+                    <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+                      <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700">
+                        {business?.businessType || "Business"}
+                      </span>
+
+                      {/* Green only when there is nothing left to add, so the
+                          colour means something rather than always being on. */}
+                      <span
+                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                          isComplete
+                            ? "bg-green-50 text-green-700"
+                            : "bg-amber-50 text-amber-700"
+                        }`}
+                      >
+                        {isComplete ? (
+                          <Check className="h-3 w-3" />
+                        ) : (
+                          <AlertTriangle className="h-3 w-3" />
+                        )}
+                        {isComplete
+                          ? "Profile complete"
+                          : `${filledCount} of ${totalFields} details added`}
+                      </span>
+                    </div>
                   </>
                 )}
 
@@ -382,10 +477,10 @@ export default function BusinessSettingsPage() {
               </div>
             )}
 
-            <div className="border-t border-gray-100" />
-
-            {/* Details */}
-            <div className="grid gap-5 p-6 sm:grid-cols-2">
+            <Section
+              title="Owner & contact"
+              description="Who runs the business, and how customers reach you."
+            >
               <Field
                 icon={User}
                 label="Owner"
@@ -417,7 +512,12 @@ export default function BusinessSettingsPage() {
                   placeholder="e.g. +977-9841234567"
                 />
               </Field>
+            </Section>
 
+            <Section
+              title="Location"
+              description="Printed on receipts, and used to place you on a map."
+            >
               <Field
                 icon={MapPin}
                 label="Address"
@@ -431,24 +531,6 @@ export default function BusinessSettingsPage() {
                   onChange={(e) => set("address", e.target.value)}
                   className={errors.address ? inputErrorClass : inputClass}
                   placeholder="e.g. Kathmandu, Nepal"
-                />
-              </Field>
-
-              <Field
-                icon={Receipt}
-                label="PAN / VAT"
-                hint="Printed on tax invoices"
-                editing={editing}
-                value={
-                  business?.panNumber ? String(business.panNumber) : undefined
-                }
-              >
-                <Input
-                  type="text"
-                  value={form.panNumber}
-                  onChange={(e) => set("panNumber", e.target.value)}
-                  className={inputClass}
-                  placeholder="e.g. 609699393"
                 />
               </Field>
 
@@ -467,7 +549,30 @@ export default function BusinessSettingsPage() {
                   />
                 </Field>
               </div>
-            </div>
+            </Section>
+
+            <Section
+              title="Tax details"
+              description="Shown on tax invoices so customers can claim against them."
+            >
+              <Field
+                icon={Receipt}
+                label="PAN / VAT"
+                hint="Printed on tax invoices"
+                editing={editing}
+                value={
+                  business?.panNumber ? String(business.panNumber) : undefined
+                }
+              >
+                <Input
+                  type="text"
+                  value={form.panNumber}
+                  onChange={(e) => set("panNumber", e.target.value)}
+                  className={inputClass}
+                  placeholder="e.g. 609699393"
+                />
+              </Field>
+            </Section>
 
             {/* Actions */}
             {editing && (

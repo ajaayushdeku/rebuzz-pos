@@ -14,7 +14,7 @@ import type { BarShapeProps } from "recharts";
 
 import SampleDataBadge from "@/components/ui/sampledatabadge";
 import { CustomTooltipProps } from "@/lib/types/chart";
-import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import { ChartColumnBig } from "lucide-react";
@@ -79,7 +79,7 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
   const isEmpty = !data || data.length === 0;
   const displayData = isEmpty ? [{ name: "No Data", revenue: 0 }] : data;
   const formatYAxis = (value: number): string =>
-    `${currency.symbol} ${formatCompactNumber(value, currency.locale)}`;
+    formatCompactCurrency(value, currency.symbol, currency.locale);
 
   // Replace the hardcoded ticks/domain with dynamic calculation:
   const maxRevenue = Math.max(...displayData.map((d) => d.revenue), 1);

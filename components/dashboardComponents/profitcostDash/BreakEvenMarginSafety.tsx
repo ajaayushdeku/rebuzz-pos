@@ -113,6 +113,7 @@ export default function BreakEvenMarginSafety() {
 
   const {
     revenue,
+    miscIncome,
     breakEvenPoint,
     fixedCosts,
     variableCosts,
@@ -204,7 +205,10 @@ export default function BreakEvenMarginSafety() {
           <div className="flex justify-between mt-2 text-xs text-gray-500">
             <span className="tracking-wide">{money(0)}</span>
             <span className="text-gray-400 tracking-wide">
-              Current: {money(revenue)}
+              {/* Says what is in the figure only when something extra is —
+                  otherwise the plain word is the whole truth. */}
+              Current{miscIncome > 0 ? " (with misc income)" : ""}:{" "}
+              {money(revenue)}
             </span>
             <span className="tracking-wide">{money(Math.round(axisMax))}</span>
           </div>
@@ -249,6 +253,18 @@ export default function BreakEvenMarginSafety() {
             {(contributionMarginRatio * 100).toFixed(1)}%
           </p>
         </div>
+
+        {/* Shown only when the tracker recorded some. A tile reading zero would
+            invite every business to wonder what it was missing, and the figure
+            is already inside the revenue above either way. */}
+        {miscIncome > 0 && (
+          <div>
+            <p className="text-[11px] text-gray-400">Misc income</p>
+            <p className="mt-0.5 text-sm font-semibold tracking-wide tabular-nums text-gray-800">
+              {money(miscIncome)}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* A month still in progress compares part of its revenue against all of

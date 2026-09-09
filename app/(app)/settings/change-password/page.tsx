@@ -4,12 +4,15 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
   AlertCircle,
+  Building2,
   Check,
   Eye,
   EyeOff,
   Loader2,
   Lock,
+  RefreshCw,
   Shield,
+  Users,
   X,
 } from "lucide-react";
 
@@ -17,9 +20,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const inputClass =
-  "w-full border border-gray-200 rounded-lg px-3 py-2.5 pr-10 text-sm text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+  "w-full border border-gray-200 rounded-lg px-3 py-6 pr-10 text-sm text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
 const inputErrorClass =
-  "w-full border border-red-300 rounded-lg px-3 py-2.5 pr-10 text-sm text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition";
+  "w-full border border-red-300 rounded-lg px-3 py-4 pr-10 text-sm text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition";
 
 /** Four segments, so the bar reads as a level rather than a percentage. */
 const STRENGTH_LEVELS = [
@@ -64,6 +67,30 @@ function strengthLevel(score: number): number {
 }
 
 /**
+ * What actually makes a password safe here, rather than a single tip box.
+ *
+ * Each answers a question someone changing a password is entitled to ask:
+ * why not reuse one, why length beats symbols, and what happens after saving.
+ */
+const SECURITY_NOTES: { icon: typeof Shield; title: string; body: string }[] = [
+  {
+    icon: Building2,
+    title: "Nothing about the business",
+    body: "Your business name, phone number, PAN and opening year are printed on every receipt you hand out. They are the first things anyone guessing would try.",
+  },
+  {
+    icon: RefreshCw,
+    title: "Not a version of the old one",
+    body: "Adding a digit or changing a letter is the first variation attempted once a password leaks. Pick something unrelated to the one you are replacing.",
+  },
+  {
+    icon: Users,
+    title: "Never share it with staff",
+    body: "Give each employee their own login under Settings → Employees. A shared owner password means no record of who did what, and no way to revoke one person's access.",
+  },
+];
+
+/**
  * A password input with its own reveal toggle and message slot.
  *
  * The three fields were identical blocks of markup with only the state
@@ -94,7 +121,10 @@ function PasswordField({
   const [visible, setVisible] = useState(false);
 
   return (
-    <div className="px-4">
+    // No horizontal padding of its own: the card body already provides it, and
+    // the extra px-4 pushed every field 1rem further in than the card heading
+    // above it, so nothing lined up down the left edge.
+    <div>
       <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.06em] text-gray-500">
         {label}
       </label>
@@ -218,181 +248,216 @@ export default function ChangePasswordPage() {
           </p>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
-        >
-          {/* Card heading */}
-          <div className="flex items-center gap-3 border-b border-gray-100 px-6 py-5">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50">
-              <Lock className="h-5 w-5 text-blue-600" />
-            </div>
-            <div className="min-w-0">
-              <h2 className="text-[15px] font-semibold text-gray-900">
-                Account security
-              </h2>
-              <p className="text-xs text-gray-400">
-                Choose a strong password you haven&rsquo;t used before.
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-5 p-6">
-            {/* The account is needed to submit, so say so while it loads
-                instead of leaving the button inert without explanation. */}
-            {profileLoading && (
-              <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2.5 text-[12px] text-gray-500">
-                <Loader2 size={14} className="animate-spin" />
-                Loading your account…
+        {/* Form leading, guidance beside it — the same shape as Settings →
+            API Keys, so the two security screens read as one place. A single
+            full-width card left a password form stranded across a dashboard
+            far wider than any of its fields. */}
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <form
+            onSubmit={handleSubmit}
+            className="overflow-hidden rounded-2xl border border-gray-200 bg-white"
+          >
+            {/* Card heading */}
+            <div className="flex items-center gap-3  px-6 pt-6 pb-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50">
+                <Lock className="h-5 w-5 text-blue-600" />
               </div>
-            )}
-
-            {!profileLoading && !userId && (
-              <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5">
-                <AlertCircle
-                  size={14}
-                  className="mt-0.5 shrink-0 text-red-500"
-                />
-                <p className="text-[12px] leading-relaxed text-red-600">
-                  Your account details could not be loaded, so the password
-                  cannot be changed right now. Reload the page and try again.
+              <div className="min-w-0">
+                <h2 className="text-[15px] font-semibold text-gray-900">
+                  Account security
+                </h2>
+                <p className="text-xs text-gray-400">
+                  Choose a strong password you haven&rsquo;t used before.
                 </p>
               </div>
-            )}
+            </div>
 
-            <PasswordField
-              label="Current password"
-              value={oldPassword}
-              onChange={setOldPassword}
-              placeholder="Enter your current password"
-              autoComplete="current-password"
-            />
-
-            <PasswordField
-              label="New password"
-              value={newPassword}
-              onChange={setNewPassword}
-              placeholder="Enter your new password"
-              autoComplete="new-password"
-              invalid={reusesOld}
-              message={
-                reusesOld ? (
-                  <p className="mt-1 flex items-center gap-1 text-[11px] text-red-500">
-                    <AlertCircle className="h-3 w-3" />
-                    Must be different from your current password
-                  </p>
-                ) : undefined
-              }
-            >
-              {newPassword && (
-                <div className="mt-3 space-y-2.5">
-                  {/* Segmented meter — four filled blocks read as a level. */}
-                  <div className="flex items-center gap-2">
-                    <div className="flex flex-1 gap-1">
-                      {STRENGTH_LEVELS.map((_, i) => (
-                        <span
-                          key={i}
-                          className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
-                            i <= level
-                              ? STRENGTH_LEVELS[level].bar
-                              : "bg-gray-200"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span
-                      className={`min-w-[44px] text-right text-[11px] font-semibold ${STRENGTH_LEVELS[level].text}`}
-                    >
-                      {STRENGTH_LEVELS[level].label}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
-                    {REQUIREMENTS.map((req) => {
-                      const passed = req.test(newPassword);
-                      return (
-                        <div
-                          key={req.label}
-                          className="flex items-center gap-1.5 text-[11px]"
-                        >
-                          {passed ? (
-                            <Check className="h-3 w-3 shrink-0 text-green-500" />
-                          ) : (
-                            <X className="h-3 w-3 shrink-0 text-gray-300" />
-                          )}
-                          <span
-                            className={
-                              passed ? "text-green-600" : "text-gray-400"
-                            }
-                          >
-                            {req.label}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
+            <div className="space-y-5 p-6">
+              {/* The account is needed to submit, so say so while it loads
+                instead of leaving the button inert without explanation. */}
+              {profileLoading && (
+                <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2.5 text-[12px] text-gray-500">
+                  <Loader2 size={14} className="animate-spin" />
+                  Loading your account…
                 </div>
               )}
-            </PasswordField>
 
-            <PasswordField
-              label="Confirm new password"
-              value={confirmPassword}
-              onChange={setConfirmPassword}
-              placeholder="Re-enter your new password"
-              autoComplete="new-password"
-              invalid={!!confirmPassword && !passwordsMatch}
-              message={
-                confirmPassword ? (
-                  passwordsMatch ? (
-                    <p className="mt-1 flex items-center gap-1 text-[11px] text-green-600">
-                      <Check className="h-3 w-3" />
-                      Passwords match
-                    </p>
-                  ) : (
+              {!profileLoading && !userId && (
+                <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5">
+                  <AlertCircle
+                    size={14}
+                    className="mt-0.5 shrink-0 text-red-500"
+                  />
+                  <p className="text-[12px] leading-relaxed text-red-600">
+                    Your account details could not be loaded, so the password
+                    cannot be changed right now. Reload the page and try again.
+                  </p>
+                </div>
+              )}
+
+              <PasswordField
+                label="Current password"
+                value={oldPassword}
+                onChange={setOldPassword}
+                placeholder="Enter your current password"
+                autoComplete="current-password"
+              />
+
+              <PasswordField
+                label="New password"
+                value={newPassword}
+                onChange={setNewPassword}
+                placeholder="Enter your new password"
+                autoComplete="new-password"
+                invalid={reusesOld}
+                message={
+                  reusesOld ? (
                     <p className="mt-1 flex items-center gap-1 text-[11px] text-red-500">
                       <AlertCircle className="h-3 w-3" />
-                      Passwords do not match
+                      Must be different from your current password
                     </p>
-                  )
-                ) : undefined
-              }
-            />
-          </div>
+                  ) : undefined
+                }
+              >
+                {newPassword && (
+                  <div className="mt-3 space-y-2.5">
+                    {/* Segmented meter — four filled blocks read as a level
+                        rather than a percentage, and the label names it so
+                        colour is not the only thing carrying the meaning. */}
+                    <div>
+                      <div className="mb-1.5 flex items-baseline justify-between">
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.06em] text-gray-400">
+                          Strength
+                        </span>
+                        <span
+                          className={`text-[11px] font-bold ${STRENGTH_LEVELS[level].text}`}
+                        >
+                          {STRENGTH_LEVELS[level].label}
+                        </span>
+                      </div>
+                      <div className="flex gap-1.5">
+                        {STRENGTH_LEVELS.map((_, i) => (
+                          <span
+                            key={i}
+                            className={`h-2 flex-1 rounded-full transition-colors duration-300 ${
+                              i <= level
+                                ? STRENGTH_LEVELS[level].bar
+                                : "bg-gray-200"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
 
-          {/* ── Submit ── */}
-          <div className="space-y-2 border-t border-gray-100 bg-gray-50 px-6 py-4">
-            {blocker && (
-              <p className="text-center text-[11px] text-gray-500">{blocker}</p>
-            )}
+                    <div className="grid grid-cols-1 gap-x-4 gap-y-1.5 rounded-xl bg-gray-50 p-3 sm:grid-cols-2">
+                      {REQUIREMENTS.map((req) => {
+                        const passed = req.test(newPassword);
+                        return (
+                          <div
+                            key={req.label}
+                            className="flex items-center gap-1.5 text-[11px]"
+                          >
+                            <span
+                              className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full transition-colors ${
+                                passed ? "bg-green-500" : "bg-gray-200"
+                              }`}
+                            >
+                              {passed ? (
+                                <Check className="h-2.5 w-2.5 text-white" />
+                              ) : (
+                                <X className="h-2.5 w-2.5 text-gray-400" />
+                              )}
+                            </span>
+                            <span
+                              className={
+                                passed
+                                  ? "font-medium text-gray-700"
+                                  : "text-gray-400"
+                              }
+                            >
+                              {req.label}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </PasswordField>
 
-            <Button
-              type="submit"
-              disabled={!canSubmit}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2.5 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Changing password...
-                </>
-              ) : (
-                <>
-                  <Shield className="h-4 w-4" />
-                  Update password
-                </>
+              <PasswordField
+                label="Confirm new password"
+                value={confirmPassword}
+                onChange={setConfirmPassword}
+                placeholder="Re-enter your new password"
+                autoComplete="new-password"
+                invalid={!!confirmPassword && !passwordsMatch}
+                message={
+                  confirmPassword ? (
+                    passwordsMatch ? (
+                      <p className="mt-1 flex items-center gap-1 text-[11px] text-green-600">
+                        <Check className="h-3 w-3" />
+                        Passwords match
+                      </p>
+                    ) : (
+                      <p className="mt-1 flex items-center gap-1 text-[11px] text-red-500">
+                        <AlertCircle className="h-3 w-3" />
+                        Passwords do not match
+                      </p>
+                    )
+                  ) : undefined
+                }
+              />
+            </div>
+
+            {/* ── Submit ── */}
+            <div className="space-y-2 border-t border-gray-100 bg-gray-50 px-6 py-4">
+              {blocker && (
+                <p className="text-center text-[11px] text-gray-500">
+                  {blocker}
+                </p>
               )}
-            </Button>
-          </div>
-        </form>
 
-        {/* ── Security tip ── */}
-        <div className="mt-6 flex items-start gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4">
-          <Shield className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
-          <p className="text-[11px] leading-relaxed text-blue-700">
-            Use a password unique to this account. Reusing one from another site
-            means a breach there becomes a breach here.
-          </p>
+              <Button
+                type="submit"
+                disabled={!canSubmit}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-6 text-[14px] text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Changing password...
+                  </>
+                ) : (
+                  <>
+                    <Shield className="h-4 w-4" />
+                    Update password
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+
+          {/* ── Why it matters ── */}
+          <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6">
+            <h3 className="text-[13px] font-bold text-gray-900">
+              Choosing a password
+            </h3>
+
+            {SECURITY_NOTES.map(({ icon: Icon, title, body }) => (
+              <div key={title} className="flex gap-3">
+                <Icon className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
+                <div className="min-w-0">
+                  <p className="text-[12px] font-semibold text-gray-800">
+                    {title}
+                  </p>
+                  <p className="mt-0.5 text-[11px] leading-relaxed text-gray-500">
+                    {body}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

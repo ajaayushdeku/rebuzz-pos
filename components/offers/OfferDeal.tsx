@@ -15,39 +15,79 @@ import { useOfferForm } from "@/providers/OfferFormContext";
 import { useProductsList } from "@/hooks/useProductsList";
 import OfferStepCard from "./OfferStepCard";
 import { AUDIENCES, DEAL_KINDS, dealById } from "./offerDealConfig";
+import { getVariants, variantLabel } from "@/lib/productVariants";
+import { Product } from "@/lib/types/product";
 
 const FIELD =
   "h-11 w-full rounded-xl border border-gray-200 bg-white text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20";
 
 const LABEL = "mb-1.5 block text-[13px] font-medium text-gray-700";
 
-/**
- * A searchable product dropdown.
- *
- * Two fields on this step pick a product for different reasons — the item a
- * deal applies to, and the item given away by a free-item deal — so it takes
- * its value and setter rather than reading the form itself.
- */
+type PickerRow = {
+  key: string;
+  productId: string;
+  variantId: string | null;
+  label: string;
+  search: string;
+  available: boolean;
+};
+
+const toRows = (products: Product[]): PickerRow[] => {
+  return products.flatMap((product): PickerRow[] => {
+    const variants = getVariants(product);
+
+    if (variants.length === 0) {
+      return [
+        {
+          key: product.id,
+          productId: product.id,
+          variantId: null,
+          label: product.name,
+          search: product.name.toLowerCase(),
+          available: true,
+        },
+      ];
+    }
+
+    return variants.map((variant) => {
+      const label = `${product.name} · ${variantLabel(variant)}`;
+      return {
+        key: `${product.id}:${variant.id}`,
+        productId: product.id,
+        variantId: variant.id,
+        label,
+        search: label.toLowerCase(),
+        available: variant.isAvailable && (variant.inStock ?? 0) > 0,
+      };
+    });
+  });
+};
+
 function ProductPicker({
   value,
+  variantValue,
   onChange,
   placeholder,
 }: {
   value: string;
-  onChange: (id: string) => void;
+  variantValue?: string | null;
+  onChange: (id: string, variantId: string | null) => void;
   placeholder: string;
 }) {
   const { data: products = [], isLoading } = useProductsList();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
-  const selected = products.find((p) => p.id === value);
+  const rows = useMemo(() => toRows(products), [products]);
+
+  const selected = rows.find(
+    (r) => r.productId === value && r.variantId === (variantValue ?? null),
+  );
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return q
-      ? products.filter((p) => p.name.toLowerCase().includes(q))
-      : products;
-  }, [products, query]);
+    return q ? rows.filter((r) => r.search.includes(q)) : rows;
+  }, [rows, query]);
 
   return (
     <div className="relative">
@@ -57,7 +97,7 @@ function ProductPicker({
         className={`${FIELD} flex items-center justify-between px-3.5 text-left`}
       >
         <span className={selected ? "truncate text-gray-900" : "text-gray-400"}>
-          {selected ? selected.name : placeholder}
+          {selected ? selected.label : placeholder}
         </span>
         <ChevronsUpDown size={15} className="ml-2 shrink-0 text-gray-400" />
       </button>
@@ -98,23 +138,40 @@ function ProductPicker({
                 No items match “{query}”
               </p>
             ) : (
-              filtered.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => {
-                    onChange(p.id);
-                    setOpen(false);
-                    setQuery("");
-                  }}
-                  className="flex w-full items-center justify-between gap-2 px-3.5 py-2 text-left text-sm hover:bg-gray-50"
-                >
-                  <span className="truncate text-gray-700">{p.name}</span>
-                  {p.id === value && (
-                    <Check size={14} className="shrink-0 text-blue-600" />
-                  )}
-                </button>
-              ))
+              filtered.map((row) => {
+                return (
+                  <button
+                    key={row.key}
+                    type="button"
+                    disabled={!row.available}
+                    onClick={() => {
+                      onChange(row.productId, row.variantId);
+                      setOpen(false);
+                      setQuery("");
+                    }}
+                    className="flex w-full items-center justify-between gap-2 px-3.5 py-2 text-left text-sm hover:bg-gray-50"
+                  >
+                    <span className="truncate text-gray-700">{row.label}</span>
+                    {/* {(row.variants?.length ?? 0) > 1 && (
+                      <span className="text-xs text-gray-400">
+                        {row?.variants?.length} variants
+                      </span>
+                    )} */}
+
+                    {row.variantId && row.variantId === variantValue && (
+                      <Check size={14} className="shrink-0 text-blue-600" />
+                    )}
+                    {!row.variantId && row.productId === value && (
+                      <Check size={14} className="shrink-0 text-blue-600" />
+                    )}
+                    {!row.available && (
+                      <span className="shrink-0 text-[11px] text-gray-400">
+                        Unavailable
+                      </span>
+                    )}
+                  </button>
+                );
+              })
             )}
           </div>
         </>
@@ -253,7 +310,11 @@ export default function OfferDeal() {
           </label>
           <ProductPicker
             value={form.freeItemId}
-            onChange={(id) => updateField("freeItemId", id)}
+            variantValue={form.freeItemVariantId || null}
+            onChange={(id, variantId) => {
+              updateField("freeItemId", id);
+              updateField("freeItemVariantId", variantId ?? undefined);
+            }}
             placeholder="Choose the free item..."
           />
         </div>

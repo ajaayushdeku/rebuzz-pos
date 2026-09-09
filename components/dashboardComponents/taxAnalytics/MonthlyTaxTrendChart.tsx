@@ -16,7 +16,7 @@ import type {
 } from "recharts/types/component/DefaultTooltipContent";
 import { Info, ChartColumnBig } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useMonthlyTaxTrend } from "@/hooks/useMonthlyTaxTrend";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import { TaxTrendChartSkeleton } from "./TaxAnalyticsSkeletons";
@@ -84,7 +84,7 @@ export default function MonthlyTaxTrendChart() {
   const hasData = rows.some((r) => r.total > 0);
 
   const formatY = (v: number) =>
-    `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`;
+    formatCompactCurrency(v, currency.symbol, currency.locale);
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">

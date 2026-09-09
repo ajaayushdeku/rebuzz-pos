@@ -14,7 +14,7 @@ import type { BarShapeProps } from "recharts";
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import { CustomTooltipProps, DataPoint } from "@/lib/types/chart";
-import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import { ChartColumnBig } from "lucide-react";
 
@@ -73,7 +73,7 @@ const WeeklyRevenueChart = ({ data, peakDay }: WeeklyRevenueChartProps) => {
 
   const { currency } = useCurrency();
   const formatYAxis = (value: number): string =>
-    `${currency.symbol} ${formatCompactNumber(value, currency.locale)}`;
+    formatCompactCurrency(value, currency.symbol, currency.locale);
 
   return (
     <div className="w-full bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5">

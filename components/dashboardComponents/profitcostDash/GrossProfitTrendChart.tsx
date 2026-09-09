@@ -11,7 +11,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { formatCurrencySymbol, formatCompactNumber } from "@/utils/helper";
+import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { CustomTooltipProps } from "@/lib/types/chart";
 import { ComponentHeader } from "@/components/ComponentHeader";
@@ -130,7 +130,7 @@ export default function GrossProfitTrendChart() {
   //   data.every((d) => d.grossRevenue === 0 && d.netProfit === 0);
 
   const formatYAxis = (value: number): string =>
-    `${currency.symbol} ${formatCompactNumber(value, currency.locale)}`;
+    formatCompactCurrency(value, currency.symbol, currency.locale);
 
   const yTicks = getYAxisTicks(data);
   const yMax = yTicks[yTicks.length - 1] * 1.05;

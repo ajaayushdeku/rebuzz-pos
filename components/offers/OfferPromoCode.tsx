@@ -16,6 +16,7 @@ import QRCode from "react-qr-code";
 import { useOfferForm } from "@/providers/OfferFormContext";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { useProductsList } from "@/hooks/useProductsList";
+import { productLabel } from "@/lib/productVariants";
 import OfferStepCard from "./OfferStepCard";
 import { dealSummary, offerLink } from "./offerDealConfig";
 import { useLoyaltyTiers } from "@/hooks/useLoyaltyTiers";
@@ -109,7 +110,11 @@ export default function OfferPromoCode() {
       amount: form.discount,
       audience: form.audience,
       tierName: tiers.find((t) => t.id === form.audienceTierId)?.name,
-      freeItemName: products.find((p) => p.id === form.freeItemId)?.name,
+      freeItemName: productLabel(
+        products,
+        form.freeItemId,
+        form.freeItemVariantId,
+      ),
       customDeal: form.customDeal,
       currency: currency.symbol,
     }),

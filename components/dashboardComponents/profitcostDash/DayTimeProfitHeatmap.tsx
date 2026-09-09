@@ -7,9 +7,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import RangeBadge from "@/components/ui/RangeBadge";
 import { Grid3x3 } from "lucide-react";
 
 export interface DayTimeProfitData {
@@ -93,6 +94,7 @@ export default function DayTimeProfitHeatmap({
             title=" Day × Time Profit Heatmap"
             subHeader="Average profit generation by hour and day of week"
           />
+          <RangeBadge />
         </div>
       </div>
 
@@ -154,7 +156,11 @@ export default function DayTimeProfitHeatmap({
                             className={`h-10 rounded flex items-center justify-center text-[10px] font-medium tracking-wide cursor-default ${getColor(profit)} ${getTextColor(profit)}`}
                           >
                             {profit >= 10000
-                              ? `${currency.symbol} ${formatCompactNumber(profit, currency.locale)}`
+                              ? formatCompactCurrency(
+                                  profit,
+                                  currency.symbol,
+                                  currency.locale,
+                                )
                               : formatCurrencySymbol(
                                   profit,
                                   currency.symbol,

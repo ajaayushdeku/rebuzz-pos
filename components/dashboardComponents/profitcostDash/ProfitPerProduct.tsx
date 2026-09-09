@@ -16,6 +16,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useProfitPerProduct } from "@/hooks/useProfitPerProduct";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import RangeBadge from "@/components/ui/RangeBadge";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -109,6 +110,7 @@ export default function ProfitPerProduct({
             title="Profit per Product"
             subHeader="Revenue, cost and margins for top selling products."
           />
+          <RangeBadge />
         </div>
       </div>
 

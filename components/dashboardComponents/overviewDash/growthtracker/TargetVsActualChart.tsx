@@ -17,7 +17,7 @@ import SetTargetsModal from "./SetTargetsModal";
 import SampleDataBadge from "@/components/ui/sampledatabadge";
 import { CustomTooltipProps } from "@/lib/types/chart";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import { fetchTargets } from "@/services/apiTarget.client";
 import { Target } from "lucide-react";
@@ -171,7 +171,7 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
 
   const isEmpty = chartData.every((d) => d.actual === 0 && d.target === 0);
   const formatYAxis = (value: number): string =>
-    `${currency.symbol} ${formatCompactNumber(value, currency.locale)}`;
+    formatCompactCurrency(value, currency.symbol, currency.locale);
   const yTicks = getYAxisTicks(chartData);
   const yMax = yTicks[yTicks.length - 1] * 1.05;
 

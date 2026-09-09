@@ -10,6 +10,7 @@ import {
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import RangeBadge from "@/components/ui/RangeBadge";
 import type { UnitEconomicsData } from "@/services/dashboardServices/apiProfitCost";
 
 export default function UnitEconomics({ data }: { data: UnitEconomicsData }) {
@@ -77,6 +78,7 @@ export default function UnitEconomics({ data }: { data: UnitEconomicsData }) {
           title="Unit Economics"
           subHeader="What one item, one order and one labour hour earn"
         />
+        <RangeBadge />
       </div>
 
       <div className="grid grid-cols-2 gap-5 mt-6 ">

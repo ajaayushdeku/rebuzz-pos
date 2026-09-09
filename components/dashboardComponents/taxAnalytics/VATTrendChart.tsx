@@ -13,13 +13,13 @@ import {
 import { Info, ChartSpline } from "lucide-react";
 import { mockVATTrendData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
-import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { ComponentHeader } from "@/components/ComponentHeader";
 
 const FmtRs = (v: number) => {
   const { currency } = useCurrency();
-  return `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`;
+  return formatCompactCurrency(v, currency.symbol, currency.locale);
 };
 
 const CustomTooltip = ({ active, payload, label }: any) => {

@@ -3,6 +3,7 @@ import { ICON_MAP } from "@/lib/config/dashboard";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { StatBoxProps } from "../StatBox";
 import { formatCurrencySymbol } from "@/utils/helper";
+import RangeTag from "@/components/ui/RangeTag";
 
 export default function StatBox({
   label,
@@ -36,9 +37,15 @@ export default function StatBox({
           <Icon size={16} className={iconColor ?? "text-gray-500"} />
         </div>
       </div>
-      <p className="text-lg font-bold text-gray-900 tracking-wide truncate">
-        {formatValue(value)}
-      </p>
+      {/* The tag rides the value row rather than competing with the label for
+          the top row's width — the same placement as the inventory summary
+          tiles, so a range-scoped figure looks the same wherever it appears. */}
+      <div className="flex items-baseline justify-between gap-2">
+        <p className="truncate text-lg font-bold tracking-wide text-gray-900">
+          {formatValue(value)}
+        </p>
+        <RangeTag />
+      </div>
     </div>
   );
 }

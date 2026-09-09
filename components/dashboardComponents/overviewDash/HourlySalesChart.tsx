@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef } from "react";
 import { CustomTooltipProps } from "@/lib/types/chart";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { HOUR_RANGES } from "@/utils/formatHourReportToday";
 
 import {
@@ -147,7 +147,7 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
   }, [data, selectedRange]);
 
   const formatYAxis = (value: number): string =>
-    `${currency.symbol} ${formatCompactNumber(value, currency.locale)}`;
+    formatCompactCurrency(value, currency.symbol, currency.locale);
 
   const maxRevenue = Math.max(...filteredData.map((d) => d.revenue), 0);
   const domainMax =

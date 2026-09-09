@@ -16,7 +16,7 @@ import type {
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { ComponentHeader } from "../ComponentHeader";
 import { ArrowLeftRight, AlertTriangle } from "lucide-react";
 import { useCashFlowTrend } from "@/hooks/useCashFlowTrend";
@@ -111,7 +111,7 @@ export default function CashFlowTrend() {
   const hasData = data.some((d) => d.inflow > 0 || d.outflow > 0);
 
   const fmtK = (v: number) => {
-    return `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`;
+    return formatCompactCurrency(v, currency.symbol, currency.locale);
   };
 
   if (isLoading)

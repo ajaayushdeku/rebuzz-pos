@@ -31,6 +31,36 @@ const formatCompactValue = (value: number): string => {
   return value.toFixed(1).replace(/\.0$/, "");
 };
 
+/**
+ * Puts a minus in front of the currency symbol rather than after it.
+ *
+ * Formatting the signed number and then prefixing the symbol produced
+ * "Rs -1,200.00", which reads as a symbol applied to nothing and is not how
+ * any locale writes a negative amount. The sign has to lead the whole thing.
+ *
+ * Takes the already-formatted string so it can be applied wherever a symbol is
+ * glued to a number, and reads the sign from the original value so an amount
+ * that rounds away to zero is not printed as a negative nothing.
+ */
+const withSign = (amount: number, formatted: string) =>
+  amount < 0 && /[1-9]/.test(formatted) ? `-${formatted}` : formatted;
+
+/**
+ * Symbol plus a compact number, for chart axes and other tight spaces.
+ *
+ * The pairing chart code used to write out by hand, which put the minus in the
+ * wrong place on any axis that runs below zero.
+ */
+export const formatCompactCurrency = (
+  amount: number,
+  symbol: string,
+  locale?: string,
+) =>
+  withSign(
+    amount,
+    `${symbol} ${formatCompactNumber(Math.abs(amount), locale)}`,
+  );
+
 // Format currency symbol only (no conversion)
 // Uses locale-aware number formatting (Indian/Nepali: 1,00,000 | Western: 1,000,000)
 // Very large values (≥ 1,00,00,000 Indian / ≥ 1,000,000 Western) are compacted
@@ -46,14 +76,14 @@ export const formatCurrencySymbol = (
 
   // Very large values — use compact notation so they fit in the UI
   if (abs >= threshold) {
-    return `${symbol} ${formatCompactNumber(amount, locale)}`;
+    return withSign(amount, `${symbol} ${formatCompactNumber(abs, locale)}`);
   }
 
   const formatted = new Intl.NumberFormat(numberLocale(locale), {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(amount);
-  return `${symbol} ${formatted}`;
+  }).format(abs);
+  return withSign(amount, `${symbol} ${formatted}`);
 };
 
 /* Formats an amount with locale-aware grouping */

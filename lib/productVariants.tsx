@@ -79,6 +79,31 @@ export function variantLabel(variant: NormalizedVariant | undefined): string {
   return variant?.optionValues.join(" · ") ?? "";
 }
 
+/**
+ * A chosen item as a customer would read it — "Momo · buff · large".
+ *
+ * Lives here rather than at each call site because a product id and a variant
+ * id only mean something together: a variant id is unique within its product,
+ * not across the catalogue, so resolving one without the other is wrong in a
+ * way that looks right until two products share an id.
+ *
+ * Returns undefined when nothing is chosen, so callers can fall back to
+ * generic wording ("a free item") instead of printing an empty name.
+ */
+export function productLabel(
+  products: Product[],
+  productId: string | undefined | null,
+  variantId?: string | null,
+): string | undefined {
+  if (!productId) return undefined;
+
+  const product = products.find((p) => p.id === productId);
+  if (!product) return undefined;
+
+  const label = variantLabel(findVariant(product, variantId));
+  return label ? `${product.name} · ${label}` : product.name;
+}
+
 /** Cheapest variant price, for "From X" in the product list. */
 export function lowestVariantPrice(
   product: Product | undefined | null,

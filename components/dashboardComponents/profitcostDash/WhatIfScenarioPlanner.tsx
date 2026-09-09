@@ -1,293 +1,354 @@
 "use client";
 
-import {
-  baseScenario,
-  defaultAdjustments,
-  sliderConfig,
-  ScenarioAdjustments,
-} from "@/lib/mockData/mock-whatifscenario";
 import { useMemo, useState } from "react";
-import { TrendingUp, TrendingDown, SlidersHorizontal } from "lucide-react";
-import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
+import {
+  Info,
+  Lock,
+  RotateCcw,
+  SlidersHorizontal,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
+
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import RangeBadge from "@/components/ui/RangeBadge";
+import type { ScenarioBaseline } from "@/services/dashboardServices/apiProfitCost";
 
-// function clamp(value: number, min: number, max: number) {
-//   return Math.min(max, Math.max(min, value));
-// }
+interface ScenarioAdjustments {
+  priceAdjustment: number;
+  volumeAdjustment: number;
+  cogsAdjustment: number;
+  laborAdjustment: number;
+}
 
-export default function WhatIfScenarioPlanner() {
+const DEFAULTS: ScenarioAdjustments = {
+  priceAdjustment: 0,
+  volumeAdjustment: 0,
+  cogsAdjustment: 0,
+  laborAdjustment: 0,
+};
+
+/**
+ * The levers, in the order an owner would reach for them.
+ *
+ * `locked` keeps a lever visible but inert. Labour is the one case: shifts
+ * record hours, but no employee carries a pay rate, so hours cannot become
+ * money. Any payroll the business records as an expense is already counted
+ * inside fixed costs and cannot be pulled back out to move on its own.
+ */
+const SLIDERS: {
+  key: keyof ScenarioAdjustments;
+  label: string;
+  hint: string;
+  min: number;
+  max: number;
+  /** True when a rise is bad — cost levers read the opposite way to revenue. */
+  isCost: boolean;
+  locked?: string;
+}[] = [
+  {
+    key: "priceAdjustment",
+    label: "Price",
+    hint: "Charge more or less per item",
+    min: -20,
+    max: 20,
+    isCost: false,
+  },
+  {
+    key: "volumeAdjustment",
+    label: "Sales volume",
+    hint: "Sell more or fewer items",
+    min: -30,
+    max: 30,
+    isCost: false,
+  },
+  {
+    key: "cogsAdjustment",
+    label: "Cost of goods",
+    hint: "What your stock costs you",
+    min: -30,
+    max: 30,
+    isCost: true,
+  },
+  {
+    key: "laborAdjustment",
+    label: "Labour cost",
+    hint: "Needs a pay rate on each employee",
+    min: -30,
+    max: 30,
+    isCost: true,
+    locked:
+      "Staff pay isn't recorded yet, so labour can't be modelled on its own. It is counted inside other costs.",
+  },
+];
+
+export default function WhatIfScenarioPlanner({
+  baseline,
+}: {
+  baseline: ScenarioBaseline;
+}) {
   const { currency } = useCurrency();
-  const [adjustments, setAdjustments] =
-    useState<ScenarioAdjustments>(defaultAdjustments);
+  const [adjustments, setAdjustments] = useState<ScenarioAdjustments>(DEFAULTS);
 
-  const handleChange = (key: keyof ScenarioAdjustments, value: number) => {
-    setAdjustments((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
+  const money = (value: number) =>
+    formatCurrencySymbol(value, currency.symbol, currency.locale);
 
-  const reset = () => setAdjustments(defaultAdjustments);
+  const set = (key: keyof ScenarioAdjustments, value: number) =>
+    setAdjustments((prev) => ({ ...prev, [key]: value }));
+
+  const touched = Object.values(adjustments).some((v) => v !== 0);
+
+  /**
+   * Everything spent that is not cost of goods.
+   *
+   * Fixed costs and variable expenses are summed because neither has a lever
+   * of its own: the sliders move price, volume and stock cost, and this is
+   * what sits underneath them.
+   */
+  const otherCosts = baseline.fixedCosts + baseline.variableExpenses;
+  const baselineProfit =
+    baseline.revenue + baseline.miscIncome - baseline.cogs - otherCosts;
+
+  /**
+   * Named for what the line actually contains.
+   *
+   * A business with no side income sees the plain word and is never asked to
+   * wonder what has been folded in.
+   */
+  const revenueLabel =
+    baseline.miscIncome > 0 ? "Revenue + Misc income" : "Revenue";
 
   const projected = useMemo(() => {
     const priceFactor = 1 + adjustments.priceAdjustment / 100;
     const volumeFactor = 1 + adjustments.volumeAdjustment / 100;
     const cogsFactor = 1 + adjustments.cogsAdjustment / 100;
-    const laborFactor = 1 + adjustments.laborAdjustment / 100;
 
-    const revenue = baseScenario.revenue * priceFactor * volumeFactor;
+    // Side income is added after the sliders, never through them: charging
+    // 10% more per item does not raise a supplier rebate or a sublet, and
+    // scaling it would credit the business with money it does not earn that
+    // way. It counts towards profit, it just does not move.
+    const revenue =
+      baseline.revenue * priceFactor * volumeFactor + baseline.miscIncome;
 
-    const cogs = baseScenario.cogs * cogsFactor;
-    const labor = baseScenario.labor * laborFactor;
-    const fixed = baseScenario.fixedCosts;
+    // Stock cost follows volume as well as its own slider: selling 20% more
+    // means buying 20% more, which a cost-only factor would miss.
+    const cogs = baseline.cogs * cogsFactor * volumeFactor;
 
-    const profit = revenue - (cogs + labor + fixed);
-
-    const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
-
-    const orders = Math.round(baseScenario.orders * volumeFactor);
+    const profit = revenue - cogs - otherCosts;
 
     return {
       revenue,
       cogs,
-      labor,
-      fixed,
       profit,
-      margin,
-      orders,
+      margin: revenue > 0 ? (profit / revenue) * 100 : 0,
+      orders: Math.round(baseline.orders * volumeFactor),
     };
-  }, [adjustments]);
+  }, [adjustments, baseline, otherCosts]);
 
-  const baselineProfit =
-    baseScenario.revenue -
-    (baseScenario.cogs + baseScenario.labor + baseScenario.fixedCosts);
-  const marginChange =
-    projected.margin - (baselineProfit / baseScenario.revenue) * 100;
+  const baselineMargin =
+    baseline.revenue > 0 ? (baselineProfit / baseline.revenue) * 100 : 0;
+  const marginChange = projected.margin - baselineMargin;
+  const profitChange = projected.profit - baselineProfit;
+  const better = profitChange >= 0;
+
+  const hasData = baseline.revenue > 0;
 
   return (
-    <div className="bg-slate-50 rounded-2xl border border-gray-200 shadow-sm p-5 w-full relative select-none">
-      {/* Lock overlay */}
-      <LockDimFeactureOverlay component_name="What If Scenario Planning" />
-
-      {/* Header */}
-      <div className="mb-6">
+    <div className="w-full rounded-2xl border border-gray-200 bg-white p-5">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-50">
             <SlidersHorizontal size={15} className="text-violet-600" />
           </div>
           <ComponentHeader
-            title=" What-If Scenario Planner"
-            subHeader="Adjust sliders to forecast profit impact"
+            title="What-If Scenario Planner"
+            subHeader="Move a lever to see what it would do to profit"
           />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <RangeBadge className="ml-0" />
+          {touched && (
+            <button
+              type="button"
+              onClick={() => setAdjustments(DEFAULTS)}
+              className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[12px] font-medium text-gray-600 transition hover:bg-gray-50"
+            >
+              <RotateCcw size={13} />
+              Reset
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Sliders Section */}
-        <div className="flex-1 space-y-6">
-          {sliderConfig.map((slider) => {
-            const value = adjustments[slider.key as keyof ScenarioAdjustments];
-            const isPositive = value > 0;
-            const isNegative = value < 0;
-            // For cost sliders (COGS, Labor), invert colors: right = more cost = red, left = less cost = green
-            const isCostSlider =
-              slider.key === "cogsAdjustment" ||
-              slider.key === "laborAdjustment";
-            const goodColor = isCostSlider
-              ? isNegative
-                ? "text-green-600"
-                : isPositive
-                  ? "text-red-600"
-                  : "text-gray-900"
-              : isPositive
-                ? "text-green-600"
-                : isNegative
-                  ? "text-red-600"
-                  : "text-gray-900";
-
-            return (
-              <div key={slider.key}>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">
-                    {slider.label}
-                  </span>
-                  <span className={`text-sm font-semibold ${goodColor}`}>
-                    {isPositive ? "+" : ""}
-                    {value}
-                    {slider.suffix}
-                  </span>
-                </div>
-
-                <div className="relative">
-                  <input
-                    type="range"
-                    min={slider.min}
-                    max={slider.max}
-                    step={slider.step}
-                    value={value}
-                    onChange={(e) =>
-                      handleChange(
-                        slider.key as keyof ScenarioAdjustments,
-                        Number(e.target.value),
-                      )
-                    }
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                  />
-                </div>
-
-                {/* <div className="flex justify-between text-xs text-gray-400 mt-1.5">
-                  <span>
-                    {slider.min}
-                    {slider.suffix}
-                  </span>
-                  <span>
-                    {slider.max}
-                    {slider.suffix}
-                  </span>
-                </div> */}
-              </div>
-            );
-          })}
-
-          <button
-            onClick={reset}
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium mt-4"
-          >
-            Reset All Sliders
-          </button>
-        </div>
-
-        {/* Projected Profit Card */}
-        <div className="lg:w-80">
-          <div className="bg-slate-900 rounded-xl p-6 text-white">
-            <div className="mb-6">
-              <p className="text-xs text-gray-400 mb-1">Projected Net Profit</p>
-              <div className="flex items-baseline gap-2">
-                <p className="text-3xl font-bold">
-                  {formatCurrencySymbol(
-                    projected.profit,
-                    currency.symbol,
-                    currency.locale,
-                  )}
+      {!hasData ? (
+        <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-[12px] text-gray-400">
+          No sales in this period, so there is nothing to model yet.
+        </p>
+      ) : (
+        <div className="flex flex-col gap-6">
+          {/* Outcome */}
+          <div>
+            <div className="rounded-xl bg-slate-900 p-5 text-white">
+              <p className="text-[11px] text-slate-400">Projected net profit</p>
+              <div className="mt-1 flex flex-wrap items-baseline gap-2">
+                <p className="text-[28px] font-bold leading-none tabular-nums">
+                  {money(projected.profit)}
                 </p>
-                {projected.profit !== baselineProfit && (
+                {touched && (
                   <span
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                      projected.profit > baselineProfit
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums ${
+                      better
                         ? "bg-green-500/20 text-green-400"
                         : "bg-red-500/20 text-red-400"
                     }`}
                   >
-                    {projected.profit > baselineProfit ? (
-                      <TrendingUp size={12} />
+                    {better ? (
+                      <TrendingUp size={11} />
                     ) : (
-                      <TrendingDown size={12} />
+                      <TrendingDown size={11} />
                     )}
-                    {projected.profit > baselineProfit ? "+" : ""}
-                    {formatCurrencySymbol(
-                      Math.abs(projected.profit - baselineProfit),
-                      currency.symbol,
-                      currency.locale,
-                    )}
+                    {better ? "+" : "−"}
+                    {money(Math.abs(profitChange))}
                   </span>
                 )}
               </div>
+
+              <div className="mt-5 grid grid-cols-2 gap-4 border-t border-white/10 pt-4">
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500">
+                    Margin
+                  </p>
+                  <p className="mt-0.5 text-[15px] font-bold tabular-nums">
+                    {projected.margin.toFixed(1)}%
+                    {touched && (
+                      <span
+                        className={`ml-1.5 text-[11px] font-semibold ${
+                          marginChange >= 0 ? "text-green-400" : "text-red-400"
+                        }`}
+                      >
+                        {marginChange >= 0 ? "+" : ""}
+                        {marginChange.toFixed(1)}
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500">
+                    Orders
+                  </p>
+                  <p className="mt-0.5 text-[15px] font-bold tabular-nums">
+                    {projected.orders.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+
+              {/* The figures the projection is built from, so the number above
+                  can be checked rather than trusted. */}
+              <div className="mt-4 space-y-1.5 border-t border-white/10 pt-4 text-[11px]">
+                <div className="flex justify-between gap-3">
+                  <span className="text-slate-400">{revenueLabel}</span>
+                  <span className="tabular-nums text-slate-200">
+                    {money(projected.revenue)}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-slate-400">Cost of goods</span>
+                  <span className="tabular-nums text-slate-200">
+                    −{money(projected.cogs)}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-slate-400">Other costs (Expenses)</span>
+                  <span className="tabular-nums text-slate-200">
+                    −{money(otherCosts)}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-3 border-t border-white/10 pt-1.5 font-semibold">
+                  <span className="text-slate-300">Baseline profit</span>
+                  <span className="tabular-nums text-slate-200">
+                    {money(baselineProfit)}
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <div className="mb-6">
-              <p className="text-xs text-gray-400 mb-1">Projected Margin</p>
-              <div className="flex items-center gap-2">
-                <p className="text-3xl font-bold">
-                  {projected.margin.toFixed(1)}%
-                </p>
-                <span
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                    marginChange >= 0
-                      ? "bg-green-500/20 text-green-400"
-                      : "bg-red-500/20 text-red-400"
-                  }`}
-                >
-                  {marginChange >= 0 ? (
-                    <TrendingUp size={12} />
-                  ) : (
-                    <TrendingDown size={12} />
-                  )}
-                  {marginChange >= 0 ? "+" : ""}
-                  {marginChange.toFixed(1)}%
+            {baseline.missing.length > 0 && (
+              <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800">
+                <Info className="mt-px h-3.5 w-3.5 shrink-0" />
+                <span>
+                  Some figures could not be loaded (
+                  {baseline.missing.join(", ")}), so this projection covers only
+                  part of the picture.
                 </span>
-              </div>
-            </div>
+              </p>
+            )}
+          </div>
 
-            <div className="pt-4 border-t border-gray-700">
-              <div className="flex justify-between items-center mb-2">
-                <p className="text-[10px] text-gray-500 uppercase tracking-wide">
-                  Baseline:{" "}
-                  {formatCurrencySymbol(
-                    baselineProfit,
-                    currency.symbol,
-                    currency.locale,
-                  )}
-                </p>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wide">
-                  New:{" "}
-                  {formatCurrencySymbol(
-                    projected.profit,
-                    currency.symbol,
-                    currency.locale,
-                  )}
-                </p>
-              </div>
-              <div className="relative h-2 bg-gray-700 rounded-full overflow-hidden">
-                {/* Calculate scale max */}
-                {(() => {
-                  const maxValue = Math.max(
-                    baselineProfit,
-                    projected.profit,
-                    baselineProfit * 1.2,
-                    1,
-                  );
-                  const baselineWidth = (baselineProfit / maxValue) * 100;
-                  const changeWidth =
-                    (Math.abs(projected.profit - baselineProfit) / maxValue) *
-                    100;
-                  const changeLeft =
-                    (Math.min(baselineProfit, projected.profit) / maxValue) *
-                    100;
+          {/* Levers */}
+          <div className="grid gap-5 sm:grid-cols-2">
+            {SLIDERS.map((slider) => {
+              const value = adjustments[slider.key];
+              const isLocked = Boolean(slider.locked);
 
-                  return (
-                    <>
-                      {/* Baseline fill (gray) - from 0 to baseline */}
-                      <div
-                        className="absolute top-0 bottom-0 bg-gray-500"
-                        style={{
-                          left: "0%",
-                          width: `${baselineWidth}%`,
-                        }}
-                      />
-                      {/* Change fill (green/red) - from baseline to new value */}
-                      {projected.profit !== baselineProfit && (
-                        <div
-                          className={`absolute top-0 bottom-0 ${
-                            projected.profit > baselineProfit
-                              ? "bg-green-500"
-                              : "bg-red-500"
-                          }`}
-                          style={{
-                            left: `${changeLeft}%`,
-                            width: `${changeWidth}%`,
-                          }}
-                        />
-                      )}
-                    </>
-                  );
-                })()}
-              </div>
-            </div>
+              // A cost going up is bad; revenue going up is good. Without this
+              // the colour would congratulate a rising stock bill.
+              const good = slider.isCost ? value < 0 : value > 0;
+              const bad = slider.isCost ? value > 0 : value < 0;
+
+              return (
+                <div
+                  key={slider.key}
+                  className={isLocked ? "opacity-50" : undefined}
+                >
+                  <div className="mb-1 flex items-baseline justify-between gap-3">
+                    <span className="flex items-center gap-1.5 text-[13px] font-semibold text-gray-800">
+                      {isLocked && <Lock size={11} className="shrink-0" />}
+                      {slider.label}
+                    </span>
+                    <span
+                      className={`text-[13px] font-bold tabular-nums ${
+                        good
+                          ? "text-green-600"
+                          : bad
+                            ? "text-red-600"
+                            : "text-gray-400"
+                      }`}
+                    >
+                      {value > 0 ? "+" : ""}
+                      {value}%
+                    </span>
+                  </div>
+
+                  <p className="mb-2 text-[11px] leading-relaxed text-gray-400">
+                    {slider.locked ?? slider.hint}
+                  </p>
+
+                  <input
+                    type="range"
+                    min={slider.min}
+                    max={slider.max}
+                    step={1}
+                    value={value}
+                    disabled={isLocked}
+                    aria-label={slider.label}
+                    onChange={(e) => set(slider.key, Number(e.target.value))}
+                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-violet-600 disabled:cursor-not-allowed"
+                  />
+
+                  <div className="mt-1 flex justify-between text-[10px] tabular-nums text-gray-300">
+                    <span>{slider.min}%</span>
+                    <span>0</span>
+                    <span>+{slider.max}%</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

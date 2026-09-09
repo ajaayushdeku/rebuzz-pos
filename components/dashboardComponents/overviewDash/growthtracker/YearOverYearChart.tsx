@@ -17,7 +17,7 @@ import SampleDataBadge from "@/components/ui/sampledatabadge";
 import { CustomTooltipProps } from "@/lib/types/chart";
 import { mockYearOverYearData } from "@/lib/mockData/mock-growthtrackerdata";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import { ChartColumnBig } from "lucide-react";
 // Types
@@ -166,7 +166,7 @@ export default function YearOverYearChart({ data }: YearOverYearProps) {
   const { currency } = useCurrency();
 
   const formatYAxis = (value: number): string =>
-    `${currency.symbol} ${formatCompactNumber(value, currency.locale)}`;
+    formatCompactCurrency(value, currency.symbol, currency.locale);
 
   const yTicks = getYAxisTicks(displayData);
   const yMax = yTicks[yTicks.length - 1] * 1.05;

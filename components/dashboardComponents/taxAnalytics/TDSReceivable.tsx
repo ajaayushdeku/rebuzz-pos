@@ -5,7 +5,7 @@ import { mockTDSReceivableData } from "@/lib/mockData/mock-tax-data";
 import type { TDSReceivableStatus } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
 
 const STATUS_CONFIG: Record<
@@ -30,7 +30,7 @@ export default function TDSReceivable() {
 
   function fmtK(v: number) {
     return v >= 1000
-      ? `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`
+      ? formatCompactCurrency(v, currency.symbol, currency.locale)
       : `Rs ${v}`;
   }
 

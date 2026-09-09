@@ -115,7 +115,10 @@ export default async function Page({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <ChartErrorBoundary>
             <Suspense fallback={<ChartSkeleton />}>
-              <ProfitWaterfallBridgeWrapper />
+              <ProfitWaterfallBridgeWrapper
+                startDate={effectiveStartDate}
+                endDate={effectiveEndDate}
+              />
             </Suspense>
           </ChartErrorBoundary>
 
@@ -185,7 +188,10 @@ export default async function Page({
         <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6">
           <ChartErrorBoundary>
             <Suspense fallback={<ChartSkeleton />}>
-              <WhatIfScenarioPlannerWrapper />
+              <WhatIfScenarioPlannerWrapper
+                startDate={effectiveStartDate}
+                endDate={effectiveEndDate}
+              />
             </Suspense>
           </ChartErrorBoundary>
 

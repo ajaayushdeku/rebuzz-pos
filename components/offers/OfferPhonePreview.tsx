@@ -23,6 +23,7 @@ import {
 
 import { useOfferForm } from "@/providers/OfferFormContext";
 import { useProductsList } from "@/hooks/useProductsList";
+import { productLabel } from "@/lib/productVariants";
 import { useBusiness } from "@/hooks/useBusiness";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -162,7 +163,13 @@ export default function OfferPhonePreview() {
   const { badge, headline } = offerCopy({
     dealId: form.discountKind,
     amount: form.discount,
-    freeItemName: products.find((p) => p.id === form.freeItemId)?.name,
+    // The variant, not just the product: an offer on the large buff momo
+    // previewing as "a free Momo" promises something the offer does not.
+    freeItemName: productLabel(
+      products,
+      form.freeItemId,
+      form.freeItemVariantId,
+    ),
     customDeal: form.customDeal,
     currency: currency.symbol,
   });

@@ -20,7 +20,7 @@ import {
 import type { MarginTrendPoint } from "@/lib/mockData/mock-profitcost-advanced";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCompactNumber } from "@/utils/helper";
+import { formatCompactCurrency } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import { ChartSpline } from "lucide-react";
 
@@ -80,7 +80,11 @@ const CustomTooltip = ({
               <span className="font-bold text-gray-800">
                 {entry.name === "Margin %" || entry.name === "forecastMarginMax"
                   ? `${entry.value}%`
-                  : `${currency.symbol} ${formatCompactNumber(Number(entry.value), currency.locale)}`}
+                  : formatCompactCurrency(
+                      Number(entry.value),
+                      currency.symbol,
+                      currency.locale,
+                    )}
               </span>
             </div>
           ),
@@ -198,7 +202,7 @@ export default function MarginProfitForecastChart() {
             yAxisId="profit"
             orientation="left"
             tickFormatter={(v) =>
-              `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`
+              formatCompactCurrency(v, currency.symbol, currency.locale)
             }
             axisLine={false}
             tickLine={false}

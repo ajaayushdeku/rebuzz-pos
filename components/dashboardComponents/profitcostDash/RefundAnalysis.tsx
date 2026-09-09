@@ -16,6 +16,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useRefundAnalysis } from "@/hooks/useRefundAnalysis";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import RangeBadge from "@/components/ui/RangeBadge";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -118,6 +119,7 @@ export default function RefundAnalysis({
             title="Refund Analysis"
             subHeader="All the refunded bills with lost value."
           />
+          <RangeBadge />
         </div>
       </div>
 

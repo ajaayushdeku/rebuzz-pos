@@ -14,7 +14,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
-import { formatCompactNumber, formatCurrencySymbol } from "@/utils/helper";
+import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { ComponentHeader } from "../ComponentHeader";
 import { ExpenseBudgetGaugesSkeleton } from "./ExpenseAnalyticsSkeletons";
@@ -43,7 +43,7 @@ function RadialGauge({
 
   const fmtK = (v: number) =>
     v >= 1000
-      ? `${currency.symbol} ${formatCompactNumber(v, currency.locale)}`
+      ? formatCompactCurrency(v, currency.symbol, currency.locale)
       : `${currency.symbol} ${v}`;
 
   return (
@@ -75,7 +75,9 @@ function RadialGauge({
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className={`text-lg font-bold tracking-wide ${textColor}`}>{pct}%</span>
+          <span className={`text-lg font-bold tracking-wide ${textColor}`}>
+            {pct}%
+          </span>
         </div>
       </div>
 
@@ -312,7 +314,9 @@ export default function ExpenseBudgetGauges() {
               </p>
               <span className={`${stat.color}`}>{stat.icon}</span>
             </div>
-            <p className="text-xl font-bold text-gray-900 tracking-wide">{stat.display}</p>
+            <p className="text-xl font-bold text-gray-900 tracking-wide">
+              {stat.display}
+            </p>
           </div>
         ))}
       </div>
