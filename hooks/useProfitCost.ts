@@ -94,7 +94,10 @@ export const useGrossProfitTrend = () =>
 export const useProfitPerProduct = () =>
   useQuery({
     queryKey: ["profit-per-product"],
-    queryFn: getProfitPerProduct,
+    // Wrapped rather than passed by reference: react-query calls queryFn with
+    // its own context object, which would arrive as the start date now that
+    // this function takes one.
+    queryFn: () => getProfitPerProduct(),
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });

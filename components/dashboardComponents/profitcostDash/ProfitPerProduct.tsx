@@ -54,6 +54,10 @@ export default function ProfitPerProduct({
   );
   const products = fetchedData ?? initialProducts ?? [];
 
+  // The sales report does not always carry tax per line. Rather than show a
+  // column of dashes, the column appears only once something reports one.
+  const hasTax = products.some((p) => p.tax !== null);
+
   const filtered = useMemo(() => {
     if (!search) return products;
     const q = search.toLowerCase();
@@ -175,6 +179,19 @@ export default function ProfitPerProduct({
                   COGS {SortIcon({ colKey: "cogs" })}
                 </span>
               </th>
+              {/* Hidden entirely when the report carries no tax, rather than
+                  shown as a column of dashes taking room from the figures
+                  that are there. */}
+              {/* {hasTax && (
+                <th
+                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("tax")}
+                >
+                  <span className="flex items-center justify-end gap-1">
+                    Tax {SortIcon({ colKey: "tax" })}
+                  </span>
+                </th>
+              )} */}
               <th
                 className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                 onClick={() => toggleSort("profit")}
@@ -196,7 +213,7 @@ export default function ProfitPerProduct({
           <tbody>
             {isFetching && !fetchedData ? (
               <tr>
-                <td colSpan={6} className="text-center py-12">
+                <td colSpan={hasTax ? 7 : 6} className="text-center py-12">
                   <div className="flex items-center justify-center gap-2">
                     <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
                     <span className="text-sm text-gray-400">Loading...</span>
@@ -206,7 +223,7 @@ export default function ProfitPerProduct({
             ) : paged.length === 0 ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={hasTax ? 7 : 6}
                   className="text-center py-2 text-sm text-gray-400"
                 >
                   <div className="flex flex-col items-center justify-center py-12">
@@ -251,6 +268,18 @@ export default function ProfitPerProduct({
                       currency.locale,
                     )}
                   </td>
+                  {/* {hasTax && (
+                    <td className="py-3 px-4 text-right tracking-wide font-semibold text-xs text-gray-500">
+                    
+                      {product.tax === null
+                        ? "—"
+                        : formatCurrencySymbol(
+                            product.tax,
+                            currency.symbol,
+                            currency.locale,
+                          )}
+                    </td>
+                  )} */}
 
                   <td
                     className={`py-3 px-4 text-right tracking-wide text-xs font-semibold  ${getProfitColor(product.profit)}`}

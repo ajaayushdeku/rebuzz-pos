@@ -6,6 +6,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import { Scale, Info, Loader2 } from "lucide-react";
 import { MonthYearFilter, MONTHS } from "@/components/ui/MonthYearFilter";
+import ExpenseBadge from "@/components/ui/ExpenseBadge";
 import type { BreakEvenData } from "@/services/dashboardServices/apiProfitCost";
 
 export default function BreakEvenMarginSafety() {
@@ -66,7 +67,8 @@ export default function BreakEvenMarginSafety() {
 
   const header = (
     <div className="mb-6 flex items-center justify-between gap-3 flex-wrap">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-row items-center justify-center gap-3 ">
+        {" "}
         <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
           <Scale size={15} className="text-emerald-600" />
         </div>
@@ -76,12 +78,16 @@ export default function BreakEvenMarginSafety() {
         />
       </div>
 
-      <MonthYearFilter
-        month={month}
-        year={year}
-        onMonthChange={setMonth}
-        onYearChange={setYear}
-      />
+      <div className="flex items-center justify-between gap-2">
+        {" "}
+        <ExpenseBadge className="ml-0" />{" "}
+        <MonthYearFilter
+          month={month}
+          year={year}
+          onMonthChange={setMonth}
+          onYearChange={setYear}
+        />
+      </div>
     </div>
   );
 
@@ -114,6 +120,7 @@ export default function BreakEvenMarginSafety() {
   const {
     revenue,
     miscIncome,
+    tax,
     breakEvenPoint,
     fixedCosts,
     variableCosts,
@@ -262,6 +269,19 @@ export default function BreakEvenMarginSafety() {
             <p className="text-[11px] text-gray-400">Misc income</p>
             <p className="mt-0.5 text-sm font-semibold tracking-wide tabular-nums text-gray-800">
               {money(miscIncome)}
+            </p>
+          </div>
+        )}
+
+        {/* Broken out of the variable costs beside it, because a reader who
+            knows their stock bill will otherwise wonder why that figure is
+            larger than expected. Same rule as misc income: shown only when
+            there is some. */}
+        {tax > 0 && (
+          <div>
+            <p className="text-[11px] text-gray-400">Tax (in variable)</p>
+            <p className="mt-0.5 text-sm font-semibold tracking-wide tabular-nums text-gray-800">
+              {money(tax)}
             </p>
           </div>
         )}

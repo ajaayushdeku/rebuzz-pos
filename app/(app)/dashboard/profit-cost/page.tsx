@@ -92,42 +92,42 @@ export default async function Page({
           </Suspense>
         </ChartErrorBoundary>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <ChartErrorBoundary>
-            <Suspense fallback={<ProfitPerProductSkeleton />}>
-              <ProfitPerProductWrapper
-                startDate={effectiveStartDate}
-                endDate={effectiveEndDate}
-              />
-            </Suspense>
-          </ChartErrorBoundary>
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> */}
+        <ChartErrorBoundary>
+          <Suspense fallback={<ProfitPerProductSkeleton />}>
+            <ProfitPerProductWrapper
+              startDate={effectiveStartDate}
+              endDate={effectiveEndDate}
+            />
+          </Suspense>
+        </ChartErrorBoundary>
 
-          <ChartErrorBoundary>
-            <Suspense fallback={<TableSkeleton rows={4} />}>
-              <RefundAnalysisWrapper
-                startDate={effectiveStartDate}
-                endDate={effectiveEndDate}
-              />
-            </Suspense>
-          </ChartErrorBoundary>
-        </div>
+        <ChartErrorBoundary>
+          <Suspense fallback={<TableSkeleton rows={4} />}>
+            <RefundAnalysisWrapper
+              startDate={effectiveStartDate}
+              endDate={effectiveEndDate}
+            />
+          </Suspense>
+        </ChartErrorBoundary>
+        {/* </div> */}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <ChartErrorBoundary>
-            <Suspense fallback={<ChartSkeleton />}>
-              <ProfitWaterfallBridgeWrapper
-                startDate={effectiveStartDate}
-                endDate={effectiveEndDate}
-              />
-            </Suspense>
-          </ChartErrorBoundary>
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> */}
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <ProfitWaterfallBridgeWrapper
+              startDate={effectiveStartDate}
+              endDate={effectiveEndDate}
+            />
+          </Suspense>
+        </ChartErrorBoundary>
 
-          <ChartErrorBoundary>
-            <Suspense fallback={<ChartSkeleton />}>
-              <ProfitVarianceBridgeWrapper />
-            </Suspense>
-          </ChartErrorBoundary>
-        </div>
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <ProfitVarianceBridgeWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+        {/* </div> */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <ChartErrorBoundary>

@@ -12,6 +12,8 @@ import {
   TrendingUp,
   PlusCircle,
   Wallet,
+  Boxes,
+  Landmark,
   RotateCcw,
   HandCoins,
   type LucideIcon,
@@ -22,6 +24,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import { MonthYearFilter } from "@/components/ui/MonthYearFilter";
+import ExpenseBadge from "@/components/ui/ExpenseBadge";
 import { getPurposeColor } from "@/providers/ExpenseContext";
 import { getPurposeIcon } from "@/lib/purpose-icons";
 
@@ -103,6 +106,16 @@ function monthRange(month: number, year: number) {
 interface SankeyData {
   grossRevenue: number;
   miscIncome: number;
+  /**
+   * What the goods sold cost, as far as the till knows.
+   *
+   * Only items carrying a cost price contribute; a customised line carries
+   * none, so this is the recorded part of the cost and never more than the
+   * real one.
+   */
+  itemCost: number;
+  /** Tax charged on sales — collected as revenue, owed onwards. */
+  taxCollected: number;
   refunds: number;
   expensesByPurpose: ExpenseByPurpose[];
   isLoading: boolean;
@@ -112,6 +125,8 @@ interface SankeyData {
 const EMPTY_DATA: SankeyData = {
   grossRevenue: 0,
   miscIncome: 0,
+  itemCost: 0,
+  taxCollected: 0,
   refunds: 0,
   expensesByPurpose: [],
   isLoading: true,
@@ -148,10 +163,45 @@ async function fetchSankeyData(
     0;
   const refunds = Number(refundField) || 0;
 
-  const [expenseRes, purposeRes] = await Promise.all([
+  const [expenseRes, purposeRes, salesRes] = await Promise.all([
     fetch(`/api/expense?month=${month}&year=${year}`, { cache: "no-store" }),
     fetch("/api/expense/purpose", { cache: "no-store" }),
+    fetch(`/api/report/salesByItem?startDate=${startDate}&endDate=${endDate}`, {
+      cache: "no-store",
+    }),
   ]);
+
+  const salesJson = salesRes.ok ? await salesRes.json() : null;
+  const soldItems = (salesJson?.data ?? []) as {
+    totalRevenue?: number;
+    costPrice?: number;
+    totalTax?: number;
+    price?: number;
+    count?: number;
+  }[];
+
+  // Unit cost times units, the same rule the waterfall and break-even use.
+  //
+  // Not `totalRevenue - netProfit`, which was the first attempt: a customised
+  // line carries no cost price, and that subtraction hands back whatever the
+  // report chose to call profit on it — quietly charging the customisation to
+  // cost of goods. Reading `costPrice` directly means an item without one
+  // contributes nothing, which is the truth about what is on record.
+  const itemCost = soldItems.reduce(
+    (sum, i) => sum + (i.costPrice ?? 0) * (i.count ?? 0),
+    0,
+  );
+
+  // `totalRevenue` is tax-inclusive: the pre-tax value of a line is price ×
+  // count, and the report elsewhere derives tax as the difference. Prefer the
+  // report's own `totalTax` where it sends one and fall back to that
+  // subtraction, since the two are documented in different places here.
+  const taxCollected = soldItems.reduce((sum, i) => {
+    const stated = i.totalTax;
+    if (typeof stated === "number" && stated > 0) return sum + stated;
+    const preTax = (i.price ?? 0) * (i.count ?? 0);
+    return sum + Math.max(0, (i.totalRevenue ?? 0) - preTax);
+  }, 0);
 
   const expenseJson = expenseRes.ok ? await expenseRes.json() : null;
   const transactions = (expenseJson?.data?.transactions ?? []) as {
@@ -196,6 +246,8 @@ async function fetchSankeyData(
   return {
     grossRevenue,
     miscIncome,
+    itemCost,
+    taxCollected,
     refunds,
     expensesByPurpose,
     isLoading: false,
@@ -209,6 +261,8 @@ const NODE_IDS = {
   gross: "gross",
   misc: "misc",
   totalIncome: "total-income",
+  itemCost: "item-cost",
+  tax: "tax",
   refunds: "refunds",
   profit: "profit",
   deficit: "deficit",
@@ -220,8 +274,15 @@ const NODE_IDS = {
  *
  *   Gross Revenue ┐
  *                 ├→ Total Income ┬→ Net Profit
- *   Misc. Income ─┘               ├→ each expense purpose
+ *   Misc. Income ─┘               ├→ Cost of Goods
+ *                                 ├→ Tax
+ *                                 ├→ each expense purpose
  *                                 └→ Refunds
+ *
+ * Cost of goods and tax belong here because both are already inside the income
+ * above them: sales revenue from this API is tax-inclusive, and the goods were
+ * paid for out of it. Without them the diagram called everything left after
+ * tracked expenses "net profit", which overstated it by both.
  */
 const DEPTH = {
   source: 0,
@@ -236,6 +297,10 @@ const PALETTE = {
   incomeText: "#14532D",
   totalFill: "#15734A",
   totalText: "#FFFFFF",
+  itemCostFill: "#C2703D",
+  itemCostText: "#FFFFFF",
+  taxFill: "#7C6BC4",
+  taxText: "#FFFFFF",
   refundsFill: "#F0952E",
   refundsText: "#FFFFFF",
   profitFill: "#4A7EBB",
@@ -259,10 +324,14 @@ interface FlowStages {
   grossRevenue: number;
   miscIncome: number;
   totalIncome: number;
+  itemCost: number;
+  taxCollected: number;
   refunds: number;
-  /** Income after refunds — the pot expenses and profit come out of. */
+  /** Income after refunds — the pot every cost comes out of. */
   netRevenue: number;
   expenses: number;
+  /** Cost of goods, tax and tracked expenses together. */
+  outflows: number;
   netProfit: number;
   refundsCapped: boolean;
 }
@@ -271,8 +340,8 @@ interface FlowStages {
  * Each figure is derived from the one before it, so the diagram balances by
  * construction:
  *
- *   grossRevenue + miscIncome           = totalIncome
- *   totalIncome − refunds − expenses    = netProfit
+ *   grossRevenue + miscIncome                              = totalIncome
+ *   totalIncome − refunds − itemCost − tax − expenses      = netProfit
  */
 function computeStages(data: SankeyData): FlowStages {
   const grossRevenue = Math.max(0, data.grossRevenue);
@@ -284,16 +353,23 @@ function computeStages(data: SankeyData): FlowStages {
   const refunds = Math.min(rawRefunds, totalIncome);
   const netRevenue = totalIncome - refunds;
 
+  const itemCost = Math.max(0, data.itemCost);
+  const taxCollected = Math.max(0, data.taxCollected);
   const expenses = data.expensesByPurpose.reduce((s, e) => s + e.amount, 0);
-  const netProfit = netRevenue - expenses;
+
+  const outflows = itemCost + taxCollected + expenses;
+  const netProfit = netRevenue - outflows;
 
   return {
     grossRevenue,
     miscIncome,
     totalIncome,
+    itemCost,
+    taxCollected,
     refunds,
     netRevenue,
     expenses,
+    outflows,
     netProfit,
     refundsCapped: rawRefunds > totalIncome,
   };
@@ -379,6 +455,36 @@ function buildGraph(
     });
   }
 
+  // Cost of goods and tax sit above the purposes: both are usually larger than
+  // any of them, and both are costs the business never chose line by line.
+  if (s.itemCost > 0) {
+    nodes.push({
+      id: NODE_IDS.itemCost,
+      name: "Cost of Goods",
+      color: PALETTE.itemCostFill,
+      onFill: PALETTE.itemCostText,
+      depth: DEPTH.outcome,
+      icon: Boxes,
+      displayValue: s.itemCost,
+      share: pct(s.itemCost),
+      caption: "items with a cost price",
+    });
+  }
+
+  if (s.taxCollected > 0) {
+    nodes.push({
+      id: NODE_IDS.tax,
+      name: "Tax",
+      color: PALETTE.taxFill,
+      onFill: PALETTE.taxText,
+      depth: DEPTH.outcome,
+      icon: Landmark,
+      displayValue: s.taxCollected,
+      share: pct(s.taxCollected),
+      caption: "collected on sales",
+    });
+  }
+
   for (const e of expensesByPurpose) {
     nodes.push({
       id: `exp-${e.purposeId}`,
@@ -410,38 +516,51 @@ function buildGraph(
     });
   }
 
-  // ── Expense links ──
+  // ── Cost links ──
+  // Cost of goods and tax are funded exactly like the expense purposes, so
+  // they join the same list rather than getting their own branch.
+  const costs: { id: string; amount: number }[] = [
+    ...(s.itemCost > 0 ? [{ id: NODE_IDS.itemCost, amount: s.itemCost }] : []),
+    ...(s.taxCollected > 0
+      ? [{ id: NODE_IDS.tax, amount: s.taxCollected }]
+      : []),
+    ...expensesByPurpose.map((e) => ({
+      id: `exp-${e.purposeId}`,
+      amount: e.amount,
+    })),
+  ];
+
   if (s.netProfit >= 0) {
-    for (const e of expensesByPurpose) {
+    for (const c of costs) {
       links.push({
         source: NODE_IDS.totalIncome,
-        target: `exp-${e.purposeId}`,
-        value: e.amount,
+        target: c.id,
+        value: c.amount,
       });
     }
   } else {
-    // Loss: expenses outran what was left after refunds. The shortfall enters
+    // Loss: the costs outran what was left after refunds. The shortfall enters
     // as its own source rather than distorting any input. Nothing in the data
-    // says which purpose went unfunded, so every purpose draws the same
-    // proportion from income and the rest from the deficit.
+    // says which cost went unfunded, so every one draws the same proportion
+    // from income and the rest from the deficit.
     const shortfall = Math.abs(s.netProfit);
-    const incomeShare = s.expenses > 0 ? s.netRevenue / s.expenses : 0;
+    const incomeShare = s.outflows > 0 ? s.netRevenue / s.outflows : 0;
 
-    for (const e of expensesByPurpose) {
-      const fromIncome = e.amount * incomeShare;
-      const fromDeficit = e.amount - fromIncome;
+    for (const c of costs) {
+      const fromIncome = c.amount * incomeShare;
+      const fromDeficit = c.amount - fromIncome;
 
       if (fromIncome > 0) {
         links.push({
           source: NODE_IDS.totalIncome,
-          target: `exp-${e.purposeId}`,
+          target: c.id,
           value: fromIncome,
         });
       }
       if (fromDeficit > 0) {
         links.push({
           source: NODE_IDS.deficit,
-          target: `exp-${e.purposeId}`,
+          target: c.id,
           value: fromDeficit,
         });
       }
@@ -700,11 +819,13 @@ export default function RevenueFlowSankey() {
     })),
   };
 
-  // The outcome column is the tallest: Net Profit, one node per expense
-  // purpose, and Refunds. The chart has to grow with it.
+  // The outcome column is the tallest: Net Profit, cost of goods, tax, one
+  // node per expense purpose, and Refunds. The chart has to grow with it.
   const lastColumnCount = Math.max(
     data.expensesByPurpose.length +
       (stages.netProfit > 0 ? 1 : 0) +
+      (stages.itemCost > 0 ? 1 : 0) +
+      (stages.taxCollected > 0 ? 1 : 0) +
       (stages.refunds > 0 ? 1 : 0),
     2,
   );
@@ -733,28 +854,32 @@ export default function RevenueFlowSankey() {
       <div className="mb-4">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3">
+            {" "}
             <div className="w-8 h-8 rounded-lg bg-cyan-50 flex items-center justify-center shrink-0">
               <Waypoints size={15} className="text-cyan-600" />
             </div>
             <ComponentHeader
               title="Revenue Flow (Sankey Diagram)"
-              subHeader="Income sources → Total Income → Expenses / Refunds / Net Profit"
+              subHeader="Income sources → Total Income → Cost of Goods / Tax / Expenses / Refunds / Net Profit"
             />
           </div>
 
-          {/* Month / Year filter — shared with Break-even. */}
-          <MonthYearFilter
-            month={month}
-            year={year}
-            onMonthChange={setMonth}
-            onYearChange={setYear}
-          />
+          <div className="flex items-center justify-between gap-2">
+            <ExpenseBadge className="ml-0" />
+            {/* Month / Year filter — shared with Break-even. */}
+            <MonthYearFilter
+              month={month}
+              year={year}
+              onMonthChange={setMonth}
+              onYearChange={setYear}
+            />
+          </div>
         </div>
       </div>
 
       {data.isLoading ? (
         <div
-          className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 flex flex-col items-center justify-center gap-3 text-gray-400"
+          className="bg-white p-16 flex flex-col items-center justify-center gap-3 text-gray-400"
           style={{ height: chartHeight }}
         >
           <Loader2 className="h-6 w-6 animate-spin" />
@@ -857,6 +982,25 @@ export default function RevenueFlowSankey() {
                           </tspan>
                         )}
                       </text>
+
+                      {/* A third line, only in the final column and only
+                          where a node needs a caveat said out loud — cost of
+                          goods covering just the items that carry a cost
+                          price. Confined to that column because it is the one
+                          with the page margin to its right; anywhere else a
+                          caption this long runs into the next column. */}
+                      {node.caption && node.depth === MAX_DEPTH && (
+                        <text
+                          x={labelX}
+                          y={midY + 23}
+                          fill="#94A3B8"
+                          fontSize={9.5}
+                          fontWeight={500}
+                          {...halo}
+                        >
+                          {node.caption}
+                        </text>
+                      )}
 
                       <text
                         x={labelX}

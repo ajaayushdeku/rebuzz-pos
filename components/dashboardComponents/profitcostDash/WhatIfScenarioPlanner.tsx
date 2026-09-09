@@ -14,6 +14,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import RangeBadge from "@/components/ui/RangeBadge";
+import ExpenseBadge from "@/components/ui/ExpenseBadge";
 import type { ScenarioBaseline } from "@/services/dashboardServices/apiProfitCost";
 
 interface ScenarioAdjustments {
@@ -109,7 +110,11 @@ export default function WhatIfScenarioPlanner({
    */
   const otherCosts = baseline.fixedCosts + baseline.variableExpenses;
   const baselineProfit =
-    baseline.revenue + baseline.miscIncome - baseline.cogs - otherCosts;
+    baseline.revenue +
+    baseline.miscIncome -
+    baseline.cogs -
+    baseline.tax -
+    otherCosts;
 
   /**
    * Named for what the line actually contains.
@@ -136,11 +141,18 @@ export default function WhatIfScenarioPlanner({
     // means buying 20% more, which a cost-only factor would miss.
     const cogs = baseline.cogs * cogsFactor * volumeFactor;
 
-    const profit = revenue - cogs - otherCosts;
+    // Tax has no slider — nobody chooses their rate — but it is not fixed
+    // either. It is a share of takings, so it rides the same price and volume
+    // factors as the sales it sits inside. Holding it still would credit every
+    // extra sale with tax the business does not get to keep.
+    const tax = baseline.tax * priceFactor * volumeFactor;
+
+    const profit = revenue - cogs - tax - otherCosts;
 
     return {
       revenue,
       cogs,
+      tax,
       profit,
       margin: revenue > 0 ? (profit / revenue) * 100 : 0,
       orders: Math.round(baseline.orders * volumeFactor),
@@ -170,6 +182,7 @@ export default function WhatIfScenarioPlanner({
 
         <div className="flex items-center gap-2">
           <RangeBadge className="ml-0" />
+          <ExpenseBadge className="ml-0" />
           {touched && (
             <button
               type="button"
@@ -260,6 +273,16 @@ export default function WhatIfScenarioPlanner({
                     −{money(projected.cogs)}
                   </span>
                 </div>
+                {/* Shown only where tax was charged, so a business that
+                    charges none is not asked to read a row of zeroes. */}
+                {baseline.tax > 0 && (
+                  <div className="flex justify-between gap-3">
+                    <span className="text-slate-400">Tax</span>
+                    <span className="tabular-nums text-slate-200">
+                      −{money(projected.tax)}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between gap-3">
                   <span className="text-slate-400">Other costs (Expenses)</span>
                   <span className="tabular-nums text-slate-200">

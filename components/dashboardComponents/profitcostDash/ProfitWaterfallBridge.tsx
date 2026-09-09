@@ -16,6 +16,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import RangeBadge from "@/components/ui/RangeBadge";
+import ExpenseBadge from "@/components/ui/ExpenseBadge";
 import type {
   ProfitWaterfall,
   WaterfallStep,
@@ -58,10 +59,6 @@ function StepTooltip({
         </p>
       ) : step.deduction > 0 ? (
         <>
-          {/* The running total before this step, what it takes, and what is
-              left — `value` is already the after figure, so before is simply
-              it plus the deduction. Showing the arithmetic is the point of a
-              waterfall; one running total alone leaves it to be inferred. */}
           <p className="flex flex-row justify-between gap-4 text-gray-500">
             Before
             <span className="tabular-nums text-gray-700">
@@ -82,8 +79,6 @@ function StepTooltip({
           </p>
         </>
       ) : (
-        // Start and end steps take nothing, so a before/after pair would print
-        // the same number twice.
         <p className="flex flex-row justify-between gap-4 text-gray-500">
           Running total
           <span className="font-bold tabular-nums text-gray-800">
@@ -110,25 +105,26 @@ export default function ProfitWaterfallBridge({
   const net = steps[steps.length - 1]?.value ?? 0;
   const hasData = steps.length > 0 && revenue > 0;
 
-  // Wide enough that every step keeps a readable label; the container below
-  // scrolls once that exceeds the space available. Sized off the longest label
-  // rather than fixed, because a step named after a purpose the business chose
-  // — or the combined revenue line — can be far wider than "Labour", and
-  // recharts prints axis ticks on one line whatever the column width.
   const longestLabel = Math.max(...steps.map((s) => s.label.length), 0);
-  const chartWidth = steps.length * Math.max(86, longestLabel * 6);
+  const chartWidth = steps.length * Math.max(86, longestLabel * 4);
 
   return (
     <div className="w-full rounded-2xl border border-gray-200 bg-white p-5">
-      <div className="mb-6 flex items-center gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-teal-50">
-          <ChartColumnDecreasing size={15} className="text-teal-600" />
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-teal-50">
+            <ChartColumnDecreasing size={15} className="text-teal-600" />
+          </div>
+          <ComponentHeader
+            title="Profit Waterfall Bridge"
+            subHeader="Where each rupee of revenue goes, from gross to net"
+          />
         </div>
-        <ComponentHeader
-          title="Profit Waterfall Bridge"
-          subHeader="Where each rupee of revenue goes, from gross to net"
-        />
-        <RangeBadge />
+
+        <div className="flex items-center gap-2">
+          <RangeBadge />
+          <ExpenseBadge className="ml-0" />
+        </div>
       </div>
 
       {!hasData ? (
@@ -137,17 +133,13 @@ export default function ProfitWaterfallBridge({
         </p>
       ) : (
         <>
-          {/* Scrollbar left out of the layout entirely, as elsewhere in the
-              dashboard: with nothing drawn there is nothing to appear on one
-              card and not the next. Wheel, touch, keyboard and drag all still
-              scroll it. */}
           <div className="overflow-x-auto scrollbar-hide [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div style={{ minWidth: chartWidth }}>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart
                   data={steps}
                   margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
-                  barCategoryGap="25%"
+                  barCategoryGap="10%"
                 >
                   <CartesianGrid vertical={false} stroke="#f3f4f6" />
                   <XAxis
@@ -165,7 +157,7 @@ export default function ProfitWaterfallBridge({
                     axisLine={false}
                     tickLine={false}
                     tick={{ fill: "#9ca3af", fontSize: 11 }}
-                    width={56}
+                    width={65}
                   />
                   <Tooltip
                     content={<StepTooltip />}
@@ -181,26 +173,17 @@ export default function ProfitWaterfallBridge({
             </div>
           </div>
 
-          {/* The two ends stated in words. A waterfall shows the shape of the
-              journey; these are the numbers it starts and finishes on. */}
           <div className="mt-2 flex flex-wrap items-center justify-between tracking-wide gap-3 border-t border-gray-100 pt-3 text-[12px]">
             <span className="text-gray-500">
-              From{"  "}
+              From:{"  "}
               <span className="font-semibold tracking-wide tabular-nums text-gray-800">
                 {money(revenue)}
-              </span>
-              {"  "}
-              {/* Named by the first step rather than hardcoded to "revenue",
-                  which stops being the whole truth once side income is folded
-                  into it. */}
-              {(steps[0]?.label ?? "revenue").toLowerCase()}
+              </span>{" "}
+              [{(steps[0]?.label ?? "revenue").toLowerCase()}]
             </span>
-            <span className="flex items-center gap-1.5 text-gray-400">
-              <Lock size={11} />
-              Labour not yet tracked
-            </span>
+
             <span className="text-gray-500">
-              to{" "}
+              To:{" "}
               <span
                 className={`font-semibold tracking-wide tabular-nums ${
                   net >= 0 ? "text-green-600" : "text-red-600"
@@ -208,7 +191,12 @@ export default function ProfitWaterfallBridge({
               >
                 {money(net)}
               </span>{" "}
-              net profit
+              [net profit]
+            </span>
+
+            <span className="flex items-center gap-1.5 text-gray-400">
+              <Lock size={11} />
+              Labour not yet tracked
             </span>
           </div>
 

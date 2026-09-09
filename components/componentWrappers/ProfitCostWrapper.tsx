@@ -65,7 +65,9 @@ export async function ProfitPerProductWrapper({
   startDate: string;
   endDate: string;
 }) {
-  const profitPerProduct = await getProfitPerProduct();
+  // Passed through, so the first paint already covers the selected range
+  // rather than the year to date the client query then replaces.
+  const profitPerProduct = await getProfitPerProduct(startDate, endDate);
   return (
     <ProfitPerProduct
       products={profitPerProduct}

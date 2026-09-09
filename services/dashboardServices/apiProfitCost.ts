@@ -20,6 +20,7 @@ import { RawReport, RawReportResponse } from "@/lib/types/report";
 import { DayTimeProfitData } from "@/components/dashboardComponents/profitcostDash/DayTimeProfitHeatmap";
 import { formatDayTimeProfitAverages } from "@/utils/formatHourReportToday";
 import { classifyExpenses } from "@/lib/costClassification";
+import { mergeSalesItems } from "@/lib/profitPerProduct";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
@@ -120,40 +121,30 @@ export async function getGrossProfitTrendData(): Promise<ProfitTrendData[]> {
   return json.data ?? [];
 }
 
-export async function getProfitPerProduct(): Promise<Product[]> {
+/**
+ * Revenue, cost and margin per product.
+ *
+ * Server-rendered so the table has rows on first paint; useProfitPerProduct
+ * then refetches on the client whenever the range changes. The two derive
+ * their figures the same way on purpose — a different rule here would make the
+ * numbers visibly jump the moment the client query resolved.
+ */
+export async function getProfitPerProduct(
+  startDate?: string,
+  endDate?: string,
+): Promise<Product[]> {
   const today = new Date();
   const defaultStart = new Date(today.getFullYear(), 0, 1); // Start of current year (Jan 1)
 
-  const start = defaultStart.toISOString().split("T")[0];
-  const end = today.toISOString().split("T")[0];
+  const start = startDate ?? defaultStart.toISOString().split("T")[0];
+  const end = endDate ?? today.toISOString().split("T")[0];
 
   const res = await axios.get(
     `${BASE}/business/report/salesByItem?startDate=${start}&endDate=${end}`,
     { headers: await authHeaders() },
   );
 
-  const rawItems: {
-    itemName: string;
-    totalRevenue: number;
-    count: number;
-    profit?: number;
-    costPrice?: number;
-  }[] = res.data?.data ?? [];
-
-  return rawItems.map((item) => {
-    const revenue = item.totalRevenue ?? 0;
-    const cost = (item.costPrice ?? 0) * (item.count ?? 0);
-    const profit = item.profit ?? revenue - cost;
-    const margin = revenue > 0 ? Math.round((profit / revenue) * 100) : 0;
-
-    return {
-      name: item.itemName,
-      revenue,
-      cogs: cost,
-      profit,
-      margin,
-    };
-  });
+  return mergeSalesItems(res.data?.data ?? []);
 }
 
 export async function getRefundReason(): Promise<RefundReason[]> {
@@ -292,7 +283,29 @@ type UnitEconomicsSalesItem = {
   count?: number;
   costPrice?: number;
   netProfit?: number;
+  totalRevenue?: number;
+  /** Pre-tax unit price. `totalRevenue` for the line includes tax. */
+  price?: number;
+  totalTax?: number;
 };
+
+/**
+ * Tax charged on a period's sales.
+ *
+ * Sales revenue from this report is tax-inclusive: the pre-tax value of a line
+ * is price × count, and the tax pages here derive tax as the difference. The
+ * report's own `totalTax` is preferred where it sends one, with that
+ * subtraction as the fallback, because the two are documented in different
+ * places in this codebase and only live data settles which is current.
+ */
+function salesTax(items: UnitEconomicsSalesItem[]): number {
+  return items.reduce((sum, i) => {
+    if (typeof i.totalTax === "number" && i.totalTax > 0)
+      return sum + i.totalTax;
+    const preTax = (i.price ?? 0) * (i.count ?? 0);
+    return sum + Math.max(0, (i.totalRevenue ?? 0) - preTax);
+  }, 0);
+}
 
 type UnitEconomicsShift = {
   totalHours?: string; // "HH:MM:SS"
@@ -402,9 +415,9 @@ export async function getUnitEconomics(
 // second is the more direct reading, and it needs no assumption that variable
 // costs scale linearly.
 //
-// Variable cost is COGS — the cost of goods actually sold — plus any expense
-// the classifier did not recognise as fixed. Fixed costs come from recorded
-// expenses, classified by lib/costClassification.
+// Variable cost is COGS — the cost of goods actually sold — plus tax charged
+// on those sales, plus any expense the classifier did not recognise as fixed.
+// Fixed costs come from recorded expenses, classified by lib/costClassification.
 
 export interface BreakEvenData {
   /** Sales revenue plus income recorded in the expense tracker. */
@@ -414,6 +427,13 @@ export interface BreakEvenData {
    * is showing. Zero when the tracker recorded none.
    */
   miscIncome: number;
+  /**
+   * Tax charged on sales, part of `variableCosts`.
+   *
+   * Kept separately only so the card can name it. It belongs on the variable
+   * side because it is a share of every sale rather than a monthly commitment.
+   */
+  tax: number;
   fixedCosts: number;
   variableCosts: number;
   /**
@@ -634,8 +654,15 @@ export async function getBreakEvenData(
     }),
   );
 
-  // Variable expenses sit alongside COGS: both scale with trading.
-  const variableCosts = cogs + variableExpenses;
+  // Tax joins the variable side, and for consistency rather than prudence:
+  // `revenue` above is tax-inclusive, so part of every sale is the
+  // government's. Comparing takings that contain tax against a target with no
+  // tax in it flatters the business and shows break-even reached earlier than
+  // it really is. Both halves now sit on the same basis.
+  const tax = salesTax(items);
+
+  // Variable expenses sit alongside COGS: all three scale with trading.
+  const variableCosts = cogs + variableExpenses + tax;
 
   // Still reported, though break-even no longer divides by it: it is the
   // clearest single measure of whether each sale carries its own weight.
@@ -650,6 +677,7 @@ export async function getBreakEvenData(
   return {
     revenue,
     miscIncome,
+    tax,
     fixedCosts: fixed,
     variableCosts,
     breakEvenPoint,
@@ -678,6 +706,15 @@ export interface ScenarioBaseline {
   miscIncome: number;
   /** Cost of goods sold — the part that moves with volume. */
   cogs: number;
+  /**
+   * Tax charged on sales. Inside `revenue`, which this report gives
+   * tax-inclusive, and owed onwards rather than kept.
+   *
+   * It has no slider of its own because it is not a lever: it follows takings
+   * at whatever rate the till charges. It moves with price and volume all the
+   * same, which is why it is here rather than folded into fixed costs.
+   */
+  tax: number;
   /** Recorded expenses classified as fixed. Payroll lands here too. */
   fixedCosts: number;
   /** Recorded expenses that are neither fixed nor cost of goods. */
@@ -788,6 +825,7 @@ export async function getScenarioBaseline(
     // the business does not earn that way.
     miscIncome: sumMiscIncome(transactions, start, end),
     cogs,
+    tax: salesTax(items),
     fixedCosts: fixed,
     variableExpenses: variable,
     orders: report?.totalSales ?? 0,
@@ -937,6 +975,20 @@ export async function getProfitWaterfall(
     type: "deduct",
   });
 
+  // Tax comes out next, because the revenue at the left includes it. It was
+  // collected from customers and is owed onwards, so leaving it in overstated
+  // every step after this one.
+  const tax = salesTax(items);
+  if (tax > 0) {
+    running -= tax;
+    steps.push({
+      label: "Tax",
+      value: running,
+      deduction: tax,
+      type: "deduct",
+    });
+  }
+
   // Labour, shown but inert: no employee carries a pay rate, so hours cannot
   // become money. Deducts nothing — payroll a business does record appears
   // under its own purpose below, and subtracting here would double-count it.
@@ -1022,18 +1074,36 @@ interface PeriodFigures {
   /** The side-income part of `revenue`, kept only to name the bar. */
   miscIncome: number;
   cogs: number;
+  /** Tax charged on sales — inside `revenue`, and owed onwards. */
+  tax: number;
   /** Expense total per purpose name. */
   byPurpose: Map<string, number>;
   ok: boolean;
 }
 
-/** Revenue, cost of goods and expenses-by-purpose for one window. */
+/**
+ * Revenue, cost of goods and expenses-by-purpose for one window.
+ *
+ * `expenseWindow` lets spending be counted over a wider span than trading.
+ * Sales can only be read up to today, but an expense dated the 12th is this
+ * month's expense whether or not the 12th has arrived — rent is owed on its
+ * date, not on the day someone opens the dashboard. Break-even already treats
+ * the two the same way. Defaults to the trading window when not given.
+ */
 async function periodFigures(
   start: string,
   end: string,
   headers: Record<string, string>,
+  expenseWindow?: { start: string; end: string },
 ): Promise<PeriodFigures> {
-  const months = monthsBetween(start, end);
+  const spend = expenseWindow ?? { start, end };
+
+  // Fetch every month either window touches, so a wider spending window can't
+  // ask for transactions that were never requested.
+  const months = monthsBetween(
+    start < spend.start ? start : spend.start,
+    end > spend.end ? end : spend.end,
+  );
 
   const [reportRes, salesRes, purposeRes, ...expenseResults] =
     await Promise.allSettled([
@@ -1082,11 +1152,15 @@ async function periodFigures(
   for (const t of transactions) {
     if (t.kind !== "expense") continue;
     const day = String(t.date ?? "").slice(0, 10);
-    if (day < start || day > end) continue;
+    // The spending window, which may run past the last day traded.
+    if (day < spend.start || day > spend.end) continue;
     const label = purposeName.get(String(t.purposeId)) ?? "Uncategorised";
     byPurpose.set(label, (byPurpose.get(label) ?? 0) + (Number(t.amount) || 0));
   }
 
+  // Income keeps the trading window. A cost dated ahead is a commitment
+  // already made; income dated ahead has not arrived, and counting it would
+  // credit the month with money against sales that stop at today.
   const miscIncome = sumMiscIncome(transactions, start, end);
 
   return {
@@ -1098,6 +1172,7 @@ async function periodFigures(
       (sum, i) => sum + (i.costPrice ?? 0) * (i.count ?? 0),
       0,
     ),
+    tax: salesTax(items),
     byPurpose,
     ok: Boolean(report) && salesRes.status === "fulfilled",
   };
@@ -1141,11 +1216,18 @@ export async function getProfitVariance(): Promise<ProfitVariance> {
     end: iso(new Date(year, month, 0)),
   };
 
-  const inProgress = current.end < iso(new Date(year, month + 1, 0));
+  const monthEnd = iso(new Date(year, month + 1, 0));
+  const inProgress = current.end < monthEnd;
 
   const headers = await authHeaders();
   const [now, before] = await Promise.all([
-    periodFigures(current.start, current.end, headers),
+    // Spending is counted to the end of the month even though trading stops at
+    // today, so an expense dated the 12th is in this month's figures on the
+    // 9th. Last month needs no widening — it is already whole.
+    periodFigures(current.start, current.end, headers, {
+      start: current.start,
+      end: monthEnd,
+    }),
     periodFigures(previous.start, previous.end, headers),
   ]);
 
@@ -1156,8 +1238,11 @@ export async function getProfitVariance(): Promise<ProfitVariance> {
   const expensesOf = (f: PeriodFigures) =>
     Array.from(f.byPurpose.values()).reduce((sum, v) => sum + v, 0);
 
-  const prevNet = before.revenue - before.cogs - expensesOf(before);
-  const currNet = now.revenue - now.cogs - expensesOf(now);
+  // Tax is deducted alongside cost of goods: it sits inside `revenue`, which
+  // this report gives tax-inclusive, and it is owed onwards rather than kept.
+  const prevNet =
+    before.revenue - before.cogs - before.tax - expensesOf(before);
+  const currNet = now.revenue - now.cogs - now.tax - expensesOf(now);
 
   /** One cause, carrying both months' figures and its effect on profit. */
   type Cause = {
@@ -1200,6 +1285,7 @@ export async function getProfitVariance(): Promise<ProfitVariance> {
       false,
     ),
     cause("Cost of goods", now.cogs, before.cogs, true),
+    cause("Tax", now.tax, before.tax, true),
   ].filter((c) => c.impact !== 0);
 
   const purposeLabels = new Set([

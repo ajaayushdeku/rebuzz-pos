@@ -15,6 +15,7 @@ import { ArrowLeftRight, Info } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import ExpenseBadge from "@/components/ui/ExpenseBadge";
 import type {
   ProfitVariance,
   VarianceBar,
@@ -28,23 +29,7 @@ const BAR_COLORS: Record<VarianceBar["type"], string> = {
   result: "#94a3b8",
 };
 
-/**
- * A running total that has fallen below zero — the business is in a loss at
- * that point in the chain.
- *
- * Deeper than the red used for a cause that merely hurt, because it says
- * something stronger: not "this went the wrong way" but "everything up to here
- * adds up to a loss".
- */
 const BELOW_ZERO = "#b91c1c";
-
-/**
- * Bars that keep their own colour below the axis.
- *
- * Revenue and the two net-profit bars are identified by colour rather than
- * judged by it, so recolouring them where the chain dips would cost the reader
- * the one thing those columns are for.
- */
 const KEEPS_COLOUR: VarianceBar["type"][] = ["revenue", "base", "result"];
 
 const barFill = (bar: VarianceBar) =>
@@ -76,9 +61,6 @@ function CauseTooltip({
   const money = (v: number) =>
     formatCurrencySymbol(v, currency.symbol, currency.locale);
 
-  // The two end bars are net profit itself rather than a cause of it, so they
-  // carry no impact. Their variance is simply the difference between the two
-  // months, where a rise is unambiguously good.
   const isEnd = bar.type === "base" || bar.type === "result";
   const variance = isEnd ? bar.current - bar.previous : bar.impact;
   const helped = variance > 0;
@@ -100,9 +82,6 @@ function CauseTooltip({
         </span>
       </p>
 
-      {/* On a cost line this is not the difference of the two figures above —
-          spending less is a smaller number and a better result, so the sign is
-          flipped to read as an effect on profit. */}
       <p
         className={`mt-1 flex flex-row justify-between gap-4 border-t border-gray-100 pt-1 ${
           variance === 0
@@ -120,8 +99,6 @@ function CauseTooltip({
         </span>
       </p>
 
-      {/* The bar is drawn at the running total, not at either month's figure,
-          so without this line its height would go unexplained. */}
       {!isEnd && (
         <p className="mt-1 flex flex-row justify-between gap-4 border-t border-gray-100 pt-1 text-gray-500">
           Profit so far
@@ -146,32 +123,17 @@ export default function ProfitVarianceBridge({
   const { currency } = useCurrency();
   const { bars, current, previous, inProgress, missing } = data;
 
-  const money = (v: number) =>
-    formatCurrencySymbol(v, currency.symbol, currency.locale);
+  // const money = (v: number) =>
+  //   formatCurrencySymbol(v, currency.symbol, currency.locale);
 
-  const from = bars[0]?.value ?? 0;
-  const to = bars[bars.length - 1]?.value ?? 0;
-  const change = to - from;
-  const up = change >= 0;
+  // const from = bars[0]?.value ?? 0;
+  // const to = bars[bars.length - 1]?.value ?? 0;
+  // const change = to - from;
+  // const up = change >= 0;
 
-  // Two end bars and nothing between them means every cause cancelled to zero,
-  // which is not a chart worth drawing.
   const hasData = bars.length > 2;
-
-  // Wide enough that every cause keeps a readable label; the container scrolls
-  // once that exceeds the space available. Sized off the longest label rather
-  // than fixed, because a bar named after a purpose the business chose — or
-  // the combined revenue line — can be far wider than "Rent", and recharts
-  // prints axis ticks on one line whatever the column width.
   const longestLabel = Math.max(...bars.map((b) => b.label.length), 0);
-  const chartWidth = bars.length * Math.max(90, longestLabel * 6);
-
-  /**
-   * The month a window falls in, by name.
-   *
-   * Built from the parts rather than `new Date(iso)`, which reads a bare date
-   * as UTC midnight and in any negative offset renders the month before.
-   */
+  const chartWidth = bars.length * Math.max(90, longestLabel * 4);
   const monthName = (iso: string, withYear = true) => {
     const [y, m] = iso.split("-").map(Number);
     return new Date(y, m - 1, 1).toLocaleDateString(currency.locale, {
@@ -180,7 +142,6 @@ export default function ProfitVarianceBridge({
     });
   };
 
-  /** Days of this month the figures actually cover, the 1st included. */
   const dayCount = Number(current.end.slice(8, 10));
 
   return (
@@ -193,6 +154,7 @@ export default function ProfitVarianceBridge({
           title="Profit Variance Bridge"
           subHeader={`Why did net profit move in ${monthName(current.start)} vs ${monthName(previous.start)}?`}
         />
+        <ExpenseBadge />
       </div>
 
       {!hasData ? (
@@ -211,7 +173,7 @@ export default function ProfitVarianceBridge({
                 <BarChart
                   data={bars}
                   margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
-                  barCategoryGap="20%"
+                  barCategoryGap="10%"
                 >
                   <CartesianGrid vertical={false} stroke="#f3f4f6" />
                   <XAxis
@@ -222,8 +184,7 @@ export default function ProfitVarianceBridge({
                     interval={0}
                     dy={8}
                   />
-                  {/* Axis left to the data. A fixed domain would clip a real
-                      loss, and net profit here is free to go below zero. */}
+
                   <YAxis
                     tickFormatter={(v) =>
                       formatCompactCurrency(v, currency.symbol, currency.locale)
@@ -231,7 +192,7 @@ export default function ProfitVarianceBridge({
                     axisLine={false}
                     tickLine={false}
                     tick={{ fill: "#9ca3af", fontSize: 11 }}
-                    width={56}
+                    width={65}
                   />
                   <Tooltip
                     content={<CauseTooltip />}
@@ -281,11 +242,12 @@ export default function ProfitVarianceBridge({
           {inProgress && (
             <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800">
               <Info className="mt-px h-3.5 w-3.5 shrink-0" />
+
               <span>
-                This month covers {dayCount} {dayCount === 1 ? "day" : "days"}{" "}
-                so far, against a full {monthName(previous.start, false)}. Costs
-                will look lower than they will end up. Expect the gap to close
-                as the month fills in.
+                Sales cover {dayCount} {dayCount === 1 ? "day" : "days"} so far,
+                against a full {monthName(previous.start, false)}. Expenses
+                count the whole month, including any dated later, so takings
+                will catch up as the month fills in.
               </span>
             </p>
           )}
