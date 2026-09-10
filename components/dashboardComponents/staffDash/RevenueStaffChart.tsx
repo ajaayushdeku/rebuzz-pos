@@ -17,6 +17,7 @@ import { CustomTooltipProps } from "@/lib/types/chart";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import RangeBadge from "@/components/ui/RangeBadge";
 import { ChartColumnBig } from "lucide-react";
 
 export interface StaffRevenue {
@@ -99,6 +100,7 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
             title="Revenue per Employee"
             subHeader="Individual contribution to total revenue"
           />
+          <RangeBadge />
         </div>
       </div>
 

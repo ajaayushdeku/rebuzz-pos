@@ -59,15 +59,15 @@ const Page = async ({
             <EmployeeDateFilter />
           </div>
 
-          <Button
-            className="flex text-sm items-center gap-2 bg-transparent border-dashed border-[1px] border-blue-400 text-blue-500 font-semibold hover:bg-blue-100 hover:text-blue-500 hover:border-blue-500  cursor-pointer"
-            asChild
-          >
-            <Link href="/settings/employees">
+          <button className="flex flex-row items-center rounded-md text-sm px-2.5 py-2 md:py-1.5 gap-2 bg-transparent border-dashed border-[1px] border-blue-400 text-blue-500 font-semibold hover:bg-blue-100 hover:text-blue-500 hover:border-blue-500  cursor-pointer">
+            <Link
+              href="/settings/employees"
+              className="flex flex-row items-center gap-2"
+            >
               <UserPlus className="h-4 w-4" />
               <span className="hidden lg:block">Manage Employees</span>
             </Link>
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -92,8 +92,8 @@ const Page = async ({
           </Suspense>
         </ChartErrorBoundary>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* <ChartErrorBoundary>
+        {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-4"> */}
+        {/* <ChartErrorBoundary>
           <Suspense fallback={<TableSkeleton rows={3} />}>
             <ShiftAnalysisWrapper
               range={range}
@@ -102,26 +102,26 @@ const Page = async ({
             />
           </Suspense>
         </ChartErrorBoundary> */}
-          <ChartErrorBoundary>
-            <Suspense fallback={<LatestShiftsSkeleton />}>
-              <LatestShiftsWrapper
-                range={range}
-                startDate={hasCustomDates ? startDate : undefined}
-                endDate={hasCustomDates ? endDate : undefined}
-              />
-            </Suspense>
-          </ChartErrorBoundary>
+        <ChartErrorBoundary>
+          <Suspense fallback={<LatestShiftsSkeleton />}>
+            <LatestShiftsWrapper
+              range={range}
+              startDate={hasCustomDates ? startDate : undefined}
+              endDate={hasCustomDates ? endDate : undefined}
+            />
+          </Suspense>
+        </ChartErrorBoundary>
 
-          <ChartErrorBoundary>
-            <Suspense fallback={<StaffRevenueSkeleton />}>
-              <StaffRevenueWrapper
-                range={range}
-                startDate={hasCustomDates ? startDate : undefined}
-                endDate={hasCustomDates ? endDate : undefined}
-              />
-            </Suspense>
-          </ChartErrorBoundary>
-        </div>
+        <ChartErrorBoundary>
+          <Suspense fallback={<StaffRevenueSkeleton />}>
+            <StaffRevenueWrapper
+              range={range}
+              startDate={hasCustomDates ? startDate : undefined}
+              endDate={hasCustomDates ? endDate : undefined}
+            />
+          </Suspense>
+        </ChartErrorBoundary>
+        {/* </div> */}
 
         <ChartErrorBoundary>
           <Suspense fallback={<TableSkeleton />}>

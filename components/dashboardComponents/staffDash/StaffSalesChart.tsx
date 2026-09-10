@@ -25,6 +25,7 @@ import {
 import SampleDataBadge from "@/components/ui/sampledatabadge";
 import StaffFilterModal from "./StaffFilterModal";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import RangeBadge from "@/components/ui/RangeBadge";
 import { FilterSelect } from "@/components/ui/FilterSelect";
 import { HOUR_RANGES } from "@/utils/formatHourReportToday";
 
@@ -318,60 +319,59 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Hour Range Filter — same control as the hourly sales trend */}
-            <FilterSelect
-              value={presetValue}
-              options={HOUR_RANGE_OPTIONS}
-              onChange={handlePresetChange}
-              className="w-[210px]"
-            />
-
-            <div className="w-px h-6 bg-gray-300 mx-1" />
-
-            {/* Custom From / To hour inputs */}
-            <div className="flex items-center gap-1.5">
-              <label className="text-xs text-gray-400 whitespace-nowrap">
-                From
-              </label>
-              <input
-                type="number"
-                min={0}
-                max={23}
-                value={fromHour}
-                onChange={(e) => handleFromChange(Number(e.target.value))}
-                className="w-14 text-xs border border-gray-200 rounded-lg px-2 py-2.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          <div className="flex flex-row-reverse md:flex-row items-center gap-2">
+            <RangeBadge className="ml-0" />
+            <div className="flex flex-row-reverese md:flex-row items-center">
+              {/* Hour Range Filter — same control as the hourly sales trend */}
+              <FilterSelect
+                value={presetValue}
+                options={HOUR_RANGE_OPTIONS}
+                onChange={handlePresetChange}
+                className="w-[210px]"
               />
-              <label className="text-xs text-gray-400 whitespace-nowrap">
-                To
-              </label>
-              <input
-                type="number"
-                min={0}
-                max={23}
-                value={toHour}
-                onChange={(e) => handleToChange(Number(e.target.value))}
-                className="w-14 text-xs border border-gray-200 rounded-lg px-2 py-2.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              />
+              <div className="w-px h-6 bg-gray-300 mx-1" />
+              {/* Custom From / To hour inputs */}
+              <div className="flex items-center gap-1.5">
+                <label className="text-xs text-gray-400 whitespace-nowrap">
+                  From
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  max={23}
+                  value={fromHour}
+                  onChange={(e) => handleFromChange(Number(e.target.value))}
+                  className="w-14 text-xs border border-gray-200 rounded-lg px-2 py-2.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+                <label className="text-xs text-gray-400 whitespace-nowrap">
+                  To
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  max={23}
+                  value={toHour}
+                  onChange={(e) => handleToChange(Number(e.target.value))}
+                  className="w-14 text-xs border border-gray-200 rounded-lg px-2 py-2.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+              {/* Employee filter */}
+              {!isEmpty && allStaffNames.length > 0 && (
+                <button
+                  onClick={() => setModalOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-xl hover:bg-blue-50 transition-colors shrink-0"
+                >
+                  <SlidersHorizontal size={12} />
+                  Filter Employee
+                  {selectedStaff.length < allStaffNames.length && (
+                    <span className="bg-blue-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold">
+                      {selectedStaff.length}
+                    </span>
+                  )}
+                </button>
+              )}
             </div>
-
-            {/* Employee filter */}
-            {!isEmpty && allStaffNames.length > 0 && (
-              <button
-                onClick={() => setModalOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-xl hover:bg-blue-50 transition-colors shrink-0"
-              >
-                <SlidersHorizontal size={12} />
-                Filter Employee
-                {selectedStaff.length < allStaffNames.length && (
-                  <span className="bg-blue-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold">
-                    {selectedStaff.length}
-                  </span>
-                )}
-              </button>
-            )}
           </div>
-
           {rangeError && <p className="text-xs text-red-500">{rangeError}</p>}
         </div>
       </div>

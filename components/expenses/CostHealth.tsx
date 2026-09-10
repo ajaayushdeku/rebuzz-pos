@@ -3,6 +3,8 @@
 import { useMemo, useState, createElement } from "react";
 import type { CostHealthStatus } from "@/lib/mockData/mock-expense-data";
 import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
+import RangeBadge from "@/components/ui/RangeBadge";
+import { useMonthlySalesRevenue } from "@/hooks/useMonthlySalesRevenue";
 import { getPurposeIcon } from "@/lib/purpose-icons";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -59,15 +61,20 @@ type CostCard = {
   purposeId: string;
   label: string;
   amount: number;
-  pct: number;
+  /** Share of revenue, or null when revenue for the month is unknown. */
+  pct: number | null;
   target: number;
-  status: CostHealthStatus;
+  status: CostHealthStatus | null;
   iconKey: string;
   iconColor: string;
 };
 
 type SpendOverview = {
   totalSpend: number;
+  /** Sales for the month plus miscellaneous income. Null when unknown. */
+  revenue: number | null;
+  miscIncome: number;
+  /** Tracker income minus tracker expenses — not the shop's net profit. */
   netProfit: number;
   netProfitMarginPct: number;
   fixedPct: number;
@@ -82,9 +89,10 @@ type SpendOverview = {
 
 function CostHealthCard({ card }: { card: CostCard }) {
   const { currency } = useCurrency();
-  const s = STATUS_STYLES[card.status];
-  const barPct = Math.min((card.pct / card.target) * 100, 100);
-  const barColor = getBarColor(card.status);
+  const s = card.status ? STATUS_STYLES[card.status] : null;
+  const barPct =
+    card.pct === null ? 0 : Math.min((card.pct / card.target) * 100, 100);
+  const barColor = card.status ? getBarColor(card.status) : "#cbd5e1";
   const Icon = getPurposeIcon(card.iconKey, card.label);
 
   const radius = 27;
@@ -106,11 +114,13 @@ function CostHealthCard({ card }: { card: CostCard }) {
           <p className="text-sm font-semibold text-gray-900">{card.label}</p>
         </div>
 
-        <span
-          className={`px-3 py-1 rounded-full border text-[11px] font-semibold ${s.bg} ${s.text} ${s.border}`}
-        >
-          {card.status}
-        </span>
+        {s && (
+          <span
+            className={`px-3 py-1 rounded-full border text-[11px] font-semibold ${s.bg} ${s.text} ${s.border}`}
+          >
+            {card.status}
+          </span>
+        )}
       </div>
 
       {/* Main metric */}
@@ -153,7 +163,7 @@ function CostHealthCard({ card }: { card: CostCard }) {
         {/* Percentage + amount */}
         <div className="flex flex-col tracking-wide">
           <span className="text-3xl font-bold tracking-tight text-gray-950">
-            {card.pct.toFixed(1)}%
+            {card.pct === null ? "—" : `${card.pct.toFixed(1)}%`}
           </span>
           <span className="text-xs text-gray-400 font-medium mt-0.5">
             {formatMoney(card.amount)}
@@ -178,7 +188,9 @@ function CostHealthCard({ card }: { card: CostCard }) {
 
       {/* Footer */}
       <div className="flex items-center justify-between mt-3">
-        <p className="text-xs text-gray-400">of revenue</p>
+        <p className="text-xs text-gray-400">
+          {card.pct === null ? "revenue unavailable" : "of revenue"}
+        </p>
         <p className="text-xs text-gray-400">target ≤ {card.target}%</p>
       </div>
     </div>
@@ -252,7 +264,10 @@ function FixedVariableDonut({
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-gray-800" />
             <span className="text-xs font-semibold text-gray-800 flex flex-row items-center gap-2">
-              <span className="tracking-wide"> Fixed costs {fixedPct.toFixed(2)}%</span>
+              <span className="tracking-wide">
+                {" "}
+                Fixed costs {fixedPct.toFixed(2)}%
+              </span>
               <span className="font-semibold text-gray-500 tracking-wide">
                 {fmtRs(fixedAmount)}
               </span>
@@ -284,7 +299,20 @@ function FixedVariableDonut({
 
 export default function CostHealth() {
   const { currency } = useCurrency();
-  const { transactions, expensePurposes, summary, isLoading } = useTracker();
+  const { transactions, expensePurposes, summary, isLoading, month, year } =
+    useTracker();
+
+  // The tracker's own income total is miscellaneous income — rebates, scrap
+  // sales, the odd refund — and never the shop's takings. Dividing a cost by
+  // it answered a question nobody asked: with no misc income logged every
+  // category read 0% and "Healthy", and with a little logged they read in the
+  // hundreds. Sales come from the report API, the same figure Profit & Cost
+  // uses, so the two pages agree.
+  const {
+    salesRevenue,
+    isLoading: isRevenueLoading,
+    hasRevenue,
+  } = useMonthlySalesRevenue(month, year);
 
   // Build purposeId → { name, icon } lookup
   const purposeLookup = useMemo(() => {
@@ -300,8 +328,12 @@ export default function CostHealth() {
     cards: CostCard[];
     overview: SpendOverview;
   }>(() => {
-    const revenue = summary.incomeTotal || 0;
+    const miscIncome = summary.incomeTotal || 0;
     const totalSpend = summary.expenseTotal || 0;
+
+    // Matches the rest of the app: misc income helps pay the bills, so it
+    // belongs in revenue, but it is an addition to sales and never a stand-in.
+    const revenue = hasRevenue ? salesRevenue + miscIncome : null;
 
     // Group expenses by purposeId
     const spendByPurpose = new Map<string, number>();
@@ -331,9 +363,13 @@ export default function CostHealth() {
         const name = purpose?.name ?? purposeId;
         const icon = purpose?.icon ?? "";
         const pct =
-          revenue > 0 ? Math.round((amount / revenue) * 1000) / 10 : 0;
+          revenue !== null && revenue > 0
+            ? Math.round((amount / revenue) * 1000) / 10
+            : null;
         const target = DEFAULT_TARGET;
-        const status = getStatus(pct, target);
+        // No verdict without a denominator. A card that says "Healthy" because
+        // it could not read revenue is worse than one that says nothing.
+        const status = pct === null ? null : getStatus(pct, target);
         return {
           purposeId,
           label: name,
@@ -346,10 +382,12 @@ export default function CostHealth() {
         };
       });
 
-    // Calculate overview
-    const netProfit = revenue - totalSpend;
+    // The Spend overview tile stays on tracker figures, as its own caption
+    // says. Feeding sales into it would print takings minus a few logged
+    // expenses and call that net profit, with no cost of goods and no tax.
+    const netProfit = miscIncome - totalSpend;
     const netProfitMarginPct =
-      revenue > 0 ? Math.round((netProfit / revenue) * 1000) / 10 : 0;
+      miscIncome > 0 ? Math.round((netProfit / miscIncome) * 1000) / 10 : 0;
     const total = fixedAmount + variableAmount;
     const fixedPct =
       total > 0 ? Math.round((fixedAmount / total) * 1000) / 10 : 0;
@@ -357,6 +395,8 @@ export default function CostHealth() {
 
     const overview: SpendOverview = {
       totalSpend,
+      revenue,
+      miscIncome,
       netProfit,
       netProfitMarginPct,
       fixedPct,
@@ -366,7 +406,7 @@ export default function CostHealth() {
     };
 
     return { cards, overview };
-  }, [transactions, purposeLookup, summary]);
+  }, [transactions, purposeLookup, summary, salesRevenue, hasRevenue]);
 
   const fmtRs = (v: number) => {
     return `${formatCurrencySymbol(v, currency.symbol, currency.locale)}`;
@@ -374,13 +414,18 @@ export default function CostHealth() {
 
   const hasData = cards.length > 0 || overview.totalSpend > 0;
 
+  // Misc income is named only when it is actually in the denominator, the same
+  // rule the Profit & Cost cards follow.
+  const revenueLabel =
+    overview.miscIncome > 0 ? "revenue + misc. income" : "revenue";
+
   // Visible card count — initially 4, expand/collapse in batches of 4
   const [visibleCount, setVisibleCount] = useState(4);
   const visibleCards = cards.slice(0, visibleCount);
   const canLoadMore = visibleCount < cards.length;
   const canHide = visibleCount > 4;
 
-  if (isLoading)
+  if (isLoading || isRevenueLoading)
     return (
       <>
         {/* CostHealth — 4-up stat tiles */}
@@ -416,8 +461,9 @@ export default function CostHealth() {
             </div>
             <ComponentHeader
               title="Cost health"
-              subHeader="Each cost as a share of revenue, against a target"
+              subHeader={`Each cost as a share of ${revenueLabel}, against a target`}
             />
+            <RangeBadge scope="month" />
           </div>
         </div>
 
@@ -492,6 +538,7 @@ export default function CostHealth() {
               title="Spend overview"
               subHeader="How your money was split this month"
             />
+            <RangeBadge scope="month" />
           </div>
         </div>
 
@@ -521,33 +568,42 @@ export default function CostHealth() {
                   <p className="text-3xl font-bold tracking-wide text-gray-950">
                     {fmtRs(overview.totalSpend)}
                   </p>
-                  <div className="flex items-center gap-1.5 mt-2">
-                    {overview.netProfit < 0 ? (
-                      <>
-                        <TrendingUp size={13} className="text-red-500" />
-                        <span className="text-xs font-semibold text-red-500">
-                          Over revenue
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <TrendingDown size={13} className="text-emerald-500" />
-                        <span className="text-xs font-semibold text-emerald-500">
-                          Within revenue
-                        </span>
-                      </>
-                    )}
-                  </div>
+                  {/* Reads against the same revenue the cards use. Keyed to
+                      the tracker's own net it said "Over revenue" on every
+                      profitable month where no misc income happened to be
+                      logged. */}
+                  {overview.revenue !== null && (
+                    <div className="flex items-center gap-1.5 mt-2">
+                      {overview.totalSpend > overview.revenue ? (
+                        <>
+                          <TrendingUp size={13} className="text-red-500" />
+                          <span className="text-xs font-semibold text-red-500">
+                            Over revenue
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <TrendingDown
+                            size={13}
+                            className="text-emerald-500"
+                          />
+                          <span className="text-xs font-semibold text-emerald-500">
+                            Within revenue
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Net profit */}
                 <div>
-                  <p className="text-gray-500 font-medium mb-2 flex flex-row items-end gap-2">
-                    <p className="text-sm "> Net profit</p>
-                    <p className="text-xs text-gray-400">
+                  <div className="text-gray-500 font-medium mb-2 flex flex-col mf:flex-row items-start gap-0 md:gap-2">
+                    <span className="text-sm">Net profit</span>
+                    <span className="text-xs text-gray-400">
                       (Miscellaneous Income − Miscellaneous Expenses)
-                    </p>
-                  </p>
+                    </span>
+                  </div>
                   <p
                     className={`text-3xl font-bold tracking-wide ${
                       overview.netProfit >= 0
@@ -558,9 +614,16 @@ export default function CostHealth() {
                     {fmtRs(overview.netProfit)}
                   </p>
 
-                  <p className="text-sm font-medium text-gray-500 tracking-wide mt-1">
-                    {overview.netProfitMarginPct}% margin
-                  </p>
+                  {/* Named base. The figure above is tracker-only, so its
+                      margin is against misc income and can read in the
+                      hundreds — a bare "% margin" invited it to be read as the
+                      shop's. Hidden entirely when there is no base to divide
+                      by, rather than printed as a flat 0%. */}
+                  {overview.miscIncome > 0 && (
+                    <p className="text-sm font-medium text-gray-500 tracking-wide mt-1">
+                      {overview.netProfitMarginPct}% of misc. income
+                    </p>
+                  )}
                 </div>
               </div>
               {/* Fixed vs variable breakdown */}

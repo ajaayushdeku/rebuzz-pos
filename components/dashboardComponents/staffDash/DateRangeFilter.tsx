@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { format } from "date-fns";
 import {
   Calendar as CalendarIcon,
   CalendarDays,
@@ -14,6 +13,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { FilterSelect } from "@/components/ui/FilterSelect";
 import { cn } from "@/lib/utils";
+import { formatDateRangeLabel } from "@/utils/helper";
 
 export type DateRangeValue = {
   startDate: string;
@@ -315,10 +315,7 @@ export function DateRangeFilter({
 
   const displayText = (() => {
     if (value.startDate && value.endDate) {
-      if (value.startDate === value.endDate) {
-        return format(new Date(value.startDate), "MMM d, yyyy");
-      }
-      return `${format(new Date(value.startDate), "MMM d, yyyy")}  –  ${format(new Date(value.endDate), "MMM d, yyyy")}`;
+      return formatDateRangeLabel(value.startDate, value.endDate);
     }
     const foundPreset = PRESET_RANGES.find((r) => r.value === "month");
     return foundPreset?.label ?? "Select date";

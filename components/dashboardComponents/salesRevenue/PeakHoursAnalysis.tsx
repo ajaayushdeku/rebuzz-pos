@@ -18,6 +18,7 @@ import {
   Legend,
 } from "recharts";
 import type { BarShapeProps } from "recharts";
+import RangeBadge from "@/components/ui/RangeBadge";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import { FilterSelect } from "@/components/ui/FilterSelect";
 import { Clock } from "lucide-react";
@@ -231,6 +232,7 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
             title="Peak Hours Analysis"
             subHeader="Average number of orders per hour across the selected period"
           />
+          <RangeBadge />
         </div>
 
         {/* </div> */}

@@ -24,6 +24,7 @@ import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { CurrencyConfig, useCurrency } from "@/providers/CurrencyContext";
 import { useRevenueVsProfit } from "@/hooks/useRevenueVsProfit";
 import { ChevronLeft, ChevronRight, ChartColumnBig } from "lucide-react";
+import RangeBadge from "@/components/ui/RangeBadge";
 import { ComponentHeader } from "@/components/ComponentHeader";
 
 // Types
@@ -190,6 +191,7 @@ export default function RevenueVsProfitChart({
             title="Revenue vs Profit by Product"
             subHeader="Comparing top-line revenue against net profit per product"
           />
+          <RangeBadge />
         </div>
 
         {isError && (

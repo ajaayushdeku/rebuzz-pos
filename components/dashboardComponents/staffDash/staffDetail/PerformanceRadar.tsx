@@ -6,6 +6,7 @@ import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import RangeBadge from "@/components/ui/RangeBadge";
 import {
   PERFORMANCE_TARGETS,
   avgOrderValueTarget,
@@ -864,6 +865,7 @@ export default function PerformanceRadar({
             subHeader={`Employee's Performance Radar for ${dateRange.startDate} to
               ${dateRange.endDate}`}
           />
+          <RangeBadge className="ml-0" />
         </div>
 
         <div className="flex items-center gap-2">

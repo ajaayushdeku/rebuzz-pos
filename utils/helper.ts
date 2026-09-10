@@ -240,3 +240,66 @@ export const formatVariantName = (
 
   return parts.length ? `${base} [${parts.join("/")}]` : base;
 };
+
+/**
+ * A date range as one label, with the year said only where it is needed.
+ *
+ *   same day        Aug 12, 2026
+ *   same year       Aug 12 – Sep 10, 2026
+ *   across years    Aug 12, 2025 – Sep 10, 2026
+ *
+ * Repeating the year on both ends of a within-year range is the longest form
+ * of the least useful information, and it was overflowing the filter button.
+ * Dropping it unconditionally is worse: a range that genuinely crosses a new
+ * year then reads as though both ends sit in the later one.
+ */
+export const formatDateRangeLabel = (
+  start: Date | string | null | undefined,
+  end: Date | string | null | undefined,
+  fallback = "Select date",
+): string => {
+  const parse = (value: Date | string | null | undefined): Date | null => {
+    if (!value) return null;
+    if (value instanceof Date) {
+      return Number.isNaN(value.getTime()) ? null : value;
+    }
+    // A bare "YYYY-MM-DD" is read as UTC midnight by the Date constructor,
+    // which renders the day before in any negative offset. Build it from the
+    // parts instead so the label always names the day that was picked.
+    const parts = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const parsed = parts
+      ? new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]))
+      : new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  };
+
+  const from = parse(start);
+  const to = parse(end);
+
+  if (!from && !to) return fallback;
+  if (!from || !to) {
+    const only = (from ?? to) as Date;
+    return only.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  }
+
+  const [a, b] = from <= to ? [from, to] : [to, from];
+
+  const withYear = (d: Date) =>
+    d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  const withoutYear = (d: Date) =>
+    d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  if (a.getTime() === b.getTime()) return withYear(a);
+
+  return a.getFullYear() === b.getFullYear()
+    ? `${withoutYear(a)} – ${withYear(b)}`
+    : `${withYear(a)} – ${withYear(b)}`;
+};

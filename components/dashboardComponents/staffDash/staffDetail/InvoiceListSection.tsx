@@ -15,6 +15,10 @@ import { useRouter } from "next/navigation";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { parseNepalDateTime } from "./staffDetailHelpers";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import RangeBadge from "@/components/ui/RangeBadge";
+import SegmentedControl, {
+  toSegmentOptions,
+} from "@/components/ui/SegmentedControl";
 import {
   normalizePaymentMethod,
   paymentMethodStyle,
@@ -39,7 +43,8 @@ interface InvoiceListSectionProps {
   dateRange: DateRangeValue;
 }
 
-const STATUS_OPTIONS = ["all", "paid", "unpaid"];
+const STATUS_OPTIONS = toSegmentOptions(["all", "paid", "unpaid"] as const);
+type StatusFilter = (typeof STATUS_OPTIONS)[number]["value"];
 
 const statusStyles: Record<string, { cell: string; badge: string }> = {
   settled: {
@@ -76,7 +81,7 @@ export default function InvoiceListSection({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const pageSize = 5;
 
@@ -224,6 +229,7 @@ export default function InvoiceListSection({
             subHeader={`${filteredTickets.length}
               ${filteredTickets.length === 1 ? "order" : "orders"} `}
           />
+          <RangeBadge className="ml-0" />
         </div>
       </div>
 
@@ -256,27 +262,16 @@ export default function InvoiceListSection({
         </div>
 
         {/* Status Filter */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-[11px] text-gray-400 font-medium mr-1">
-            Status:
-          </span>
-          {STATUS_OPTIONS.map((status) => (
-            <button
-              key={status}
-              onClick={() => {
-                setStatusFilter(status);
-                setPage(0);
-              }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize ${
-                statusFilter === status
-                  ? "bg-orange-500 text-white"
-                  : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              {status}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          label="Status:"
+          accent="orange"
+          options={STATUS_OPTIONS}
+          value={statusFilter}
+          onChange={(next) => {
+            setStatusFilter(next);
+            setPage(0);
+          }}
+        />
       </div>
 
       {displayTickets.length === 0 ? (

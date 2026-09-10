@@ -11,6 +11,7 @@ import type {
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
+import RangeBadge from "@/components/ui/RangeBadge";
 import { ComponentHeader } from "../ComponentHeader";
 import { ChartPie, ChevronDown, ChevronUp } from "lucide-react";
 import { ExpensesByCategorySkeleton } from "./ExpenseAnalyticsSkeletons";
@@ -145,6 +146,7 @@ export default function ExpensesByCategory() {
             title="Expenses by Category"
             subHeader="Share of total expenses this month"
           />
+          <RangeBadge scope="month" />
         </div>
       </div>
 

@@ -2,23 +2,26 @@
 
 import { useState, useMemo } from "react";
 import { Search } from "lucide-react";
-import { cn } from "@/lib/utils";
 import StaffStatBox, {
   StaffBoxProps,
 } from "@/components/dashboardComponents/staffDash/StaffStatBox";
+import RangeBadge from "@/components/ui/RangeBadge";
+import SegmentedControl from "@/components/ui/SegmentedControl";
 
 const ROLE_OPTIONS = [
   { value: "all", label: "All" },
   { value: "staff", label: "Staff" },
   { value: "basic", label: "Basic" },
-];
+] as const;
+
+type RoleFilter = (typeof ROLE_OPTIONS)[number]["value"];
 
 export default function StaffBoxContainer({
   staffList,
 }: {
   staffList: StaffBoxProps[];
 }) {
-  const [roleFilter, setRoleFilter] = useState("all");
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredList = useMemo(() => {
@@ -75,22 +78,15 @@ export default function StaffBoxContainer({
         </div>
 
         {/* Role filter */}
-        <div className="flex items-center gap-1 rounded-lg bg-gray-100 p-1">
-          {ROLE_OPTIONS.map(({ value, label }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setRoleFilter(value)}
-              className={cn(
-                "px-3 py-1.5 text-xs font-medium rounded-md transition-colors",
-                roleFilter === value
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700",
-              )}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="flex items-center gap-2">
+          <RangeBadge className="ml-0" />
+          <SegmentedControl
+            label="Role:"
+            accent="blue"
+            options={ROLE_OPTIONS}
+            value={roleFilter}
+            onChange={setRoleFilter}
+          />
         </div>
       </div>
 

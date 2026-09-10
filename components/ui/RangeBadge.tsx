@@ -25,7 +25,32 @@ import {
  * Only put this on a card that genuinely re-fetches on the range — a badge on
  * one that ignores it is worse than none, because it is then believed.
  */
-export default function RangeBadge({ className = "" }: { className?: string }) {
+/**
+ * The two shapes of date control this codebase puts at the top of a page: a
+ * start/end range on the report pages, and a month/year picker on Expense
+ * Analytics. The mark is the same either way — the tooltip has to say which
+ * control it means, or it sends the reader to a filter that is not there.
+ */
+const COPY = {
+  range: {
+    title: "Follows the date range",
+    body: "These figures update when you change the range at the top of the page. Cards without this mark use their own dates, or none at all.",
+  },
+  month: {
+    title: "Follows the month filter",
+    body: "These figures update when you change the month and year at the top of the page. Cards without this mark use their own window, or none at all.",
+  },
+} as const;
+
+export default function RangeBadge({
+  className = "",
+  scope = "range",
+}: {
+  className?: string;
+  scope?: keyof typeof COPY;
+}) {
+  const copy = COPY[scope];
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -43,11 +68,8 @@ export default function RangeBadge({ className = "" }: { className?: string }) {
       {/* Says what the mark means *and* what its absence means — the second
           half is the useful part, and a one-line title had no room for it. */}
       <TooltipContent side="top" sideOffset={6} className="max-w-64">
-        <p className="font-semibold">Follows the date range</p>
-        <p className="mt-1 leading-relaxed opacity-80">
-          These figures update when you change the range at the top of the page.
-          Cards without this mark use their own dates, or none at all.
-        </p>
+        <p className="font-semibold">{copy.title}</p>
+        <p className="mt-1 leading-relaxed opacity-80">{copy.body}</p>
       </TooltipContent>
     </Tooltip>
   );

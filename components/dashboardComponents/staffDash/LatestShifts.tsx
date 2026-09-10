@@ -11,6 +11,8 @@ import {
 import type { ShiftDetail } from "../staffDash/staffDetail/staffDetailHelpers";
 import ShiftDetailModal from "../staffDash/staffDetail/ShiftDetailModal";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import RangeBadge from "@/components/ui/RangeBadge";
+import SegmentedControl from "@/components/ui/SegmentedControl";
 // import { DateRangeFilter, type DateRangeValue } from "./DateRangeFilter";
 
 interface LatestShiftsProps {
@@ -31,6 +33,19 @@ interface RawShift {
   openingCash: number;
   closingCash: number;
 }
+
+/**
+ * The windows this card can narrow to. "all" is the page's own date range —
+ * every other value is a day count read straight off the segment.
+ */
+const SHIFT_WINDOWS = [
+  { value: "all", label: "All" },
+  { value: "3", label: "3 days" },
+  { value: "5", label: "5 days" },
+  { value: "7", label: "7 days" },
+] as const;
+
+type ShiftWindow = (typeof SHIFT_WINDOWS)[number]["value"];
 
 export default function LatestShifts({
   shifts,
@@ -72,7 +87,7 @@ export default function LatestShifts({
     (safePage + 1) * pageSize,
   );
 
-  const [activePreset, setActivePreset] = useState<string>("");
+  const [activePreset, setActivePreset] = useState<ShiftWindow>("all");
 
   const applyPreset = (days: number) => {
     const today = new Date();
@@ -82,15 +97,22 @@ export default function LatestShifts({
     const startDt = start.toISOString().split("T")[0];
     setLocalStartDate(startDt);
     setLocalEndDate(end);
-    setActivePreset(`${days}days`);
     setPage(0);
   };
 
   const resetFilter = () => {
     setLocalStartDate(startDate);
     setLocalEndDate(endDate);
-    setActivePreset("");
     setPage(0);
+  };
+
+  // "All" is the page range itself, so the old dangling Reset button is now
+  // just the first segment. It was the only way back and sat outside the
+  // control it undid, appearing and disappearing as presets were clicked.
+  const selectWindow = (next: ShiftWindow) => {
+    setActivePreset(next);
+    if (next === "all") resetFilter();
+    else applyPreset(Number(next));
   };
 
   function formatFullDate(raw: string | undefined): string {
@@ -187,53 +209,19 @@ export default function LatestShifts({
             subHeader={`
               Latest Shifts from all the employees`}
           />
+          {/* The Show segments narrow this card further, but what they narrow
+              is whatever the page range fetched. */}
+          <RangeBadge className="ml-0" />
         </div>
 
         <div className="flex items-center gap-3">
-          <p className=" px-3 pr-0 text-xs font-medium text-gray-500">
-            {" "}
-            For last:
-          </p>
-          <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 inline-flex">
-            <button
-              onClick={() => applyPreset(3)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                activePreset === "3days"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              3 Days
-            </button>
-            <button
-              onClick={() => applyPreset(5)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                activePreset === "5days"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              5 Days
-            </button>
-            <button
-              onClick={() => applyPreset(7)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                activePreset === "7days"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              7 Days
-            </button>
-          </div>
-          {activePreset && (
-            <button
-              onClick={resetFilter}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all"
-            >
-              Reset
-            </button>
-          )}
+          <SegmentedControl
+            label="Show:"
+            accent="blue"
+            options={SHIFT_WINDOWS}
+            value={activePreset}
+            onChange={selectWindow}
+          />
         </div>
       </div>
 

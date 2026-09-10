@@ -14,6 +14,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
+import RangeBadge from "@/components/ui/RangeBadge";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { ComponentHeader } from "../ComponentHeader";
@@ -211,7 +212,7 @@ export default function ExpenseBudgetGauges() {
       {/* Cost Health */}
       {/* Gauges card */}
       <div className=" bg-white rounded-2xl border border-gray-200 shadow-sm px-5 pt-5 pb-3">
-        <div className="mb-4">
+        <div className="mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
@@ -223,18 +224,21 @@ export default function ExpenseBudgetGauges() {
               />
             </div>
 
-            {/* Info tooltip */}
-            <div className="relative group shrink-0">
-              <button
-                type="button"
-                className="w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 flex items-center justify-center transition-colors"
-                aria-label="About this chart"
-              >
-                <Info size={14} />
-              </button>
-              <div className="absolute right-0 top-full mt-2 w-64 bg-gray-900 text-white text-[11px] leading-relaxed rounded-lg px-3 py-2.5 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-20">
-                These gauges show only the expense categories that have a budget
-                set. Categories without a budget are not included here.
+            <div className="flex flex-row items-center gap-2">
+              <RangeBadge scope="month" className="ml-0" />
+              {/* Info tooltip */}
+              <div className="relative group shrink-0">
+                <button
+                  type="button"
+                  className="w-7 h-7 rounded-full bg-gray-50 hover:bg-gray-200 text-gray-500 hover:text-gray-700 flex items-center justify-center transition-colors"
+                  aria-label="About this chart"
+                >
+                  <Info size={14} />
+                </button>
+                <div className="absolute right-0 top-full mt-2 w-64 bg-gray-900 text-white text-[11px] leading-relaxed rounded-lg px-3 py-2.5 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-20">
+                  These gauges show only the expense categories that have a
+                  budget set. Categories without a budget are not included here.
+                </div>
               </div>
             </div>
           </div>

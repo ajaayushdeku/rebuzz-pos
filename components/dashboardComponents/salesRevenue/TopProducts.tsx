@@ -16,6 +16,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatNumber } from "@/utils/helper";
 import { getPercentColor } from "@/lib/utils";
 import { useTopProducts } from "@/hooks/useTopProducts";
+import RangeBadge from "@/components/ui/RangeBadge";
 import { ComponentHeader } from "@/components/ComponentHeader";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
@@ -88,7 +89,7 @@ export default function TopProducts({
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
             <Trophy size={15} className="text-amber-600" />
@@ -98,6 +99,8 @@ export default function TopProducts({
             subHeader="Products contributing most to revenue growth"
           />
         </div>
+
+        <RangeBadge />
       </div>
 
       {/* Search */}

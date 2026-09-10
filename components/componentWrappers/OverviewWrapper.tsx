@@ -18,7 +18,6 @@ import {
   getWinningStats,
 } from "@/services/dashboardServices/apiOverview";
 
-import { format } from "date-fns";
 import { DataPoint } from "@/lib/types/chart";
 import WeeklyRevenueChart from "../dashboardComponents/overviewDash/WeeklyRevenueChart";
 import HourlySalesTrend from "../dashboardComponents/overviewDash/HourlySalesChart";
@@ -27,16 +26,11 @@ import SalesCategoryChart from "../dashboardComponents/overviewDash/SalesCategor
 import AIBusinessStory from "../dashboardComponents/overviewDash/AIBusinessStory";
 import BusinessInsightsAlerts from "../dashboardComponents/overviewDash/BusinessInsightsAlerts";
 import LowStockAlerts from "../dashboardComponents/overviewDash/LowStockAlerts";
+import { formatDateRangeLabel } from "@/utils/helper";
 
-/** Format date range as "MMM d – MMM d, yyyy" or "MMM d, yyyy" if same day */
+/** Format date range as "MMM d – MMM d, yyyy", with the year said once. */
 function formatDateRange(start: string, end: string): string {
-  const s = new Date(start);
-  const e = new Date(end);
-  if (isNaN(s.getTime()) || isNaN(e.getTime())) return "";
-  if (start === end) {
-    return format(s, "MMM d, yyyy");
-  }
-  return `${format(s, "MMM d, yyyy")} – ${format(e, "MMM d, yyyy")}`;
+  return formatDateRangeLabel(start, end, "");
 }
 
 /** Format a Date as YYYY-MM-DD using local timezone (not UTC) */

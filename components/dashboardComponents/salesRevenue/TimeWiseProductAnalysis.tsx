@@ -8,6 +8,7 @@ import {
   formatNumber,
   formatVariantName,
 } from "@/utils/helper";
+import RangeBadge from "@/components/ui/RangeBadge";
 import { ComponentHeader } from "@/components/ComponentHeader";
 
 type TimePeriod = "morning" | "lunch" | "afternoon" | "evening";
@@ -215,6 +216,7 @@ export default function TimeWiseProductAnalysis({
           title="Time-Wise Product Analysis"
           subHeader="Top performing products specific to times of day"
         />
+        <RangeBadge />
       </div>
 
       {isLoading ? (

@@ -1,5 +1,6 @@
 "use client";
 
+import RangeBadge from "@/components/ui/RangeBadge";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import { CalendarDays } from "lucide-react";
 import {
@@ -123,6 +124,7 @@ const PeakDaysAnalysis = ({ data }: PeakDayDataProps) => {
           title="Peak Days Analysis"
           subHeader="Average orders and sales per weekday across the selected period"
         />
+        <RangeBadge />
       </div>
 
       {/* CHART */}

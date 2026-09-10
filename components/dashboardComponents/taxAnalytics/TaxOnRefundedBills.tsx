@@ -1,5 +1,6 @@
 "use client";
 
+import RangeBadge from "@/components/ui/RangeBadge";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -42,6 +43,7 @@ const TaxOnRefundedBills = ({
           title="Tax on Refunds"
           subHeader="Tax reversed for returned items"
         />
+        <RangeBadge />
       </div>
 
       {isLoading ? (

@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { format } from "date-fns";
 import {
   Calendar as CalendarIcon,
   CalendarDays,
@@ -15,6 +14,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { FilterSelect } from "@/components/ui/FilterSelect";
 import { cn } from "@/lib/utils";
+import { formatDateRangeLabel } from "@/utils/helper";
 
 type DateMode = "single" | "range";
 
@@ -362,9 +362,11 @@ export function CalendarDateFilter({
   const displayText = (() => {
     if (currentStartDate && currentEndDate) {
       if (currentStartDate === currentEndDate) {
-        return format(new Date(currentStartDate), "MMM d, yyyy");
+        return formatDateRangeLabel(currentStartDate, currentStartDate);
       }
-      return `${format(new Date(currentStartDate), "MMM d")}  –  ${format(new Date(currentEndDate), "MMM d, yyyy")}`;
+      // Was dropping the start year unconditionally, so a range crossing into
+      // a new year read as though both ends sat in the later one.
+      return formatDateRangeLabel(currentStartDate, currentEndDate);
     }
     if (currentPreset) {
       return (

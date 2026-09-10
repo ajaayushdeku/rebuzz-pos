@@ -21,6 +21,7 @@ import {
 import type { ShiftSummary, ShiftDetail } from "./staffDetailHelpers";
 import ShiftDetailModal from "./ShiftDetailModal";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import RangeBadge from "@/components/ui/RangeBadge";
 
 interface ShiftsSectionProps {
   shifts: ShiftSummary[];
@@ -184,6 +185,7 @@ export default function ShiftsSection({
               subHeader={`${shiftList.length} ${shiftList.length === 1 ? "shift" : "shifts"}
                 recorded`}
             />
+            <RangeBadge className="ml-0" />
           </div>
         </div>
 

@@ -20,6 +20,10 @@ import {
   paymentMethodStyle,
 } from "@/lib/config/transaction";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import RangeBadge from "@/components/ui/RangeBadge";
+import SegmentedControl, {
+  toSegmentOptions,
+} from "@/components/ui/SegmentedControl";
 
 interface BillRecord {
   _id: string;
@@ -67,7 +71,12 @@ interface BillsSectionProps {
   dateRange: DateRangeValue;
 }
 
-const STATUS_OPTIONS = ["all", "completed", "refunded"];
+const STATUS_OPTIONS = toSegmentOptions([
+  "all",
+  "completed",
+  "refunded",
+] as const);
+type StatusFilter = (typeof STATUS_OPTIONS)[number]["value"];
 
 export default function BillsSection({
   employeeId,
@@ -80,7 +89,7 @@ export default function BillsSection({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [noEmployeeAnalytics, setNoEmployeeAnalytics] = useState(false);
   const pageSize = 5;
@@ -289,6 +298,7 @@ export default function BillsSection({
             subHeader={`${filteredBills.length}
               ${filteredBills.length === 1 ? "bill" : "bills"}`}
           />
+          <RangeBadge className="ml-0" />
         </div>
       </div>
 
@@ -321,27 +331,16 @@ export default function BillsSection({
         </div>
 
         {/* Status Filter */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-[11px] text-gray-400 font-medium mr-1">
-            Status:
-          </span>
-          {STATUS_OPTIONS.map((status) => (
-            <button
-              key={status}
-              onClick={() => {
-                setStatusFilter(status);
-                setPage(0);
-              }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize ${
-                statusFilter === status
-                  ? "bg-purple-500 text-white"
-                  : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              {status}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          label="Status:"
+          accent="purple"
+          options={STATUS_OPTIONS}
+          value={statusFilter}
+          onChange={(next) => {
+            setStatusFilter(next);
+            setPage(0);
+          }}
+        />
       </div>
 
       {displayBills.length === 0 ? (

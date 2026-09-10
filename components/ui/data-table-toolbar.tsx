@@ -4,7 +4,6 @@ import * as React from "react";
 import { Table } from "@tanstack/react-table";
 import { X } from "lucide-react";
 import { DateRange } from "react-day-picker";
-import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -25,6 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 
 import { FilterConfig } from "@/lib/datatable";
+import { formatDateRangeLabel } from "@/utils/helper";
 
 type DataTableToolbarProps<TData> = {
   table: Table<TData>;
@@ -95,9 +95,7 @@ export function DataTableToolbar<TData>({
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm">
               {dateRange?.from
-                ? dateRange.to
-                  ? `${format(dateRange.from, "MMM d")} – ${format(dateRange.to, "MMM d, yyyy")}`
-                  : format(dateRange.from, "MMM d, yyyy")
+                ? formatDateRangeLabel(dateRange.from, dateRange.to)
                 : "Date range"}
             </Button>
           </PopoverTrigger>

@@ -5,6 +5,7 @@ import { mockWhereMoneyGoesData } from "@/lib/mockData/mock-expense-data";
 import { Wallet, Zap } from "lucide-react";
 import LockDimFeactureOverlay from "../LockDimFeactureOverlay";
 import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
+import RangeBadge from "@/components/ui/RangeBadge";
 import { getPurposeIcon } from "@/lib/purpose-icons";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -150,6 +151,7 @@ export default function WhereMoneyGoes() {
             title="Where the money goes"
             subHeader=" Category breakdown and top vendor concentration"
           />
+          <RangeBadge scope="month" />
         </div>
       </div>
 

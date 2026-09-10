@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Loader2, TrendingUp, AlertTriangle } from "lucide-react";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import RangeBadge from "@/components/ui/RangeBadge";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import TablePagination from "@/components/ui/TablePagination";
@@ -165,6 +166,7 @@ function Header({ subHeader }: { subHeader: string }) {
         <TrendingUp size={16} className="text-emerald-500" />
       </div>
       <ComponentHeader title="Top Items Sold" subHeader={subHeader} />
+      <RangeBadge />
     </div>
   );
 }
