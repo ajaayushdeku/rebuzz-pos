@@ -12,6 +12,7 @@ import { PaymentMethodRevenue } from "@/services/paymentMethods.client";
 import { usePaymentMethods } from "@/hooks/usePaymentMethods";
 import { ChevronDown, CreditCard } from "lucide-react";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import RangeBadge from "@/components/ui/RangeBadge";
 
 interface PaymentMethodDataWithColor extends PaymentMethodRevenue {
   color: string;
@@ -147,6 +148,7 @@ const PaymentMethodsChart = ({
           title="Payment Methods"
           subHeader=" Revenue split by payment type"
         />
+        <RangeBadge />
       </div>
 
       {data.length === 0 ? (

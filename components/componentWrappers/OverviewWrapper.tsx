@@ -240,8 +240,11 @@ export const OverviewStatsWrapper = async ({
       };
     });
 
+    // items-start: a grid stretches every cell to the tallest in its row, so
+    // expanding one card silently grew its neighbours too — they gained the
+    // height without anything to put in it.
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 my-4">
+      <div className="grid items-start grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 my-4">
         <OverviewStatBoxGrid stats={stats} periodLabel="" />
       </div>
     );
@@ -305,8 +308,9 @@ export const OverviewStatsWrapper = async ({
     };
   });
 
+  // items-start — see the note on the other grid above.
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 mt-4">
+    <div className="grid items-start grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 mt-4">
       <OverviewStatBoxGrid
         stats={stats}
         periodLabel={periodLabel}

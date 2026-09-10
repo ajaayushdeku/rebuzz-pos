@@ -39,7 +39,7 @@ export default function Sidebar() {
     <aside
       className={cn(
         "border-r bg-background h-full flex flex-col overflow-hidden transition-[width] duration-300 ease-in-out",
-        isCollapsed ? "w-12" : "w-64",
+        isCollapsed ? "w-12" : "w-60",
       )}
     >
       <div

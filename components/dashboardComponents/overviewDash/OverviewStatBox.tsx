@@ -5,6 +5,7 @@ import { getPercentColor } from "@/lib/utils";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import RangeTag from "@/components/ui/RangeTag";
 
 interface StatBoxProps {
   label: string;
@@ -79,7 +80,9 @@ const OverviewStatBox = ({
   }
 
   return (
-    <div className={`${CARD} transition-shadow font-sans duration-200 hover:shadow-md`}>
+    <div
+      className={`${CARD} transition-shadow font-sans duration-200 hover:shadow-md`}
+    >
       {/* Label + icon */}
       <div className="flex items-center justify-between gap-2">
         <span className="truncate text-xs font-medium text-gray-500 md:text-[13px]">
@@ -93,9 +96,12 @@ const OverviewStatBox = ({
       </div>
 
       {/* Value */}
-      <p className="mt-3 truncate text-xl font-bold tracking-wide text-gray-900 tabular-nums md:mt-4 md:text-[22px] font-sans">
-        {formattedValue}
-      </p>
+      <div className="mt-3 flex items-baseline justify-between gap-2 md:mt-4">
+        <p className="truncate text-xl font-bold tracking-wide text-gray-900 tabular-nums md:text-[22px] font-sans">
+          {formattedValue}
+        </p>
+        <RangeTag />
+      </div>
 
       {/* Change vs. the comparison period — ruled off so the figure above
           reads on its own, matching the growth tracker tiles. */}
@@ -136,9 +142,9 @@ const OverviewStatBox = ({
           opacity: isExpanded ? 1 : 0,
         }}
       >
-        <div className="mt-2.5 space-y-1 rounded-lg bg-gray-50 px-2.5 py-2">
+        <div className="mt-2.5 space-y-1 flex flex-col  rounded-lg bg-gray-50 px-2.5 py-2">
           {currentDateRange && (
-            <p className="flex items-baseline justify-between gap-2 text-[11px] text-gray-500">
+            <p className="flex flex-col items-baseline justify-between gap-1 text-[11px] text-gray-500">
               <span className="shrink-0 font-medium text-gray-400">
                 Period (current)
               </span>
@@ -147,16 +153,20 @@ const OverviewStatBox = ({
               </span>
             </p>
           )}
+
+          <span className="shrink-0 font-medium text-[12px] text-gray-400">
+            vs
+          </span>
+
           {comparisonDateRangeLabel && (
-            <p className="flex items-baseline justify-between gap-2 text-[11px] text-gray-500">
-              <span className="shrink-0 font-medium text-gray-400">vs</span>
+            <p className="flex flex-col items-baseline justify-between gap-1 text-[11px] text-gray-500">
               <span className="truncate text-right tabular-nums">
                 {comparisonDateRangeLabel}
               </span>
+              {periodLabel && (
+                <p className="text-[11px] text-gray-400">{periodLabel}</p>
+              )}
             </p>
-          )}
-          {periodLabel && (
-            <p className="text-[11px] text-gray-400">{periodLabel}</p>
           )}
         </div>
       </div>

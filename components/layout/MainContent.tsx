@@ -27,7 +27,7 @@ export default function MainContent({
       data-app-scroll
       className={cn(
         "scrollbar-hide mt-(--navbar-height) h-[calc(100dvh-var(--navbar-height))] overflow-y-auto transition-all duration-300",
-        isCollapsed ? "md:pl-12" : "md:pl-64",
+        isCollapsed ? "md:pl-12" : "md:pl-60",
       )}
     >
       {children}

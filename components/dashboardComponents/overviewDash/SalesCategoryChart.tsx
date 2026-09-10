@@ -11,6 +11,7 @@ import type {
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import RangeBadge from "@/components/ui/RangeBadge";
 
 export interface CategorySalesData {
   name: string;
@@ -156,6 +157,7 @@ const SalesCategoryChart = ({
           title="Sales by Category"
           subHeader=" Revenue share across product categories"
         />
+        <RangeBadge />
       </div>
 
       {data.length === 0 ? (
