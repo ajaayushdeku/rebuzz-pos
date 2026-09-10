@@ -76,7 +76,7 @@ export default function UnitEconomics({ data }: { data: UnitEconomicsData }) {
         </div>
         <ComponentHeader
           title="Unit Economics"
-          subHeader="What one item, one order and one labour hour earn"
+          subHeader="What one item, one order and one labor hour earn"
         />
         <RangeBadge />
       </div>

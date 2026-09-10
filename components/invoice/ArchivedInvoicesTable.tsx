@@ -182,9 +182,9 @@ export default function ArchivedInvoicesTable({
           <table className="w-full text-sm min-w-[900px]">
             <thead>
               <tr className="text-xs text-gray-400 border-b border-gray-100">
-                <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+                {/* <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
                   S.No
-                </th>
+                </th> */}
                 <th
                   className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("invoice")}
@@ -200,7 +200,7 @@ export default function ArchivedInvoicesTable({
                   Customer
                 </th>
                 <th
-                  className="flex items-center pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className=" text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("amount")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -208,10 +208,10 @@ export default function ArchivedInvoicesTable({
                   </span>
                 </th>
                 <th
-                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("created_at")}
                 >
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center justify-end gap-1">
                     Archived Date {SortIcon({ colKey: "created_at" })}
                   </span>
                 </th>
@@ -251,9 +251,9 @@ export default function ArchivedInvoicesTable({
                       // onClick={() => router.push(`/invoices/${inv.invoice}`)}
                       className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors cursor-pointer"
                     >
-                      <td className="py-3 px-4 text-gray-400 text-xs">
+                      {/* <td className="py-3 px-4 text-gray-400 text-xs">
                         {page * pageSize + idx + 1}
-                      </td>
+                      </td> */}
                       <td className="py-3 px-4">
                         <span className="font-medium text-xs text-gray-900 block">
                           ORD-{inv.invoice}
@@ -273,14 +273,14 @@ export default function ArchivedInvoicesTable({
                       <td className="py-3 px-4 text-xs text-gray-600">
                         {inv.customer_name ?? "—"}
                       </td>
-                      <td className="py-3 px-4 text-xs text-left font-semibold text-gray-900">
+                      <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
                         {formatCurrencySymbol(
                           Number(inv.amount),
                           currency.symbol,
                           currency.locale,
                         )}
                       </td>
-                      <td className="py-3 px-4 text-gray-500 text-xs">
+                      <td className="py-3 px-4 text-gray-500 text-right text-xs">
                         {/* {formatDatetime(inv.archivedAt || inv.created_at)} */}
 
                         <span className="font-medium text-gray-800 text-xs block">
@@ -316,7 +316,7 @@ export default function ArchivedInvoicesTable({
                         >
                           <button
                             onClick={() => setRestoreTarget(inv)}
-                            className="p-1.5 text-xs flex flex-row items-center gap-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors hover:cursor-pointer"
+                            className="py-1.5 text-xs flex flex-row items-center gap-2 text-gray-400 hover:text-green-600 rounded-lg transition-colors hover:cursor-pointer"
                             title="Restore invoice"
                           >
                             Unarchive <RotateCcw className="h-3.5 w-3.5" />

@@ -149,7 +149,11 @@ export default function Page() {
               className="focus-visible:outline-none"
             >
               {activeTab === "invoices" && (
-                <InvoiceTable invoices={invoices} isLoading={isLoading} />
+                <InvoiceTable
+                  invoices={invoices}
+                  isLoading={isLoading}
+                  showStatusFilter={false}
+                />
               )}
 
               {activeTab === "archived" && (

@@ -423,7 +423,7 @@ export const mockCostHealthData: CostHealthData = {
     },
     {
       emoji: "👷",
-      label: "Labour cost",
+      label: "Labor cost",
       pct: 26,
       changePt: 0.8,
       changeDir: "down",
@@ -459,7 +459,7 @@ export const mockCostHealthData: CostHealthData = {
     fixedAmount: 411600,
     variableAmount: 568400,
     fixedLabel: "Rent, salaries, insurance",
-    variableLabel: "Ingredients, casual labour, delivery",
+    variableLabel: "Ingredients, casual labor, delivery",
   },
 };
 

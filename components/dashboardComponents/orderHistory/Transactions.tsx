@@ -17,7 +17,8 @@ import { Transaction } from "./transaction-columns";
 import TransactionDetailModal from "./TransactionDetailModal";
 import RefundModal from "./RefundModal";
 import LoadingState from "@/components/ui/LoadingState";
-import { statusStyles, paymentMethods } from "@/lib/config/transaction";
+import { paymentMethods } from "@/lib/config/transaction";
+import StatusPill from "@/components/ui/StatusPill";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { parseNepalDateTime } from "../staffDash/staffDetail/staffDetailHelpers";
 import { useRouter } from "next/navigation";
@@ -395,12 +396,13 @@ export default function Transactions({
         aria-labelledby={`transactions-tab-${activeTab}`}
         className="bg-white overflow-x-auto scrollbar-hide focus-visible:outline-none"
       >
-        <table className="w-full text-sm min-w-[1000px]">
+        <table className="w-full text-sm min-w-[1200px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
-              <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+              {/* <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
                 S.No
-              </th>
+              </th> */}
+              <th className="text-left pb-3 pt-3 px-4 font-medium">Status</th>
               <th
                 className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                 onClick={() => toggleSort("id")}
@@ -415,14 +417,6 @@ export default function Transactions({
               >
                 <span className="flex items-center gap-1">
                   Order ID {SortIcon({ colKey: "id" })}
-                </span>
-              </th>
-              <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("timestamp")}
-              >
-                <span className="flex items-center gap-1">
-                  Date / Time {SortIcon({ colKey: "timestamp" })}
                 </span>
               </th>
               <th className="text-left pb-3 pt-3 px-4 font-medium">
@@ -447,11 +441,17 @@ export default function Transactions({
                   Total {SortIcon({ colKey: "amount" })}
                 </span>
               </th>
-              <th className="text-center pb-3 pt-3 px-4 font-medium">Status</th>
-              {/* ── New actions column ── */}
-              <th className="text-center pb-3 pt-3 px-4 font-medium">
-                Actions
+              {/* Takes the slot Status has vacated at the end. */}
+              <th
+                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                onClick={() => toggleSort("timestamp")}
+              >
+                <span className="flex items-center justify-end gap-1">
+                  Date / Time {SortIcon({ colKey: "timestamp" })}
+                </span>
               </th>
+              {/* ── New actions column ── */}
+              <th className="text-right pb-3 pt-3 px-4 font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -485,8 +485,6 @@ export default function Transactions({
               </tr>
             ) : (
               paged.map((transaction, idx) => {
-                const s =
-                  statusStyles[transaction.status] ?? statusStyles["pending"];
                 const p =
                   paymentMethods[transaction.paymentMethod] ??
                   paymentMethods["Cash"];
@@ -501,8 +499,16 @@ export default function Transactions({
                     }
                     className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
                   >
-                    <td className="py-3 px-4 text-gray-400 text-xs">
+                    {/* <td className="py-3 px-4 text-gray-400 text-xs">
                       {page * pageSize + idx + 1}
+                    </td> */}
+                    <td className="py-3 px-4">
+                      <StatusPill
+                        label={
+                          transaction.status.charAt(0).toUpperCase() +
+                          transaction.status.slice(1)
+                        }
+                      />
                     </td>
                     <td className="py-3 px-4">
                       <span className="font-semibold text-xs text-gray-900 block">
@@ -517,19 +523,6 @@ export default function Transactions({
                     <td className="py-3 px-4">
                       <span className="font-semibold text-xs text-gray-900">
                         ORD-{transaction.invoiceNo}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="font-medium text-gray-800 text-xs block">
-                        {transaction.timestamp}
-                        {transaction.timestamp12h && (
-                          <span className="text-[10px] font-normal text-gray-400">
-                            {"  "}[ {transaction.timestamp12h} ]
-                          </span>
-                        )}
-                      </span>
-                      <span className="text-[11px] text-gray-400">
-                        {transaction.date}
                       </span>
                     </td>
                     <td className="py-3 px-4 text-xs text-gray-600">
@@ -556,18 +549,24 @@ export default function Transactions({
                       )}
                     </td>
 
-                    <td className="py-3 px-4 text-center">
-                      <span
-                        className={`${s.badge} ${s.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
-                      >
-                        {transaction.status.charAt(0).toUpperCase() +
-                          transaction.status.slice(1)}
+                    {/* Takes the slot Status has vacated at the end. */}
+                    <td className="py-3 px-4 text-right">
+                      <span className="font-medium text-gray-800 text-xs block">
+                        {transaction.timestamp}
+                        {transaction.timestamp12h && (
+                          <span className="text-[10px] font-normal text-gray-400">
+                            {"  "}[ {transaction.timestamp12h} ]
+                          </span>
+                        )}
+                      </span>
+                      <span className="text-[11px] text-gray-400">
+                        {transaction.date}
                       </span>
                     </td>
 
                     {/* ── Actions cell ── */}
                     <td
-                      className="py-3 px-4 text-center"
+                      className="py-3  text-right items-right justify-end px-4 flex gap-2"
                       onClick={(e) => e.stopPropagation()}
                     >
                       {isRefunded ? (
@@ -578,7 +577,7 @@ export default function Transactions({
                         <button
                           onClick={() => setRefundTarget(transaction)}
                           title="Refund this transaction"
-                          className="p-1.5 text-xs flex flex-row items-center gap-2 text-gray-400 hover:text-orange-600 hover:bg-orange-100 rounded-lg transition-colors hover:cursor-pointer tracking-wide font-medium"
+                          className="py-1.5 text-xs flex flex-row items-center gap-2 text-gray-400 hover:text-orange-600  transition-colors hover:cursor-pointer tracking-wide font-medium"
                         >
                           Refund <RotateCcw size={12} />
                         </button>

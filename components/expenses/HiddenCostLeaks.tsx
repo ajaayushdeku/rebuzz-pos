@@ -232,7 +232,7 @@ export default function HiddenCostLeaks() {
             <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5">
               <Info size={13} className="text-blue-400 shrink-0 mt-0.5" />
               <p className="text-[11px] text-blue-700 leading-relaxed">
-                The staff share is a real labour cost (part of your 26%).
+                The staff share is a real labor cost (part of your 26%).
                 Service charge itself is revenue — not a tax.
               </p>
             </div>

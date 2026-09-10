@@ -7,6 +7,10 @@ export type Invoice = {
   ticket_name: string;
   amount: number;
   created_at: string;
+  /** When payment is expected. Absent until a due date is set. */
+  due_date?: string | null;
+  /** Days relative to the due date on which a reminder goes out. */
+  reminder_schedule?: number[] | null;
   status: string;
   // Archived invoice fields
   ticketName?: string;

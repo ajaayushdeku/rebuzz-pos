@@ -104,3 +104,31 @@ export const getTicketByInvoice = async (invoiceNumber: string) => {
   if (!response.ok) throw new Error("Failed to fetch invoice");
   return response.json();
 };
+
+export interface ReminderSettingsInput {
+  /** YYYY-MM-DD. When payment is expected. */
+  dueDate: string;
+  /**
+   * Days relative to the due date, negative before and positive after, with 0
+   * meaning the day itself. So -7 is a week's warning and 3 chases three days
+   * late.
+   */
+  reminderSchedule: number[];
+}
+
+export const updateReminderSettings = async (
+  invoiceNumber: number | string,
+  settings: ReminderSettingsInput,
+) => {
+  const res = await fetch(`/api/tickets/${invoiceNumber}/reminder-settings`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(settings),
+  });
+
+  const result = await res.json();
+  if (!res.ok || result.status === "fail") {
+    throw new Error(result.message || "Failed to save the due date");
+  }
+  return result;
+};

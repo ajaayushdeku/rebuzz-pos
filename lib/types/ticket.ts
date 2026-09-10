@@ -34,6 +34,15 @@ export type RawTicket = {
   checkedOut: boolean;
   archivedAt: string | null;
   items: RawTicketItem[];
+  /** When payment is expected, YYYY-MM-DD. Absent until one is set. */
+  dueDate?: string | null;
+  /**
+   * Days relative to `dueDate` on which a reminder goes out — negative before,
+   * 0 on the day, positive once overdue.
+   */
+  reminderSchedule?: number[] | null;
+  /** When the invoice or a reminder last went to the customer, as UTC. */
+  lastReminderAt?: string | null;
   createdAt: string;
   updatedAt: string;
   customer?: {

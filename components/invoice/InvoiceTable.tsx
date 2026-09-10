@@ -36,20 +36,26 @@ import EmailInvoiceModal from "@/components/invoice/modals/EmailInvoiceModal";
 import DeleteInvoiceModal from "@/components/invoice/modals/DeleteInvoiceModal";
 import MoveToCreditModal from "@/components/invoice/modals/MoveToCreditModal";
 import LoadingState from "@/components/ui/LoadingState";
+import DueDateCell from "@/components/ui/DueDateCell";
+import StatusPill from "@/components/ui/StatusPill";
 import toast from "react-hot-toast";
 import { parseNepalDateTime } from "../dashboardComponents/staffDash/staffDetail/staffDetailHelpers";
 import { moveInvoiceToCredit } from "@/services/apiCredit.client";
-import { getTicketByInvoice } from "@/services/apiTicket.client";
+import {
+  getTicketByInvoice,
+  updateReminderSettings,
+} from "@/services/apiTicket.client";
+import DueDateModal from "@/components/invoice/modals/DueDateModal";
+import { nepalDateString } from "@/lib/nepalDate";
+import {
+  DUE_DATE_FILTER_OPTIONS,
+  matchesDueDateFilter,
+  type DueDateFilter,
+} from "@/lib/dueDateFilter";
+import { FilterSelect } from "@/components/ui/FilterSelect";
 import { useDuplicateInvoiceStore } from "@/stores/useDuplicateInvoiceStore";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
-
-const STATUS_STYLES: Record<string, string> = {
-  paid: "bg-green-100 text-green-700 border-green-200",
-  unpaid: "bg-red-100 text-red-700 border-red-200",
-  draft: "bg-gray-100 text-gray-600 border-gray-200",
-  overdue: "bg-orange-100 text-orange-700 border-orange-200",
-};
 
 const STATUS_FILTER_OPTIONS = ["paid", "unpaid"];
 
@@ -69,15 +75,19 @@ function timeAgo(date: Date): string {
 export default function InvoiceTable({
   invoices,
   isLoading = false,
+  showStatusFilter = true,
 }: {
   invoices: Invoice[];
   isLoading?: boolean;
+  /** Matches CreditsTable's prop of the same name. */
+  showStatusFilter?: boolean;
 }) {
   const { currency } = useCurrency();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [dueDateFilter, setDueDateFilter] = useState<DueDateFilter>("all");
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [page, setPage] = useState(0);
   const [deleteTarget, setDeleteTarget] = useState<Invoice | null>(null);
@@ -88,6 +98,8 @@ export default function InvoiceTable({
   const [emailTarget, setEmailTarget] = useState<Invoice | null>(null);
   const [moveTarget, setMoveTarget] = useState<Invoice | null>(null);
   const [moving, setMoving] = useState(false);
+  const [dueDateTarget, setDueDateTarget] = useState<Invoice | null>(null);
+  const [savingDueDate, setSavingDueDate] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const setDuplicate = useDuplicateInvoiceStore((s) => s.setDuplicate);
   const statusRef = useRef<HTMLDivElement | null>(null);
@@ -139,6 +151,30 @@ export default function InvoiceTable({
     }
   };
 
+  const openDueDate = (invoice: Invoice) => setDueDateTarget(invoice);
+
+  const handleSaveDueDate = async (settings: {
+    dueDate: string;
+    reminderSchedule: number[];
+  }) => {
+    const invoiceNo = dueDateTarget?.invoice;
+    if (invoiceNo == null) return;
+
+    setSavingDueDate(true);
+    try {
+      await updateReminderSettings(invoiceNo, settings);
+      toast.success("Due date saved");
+      setDueDateTarget(null);
+      queryClient.invalidateQueries({ queryKey: ["invoice"] });
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to save the due date",
+      );
+    } finally {
+      setSavingDueDate(false);
+    }
+  };
+
   const handleMoveToCredit = async () => {
     const invoiceNo = moveTarget?.invoice;
     if (invoiceNo == null) return;
@@ -171,20 +207,33 @@ export default function InvoiceTable({
       const matchStatus =
         statusFilter === "all" ||
         (inv.status ?? "").toLowerCase() === statusFilter;
-      return matchSearch && matchStatus;
+      const matchDueDate = matchesDueDateFilter(inv.due_date, dueDateFilter);
+      return matchSearch && matchStatus && matchDueDate;
     });
-  }, [invoices, search, statusFilter]);
+  }, [invoices, search, statusFilter, dueDateFilter]);
 
   const sorted = useMemo(() => {
     if (!sortConfig) return filtered;
     return [...filtered].sort((a, b) => {
-      const aVal = String(
-        (a as unknown as Record<string, unknown>)[sortConfig.key] ?? "",
-      );
-      const bVal = String(
-        (b as unknown as Record<string, unknown>)[sortConfig.key] ?? "",
-      );
-      const cmp = aVal.localeCompare(bVal, undefined, { numeric: true });
+      const read = (row: Invoice) =>
+        (row as unknown as Record<string, unknown>)[sortConfig.key];
+
+      const aRaw = read(a);
+      const bRaw = read(b);
+
+      // Rows missing the value sink to the bottom whichever way the column is
+      // sorted. Coerced to "" they would lead an ascending sort, which is
+      // where the eye goes first and exactly where an invoice with no due date
+      // does not belong.
+      const aEmpty = aRaw === null || aRaw === undefined || aRaw === "";
+      const bEmpty = bRaw === null || bRaw === undefined || bRaw === "";
+      if (aEmpty && bEmpty) return 0;
+      if (aEmpty) return 1;
+      if (bEmpty) return -1;
+
+      const cmp = String(aRaw).localeCompare(String(bRaw), undefined, {
+        numeric: true,
+      });
       return sortConfig.direction === "asc" ? cmp : -cmp;
     });
   }, [filtered, sortConfig]);
@@ -239,7 +288,25 @@ export default function InvoiceTable({
             className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
           />
         </div>
-        <div ref={statusRef} className="relative w-full sm:w-[150px]">
+        <FilterSelect
+          value={dueDateFilter}
+          options={DUE_DATE_FILTER_OPTIONS}
+          onChange={(v) => {
+            setDueDateFilter(v as DueDateFilter);
+            // Otherwise a narrower result set leaves you on a page that no
+            // longer exists, looking at an empty table.
+            setPage(0);
+          }}
+          className="w-full sm:w-[170px]"
+        />
+
+        {/* Hidden where the page already splits invoices into its own tabs —
+            a second filter there just gives two ways to narrow the same list
+            and two states that can disagree. */}
+        <div
+          ref={statusRef}
+          className={`relative w-full sm:w-[150px] ${showStatusFilter ? "" : "hidden"}`}
+        >
           <button
             type="button"
             onClick={() => setStatusOpen((o) => !o)}
@@ -289,11 +356,20 @@ export default function InvoiceTable({
       {/* Table — horizontally scrollable on mobile */}
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
       <div className="bg-white overflow-x-auto scrollbar-hide">
-        <table className="w-full text-sm min-w-[1000px]">
+        <table className="w-full text-sm min-w-[1200px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
-              <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+              {/* <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
                 S.No
+              </th> */}
+              <th className="text-left pb-3 pt-3 px-4 font-medium">Status</th>
+              <th
+                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                onClick={() => toggleSort("due_date")}
+              >
+                <span className="flex items-center gap-1">
+                  Due date {SortIcon({ colKey: "due_date" })}
+                </span>
               </th>
               <th
                 className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
@@ -308,7 +384,7 @@ export default function InvoiceTable({
               </th>
               <th className="text-left pb-3 pt-3 px-4 font-medium">Customer</th>
               <th
-                className="flex items-center pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                 onClick={() => toggleSort("amount")}
               >
                 <span className="flex items-center justify-end gap-1">
@@ -316,14 +392,13 @@ export default function InvoiceTable({
                 </span>
               </th>
               <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                 onClick={() => toggleSort("created_at")}
               >
-                <span className="flex items-center gap-1">
+                <span className="flex items-center justify-end gap-1">
                   Date {SortIcon({ colKey: "created_at" })}
                 </span>
               </th>
-              <th className="text-center pb-3 pt-3 px-4 font-medium">Status</th>
               <th className="text-right pb-3 pt-3 px-4 font-medium">Actions</th>
             </tr>
           </thead>
@@ -366,8 +441,19 @@ export default function InvoiceTable({
                     onClick={() => router.push(`/invoices/${inv.invoice}`)}
                     className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
                   >
-                    <td className="py-3 px-4 text-gray-400 text-xs">
+                    {/* <td className="py-3 px-4 text-gray-400 text-xs">
                       {page * pageSize + idx + 1}
+                    </td> */}
+                    <td className="py-3 px-4">
+                      <StatusPill label={inv.status ?? "—"} />
+                    </td>
+                    <td className="py-3 px-4">
+                      <DueDateCell
+                        dueDate={inv.due_date}
+                        // A paid or refunded invoice owes nothing, so its date
+                        // is a record rather than a deadline.
+                        settled={status === "paid" || status === "refunded"}
+                      />
                     </td>
                     <td className="py-3 px-4">
                       <span className="font-medium text-xs text-gray-900 block">
@@ -390,7 +476,7 @@ export default function InvoiceTable({
                       {inv.customer_name ?? "—"}
                     </td>
 
-                    <td className="py-3 px-4 text-xs text-left font-semibold text-gray-900">
+                    <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
                       {/* {formatCurrency(Number(inv.amount), currency)} */}
                       {formatCurrencySymbol(
                         Number(inv.amount),
@@ -399,7 +485,7 @@ export default function InvoiceTable({
                       )}
                     </td>
 
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-4 text-right">
                       {invoiceDate ? (
                         <div>
                           <span className="font-medium text-gray-800 text-xs block">
@@ -428,7 +514,7 @@ export default function InvoiceTable({
                               ]
                             </span>
                           </span>
-                          <span className="text-[11px] text-gray-400">
+                          <span className="text-[11px]  text-gray-400">
                             {invoiceDate.toLocaleDateString("en-US", {
                               month: "short",
                               day: "numeric",
@@ -441,13 +527,6 @@ export default function InvoiceTable({
                       )}
                     </td>
 
-                    <td className="py-3 px-4  text-center">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border capitalize ${STATUS_STYLES[status] ?? "bg-gray-100 text-gray-600 border-gray-200"}`}
-                      >
-                        {inv.status ?? "—"}
-                      </span>
-                    </td>
                     <td
                       className="py-3 px-4"
                       onClick={(e) => e.stopPropagation()}
@@ -485,6 +564,12 @@ export default function InvoiceTable({
                             >
                               {/* <Pencil className="h-4 w-4" /> */}
                               Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="rounded-lg cursor-pointer"
+                              onSelect={() => openDueDate(inv)}
+                            >
+                              {inv.due_date ? "Edit due date" : "Set due date"}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="rounded-lg cursor-pointer"
@@ -803,6 +888,19 @@ export default function InvoiceTable({
         movingToCredit={moving}
         onConfirm={handleMoveToCredit}
       />
+
+      {/* Mounted on demand so the form always opens on the row's own saved
+          values — see the note in the modal. */}
+      {dueDateTarget && (
+        <DueDateModal
+          onClose={() => setDueDateTarget(null)}
+          invoiceNo={dueDateTarget.invoice}
+          dueDate={nepalDateString(dueDateTarget.due_date)}
+          reminderSchedule={dueDateTarget.reminder_schedule ?? []}
+          isSaving={savingDueDate}
+          onSubmit={handleSaveDueDate}
+        />
+      )}
     </>
   );
 }

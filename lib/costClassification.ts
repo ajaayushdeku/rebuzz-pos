@@ -34,10 +34,41 @@ const FIXED_NAME_FRAGMENTS = [
   "education",
   "health",
   // Payroll counts as fixed here: staff are paid whether or not the tills ring.
-  // Prime-cost analysis treats labour as controllable instead — same money,
+  // Prime-cost analysis treats labor as controllable instead — same money,
   // different question — so keep that distinction in the caller, not here.
   "salary",
 ];
+
+/**
+ * Purpose-name fragments that mean staff pay.
+ *
+ * Wider than the single "salary" above, because that list only has to decide
+ * fixed-versus-variable while this one has to find every way a business might
+ * label payroll before a chart shows it as its own line.
+ */
+const LABOR_NAME_FRAGMENTS = [
+  "salary",
+  "salaries",
+  "wage",
+  "payroll",
+  "labor",
+  "labour",
+  "staff",
+  "employee",
+  "manpower",
+];
+
+/**
+ * Whether an expense purpose is staff pay.
+ *
+ * Purposes are free text the business typed, so this is a heuristic and will
+ * miss a purpose named something unexpected. It errs towards matching, since a
+ * missed one merely stays among the other expense lines rather than being lost.
+ */
+export function isLaborPurpose(name: string): boolean {
+  const key = (name || "").toLowerCase();
+  return LABOR_NAME_FRAGMENTS.some((fragment) => key.includes(fragment));
+}
 
 export function isFixedCost(icon: string, name: string): boolean {
   const iconKey = (icon || "").toLowerCase();

@@ -53,9 +53,8 @@ function StepTooltip({
 
       {step.type === "locked" ? (
         <p className="max-w-52 leading-relaxed text-gray-500">
-          Staff pay isn&apos;t recorded yet, so labour can&apos;t be shown as
-          its own step. Payroll entered as an expense appears under its own
-          category.
+          No staff pay was recorded this period, so this step takes nothing.
+          Record payroll as an expense and it will appear here.
         </p>
       ) : step.deduction > 0 ? (
         <>
@@ -194,10 +193,14 @@ export default function ProfitWaterfallBridge({
               [net profit]
             </span>
 
-            <span className="flex items-center gap-1.5 text-gray-400">
-              <Lock size={11} />
-              Labour not yet tracked
-            </span>
+            {/* Only while the labor step is inert. Once payroll is recorded
+                the step deducts like any other and needs no caveat. */}
+            {steps.some((s) => s.type === "locked") && (
+              <span className="flex items-center gap-1.5 text-gray-400">
+                <Lock size={11} />
+                No staff pay recorded
+              </span>
+            )}
           </div>
 
           {missing.length > 0 && (

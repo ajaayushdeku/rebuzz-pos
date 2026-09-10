@@ -15,6 +15,15 @@ export interface Credit {
   dueAmount: number;
   invoiceNo: number;
   ticketName?: string;
+  /** When payment is expected. A UTC instant of Nepal midnight on that day. */
+  dueDate?: string | null;
+  /**
+   * Days relative to `dueDate` on which a reminder goes out — negative before,
+   * 0 on the day, positive once overdue.
+   */
+  reminderSchedule?: number[] | null;
+  /** When the customer last heard about this credit, as UTC. */
+  lastReminderAt?: string | null;
 }
 
 export interface CreditPayment {
@@ -217,6 +226,33 @@ export async function sendCreditReminder(
         ?.message ||
         (data as { message?: string }).message ||
         "Failed to send reminder",
+    );
+  }
+}
+
+/**
+ * Set a credit's due date and reminder schedule.
+ *
+ * Same payload shape as the ticket's own reminder settings — the two documents
+ * describe the same debt, so a schedule set on one should read the same as a
+ * schedule set on the other.
+ */
+export async function updateCreditReminderSettings(
+  creditId: string,
+  settings: { dueDate: string; reminderSchedule: number[] },
+): Promise<void> {
+  const res = await fetch(`/api/credit/${creditId}/reminder-settings`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(settings),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data?.status === "error" || data?.status === "fail") {
+    throw new Error(
+      (data as { data?: { message?: string }; message?: string })?.data
+        ?.message ||
+        (data as { message?: string }).message ||
+        "Failed to save the due date",
     );
   }
 }

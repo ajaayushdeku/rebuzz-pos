@@ -19,7 +19,7 @@ import { RawBill } from "@/lib/types/bill";
 import { RawReport, RawReportResponse } from "@/lib/types/report";
 import { DayTimeProfitData } from "@/components/dashboardComponents/profitcostDash/DayTimeProfitHeatmap";
 import { formatDayTimeProfitAverages } from "@/utils/formatHourReportToday";
-import { classifyExpenses } from "@/lib/costClassification";
+import { classifyExpenses, isLaborPurpose } from "@/lib/costClassification";
 import { mergeSalesItems } from "@/lib/profitPerProduct";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
@@ -332,7 +332,7 @@ export async function getUnitEconomics(
 
   const headers = await authHeaders();
 
-  // Shifts are supplementary — only the labour-hour metric depends on them, so
+  // Shifts are supplementary — only the labor-hour metric depends on them, so
   // a shift outage should blank that one card rather than fail the whole panel.
   // The limit is raised well above fetchAllShifts' 15: that cap is fine for the
   // staff table's recent-shift list, but truncating shifts here would divide
@@ -721,7 +721,7 @@ export interface ScenarioBaseline {
   variableExpenses: number;
   orders: number;
   /**
-   * Labour, when it can be separated from everything else — currently never.
+   * Labor, when it can be separated from everything else — currently never.
    *
    * Shifts record hours but no employee carries a pay rate, so hours cannot
    * become money. Any payroll the business records as an expense is already
@@ -940,8 +940,16 @@ export async function getProfitWaterfall(
     byPurpose.set(label, (byPurpose.get(label) ?? 0) + (Number(t.amount) || 0));
   }
 
+  // Staff pay is pulled out of the purpose list and given its own step, so the
+  // biggest cost most kitchens carry is not left to compete for one of the
+  // capped slots below. Pulled out rather than copied — leaving it in the list
+  // as well would deduct it twice.
+  const laborCost = Array.from(byPurpose.entries())
+    .filter(([label]) => isLaborPurpose(label))
+    .reduce((sum, [, amount]) => sum + amount, 0);
+
   const ranked = Array.from(byPurpose.entries())
-    .filter(([, amount]) => amount > 0)
+    .filter(([label, amount]) => amount > 0 && !isLaborPurpose(label))
     .sort((a, b) => b[1] - a[1]);
 
   const named = ranked.slice(0, MAX_PURPOSE_STEPS);
@@ -989,10 +997,26 @@ export async function getProfitWaterfall(
     });
   }
 
-  // Labour, shown but inert: no employee carries a pay rate, so hours cannot
-  // become money. Deducts nothing — payroll a business does record appears
-  // under its own purpose below, and subtracting here would double-count it.
-  steps.push({ label: "Labour", value: running, deduction: 0, type: "locked" });
+  // Labor comes from what the business recorded as staff pay, not from shift
+  // hours: employees still carry no pay rate, so hours cannot become money.
+  // With nothing recorded the step stays but deducts nothing, which says "not
+  // tracked" rather than "you spend nothing on staff".
+  if (laborCost > 0) {
+    running -= laborCost;
+    steps.push({
+      label: "Labor",
+      value: running,
+      deduction: laborCost,
+      type: "deduct",
+    });
+  } else {
+    steps.push({
+      label: "Labor",
+      value: running,
+      deduction: 0,
+      type: "locked",
+    });
+  }
 
   for (const [label, amount] of named) {
     running -= amount;

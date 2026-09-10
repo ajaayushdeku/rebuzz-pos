@@ -18,6 +18,7 @@ import {
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { parseNepalDateTime } from "@/components/dashboardComponents/staffDash/staffDetail/staffDetailHelpers";
+import DueDateCell from "@/components/ui/DueDateCell";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,7 +32,19 @@ import DeleteCreditModal from "@/components/invoice/modals/DeleteCreditModal";
 import CreditDocumentModals, {
   type CreditDocumentAction,
 } from "@/components/credit/detail/CreditDocumentModals";
-import { archiveCredit, type Credit } from "@/services/apiCredit.client";
+import {
+  archiveCredit,
+  updateCreditReminderSettings,
+  type Credit,
+} from "@/services/apiCredit.client";
+import DueDateModal from "@/components/invoice/modals/DueDateModal";
+import { nepalDateString } from "@/lib/nepalDate";
+import {
+  DUE_DATE_FILTER_OPTIONS,
+  matchesDueDateFilter,
+  type DueDateFilter,
+} from "@/lib/dueDateFilter";
+import { FilterSelect } from "@/components/ui/FilterSelect";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -64,11 +77,22 @@ export default function CreditsTable({
   isLoading?: boolean;
   error?: unknown;
 }) {
-  const colCount = actionsMode === "none" ? 7 : 8;
+  /**
+   * A due date only means something while payment is still expected. On a
+   * settled or archived list every row would read the same shade of grey,
+   * which is a column's width spent saying nothing.
+   */
+  const showDueDate =
+    creditStatus !== "completed" && creditStatus !== "archived";
+
+  // The empty and loading rows span the whole table, so this has to move with
+  // whichever headers are actually rendered.
+  const colCount = (actionsMode === "none" ? 7 : 8) + (showDueDate ? 1 : 0);
   const { currency } = useCurrency();
   const queryClient = useQueryClient();
   const router = useRouter();
   const [search, setSearch] = useState("");
+  const [dueDateFilter, setDueDateFilter] = useState<DueDateFilter>("all");
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [page, setPage] = useState(0);
   const [paymentTarget, setPaymentTarget] = useState<Credit | null>(null);
@@ -83,6 +107,8 @@ export default function CreditsTable({
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [archiveTarget, setArchiveTarget] = useState<Credit | null>(null);
   const [archiving, setArchiving] = useState(false);
+  const [dueDateTarget, setDueDateTarget] = useState<Credit | null>(null);
+  const [savingDueDate, setSavingDueDate] = useState(false);
   // Document actions are keyed by the credit itself â€” every one of them builds
   // the credit's own document, so no invoice number is needed to open them.
   const [docTarget, setDocTarget] = useState<{
@@ -105,6 +131,27 @@ export default function CreditsTable({
       );
     } finally {
       setArchiving(false);
+    }
+  };
+
+  const handleSaveDueDate = async (settings: {
+    dueDate: string;
+    reminderSchedule: number[];
+  }) => {
+    if (!dueDateTarget?._id) return;
+
+    setSavingDueDate(true);
+    try {
+      await updateCreditReminderSettings(dueDateTarget._id, settings);
+      toast.success("Due date saved");
+      setDueDateTarget(null);
+      queryClient.invalidateQueries({ queryKey: ["credits"] });
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to save the due date",
+      );
+    } finally {
+      setSavingDueDate(false);
     }
   };
 
@@ -135,6 +182,12 @@ export default function CreditsTable({
 
   const filtered = useMemo(() => {
     return credits.filter((c) => {
+      // Applied only where the control is shown, so a filter left set on the
+      // ongoing list cannot silently hide rows on a tab without the control.
+      if (showDueDate && !matchesDueDateFilter(c.dueDate, dueDateFilter)) {
+        return false;
+      }
+
       const q = search.toLowerCase();
       if (!search) return true;
       const nameMatch = (c.user?.name ?? "").toLowerCase().includes(q);
@@ -143,18 +196,30 @@ export default function CreditsTable({
         (String(c.invoiceNo).includes(q) || `ord-${c.invoiceNo}`.includes(q));
       return nameMatch || invoiceMatch;
     });
-  }, [credits, search]);
+  }, [credits, search, dueDateFilter, showDueDate]);
 
   const sorted = useMemo(() => {
     if (!sortConfig) return filtered;
     return [...filtered].sort((a, b) => {
-      const aVal = String(
-        (a as unknown as Record<string, unknown>)[sortConfig.key] ?? "",
-      );
-      const bVal = String(
-        (b as unknown as Record<string, unknown>)[sortConfig.key] ?? "",
-      );
-      const cmp = aVal.localeCompare(bVal, undefined, { numeric: true });
+      const read = (row: (typeof filtered)[number]) =>
+        (row as unknown as Record<string, unknown>)[sortConfig.key];
+
+      const aRaw = read(a);
+      const bRaw = read(b);
+
+      // Rows missing the value sink to the bottom whichever way the column is
+      // sorted. Coerced to "" they would lead an ascending sort, which is
+      // where the eye goes first and exactly where a credit with no due date
+      // does not belong.
+      const aEmpty = aRaw === null || aRaw === undefined || aRaw === "";
+      const bEmpty = bRaw === null || bRaw === undefined || bRaw === "";
+      if (aEmpty && bEmpty) return 0;
+      if (aEmpty) return 1;
+      if (bEmpty) return -1;
+
+      const cmp = String(aRaw).localeCompare(String(bRaw), undefined, {
+        numeric: true,
+      });
       return sortConfig.direction === "asc" ? cmp : -cmp;
     });
   }, [filtered, sortConfig]);
@@ -227,6 +292,23 @@ export default function CreditsTable({
             className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
           />
         </div>
+        {/* Ongoing list only, alongside the column itself — on a settled or
+            archived list every row is grey and filtering by deadline sorts
+            nothing worth sorting. */}
+        {showDueDate && (
+          <FilterSelect
+            value={dueDateFilter}
+            options={DUE_DATE_FILTER_OPTIONS}
+            onChange={(v) => {
+              setDueDateFilter(v as DueDateFilter);
+              // Otherwise a narrower result set leaves you on a page that no
+              // longer exists, looking at an empty table.
+              setPage(0);
+            }}
+            className="w-full sm:w-[170px]"
+          />
+        )}
+
         {showStatusFilter && (
           <button
             type="button"
@@ -267,39 +349,55 @@ export default function CreditsTable({
 
       {/* Table */}
       <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        <table className="w-full text-sm min-w-[900px]">
+        <table className="w-full text-sm min-w-[1200px]">
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
               <th className="text-left pb-3 pt-3 px-4 font-medium">Status</th>
-              <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("creationDate")}
-              >
-                <span className="flex items-center gap-1">
-                  Date {SortIcon({ colKey: "creationDate" })}
-                </span>
+              {/* Second, right after status: on an ongoing list what is owed
+                  and when reads as one thought, and the created date matters
+                  less than the deadline. */}
+              {showDueDate && (
+                <th
+                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("dueDate")}
+                >
+                  <span className="flex items-center gap-1">
+                    Due date {SortIcon({ colKey: "dueDate" })}
+                  </span>
+                </th>
+              )}
+
+              <th className="text-left pb-3 pt-3 px-4 font-medium">
+                Invoice #
               </th>
-              <th className="text-left pb-3 pt-3 px-4 font-medium">Number</th>
               <th className="text-left pb-3 pt-3 px-4 font-medium">Customer</th>
               {creditStatus !== "completed" && creditStatus !== "archived" && (
-                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                <th className="text-center pb-3 pt-3 px-4 font-medium">
                   Unpaid by Customer
                 </th>
               )}
               <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                 onClick={() => toggleSort("grandTotal")}
               >
-                <span className="flex items-center gap-1">
+                <span className="flex items-center justify-end gap-1">
                   Total Credit {SortIcon({ colKey: "grandTotal" })}
                 </span>
               </th>
               <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                 onClick={() => toggleSort("dueAmount")}
               >
-                <span className="flex items-center gap-1">
+                <span className="flex items-center justify-end gap-1">
                   Amount due {SortIcon({ colKey: "dueAmount" })}
+                </span>
+              </th>
+              <th
+                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                onClick={() => toggleSort("creationDate")}
+              >
+                <span className="flex items-center justify-end gap-1">
+                  Date {SortIcon({ colKey: "creationDate" })}
                 </span>
               </th>
               {actionsMode !== "none" && (
@@ -401,8 +499,62 @@ export default function CreditsTable({
                         </span>
                       </td>
 
-                      {/* Date */}
+                      {/* Due date */}
+                      {showDueDate && (
+                        <td className="py-3.5 px-4">
+                          <DueDateCell
+                            dueDate={c.dueDate}
+                            // A cleared credit owes nothing, so a passed date
+                            // on it is history rather than a warning.
+                            settled={cleared}
+                          />
+                        </td>
+                      )}
+
+                      {/* Invoice Number */}
                       <td className="py-3.5 px-4">
+                        <span className="text-xs text-gray-800 block font-semibold">
+                          {c.invoiceNo ? `ORD-${c.invoiceNo}` : "—"}
+                        </span>
+                        {(() => {
+                          const d = parseNepalDateTime(c.creationDate);
+                          return d ? (
+                            <span className="text-[11px] text-gray-400">
+                              {timeAgo(d)}
+                            </span>
+                          ) : null;
+                        })()}
+                      </td>
+
+                      {/* Customer */}
+                      <td className="py-3.5 px-4 text-xs text-gray-800">
+                        {c.user?.name ?? "—"}
+                      </td>
+
+                      {/* Unpaid by customer (hidden for completed/archived) */}
+                      {creditStatus !== "archived" &&
+                        creditStatus !== "completed" && (
+                          <td className="py-3.5 px-4 text-xs text-center text-gray-500">
+                            {!cleared &&
+                            !(c.status === "archived") &&
+                            ubc &&
+                            ubc.total > 1
+                              ? `${ubc.ordinal} of ${ubc.total}`
+                              : ""}
+                          </td>
+                        )}
+                      {/* Total Credit */}
+                      <td className="py-3.5 px-5 text-xs text-right font-semibold text-gray-800">
+                        {fmt(c.grandTotal ?? 0)}
+                      </td>
+
+                      {/* Amount due */}
+                      <td className="py-3.5 px-5  text-xs text-right font-semibold text-red-900">
+                        {fmt(c.dueAmount ?? 0)}
+                      </td>
+
+                      {/* Date */}
+                      <td className="py-3.5 px-4 text-right">
                         {(() => {
                           const d = parseNepalDateTime(c.creationDate);
                           // console.log("invoiceDate", d, c.creationDate);
@@ -436,48 +588,6 @@ export default function CreditsTable({
                             <span className="text-gray-400">—</span>
                           );
                         })()}
-                      </td>
-
-                      {/* Invoice Number */}
-                      <td className="py-3.5 px-4">
-                        <span className="text-xs text-gray-800 block font-semibold">
-                          {c.invoiceNo ? `ORD-${c.invoiceNo}` : "—"}
-                        </span>
-                        {(() => {
-                          const d = parseNepalDateTime(c.creationDate);
-                          return d ? (
-                            <span className="text-[11px] text-gray-400">
-                              {timeAgo(d)}
-                            </span>
-                          ) : null;
-                        })()}
-                      </td>
-
-                      {/* Customer */}
-                      <td className="py-3.5 px-4 text-xs text-gray-800">
-                        {c.user?.name ?? "—"}
-                      </td>
-
-                      {/* Unpaid by customer (hidden for completed/archived) */}
-                      {creditStatus !== "archived" &&
-                        creditStatus !== "completed" && (
-                          <td className="py-3.5 px-4 text-xs text-gray-500">
-                            {!cleared &&
-                            !(c.status === "archived") &&
-                            ubc &&
-                            ubc.total > 1
-                              ? `${ubc.ordinal} of ${ubc.total}`
-                              : ""}
-                          </td>
-                        )}
-                      {/* Total Credit */}
-                      <td className="py-3.5 px-4 text-xs font-semibold text-gray-800">
-                        {fmt(c.grandTotal ?? 0)}
-                      </td>
-
-                      {/* Amount due */}
-                      <td className="py-3.5 px-4 text-xs font-semibold text-red-900">
-                        {fmt(c.dueAmount ?? 0)}
                       </td>
 
                       {/* Actions */}
@@ -542,6 +652,25 @@ export default function CreditsTable({
                                           Edit
                                         </DropdownMenuItem>
                                       )}
+
+                                    {/* Set due date — ongoing credits only.
+                                        A settled or archived credit is owed
+                                        nothing, so a deadline on it would
+                                        schedule reminders for a debt that no
+                                        longer exists. `showDueDate` is the
+                                        same test the column uses, so the
+                                        action and the column appear together
+                                        or not at all. */}
+                                    {showDueDate && !cleared && (
+                                      <DropdownMenuItem
+                                        className="rounded-lg cursor-pointer"
+                                        onSelect={() => setDueDateTarget(c)}
+                                      >
+                                        {c.dueDate
+                                          ? "Edit due date"
+                                          : "Set due date"}
+                                      </DropdownMenuItem>
+                                    )}
 
                                     {!cleared && (
                                       <>
@@ -698,6 +827,19 @@ export default function CreditsTable({
         isArchiving={archiving}
         onConfirm={handleArchive}
       />
+
+      {/* Mounted on demand so the form always opens on the row's own saved
+          values — see the note in the modal. */}
+      {dueDateTarget && (
+        <DueDateModal
+          onClose={() => setDueDateTarget(null)}
+          invoiceNo={dueDateTarget.invoiceNo}
+          dueDate={nepalDateString(dueDateTarget.dueDate)}
+          reminderSchedule={dueDateTarget.reminderSchedule ?? []}
+          isSaving={savingDueDate}
+          onSubmit={handleSaveDueDate}
+        />
+      )}
     </>
   );
 }

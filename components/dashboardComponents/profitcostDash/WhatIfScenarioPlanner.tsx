@@ -34,7 +34,7 @@ const DEFAULTS: ScenarioAdjustments = {
 /**
  * The levers, in the order an owner would reach for them.
  *
- * `locked` keeps a lever visible but inert. Labour is the one case: shifts
+ * `locked` keeps a lever visible but inert. Labor is the one case: shifts
  * record hours, but no employee carries a pay rate, so hours cannot become
  * money. Any payroll the business records as an expense is already counted
  * inside fixed costs and cannot be pulled back out to move on its own.
@@ -75,13 +75,13 @@ const SLIDERS: {
   },
   {
     key: "laborAdjustment",
-    label: "Labour cost",
+    label: "Labor cost",
     hint: "Needs a pay rate on each employee",
     min: -30,
     max: 30,
     isCost: true,
     locked:
-      "Staff pay isn't recorded yet, so labour can't be modelled on its own. It is counted inside other costs.",
+      "Staff pay carries no rate per employee, so labor can't be modelled on its own. Any payroll you record is counted inside other costs.",
   },
 ];
 

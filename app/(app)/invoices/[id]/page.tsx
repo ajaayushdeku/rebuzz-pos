@@ -22,7 +22,10 @@ import {
 } from "lucide-react";
 
 import { useBusiness } from "@/hooks/useBusiness";
-import { getTicketByInvoice } from "@/services/apiTicket.client";
+import {
+  getTicketByInvoice,
+  updateReminderSettings,
+} from "@/services/apiTicket.client";
 import {
   archiveCredit,
   deleteCreditPayment,
@@ -57,7 +60,15 @@ import RemovePaymentModal from "@/components/invoice/modals/RemovePaymentModal";
 import EditPaymentModal from "@/components/invoice/modals/EditPaymentModal";
 import DeleteInvoiceModal from "@/components/invoice/modals/DeleteInvoiceModal";
 import MoveToCreditModal from "@/components/invoice/modals/MoveToCreditModal";
+import DueDateModal, {
+  reminderLabel,
+} from "@/components/invoice/modals/DueDateModal";
 import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
+import {
+  daysFromNepalToday,
+  formatNepalDateTime,
+  nepalDateString,
+} from "@/lib/nepalDate";
 
 type InvoiceTypeKey = "proforma" | "invoice" | "tax";
 
@@ -90,6 +101,8 @@ const InvoiceDetailPage = () => {
   const [isCreditPaymentOpen, setIsCreditPaymentOpen] = useState(false);
   const [isEmailInvoiceOpen, setIsEmailInvoiceOpen] = useState(false);
   const [isReminderOpen, setIsReminderOpen] = useState(false);
+  const [isDueDateOpen, setIsDueDateOpen] = useState(false);
+  const [savingDueDate, setSavingDueDate] = useState(false);
   const [reminderMessage, setReminderMessage] = useState("");
   const [sendingReminder, setSendingReminder] = useState(false);
   const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
@@ -247,6 +260,31 @@ const InvoiceDetailPage = () => {
       setIsReminderOpen(false);
     } finally {
       setSendingReminder(false);
+    }
+  };
+
+  const handleSaveDueDate = async (settings: {
+    dueDate: string;
+    reminderSchedule: number[];
+  }) => {
+    const ticketId = invoice?.invoice;
+    if (ticketId == null) {
+      toast.error("Invoice ID is missing");
+      return;
+    }
+
+    setSavingDueDate(true);
+    try {
+      await updateReminderSettings(ticketId, settings);
+      toast.success("Due date saved");
+      setIsDueDateOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["ticket", id] });
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to save the due date",
+      );
+    } finally {
+      setSavingDueDate(false);
     }
   };
 
@@ -439,6 +477,46 @@ const InvoiceDetailPage = () => {
     tabRefs.current[next]?.focus();
   };
 
+  // ── Due date ──────────────────────────────────────────────────────────────
+  // Stored as the instant the day begins in Nepal, so it arrives as the
+  // evening before in UTC. Converted rather than sliced — see lib/nepalDate.
+  const dueDateRaw: string | null = nepalDateString(invoice.dueDate);
+  const reminderSchedule: number[] = Array.isArray(invoice.reminderSchedule)
+    ? [...invoice.reminderSchedule].sort((a: number, b: number) => a - b)
+    : [];
+
+  // The day itself sits with the ones after, as it did before: both are the
+  // invoice having come due, where anything negative is still a warning.
+  const remindersBefore = reminderSchedule.filter((o) => o < 0);
+  const remindersAfter = reminderSchedule.filter((o) => o >= 0);
+
+  /**
+   * When the customer last heard about this invoice.
+   *
+   * `lastReminderAt` is what the API records; the `sentAt` this used to read is
+   * not a field on the ticket, so the line said "Never" no matter how many
+   * times an invoice had gone out. Rendered in Nepal time rather than the
+   * viewer's, like every other timestamp on the page.
+   */
+  const lastSentAt = formatNepalDateTime(invoice.lastReminderAt);
+
+  /**
+   * Built from the parts, never `new Date(iso)`, which reads a bare date as UTC
+   * midnight and renders the day before in any negative offset.
+   */
+  const formatDueDate = (iso: string) => {
+    const [y, m, d] = iso.split("-").map(Number);
+    if (!y || !m || !d) return iso;
+    return new Date(y, m - 1, d).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  /** Whole days from today in Nepal to the due date. Negative once past. */
+  const daysUntilDue = daysFromNepalToday(dueDateRaw);
+
   // ── Derived status ────────────────────────────────────────────────────────
   const isRefunded = displayBillData?.status === "refunded";
   const isPaid = invoice.paidStatus === "paid";
@@ -558,6 +636,23 @@ const InvoiceDetailPage = () => {
                 year: "numeric",
               })}{" "}
               GMT+5:45
+              {/* Only once one is set, and coloured only while it still
+                  matters — an overdue date on a paid invoice is history, not a
+                  warning. */}
+              {dueDateRaw && (
+                <>
+                  {" · "}
+                  <span
+                    className={
+                      !isPaid && !isRefunded && (daysUntilDue ?? 0) < 0
+                        ? "font-semibold text-red-500"
+                        : "font-medium text-gray-500"
+                    }
+                  >
+                    Due {formatDueDate(dueDateRaw)}
+                  </span>
+                </>
+              )}
             </p>
           </div>
         </div>
@@ -815,6 +910,48 @@ const InvoiceDetailPage = () => {
             <div className="flex flex-row justify-content gap-6">
               <div>
                 <p className="text-[10px] text-right font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
+                  Due date
+                </p>
+                {dueDateRaw ? (
+                  <div className="text-right relative">
+                    <p className="text-xl text-600 font-semibold font-sans text-gray-800">
+                      {formatDueDate(dueDateRaw)}
+                    </p>
+
+                    {!isPaid && !isRefunded && daysUntilDue !== null && (
+                      <p
+                        className={` absolute right-0 text-[11px] font-semibold mt-0.5 ${
+                          daysUntilDue < 0
+                            ? "text-red-500"
+                            : daysUntilDue === 0
+                              ? "text-amber-600"
+                              : "text-gray-400"
+                        }`}
+                      >
+                        {daysUntilDue < 0
+                          ? `${Math.abs(daysUntilDue)} ${
+                              Math.abs(daysUntilDue) === 1 ? "day" : "days"
+                            } overdue`
+                          : daysUntilDue === 0
+                            ? "Due today"
+                            : `in ${daysUntilDue} ${
+                                daysUntilDue === 1 ? "day" : "days"
+                              }`}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setIsDueDateOpen(true)}
+                    className="text-base font-semibold text-blue-600 tracking-wide cursor-pointer hover:underline"
+                  >
+                    Set due date
+                  </button>
+                )}
+              </div>
+
+              <div>
+                <p className="text-[10px] text-right font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
                   Amount due
                 </p>
                 <p className="text-xl font-bold font-sans text-gray-800">
@@ -837,14 +974,6 @@ const InvoiceDetailPage = () => {
                   )}
                 </p>
               </div>
-              {/* <div>
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
-                  Due
-                </p>
-                <p className="text-xl font-semibold text-gray-800">
-                  0 days ago
-                </p>
-              </div> */}
             </div>
           </div>
 
@@ -893,7 +1022,7 @@ const InvoiceDetailPage = () => {
             <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-0">
               <div className="flex items-start gap-4">
                 <div className="w-9 h-9 rounded-full border-2 border-blue-500 flex items-center justify-center text-blue-600 shrink-0">
-                  {invoice.sentAt ? <Send size={16} /> : <Mail size={16} />}
+                  {lastSentAt ? <Send size={16} /> : <Mail size={16} />}
                 </div>
 
                 <div className="flex-1 min-w-0">
@@ -902,33 +1031,10 @@ const InvoiceDetailPage = () => {
                     <span className="font-medium text-gray-700">
                       Last sent:
                     </span>{" "}
-                    {invoice.sentAt
-                      ? new Date(invoice.sentAt).toLocaleString([], {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                        })
-                      : "Never"}
-                    {/* {invoice.sentAt ? (
-                      <div className="flex flex-col">
-                        <p className="text-sm text-gray-600 mt-0.5">
-                          <span className="font-medium text-gray-900">
-                            Sent to:
-                          </span>{" "}
-                          {invoice.customerEmail || "Customer"}
-                        </p>
-                        <p className="text-xs text-blue-600 font-medium mt-1">
-                          Last sent:{" "}
-                          {new Date(invoice.sentAt).toLocaleString([], {
-                            dateStyle: "medium",
-                            timeStyle: "short",
-                          })}
-                        </p>
-                      </div>
-                    ) : (
-                      <p className="text-sm text-gray-500 mt-0.5">
-                        Not sent to the customer yet.
-                      </p>
-                    )} */}
+                    {lastSentAt ?? "Never"}
+                    {lastSentAt && (
+                      <span className="text-gray-400"> GMT+5:45</span>
+                    )}
                   </p>
                 </div>
 
@@ -940,64 +1046,117 @@ const InvoiceDetailPage = () => {
                     onClick={() => setIsSendInvoiceModalOpen(true)}
                     className="text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-1.5 transition-colors"
                   >
-                    {invoice.sentAt ? "Send again" : "Send Invoice"}
+                    {lastSentAt ? "Send again" : "Send Invoice"}
                   </button>
                 </div>
               </div>
 
               {/* Reminders section */}
               <div className="mt-4 ml-13 border border-gray-100 rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Bell size={13} className="text-gray-500" />
-                  <p className="text-xs font-semibold text-gray-700">
-                    Schedule automatic reminders
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                      Reminders after due date
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-2">
+                    <Bell size={13} className="text-gray-500" />
+                    <p className="text-xs font-semibold text-gray-700">
+                      Scheduled due date &amp; automatic reminders
                     </p>
-                    <div className="flex flex-wrap gap-2 opacity-50">
-                      {[
-                        "On due date",
-                        "3 days after",
-                        "7 days after",
-                        "14 days after",
-                      ].map((label) => (
-                        <label
-                          key={label}
-                          className="flex items-center gap-1.5 border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-500 cursor-not-allowed"
-                        >
-                          <input type="checkbox" className="rounded" disabled />
-                          {label}
-                        </label>
-                      ))}
-                    </div>
                   </div>
-                  <div>
-                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                      Reminders before due date
-                    </p>
-                    <div className="flex flex-wrap gap-2 opacity-50">
-                      {["14 days before", "7 days before", "3 days before"].map(
-                        (label) => (
-                          <label
-                            key={label}
-                            className="flex items-center gap-1.5 border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs text-gray-500 cursor-not-allowed"
-                          >
-                            <input
-                              type="checkbox"
-                              className="rounded"
-                              disabled
-                            />
-                            {label}
-                          </label>
-                        ),
+                  <button
+                    onClick={() => setIsDueDateOpen(true)}
+                    className="text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-4 py-1.5 transition-colors shrink-0"
+                  >
+                    {dueDateRaw ? "Edit due date" : "Set due date"}
+                  </button>
+                </div>
+
+                {!dueDateRaw ? (
+                  // Reminders are all relative to the due date, so there is
+                  // nothing to schedule against until one exists. Saying that
+                  // beats showing a row of options that could not fire.
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    No due date set. Add one to schedule reminders before and
+                    after payment falls due.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                      <p className="text-xs text-gray-500">
+                        <span className="font-medium text-gray-700">Due:</span>{" "}
+                        <span className="font-semibold text-gray-800">
+                          {formatDueDate(dueDateRaw)}
+                        </span>
+                      </p>
+                      {!isPaid && !isRefunded && daysUntilDue !== null && (
+                        <span
+                          className={`text-[11px] font-semibold ${
+                            daysUntilDue < 0
+                              ? "text-red-500"
+                              : daysUntilDue === 0
+                                ? "text-amber-600"
+                                : "text-gray-400"
+                          }`}
+                        >
+                          {daysUntilDue < 0
+                            ? `${Math.abs(daysUntilDue)} ${
+                                Math.abs(daysUntilDue) === 1 ? "day" : "days"
+                              } overdue`
+                            : daysUntilDue === 0
+                              ? "Due today"
+                              : `in ${daysUntilDue} ${
+                                  daysUntilDue === 1 ? "day" : "days"
+                                }`}
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                        Scheduled reminders before due date
+                      </p>
+                      {remindersBefore.length === 0 ? (
+                        <p className="text-xs text-gray-400">
+                          None scheduled before the due date.
+                        </p>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {remindersBefore.map((offset) => (
+                            <span
+                              key={offset}
+                              className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600"
+                            >
+                              {reminderLabel(offset)}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                        Scheduled reminders after due date
+                      </p>
+                      {remindersAfter.length === 0 ? (
+                        <p className="text-xs text-gray-400">
+                          None scheduled once it falls due.
+                        </p>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {remindersAfter.map((offset) => (
+                            <span
+                              key={offset}
+                              className={`rounded-lg border px-2.5 py-1.5 text-xs font-medium ${
+                                offset === 0
+                                  ? "border-amber-200 bg-amber-50 text-amber-700"
+                                  : "border-red-200 bg-red-50 text-red-600"
+                              }`}
+                            >
+                              {reminderLabel(offset)}
+                            </span>
+                          ))}
+                        </div>
                       )}
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* Send reminder quick action */}
                 <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
@@ -1006,7 +1165,7 @@ const InvoiceDetailPage = () => {
                   </p>
                   <button
                     onClick={handleSendReminder}
-                    className="text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
+                    className="text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     Send reminder
                   </button>
@@ -1559,6 +1718,19 @@ const InvoiceDetailPage = () => {
         isDeleting={isDeleting}
         onConfirm={handleDeleteInvoice}
       />
+
+      {/* Due date & reminder schedule. Mounted on demand so the form always
+          opens on what is currently saved — see the note in the modal. */}
+      {isDueDateOpen && (
+        <DueDateModal
+          onClose={() => setIsDueDateOpen(false)}
+          invoiceNo={invoice?.invoice}
+          dueDate={dueDateRaw}
+          reminderSchedule={reminderSchedule}
+          isSaving={savingDueDate}
+          onSubmit={handleSaveDueDate}
+        />
+      )}
 
       {/* Move to Credit Confirmation Modal */}
       <MoveToCreditModal

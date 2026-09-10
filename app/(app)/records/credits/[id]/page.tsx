@@ -14,8 +14,11 @@ import {
   deleteCreditPayment,
   fetchCreditDetail,
   sendCreditReminder,
+  updateCreditReminderSettings,
   type CreditPayment,
 } from "@/services/apiCredit.client";
+import DueDateModal from "@/components/invoice/modals/DueDateModal";
+import { nepalDateString } from "@/lib/nepalDate";
 import type { TicketInvoice } from "@/components/invoice/modals/useInvoiceTicket";
 import { formatCurrencySymbol } from "@/utils/helper";
 
@@ -76,6 +79,8 @@ export default function CreditDetailPage() {
   const [isCustomerPreviewOpen, setIsCustomerPreviewOpen] = useState(false);
   const [isCreditPaymentOpen, setIsCreditPaymentOpen] = useState(false);
   const [isReminderOpen, setIsReminderOpen] = useState(false);
+  const [isDueDateOpen, setIsDueDateOpen] = useState(false);
+  const [savingDueDate, setSavingDueDate] = useState(false);
   const [reminderMessage, setReminderMessage] = useState("");
   const [sendingReminder, setSendingReminder] = useState(false);
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
@@ -170,6 +175,32 @@ export default function CreditDetailPage() {
   };
 
   // ── Actions ─────────────────────────────────────────────────────────────
+  const handleSaveDueDate = async (settings: {
+    dueDate: string;
+    reminderSchedule: number[];
+  }) => {
+    if (!credit?._id) {
+      toast.error("Credit not found");
+      return;
+    }
+
+    setSavingDueDate(true);
+    try {
+      await updateCreditReminderSettings(credit._id, settings);
+      toast.success("Due date saved");
+      setIsDueDateOpen(false);
+      queryClient.invalidateQueries({
+        queryKey: ["credit-detail-by-id", creditId],
+      });
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to save the due date",
+      );
+    } finally {
+      setSavingDueDate(false);
+    }
+  };
+
   const handleSendReminder = () => {
     setReminderMessage(
       `Reminder: ${formatCurrencySymbol(
@@ -318,6 +349,8 @@ export default function CreditDetailPage() {
             paidAmount={paid}
             grandTotal={credit.grandTotal ?? 0}
             currency={currency}
+            dueDate={nepalDateString(credit.dueDate)}
+            onSetDueDate={() => setIsDueDateOpen(true)}
           />
 
           <CreditTimeline
@@ -332,6 +365,7 @@ export default function CreditDetailPage() {
             }
             onSendInvoice={() => setIsSendInvoiceOpen(true)}
             onSendReminder={handleSendReminder}
+            onSetDueDate={() => setIsDueDateOpen(true)}
             onRecordPayment={() => setIsCreditPaymentOpen(true)}
             onSendReceipt={(p) => setReceiptPayment(p)}
             onEditPayment={(p) => setPaymentToEdit(p)}
@@ -361,6 +395,21 @@ export default function CreditDetailPage() {
       </div>
 
       {/* ── Modals ── */}
+      {/* Due date & reminder schedule. Mounted on demand so the form always
+          opens on what is currently saved — see the note in the modal. Shared
+          with the invoice page: the two documents describe the same debt, so
+          the schedule should be set the same way from either side. */}
+      {isDueDateOpen && (
+        <DueDateModal
+          onClose={() => setIsDueDateOpen(false)}
+          invoiceNo={credit?.invoiceNo}
+          dueDate={nepalDateString(credit?.dueDate)}
+          reminderSchedule={credit?.reminderSchedule ?? []}
+          isSaving={savingDueDate}
+          onSubmit={handleSaveDueDate}
+        />
+      )}
+
       {/* Copy / download / email — all three carry the credit's document, not
           the ticket the credit was raised from. */}
       <CreditSendModal
