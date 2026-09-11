@@ -30,7 +30,7 @@ const VARIANT: Record<HeaderActionVariant, string> = {
  * matches the `DateRangeFilter` trigger these stand beside in most headers.
  */
 const BASE =
-  "inline-flex h-9 shrink-0 cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-transparent px-3.5 text-sm font-semibold transition-colors outline-none focus-visible:border-blue-500 focus-visible:ring-[3px] focus-visible:ring-blue-500/30 active:translate-y-px disabled:pointer-events-none disabled:opacity-50";
+  "inline-flex h-9 shrink-0 cursor-pointer select-none items-center justify-center gap-2 tracking-wide whitespace-nowrap rounded-lg border border-transparent px-3.5 text-sm font-semibold transition-colors outline-none focus-visible:border-blue-500 focus-visible:ring-[3px] focus-visible:ring-blue-500/30 active:translate-y-px disabled:pointer-events-none disabled:opacity-50";
 
 /** Square below `lg`, so an icon-only button is not a wide pill with a dot in it. */
 const ICON_ONLY = "max-lg:w-9 max-lg:px-0";

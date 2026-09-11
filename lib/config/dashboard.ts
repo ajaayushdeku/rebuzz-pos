@@ -50,6 +50,12 @@ export interface ClientStatConfig {
   iconColor: string;
   bgColor?: string;
   format?: "currency" | "number";
+  /**
+   * Figure is scoped to the page's date range, so the tile carries a RANGE
+   * tag. Omit it on an all-time figure — an untagged tile in a grid that has
+   * tagged ones is how a reader knows the filter does not touch it.
+   */
+  ranged?: boolean;
 }
 
 export interface MergedSerializableConfig extends SerializableStatConfig {
@@ -141,18 +147,22 @@ export const CUSTOMER_STAT_CONFIG: ClientStatConfig[] = [
     bgColor: "bg-blue-100",
   },
   {
+    // Unique customers who bought within the range.
     key: "activeCustomers",
     label: "Active This Month",
     icon: User,
     iconColor: "text-green-500",
     bgColor: "bg-green-100",
+    ranged: true,
   },
   {
+    // Read off the sales report for the range.
     key: "pointsRedeemed",
     label: "Points Redeemed",
     icon: Gift,
     iconColor: "text-purple-500",
     bgColor: "bg-purple-100",
+    ranged: true,
   },
   {
     key: "pointsPerMember",

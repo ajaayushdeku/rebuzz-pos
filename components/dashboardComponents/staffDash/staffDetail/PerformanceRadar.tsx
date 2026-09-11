@@ -865,10 +865,9 @@ export default function PerformanceRadar({
             subHeader={`Employee's Performance Radar for ${dateRange.startDate} to
               ${dateRange.endDate}`}
           />
-          <RangeBadge className="ml-0" />
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="relative flex items-center gap-1">
           <button
             onClick={() => setShowBaseline(!showBaseline)}
             className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
@@ -882,6 +881,8 @@ export default function PerformanceRadar({
             </span>
             <span className="text-sm font-bold text-blue-600">{avgScore}</span>
           </div>
+
+          <RangeBadge className="absolute bottom-[-25px] right-0" />
         </div>
       </div>
 

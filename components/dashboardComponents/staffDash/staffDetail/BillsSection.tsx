@@ -287,7 +287,7 @@ export default function BillsSection({
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 ">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
             <Receipt size={16} className="text-purple-500" />
@@ -298,8 +298,9 @@ export default function BillsSection({
             subHeader={`${filteredBills.length}
               ${filteredBills.length === 1 ? "bill" : "bills"}`}
           />
-          <RangeBadge className="ml-0" />
         </div>
+
+        <RangeBadge className="ml-0" />
       </div>
 
       {/* Search & Filter Bar */}
@@ -333,7 +334,7 @@ export default function BillsSection({
         {/* Status Filter */}
         <SegmentedControl
           label="Status:"
-          accent="purple"
+          accent="blue"
           options={STATUS_OPTIONS}
           value={statusFilter}
           onChange={(next) => {

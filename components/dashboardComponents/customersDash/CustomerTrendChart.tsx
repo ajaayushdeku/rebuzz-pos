@@ -89,6 +89,22 @@ const getYAxisConfig = (maxStackValue: number) => {
 const stackTotal = (d: CustomerTrendData) =>
   (d.active || 0) + (d.inactive || 0) + (d.new || 0) + (d.newActive || 0);
 
+/**
+ * The two figures the stack hides.
+ *
+ * The four series are disjoint buckets, so the bar's height is every customer
+ * on the books that month — and because `inactive` carries the whole back
+ * catalogue, that height barely moves and says almost nothing about the month.
+ * What actually happened in a month is who bought and who joined, and each of
+ * those spans two buckets: someone who signed up and bought sits in
+ * `newActive` and belongs in both counts.
+ */
+const boughtInMonth = (d: CustomerTrendData) =>
+  (d.active || 0) + (d.newActive || 0);
+
+const joinedInMonth = (d: CustomerTrendData) =>
+  (d.new || 0) + (d.newActive || 0);
+
 // Sub-components
 
 /** Reversed, so it reads top-of-stack down — the order the bars appear in. */
@@ -179,22 +195,41 @@ export default function CustomerTrendChart({ data }: CustomerTrendProps) {
           />
         </div>
 
-        {/* Latest month's total — the stack shows the mix but never the size
-            of the most recent bar as a figure. Hidden while showing samples. */}
+        {/* Latest month, as a readout. It used to print the month name over a
+            bare number with nothing saying what the number counted — and the
+            number it chose, the full customer base, is the one figure in the
+            chart that hardly moves. The base is still the headline so it ties
+            back to the bar and to the tooltip's Total, but the two figures
+            that describe the month now sit under it. Hidden while showing
+            samples. */}
         {!isEmpty && latest && (
           <div className="flex shrink-0 flex-col items-end">
             <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
-              {latest.month}
+              {latest.month} · total customers
             </span>
             <p className="mt-0.5 text-base font-bold leading-tight tabular-nums text-gray-900">
               {stackTotal(latest).toLocaleString()}
             </p>
+            <div className="mt-1 flex items-center gap-3 text-[11px] text-gray-500">
+              <span className="tabular-nums">
+                <span className="font-semibold text-gray-700">
+                  {boughtInMonth(latest).toLocaleString()}
+                </span>{" "}
+                bought
+              </span>
+              <span className="tabular-nums">
+                <span className="font-semibold text-gray-700">
+                  {joinedInMonth(latest).toLocaleString()}
+                </span>{" "}
+                joined
+              </span>
+            </div>
           </div>
         )}
       </div>
 
       {/* Chart */}
-      <div className="mt-8">
+      <div className="mt-5">
         <ResponsiveContainer width="100%" height={240}>
           <BarChart
             data={displayData}

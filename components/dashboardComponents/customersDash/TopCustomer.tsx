@@ -14,7 +14,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrencySymbol } from "@/utils/helper";
+import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
 import CustomerFormModal from "@/components/invoice/CustomerFormModal";
 import CustomerHistoryModal from "@/components/dashboardComponents/customersDash/CustomerHistoryModal";
 import { ComponentHeader } from "@/components/ComponentHeader";
@@ -115,7 +115,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
 
         <button
           onClick={() => setCreateModalOpen(true)}
-          className="inline-flex items-center gap-2 self-start rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700"
+          className="border-blue-300 bg-white text-blue-600  hover:bg-blue-50 active:bg-blue-100 inline-flex h-9 shrink-0 text-[13px] tracking-wide cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-transparent px-3.5 text-sm font-semibold transition-colors outline-none focus-visible:border-blue-500 focus-visible:ring-[3px] focus-visible:ring-blue-500/30 active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
         >
           <UserPlus className="h-4 w-4" />
           Add New Customer
@@ -169,12 +169,15 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                 </span>
               </th>
               <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                className="text-right  pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                 onClick={() => toggleSort("numVisits")}
               >
-                <span className="flex items-center gap-1">
+                <span className="flex w-fit items-center justify-end gap-1">
                   Visits {SortIcon({ colKey: "numVisits" })}
                 </span>
+              </th>
+              <th className="text-center pb-3 pt-3 px-4 font-medium">
+                Loyalty Tier
               </th>
               <th
                 className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
@@ -184,9 +187,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                   Total Spent {SortIcon({ colKey: "totalSpent" })}
                 </span>
               </th>
-              <th className="text-center pb-3 pt-3 px-4 font-medium">
-                Loyalty Tier
-              </th>
+
               <th
                 className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                 onClick={() => toggleSort("loyaltyPoints")}
@@ -195,6 +196,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                   Loyalty Points {SortIcon({ colKey: "loyaltyPoints" })}
                 </span>
               </th>
+
               <th className="text-right pb-3 pt-3 px-4 font-medium">Action</th>
             </tr>
           </thead>
@@ -232,18 +234,10 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                       {customer.customer}
                     </span>
                   </td>
-                  <td className="py-3 px-4">
-                    <span className="font-semibold text-xs text-gray-900">
+                  <td className="py-3 px-4 ">
+                    <span className="font-semibold text-xs  text-gray-900">
                       {customer.numVisits}
                     </span>
-                  </td>
-                  <td className="py-3 px-4 text-right text-xs font-semibold text-gray-900">
-                    {/* {formatCurrency(customer.totalSpent, currency)} */}
-                    {formatCurrencySymbol(
-                      customer.totalSpent,
-                      currency.symbol,
-                      currency.locale,
-                    )}
                   </td>
                   <td className="py-3 px-4 text-center">
                     <span
@@ -257,9 +251,26 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                       {customer.loyaltyTier}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
-                    {customer.loyaltyPoints}
+                  <td className="py-3 px-4 text-right text-xs font-semibold text-gray-900">
+                    {/* {formatCurrency(customer.totalSpent, currency)} */}
+                    {formatCurrencySymbol(
+                      customer.totalSpent,
+                      currency.symbol,
+                      currency.locale,
+                    )}
                   </td>
+                  <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
+                    <span className="font-semibold text-gray-800 ">
+                      {formatAmount(
+                        customer.loyaltyPoints ?? 0,
+                        currency.locale,
+                      )}
+                      <span className=" ml-1 text-[9px] text-gray-400">
+                        pts
+                      </span>
+                    </span>
+                  </td>
+
                   <td className="py-3  text-center md:text-right">
                     <button
                       onClick={() => setHistoryFor(customer)}

@@ -1,5 +1,7 @@
 "use client";
 
+import type { LucideIcon } from "lucide-react";
+
 /**
  * A row of mutually exclusive filter buttons, drawn as one control.
  *
@@ -21,6 +23,12 @@
 export type SegmentOption<T extends string> = {
   value: T;
   label: string;
+  /**
+   * Optional leading glyph. Decorative — the label is always present and
+   * carries the meaning, so the icon is hidden from screen readers rather
+   * than read out twice.
+   */
+  icon?: LucideIcon;
 };
 
 /**
@@ -62,22 +70,25 @@ export default function SegmentedControl<T extends string>({
       <div
         role="group"
         aria-label={label}
-        className="inline-flex items-center gap-0.5 rounded-lg bg-gray-100 p-1"
+        className="inline-flex items-center gap-0.5 rounded-lg bg-[#e4f2fe] p-1"
       >
         {options.map((option) => {
           const selected = option.value === value;
+          // Bound to a capitalised name so JSX reads it as a component.
+          const Icon = option.icon;
           return (
             <button
               key={option.value}
               type="button"
               aria-pressed={selected}
               onClick={() => onChange(option.value)}
-              className={`rounded-md px-3 py-1.5 text-xs font-medium capitalize transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] md:px-4 ${
                 selected
-                  ? `bg-white shadow-sm ${ACCENTS[accent]}`
-                  : "text-gray-500 hover:text-gray-800"
+                  ? `bg-white font-bold text-blue-950 shadow-sm ${ACCENTS[accent]}`
+                  : "font-medium text-blue-800 hover:text-blue-950"
               }`}
             >
+              {Icon && <Icon size={12} className="shrink-0" aria-hidden />}
               {option.label}
             </button>
           );
@@ -90,6 +101,11 @@ export default function SegmentedControl<T extends string>({
 /** Turns a bare `["all", "paid"]` list into labelled options. */
 export function toSegmentOptions<T extends string>(
   values: readonly T[],
+  icons: Partial<Record<T, LucideIcon>> = {},
 ): SegmentOption<T>[] {
-  return values.map((value) => ({ value, label: value }));
+  return values.map((value) => ({
+    value,
+    label: value.charAt(0).toUpperCase() + value.slice(1),
+    icon: icons[value],
+  }));
 }

@@ -1,11 +1,15 @@
 import type { LucideIcon } from "lucide-react";
 
+import RangeTag from "@/components/ui/RangeTag";
+
 export interface StatBoxProps {
   label: string;
   value: number;
   icon: LucideIcon;
   iconColor?: string;
   bgColor?: string;
+  /** Follows the page's date range, so the tile gets a RANGE tag. */
+  ranged?: boolean;
 }
 
 /**
@@ -24,6 +28,7 @@ export default function CustomerStatBox({
   icon: Icon,
   iconColor,
   bgColor,
+  ranged = false,
 }: StatBoxProps) {
   return (
     <div className=" rounded-xl  p-4 shadow-sm transition-shadow duration-200 hover:shadow-md md:p-5">
@@ -38,11 +43,16 @@ export default function CustomerStatBox({
         </div>
       </div>
 
-      {/* toLocaleString, not String() — a four-figure count rendered as
-          "12340" before, with no separator. */}
-      <p className="mt-3 truncate text-xl font-bold tracking-tight tabular-nums text-gray-900 md:mt-4 md:text-[22px]">
-        {value.toLocaleString()}
-      </p>
+      {/* Only two of these four figures move with the filter, so the tag
+          rides the value row the way it does on the other stat grids. */}
+      <div className="mt-3 flex items-baseline justify-between gap-2 md:mt-4">
+        {/* toLocaleString, not String() — a four-figure count rendered as
+            "12340" before, with no separator. */}
+        <p className="truncate text-xl font-bold tracking-tight tabular-nums text-gray-900 md:text-[22px]">
+          {value.toLocaleString()}
+        </p>
+        {ranged && <RangeTag />}
+      </div>
     </div>
   );
 }

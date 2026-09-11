@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search } from "lucide-react";
+import { Search, User, UserCog, Users } from "lucide-react";
 import StaffStatBox, {
   StaffBoxProps,
 } from "@/components/dashboardComponents/staffDash/StaffStatBox";
@@ -9,9 +9,9 @@ import RangeBadge from "@/components/ui/RangeBadge";
 import SegmentedControl from "@/components/ui/SegmentedControl";
 
 const ROLE_OPTIONS = [
-  { value: "all", label: "All" },
-  { value: "staff", label: "Staff" },
-  { value: "basic", label: "Basic" },
+  { value: "all", label: "All", icon: Users },
+  { value: "staff", label: "Staff", icon: User },
+  { value: "basic", label: "Basic", icon: UserCog },
 ] as const;
 
 type RoleFilter = (typeof ROLE_OPTIONS)[number]["value"];
@@ -61,7 +61,7 @@ export default function StaffBoxContainer({
       `}</style>
 
       {/* Filter bar: role buttons + search */}
-      <div className="flex flex-row items-start sm:items-center justify-between gap-3 mb-4 px-2 sm:px-0">
+      <div className="flex flex-row items-start sm:items-center justify-between gap-3 mb-8 px-2 sm:px-0">
         {/* Search */}
         <div className="relative w-full sm:w-64">
           <Search
@@ -73,13 +73,13 @@ export default function StaffBoxContainer({
             placeholder="Search employee..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-9 pl-9 pr-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full h-9 pl-9 pr-3 py-5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
         {/* Role filter */}
-        <div className="flex items-center gap-2">
-          <RangeBadge className="ml-0" />
+        <div className="relative flex items-center gap-2">
+          <RangeBadge className="absolute bottom-[-26px] right-0" />
           <SegmentedControl
             label="Role:"
             accent="blue"

@@ -84,7 +84,7 @@ function Metric({
   return (
     <div className="flex min-w-0 flex-1 flex-col items-center gap-1 px-1">
       <Icon size={13} className="text-gray-400" />
-      <p className="truncate text-sm font-bold leading-none text-gray-900 tabular-nums">
+      <p className="truncate text-sm font-bold tracking-wide text-gray-900 tabular-nums">
         {value}
       </p>
       <p className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
@@ -152,7 +152,7 @@ export default function StaffStatBox({
           <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
             Revenue
           </span>
-          <p className="mt-0.5 max-w-[140px] truncate text-base font-bold leading-tight text-green-700 tabular-nums">
+          <p className="mt-0.5 max-w-[140px] truncate text-base font-bold tracking-wide text-green-700 tabular-nums">
             {formatCurrencySymbol(amount, currency.symbol, currency.locale)}
           </p>
         </div>

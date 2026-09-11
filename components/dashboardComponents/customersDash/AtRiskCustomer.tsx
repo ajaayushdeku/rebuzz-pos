@@ -176,7 +176,7 @@ export default function AtRiskCustomer({
                 Alert Reason
               </th>
               <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                className="text-center pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                 onClick={() => toggleSort("spendLevel")}
               >
                 <span className="flex items-center gap-1">
@@ -225,7 +225,7 @@ export default function AtRiskCustomer({
                       {`Inactive for about 2 weeks`}
                     </span>
                   </td>
-                  <td className="py-3 px-4">
+                  <td className="py-3 px-4 text-center">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-semibold ${
                         spendLevelStyles[customer.spendLevel].badge

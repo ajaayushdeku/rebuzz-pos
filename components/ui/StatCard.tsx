@@ -53,7 +53,7 @@ export default function StatCard({
 
       {/* Tag rides the value row so it costs no extra height. */}
       <div className="mt-3 flex items-baseline justify-between gap-2 md:mt-4">
-        <p className="truncate text-xl font-bold tracking-tight tabular-nums text-gray-900 md:text-[22px]">
+        <p className="truncate text-xl font-bold tracking-wide tabular-nums text-gray-900 md:text-[22px]">
           {value}
         </p>
         {ranged && <RangeTag />}

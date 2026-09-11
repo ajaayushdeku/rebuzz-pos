@@ -218,7 +218,7 @@ export default function InvoiceListSection({
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 ">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
             <FileText size={16} className="text-orange-500" />
@@ -229,8 +229,8 @@ export default function InvoiceListSection({
             subHeader={`${filteredTickets.length}
               ${filteredTickets.length === 1 ? "order" : "orders"} `}
           />
-          <RangeBadge className="ml-0" />
         </div>
+        <RangeBadge className="ml-0" />
       </div>
 
       {/* Search & Filter Bar */}
@@ -264,7 +264,7 @@ export default function InvoiceListSection({
         {/* Status Filter */}
         <SegmentedControl
           label="Status:"
-          accent="orange"
+          accent="blue"
           options={STATUS_OPTIONS}
           value={statusFilter}
           onChange={(next) => {

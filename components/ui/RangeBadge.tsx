@@ -60,7 +60,7 @@ export default function RangeBadge({
           tabIndex={0}
           className={`ml-auto inline-flex shrink-0 cursor-help items-center gap-1 rounded-full bg-gray-50/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-800 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${className}`}
         >
-          <CalendarRange size={11} />
+          <CalendarRange size={9} />
           Range
         </span>
       </TooltipTrigger>

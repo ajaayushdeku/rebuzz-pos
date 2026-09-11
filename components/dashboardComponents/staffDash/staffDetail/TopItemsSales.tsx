@@ -161,11 +161,14 @@ const CARD = "bg-white rounded-xl border border-gray-200 shadow-sm p-5";
 /** Header is identical in all four states; it used to be pasted into each. */
 function Header({ subHeader }: { subHeader: string }) {
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50">
-        <TrendingUp size={16} className="text-emerald-500" />
+    <div className="flex flex-row items-center justify-between  w-full gap-3">
+      <div className="flex flex-row items-center gap-3">
+        {" "}
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50">
+          <TrendingUp size={16} className="text-emerald-500" />
+        </div>
+        <ComponentHeader title="Top Items Sold" subHeader={subHeader} />
       </div>
-      <ComponentHeader title="Top Items Sold" subHeader={subHeader} />
       <RangeBadge />
     </div>
   );

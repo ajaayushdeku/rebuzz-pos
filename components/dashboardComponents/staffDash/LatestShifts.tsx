@@ -196,7 +196,7 @@ export default function LatestShifts({
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition duration-300 p-5 w-full">
-      <div className="mb-6 flex items-center justify-between gap-3">
+      <div className="mb-10 flex items-center justify-between gap-3">
         {/* {filteredShifts.length}{" "}
             {filteredShifts.length === 1 ? "shift" : "shifts"} recorded */}
 
@@ -211,10 +211,9 @@ export default function LatestShifts({
           />
           {/* The Show segments narrow this card further, but what they narrow
               is whatever the page range fetched. */}
-          <RangeBadge className="ml-0" />
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="relative flex items-center gap-3">
           <SegmentedControl
             label="Show:"
             accent="blue"
@@ -222,6 +221,7 @@ export default function LatestShifts({
             value={activePreset}
             onChange={selectWindow}
           />
+          <RangeBadge className="absolute bottom-[-28px] right-0" />
         </div>
       </div>
 
@@ -244,7 +244,7 @@ export default function LatestShifts({
           <div className="overflow-x-auto">
             <table className="w-full min-w-[500px] text-sm">
               <thead>
-                <tr className="text-[11px] text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                <tr className="text-[11px] text-gray-400  tracking-wider border-b border-gray-100">
                   <th className="text-left pb-3 pl-0 font-semibold">S.No.</th>
                   <th className="text-left pb-3 pl-0 font-semibold">
                     Employee
@@ -311,7 +311,7 @@ export default function LatestShifts({
                       </div>
                     </td>
                     <td className="py-3 px-3 text-right">
-                      <span className="text-[13px] font-bold text-gray-900">
+                      <span className="text-[13px] font-bold text-gray-900 tracking-wide tabular-nums">
                         {formatCurrencySymbol(
                           shift.totalSale ?? 0,
                           currency.symbol,
