@@ -66,21 +66,28 @@ export default function BreakEvenMarginSafety() {
     formatCurrencySymbol(value, currency.symbol, currency.locale);
 
   const header = (
-    <div className="mb-6 flex items-center justify-between gap-3 flex-wrap">
-      <div className="flex flex-row items-center justify-center gap-3 ">
-        {" "}
-        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-          <Scale size={15} className="text-emerald-600" />
+    <div className="mb-8 flex items-start justify-between gap-3 md:flex-row flex-col">
+      <div className="flex flex-row w-full items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+            <Scale size={15} className="text-emerald-600" />
+          </div>
+          <ComponentHeader
+            title="Break-even & Margin of Safety"
+            subHeader="How much revenue is required to cover all costs"
+          />
         </div>
-        <ComponentHeader
-          title="Break-even & Margin of Safety"
-          subHeader="How much revenue is required to cover all costs"
-        />
+
+        <div className="block md:hidden ">
+          <ExpenseBadge className=" md:ml-0" />
+        </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2">
-        {" "}
-        <ExpenseBadge className="ml-0" />{" "}
+      <div className="relative flex items-center justify-between gap-2">
+        <div className="hidden md:block">
+          {" "}
+          <ExpenseBadge className="absolute right-0 bottom-[-28px] " />
+        </div>
         <MonthYearFilter
           month={month}
           year={year}

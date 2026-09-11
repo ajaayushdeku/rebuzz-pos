@@ -318,6 +318,7 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
               subHeader="Throughput breakdown across the day per team member."
             />
           </div>
+
           <div className="block md:hidden flex flex-row items-center gap-2">
             <RangeBadge className=" md:ml-0" />
             {/* Employee filter */}

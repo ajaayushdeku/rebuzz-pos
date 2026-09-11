@@ -324,8 +324,11 @@ export default function CustomerTable({
                 </th>
               )}
               {showColumn("points") && (
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                <th className="text-right pb-3 pt-3 pl-4 pr-8 font-medium ">
                   Points
+                  <span className="ml-0.5 text-[9px] text-gray-400">
+                    ( pts )
+                  </span>
                 </th>
               )}
 
@@ -336,12 +339,12 @@ export default function CustomerTable({
               )}
 
               {showColumn("dueAmount") && (
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                <th className="text-right pb-3 pt-3 px-4 font-medium">
                   Due Amount
                 </th>
               )}
               {showColumn("contact") && (
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                <th className="text-right pb-3 pt-3 px-4 font-medium">
                   Contact
                 </th>
               )}
@@ -486,7 +489,7 @@ export default function CustomerTable({
                   )}
 
                   {showColumn("dueAmount") && (
-                    <td className="py-3 px-4 text-xs text-center tracking-wide font-semibold">
+                    <td className="py-3 px-4 text-xs text-right tracking-wide font-semibold">
                       {customer.totalDueAmount !== undefined
                         ? formatCurrencySymbol(
                             customer.totalDueAmount,
@@ -499,7 +502,7 @@ export default function CustomerTable({
 
                   {showColumn("contact") && (
                     <td
-                      className="py-3 px-4 text-center"
+                      className="py-3 px-4 text-right"
                       onClick={(e) => e.stopPropagation()}
                     >
                       {customer.phone ? (

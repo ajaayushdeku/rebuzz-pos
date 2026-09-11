@@ -142,7 +142,7 @@ const HighestTaxGenerated = ({
   );
 
   return (
-    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6">
+    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-5">
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
           <Landmark size={15} className="text-amber-600" />
@@ -175,7 +175,7 @@ const HighestTaxGenerated = ({
       ) : (
         <>
           {/* Totals card — compact stat bar */}
-          <div className=" px-3.5 py-2.5 flex items-center justify-between gap-3">
+          <div className=" px-3.5 py-1.5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="min-w-0">
                 <p className="text-[10px] uppercase tracking-wide text-gray-400 font-medium">

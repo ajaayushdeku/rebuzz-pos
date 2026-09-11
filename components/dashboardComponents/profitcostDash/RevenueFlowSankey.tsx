@@ -852,20 +852,28 @@ export default function RevenueFlowSankey() {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full relative select-none">
       <div className="mb-4">
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-3">
-            {" "}
-            <div className="w-8 h-8 rounded-lg bg-cyan-50 flex items-center justify-center shrink-0">
-              <Waypoints size={15} className="text-cyan-600" />
+        <div className="flex items-start justify-between gap-3 md:flex-row flex-col">
+          <div className="flex flex-row w-full items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-cyan-50 flex items-center justify-center shrink-0">
+                <Waypoints size={15} className="text-cyan-600" />
+              </div>
+              <ComponentHeader
+                title="Revenue Flow (Sankey Diagram)"
+                subHeader="Income sources → Total Income → Cost of Goods / Tax / Expenses / Refunds / Net Profit"
+              />
             </div>
-            <ComponentHeader
-              title="Revenue Flow (Sankey Diagram)"
-              subHeader="Income sources → Total Income → Cost of Goods / Tax / Expenses / Refunds / Net Profit"
-            />
+            <div className="block md:hidden ">
+              <ExpenseBadge className=" md:ml-0" />
+            </div>
           </div>
 
-          <div className="flex items-center justify-between gap-2">
-            <ExpenseBadge className="ml-0" />
+          <div className="relative flex items-center justify-between gap-2">
+            <div className="hidden md:block">
+              {" "}
+              <ExpenseBadge className="absolute right-0 bottom-[-28px] " />
+            </div>
+
             {/* Month / Year filter — shared with Break-even. */}
             <MonthYearFilter
               month={month}
