@@ -48,7 +48,7 @@ export default function CustomerStatBox({
       <div className="mt-3 flex items-baseline justify-between gap-2 md:mt-4">
         {/* toLocaleString, not String() — a four-figure count rendered as
             "12340" before, with no separator. */}
-        <p className="truncate text-xl font-bold tracking-tight tabular-nums text-gray-900 md:text-[22px]">
+        <p className="truncate text-xl font-bold tracking-wide tabular-nums text-gray-900 md:text-[22px]">
           {value.toLocaleString()}
         </p>
         {ranged && <RangeTag />}

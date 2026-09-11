@@ -70,7 +70,7 @@ export default function ExpenseTrackerStats() {
             className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-gray-400 font-medium">
+              <span className="text-xs text-gray-400 font-medium tracking-wide">
                 {item.label}
               </span>
               <div

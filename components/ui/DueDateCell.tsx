@@ -82,7 +82,7 @@ export default function DueDateCell({
 
   return (
     <div>
-      <span className={`block text-xs font-semibold ${tone}`}>
+      <span className={`block text-xs tracking-wide font-semibold ${tone}`}>
         {dueDateRelativeLabel(days)}
       </span>
       <span className="text-[11px] text-gray-400">{readable}</span>

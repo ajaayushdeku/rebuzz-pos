@@ -45,8 +45,15 @@ import {
   type DueDateFilter,
 } from "@/lib/dueDateFilter";
 import { FilterSelect } from "@/components/ui/FilterSelect";
+import ColumnPicker, {
+  readStoredColumns,
+  storeColumns,
+  type TableColumn,
+} from "@/components/ui/ColumnPicker";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
+
+const MIN_COLUMNS = 3;
 
 /** Relative "time ago" label: moments / min / hours / days ago. */
 function timeAgo(date: Date): string {
@@ -85,15 +92,62 @@ export default function CreditsTable({
   const showDueDate =
     creditStatus !== "completed" && creditStatus !== "archived";
 
-  // The empty and loading rows span the whole table, so this has to move with
-  // whichever headers are actually rendered.
-  const colCount = (actionsMode === "none" ? 7 : 8) + (showDueDate ? 1 : 0);
+  /**
+   * Which columns this variant has at all, in the order they are drawn.
+   *
+   * Keys match the sort keys, so hiding a column and sorting by it name the
+   * same thing. Actions is locked: it is the row menu, and taking it away
+   * removes what a row can do rather than what it shows.
+   */
+  const creditColumns: TableColumn[] = [
+    { key: "status", label: "Status" },
+    ...(showDueDate ? [{ key: "dueDate", label: "Due date" }] : []),
+    { key: "invoice", label: "Invoice #" },
+    { key: "customer", label: "Customer" },
+    ...(showDueDate ? [{ key: "unpaidBy", label: "Unpaid by Customer" }] : []),
+    { key: "grandTotal", label: "Total Credit" },
+    { key: "dueAmount", label: "Amount due" },
+    { key: "creationDate", label: "Date" },
+    ...(actionsMode !== "none"
+      ? [{ key: "actions", label: "Actions", locked: true }]
+      : []),
+  ];
+
+  // Keyed per tab: the three lists do not carry the same columns, so one
+  // shared preference would keep collapsing back to every column as you
+  // switch between them.
+  const columnsStorageKey = `rebuzz-credit-table-columns-${creditStatus ?? "ongoing"}`;
   const { currency } = useCurrency();
   const queryClient = useQueryClient();
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [dueDateFilter, setDueDateFilter] = useState<DueDateFilter>("all");
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
+
+  // Initialiser, not an effect: reading storage in an effect renders one frame
+  // with the wrong columns, and this repo's lint rules forbid it besides.
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(() =>
+    readStoredColumns(columnsStorageKey, creditColumns, MIN_COLUMNS),
+  );
+
+  const shownColumns = new Set(visibleColumns);
+  const showColumn = (key: string) =>
+    shownColumns.has(key) ||
+    creditColumns.some((c) => c.key === key && c.locked);
+
+  // The empty, loading and payment-history rows span the whole table, so this
+  // has to move with whichever headers are actually rendered. It used to be a
+  // hand-kept arithmetic that counted "Unpaid by Customer" as unconditional,
+  // so every completed and archived list spanned one column too many.
+  const colCount = creditColumns.filter((c) => showColumn(c.key)).length;
+
+  const handleColumnsChange = (next: string[]) => {
+    setVisibleColumns(next);
+    storeColumns(columnsStorageKey, next);
+    // Sorting by a column you can no longer see leaves the rows in an order
+    // with nothing on screen to explain it.
+    setSortConfig((prev) => (prev && !next.includes(prev.key) ? null : prev));
+  };
   const [page, setPage] = useState(0);
   const [paymentTarget, setPaymentTarget] = useState<Credit | null>(null);
   /**
@@ -309,6 +363,14 @@ export default function CreditsTable({
           />
         )}
 
+        <ColumnPicker
+          columns={creditColumns}
+          visible={visibleColumns}
+          onChange={handleColumnsChange}
+          minVisible={MIN_COLUMNS}
+          className="w-full sm:w-[150px]"
+        />
+
         {showStatusFilter && (
           <button
             type="button"
@@ -349,14 +411,22 @@ export default function CreditsTable({
 
       {/* Table */}
       <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        <table className="w-full text-sm min-w-[1200px]">
+        <table
+          className="w-full text-sm"
+          // Scales with what is actually shown. A fixed floor sized for every
+          // column left a horizontal scrollbar over empty space once a few
+          // were hidden.
+          style={{ minWidth: `${Math.max(640, colCount * 150)}px` }}
+        >
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
-              <th className="text-left pb-3 pt-3 px-4 font-medium">Status</th>
+              {showColumn("status") && (
+                <th className="text-left pb-3 pt-3 px-4 font-medium">Status</th>
+              )}
               {/* Second, right after status: on an ongoing list what is owed
                   and when reads as one thought, and the created date matters
                   less than the deadline. */}
-              {showDueDate && (
+              {showDueDate && showColumn("dueDate") && (
                 <th
                   className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("dueDate")}
@@ -367,39 +437,51 @@ export default function CreditsTable({
                 </th>
               )}
 
-              <th className="text-left pb-3 pt-3 px-4 font-medium">
-                Invoice #
-              </th>
-              <th className="text-left pb-3 pt-3 px-4 font-medium">Customer</th>
-              {creditStatus !== "completed" && creditStatus !== "archived" && (
+              {showColumn("invoice") && (
+                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                  Invoice #
+                </th>
+              )}
+              {showColumn("customer") && (
+                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                  Customer
+                </th>
+              )}
+              {showDueDate && showColumn("unpaidBy") && (
                 <th className="text-center pb-3 pt-3 px-4 font-medium">
                   Unpaid by Customer
                 </th>
               )}
-              <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("grandTotal")}
-              >
-                <span className="flex items-center justify-end gap-1">
-                  Total Credit {SortIcon({ colKey: "grandTotal" })}
-                </span>
-              </th>
-              <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("dueAmount")}
-              >
-                <span className="flex items-center justify-end gap-1">
-                  Amount due {SortIcon({ colKey: "dueAmount" })}
-                </span>
-              </th>
-              <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("creationDate")}
-              >
-                <span className="flex items-center justify-end gap-1">
-                  Date {SortIcon({ colKey: "creationDate" })}
-                </span>
-              </th>
+              {showColumn("grandTotal") && (
+                <th
+                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("grandTotal")}
+                >
+                  <span className="flex items-center justify-end gap-1">
+                    Total Credit {SortIcon({ colKey: "grandTotal" })}
+                  </span>
+                </th>
+              )}
+              {showColumn("dueAmount") && (
+                <th
+                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("dueAmount")}
+                >
+                  <span className="flex items-center justify-end gap-1">
+                    Amount due {SortIcon({ colKey: "dueAmount" })}
+                  </span>
+                </th>
+              )}
+              {showColumn("creationDate") && (
+                <th
+                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("creationDate")}
+                >
+                  <span className="flex items-center justify-end gap-1">
+                    Date / Time {SortIcon({ colKey: "creationDate" })}
+                  </span>
+                </th>
+              )}
               {actionsMode !== "none" && (
                 <th className="text-right pb-3 pt-3 px-4 font-medium">
                   Actions
@@ -462,45 +544,49 @@ export default function CreditsTable({
                       className={`${isExpanded ? "" : "border-b border-gray-50 "}last:border-0 hover:bg-gray-50 transition-colors ${c.status !== "archived" ? "cursor-pointer" : ""}`}
                     >
                       {/* Status */}
-                      <td className="py-3.5 px-4">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-semibold border capitalize relative overflow-hidden ${
-                            c.status === "archived"
-                              ? "text-gray-600 border-gray-300"
-                              : cleared
-                                ? "text-green-700 border-green-200"
-                                : "text-red-700 border-red-200"
-                          }`}
-                          style={
-                            c.status === "archived"
-                              ? {
-                                  backgroundImage:
-                                    "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(156, 163, 175, 0.2) 2px, rgba(156, 163, 175, 0.2) 4px)",
-                                  backgroundColor: "rgba(156, 163, 175, 0.3)",
-                                }
-                              : cleared
+                      {showColumn("status") && (
+                        <td className="py-3.5 px-4">
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-semibold border tracking-wide capitalize relative overflow-hidden ${
+                              c.status === "archived"
+                                ? "text-gray-600 border-gray-300"
+                                : cleared
+                                  ? "text-green-700 border-green-200"
+                                  : "text-red-700 border-red-200"
+                            }`}
+                            style={
+                              c.status === "archived"
                                 ? {
                                     backgroundImage:
-                                      "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(134, 239, 172, 0.2) 2px, rgba(134, 239, 172, 0.2) 4px)",
-                                    backgroundColor: "rgba(134, 239, 172, 0.3)",
+                                      "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(156, 163, 175, 0.2) 2px, rgba(156, 163, 175, 0.2) 4px)",
+                                    backgroundColor: "rgba(156, 163, 175, 0.3)",
                                   }
-                                : {
-                                    backgroundImage:
-                                      "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(252, 165, 165, 0.2) 2px, rgba(252, 165, 165, 0.2) 4px)",
-                                    backgroundColor: "rgba(252, 165, 165, 0.3)",
-                                  }
-                          }
-                        >
-                          {cleared && c.status === "completed"
-                            ? "Paid"
-                            : c.status === "archived"
-                              ? "Archived"
-                              : c.status === "ongoing" && "Ongoing"}
-                        </span>
-                      </td>
+                                : cleared
+                                  ? {
+                                      backgroundImage:
+                                        "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(134, 239, 172, 0.2) 2px, rgba(134, 239, 172, 0.2) 4px)",
+                                      backgroundColor:
+                                        "rgba(134, 239, 172, 0.3)",
+                                    }
+                                  : {
+                                      backgroundImage:
+                                        "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(252, 165, 165, 0.2) 2px, rgba(252, 165, 165, 0.2) 4px)",
+                                      backgroundColor:
+                                        "rgba(252, 165, 165, 0.3)",
+                                    }
+                            }
+                          >
+                            {cleared && c.status === "completed"
+                              ? "Paid"
+                              : c.status === "archived"
+                                ? "Archived"
+                                : c.status === "ongoing" && "Ongoing"}
+                          </span>
+                        </td>
+                      )}
 
                       {/* Due date */}
-                      {showDueDate && (
+                      {showDueDate && showColumn("dueDate") && (
                         <td className="py-3.5 px-4">
                           <DueDateCell
                             dueDate={c.dueDate}
@@ -512,83 +598,92 @@ export default function CreditsTable({
                       )}
 
                       {/* Invoice Number */}
-                      <td className="py-3.5 px-4">
-                        <span className="text-xs text-gray-800 block font-semibold">
-                          {c.invoiceNo ? `ORD-${c.invoiceNo}` : "—"}
-                        </span>
-                        {(() => {
-                          const d = parseNepalDateTime(c.creationDate);
-                          return d ? (
-                            <span className="text-[11px] text-gray-400">
-                              {timeAgo(d)}
-                            </span>
-                          ) : null;
-                        })()}
-                      </td>
+                      {showColumn("invoice") && (
+                        <td className="py-3.5 px-4">
+                          <span className="text-xs text-gray-800 block font-semibold">
+                            {c.invoiceNo ? `ORD-${c.invoiceNo}` : "—"}
+                          </span>
+                          {(() => {
+                            const d = parseNepalDateTime(c.creationDate);
+                            return d ? (
+                              <span className="text-[11px] text-gray-400">
+                                {timeAgo(d)}
+                              </span>
+                            ) : null;
+                          })()}
+                        </td>
+                      )}
 
                       {/* Customer */}
-                      <td className="py-3.5 px-4 text-xs text-gray-800">
-                        {c.user?.name ?? "—"}
-                      </td>
+                      {showColumn("customer") && (
+                        <td className="py-3.5 px-4 text-xs text-gray-800">
+                          {c.user?.name ?? "—"}
+                        </td>
+                      )}
 
                       {/* Unpaid by customer (hidden for completed/archived) */}
-                      {creditStatus !== "archived" &&
-                        creditStatus !== "completed" && (
-                          <td className="py-3.5 px-4 text-xs text-center text-gray-500">
-                            {!cleared &&
-                            !(c.status === "archived") &&
-                            ubc &&
-                            ubc.total > 1
-                              ? `${ubc.ordinal} of ${ubc.total}`
-                              : ""}
-                          </td>
-                        )}
+                      {showDueDate && showColumn("unpaidBy") && (
+                        <td className="py-3.5 px-4 text-xs text-center text-gray-500">
+                          {!cleared &&
+                          !(c.status === "archived") &&
+                          ubc &&
+                          ubc.total > 1
+                            ? `${ubc.ordinal} of ${ubc.total}`
+                            : ""}
+                        </td>
+                      )}
                       {/* Total Credit */}
-                      <td className="py-3.5 px-5 text-xs text-right font-semibold text-gray-800">
-                        {fmt(c.grandTotal ?? 0)}
-                      </td>
+                      {showColumn("grandTotal") && (
+                        <td className="py-3.5 px-5 text-xs text-right tracking-wide font-semibold text-gray-800">
+                          {fmt(c.grandTotal ?? 0)}
+                        </td>
+                      )}
 
                       {/* Amount due */}
-                      <td className="py-3.5 px-5  text-xs text-right font-semibold text-red-900">
-                        {fmt(c.dueAmount ?? 0)}
-                      </td>
+                      {showColumn("dueAmount") && (
+                        <td className="py-3.5 px-5  text-xs text-right tracking-wide font-semibold text-red-900">
+                          {fmt(c.dueAmount ?? 0)}
+                        </td>
+                      )}
 
                       {/* Date */}
-                      <td className="py-3.5 px-4 text-right">
-                        {(() => {
-                          const d = parseNepalDateTime(c.creationDate);
-                          // console.log("invoiceDate", d, c.creationDate);
-                          return d ? (
-                            <div>
-                              <span className="font-medium text-gray-800 text-xs block">
-                                {d.toLocaleTimeString("en-US", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  hour12: false,
-                                })}
-                                <span className="text-[10px] font-normal text-gray-400">
-                                  {"  "}[{" "}
+                      {showColumn("creationDate") && (
+                        <td className="py-3.5 px-4 text-right">
+                          {(() => {
+                            const d = parseNepalDateTime(c.creationDate);
+                            // console.log("invoiceDate", d, c.creationDate);
+                            return d ? (
+                              <div>
+                                <span className="font-medium tracking-wide text-gray-800 text-xs block">
                                   {d.toLocaleTimeString("en-US", {
                                     hour: "2-digit",
                                     minute: "2-digit",
-                                    hour12: true,
-                                  })}{" "}
-                                  ]
+                                    hour12: false,
+                                  })}
+                                  <span className="text-[10px] font-normal text-gray-400">
+                                    {"  "}[{" "}
+                                    {d.toLocaleTimeString("en-US", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      hour12: true,
+                                    })}{" "}
+                                    ]
+                                  </span>
                                 </span>
-                              </span>
-                              <span className="text-[11px] text-gray-400">
-                                {d.toLocaleDateString("en-US", {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                })}
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-gray-400">—</span>
-                          );
-                        })()}
-                      </td>
+                                <span className="text-[11px] text-gray-400">
+                                  {d.toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            );
+                          })()}
+                        </td>
+                      )}
 
                       {/* Actions */}
                       {actionsMode !== "none" && (

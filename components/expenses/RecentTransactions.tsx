@@ -302,7 +302,7 @@ export default function RecentTransactions() {
                           <Icon size={13} className={color} />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs font-medium text-gray-900 truncate">
+                          <p className="text-xs font-medium text-gray-900 tracking-wide truncate">
                             {t.remark || "—"}
                           </p>
                           {t.isRecurring && (
@@ -344,7 +344,7 @@ export default function RecentTransactions() {
 
                     {/* Amount */}
                     <td
-                      className={`py-3 px-4 text-right text-xs font-semibold ${color}`}
+                      className={`py-3 px-4 text-right text-xs tracking-wide font-semibold ${color}`}
                     >
                       {isExpense ? "− " : "+ "}
                       {formatCurrencySymbol(

@@ -176,10 +176,10 @@ export default function AtRiskCustomer({
                 Alert Reason
               </th>
               <th
-                className="text-center pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                className="flex items-center justify-center pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                 onClick={() => toggleSort("spendLevel")}
               >
-                <span className="flex items-center gap-1">
+                <span className="flex  w-fit items-center gap-1">
                   Spending Level {SortIcon({ colKey: "spendLevel" })}
                 </span>
               </th>

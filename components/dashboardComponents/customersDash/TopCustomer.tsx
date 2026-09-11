@@ -169,7 +169,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                 </span>
               </th>
               <th
-                className="text-right  pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                className="flex items-center justify-center  pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
                 onClick={() => toggleSort("numVisits")}
               >
                 <span className="flex w-fit items-center justify-end gap-1">
@@ -234,8 +234,8 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                       {customer.customer}
                     </span>
                   </td>
-                  <td className="py-3 px-4 ">
-                    <span className="font-semibold text-xs  text-gray-900">
+                  <td className="py-3 px-4 text-center">
+                    <span className="font-semibold text-xs tracking-wide text-gray-900">
                       {customer.numVisits}
                     </span>
                   </td>
@@ -251,7 +251,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                       {customer.loyaltyTier}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-right text-xs font-semibold text-gray-900">
+                  <td className="py-3 px-4 text-right text-xs font-semibold text-gray-900 tracking-wide">
                     {/* {formatCurrency(customer.totalSpent, currency)} */}
                     {formatCurrencySymbol(
                       customer.totalSpent,
@@ -260,7 +260,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                     )}
                   </td>
                   <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
-                    <span className="font-semibold text-gray-800 ">
+                    <span className="font-semibold text-gray-800 tracking-wide ">
                       {formatAmount(
                         customer.loyaltyPoints ?? 0,
                         currency.locale,

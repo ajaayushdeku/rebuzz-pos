@@ -22,6 +22,11 @@ import StatusPill from "@/components/ui/StatusPill";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { parseNepalDateTime } from "../staffDash/staffDetail/staffDetailHelpers";
 import { useRouter } from "next/navigation";
+import ColumnPicker, {
+  readStoredColumns,
+  storeColumns,
+  type TableColumn,
+} from "@/components/ui/ColumnPicker";
 import toast from "react-hot-toast";
 
 /** Relative "time ago" label: moments / min / hours / days ago. */
@@ -36,6 +41,37 @@ function timeAgo(date: Date): string {
   return `${days} ${days === 1 ? "day" : "days"} ago`;
 }
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
+
+/**
+ * Columns in the order they are drawn. Actions is locked: it is the row menu,
+ * and taking it away removes what a row can do rather than what it shows.
+ */
+const TRANSACTION_COLUMNS: TableColumn[] = [
+  { key: "status", label: "Status" },
+  { key: "billId", label: "Bill ID" },
+  { key: "orderId", label: "Order ID" },
+  { key: "invoiceName", label: "Invoice Name" },
+  { key: "customer", label: "Customer" },
+  { key: "payment", label: "Payment" },
+  { key: "amount", label: "Total" },
+  { key: "timestamp", label: "Date / Time" },
+  { key: "actions", label: "Actions", locked: true },
+];
+
+/**
+ * Which field a column sorts by. Bill ID and Order ID both sort on "id", so
+ * the two cannot be mapped one-to-one onto their column keys.
+ */
+const SORT_KEYS: Record<string, string | undefined> = {
+  billId: "id",
+  orderId: "id",
+  customer: "invoiceName",
+  amount: "amount",
+  timestamp: "timestamp",
+};
+
+const COLUMNS_STORAGE_KEY = "rebuzz-transactions-table-columns";
+const MIN_COLUMNS = 3;
 type TabKey = "completed" | "refunded" | "all";
 
 // ── Main table ────────────────────────────────────────────────────────────
@@ -86,6 +122,37 @@ export default function Transactions({
 
   const [search, setSearch] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
+
+  // Initialiser, not an effect: reading storage in an effect renders one frame
+  // with the wrong columns, and this repo's lint rules forbid it besides.
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(() =>
+    readStoredColumns(COLUMNS_STORAGE_KEY, TRANSACTION_COLUMNS, MIN_COLUMNS),
+  );
+
+  const shownColumns = new Set(visibleColumns);
+  const showColumn = (key: string) =>
+    shownColumns.has(key) ||
+    TRANSACTION_COLUMNS.some((c) => c.key === key && c.locked);
+
+  // The loading and empty rows span the whole table, so this has to move with
+  // whichever headers are actually rendered. It was a hard-coded 10 against
+  // nine columns.
+  const colCount = TRANSACTION_COLUMNS.filter((c) => showColumn(c.key)).length;
+
+  const handleColumnsChange = (next: string[]) => {
+    setVisibleColumns(next);
+    storeColumns(COLUMNS_STORAGE_KEY, next);
+    // Sorting by a column you can no longer see leaves the rows in an order
+    // with nothing on screen to explain it. Two columns share the "id" sort
+    // key, so the sort survives while either of them is still shown.
+    setSortConfig((prev) => {
+      if (!prev) return prev;
+      const stillShown = TRANSACTION_COLUMNS.some(
+        (c) => SORT_KEYS[c.key] === prev.key && next.includes(c.key),
+      );
+      return stillShown ? prev : null;
+    });
+  };
   const [page, setPage] = useState(0);
   const [paymentFilter, setPaymentFilter] = useState<string>("all");
   const [paymentOpen, setPaymentOpen] = useState(false);
@@ -387,6 +454,14 @@ export default function Transactions({
             ))}
           </div>
         </div>
+
+        <ColumnPicker
+          columns={TRANSACTION_COLUMNS}
+          visible={visibleColumns}
+          onChange={handleColumnsChange}
+          minVisible={MIN_COLUMNS}
+          className="w-full sm:w-[150px]"
+        />
       </div>
 
       {/* Table — horizontally scrollable on mobile */}
@@ -396,60 +471,82 @@ export default function Transactions({
         aria-labelledby={`transactions-tab-${activeTab}`}
         className="bg-white overflow-x-auto scrollbar-hide focus-visible:outline-none"
       >
-        <table className="w-full text-sm min-w-[1200px]">
+        <table
+          className="w-full text-sm"
+          // Scales with what is actually shown. A fixed floor sized for every
+          // column left a horizontal scrollbar over empty space once a few
+          // were hidden.
+          style={{ minWidth: `${Math.max(640, colCount * 150)}px` }}
+        >
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
               {/* <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
                 S.No
               </th> */}
-              <th className="text-left pb-3 pt-3 px-4 font-medium">Status</th>
-              <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("id")}
-              >
-                <span className="flex items-center gap-1">
-                  Bill ID {SortIcon({ colKey: "id" })}
-                </span>
-              </th>
-              <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("id")}
-              >
-                <span className="flex items-center gap-1">
-                  Order ID {SortIcon({ colKey: "id" })}
-                </span>
-              </th>
-              <th className="text-left pb-3 pt-3 px-4 font-medium">
-                Invoice Name
-              </th>
-              <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("invoiceName")}
-              >
-                <span className="flex items-center gap-1">
-                  Customer {SortIcon({ colKey: "invoiceName" })}
-                </span>
-              </th>
-              <th className="text-center pb-3 pt-3 px-4 font-medium">
-                Payment
-              </th>
-              <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("amount")}
-              >
-                <span className="flex items-center justify-end gap-1">
-                  Total {SortIcon({ colKey: "amount" })}
-                </span>
-              </th>
+              {showColumn("status") && (
+                <th className="text-left pb-3 pt-3 px-4 font-medium">Status</th>
+              )}
+              {showColumn("billId") && (
+                <th
+                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("id")}
+                >
+                  <span className="flex items-center gap-1">
+                    Bill ID {SortIcon({ colKey: "id" })}
+                  </span>
+                </th>
+              )}
+              {showColumn("orderId") && (
+                <th
+                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("id")}
+                >
+                  <span className="flex items-center gap-1">
+                    Order ID {SortIcon({ colKey: "id" })}
+                  </span>
+                </th>
+              )}
+              {showColumn("invoiceName") && (
+                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                  Invoice Name
+                </th>
+              )}
+              {showColumn("customer") && (
+                <th
+                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("invoiceName")}
+                >
+                  <span className="flex items-center gap-1">
+                    Customer {SortIcon({ colKey: "invoiceName" })}
+                  </span>
+                </th>
+              )}
+              {showColumn("payment") && (
+                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                  Payment
+                </th>
+              )}
+              {showColumn("amount") && (
+                <th
+                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("amount")}
+                >
+                  <span className="flex items-center justify-end gap-1">
+                    Total {SortIcon({ colKey: "amount" })}
+                  </span>
+                </th>
+              )}
               {/* Takes the slot Status has vacated at the end. */}
-              <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("timestamp")}
-              >
-                <span className="flex items-center justify-end gap-1">
-                  Date / Time {SortIcon({ colKey: "timestamp" })}
-                </span>
-              </th>
+              {showColumn("timestamp") && (
+                <th
+                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("timestamp")}
+                >
+                  <span className="flex items-center justify-end gap-1">
+                    Date / Time {SortIcon({ colKey: "timestamp" })}
+                  </span>
+                </th>
+              )}
               {/* ── New actions column ── */}
               <th className="text-right pb-3 pt-3 px-4 font-medium">Actions</th>
             </tr>
@@ -460,14 +557,14 @@ export default function Transactions({
                 tables. */}
             {isLoading ? (
               <tr>
-                <td colSpan={10}>
+                <td colSpan={colCount}>
                   <LoadingState message="Loading transactions..." />
                 </td>
               </tr>
             ) : paged.length === 0 ? (
               <tr>
                 <td
-                  colSpan={10}
+                  colSpan={colCount}
                   className="text-center py-2 text-sm text-gray-400"
                 >
                   <div className="flex flex-col items-center justify-center py-12">
@@ -502,67 +599,82 @@ export default function Transactions({
                     {/* <td className="py-3 px-4 text-gray-400 text-xs">
                       {page * pageSize + idx + 1}
                     </td> */}
-                    <td className="py-3 px-4">
-                      <StatusPill
-                        label={
-                          transaction.status.charAt(0).toUpperCase() +
-                          transaction.status.slice(1)
-                        }
-                      />
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="font-semibold text-xs text-gray-900 block">
-                        BILL-{transaction.billNo}
-                      </span>
-                      {billDate && (
-                        <span className="text-[11px] text-gray-400">
-                          {timeAgo(billDate)}
+                    {showColumn("status") && (
+                      <td className="py-3 px-4">
+                        <StatusPill
+                          label={
+                            transaction.status.charAt(0).toUpperCase() +
+                            transaction.status.slice(1)
+                          }
+                        />
+                      </td>
+                    )}
+                    {showColumn("billId") && (
+                      <td className="py-3 px-4">
+                        <span className="font-semibold text-xs text-gray-900 block">
+                          BILL-{transaction.billNo}
                         </span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="font-semibold text-xs text-gray-900">
-                        ORD-{transaction.invoiceNo}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-xs text-gray-600">
-                      {transaction.invoiceName || "—"}
-                    </td>
-                    <td className="py-3 px-4 text-xs text-gray-600">
-                      {transaction.customer?.name || "—"}
-                    </td>
-
-                    <td className="py-3 px-4 text-center">
-                      <span
-                        className={`${p.badge} ${p.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
-                      >
-                        {transaction.paymentMethod}
-                      </span>
-                    </td>
-
-                    <td className="py-3 px-4 text-right font-semibold text-xs text-gray-900">
-                      {/* {formatCurrency(Number(transaction.amount), currency)} */}
-                      {formatCurrencySymbol(
-                        Number(transaction.amount),
-                        currency.symbol,
-                        currency.locale,
-                      )}
-                    </td>
-
-                    {/* Takes the slot Status has vacated at the end. */}
-                    <td className="py-3 px-4 text-right">
-                      <span className="font-medium text-gray-800 text-xs block">
-                        {transaction.timestamp}
-                        {transaction.timestamp12h && (
-                          <span className="text-[10px] font-normal text-gray-400">
-                            {"  "}[ {transaction.timestamp12h} ]
+                        {billDate && (
+                          <span className="text-[11px] text-gray-400">
+                            {timeAgo(billDate)}
                           </span>
                         )}
-                      </span>
-                      <span className="text-[11px] text-gray-400">
-                        {transaction.date}
-                      </span>
-                    </td>
+                      </td>
+                    )}
+                    {showColumn("orderId") && (
+                      <td className="py-3 px-4">
+                        <span className="font-semibold text-xs text-gray-900">
+                          ORD-{transaction.invoiceNo}
+                        </span>
+                      </td>
+                    )}
+                    {showColumn("invoiceName") && (
+                      <td className="py-3 px-4 text-xs text-gray-600">
+                        {transaction.invoiceName || "—"}
+                      </td>
+                    )}
+                    {showColumn("customer") && (
+                      <td className="py-3 px-4 text-xs text-gray-600">
+                        {transaction.customer?.name || "—"}
+                      </td>
+                    )}
+
+                    {showColumn("payment") && (
+                      <td className="py-3 px-4 text-center">
+                        <span
+                          className={`${p.badge} ${p.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
+                        >
+                          {transaction.paymentMethod}
+                        </span>
+                      </td>
+                    )}
+
+                    {showColumn("amount") && (
+                      <td className="py-3 px-4 text-right font-semibold text-xs text-gray-900 tracking-wide tabular-nums">
+                        {formatCurrencySymbol(
+                          Number(transaction.amount),
+                          currency.symbol,
+                          currency.locale,
+                        )}
+                      </td>
+                    )}
+
+                    {/* Takes the slot Status has vacated at the end. */}
+                    {showColumn("timestamp") && (
+                      <td className="py-3 px-4 text-right">
+                        <span className="font-medium text-gray-800 text-xs tracking-wide block">
+                          {transaction.timestamp}
+                          {transaction.timestamp12h && (
+                            <span className="text-[10px] font-normal text-gray-400">
+                              {"  "}[ {transaction.timestamp12h} ]
+                            </span>
+                          )}
+                        </span>
+                        <span className="text-[11px] text-gray-400">
+                          {transaction.date}
+                        </span>
+                      </td>
+                    )}
 
                     {/* ── Actions cell ── */}
                     <td

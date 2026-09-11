@@ -22,6 +22,11 @@ import LoyaltyPointModal from "./LoyaltyPointModal";
 import DeleteCustomerModal from "./DeleteCustomerModal";
 import LoadingState from "@/components/ui/LoadingState";
 import PhotoViewer from "@/components/ui/PhotoViewer";
+import ColumnPicker, {
+  readStoredColumns,
+  storeColumns,
+  type TableColumn,
+} from "@/components/ui/ColumnPicker";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -86,6 +91,25 @@ export function whatsappLink(phone: string): string {
 }
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
+
+/**
+ * Columns in the order they are drawn. Actions is locked: it holds edit and
+ * delete, and taking it away removes what a row can do rather than what it
+ * shows.
+ */
+const CUSTOMER_COLUMNS: TableColumn[] = [
+  { key: "profile", label: "Profile" },
+  { key: "name", label: "Customer Name" },
+  { key: "loyaltyStatus", label: "Loyalty Status" },
+  { key: "points", label: "Points" },
+  { key: "purchases", label: "Purchases" },
+  { key: "dueAmount", label: "Due Amount" },
+  { key: "contact", label: "Contact" },
+  { key: "actions", label: "Actions", locked: true },
+];
+
+const COLUMNS_STORAGE_KEY = "rebuzz-customer-table-columns";
+const MIN_COLUMNS = 3;
 
 export default function CustomerTable({
   customers,
@@ -188,6 +212,30 @@ export default function CustomerTable({
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const paged = sorted.slice(page * pageSize, (page + 1) * pageSize);
 
+  // Initialiser, not an effect: reading storage in an effect renders one frame
+  // with the wrong columns, and this repo's lint rules forbid it besides.
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(() =>
+    readStoredColumns(COLUMNS_STORAGE_KEY, CUSTOMER_COLUMNS, MIN_COLUMNS),
+  );
+
+  const shownColumns = new Set(visibleColumns);
+  const showColumn = (key: string) =>
+    shownColumns.has(key) ||
+    CUSTOMER_COLUMNS.some((c) => c.key === key && c.locked);
+
+  // The loading and empty rows span the whole table, so this has to move with
+  // whichever headers are actually rendered. It was a hard-coded 9 against
+  // eight columns.
+  const colCount = CUSTOMER_COLUMNS.filter((c) => showColumn(c.key)).length;
+
+  const handleColumnsChange = (next: string[]) => {
+    setVisibleColumns(next);
+    storeColumns(COLUMNS_STORAGE_KEY, next);
+    // Sorting by a column you can no longer see leaves the rows in an order
+    // with nothing on screen to explain it.
+    setSortConfig((prev) => (prev && !next.includes(prev.key) ? null : prev));
+  };
+
   const toggleSort = (key: string) => {
     setSortConfig((prev) =>
       prev?.key === key && prev.direction === "asc"
@@ -209,27 +257,43 @@ export default function CustomerTable({
 
   return (
     <>
-      {/* Search */}
-      <div className="relative mb-4 mt-6">
-        <Search
-          size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-        />
-        <input
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(0);
-          }}
-          placeholder="Search by name, email or phone..."
-          className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+      {/* Search + column picker */}
+      <div className="mb-4 mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="relative flex-1">
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+          <input
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
+            placeholder="Search by name, email or phone..."
+            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+          />
+        </div>
+
+        <ColumnPicker
+          columns={CUSTOMER_COLUMNS}
+          visible={visibleColumns}
+          onChange={handleColumnsChange}
+          minVisible={MIN_COLUMNS}
+          className="w-full sm:w-[150px]"
         />
       </div>
 
       {/* Table â€” horizontally scrollable on mobile */}
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
       <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        <table className="w-full text-sm min-w-[1000px]">
+        <table
+          className="w-full text-sm"
+          // Scales with what is actually shown. A fixed floor sized for every
+          // column left a horizontal scrollbar over empty space once a few
+          // were hidden.
+          style={{ minWidth: `${Math.max(640, colCount * 150)}px` }}
+        >
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
               {/* <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
@@ -238,33 +302,49 @@ export default function CustomerTable({
               {/* No label: the column is one 32px avatar wide, and "Photo"
                   over it would be wider than the thing it names. */}
               {/* <th className="w-12 pb-3 pt-3 px-4 font-medium" /> */}
-              <th className=" text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600">
-                Profile
-              </th>
-              <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("name")}
-              >
-                <span className="flex items-center gap-1">
-                  Customer Name {SortIcon({ colKey: "name" })}
-                </span>
-              </th>
+              {showColumn("profile") && (
+                <th className=" text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600">
+                  Profile
+                </th>
+              )}
+              {showColumn("name") && (
+                <th
+                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("name")}
+                >
+                  <span className="flex items-center gap-1">
+                    Customer Name {SortIcon({ colKey: "name" })}
+                  </span>
+                </th>
+              )}
 
-              <th className="text-center pb-3 pt-3 px-4 font-medium">
-                Loyalty Status
-              </th>
-              <th className="text-center pb-3 pt-3 px-4 font-medium">Points</th>
+              {showColumn("loyaltyStatus") && (
+                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                  Loyalty Status
+                </th>
+              )}
+              {showColumn("points") && (
+                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                  Points
+                </th>
+              )}
 
-              <th className="text-center pb-3 pt-3 px-4 font-medium">
-                Purchases
-              </th>
+              {showColumn("purchases") && (
+                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                  Purchases
+                </th>
+              )}
 
-              <th className="text-center pb-3 pt-3 px-4 font-medium">
-                Due Amount
-              </th>
-              <th className="text-center pb-3 pt-3 px-4 font-medium">
-                Contact
-              </th>
+              {showColumn("dueAmount") && (
+                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                  Due Amount
+                </th>
+              )}
+              {showColumn("contact") && (
+                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                  Contact
+                </th>
+              )}
               <th className="text-right pb-3 pt-3 px-4 font-medium">Actions</th>
             </tr>
           </thead>
@@ -274,14 +354,14 @@ export default function CustomerTable({
                 tables. */}
             {isLoading ? (
               <tr>
-                <td colSpan={9}>
+                <td colSpan={colCount}>
                   <LoadingState message="Loading customers..." />
                 </td>
               </tr>
             ) : paged.length === 0 ? (
               <tr>
                 <td
-                  colSpan={9}
+                  colSpan={colCount}
                   className="text-center py-2 text-sm text-gray-400"
                 >
                   <div className="flex flex-col items-center justify-center py-12">
@@ -311,118 +391,132 @@ export default function CustomerTable({
                   {/* The row opens the customer; the photo opens the photo.
                       Without stopping propagation the click would do both,
                       and the navigation would win. */}
-                  <td
-                    className="py-3 px-4"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <CustomerAvatar
-                      src={getCustomerImageUrl(customer.image)}
-                      name={customer.name}
-                      className="h-9 w-9"
-                      textClass="text-[11px]"
-                      // `CustomerAvatar` only wires this up when it has a real
-                      // photo, so the initials fallback keeps a plain cursor
-                      // rather than promising a picture that is not there.
-                      onClick={() =>
-                        setPhotoTarget({
-                          src: getCustomerImageUrl(customer.image),
-                          name: customer.name,
-                        })
-                      }
-                    />
-                  </td>
-
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-xs text-gray-900">
-                        {customer.name}
-                      </span>
-                      {customer.isDeactivated && (
-                        <span className="text-xs text-red-500">Inactive</span>
-                      )}
-                    </div>
-                  </td>
-
-                  <td className="py-3 px-4 text-xs text-center font-semibold">
-                    {(() => {
-                      // No configured colour — an unconfigured business, or
-                      // the moment before the ladder loads — leaves TierBadge
-                      // on its own palette, so the column never goes blank.
-                      const style = tierStyle(customer.loyaltyStatus);
-                      return (
-                        <TierBadge
-                          tier={customer.loyaltyStatus}
-                          className={
-                            style
-                              ? `${style.bgColor} ${style.color}`
-                              : undefined
-                          }
-                        />
-                      );
-                    })()}
-                  </td>
-
-                  <td className="py-3 px-4 text-xs text-center">
-                    <div
-                      className="gap-1.5 items-center"
+                  {showColumn("profile") && (
+                    <td
+                      className="py-3 px-4"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <span className="font-semibold text-gray-800 ">
-                        {/* {formatAmount(customer.loyaltyPoint, currency.locale)}{" "} */}
-                        {formatAmount(
-                          customer.loyaltyPoint ?? 0,
-                          currency.locale,
-                        )}
-                        <span className=" ml-1 text-[9px] text-gray-400">
-                          pts
+                      <CustomerAvatar
+                        src={getCustomerImageUrl(customer.image)}
+                        name={customer.name}
+                        className="h-9 w-9"
+                        textClass="text-[11px]"
+                        // `CustomerAvatar` only wires this up when it has a real
+                        // photo, so the initials fallback keeps a plain cursor
+                        // rather than promising a picture that is not there.
+                        onClick={() =>
+                          setPhotoTarget({
+                            src: getCustomerImageUrl(customer.image),
+                            name: customer.name,
+                          })
+                        }
+                      />
+                    </td>
+                  )}
+
+                  {showColumn("name") && (
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-xs text-gray-900">
+                          {customer.name}
                         </span>
-                      </span>
+                        {customer.isDeactivated && (
+                          <span className="text-xs text-red-500">Inactive</span>
+                        )}
+                      </div>
+                    </td>
+                  )}
 
-                      <button
-                        onClick={() => {
-                          setLoyaltyCustomer(customer);
-                          setLoyaltyOpen(true);
-                        }}
-                        className="p-1 px-2 text-blue-300 hover:text-orange-500 hover:bg-orange-50 rounded-md transition-colors"
-                        title="Update loyalty points"
+                  {showColumn("loyaltyStatus") && (
+                    <td className="py-3 px-4 text-xs text-center font-semibold">
+                      {(() => {
+                        // No configured colour — an unconfigured business, or
+                        // the moment before the ladder loads — leaves TierBadge
+                        // on its own palette, so the column never goes blank.
+                        const style = tierStyle(customer.loyaltyStatus);
+                        return (
+                          <TierBadge
+                            tier={customer.loyaltyStatus}
+                            className={
+                              style
+                                ? `${style.bgColor} ${style.color}`
+                                : undefined
+                            }
+                          />
+                        );
+                      })()}
+                    </td>
+                  )}
+
+                  {showColumn("points") && (
+                    <td className="py-3 px-4 text-xs text-right">
+                      <div
+                        className="gap-1.5 items-center"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        <Pencil className="h-3 w-3" />
-                      </button>
-                    </div>
-                  </td>
+                        <span className="font-semibold tracking-wide text-gray-800 ">
+                          {/* {formatAmount(customer.loyaltyPoint, currency.locale)}{" "} */}
+                          {formatAmount(
+                            customer.loyaltyPoint ?? 0,
+                            currency.locale,
+                          )}
+                          <span className=" ml-1 text-[9px] text-gray-400">
+                            pts
+                          </span>
+                        </span>
 
-                  <td className="py-3 px-4 text-xs text-center text-gray-600">
-                    {customer.numberOfPurchases ?? "â€”"}
-                  </td>
+                        <button
+                          onClick={() => {
+                            setLoyaltyCustomer(customer);
+                            setLoyaltyOpen(true);
+                          }}
+                          className="p-1 px-2 text-blue-300 hover:text-cyan-500 hover:bg-cyan-50 rounded-md transition-colors"
+                          title="Update loyalty points"
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </td>
+                  )}
 
-                  <td className="py-3 px-4 text-xs text-center font-semibold">
-                    {customer.totalDueAmount !== undefined
-                      ? formatCurrencySymbol(
-                          customer.totalDueAmount,
-                          currency.symbol,
-                          currency.locale,
-                        )
-                      : "â€”"}
-                  </td>
+                  {showColumn("purchases") && (
+                    <td className="py-3 px-4 text-xs text-center tracking-wide text-gray-600">
+                      {customer.numberOfPurchases ?? "â€”"}
+                    </td>
+                  )}
 
-                  <td
-                    className="py-3 px-4 text-center"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {customer.phone ? (
-                      <a
-                        href={whatsappLink(customer.phone)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title={`Chat on WhatsApp — ${customer.phone}`}
-                        className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-green-600 hover:bg-green-50 transition-colors"
-                      >
-                        <WhatsAppIcon className="h-4 w-4" />
-                      </a>
-                    ) : (
-                      <span className="text-gray-300">—</span>
-                    )}
-                  </td>
+                  {showColumn("dueAmount") && (
+                    <td className="py-3 px-4 text-xs text-center tracking-wide font-semibold">
+                      {customer.totalDueAmount !== undefined
+                        ? formatCurrencySymbol(
+                            customer.totalDueAmount,
+                            currency.symbol,
+                            currency.locale,
+                          )
+                        : "â€”"}
+                    </td>
+                  )}
+
+                  {showColumn("contact") && (
+                    <td
+                      className="py-3 px-4 text-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {customer.phone ? (
+                        <a
+                          href={whatsappLink(customer.phone)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={`Chat on WhatsApp — ${customer.phone}`}
+                          className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-green-600 hover:bg-green-50 transition-colors"
+                        >
+                          <WhatsAppIcon className="h-4 w-4" />
+                        </a>
+                      ) : (
+                        <span className="text-gray-300">—</span>
+                      )}
+                    </td>
+                  )}
 
                   <td className="py-3 px-4">
                     <div

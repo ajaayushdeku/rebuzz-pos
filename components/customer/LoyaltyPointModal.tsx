@@ -127,7 +127,7 @@ export default function LoyaltyPointModal({
                 </p>
               </div>
             </div>
-            <p className="text-xl font-bold text-cyan-700/80 tabular-nums">
+            <p className="text-xl font-bold text-cyan-700/80 tabular-nums tracking-wide">
               {formatAmount(customer.loyaltyPoint ?? 0, currency.locale)}{" "}
               <span className=" text-[11px] text-cyan-600/80">pts</span>
             </p>

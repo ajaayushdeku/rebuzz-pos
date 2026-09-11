@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -21,7 +21,7 @@ import {
 import { Invoice } from "@/lib/types/invoice";
 import { LoyaltyTier } from "@/lib/types/customer";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrencySymbol, formatDatetime } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,11 +53,35 @@ import {
   type DueDateFilter,
 } from "@/lib/dueDateFilter";
 import { FilterSelect } from "@/components/ui/FilterSelect";
+import ColumnPicker, {
+  readStoredColumns,
+  storeColumns,
+  type TableColumn,
+} from "@/components/ui/ColumnPicker";
 import { useDuplicateInvoiceStore } from "@/stores/useDuplicateInvoiceStore";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
 const STATUS_FILTER_OPTIONS = ["paid", "unpaid"];
+
+/**
+ * Keys match the sort keys, so hiding a column and sorting by it are talking
+ * about the same thing. Actions is locked: it is the row menu, and taking it
+ * away removes what a row can do rather than what it shows.
+ */
+const INVOICE_COLUMNS: TableColumn[] = [
+  { key: "status", label: "Status" },
+  { key: "due_date", label: "Due date" },
+  { key: "invoice", label: "Invoice #" },
+  { key: "ticket_name", label: "Invoice Name" },
+  { key: "customer", label: "Customer" },
+  { key: "amount", label: "Amount" },
+  { key: "created_at", label: "Date" },
+  { key: "actions", label: "Actions", locked: true },
+];
+
+const COLUMNS_STORAGE_KEY = "rebuzz-invoice-table-columns";
+const MIN_COLUMNS = 3;
 
 /** Relative "time ago" label: moments / min / hours / days ago. */
 function timeAgo(date: Date): string {
@@ -89,6 +113,12 @@ export default function InvoiceTable({
   const [statusFilter, setStatusFilter] = useState("all");
   const [dueDateFilter, setDueDateFilter] = useState<DueDateFilter>("all");
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
+
+  // Initialiser, not an effect: reading storage in an effect renders one frame
+  // with the wrong columns, and this repo's lint rules forbid it besides.
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(() =>
+    readStoredColumns(COLUMNS_STORAGE_KEY, INVOICE_COLUMNS, MIN_COLUMNS),
+  );
   const [page, setPage] = useState(0);
   const [deleteTarget, setDeleteTarget] = useState<Invoice | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -238,6 +268,21 @@ export default function InvoiceTable({
     });
   }, [filtered, sortConfig]);
 
+  const shownColumns = new Set(visibleColumns);
+  const showColumn = (key: string) =>
+    shownColumns.has(key) ||
+    INVOICE_COLUMNS.some((c) => c.key === key && c.locked);
+
+  const columnCount = INVOICE_COLUMNS.filter((c) => showColumn(c.key)).length;
+
+  const handleColumnsChange = (next: string[]) => {
+    setVisibleColumns(next);
+    storeColumns(COLUMNS_STORAGE_KEY, next);
+    // Sorting by a column you can no longer see leaves the rows in an order
+    // with nothing on screen to explain it.
+    setSortConfig((prev) => (prev && !next.includes(prev.key) ? null : prev));
+  };
+
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const paged = sorted.slice(page * pageSize, (page + 1) * pageSize);
 
@@ -351,54 +396,84 @@ export default function InvoiceTable({
             ))}
           </div>
         </div>
+
+        <ColumnPicker
+          columns={INVOICE_COLUMNS}
+          visible={visibleColumns}
+          onChange={handleColumnsChange}
+          minVisible={MIN_COLUMNS}
+          className="w-full sm:w-[150px]"
+        />
       </div>
 
       {/* Table — horizontally scrollable on mobile */}
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
       <div className="bg-white overflow-x-auto scrollbar-hide">
-        <table className="w-full text-sm min-w-[1200px]">
+        <table
+          className="w-full text-sm"
+          // Scales with what is actually shown. A fixed floor sized for every
+          // column left a horizontal scrollbar over empty space once a few
+          // were hidden.
+          style={{ minWidth: `${Math.max(640, columnCount * 150)}px` }}
+        >
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
               {/* <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
                 S.No
               </th> */}
-              <th className="text-left pb-3 pt-3 px-4 font-medium">Status</th>
-              <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("due_date")}
-              >
-                <span className="flex items-center gap-1">
-                  Due date {SortIcon({ colKey: "due_date" })}
-                </span>
-              </th>
-              <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("invoice")}
-              >
-                <span className="flex items-center gap-1">
-                  Invoice # {SortIcon({ colKey: "invoice" })}
-                </span>
-              </th>
-              <th className="text-left pb-3 pt-3 px-4 font-medium">
-                Invoice Name
-              </th>
-              <th className="text-left pb-3 pt-3 px-4 font-medium">Customer</th>
-              <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("amount")}
-              >
-                <span className="flex items-center justify-end gap-1">
-                  Amount {SortIcon({ colKey: "amount" })}
-                </span>
-              </th>
-              <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("created_at")}
-              >
-                <span className="flex items-center justify-end gap-1">
-                  Date {SortIcon({ colKey: "created_at" })}
-                </span>
-              </th>
+              {showColumn("status") && (
+                <th className="text-left pb-3 pt-3 px-4 font-medium">Status</th>
+              )}
+              {showColumn("due_date") && (
+                <th
+                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("due_date")}
+                >
+                  <span className="flex items-center gap-1">
+                    Due date {SortIcon({ colKey: "due_date" })}
+                  </span>
+                </th>
+              )}
+              {showColumn("invoice") && (
+                <th
+                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("invoice")}
+                >
+                  <span className="flex items-center gap-1">
+                    Invoice # {SortIcon({ colKey: "invoice" })}
+                  </span>
+                </th>
+              )}
+              {showColumn("ticket_name") && (
+                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                  Invoice Name
+                </th>
+              )}
+              {showColumn("customer") && (
+                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                  Customer
+                </th>
+              )}
+              {showColumn("amount") && (
+                <th
+                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("amount")}
+                >
+                  <span className="flex items-center justify-end gap-1">
+                    Amount {SortIcon({ colKey: "amount" })}
+                  </span>
+                </th>
+              )}
+              {showColumn("created_at") && (
+                <th
+                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("created_at")}
+                >
+                  <span className="flex items-center justify-end gap-1">
+                    Date / Time {SortIcon({ colKey: "created_at" })}
+                  </span>
+                </th>
+              )}
               <th className="text-right pb-3 pt-3 px-4 font-medium">Actions</th>
             </tr>
           </thead>
@@ -408,14 +483,14 @@ export default function InvoiceTable({
                 tables. */}
             {isLoading ? (
               <tr>
-                <td colSpan={9}>
+                <td colSpan={columnCount}>
                   <LoadingState message="Loading invoices..." />
                 </td>
               </tr>
             ) : paged.length === 0 ? (
               <tr>
                 <td
-                  colSpan={9}
+                  colSpan={columnCount}
                   className="text-center py-2 text-sm text-gray-400"
                 >
                   <div className="flex flex-col items-center justify-center py-12">
@@ -432,7 +507,7 @@ export default function InvoiceTable({
                 </td>
               </tr>
             ) : (
-              paged.map((inv, idx) => {
+              paged.map((inv) => {
                 const status = (inv.status ?? "").toLowerCase();
                 const invoiceDate = parseNepalDateTime(inv.created_at);
                 return (
@@ -444,88 +519,101 @@ export default function InvoiceTable({
                     {/* <td className="py-3 px-4 text-gray-400 text-xs">
                       {page * pageSize + idx + 1}
                     </td> */}
-                    <td className="py-3 px-4">
-                      <StatusPill label={inv.status ?? "—"} />
-                    </td>
-                    <td className="py-3 px-4">
-                      <DueDateCell
-                        dueDate={inv.due_date}
-                        // A paid or refunded invoice owes nothing, so its date
-                        // is a record rather than a deadline.
-                        settled={status === "paid" || status === "refunded"}
-                      />
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="font-medium text-xs text-gray-900 block">
-                        ORD-{inv.invoice}
-                      </span>
-                      {inv.created_at && (
-                        <span className="text-[11px] text-gray-400">
-                          {timeAgo(
-                            inv.created_at
-                              ? new Date(inv.created_at)
-                              : new Date(),
-                          )}
+                    {showColumn("status") && (
+                      <td className="py-3 px-4">
+                        <StatusPill label={inv.status ?? "—"} />
+                      </td>
+                    )}
+                    {showColumn("due_date") && (
+                      <td className="py-3 px-4">
+                        <DueDateCell
+                          dueDate={inv.due_date}
+                          // A paid or refunded invoice owes nothing, so its
+                          // date is a record rather than a deadline.
+                          settled={status === "paid" || status === "refunded"}
+                        />
+                      </td>
+                    )}
+                    {showColumn("invoice") && (
+                      <td className="py-3 px-4">
+                        <span className="font-medium text-xs text-gray-900 block">
+                          ORD-{inv.invoice}
                         </span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-xs text-gray-600">
-                      {inv.ticket_name || "—"}
-                    </td>
-                    <td className="py-3 px-4 text-xs text-gray-600">
-                      {inv.customer_name ?? "—"}
-                    </td>
+                        {inv.created_at && (
+                          <span className="text-[11px] text-gray-400">
+                            {timeAgo(
+                              inv.created_at
+                                ? new Date(inv.created_at)
+                                : new Date(),
+                            )}
+                          </span>
+                        )}
+                      </td>
+                    )}
+                    {showColumn("ticket_name") && (
+                      <td className="py-3 px-4 text-xs text-gray-600">
+                        {inv.ticket_name || "—"}
+                      </td>
+                    )}
+                    {showColumn("customer") && (
+                      <td className="py-3 px-4 text-xs text-gray-600">
+                        {inv.customer_name ?? "—"}
+                      </td>
+                    )}
 
-                    <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
-                      {/* {formatCurrency(Number(inv.amount), currency)} */}
-                      {formatCurrencySymbol(
-                        Number(inv.amount),
-                        currency.symbol,
-                        currency.locale,
-                      )}
-                    </td>
+                    {showColumn("amount") && (
+                      <td className="py-3 px-4 text-xs text-right tracking-wide tabular-nums font-semibold text-gray-900">
+                        {formatCurrencySymbol(
+                          Number(inv.amount),
+                          currency.symbol,
+                          currency.locale,
+                        )}
+                      </td>
+                    )}
 
-                    <td className="py-3 px-4 text-right">
-                      {invoiceDate ? (
-                        <div>
-                          <span className="font-medium text-gray-800 text-xs block">
-                            {/* {invoiceDate.toLocaleTimeString("en-US", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: false,
-                            })}{" "} */}
-                            {new Date(inv.created_at).toLocaleString(
-                              undefined,
-                              {
+                    {showColumn("created_at") && (
+                      <td className="py-3 px-4 text-right">
+                        {invoiceDate ? (
+                          <div>
+                            <span className="font-medium text-gray-800 text-xs tracking-wide block">
+                              {/* {invoiceDate.toLocaleTimeString("en-US", {
                                 hour: "2-digit",
                                 minute: "2-digit",
                                 hour12: false,
-                              },
-                            )}{" "}
-                            <span className="text-[10px] font-normal text-gray-400">
-                              {"  "}[{" "}
+                              })}{" "} */}
                               {new Date(inv.created_at).toLocaleString(
                                 undefined,
                                 {
                                   hour: "2-digit",
                                   minute: "2-digit",
+                                  hour12: false,
                                 },
                               )}{" "}
-                              ]
+                              <span className="text-[10px] font-normal text-gray-400">
+                                {"  "}[{" "}
+                                {new Date(inv.created_at).toLocaleString(
+                                  undefined,
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  },
+                                )}{" "}
+                                ]
+                              </span>
                             </span>
-                          </span>
-                          <span className="text-[11px]  text-gray-400">
-                            {invoiceDate.toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">—</span>
-                      )}
-                    </td>
+                            <span className="text-[11px]  text-gray-400">
+                              {invoiceDate.toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
+                      </td>
+                    )}
 
                     <td
                       className="py-3 px-4"

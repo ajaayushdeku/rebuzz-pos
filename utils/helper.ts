@@ -106,6 +106,23 @@ export const formatAmount = (
   }).format(amount);
 };
 
+/**
+ * A plain number: no decimal part on a whole number, two places on anything
+ * else.
+ *
+ *   120      120
+ *   120.5    120.50
+ *   12.345   12.35
+ *
+ * A whole number is free of a pointless ".00" — counts of things, which is
+ * most of what this formats, read worse with one. A value that does have a
+ * fraction gets both places, so a column of them lines up on the point
+ * instead of jittering between one digit and two.
+ *
+ * The cap used to be zero, which meant every fraction was rounded away: a
+ * growth figure of 12.5% printed as 13%. Anything needing a fixed two places
+ * whether or not there is a fraction is `formatAmount`.
+ */
 export const formatNumber = (
   amount: number,
   locale: string = "en-US",
@@ -119,9 +136,13 @@ export const formatNumber = (
     return formatCompactNumber(amount, locale);
   }
 
+  // Read off the value itself, not the rounded output, so 12.001 is treated
+  // as the fractional number it is and prints "12.00" rather than a bare "12".
+  const hasFraction = amount % 1 !== 0;
+
   return new Intl.NumberFormat(numberLocale(locale), {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: hasFraction ? 2 : 0,
+    maximumFractionDigits: 2,
   }).format(amount);
 };
 

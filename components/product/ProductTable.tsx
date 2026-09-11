@@ -2,7 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrencySymbol } from "@/utils/helper";
+import {
+  formatAmount,
+  formatCurrencySymbol,
+  formatNumber,
+} from "@/utils/helper";
 import {
   Search,
   ChevronDown,
@@ -23,12 +27,33 @@ import ProductFormModal from "./ProductFormModal";
 import DeleteProductModal from "./DeleteProductModal";
 import LoadingState from "@/components/ui/LoadingState";
 import PhotoViewer from "@/components/ui/PhotoViewer";
+import ColumnPicker, {
+  readStoredColumns,
+  storeColumns,
+  type TableColumn,
+} from "@/components/ui/ColumnPicker";
 import { useDeleteProduct } from "@/hooks/useProducts";
 import toast from "react-hot-toast";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
-const COLUMN_COUNT = 8;
+/**
+ * Columns in the order they are drawn. Actions is locked: it holds edit and
+ * delete, and taking it away removes what a row can do rather than what it
+ * shows.
+ */
+const PRODUCT_COLUMNS: TableColumn[] = [
+  { key: "profile", label: "Profile" },
+  { key: "name", label: "Product" },
+  { key: "description", label: "Description" },
+  { key: "price", label: "Price" },
+  { key: "tax", label: "Tax" },
+  { key: "stock", label: "Stock" },
+  { key: "actions", label: "Actions", locked: true },
+];
+
+const COLUMNS_STORAGE_KEY = "rebuzz-product-table-columns";
+const MIN_COLUMNS = 3;
 
 /**
  * A product's picture, or its initials.
@@ -212,6 +237,29 @@ export default function ProductTable({
   };
 
   /** Likewise stock: the base row reads 0, the variants hold the real counts. */
+  // Initialiser, not an effect: reading storage in an effect renders one frame
+  // with the wrong columns, and this repo's lint rules forbid it besides.
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(() =>
+    readStoredColumns(COLUMNS_STORAGE_KEY, PRODUCT_COLUMNS, MIN_COLUMNS),
+  );
+
+  const shownColumns = new Set(visibleColumns);
+  const showColumn = (key: string) =>
+    shownColumns.has(key) ||
+    PRODUCT_COLUMNS.some((c) => c.key === key && c.locked);
+
+  // The loading and empty rows span the whole table, so this has to move with
+  // whichever headers are actually rendered.
+  const colCount = PRODUCT_COLUMNS.filter((c) => showColumn(c.key)).length;
+
+  const handleColumnsChange = (next: string[]) => {
+    setVisibleColumns(next);
+    storeColumns(COLUMNS_STORAGE_KEY, next);
+    // Sorting by a column you can no longer see leaves the rows in an order
+    // with nothing on screen to explain it.
+    setSortConfig((prev) => (prev && !next.includes(prev.key) ? null : prev));
+  };
+
   const stockOf = (product: Product) => {
     const variants = product.variants ?? [];
     if (variants.length === 0) return product.inStock ?? 0;
@@ -234,26 +282,42 @@ export default function ProductTable({
 
   return (
     <>
-      {/* ── Search ───────────────────────────────────────── */}
-      <div className="relative mb-4 mt-6">
-        <Search
-          size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-        />
-        <input
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(0);
-          }}
-          placeholder="Search products or variants..."
-          className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+      {/* ── Search + column picker ───────────────────────── */}
+      <div className="mb-4 mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="relative flex-1">
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+          <input
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
+            placeholder="Search products or variants..."
+            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+          />
+        </div>
+
+        <ColumnPicker
+          columns={PRODUCT_COLUMNS}
+          visible={visibleColumns}
+          onChange={handleColumnsChange}
+          minVisible={MIN_COLUMNS}
+          className="w-full sm:w-[150px]"
         />
       </div>
 
       {/* ── Table ────────────────────────────────────────── */}
       <div className="bg-white overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <table className="w-full text-sm min-w-[1000px]">
+        <table
+          className="w-full text-sm"
+          // Scales with what is actually shown. A fixed floor sized for every
+          // column left a horizontal scrollbar over empty space once a few
+          // were hidden.
+          style={{ minWidth: `${Math.max(640, colCount * 150)}px` }}
+        >
           <thead>
             <tr className="text-xs text-gray-400 border-b border-gray-100">
               {/* <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
@@ -262,32 +326,46 @@ export default function ProductTable({
               {/* No label: the column is one thumbnail wide, and "Image" over
                   it would be wider than the thing it names. */}
               {/* <th className="w-12 pb-3 pt-3 px-4 font-medium" /> */}
-              <th className=" text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600">
-                Profile
-              </th>
-              <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("name")}
-              >
-                <span className="flex items-center gap-1">
-                  Product
-                  <SortIcon colKey="name" />
-                </span>
-              </th>
-              <th className="text-left pb-3 pt-3 px-4 font-medium">
-                Description
-              </th>
-              <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("price")}
-              >
-                <span className="flex items-center justify-end gap-1">
-                  Price
-                  <SortIcon colKey="price" />
-                </span>
-              </th>
-              <th className="text-center pb-3 pt-3 px-4 font-medium">Tax</th>
-              <th className="text-center pb-3 pt-3 px-4 font-medium">Stock</th>
+              {showColumn("profile") && (
+                <th className=" text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600">
+                  Profile
+                </th>
+              )}
+              {showColumn("name") && (
+                <th
+                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("name")}
+                >
+                  <span className="flex items-center gap-1">
+                    Product
+                    <SortIcon colKey="name" />
+                  </span>
+                </th>
+              )}
+              {showColumn("description") && (
+                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                  Description
+                </th>
+              )}
+              {showColumn("price") && (
+                <th
+                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  onClick={() => toggleSort("price")}
+                >
+                  <span className="flex items-center justify-end gap-1">
+                    Price
+                    <SortIcon colKey="price" />
+                  </span>
+                </th>
+              )}
+              {showColumn("tax") && (
+                <th className="text-center pb-3 pt-3 px-4 font-medium">Tax</th>
+              )}
+              {showColumn("stock") && (
+                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                  Stock
+                </th>
+              )}
               <th className="text-right pb-3 pt-3 px-4 font-medium">Actions</th>
             </tr>
           </thead>
@@ -296,14 +374,14 @@ export default function ProductTable({
                 above stay visible, matching the settings tables. */}
             {isLoading ? (
               <tr>
-                <td colSpan={COLUMN_COUNT}>
+                <td colSpan={colCount}>
                   <LoadingState message="Loading products..." />
                 </td>
               </tr>
             ) : isEmpty ? (
               <tr>
                 <td
-                  colSpan={COLUMN_COUNT}
+                  colSpan={colCount}
                   className="text-center py-2 text-sm text-gray-400"
                 >
                   <div className="flex flex-col items-center justify-center py-12">
@@ -340,99 +418,111 @@ export default function ProductTable({
                     {/* The row opens the product's detail modal; the photo
                         opens the photo. Without stopping propagation the click
                         would do both. */}
-                    <td
-                      className="py-3 px-4"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <ProductThumb
-                        // Keyed by the row's product: without it, paging
-                        // reuses the same component instance and a failed
-                        // image would keep the next product's photo hidden.
-                        key={product.id}
-                        name={product.name}
-                        src={product.image}
-                        onOpen={() =>
-                          setPhotoTarget({
-                            src: product.image ?? null,
-                            name: product.name,
-                          })
-                        }
-                      />
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="flex items-center gap-2">
-                        {/* Expander sits in the name cell rather than taking a
-                            column of its own, so the header stays unchanged. */}
-                        {variantCount > 0 ? (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleExpanded(product.id);
-                            }}
-                            aria-expanded={isExpanded}
-                            aria-label={
-                              isExpanded
-                                ? `Hide variants of ${product.name}`
-                                : `Show variants of ${product.name}`
-                            }
-                            className="shrink-0 rounded-md p-0.5 text-gray-400 transition-colors hover:bg-blue-100 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                          >
-                            {isExpanded ? (
-                              <ChevronDown className="h-3.5 w-3.5" />
-                            ) : (
-                              <ChevronRight className="h-3.5 w-3.5" />
-                            )}
-                          </button>
-                        ) : (
-                          // Keeps names aligned down the column whether or not
-                          // a product has variants.
-                          <span className="w-[1.125rem] shrink-0" />
-                        )}
+                    {showColumn("profile") && (
+                      <td
+                        className="py-3 px-4"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <ProductThumb
+                          // Keyed by the row's product: without it, paging
+                          // reuses the same component instance and a failed
+                          // image would keep the next product's photo hidden.
+                          key={product.id}
+                          name={product.name}
+                          src={product.image}
+                          onOpen={() =>
+                            setPhotoTarget({
+                              src: product.image ?? null,
+                              name: product.name,
+                            })
+                          }
+                        />
+                      </td>
+                    )}
+                    {showColumn("name") && (
+                      <td className="py-3 px-4">
+                        <span className="flex items-center gap-2">
+                          {/* Expander sits in the name cell rather than taking a
+                              column of its own, so the header stays unchanged. */}
+                          {variantCount > 0 ? (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleExpanded(product.id);
+                              }}
+                              aria-expanded={isExpanded}
+                              aria-label={
+                                isExpanded
+                                  ? `Hide variants of ${product.name}`
+                                  : `Show variants of ${product.name}`
+                              }
+                              className="shrink-0 rounded-md p-0.5 text-gray-400 transition-colors hover:bg-blue-100 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                            >
+                              {isExpanded ? (
+                                <ChevronDown className="h-3.5 w-3.5" />
+                              ) : (
+                                <ChevronRight className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+                          ) : (
+                            // Keeps names aligned down the column whether or not
+                            // a product has variants.
+                            <span className="w-[1.125rem] shrink-0" />
+                          )}
 
-                        <span className="font-medium text-xs text-gray-900">
-                          {product.name}
-                        </span>
-                        {variantCount > 0 && (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-purple-50 text-purple-600 border border-purple-200">
-                            {variantCount} variant
-                            {variantCount > 1 ? "s" : ""}
+                          <span className="font-medium text-xs text-gray-900">
+                            {product.name}
                           </span>
+                          {variantCount > 0 && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-purple-50 text-purple-600 border border-purple-200">
+                              {variantCount} variant
+                              {variantCount > 1 ? "s" : ""}
+                            </span>
+                          )}
+                        </span>
+                      </td>
+                    )}
+                    {showColumn("description") && (
+                      <td className="py-3 px-4">
+                        <span className="text-xs text-gray-500 truncate max-w-[200px] block">
+                          {product.description || "—"}
+                        </span>
+                      </td>
+                    )}
+                    {showColumn("price") && (
+                      <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900 tabular-nums">
+                        {priceLabel(product)}
+                      </td>
+                    )}
+                    {showColumn("tax") && (
+                      <td className="py-3 px-4 text-center">
+                        <TaxBadge taxable={product.isTaxable} />
+                      </td>
+                    )}
+                    {showColumn("stock") && (
+                      <td className="py-3 px-4 text-center">
+                        {!product.usesStocks ? (
+                          <span className="text-xs text-gray-400">
+                            Not tracked
+                          </span>
+                        ) : (
+                          <div className="flex items-center justify-center gap-1.5">
+                            <Package className="h-3.5 w-3.5 text-blue-500" />
+                            <span className="text-sm font-medium tabular-nums text-gray-700 tracking-wide">
+                              {formatNumber(stockOf(product))}
+                            </span>
+                            {product.lowStock !== undefined &&
+                              product.lowStock > 0 &&
+                              variantCount === 0 && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 font-semibold border border-amber-200">
+                                  Low: {product.lowStock}
+                                </span>
+                              )}
+                          </div>
                         )}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-xs text-gray-500 truncate max-w-[200px] block">
-                        {product.description || "—"}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900 tabular-nums">
-                      {priceLabel(product)}
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <TaxBadge taxable={product.isTaxable} />
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      {!product.usesStocks ? (
-                        <span className="text-xs text-gray-400">
-                          Not tracked
-                        </span>
-                      ) : (
-                        <div className="flex items-center justify-center gap-1.5">
-                          <Package className="h-3.5 w-3.5 text-blue-500" />
-                          <span className="text-sm font-medium tabular-nums text-gray-700">
-                            {stockOf(product)}
-                          </span>
-                          {product.lowStock !== undefined &&
-                            product.lowStock > 0 &&
-                            variantCount === 0 && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 font-semibold border border-amber-200">
-                                Low: {product.lowStock}
-                              </span>
-                            )}
-                        </div>
-                      )}
-                    </td>
+                      </td>
+                    )}
                     <td className="py-3 px-4">
                       <div
                         className="flex items-center justify-end gap-1"
@@ -469,49 +559,61 @@ export default function ProductTable({
                               the product's — so the column stays empty rather
                               than repeating the parent's thumbnail down the
                               group. */}
-                          <td className="py-2.5 px-4" />
-                          <td className="py-2.5 px-4">
-                            <span className="flex items-center gap-1.5 pl-6">
-                              <CornerDownRight className="h-3.5 w-3.5 shrink-0 text-gray-300" />
-                              <span className="text-xs font-medium capitalize text-gray-800">
-                                {variant.optionValues.length > 0
-                                  ? variant.optionValues.join(" · ")
-                                  : "Default"}
-                              </span>
-                            </span>
-                          </td>
-                          <td className="py-2.5 px-4">
-                            <span className="block max-w-[200px] truncate text-xs text-gray-400">
-                              Variant of {product.name}
-                            </span>
-                          </td>
-                          <td className="py-2.5 px-4 text-right text-xs font-semibold tabular-nums text-gray-700">
-                            {fmt(variant.price)}
-                          </td>
-                          <td className="py-2.5 px-4 text-center">
-                            {/* Tax status is inherited from the parent product */}
-                            <TaxBadge taxable={product.isTaxable} />
-                          </td>
-                          <td className="py-2.5 px-4 text-center">
-                            {!product.usesStocks ? (
-                              <span className="text-xs text-gray-400">
-                                Not tracked
-                              </span>
-                            ) : (
-                              <div className="flex items-center justify-center gap-1.5">
-                                <Package className="h-3.5 w-3.5 text-blue-400" />
-                                <span className="text-sm font-medium tabular-nums text-gray-600">
-                                  {variant.inStock ?? 0}
+                          {showColumn("profile") && (
+                            <td className="py-2.5 px-4" />
+                          )}
+                          {showColumn("name") && (
+                            <td className="py-2.5 px-4">
+                              <span className="flex items-center gap-1.5 pl-6">
+                                <CornerDownRight className="h-3.5 w-3.5 shrink-0 text-gray-300" />
+                                <span className="text-xs font-medium capitalize text-gray-800">
+                                  {variant.optionValues.length > 0
+                                    ? variant.optionValues.join(" · ")
+                                    : "Default"}
                                 </span>
-                                {variant.lowStock !== undefined &&
-                                  variant.lowStock > 0 && (
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 font-semibold border border-amber-200">
-                                      Low: {variant.lowStock}
-                                    </span>
-                                  )}
-                              </div>
-                            )}
-                          </td>
+                              </span>
+                            </td>
+                          )}
+                          {showColumn("description") && (
+                            <td className="py-2.5 px-4">
+                              <span className="block max-w-[200px] truncate text-xs text-gray-400">
+                                Variant of {product.name}
+                              </span>
+                            </td>
+                          )}
+                          {showColumn("price") && (
+                            <td className="py-2.5 px-4 text-right text-xs font-semibold tabular-nums text-gray-700">
+                              {fmt(variant.price)}
+                            </td>
+                          )}
+                          {showColumn("tax") && (
+                            <td className="py-2.5 px-4 text-center">
+                              {/* Tax status is inherited from the parent product */}
+                              <TaxBadge taxable={product.isTaxable} />
+                            </td>
+                          )}
+                          {showColumn("stock") && (
+                            <td className="py-2.5 px-4 text-center">
+                              {!product.usesStocks ? (
+                                <span className="text-xs text-gray-400">
+                                  Not tracked
+                                </span>
+                              ) : (
+                                <div className="flex items-center justify-center gap-1.5">
+                                  <Package className="h-3.5 w-3.5 text-blue-400" />
+                                  <span className="text-sm font-medium tabular-nums text-gray-600">
+                                    {variant.inStock ?? 0}
+                                  </span>
+                                  {variant.lowStock !== undefined &&
+                                    variant.lowStock > 0 && (
+                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 font-semibold border border-amber-200">
+                                        Low: {variant.lowStock}
+                                      </span>
+                                    )}
+                                </div>
+                              )}
+                            </td>
+                          )}
                           <td className="py-2.5 px-4">
                             <div
                               className="flex items-center justify-end gap-1"

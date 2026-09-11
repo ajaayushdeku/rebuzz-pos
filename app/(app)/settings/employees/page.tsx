@@ -24,6 +24,11 @@ import {
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import StaffFormModal from "@/components/settingsComponents/staffs/StaffFormModal";
 import HeaderActionButton from "@/components/ui/HeaderActionButton";
+import ColumnPicker, {
+  readStoredColumns,
+  storeColumns,
+  type TableColumn,
+} from "@/components/ui/ColumnPicker";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 interface StaffFormData {
@@ -110,6 +115,25 @@ async function readError(res: Response, fallback: string): Promise<string> {
 
 // ── Input styling ───────────────────────────────────────────────────────────
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
+
+/**
+ * Columns in the order they are drawn. Actions is locked: it holds edit and
+ * delete, and taking it away removes what a row can do rather than what it
+ * shows.
+ */
+const STAFF_COLUMNS: TableColumn[] = [
+  { key: "serial", label: "S.No" },
+  { key: "name", label: "Employee Name" },
+  { key: "email", label: "Email" },
+  { key: "phone", label: "Phone" },
+  { key: "role", label: "Role" },
+  { key: "status", label: "Status" },
+  { key: "autoPrint", label: "Auto print" },
+  { key: "actions", label: "Actions", locked: true },
+];
+
+const COLUMNS_STORAGE_KEY = "rebuzz-staff-table-columns";
+const MIN_COLUMNS = 3;
 
 // ── Role badge ──────────────────────────────────────────────────────────────
 function RoleBadge({ role }: { role: string }) {
@@ -426,6 +450,29 @@ export default function StaffManagementPage() {
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const paged = sorted.slice(page * pageSize, (page + 1) * pageSize);
 
+  // Initialiser, not an effect: reading storage in an effect renders one frame
+  // with the wrong columns, and this repo's lint rules forbid it besides.
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(() =>
+    readStoredColumns(COLUMNS_STORAGE_KEY, STAFF_COLUMNS, MIN_COLUMNS),
+  );
+
+  const shownColumns = new Set(visibleColumns);
+  const showColumn = (key: string) =>
+    shownColumns.has(key) ||
+    STAFF_COLUMNS.some((c) => c.key === key && c.locked);
+
+  // The loading and empty rows span the whole table, so this has to move with
+  // whichever headers are actually rendered.
+  const colCount = STAFF_COLUMNS.filter((c) => showColumn(c.key)).length;
+
+  const handleColumnsChange = (next: string[]) => {
+    setVisibleColumns(next);
+    storeColumns(COLUMNS_STORAGE_KEY, next);
+    // Sorting by a column you can no longer see leaves the rows in an order
+    // with nothing on screen to explain it.
+    setSortConfig((prev) => (prev && !next.includes(prev.key) ? null : prev));
+  };
+
   const toggleSort = (key: string) => {
     setSortConfig((prev) =>
       prev?.key === key && prev.direction === "asc"
@@ -535,34 +582,68 @@ export default function StaffManagementPage() {
               ))}
             </div>
           </div>
+
+          <ColumnPicker
+            columns={STAFF_COLUMNS}
+            visible={visibleColumns}
+            onChange={handleColumnsChange}
+            minVisible={MIN_COLUMNS}
+            className="w-full sm:w-[150px]"
+          />
         </div>
 
         {/* ── Staff Table ── */}
         {/* Table always renders; loading + empty states live inside the tbody. */}
         <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          <table className="w-full text-sm min-w-[1000px]">
+          <table
+            className="w-full text-sm"
+            // Scales with what is actually shown. A fixed floor sized for
+            // every column left a horizontal scrollbar over empty space
+            // once a few were hidden.
+            style={{ minWidth: `${Math.max(640, colCount * 150)}px` }}
+          >
             <thead>
               <tr className="text-xs text-gray-400 border-b border-gray-100">
-                <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
-                  S.No
-                </th>
-                <th
-                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                  onClick={() => toggleSort("name")}
-                >
-                  <span className="flex items-center gap-1">
-                    Employee Name {SortIcon({ colKey: "name" })}
-                  </span>
-                </th>
-                <th className="text-left pb-3 pt-3 px-4 font-medium">Email</th>
-                <th className="text-left pb-3 pt-3 px-4 font-medium">Phone</th>
-                <th className="text-center pb-3 pt-3 px-4 font-medium">Role</th>
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
-                  Status
-                </th>
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
-                  Auto print
-                </th>
+                {showColumn("serial") && (
+                  <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+                    S.No
+                  </th>
+                )}
+                {showColumn("name") && (
+                  <th
+                    className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                    onClick={() => toggleSort("name")}
+                  >
+                    <span className="flex items-center gap-1">
+                      Employee Name {SortIcon({ colKey: "name" })}
+                    </span>
+                  </th>
+                )}
+                {showColumn("email") && (
+                  <th className="text-left pb-3 pt-3 px-4 font-medium">
+                    Email
+                  </th>
+                )}
+                {showColumn("phone") && (
+                  <th className="text-left pb-3 pt-3 px-4 font-medium">
+                    Phone
+                  </th>
+                )}
+                {showColumn("role") && (
+                  <th className="text-center pb-3 pt-3 px-4 font-medium">
+                    Role
+                  </th>
+                )}
+                {showColumn("status") && (
+                  <th className="text-center pb-3 pt-3 px-4 font-medium">
+                    Status
+                  </th>
+                )}
+                {showColumn("autoPrint") && (
+                  <th className="text-center pb-3 pt-3 px-4 font-medium">
+                    Auto print
+                  </th>
+                )}
                 <th className="text-right pb-3 pt-3 px-4 font-medium">
                   Actions
                 </th>
@@ -571,7 +652,7 @@ export default function StaffManagementPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-16">
+                  <td colSpan={colCount} className="text-center py-16">
                     <div className="flex items-center justify-center gap-2 text-gray-400">
                       <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
                       <span className="text-sm">Loading staff...</span>
@@ -581,7 +662,7 @@ export default function StaffManagementPage() {
               ) : paged.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={colCount}
                     className="text-center py-2 text-sm text-gray-400"
                   >
                     <div className="flex flex-col items-center justify-center py-12">
@@ -606,47 +687,61 @@ export default function StaffManagementPage() {
                     }
                     className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
                   >
-                    <td className="py-3 px-4 text-gray-400 text-xs">
-                      {page * pageSize + idx + 1}
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="font-medium text-gray-900 text-xs">
-                        {staffMember.name || "—"}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                        <Mail className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                        {staffMember.email || "—"}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                        <Phone className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                        {staffMember.phone || "—"}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-xs text-center">
-                      <RoleBadge role={staffMember.role} />
-                    </td>
-                    <td className="py-3 px-4 text-xs text-center">
-                      <StatusBadge deactivated={staffMember.isDeactivated} />
-                    </td>
+                    {showColumn("serial") && (
+                      <td className="py-3 px-4 text-gray-400 text-xs">
+                        {page * pageSize + idx + 1}
+                      </td>
+                    )}
+                    {showColumn("name") && (
+                      <td className="py-3 px-4">
+                        <span className="font-medium text-gray-900 text-xs">
+                          {staffMember.name || "—"}
+                        </span>
+                      </td>
+                    )}
+                    {showColumn("email") && (
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                          <Mail className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                          {staffMember.email || "—"}
+                        </div>
+                      </td>
+                    )}
+                    {showColumn("phone") && (
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-1.5 text-xs text-gray-600 tracking-wide">
+                          <Phone className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                          {staffMember.phone || "—"}
+                        </div>
+                      </td>
+                    )}
+                    {showColumn("role") && (
+                      <td className="py-3 px-4 text-xs text-center">
+                        <RoleBadge role={staffMember.role} />
+                      </td>
+                    )}
+                    {showColumn("status") && (
+                      <td className="py-3 px-4 text-xs text-center">
+                        <StatusBadge deactivated={staffMember.isDeactivated} />
+                      </td>
+                    )}
 
                     {/* Auto print */}
-                    <td
-                      className="py-3 px-4 text-center"
-                      // The row opens the employee elsewhere; a switch that
-                      // navigated away as it was flipped would be unusable.
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <AutoPrintToggle
-                        enabled={!!staffMember.canAutoPrint}
-                        saving={autoPrintSaving.has(staffMember._id)}
-                        name={staffMember.name}
-                        onToggle={() => toggleAutoPrint(staffMember)}
-                      />
-                    </td>
+                    {showColumn("autoPrint") && (
+                      <td
+                        className="py-3 px-4 text-center"
+                        // The row opens the employee elsewhere; a switch that
+                        // navigated away as it was flipped would be unusable.
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <AutoPrintToggle
+                          enabled={!!staffMember.canAutoPrint}
+                          saving={autoPrintSaving.has(staffMember._id)}
+                          name={staffMember.name}
+                          onToggle={() => toggleAutoPrint(staffMember)}
+                        />
+                      </td>
+                    )}
                     <td className="py-3 px-4">
                       <div
                         className="flex items-center justify-end gap-1"

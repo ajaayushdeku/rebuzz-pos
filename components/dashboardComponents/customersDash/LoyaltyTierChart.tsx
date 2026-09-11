@@ -216,18 +216,7 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
             page on screen. */}
         {!isEmpty && (
           <div className="flex shrink-0 items-center gap-3">
-            <div className="flex flex-col items-end">
-              <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
-                Enrolled
-              </span>
-              <p className="mt-0.5 text-base font-bold leading-tight tabular-nums text-gray-900">
-                {totalMembers.toLocaleString()}
-              </p>
-            </div>
-
-            <div className="h-5 border-1  border-gray-200 mx-2" />
-
-            <div className="flex items-center gap-0.5 rounded-lg bg-[#e4f2fe]  p-0.5 ">
+            <div className="flex items-center gap-0.5 rounded-lg bg-[#e4f2fe]  px-1 py-1 ">
               {ORDERS.map(({ id, label, icon, hint }) => (
                 <button
                   key={id}
@@ -240,7 +229,7 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
                   }}
                   aria-pressed={order === id}
                   title={hint}
-                  className={`flex items-center gap-2 rounded-lg px-2 py-2 text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] cursor-pointer ${
+                  className={`flex items-center gap-2 rounded-md px-2 py-1 text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] cursor-pointer ${
                     order === id
                       ? "bg-white font-bold text-blue-950 shadow-sm"
                       : "font-semibold text-blue-800 hover:text-blue-950"
@@ -250,6 +239,17 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
                   {label}
                 </button>
               ))}
+            </div>
+
+            <div className="h-5 border-1  border-gray-200 mx-2" />
+
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                Enrolled
+              </span>
+              <p className="mt-0.5 text-base font-bold leading-tight tabular-nums text-gray-900">
+                {totalMembers.toLocaleString()}
+              </p>
             </div>
           </div>
         )}

@@ -12,7 +12,11 @@
  * would not.
  */
 export type StatusTone =
-  "positive" | "negative" | "neutral" | "warning" | "notice";
+  | "positive"
+  | "negative"
+  | "neutral"
+  | "warning"
+  | "notice";
 
 const TONES: Record<StatusTone, { className: string; rgb: string }> = {
   positive: {
@@ -69,7 +73,7 @@ export default function StatusPill({
 
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-semibold border capitalize relative overflow-hidden ${toneClass} ${className}`}
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-semibold border capitalize relative overflow-hidden tracking-wide ${toneClass} ${className}`}
       style={{
         backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(${rgb}, 0.2) 2px, rgba(${rgb}, 0.2) 4px)`,
         backgroundColor: `rgba(${rgb}, 0.3)`,

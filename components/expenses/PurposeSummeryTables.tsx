@@ -358,7 +358,7 @@ function SummaryTable({ type }: { type: TransactionType }) {
                           )}
                         />
                       </span>
-                      <span className="text-xs font-medium text-gray-900">
+                      <span className="text-xs font-medium tracking-wide text-gray-900">
                         {purposeName}
                       </span>
                     </div>
@@ -367,7 +367,7 @@ function SummaryTable({ type }: { type: TransactionType }) {
                     {count}
                   </td>
                   <td
-                    className={`py-3 px-4 text-right text-xs font-semibold ${
+                    className={`py-3 px-4 text-right text-xs tracking-wid font-semibold ${
                       type === "expense" ? "text-red-600" : "text-green-600"
                     }`}
                   >

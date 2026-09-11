@@ -61,7 +61,7 @@ const OrderHistoryStatBox = ({
           <Icon size={16} className={iconColor} />
         </div>
       </div>
-      <p className={`text-lg font-bold truncate ${valueColor}`}>
+      <p className={`text-lg font-bold truncate tracking-wide ${valueColor}`}>
         {displayValue}
       </p>
       {subText && (
