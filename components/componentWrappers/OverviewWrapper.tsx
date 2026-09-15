@@ -25,6 +25,8 @@ import PaymentMethodsChart from "../dashboardComponents/overviewDash/PaymentMeth
 import SalesCategoryChart from "../dashboardComponents/overviewDash/SalesCategoryChart";
 import AIBusinessStory from "../dashboardComponents/overviewDash/AIBusinessStory";
 import BusinessInsightsAlerts from "../dashboardComponents/overviewDash/BusinessInsightsAlerts";
+import { AiInsightsProvider } from "@/components/aiInsights/AiInsightsProvider";
+import { collectBriefingData } from "@/lib/ai-insights/collectBriefingData.server";
 import LowStockAlerts from "../dashboardComponents/overviewDash/LowStockAlerts";
 import { formatDateRangeLabel } from "@/utils/helper";
 
@@ -362,12 +364,28 @@ export const HourlySalesTrendWrapper = async () => {
   return <HourlySalesTrend data={data} />;
 };
 
-export const AIBusinessStoryWrapper = () => {
-  return <AIBusinessStory />;
-};
-
-export const BusinessInsightsAlertsWrapper = () => {
-  return <BusinessInsightsAlerts />;
+/**
+ * The two AI cards share one generation.
+ *
+ * The briefing data is collected server-side (it needs the session cookie),
+ * handed to the client provider, which generates the insights once and feeds
+ * both the story and the insights card. Collecting here rather than in each
+ * card means the briefing costs one round of dashboard fetches, and one
+ * generation instead of two.
+ *
+ * The insight cards and the charts above them read the same endpoints, so a
+ * briefing cannot disagree with the charts it summarises.
+ */
+export const AiInsightsSection = async () => {
+  const briefingData = await collectBriefingData();
+  return (
+    <AiInsightsProvider briefingData={briefingData}>
+      <div className="w-full flex items-center justify-center">
+        <AIBusinessStory />
+      </div>
+      <BusinessInsightsAlerts />
+    </AiInsightsProvider>
+  );
 };
 
 export const LowStockAlertsWrapper = () => {

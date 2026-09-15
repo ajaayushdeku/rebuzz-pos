@@ -33,6 +33,7 @@ import {
   Utensils,
   BriefcaseBusiness,
   ContactRound,
+  Sparkles,
 } from "lucide-react";
 
 export type NavigationItem =
@@ -166,6 +167,12 @@ export const navigationConfig: NavigationItem[] = [
     label: "Offer",
     icon: Gift,
     href: "/offers",
+  },
+  {
+    type: "single",
+    label: "AI Insights",
+    icon: Sparkles,
+    href: "/ai-insights",
   },
   {
     type: "section",

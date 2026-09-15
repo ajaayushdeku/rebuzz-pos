@@ -95,12 +95,40 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const apiKey = typeof body?.apiKey === "string" ? body.apiKey.trim() : "";
+  const model = typeof body?.model === "string" ? body.model.trim() : "";
 
   if (!apiKey) {
     return NextResponse.json({ error: "API_KEY_REQUIRED" }, { status: 400 });
   }
 
-  return forward("POST", { apiKey });
+  // `model` is forwarded when supplied so the user can save a key against the
+  // model they were told works. Dropping it here was a dead end: the service
+  // answers GEMINI_MODEL_UNAVAILABLE with a list of usable names, and without
+  // this there was no way to act on that answer.
+  return forward("POST", model ? { apiKey, model } : { apiKey });
+}
+
+/**
+ * Toggle `enabled`, or switch to one of the models the service reported as
+ * usable. Cannot change the key — that is POST's job.
+ */
+export async function PATCH(req: NextRequest) {
+  const body = await req.json().catch(() => null);
+
+  const payload: { enabled?: boolean; model?: string } = {};
+
+  if (typeof body?.enabled === "boolean") {
+    payload.enabled = body.enabled;
+  }
+  if (typeof body?.model === "string" && body.model.trim()) {
+    payload.model = body.model.trim();
+  }
+
+  if (Object.keys(payload).length === 0) {
+    return NextResponse.json({ error: "NOTHING_TO_UPDATE" }, { status: 400 });
+  }
+
+  return forward("PATCH", payload);
 }
 
 export async function DELETE() {

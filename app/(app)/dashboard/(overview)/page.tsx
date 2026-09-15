@@ -5,7 +5,6 @@ import TableSkeleton from "@/components/ui/tableskeleton";
 import PieChartSkeleton from "@/components/ui/piechartskeleton";
 import WinningStatSkeleton from "@/components/ui/winningstatskeleton";
 import StorySkeleton from "@/components/ui/storyskeleton";
-import InsightsSkeleton from "@/components/ui/insightsskeleton";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import {
   WeeklyRevenueChartSkeleton,
@@ -15,8 +14,7 @@ import {
 } from "@/components/dashboardComponents/overviewDash/OverviewSkeletons";
 
 import {
-  AIBusinessStoryWrapper,
-  BusinessInsightsAlertsWrapper,
+  AiInsightsSection,
   HourlySalesTrendWrapper,
   LowStockAlertsWrapper,
   OverviewStatsWrapper,
@@ -153,17 +151,9 @@ const Page = async ({
             </ChartErrorBoundary>
           </div>
 
-          <div className="w-full flex items-center justify-center ">
-            <ChartErrorBoundary>
-              <Suspense fallback={<StorySkeleton />}>
-                <AIBusinessStoryWrapper />
-              </Suspense>
-            </ChartErrorBoundary>
-          </div>
-
           <ChartErrorBoundary>
-            <Suspense fallback={<InsightsSkeleton />}>
-              <BusinessInsightsAlertsWrapper />
+            <Suspense fallback={<StorySkeleton />}>
+              <AiInsightsSection />
             </Suspense>
           </ChartErrorBoundary>
         </div>
