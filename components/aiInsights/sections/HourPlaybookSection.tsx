@@ -5,6 +5,7 @@ import { Clock, Coffee } from "lucide-react";
 import type { AiSectionState } from "@/hooks/useAiSection";
 import {
   HOUR_WINDOW_DAYS,
+  ordersLabel,
   type HourInsight,
   type SlotKind,
 } from "@/lib/ai-insights/sections/hourPlaybook";
@@ -136,9 +137,9 @@ export default function HourPlaybookSection({
                     />
                   </div>
                   <p className="mt-1.5 text-[11px] text-gray-500">
-                    {item.ordersPerDay} orders a day
+                    {ordersLabel(item.ordersPerDay)} orders a day
                     {item.avgOrder !== null &&
-                      ` · ${money(item.avgOrder)} per order`}
+                      ` · typical order ${money(item.avgOrder)}`}
                   </p>
                 </div>
 

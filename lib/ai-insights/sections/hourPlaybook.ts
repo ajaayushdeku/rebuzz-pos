@@ -44,6 +44,9 @@ const LOW_SPEND_GAP_PCT = 20;
 /** …and busy enough to matter: this share of the busiest hour's orders. */
 const LOW_SPEND_MIN_BUSYNESS = 40;
 
+/** An hour counts as open when it has orders on this share of trading days. */
+const OPEN_HOUR_SHARE = 0.1;
+
 const NEPAL_OFFSET_MS = (5 * 60 + 45) * 60 * 1000;
 
 /** One bill from `/business/report`'s `allBills`. */
@@ -78,15 +81,38 @@ export function hourLabel(hour: number): string {
 
 // ── Facts ─────────────────────────────────────────────────────────────────
 
+function median(values: number[]): number | null {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1
+    ? sorted[mid]
+    : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+/** "1.2", or "under 0.1" when an hour's orders are too rare to round up. */
+export function ordersLabel(perDay: number): string {
+  return perDay === 0 ? "under 0.1" : String(perDay);
+}
+
 export interface HourStats {
   hour: number;
-  /** Average orders a day, over every day in the window. */
+  /**
+   * Average orders a day, over the days the business traded. Counting the
+   * days it was shut would make a shop open three days a week look a third
+   * as busy as it is in every hour it is open.
+   */
   ordersPerDay: number;
-  /** Average orders on a Saturday, over the Saturdays in the window. */
+  /** Average orders on a Saturday, over the Saturdays it traded. */
   saturdayOrders: number;
-  /** Average sales a day before tax. */
+  /** Average sales a trading day, before tax. */
   salesPerDay: number;
-  /** Average spend per order before tax, or null with no orders. */
+  /**
+   * The typical order before tax — the middle one, not the mean. One large
+   * bill (a catering order, a test sale) would otherwise lift the mean of its
+   * hour and of the whole day, and every other hour would look like a
+   * low-spend hour beside it.
+   */
   avgOrder: number | null;
   /** Orders against the busiest hour, 0–100. */
   busynessPct: number;
@@ -109,6 +135,7 @@ export interface HourFacts {
   /** First and last hour with any orders. */
   opens: number | null;
   closes: number | null;
+  /** The typical order across the whole window, before tax. */
   avgOrder: number | null;
   /** Every hour between opening and closing, quiet ones included. */
   hours: HourStats[];
@@ -168,9 +195,14 @@ export function buildHourFacts(
 
   const days = Math.max(1, tradingDays.size);
 
+  // Opening hours are the hours with orders on at least one trading day in
+  // ten. One stray bill — a 5:50am test sale, a late tab closed after hours —
+  // would otherwise stretch the day, and the hours between it and real
+  // opening would be named "the quietest hour" when the shop is simply shut.
+  const regular = Math.max(1, days * OPEN_HOUR_SHARE);
   const open = sums
     .map((s, hour) => ({ s, hour }))
-    .filter(({ s }) => s.orders > 0);
+    .filter(({ s }) => s.orders >= regular);
   const opens = open.length > 0 ? open[0].hour : null;
   const closes = open.length > 0 ? open[open.length - 1].hour : null;
   const peakOrders = Math.max(0, ...sums.map((s) => s.orders));
@@ -262,14 +294,14 @@ export function hourBriefing(facts: HourFacts, currencySymbol: string): string {
 
   const lines = [
     `Window: ${facts.windowStart} to ${facts.windowEnd}, ${HOUR_WINDOW_DAYS} days. Times are Nepal time. Money is before tax, in ${currencySymbol}.`,
-    `${whole(facts.totalOrders)} orders on ${facts.tradingDays} trading days. Average order ${facts.avgOrder === null ? "unknown" : money(facts.avgOrder)}.`,
+    `${whole(facts.totalOrders)} orders on ${facts.tradingDays} trading days (days with any sale; the averages below are per trading day). Typical order ${facts.avgOrder === null ? "unknown" : money(facts.avgOrder)} (the middle order, so one large bill does not skew it).`,
     `Orders come in from ${facts.opens === null ? "?" : hourLabel(facts.opens)} to ${facts.closes === null ? "?" : hourLabel(facts.closes)}.`,
     "No data on seats, guests per order, staff on shift or which items sell in which hour.",
     "",
-    "Every hour (orders a day · orders on a Saturday · sales a day · per order · busyness vs busiest hour · discount):",
+    "Every hour (orders a day · orders on a Saturday · sales a day · typical order · busyness vs busiest hour · discount):",
     ...facts.hours.map(
       (h) =>
-        `- ${hourLabel(h.hour)}: ${h.ordersPerDay} · ${h.saturdayOrders} · ${money(h.salesPerDay)} · ${h.avgOrder === null ? "no orders" : money(h.avgOrder)} · ${h.busynessPct}% · ${h.discountPct}% off`,
+        `- ${hourLabel(h.hour)}: ${h.avgOrder === null ? "0" : ordersLabel(h.ordersPerDay)} · ${h.saturdayOrders} · ${money(h.salesPerDay)} · ${h.avgOrder === null ? "no orders" : money(h.avgOrder)} · ${h.busynessPct}% · ${h.discountPct}% off`,
     ),
     "",
     "Hours to write a play for (ref · hour · why the app picked it):",
