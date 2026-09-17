@@ -12,6 +12,8 @@ RULES:
 - Each segment is a readable sentence or two.
 - Use real numbers from the briefing only. Never invent figures.
 - If a figure is missing or zero, say so plainly.
+- When the briefing states a currency symbol, prefix every money amount with that exact symbol. Without one, write bare numbers.
+- The story covers the day so far versus yesterday's completed day; compare today (present tense) against yesterday (past tense).
 - Comparisons need a previous-period figure. Without one, state the raw number.
 - "green" = good/on-track. "red" = concerning/off-track. "default" = neutral.
 - Present tense for live view, past tense for yesterday's recap.

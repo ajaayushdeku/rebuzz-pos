@@ -14,7 +14,6 @@ import TargetTrackerCard from "../dashboardComponents/salesRevenue/TargetTracker
 import CampaignAnalysis from "../dashboardComponents/salesRevenue/CampaignAnalysis";
 import PriceChangeImpact from "../dashboardComponents/salesRevenue/PriceChangeImpact";
 import TimeWiseProductAnalysis from "../dashboardComponents/salesRevenue/TimeWiseProductAnalysis";
-import SalesRecommendationsAlerts from "../dashboardComponents/salesRevenue/SalesRecommendationsAlerts";
 import {
   mockCampaignAnalysis,
   mockPriceChangeImpact,
@@ -101,8 +100,4 @@ export function TimeWiseProductAnalysisWrapper({
   // Fetches transactions for the global date range client-side and buckets
   // them into time-of-day windows.
   return <TimeWiseProductAnalysis startDate={startDate} endDate={endDate} />;
-}
-
-export function SalesRecommendationsAlertsWrapper() {
-  return <SalesRecommendationsAlerts />;
 }

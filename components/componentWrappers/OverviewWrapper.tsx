@@ -373,8 +373,11 @@ export const HourlySalesTrendWrapper = async () => {
  * card means the briefing costs one round of dashboard fetches, and one
  * generation instead of two.
  *
- * The insight cards and the charts above them read the same endpoints, so a
- * briefing cannot disagree with the charts it summarises.
+ * The briefing reads the same endpoints as the charts, but not always the same
+ * window. It is fixed to today against yesterday, while the stat cards above
+ * follow the page's date range — so with "Last 30 days" selected, the cards
+ * show thirty days and the story talks about today. That is why these two
+ * cards carry no RANGE badge: they do not follow the filter.
  */
 export const AiInsightsSection = async () => {
   const briefingData = await collectBriefingData();

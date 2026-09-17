@@ -19,7 +19,6 @@ import {
   StaffRevenueWrapper,
   StaffStatWrapper,
   LatestShiftsWrapper,
-  StaffingRecommendationsWrapper,
 } from "@/components/componentWrappers/StaffWrapper";
 
 const Page = async ({
@@ -123,11 +122,6 @@ const Page = async ({
         </ChartErrorBoundary>
         {/* </div> */}
 
-        <ChartErrorBoundary>
-          <Suspense fallback={<TableSkeleton />}>
-            <StaffingRecommendationsWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
       </div>
     </div>
   );

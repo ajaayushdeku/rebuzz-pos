@@ -19,6 +19,7 @@
 
 import type { BriefingData } from "@/lib/ai-insights/contract";
 import { BRIEFING_SECTIONS } from "@/lib/ai-insights/contract";
+import { formatCurrencySymbolOnly } from "@/utils/helper";
 
 // ── Configuration ───────────────────────────
 
@@ -34,9 +35,9 @@ const DEBUG_FLAG = "ai-insights-debug";
 
 // ── Formatting helpers (pure) ───────────────────────────────────────────────────────────────────────────────
 
-/** Format a number as a currency string without a symbol — the dashboard uses
- * the currency context for symbols, but the briefing is plain text for Gemini,
- * so a simple formatted number is enough. */
+/** Format a number as a plain "1,234.56" string. Symbol-free by design: the
+ * symbol is added by `money()` inside `buildBriefing`, which knows whether the
+ * session carried a currency. */
 function formatCurrency(value: number): string {
   if (!isFinite(value)) return "0.00";
   return value.toLocaleString("en-US", {
@@ -187,6 +188,17 @@ function ordersClause(orders: number | undefined): string {
 export function buildBriefing(data: BriefingData): string {
   const lines: string[] = [];
 
+  // The model mirrors the formatting it reads far more reliably than it follows
+  // instructions, so the symbol is prefixed onto every figure in the briefing
+  // directly; the Currency line in [PERIOD] only reinforces what the text
+  // already shows. Empty when the session carried no currency — bare numbers
+  // are then correct, and a guessed symbol would be worse than none.
+  const currencySymbol = data.currency
+    ? formatCurrencySymbolOnly(data.currency.symbol)
+    : "";
+  const money = (value: number): string =>
+    `${currencySymbol}${formatCurrency(value)}`;
+
   // ── Period ──
   lines.push(`[${BRIEFING_SECTIONS.PERIOD}]`);
   lines.push(`Label: ${data.periodLabel}`);
@@ -194,14 +206,24 @@ export function buildBriefing(data: BriefingData): string {
   lines.push(
     `View: ${data.viewMode === "live" ? "Live (today so far)" : "Yesterday's completed day"}`,
   );
+  // The cards print the model's words, so the currency symbol only reaches the
+  // merchant through this instruction. Only sent when the session carried one:
+  // "use the symbol" with no symbol known would invite the model to invent it.
+  if (data.currency) {
+    lines.push(
+      `Currency: every money figure in this briefing is in ${data.currency.code} ` +
+        `and already carries its symbol "${data.currency.symbol}". ` +
+        `Echo money amounts exactly as written (for example: ${data.currency.symbol}1,234.56), never as a bare number.`,
+    );
+  }
   lines.push("");
 
   // ── Headline stats ──
   lines.push(`[${BRIEFING_SECTIONS.HEADLINE_STATS}]`);
-  lines.push(`Total sales: ${formatCurrency(data.stats.totalSales)}`);
+  lines.push(`Total sales:  ${money(data.stats.totalSales)}`);
   lines.push(`Total orders: ${formatNumber(data.stats.totalOrders)}`);
   lines.push(`Products sold: ${formatNumber(data.stats.productsSold)}`);
-  lines.push(`Net profit: ${formatCurrency(data.stats.netProfit)}`);
+  lines.push(`Net profit: ${money(data.stats.netProfit)}`);
   lines.push("");
 
   // ── Comparison (only when a previous-period figure exists) ──
@@ -215,7 +237,7 @@ export function buildBriefing(data: BriefingData): string {
     lines.push(`[${BRIEFING_SECTIONS.COMPARISON}]`);
     if (previousSales !== undefined) {
       lines.push(
-        `Sales: ${formatCurrency(previousSales)} to ${formatCurrency(
+        `Sales: ${money(previousSales)} to ${money(
           data.stats.totalSales,
         )} (${formatPercentChange(data.stats.totalSales, previousSales)}${trendArrow(
           data.stats.totalSales,
@@ -235,7 +257,7 @@ export function buildBriefing(data: BriefingData): string {
     }
     if (previousProfit !== undefined) {
       lines.push(
-        `Net profit: ${formatCurrency(previousProfit)} to ${formatCurrency(
+        `Net profit: ${money(previousProfit)} to ${money(
           data.stats.netProfit,
         )} (${formatPercentChange(
           data.stats.netProfit,
@@ -261,13 +283,13 @@ export function buildBriefing(data: BriefingData): string {
       const parts = [
         `${i + 1}. ${product.name}`,
         `units sold: ${formatNumber(product.unitsSold)}`,
-        `revenue: ${formatCurrency(product.revenue)}`,
+        `revenue: ${money(product.revenue)}`,
       ];
       // Absent figures are skipped, not printed: this text is read by the model
       // as fact, and "category: undefined" is a claim it could repeat.
       if (product.category) parts.push(`category: ${product.category}`);
       if (product.profit !== undefined) {
-        parts.push(`profit: ${formatCurrency(product.profit)}`);
+        parts.push(`profit: ${money(product.profit)}`);
       }
       lines.push(parts.join(" | "));
     });
@@ -284,7 +306,7 @@ export function buildBriefing(data: BriefingData): string {
           ? ""
           : ` from ${formatNumber(hour.orders)} orders`;
       lines.push(
-        `${hour.hour}: ${formatCurrency(hour.revenue)} revenue${orders}`,
+        `${hour.hour}: ${money(hour.revenue)} revenue${orders}`,
       );
     });
     lines.push("");
@@ -296,14 +318,14 @@ export function buildBriefing(data: BriefingData): string {
     lines.push(`Best day by revenue: ${findBestDay(data.dailySales)}`);
     lines.push(`Slowest day by revenue: ${findSlowestDay(data.dailySales)}`);
     lines.push(
-      `Average daily revenue: ${formatCurrency(calcAvgDailyRevenue(data.dailySales))}`,
+      `Average daily revenue: ${money(calcAvgDailyRevenue(data.dailySales))}`,
     );
     data.dailySales.forEach((day) => {
       const orders =
         day.orders === undefined
           ? ""
           : ` from ${formatNumber(day.orders)} orders`;
-      lines.push(`${day.day}: ${formatCurrency(day.revenue)} revenue${orders}`);
+      lines.push(`${day.day}: ${money(day.revenue)} revenue${orders}`);
     });
     lines.push("");
   }
@@ -316,12 +338,12 @@ export function buildBriefing(data: BriefingData): string {
         ? tx.items
             .map(
               (item) =>
-                `${item.name} x${item.quantity} @ ${formatCurrency(item.unitPrice)}`,
+                `${item.name} x${item.quantity} @ ${money(item.unitPrice)}`,
             )
             .join(", ")
         : "no line items";
       lines.push(
-        `${tx.timestamp} | ${tx.invoiceName} | ${tx.amount} | ${tx.paymentMethod} | ${tx.status} | ${items}`,
+        `${tx.timestamp} | ${tx.invoiceName} | ${money(Number(tx.amount))} | ${tx.paymentMethod} | ${tx.status} | ${items}`,
       );
     });
     lines.push("");
@@ -346,7 +368,7 @@ export function buildBriefing(data: BriefingData): string {
       lines.push(
         `Top customer: ${customer.name} | visits: ${formatNumber(
           customer.visits,
-        )} | spent: ${formatCurrency(customer.totalSpent)}${
+        )} | spent: ${money(customer.totalSpent)}${
           customer.loyaltyTier ? ` | tier: ${customer.loyaltyTier}` : ""
         }`,
       );
@@ -361,7 +383,7 @@ export function buildBriefing(data: BriefingData): string {
           : "";
       const spentClause =
         customer.totalSpent !== undefined
-          ? ` | spent: ${formatCurrency(customer.totalSpent)}`
+          ? ` | spent: ${money(customer.totalSpent)}`
           : "";
       const bandClause =
         customer.spendLevel !== undefined
@@ -407,7 +429,7 @@ export function buildBriefing(data: BriefingData): string {
           ? ` | units sold: ${formatNumber(category.unitsSold)}`
           : "";
       lines.push(
-        `${category.category} | revenue: ${formatCurrency(
+        `${category.category} | revenue: ${money(
           category.revenue,
         )} | ${(category.percentOfTotal ?? 0).toFixed(
           1,

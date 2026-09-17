@@ -45,10 +45,11 @@ const MESSAGES: Record<AiInsightsErrorCode | string, string> = {
   // Own rate limits (429, per-business). `retryAfter` carries the wait when
   // the backend sent one — appended here so the user sees "try again in N s"
   // instead of a bare "too many".
-  INSIGHTS_RATE_LIMIT:
-    "Too many insight requests for this business just now — try again shortly.",
-  VERIFY_RATE_LIMIT:
-    "Too many key checks just now — wait a moment and try again.",
+  // No "try again" in either: the wait now reaches the client with every 429
+  // and is appended, and both together read "try again shortly. Try again in
+  // 40 s."
+  INSIGHTS_RATE_LIMIT: "Too many insight requests for this business just now.",
+  VERIFY_RATE_LIMIT: "Too many key checks just now.",
 
   // Model output problems — retrying is reasonable, the prompt was fine.
   GEMINI_MALFORMED_RESPONSE:

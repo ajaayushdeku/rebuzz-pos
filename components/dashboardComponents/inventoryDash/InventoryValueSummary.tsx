@@ -184,7 +184,7 @@ export default function InventoryValueSummary({
         {card.loading ? (
           <div className="h-6 w-24 animate-pulse rounded bg-gray-100" />
         ) : (
-          <p className="truncate text-xl font-bold tracking-tight tabular-nums text-gray-900 md:text-[22px]">
+          <p className="truncate text-xl font-bold tracking-wide tabular-nums text-gray-900 md:text-[22px]">
             {card.value}
           </p>
         )}

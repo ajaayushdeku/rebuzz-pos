@@ -22,7 +22,6 @@ import {
   CampaignAnalysisWrapper,
   PriceChangeImpactWrapper,
   TimeWiseProductAnalysisWrapper,
-  SalesRecommendationsAlertsWrapper,
 } from "@/components/componentWrappers/SalesRevenueWrapper";
 import HeaderActionButton from "@/components/ui/HeaderActionButton";
 import { Plus } from "lucide-react";
@@ -161,12 +160,6 @@ export default async function Page({
           </ChartErrorBoundary>
         </div>
 
-        {/* Recommendations & Alerts */}
-        <ChartErrorBoundary>
-          <Suspense fallback={<TableSkeleton />}>
-            <SalesRecommendationsAlertsWrapper />
-          </Suspense>
-        </ChartErrorBoundary>
       </div>
     </div>
   );

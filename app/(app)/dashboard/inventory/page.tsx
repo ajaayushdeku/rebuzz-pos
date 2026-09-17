@@ -13,7 +13,6 @@ import {
   InventoryAlertsWrapper,
   ProductCardGridWrapper,
   FastSlowMovingItemsWrapper,
-  AIMenuSuggestionsWrapper,
   StockMovementChartWrapper,
   InventoryMovementAnalysisWrapper,
   PredictiveRestockingSuggestionsWrapper,
@@ -131,8 +130,6 @@ export default function InventoryPage() {
           </ChartErrorBoundary>
         </div>
 
-        {/* Static suggestions — no data fetch. */}
-        <AIMenuSuggestionsWrapper />
       </div>
     </div>
   );

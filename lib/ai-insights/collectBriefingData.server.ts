@@ -12,6 +12,10 @@
  * drops its section from the briefing rather than killing the card.
  */
 
+import { cookies } from "next/headers";
+import {
+  CURRENCY_OPTIONS,
+} from "@/lib/config/currencies";
 import {
   getHourlySalesData,
   getRecentTransactions,
@@ -44,23 +48,36 @@ function daysAgo(n: number): Date {
 const ok = <T,>(r: PromiseSettledResult<T>, fallback: T): T =>
   r.status === "fulfilled" ? r.value : fallback;
 
+/** The business's currency, read from the session's currency cookie. */
+async function readCurrency(): Promise<BriefingData["currency"]> {
+  // The cookie stores the ISO code (see providers/CurrencyContext); the symbol
+  // comes from the shared option list. Anything unrecognised is omitted rather
+  // than guessed — a wrong symbol is worse than none.
+  try {
+    const code = (await cookies()).get("currency")?.value;
+    if (!code) return undefined;
+    const found = CURRENCY_OPTIONS.find((c) => c.code === code);
+    return found ? { code: found.code, symbol: found.symbol } : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function collectBriefingData(): Promise<BriefingData> {
   // ── Windows ────────────────────────────────────────────────────────────────
-  // The dashboard itself mixes windows (headline = 30 days, hourly/top items =
-  // today, weekly = 7 days, customers = month to date), so the briefing uses
-  // the same ones and says so in periodLabel rather than pretending one range
-  // covers everything.
+  // The story is about the day in progress: live today against yesterday's
+  // completed day. The remaining sections keep their dashboard windows
+  // (hourly/top items = today, weekly = 7 days, customers = month to date),
+  // and periodLabel says so rather than pretending one range covers everything.
   const now = new Date();
-  const periodEnd = fmtLocalDate(now);
-  const periodStart = fmtLocalDate(daysAgo(29));
-  const prevStart = fmtLocalDate(daysAgo(59));
-  const prevEnd = fmtLocalDate(daysAgo(30));
+  const today = fmtLocalDate(now);
+  const yesterday = fmtLocalDate(daysAgo(1));
 
-  // Headline stats: current and previous 30 days, for the comparison section.
+  // Headline stats: today (live) and yesterday, for the comparison section.
   // A failure here is fatal — see the file comment.
   const [stats, previous] = await Promise.all([
-    getStatsData(periodStart, periodEnd),
-    getStatsData(prevStart, prevEnd),
+    getStatsData(today, today),
+    getStatsData(yesterday, yesterday),
   ]);
 
   // Everything else is optional: settle independently, drop what fails.
@@ -157,11 +174,19 @@ export async function collectBriefingData(): Promise<BriefingData> {
     : undefined;
 
   return {
-    periodStart,
-    periodEnd,
+    periodStart: today,
+    periodEnd: today,
     periodLabel:
-      "Headline stats: last 30 days · hourly pattern and top products: today · daily trend: last 7 days · categories: last 365 days · customers: month to date",
+      "Headline stats: live today (so far), compared with yesterday's completed day · hourly pattern and top products: today · daily trend: last 7 days · categories: last 365 days · customers: month to date",
     viewMode: "live",
+    // Assigned under its own key, not spread. `readCurrency` returns
+    // `{ code, symbol }`, and spreading it put those two fields on the top
+    // level of the briefing, where nothing reads them — `currency` stayed
+    // undefined on every request, so the builder never prefixed a symbol and
+    // the model wrote bare numbers, the exact outcome the currency handling
+    // exists to prevent. TypeScript let it through because excess-property
+    // checks do not apply to spreads.
+    currency: await readCurrency(),
     stats: {
       totalSales: stats.totalSales.value,
       totalOrders: stats.totalOrders.value,

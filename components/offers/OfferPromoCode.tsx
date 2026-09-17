@@ -20,7 +20,7 @@ import { productLabel } from "@/lib/productVariants";
 import OfferStepCard from "./OfferStepCard";
 import { dealSummary, offerLink } from "./offerDealConfig";
 import { useLoyaltyTiers } from "@/hooks/useLoyaltyTiers";
-import { festivalById } from "./festivals";
+import { offerOccasion } from "./festivals";
 
 /**
  * Step 4 — the code customers type at the till, and a plain-English read-back
@@ -72,7 +72,7 @@ export default function OfferPromoCode() {
     URL.revokeObjectURL(url);
   };
 
-  const festival = festivalById(form.festival);
+  const festival = offerOccasion(form.festival, form.customFestival);
 
   /**
    * The occasion, then the discount.

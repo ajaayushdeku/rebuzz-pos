@@ -13,7 +13,8 @@ import { FESTIVALS } from "@/components/offers/festivals";
  * matched, and every value is validated here before it reaches the form.
  */
 
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+// Monday first, matching the order step 3 shows and saves days in.
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const ACTIVE_HOURS = ["all-day", "happy", "lunch", "evening"];
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -100,7 +101,7 @@ Rules:
 - Pick festivalId only when the description clearly refers to that occasion. Otherwise return an empty string.
 - Do NOT calculate dates for a festival. Leave startDate and endDate empty whenever festivalId is set — the application knows each festival's dates.
 - Only fill startDate/endDate when the description gives explicit calendar dates and no festival applies.
-- repeatingDays uses exactly: Sun, Mon, Tue, Wed, Thu, Fri, Sat. In Nepal the weekend is Friday and Saturday; "weekdays" means Sun to Thu.
+- repeatingDays uses exactly: Mon, Tue, Wed, Thu, Fri, Sat, Sun. "Weekdays" means Mon to Fri; "weekend" means Sat and Sun.
 - Leave repeatingDays empty when the offer should run every day.
 - startTime/endTime are 24-hour HH:MM, empty when the offer runs all day.
 - activeHours is one of all-day, happy, lunch, evening.

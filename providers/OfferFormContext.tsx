@@ -24,10 +24,7 @@ export type UsesPerCustomer = "unlimited" | "once" | "limit";
  * than by what is on the bill.
  */
 export type CustomerAudience =
-  | "all"
-  | "first-time"
-  | "loyalty-tier"
-  | "birthday";
+  "all" | "first-time" | "loyalty-tier" | "birthday";
 export type FestivalTab = "all" | "nepali" | "hindu" | "intl";
 export type ActiveHours = "all-day" | "happy" | "lunch" | "evening";
 
@@ -87,7 +84,15 @@ export interface OfferFormState {
   endTime: string;
 
   sendTriggers: string[];
+  /** Id of a festival picked from the list, or "" when none is. */
   festival: string;
+  /**
+   * An occasion the merchant named themselves — a store anniversary, a local
+   * fair. Only one of this and `festival` is ever set: an offer runs for one
+   * occasion, and holding both would leave the preview and the promo code to
+   * guess which one was meant.
+   */
+  customFestival: string;
   festivalTab: FestivalTab;
   activeHours: ActiveHours;
   channels: string[];
@@ -124,6 +129,7 @@ const INITIAL_STATE: OfferFormState = {
   endTime: "",
   sendTriggers: [],
   festival: "",
+  customFestival: "",
   festivalTab: "all",
   activeHours: "all-day",
   channels: [],

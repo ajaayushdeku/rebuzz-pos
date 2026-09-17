@@ -25,6 +25,12 @@ const AI_SERVICE_URL = process.env.AI_SERVICE_URL;
  */
 
 /** Mirrors MAX_BRIEFING_CHARS in the service; refusing early saves a round trip. */
+
+/** Passes the service's Retry-After through, for any client reading headers. */
+function retryAfterHeader(res: Response): HeadersInit | undefined {
+  const value = res.headers.get("retry-after");
+  return value ? { "Retry-After": value } : undefined;
+}
 const MAX_BRIEFING_CHARS = 16_000;
 
 export async function POST(req: NextRequest) {
@@ -94,8 +100,15 @@ export async function POST(req: NextRequest) {
       {
         error: json?.error ?? "Request failed",
         raw: json?.raw ?? undefined,
+        // Forwarded on a 429. The service sends the wait in the body, and the
+        // client turns it into "try again in N s" — but only if it arrives.
+        // Rebuilding the body without it made that sentence unreachable.
+        retryAfter: json?.retryAfter ?? undefined,
       },
-      { status: res.status },
+      {
+        status: res.status,
+        headers: retryAfterHeader(res),
+      },
     );
   }
 

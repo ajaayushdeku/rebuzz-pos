@@ -126,3 +126,35 @@ export const FESTIVALS: Festival[] = [
 export function festivalById(id: string): Festival | undefined {
   return FESTIVALS.find((f) => f.id === id);
 }
+
+/** The longest stem a typed occasion contributes to a promo code. */
+const CUSTOM_CODE_MAX = 10;
+
+/**
+ * The occasion an offer runs for: a festival picked from the list, or one the
+ * merchant typed. Undefined when there is neither.
+ *
+ * Shared by the phone preview and the promo code so a typed event reads the
+ * same in both. A typed name gets a generic icon and a code stem made from its
+ * letters and digits, capped short for the reason the list's own codes are
+ * written out short: a code is read aloud and typed at a till. A name with no
+ * Latin letters or digits — "दशैं" — has no stem to offer, and falls back to
+ * the plain one.
+ */
+export function offerOccasion(
+  festivalId: string,
+  customName: string,
+): Pick<Festival, "icon" | "label" | "code"> | undefined {
+  const picked = festivalId ? festivalById(festivalId) : undefined;
+  if (picked) return picked;
+
+  const label = customName.trim();
+  if (!label) return undefined;
+
+  const code = label
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, CUSTOM_CODE_MAX);
+
+  return { icon: "🎉", label, code: code || "OFFER" };
+}

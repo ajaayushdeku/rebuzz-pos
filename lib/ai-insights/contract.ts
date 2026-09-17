@@ -32,6 +32,21 @@ export interface BriefingData {
   periodLabel: string;           // Human readable: "Last 7 days", "This month", "Today"
   viewMode: "live" | "yesterday"; // Whether showing live data or yesterday's analysis
   
+  /**
+   * The business's currency, when the browser reports one.
+   *
+   * The cards render the model's text, so the symbol must be part of the
+   * briefing: absent it, Gemini writes bare numbers. Optional — a session
+   * without the cookie (or a code the list no longer knows) simply omits it
+   * and the model stays quiet about currency.
+   */
+  currency?: {
+    /** ISO code, e.g. "NPR". */
+    code: string;
+    /** Native symbol, e.g. "रू". */
+    symbol: string;
+  };
+
   // Headline statistics (from OverviewStatBoxGrid)
   stats: {
     totalSales: number;          // Total revenue for period
@@ -95,7 +110,7 @@ export interface BriefingData {
   // Recent transactions (from RecentTransactions component)
   recentTransactions: Array<{
     id: string;
-    invoiceName: string;         // Customer name from invoice
+    invoiceName: string;         // The ticket's name, from `bill.ticketName` — not a customer field
     amount: string;              // Amount as string (e.g., "55.50")
     paymentMethod: string;       // "Cash", "Card", etc.
     items: Array<{

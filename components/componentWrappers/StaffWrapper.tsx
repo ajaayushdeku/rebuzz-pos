@@ -11,7 +11,6 @@ import {
   getShiftAnalysisData,
   fetchAllShifts,
 } from "@/services/dashboardServices/apiStaff";
-import StaffingRecommendations from "../dashboardComponents/staffDash/StaffingRecommendations";
 
 // const RANGE_OPTIONS: { label: string; value: string }[] = [
 //   { label: "Today", value: "today" },
@@ -104,8 +103,4 @@ export const LatestShiftsWrapper = async ({
       endDate={endDate}
     />
   );
-};
-
-export const StaffingRecommendationsWrapper = () => {
-  return <StaffingRecommendations />;
 };

@@ -15,7 +15,13 @@ import {
 import { GEMINI_STROKE } from "./googlePalette";
 import GeminiGradientDefs from "./GeminiGradientDefs";
 import { ComponentHeader } from "@/components/ComponentHeader";
-import { useAiKeyStatus, useRemoveAiKey, useSaveAiKey } from "@/hooks/useAiKey";
+import {
+  useAiKeyStatus,
+  useAiModels,
+  useRemoveAiKey,
+  useSaveAiKey,
+  useUpdateAiModel,
+} from "@/hooks/useAiKey";
 
 /**
  * Add, replace or remove the business's own Gemini API key.
@@ -36,6 +42,15 @@ export default function GeminiKeyForm() {
 
   const configured = status?.configured ?? false;
   const actionError = save.error ?? remove.error;
+
+  // The selector only exists once a key is stored: the model list is fetched
+  // from Google with the stored key, so there is nothing to ask about — and
+  // PATCH would answer 404 — without one. Switching a model never touches the
+  // key itself.
+  const models = useAiModels(configured);
+  const updateModel = useUpdateAiModel();
+  const currentModel = status?.model ?? null;
+  const selectableModels = models.data?.models ?? [];
 
   const handleSave = () => {
     const key = apiKey.trim();
@@ -155,6 +170,85 @@ export default function GeminiKeyForm() {
                 <Trash2 className="h-3.5 w-3.5" />
                 Remove
               </button>
+            )}
+          </div>
+        )}
+
+        {/* Model selector — only when a key is stored. The options are the
+            models Google reports this key can actually call, fetched with the
+            stored credential; there is nothing to ask about otherwise. */}
+        {configured && (
+          <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3">
+            <div className="flex items-center justify-between gap-2">
+              <label
+                htmlFor="gemini-model"
+                className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.06em] text-gray-400"
+              >
+                Model
+              </label>
+              {models.isFetching && (
+                <span className="mb-1.5 flex items-center gap-1 text-[11px] text-gray-400">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Loading models…
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2.5">
+              <Sparkles
+                size={15}
+                strokeWidth={1.75}
+                stroke={GEMINI_STROKE}
+                aria-hidden
+                className="pointer-events-none shrink-0"
+              />
+              <select
+                id="gemini-model"
+                value={currentModel ?? ""}
+                onChange={(e) => {
+                  const model = e.target.value;
+                  if (!model || model === currentModel) return;
+                  updateModel.mutate(model);
+                }}
+                disabled={updateModel.isPending || selectableModels.length === 0}
+                className="h-9 w-full cursor-pointer rounded-lg border border-gray-200 bg-white px-2.5 text-[13px] font-medium text-gray-800 outline-none transition focus:border-[#4285F4] focus:ring-2 focus:ring-[#4285F4]/20 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {/* The stored model stays selectable even when Google no longer
+                    reports it, so the selector never shows a value the user
+                    cannot see or silently clobber. */}
+                {currentModel && !selectableModels.includes(currentModel) && (
+                  <option value={currentModel}>{currentModel} (current)</option>
+                )}
+                {selectableModels.map((model) => (
+                  <option key={model} value={model}>
+                    {model}
+                  </option>
+                ))}
+              </select>
+              {updateModel.isPending && (
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-gray-400" />
+              )}
+            </div>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-gray-400">
+              AI features run on this model. Changing it does not touch your
+              key.
+            </p>
+            {models.error && !updateModel.error && (
+              <p className="mt-1.5 flex items-start gap-1.5 text-xs text-amber-600">
+                <TriangleAlert className="mt-px h-3.5 w-3.5 shrink-0" />
+                <span>{(models.error as Error).message}</span>
+              </p>
+            )}
+            {updateModel.error && (
+              <p className="mt-1.5 flex items-start gap-1.5 text-xs text-red-500">
+                <TriangleAlert className="mt-px h-3.5 w-3.5 shrink-0" />
+                <span>{(updateModel.error as Error).message}</span>
+              </p>
+            )}
+            {updateModel.isSuccess && !updateModel.error && (
+              <p className="mt-1.5 flex items-center gap-1.5 text-xs text-green-600">
+                <Check className="h-3.5 w-3.5 shrink-0" />
+                Model updated.
+              </p>
             )}
           </div>
         )}

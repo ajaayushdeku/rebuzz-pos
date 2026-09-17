@@ -10,7 +10,6 @@ import InventoryValueSummary from "@/components/dashboardComponents/inventoryDas
 import InventoryAlerts from "@/components/dashboardComponents/inventoryDash/InventoryAlerts";
 import ProductCardGrid from "@/components/dashboardComponents/inventoryDash/ProductCardGrid";
 import FastSlowMovingItems from "@/components/dashboardComponents/inventoryDash/FastSlowMovingItems";
-import AIMenuSuggestions from "@/components/dashboardComponents/inventoryDash/AIMenuSuggestions";
 import StockMovementChart from "@/components/dashboardComponents/inventoryDash/StockMovementChart";
 import InventoryMovementAnalysis from "@/components/dashboardComponents/inventoryDash/InventoryMovementAnalysis";
 import PredictiveRestockingSuggestions from "@/components/dashboardComponents/inventoryDash/PredictiveRestockingSuggestions";
@@ -61,10 +60,6 @@ export const FastSlowMovingItemsWrapper = () => {
   const { data: inventory } = useInventorySuspenseQuery();
 
   return <FastSlowMovingItems items={sales} inventory={inventory} />;
-};
-
-export const AIMenuSuggestionsWrapper = () => {
-  return <AIMenuSuggestions />;
 };
 
 export const StockMovementChartWrapper = () => {

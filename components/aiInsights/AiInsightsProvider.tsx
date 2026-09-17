@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { createContext, useContext, useMemo } from "react";
 import type { ReactNode } from "react";
 
 import { useAiInsights } from "@/hooks/useAiInsights";
@@ -51,10 +44,10 @@ export function useAiInsightsResult(): AiInsightsState {
  * the same business — asking the model twice would double the spend and could
  * make the two cards disagree.
  *
- * Auto-runs once on mount, deliberately not on refetch/reconnect: this is a
- * mutation rather than a query for exactly that reason (see useAiInsights).
- * The ref guard keeps React 18 StrictMode's double-mounted effects from
- * spending a second real call in development.
+ * A generation is reused for a while rather than made on every mount; the
+ * window and the reasoning live in `useAiInsights`. React Query also
+ * de-duplicates the request, so StrictMode's double-mounted effects in
+ * development cannot spend a second call — the job the ref guard used to do.
  */
 export function AiInsightsProvider({
   briefingData,
@@ -63,45 +56,43 @@ export function AiInsightsProvider({
   briefingData: BriefingData;
   children: ReactNode;
 }) {
-  const mutation = useAiInsights();
   // The briefing is assembled on the client so the payload stays inspectable
   // in devtools, and so the debug console output (gated by the ai-insights-debug
   // localStorage flag) is visible where you are looking for it.
   const briefing = useMemo(() => buildBriefing(briefingData), [briefingData]);
-  const started = useRef(false);
-  const [tick, setTick] = useState(0);
+  const query = useAiInsights("overview", briefing);
 
-  useEffect(() => {
-    if (started.current) return;
-    started.current = true;
-    mutation.mutate(briefing);
-    // Runs once per mount, plus on explicit regenerate() below.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [briefing, tick]);
-
+  // An explicit request, so it bypasses the reuse window. `cancelRefetch: false`
+  // makes a second click while one is running join that call instead of
+  // cancelling it: cancelling only stops the browser waiting, and Gemini would
+  // still bill the abandoned request.
   const regenerate = () => {
-    started.current = true;
-    setTick((t) => t + 1);
-    mutation.mutate(briefing);
+    void query.refetch({ cancelRefetch: false });
   };
 
   const state: AiInsightsState = {
     briefingData,
-    status: mutation.isPending
+    // Loading until there is something to show. The old mapping reported
+    // "success" for the idle moment before the first request went out, so
+    // both cards briefly rendered their empty state — "No insights for this
+    // period yet" — on every visit, before switching to a spinner.
+    status: query.isFetching
       ? "loading"
-      : mutation.isError
+      : query.isError
         ? "error"
-        : "success",
+        : query.data
+          ? "success"
+          : "loading",
     // The envelope types insights as `Response | string` because the service
     // can technically receive raw prose; the route always sends the schema,
     // and the client already guards that case, so narrow to the object here.
     data:
-      mutation.data && typeof mutation.data.insights !== "string"
-        ? mutation.data.insights
+      query.data && typeof query.data.insights !== "string"
+        ? query.data.insights
         : undefined,
-    error: mutation.error ?? undefined,
-    model: mutation.data?.model,
-    generatedAt: mutation.data?.generatedAt,
+    error: query.error ?? undefined,
+    model: query.data?.model,
+    generatedAt: query.data?.generatedAt,
     regenerate,
   };
 

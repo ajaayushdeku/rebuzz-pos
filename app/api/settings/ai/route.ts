@@ -80,6 +80,10 @@ async function forward(
         // Present when the model was the problem: the names this key can
         // actually use, so the message can name them instead of guessing.
         available: json?.available ?? undefined,
+        // Forwarded on a 429. The service sends the wait in the body, and the
+        // client turns it into "try again in N s" — but only if it arrives.
+        // Rebuilding the body without it made that sentence unreachable.
+        retryAfter: json?.retryAfter ?? undefined,
       },
       { status: res.status },
     );

@@ -31,6 +31,7 @@ import { audiencePhrase, offerCopy, offerLink } from "./offerDealConfig";
 import QRCode from "react-qr-code";
 import { useLoyaltyTiers } from "@/hooks/useLoyaltyTiers";
 import { toBsLabel } from "@/lib/nepaliDate";
+import { offerOccasion } from "./festivals";
 
 /** The order a Rs-savings example is worked against. */
 const SAMPLE_ORDER = 1000;
@@ -174,6 +175,12 @@ export default function OfferPhonePreview() {
     currency: currency.symbol,
   });
 
+  // The occasion the offer is tied to, named on the card so a customer knows
+  // why the deal exists and that it ends with the festival — whether it was
+  // picked from the list or typed in. An id the list no longer knows shows
+  // nothing rather than a raw id.
+  const festival = offerOccasion(form.festival, form.customFestival);
+
   // Printed on its own line rather than folded into the headline, so a
   // customer sees who the offer is for before trying to redeem it.
   const audienceLine = audiencePhrase({
@@ -273,6 +280,12 @@ export default function OfferPhonePreview() {
               <p className="mt-3 text-lg font-bold leading-snug text-white">
                 {headline}
               </p>
+              {festival && (
+                <p className="mt-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-white">
+                  <span aria-hidden>{festival.icon}</span>
+                  Runs during {festival.label}
+                </p>
+              )}
               {audienceLine && (
                 <p className="mt-1.5 text-[11px] font-medium text-white/80">
                   {audienceLine}

@@ -38,9 +38,21 @@ const MESSAGES: Record<string, string> = {
   AUTH_INVALID: "Your session has expired — sign in again.",
   AUTH_UPSTREAM_UNAVAILABLE:
     "Couldn't verify your account just now. Try again in a moment.",
+  // Codes the service sends that had no sentence, so the form printed the
+  // code itself — "VERIFY_RATE_LIMIT" in red under a dropdown.
+  // No "try again" here: the wait arrives with every 429 and is appended.
+  VERIFY_RATE_LIMIT: "Too many checks with Google just now.",
+  KEY_UNREADABLE:
+    "Your saved key can't be read any more. Enter it again to replace it.",
+  NOT_CONFIGURED: "Save an API key first.",
+  NOTHING_TO_UPDATE: "Nothing changed.",
 };
 
-function toMessage(code: unknown, available?: unknown): string {
+function toMessage(
+  code: unknown,
+  available?: unknown,
+  retryAfter?: unknown,
+): string {
   if (typeof code !== "string") return "Something went wrong.";
 
   // A model failure is only actionable if the alternatives are named.
@@ -52,7 +64,19 @@ function toMessage(code: unknown, available?: unknown): string {
     return `${MESSAGES[code]} Available to your key: ${available.join(", ")}.`;
   }
 
-  return MESSAGES[code] ?? code;
+  const base = MESSAGES[code] ?? code;
+
+  // A rate limit is only actionable if it says how long. The service sends the
+  // wait in seconds; anything that is not a positive finite number is ignored.
+  if (
+    typeof retryAfter === "number" &&
+    Number.isFinite(retryAfter) &&
+    retryAfter > 0
+  ) {
+    return `${base} Try again in ${Math.ceil(retryAfter)} s.`;
+  }
+
+  return base;
 }
 
 const EMPTY: AiKeyStatus = {
@@ -65,7 +89,7 @@ const EMPTY: AiKeyStatus = {
 export const fetchAiKeyStatus = async (): Promise<AiKeyStatus> => {
   const res = await fetch("/api/settings/ai", { cache: "no-store" });
   const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(toMessage(json?.error, json?.available));
+  if (!res.ok) throw new Error(toMessage(json?.error, json?.available, json?.retryAfter));
   return json?.data ?? EMPTY;
 };
 
@@ -76,7 +100,7 @@ export const saveAiKey = async (apiKey: string): Promise<AiKeyStatus> => {
     body: JSON.stringify({ apiKey }),
   });
   const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(toMessage(json?.error, json?.available));
+  if (!res.ok) throw new Error(toMessage(json?.error, json?.available, json?.retryAfter));
   return json?.data ?? EMPTY;
 };
 
@@ -86,4 +110,45 @@ export const removeAiKey = async (): Promise<void> => {
     const json = await res.json().catch(() => ({}));
     throw new Error(toMessage(json?.error));
   }
+};
+
+export interface AiModelList {
+  models: string[];
+  current: string | null;
+}
+
+/**
+ * The models the stored key can actually call.
+ *
+ * The backend answers 404 NOT_CONFIGURED when no key is saved, so this throws
+ * the same sentence the status screen shows — and the UI simply never calls it
+ * unless a key is configured.
+ */
+export const fetchAiModels = async (): Promise<AiModelList> => {
+  const res = await fetch("/api/settings/ai/models", { cache: "no-store" });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(toMessage(json?.error, json?.available, json?.retryAfter));
+  return (
+    json?.data ?? {
+      models: [],
+      current: null,
+    }
+  );
+};
+
+/**
+ * Switch the model the business's stored key runs against.
+ *
+ * Uses the existing PATCH on /api/settings/ai: the key stays exactly as
+ * stored, only the `gemini.model` attribute it points at changes.
+ */
+export const updateAiModel = async (model: string): Promise<AiKeyStatus> => {
+  const res = await fetch("/api/settings/ai", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ model }),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(toMessage(json?.error, json?.available, json?.retryAfter));
+  return json?.data ?? EMPTY;
 };

@@ -2,6 +2,8 @@ import { PackageCheck, Pin, PackagePlus } from "lucide-react";
 import { InventoryItem } from "@/services/apiInventory";
 import { MergedSalesItem } from "@/services/apiInventory";
 import { ComponentHeader } from "@/components/ComponentHeader";
+import { nameTokens } from "@/lib/salesVelocity";
+import { formatVariantName } from "@/utils/helper";
 
 type Priority = "High" | "Medium" | "Low";
 
@@ -12,19 +14,98 @@ type Suggestion = {
   reason: string;
 };
 
+/** One thing that holds stock: a plain product, or one variant of a product. */
+type StockUnit = {
+  name: string;
+  inStock: number;
+  lowStock: number;
+  /** Units sold in the sales window, 0 when no sales row matched. */
+  unitsSold: number;
+};
+
+/**
+ * Every stock-holding unit in the inventory, with its sales.
+ *
+ * A product with variants keeps its stock on the variants, and its own
+ * `inStock` reads 0. Evaluating the product row therefore flagged every such
+ * product as below threshold — a "restock" suggestion for something with
+ * shelves full of each variant — while the variants that actually were low
+ * never appeared. Each variant is evaluated on its own stock instead, the
+ * same way the stock alerts and the product grid on this page already do.
+ *
+ * Sales are matched by name tokens, the rule the product grid uses, so
+ * "Momo [Buff]", "Momo (buff)" and "Momo - Buff" all find the Buff variant's
+ * row and the two panels cannot disagree about what sold. Rows that spell the
+ * same item differently are summed.
+ *
+ * When the sales report gives only a product-level row, it is not handed to
+ * each variant. That total covers every variant, so copying it would multiply
+ * the product's demand by its variant count and flag them all as fast movers.
+ * Such variants are judged on their stock threshold alone.
+ */
+function stockUnits(
+  inventory: InventoryItem[],
+  sales: MergedSalesItem[],
+): StockUnit[] {
+  const soldByTokens = new Map<string, number>();
+  for (const row of sales) {
+    const key = nameTokens(row.name);
+    soldByTokens.set(key, (soldByTokens.get(key) ?? 0) + row.count);
+  }
+  const soldFor = (name: string) => soldByTokens.get(nameTokens(name)) ?? 0;
+
+  const units: StockUnit[] = [];
+
+  for (const item of inventory) {
+    // A product the business does not count has no stock to run out of, and
+    // neither do its variants: their figures only mean something when the
+    // product is tracked.
+    if (!item.usesStocks) continue;
+
+    const variants = item.variants ?? [];
+
+    if (variants.length === 0) {
+      units.push({
+        name: item.name,
+        inStock: item.inStock,
+        lowStock: item.lowStock,
+        unitsSold: soldFor(item.name),
+      });
+      continue;
+    }
+
+    for (const variant of variants) {
+      // A variant switched off is not being sold, so its empty shelf is not a
+      // gap to fill.
+      if (!variant.isAvailable) continue;
+
+      const name = formatVariantName(item.name, variant.optionValues);
+      // A variant with no option values carries the bare product name, whose
+      // sales row is the whole product's. That is only this variant's own
+      // figure when it is the product's only variant.
+      const hasOwnName =
+        variant.optionValues.length > 0 || variants.length === 1;
+
+      units.push({
+        name,
+        inStock: variant.inStock,
+        lowStock: variant.lowStock,
+        unitsSold: hasOwnName ? soldFor(name) : 0,
+      });
+    }
+  }
+
+  return units;
+}
+
 function deriveSuggestions(
   inventory: InventoryItem[],
   sales: MergedSalesItem[],
 ): Suggestion[] {
   const suggestions: Suggestion[] = [];
 
-  inventory.forEach((item) => {
-    if (!item.usesStocks) return;
-
-    const salesData = sales.find(
-      (s) => s.name.toLowerCase() === item.name.toLowerCase(),
-    );
-    const dailyVelocity = salesData ? salesData.count / 7 : 0;
+  stockUnits(inventory, sales).forEach((item) => {
+    const dailyVelocity = item.unitsSold / 7;
     const daysOfStock = dailyVelocity > 0 ? item.inStock / dailyVelocity : 999;
 
     if (item.inStock <= item.lowStock) {
@@ -32,12 +113,21 @@ function deriveSuggestions(
       const restock = Math.ceil(item.lowStock * 3 - item.inStock);
       suggestions.push({
         name: item.name,
-        suggestedRestock: restock,
+        // At least one. With no threshold set and nothing on hand, the target
+        // works out to zero and the row read "+0 units" beside an empty shelf.
+        // Variants often have no threshold, so this became common once they
+        // were evaluated.
+        suggestedRestock: Math.max(restock, 1),
         priority: daysOfStock < 2 ? "High" : "Medium",
+        // Empty first: with sales and nothing on hand, the run-out estimate
+        // is zero hours, and "could run out in 0h" describes a shelf that
+        // already has.
         reason:
-          daysOfStock < 2
-            ? `Below safety stock – could run out in ${Math.round(daysOfStock * 24)}h at current demand`
-            : `Below minimum threshold (${item.lowStock} units)`,
+          item.inStock <= 0
+            ? "Out of stock"
+            : daysOfStock < 2
+              ? `Below safety stock – could run out in ${Math.round(daysOfStock * 24)}h at current demand`
+              : `Below minimum threshold (${item.lowStock} units)`,
       });
     } else if (dailyVelocity > 0 && daysOfStock < 5) {
       // Running low relative to velocity
@@ -48,11 +138,7 @@ function deriveSuggestions(
         priority: daysOfStock < 3 ? "High" : "Medium",
         reason: `At current sales velocity, stock lasts ~${Math.round(daysOfStock)} days`,
       });
-    } else if (
-      salesData &&
-      salesData.count > 15 &&
-      item.inStock < item.lowStock * 2
-    ) {
+    } else if (item.unitsSold > 15 && item.inStock < item.lowStock * 2) {
       // Fast mover approaching low
       suggestions.push({
         name: item.name,
@@ -156,7 +242,8 @@ export default function PredictiveRestockingSuggestions({
                   </td>
 
                   <td className="py-3 text-center font-semibold text-gray-700">
-                    +{item.suggestedRestock} units
+                    +{item.suggestedRestock}{" "}
+                    {item.suggestedRestock === 1 ? "unit" : "units"}
                   </td>
                   <td className="py-3 pl-4">
                     <span
