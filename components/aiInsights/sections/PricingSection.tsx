@@ -7,9 +7,14 @@ import {
   ActionButton,
   Card,
   CardGrid,
+  CardHeader,
+  Chip,
   comingSoon,
   DismissButton,
+  EmojiTile,
   EmptySection,
+  Fact,
+  Facts,
   GenerateMoreButton,
   SectionHeader,
   useMoney,
@@ -32,11 +37,12 @@ export default function PricingSection({
         icon={BadgePercent}
         iconClassName="bg-emerald-50 text-emerald-600"
         title="Pricing Opportunities"
+        sample
         subtitle="Price moves suggested from demand sensitivity"
         actions={
           <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
             <GenerateMoreButton
-              textClassName="text-emerald-700"
+              textClassName="text-emerald-700 hover:bg-emerald-100 border-emerald-300 hover:border-emerald-400"
               onClick={onGenerate}
             />
           </div>
@@ -56,43 +62,45 @@ export default function PricingSection({
             const direction = raise ? "text-emerald-600" : "text-blue-600";
 
             return (
-              <Card key={item.id} className="gap-4">
+              <Card key={item.id}>
                 <DismissButton
                   label={item.name}
                   onClick={() => onDismiss(item.id)}
                 />
 
-                <div className="flex items-start gap-3 pr-6">
-                  <span className="text-2xl leading-none" aria-hidden>
-                    {item.icon}
-                  </span>
-                  <div>
-                    <h3 className="text-[14px] font-semibold text-gray-900">
-                      {item.name}
-                    </h3>
-                    <p className="mt-1 flex items-center gap-2 font-mono text-[13px]">
-                      <span className="text-gray-400 line-through">
-                        {money(item.currentPrice)}
-                      </span>
-                      <Arrow size={14} className={direction} aria-hidden />
-                      <span className={`font-semibold ${direction}`}>
-                        {money(item.suggestedPrice)}
-                      </span>
-                      <span className="sr-only">
-                        {raise ? "suggested increase" : "suggested decrease"}
-                      </span>
-                    </p>
-                  </div>
-                </div>
+                <CardHeader
+                  lead={<EmojiTile>{item.icon}</EmojiTile>}
+                  title={item.name}
+                >
+                  <Chip
+                    className={
+                      raise
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-blue-50 text-blue-700"
+                    }
+                  >
+                    <Arrow size={11} aria-hidden />
+                    {raise ? "Raise price" : "Lower price"}
+                  </Chip>
+                </CardHeader>
+
+                <Facts>
+                  <Fact label="Now" valueClassName="text-gray-400 line-through">
+                    {money(item.currentPrice)}
+                  </Fact>
+                  <Fact label="Suggested" valueClassName={direction}>
+                    {money(item.suggestedPrice)}
+                  </Fact>
+                </Facts>
 
                 <p className="text-[13px] leading-relaxed text-gray-600">
                   {item.description}
                 </p>
 
-                <div className="flex items-center justify-between">
-                  <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700">
+                <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-3">
+                  <Chip className="bg-emerald-50 text-emerald-700">
                     +{money(item.monthlyUplift)}/mo
-                  </span>
+                  </Chip>
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
                     {item.confidence}% confident
                   </span>

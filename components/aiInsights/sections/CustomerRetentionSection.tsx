@@ -1,6 +1,6 @@
 "use client";
 
-import { HeartHandshake, Lightbulb, Send } from "lucide-react";
+import { Coffee, HeartHandshake, Lightbulb, Send } from "lucide-react";
 
 import type {
   RetentionInsight,
@@ -10,9 +10,14 @@ import {
   ActionButton,
   Card,
   CardGrid,
+  CardHeader,
+  CardLabel,
+  Chip,
   comingSoon,
   DismissButton,
   EmptySection,
+  Fact,
+  Facts,
   GenerateMoreButton,
   SectionHeader,
   TipBox,
@@ -48,11 +53,12 @@ export default function CustomerRetentionSection({
         icon={HeartHandshake}
         iconClassName="bg-pink-50 text-pink-600"
         title="Customer Retention Radar"
+        sample
         subtitle="Regulars going quiet, and how to win them back"
         actions={
           <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
             <GenerateMoreButton
-              textClassName="text-pink-600"
+              textClassName="text-pink-700 hover:bg-pink-100 border-pink-300 hover:border-pink-400"
               onClick={onGenerate}
             />
           </div>
@@ -66,46 +72,42 @@ export default function CustomerRetentionSection({
           {items.map((item) => {
             const tone = STATUS[item.status];
             return (
-              <Card key={item.id} className="gap-3">
+              <Card key={item.id}>
                 <DismissButton
                   label={item.name}
                   onClick={() => onDismiss(item.id)}
                 />
 
-                <div className="flex items-center gap-3 pr-6">
-                  <span
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold ${tone.avatar}`}
-                    aria-hidden
-                  >
-                    {item.name.charAt(0).toUpperCase()}
+                <CardHeader
+                  lead={
+                    <span
+                      className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold ${tone.avatar}`}
+                      aria-hidden
+                    >
+                      {item.name.charAt(0).toUpperCase()}
+                    </span>
+                  }
+                  title={item.name}
+                >
+                  <Chip className={tone.pill}>{item.status}</Chip>
+                  <span className="text-[11px] text-gray-400">
+                    {item.profile}
                   </span>
-                  <div>
-                    <h3 className="text-[14px] font-semibold text-gray-900">
-                      {item.name}
-                    </h3>
-                    <p className="text-[11px] text-gray-400">{item.profile}</p>
-                  </div>
-                </div>
+                </CardHeader>
 
-                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-gray-500">
-                  <span
-                    className={`rounded px-1.5 py-0.5 font-bold ${tone.pill}`}
-                  >
-                    {item.status}
-                  </span>
-                  <span>
-                    Last visit {item.daysSinceVisit} days ago ·{" "}
+                <Facts>
+                  <Fact label="Last visit">{item.daysSinceVisit} days ago</Fact>
+                  <Fact label="Spend per visit">
                     {money(item.spendPerVisit)}
-                    /visit
-                  </span>
-                </p>
+                  </Fact>
+                </Facts>
 
-                <p className="text-[13px] text-gray-600">
-                  Usually orders:{" "}
-                  <span className="font-semibold text-gray-900">
+                <div>
+                  <CardLabel icon={Coffee}>Usually orders</CardLabel>
+                  <p className="text-[13px] font-semibold text-gray-900">
                     {item.usualOrder}
-                  </span>
-                </p>
+                  </p>
+                </div>
 
                 <TipBox icon={Lightbulb}>{item.tip}</TipBox>
 

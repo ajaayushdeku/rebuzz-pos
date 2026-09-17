@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, Gift, PackagePlus } from "lucide-react";
+import { CalendarClock, CalendarDays, Gift, PackagePlus } from "lucide-react";
 
 import type { AiSectionState } from "@/hooks/useAiSection";
 import {
@@ -15,7 +15,13 @@ import {
   AiSectionBody,
   Card,
   CardGrid,
+  CardHeader,
+  CardLabel,
+  Chip,
   DismissButton,
+  EmojiTile,
+  Fact,
+  Facts,
   GenerateMoreButton,
   SectionHeader,
   SectionRefreshButton,
@@ -36,6 +42,26 @@ function countdown(startDate: string, endDate: string): string | null {
   if (days === 0) return "Today";
   if (days === 1) return "Tomorrow";
   return `in ${days} days`;
+}
+
+/** "Sep 19", "Oct 17 – 23", "Nov 30 – Dec 2": short, and read in Nepal's calendar day. */
+function dateRange(start: string, end: string): string {
+  const parts = (iso: string) => {
+    const date = new Date(`${iso}T12:00:00Z`);
+    return {
+      month: date.toLocaleDateString("en-US", {
+        month: "short",
+        timeZone: "UTC",
+      }),
+      day: date.getUTCDate(),
+    };
+  };
+  const a = parts(start);
+  if (start === end) return `${a.month} ${a.day}`;
+  const b = parts(end);
+  return a.month === b.month
+    ? `${a.month} ${a.day} – ${b.day}`
+    : `${a.month} ${a.day} – ${b.month} ${b.day}`;
 }
 
 /** Who has the day off, in the words the holiday notice uses. */
@@ -80,7 +106,7 @@ export default function FestivalPrepSection({
             )}
             <SectionRefreshButton
               state={state}
-              textClassName="text-amber-700"
+              textClassName="text-amber-700 hover:bg-amber-100 border-amber-300 hover:border-amber-400"
             />
           </div>
         }
@@ -97,42 +123,38 @@ export default function FestivalPrepSection({
         <CardGrid>
           {shown.map((item) => {
             const when = countdown(item.startDate, item.endDate);
-            const range =
-              item.endDate === item.startDate
-                ? item.startDate
-                : `${item.startDate} → ${item.endDate}`;
+            const range = dateRange(item.startDate, item.endDate);
 
             return (
-              <Card key={item.id} className="gap-4">
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl leading-none" aria-hidden>
-                    {item.icon}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-[15px] font-semibold text-gray-900">
-                      {item.label}
-                    </h3>
-                    <p className="mt-0.5 text-xs text-gray-500">{range}</p>
-                    <p className="text-xs font-medium text-emerald-700">
-                      {item.bsLabel}
-                    </p>
-                    <p className="mt-0.5 text-[11px] text-gray-400">
-                      {observedBy(item)}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-1">
-                    {when && (
-                      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
-                        {when}
-                      </span>
-                    )}
-                    <DismissButton
-                      label={item.label}
-                      onClick={() => onDismiss(item.id)}
-                      className=""
-                    />
-                  </div>
-                </div>
+              <Card key={item.id}>
+                <DismissButton
+                  label={item.label}
+                  onClick={() => onDismiss(item.id)}
+                />
+
+                <CardHeader
+                  lead={
+                    <EmojiTile className="bg-amber-50">{item.icon}</EmojiTile>
+                  }
+                  title={item.label}
+                >
+                  {when && (
+                    <Chip className="bg-amber-50 text-amber-700">
+                      <CalendarClock size={11} aria-hidden />
+                      {when}
+                    </Chip>
+                  )}
+                  <Chip>{observedBy(item)}</Chip>
+                </CardHeader>
+
+                {/* Both calendars, each with its own label, rather than three
+                    loose lines of dates under the title. */}
+                <Facts>
+                  <Fact label="Dates">{range}</Fact>
+                  <Fact label="Nepali date" valueClassName="text-emerald-700">
+                    {item.bsLabel}
+                  </Fact>
+                </Facts>
 
                 <p className="text-[13px] leading-relaxed text-gray-600">
                   {item.description}
@@ -140,15 +162,17 @@ export default function FestivalPrepSection({
 
                 {item.stockUp.length > 0 && (
                   <div>
-                    <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
-                      <PackagePlus size={12} className="text-amber-600" />
+                    <CardLabel
+                      icon={PackagePlus}
+                      iconClassName="text-amber-600"
+                    >
                       Stock up on
-                    </p>
-                    <ul className="mt-1.5 flex flex-wrap gap-1.5">
+                    </CardLabel>
+                    <ul className="flex flex-wrap gap-1.5">
                       {item.stockUp.map((name) => (
                         <li
                           key={name}
-                          className="rounded-md border border-amber-100 bg-amber-50/60 px-2 py-0.5 text-[11px] text-amber-900"
+                          className="rounded-md border border-amber-100 bg-amber-50/60 px-2 py-1 text-[11px] text-amber-900"
                         >
                           {name}
                         </li>

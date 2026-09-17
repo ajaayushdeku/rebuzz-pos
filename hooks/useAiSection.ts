@@ -68,6 +68,16 @@ export function useAiSection<T>(section: AiSectionName) {
     /** First load failed; there is nothing on screen to keep. */
     isError: query.isError && !query.data,
     retry: () => void query.refetch({ cancelRefetch: false }),
+    /**
+     * Ask the server again, the same request "Try again" makes, and report how
+     * it went. Never `refresh`: the server answers from today's saved answer
+     * when there is one, so this only spends a call for a section that has
+     * none yet. `cancelRefetch: false` joins a request already running rather
+     * than starting a second.
+     */
+    reload: () => query.refetch({ cancelRefetch: false }),
+    /** Any request for this section is running, first load included. */
+    isFetching: query.isFetching,
     refresh: () => {
       // A second click while one is running would pay for a second answer.
       if (refreshing.current) return;

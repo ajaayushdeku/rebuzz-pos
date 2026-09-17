@@ -53,7 +53,10 @@ export default function SalesRecommendationsSection({
         subtitle={`Based on the last ${SALES_WINDOW_DAYS} days, compared with the ${SALES_WINDOW_DAYS} before`}
         actions={
           <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
-            <SectionRefreshButton state={state} textClassName="text-blue-600" />
+            <SectionRefreshButton
+              state={state}
+              textClassName="text-blue-700 hover:bg-blue-100 border-blue-300 hover:border-blue-400"
+            />
           </div>
         }
       />
@@ -78,7 +81,7 @@ export default function SalesRecommendationsSection({
               // app shell away to show empty space underneath.
               <li
                 key={item.id}
-                className="relative flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm"
+                className="relative flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 "
               >
                 <Icon
                   size={16}

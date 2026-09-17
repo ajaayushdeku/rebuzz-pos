@@ -24,8 +24,11 @@ import {
   AiSectionBody,
   Card,
   CardGrid,
+  CardHeader,
+  Chip,
   comingSoon,
   DismissButton,
+  EmojiTile,
   SectionHeader,
   SectionRefreshButton,
   TipBox,
@@ -70,7 +73,10 @@ export default function SlowItemsSection({
         subtitle={`Items selling slowly over the last ${SECTION_WINDOW_DAYS} days, and how to fix them`}
         actions={
           <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
-            <SectionRefreshButton state={state} textClassName="text-red-600" />
+            <SectionRefreshButton
+              state={state}
+              textClassName="text-red-600 hover:bg-red-100 border-red-300 hover:border-red-400"
+            />
           </div>
         }
       />
@@ -87,33 +93,26 @@ export default function SlowItemsSection({
           {items.map((item) => {
             const move = MOVES[item.move];
             return (
-              <Card key={item.id} className="gap-4">
+              <Card key={item.id}>
                 <DismissButton
                   label={item.name}
                   onClick={() => onDismiss(item.id)}
                 />
 
-                <div className="flex items-start gap-3 pr-6">
-                  <span className="text-2xl leading-none" aria-hidden>
-                    {item.icon}
+                <CardHeader
+                  lead={<EmojiTile>{item.icon}</EmojiTile>}
+                  title={item.name}
+                >
+                  <Chip className={SIGNAL_CLASS[item.kind]}>
+                    {item.kind === "drop" && (
+                      <ArrowDownRight size={11} aria-hidden />
+                    )}
+                    {item.signal}
+                  </Chip>
+                  <span className="text-[11px] text-gray-400">
+                    {item.context}
                   </span>
-                  <div>
-                    <h3 className="text-[14px] font-semibold text-gray-900">
-                      {item.name}
-                    </h3>
-                    <p className="mt-1 flex items-center gap-2 text-[11px]">
-                      <span
-                        className={`inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 font-bold ${SIGNAL_CLASS[item.kind]}`}
-                      >
-                        {item.kind === "drop" && (
-                          <ArrowDownRight size={11} aria-hidden />
-                        )}
-                        {item.signal}
-                      </span>
-                      <span className="text-gray-400">{item.context}</span>
-                    </p>
-                  </div>
-                </div>
+                </CardHeader>
 
                 <p className="text-[13px] leading-relaxed text-gray-600">
                   {item.description}

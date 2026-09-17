@@ -5,6 +5,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import {
   ArrowRight,
+  FlaskConical,
   RefreshCw,
   WandSparkles,
   X,
@@ -12,6 +13,11 @@ import {
 } from "lucide-react";
 
 import AiInsightsErrorState from "@/components/aiInsights/AiInsightsErrorState";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { AiSectionState } from "@/hooks/useAiSection";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatNumber } from "@/utils/helper";
@@ -42,12 +48,46 @@ export function comingSoon(action: string) {
   toast(`${action} is coming soon.`, { icon: "✨" });
 }
 
+/**
+ * Marks a section that still shows sample content instead of an AI answer.
+ *
+ * The connected sections and the sample ones look the same, and the sample
+ * cards name items, customers and prices that read as real. Without a mark, a
+ * merchant could act on advice about a customer they do not have. It goes
+ * once a section is generated from the business's own data.
+ */
+export function SampleDataBadge() {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        {/* tabIndex so the explanation is reachable by keyboard, as on
+            RangeBadge: a native `title` never shows for anyone tabbing. */}
+        <span
+          tabIndex={0}
+          className="inline-flex shrink-0 cursor-help items-center gap-1 rounded-full border border-dashed border-gray-300 bg-gray-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500 outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+        >
+          <FlaskConical size={10} aria-hidden />
+          Sample data
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" sideOffset={6} className="max-w-64">
+        <p className="font-semibold">Not connected to AI yet</p>
+        <p className="mt-1 leading-relaxed opacity-80">
+          These cards are examples of what this section will show. They are not
+          about your business, and its buttons are not wired up yet.
+        </p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 export function SectionHeader({
   icon: Icon,
   iconClassName,
   title,
   subtitle,
   actions,
+  sample = false,
 }: {
   icon: LucideIcon;
   /** Tile background and icon colour, e.g. "bg-red-50 text-red-600". */
@@ -55,6 +95,8 @@ export function SectionHeader({
   title: string;
   subtitle: string;
   actions?: ReactNode;
+  /** The section still shows sample content; see SampleDataBadge. */
+  sample?: boolean;
 }) {
   return (
     <div className="mb-4 flex relative gap-3 flex-col md:flex-row items-start md:items-center justify-between">
@@ -65,7 +107,10 @@ export function SectionHeader({
           <Icon size={17} />
         </div>
         <div>
-          <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+            {sample && <SampleDataBadge />}
+          </div>
           <p className="text-xs text-gray-500">{subtitle}</p>
         </div>
       </div>
@@ -95,7 +140,7 @@ export function GenerateMoreButton({
       onClick={onClick}
       disabled={busy}
       aria-busy={busy}
-      className={`inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-[13px] tracking-wide font-semibold shadow-sm  cursor-pointer transition-colors hover:bg-gray-50 disabled:cursor-wait disabled:opacity-70 ${textClassName}`}
+      className={`inline-flex items-center gap-2 rounded-lg border bg-white px-3 py-2 text-[11px] tracking-wide font-semibold   cursor-pointer transition-colors disabled:cursor-wait disabled:opacity-70 ${textClassName}`}
     >
       <Icon size={14} className={busy ? "animate-spin" : undefined} />
       <span className="hidden md:block"> {label}</span>
@@ -103,6 +148,14 @@ export function GenerateMoreButton({
   );
 }
 
+/**
+ * Every card on the page, with one rhythm inside it.
+ *
+ * The spacing lives here rather than on each card's parts. Cards used to set
+ * their own — `gap-3` on one, `mt-4` between blocks on another, nothing on a
+ * third — so the same kind of information sat at different distances on
+ * neighbouring cards, and the tight ones read as a cluster.
+ */
 export function Card({
   children,
   className = "",
@@ -112,10 +165,146 @@ export function Card({
 }) {
   return (
     <div
-      className={`relative flex flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm ${className}`}
+      className={`relative flex h-full flex-col gap-4 rounded-xl border border-gray-200 bg-white p-5 transition-shadow hover:shadow-md ${className}`}
     >
       {children}
     </div>
+  );
+}
+
+/**
+ * The top of a card: a leading visual, the title, and a row of chips under it.
+ *
+ * The right padding keeps the title clear of the corner controls (dismiss,
+ * shortlist); `reserve` widens it where there are two of them.
+ */
+export function CardHeader({
+  lead,
+  title,
+  children,
+  reserve = "pr-8",
+}: {
+  lead: ReactNode;
+  title: ReactNode;
+  /** Chips or a short line under the title. */
+  children?: ReactNode;
+  reserve?: string;
+}) {
+  return (
+    <div className={`flex items-start gap-3 ${reserve}`}>
+      <div className="shrink-0">{lead}</div>
+      <div className="min-w-0 flex-1">
+        <h3 className="text-[13px] font-semibold leading-snug text-gray-900">
+          {title}
+        </h3>
+        {children && (
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            {children}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** An emoji in a soft square, so icons of different shapes line up. */
+export function EmojiTile({
+  children,
+  className = "bg-gray-50",
+}: {
+  children: ReactNode;
+  /** Tile background, e.g. "bg-orange-50". */
+  className?: string;
+}) {
+  return (
+    <span
+      className={`flex h-10 w-10 items-center justify-center rounded-lg text-xl leading-none ${className}`}
+      aria-hidden
+    >
+      {children}
+    </span>
+  );
+}
+
+/** A small pill under a card title. */
+export function Chip({
+  children,
+  className = "border border-gray-200 text-gray-500",
+}: {
+  children: ReactNode;
+  /** Colours, e.g. "bg-violet-50 text-violet-700". */
+  className?: string;
+}) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${className}`}
+    >
+      {children}
+    </span>
+  );
+}
+
+const FACT_COLUMNS = {
+  2: "grid-cols-2",
+  3: "grid-cols-3",
+} as const;
+
+/**
+ * Figures in a row of labelled tiles.
+ *
+ * Each number gets its own box and its own name, instead of several figures
+ * sharing one line joined by dots — "Last visit 18 days ago · Rs 850/visit"
+ * made the reader work out where one fact ended and the next began.
+ */
+export function Facts({
+  children,
+  columns = 2,
+}: {
+  children: ReactNode;
+  columns?: keyof typeof FACT_COLUMNS;
+}) {
+  return <dl className={`grid gap-2 ${FACT_COLUMNS[columns]}`}>{children}</dl>;
+}
+
+export function Fact({
+  label,
+  children,
+  valueClassName = "text-gray-900",
+}: {
+  label: string;
+  children: ReactNode;
+  /** Colour of the figure, e.g. "text-emerald-700". */
+  valueClassName?: string;
+}) {
+  return (
+    <div className="min-w-0 rounded-lg bg-violet-100/60 px-3 py-2">
+      <dt className="truncate text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+        {label}
+      </dt>
+      <dd
+        className={`mt-0.5 break-words text-[13px] font-semibold leading-snug tabular-nums ${valueClassName}`}
+      >
+        {children}
+      </dd>
+    </div>
+  );
+}
+
+/** A small uppercase label over a group of chips: "Stock up on", "Built from". */
+export function CardLabel({
+  icon: Icon,
+  iconClassName = "text-gray-400",
+  children,
+}: {
+  icon: LucideIcon;
+  iconClassName?: string;
+  children: ReactNode;
+}) {
+  return (
+    <p className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+      <Icon size={12} className={iconClassName} aria-hidden />
+      {children}
+    </p>
   );
 }
 
@@ -211,7 +400,7 @@ export function ActionButton({
 /** Three across on wide screens, the grid every card section uses. */
 export function CardGrid({ children }: { children: ReactNode }) {
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {children}
     </div>
   );

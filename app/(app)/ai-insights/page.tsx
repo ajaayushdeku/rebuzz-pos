@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Sparkles } from "lucide-react";
+import toast from "react-hot-toast";
 
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import { comingSoon } from "@/components/aiInsights/parts";
@@ -41,6 +42,9 @@ import type { SlowItemInsight } from "@/lib/ai-insights/sections/slowItems";
  * while the data is sample data — persisting a dismissal of an invented card
  * would have nothing real to attach to.
  */
+/** Every section on the page, connected or not. */
+const TOTAL_SECTIONS = 8;
+
 export default function AIInsightPage() {
   const [dismissed, setDismissed] = useState<ReadonlySet<string>>(new Set());
   const [shortlisted, setShortlisted] = useState<ReadonlySet<string>>(
@@ -93,7 +97,70 @@ export default function AIInsightPage() {
     shortlisted.has(item.id),
   ).length;
 
+  // The sample sections' own buttons, until they are connected.
   const generate = () => comingSoon("Generating more insights");
+
+  // ── The banner's "Generate insights" ──
+  const liveSections = [
+    menuSuggestions,
+    slowItems,
+    hourPlaybook,
+    festivalPrep,
+    salesRecommendations,
+  ];
+  const [generating, setGenerating] = useState(false);
+
+  /**
+   * Loads every connected section again, the way each one's "Try again" does.
+   *
+   * Not a refresh: the server answers from today's saved answer where there
+   * is one, so pressing this costs nothing for a section already generated
+   * today, and one AI call for each section that is not. A section in the
+   * middle of its own Refresh is left alone, so the two cannot race.
+   */
+  const generateInsights = async () => {
+    if (generating) return;
+    setGenerating(true);
+    try {
+      const results = await Promise.all(
+        liveSections.map((section) =>
+          section.isRefreshing ? null : section.reload(),
+        ),
+      );
+      const settled = results.filter((r) => r !== null);
+      const failed = settled.filter((r) => r.isError).length;
+      const ok = settled.filter((r) => !r.isError && r.data);
+      const saved = ok.filter((r) => r.data?.cached).length;
+      const fresh = ok.filter(
+        (r) => r.data?.generatedAt && !r.data.cached,
+      ).length;
+
+      if (failed > 0) {
+        toast.error(
+          `${failed} of ${settled.length} sections couldn't load. Each one says why below.`,
+        );
+      } else {
+        const parts = [
+          saved > 0 && `${saved} from today's saved answers`,
+          fresh > 0 && `${fresh} newly generated`,
+        ].filter(Boolean);
+        toast.success(
+          `Insights are up to date${parts.length > 0 ? `: ${parts.join(", ")}` : ""}.`,
+        );
+      }
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const answered = liveSections
+    .map((section) => section.data)
+    .filter((data) => data?.generatedAt);
+  const lastUpdated = answered
+    .map((data) => data!.generatedAt!)
+    .sort()
+    .at(-1);
+  const savedAnswers = answered.filter((data) => data!.cached).length;
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
@@ -119,7 +186,14 @@ export default function AIInsightPage() {
           activeInsights={activeInsights}
           slowItems={slow.length}
           shortlisted={shortlistedCount}
-          onGenerate={generate}
+          liveSections={liveSections.length}
+          totalSections={TOTAL_SECTIONS}
+          lastUpdated={lastUpdated}
+          savedAnswers={savedAnswers}
+          isGenerating={
+            generating || liveSections.some((section) => section.isFetching)
+          }
+          onGenerate={() => void generateInsights()}
         />
 
         {/* One boundary per section, so a failure in one cannot blank the

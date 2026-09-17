@@ -15,7 +15,13 @@ import {
   AiSectionBody,
   Card,
   CardGrid,
+  CardHeader,
+  CardLabel,
+  Chip,
   DismissButton,
+  EmojiTile,
+  Fact,
+  Facts,
   EmptySection,
   SectionHeader,
   SectionRefreshButton,
@@ -102,7 +108,7 @@ export default function MenuSuggestionsSection({
               />
               <SectionRefreshButton
                 state={state}
-                textClassName="text-violet-600"
+                textClassName="text-violet-600 hover:bg-violet-100 border-violet-300 hover:border-violet-400"
               />
             </div>
           </div>
@@ -152,64 +158,62 @@ export default function MenuSuggestionsSection({
                     />
                   </div>
 
-                  <div className="flex items-start gap-3 pr-14">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-xl">
-                      {item.icon}
-                    </span>
-                    <div>
-                      <h3 className="text-[15px] font-semibold text-gray-900">
-                        {item.title}
-                      </h3>
-                      <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                        <span className="rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-semibold text-violet-700">
-                          {KIND_LABEL[item.kind]}
-                        </span>
-                        <span className="rounded-full border border-gray-200 px-2 py-0.5 text-[11px] text-gray-500">
-                          {item.difficulty}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                  <CardHeader
+                    lead={
+                      <EmojiTile className="bg-orange-50">
+                        {item.icon}
+                      </EmojiTile>
+                    }
+                    title={item.title}
+                    reserve="pr-14"
+                  >
+                    <Chip className="bg-violet-50 text-violet-700">
+                      {KIND_LABEL[item.kind]}
+                    </Chip>
+                    <Chip>{item.difficulty}</Chip>
+                  </CardHeader>
 
-                  <p className="mt-4 text-[13px] leading-relaxed text-gray-600">
+                  <p className="text-[13px] leading-relaxed text-gray-600">
                     {item.description}
                   </p>
 
-                  {/* The price to try, set against what the items cost bought
-                      one by one. Both prices are only shown when they are
-                      real: the menu's own, and a suggestion that covers cost. */}
+                  {/* The price to try, beside what the items cost bought one
+                      by one. Both are only shown when they are real: the
+                      menu's own prices, and a suggestion that covers cost. */}
                   {item.suggestedPrice !== null && (
-                    <p className="mt-4 flex flex-wrap items-baseline gap-x-2 text-[13px]">
-                      <span className="text-gray-500">Try at</span>
-                      <span className="font-bold text-emerald-700">
+                    <Facts>
+                      <Fact label="Try at" valueClassName="text-emerald-700">
                         {money(item.suggestedPrice)}
-                      </span>
+                      </Fact>
                       {item.separatePrice !== null &&
-                        item.separatePrice > item.suggestedPrice && (
-                          <span className="text-[12px] text-gray-400">
-                            (
-                            <span className="line-through">
-                              {money(item.separatePrice)}
-                            </span>{" "}
-                            if bought separately)
-                          </span>
-                        )}
-                    </p>
+                      item.separatePrice > item.suggestedPrice ? (
+                        <Fact
+                          label="Bought separately"
+                          valueClassName="text-gray-400 line-through"
+                        >
+                          {money(item.separatePrice)}
+                        </Fact>
+                      ) : (
+                        <Fact label="Items used">{item.builtFrom.length}</Fact>
+                      )}
+                    </Facts>
                   )}
 
-                  <div className="mt-4 rounded-lg border border-gray-100 bg-gray-50 p-3">
-                    <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
-                      <UtensilsCrossed size={12} className="text-violet-500" />
+                  <div className="mt-auto border-t border-gray-100 pt-4">
+                    <CardLabel
+                      icon={UtensilsCrossed}
+                      iconClassName="text-violet-500"
+                    >
                       Built from your menu
-                    </p>
-                    <ul className="mt-2 flex flex-wrap gap-1.5">
+                    </CardLabel>
+                    <ul className="flex flex-wrap gap-1.5">
                       {item.builtFrom.map((b) => (
                         <li
                           key={b.name}
-                          className="rounded-md border border-gray-200 bg-white px-2 py-0.5 text-[11px] text-gray-700"
+                          className="rounded-md border border-gray-200 bg-white px-2 py-1 text-[11px] text-gray-700"
                         >
                           {b.name}
-                          <span className="ml-1 text-gray-400">
+                          <span className="ml-1.5 text-gray-400">
                             {money(b.price)}
                           </span>
                         </li>
