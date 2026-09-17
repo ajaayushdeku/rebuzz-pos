@@ -2,15 +2,17 @@
 
 import { CircleCheck, Info, TrendingUp, TriangleAlert } from "lucide-react";
 
-import type {
-  RecommendationKind,
-  SalesRecommendation,
-} from "@/lib/mockData/mock-ai-insights";
+import type { AiSectionState } from "@/hooks/useAiSection";
 import {
+  SALES_WINDOW_DAYS,
+  type RecommendationKind,
+  type SalesRecommendation,
+} from "@/lib/ai-insights/sections/salesRecommendations";
+import {
+  AiSectionBody,
   DismissButton,
-  EmptySection,
-  GenerateMoreButton,
   SectionHeader,
+  SectionRefreshButton,
 } from "../parts";
 
 const KIND = {
@@ -32,12 +34,13 @@ const KIND = {
 
 export default function SalesRecommendationsSection({
   items,
+  state,
   onDismiss,
-  onGenerate,
 }: {
+  /** The recommendations still on the page, after dismissals. */
   items: SalesRecommendation[];
+  state: AiSectionState<SalesRecommendation>;
   onDismiss: (id: string) => void;
-  onGenerate: () => void;
 }) {
   return (
     <section>
@@ -45,18 +48,23 @@ export default function SalesRecommendationsSection({
         icon={TrendingUp}
         iconClassName="bg-blue-50 text-blue-600"
         title="Sales Recommendations"
-        subtitle="Automated performance alerts"
+        // The window is part of the subtitle so nobody reads these as
+        // following a date filter this page does not have.
+        subtitle={`Based on the last ${SALES_WINDOW_DAYS} days, compared with the ${SALES_WINDOW_DAYS} before`}
         actions={
-          <GenerateMoreButton
-            textClassName="text-blue-600"
-            onClick={onGenerate}
-          />
+          <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
+            <SectionRefreshButton state={state} textClassName="text-blue-600" />
+          </div>
         }
       />
 
-      {items.length === 0 ? (
-        <EmptySection message="No sales alerts right now." />
-      ) : (
+      <AiSectionBody
+        state={state}
+        visibleCount={items.length}
+        layout="list"
+        noSalesMessage={`No sales in the last ${SALES_WINDOW_DAYS} days, so there is nothing to analyse yet.`}
+        emptyMessage="No sales alerts right now."
+      >
         <ul className="flex flex-col gap-2.5">
           {items.map((item) => {
             const kind = KIND[item.kind];
@@ -89,7 +97,7 @@ export default function SalesRecommendationsSection({
             );
           })}
         </ul>
-      )}
+      </AiSectionBody>
     </section>
   );
 }

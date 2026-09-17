@@ -42,6 +42,11 @@ export type NavigationItem =
       label: string;
       href: string;
       icon: LucideIcon;
+      /**
+       * Only listed once the business has saved a Gemini key. A menu entry
+       * for a feature that cannot run without one only leads to an error.
+       */
+      requiresAiKey?: boolean;
     }
   | {
       type: "section";
@@ -173,6 +178,7 @@ export const navigationConfig: NavigationItem[] = [
     label: "AI Insights",
     icon: Sparkles,
     href: "/ai-insights",
+    requiresAiKey: true,
   },
   {
     type: "section",

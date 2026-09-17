@@ -29,10 +29,12 @@ export default function StaffingSection({
         title="Staffing Recommendations"
         subtitle="Floor coverage guidance"
         actions={
-          <GenerateMoreButton
-            textClassName="text-amber-700"
-            onClick={onGenerate}
-          />
+          <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
+            <GenerateMoreButton
+              textClassName="text-amber-700"
+              onClick={onGenerate}
+            />
+          </div>
         }
       />
 

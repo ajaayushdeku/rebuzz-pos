@@ -27,6 +27,7 @@ import AIBusinessStory from "../dashboardComponents/overviewDash/AIBusinessStory
 import BusinessInsightsAlerts from "../dashboardComponents/overviewDash/BusinessInsightsAlerts";
 import { AiInsightsProvider } from "@/components/aiInsights/AiInsightsProvider";
 import { collectBriefingData } from "@/lib/ai-insights/collectBriefingData.server";
+import { hasSavedAiKey } from "@/lib/ai-insights/hasSavedAiKey.server";
 import LowStockAlerts from "../dashboardComponents/overviewDash/LowStockAlerts";
 import { formatDateRangeLabel } from "@/utils/helper";
 
@@ -380,6 +381,12 @@ export const HourlySalesTrendWrapper = async () => {
  * cards carry no RANGE badge: they do not follow the filter.
  */
 export const AiInsightsSection = async () => {
+  // Hidden entirely without a saved key, and checked before the briefing is
+  // collected so a business that has not set AI up pays for none of its
+  // dashboard fetches. Returning nothing leaves no gap: the section has no
+  // wrapper of its own on the page.
+  if (!(await hasSavedAiKey())) return null;
+
   const briefingData = await collectBriefingData();
   return (
     <AiInsightsProvider briefingData={briefingData}>

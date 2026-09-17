@@ -1,6 +1,7 @@
 import axios from "axios";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { INVENTORY_PRODUCTS_PATH } from "@/lib/inventory/mapInventoryProduct";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
@@ -8,7 +9,8 @@ export const GET = async () => {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
-  const res = await axios.get(`${BASE}/business/products/popular`, {
+  // The list with each variant's stock — see INVENTORY_PRODUCTS_PATH.
+  const res = await axios.get(`${BASE}${INVENTORY_PRODUCTS_PATH}`, {
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",

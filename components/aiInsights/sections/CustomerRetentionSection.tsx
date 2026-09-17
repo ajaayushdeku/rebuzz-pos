@@ -50,10 +50,12 @@ export default function CustomerRetentionSection({
         title="Customer Retention Radar"
         subtitle="Regulars going quiet, and how to win them back"
         actions={
-          <GenerateMoreButton
-            textClassName="text-pink-600"
-            onClick={onGenerate}
-          />
+          <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
+            <GenerateMoreButton
+              textClassName="text-pink-600"
+              onClick={onGenerate}
+            />
+          </div>
         }
       />
 

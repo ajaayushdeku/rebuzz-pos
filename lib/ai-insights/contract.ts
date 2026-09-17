@@ -295,6 +295,8 @@ export interface AiInsightsUsage {
   promptTokens: number | null;
   outputTokens: number | null;
   totalTokens: number | null;
+  /** Tokens the model spent thinking before answering, billed like output. */
+  thinkingTokens?: number | null;
 }
 
 /**
@@ -331,6 +333,7 @@ export type AiInsightsErrorCode =
   | "KEY_UNREADABLE"
   | "GEMINI_MALFORMED_RESPONSE"
   | "GEMINI_EMPTY_RESPONSE"
+  | "GEMINI_TRUNCATED"
   | "GEMINI_MODEL_UNAVAILABLE"
   | "GEMINI_KEY_INVALID"
   | "GEMINI_QUOTA_EXCEEDED"

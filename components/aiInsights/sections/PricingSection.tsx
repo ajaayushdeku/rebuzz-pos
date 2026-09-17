@@ -34,10 +34,12 @@ export default function PricingSection({
         title="Pricing Opportunities"
         subtitle="Price moves suggested from demand sensitivity"
         actions={
-          <GenerateMoreButton
-            textClassName="text-emerald-700"
-            onClick={onGenerate}
-          />
+          <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
+            <GenerateMoreButton
+              textClassName="text-emerald-700"
+              onClick={onGenerate}
+            />
+          </div>
         }
       />
 

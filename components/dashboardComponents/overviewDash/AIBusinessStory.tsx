@@ -1,18 +1,19 @@
 ﻿"use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Sparkles,
   ChevronUp,
   ChevronDown,
   Hourglass,
   Flag,
-  Settings,
   RefreshCw,
   ArrowUpRight,
 } from "lucide-react";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import { useAiInsightsResult } from "@/components/aiInsights/AiInsightsProvider";
+import AiInsightsErrorState from "@/components/aiInsights/AiInsightsErrorState";
 
 /**
  * Colour segments come from the model, so the palette lives here rather than
@@ -44,58 +45,12 @@ type AiSegments = {
  * stray <br> made the card read as one undifferentiated wall of text.
  */
 
-// function StoryBody({ segments }: { segments: AiSegments }) {
-//   const paragraphs: React.ReactNode[][] = [[]];
+type ChipTone = "violet" | "gray" | "green" | "red";
 
-//   segments.forEach((seg, i) => {
-//     // Break after a sentence-ending period, but NOT decimal values like 10.00
-//     const lines = seg.text.split(/(?<=\.)\s+(?=[A-Z])/);
-
-//     lines.forEach((line, j) => {
-//       if (line.trim() === "") {
-//         paragraphs.push([]);
-//         return;
-//       }
-
-//       if (j > 0) {
-//         paragraphs[paragraphs.length - 1].push(<br key={`br-${i}-${j}`} />);
-//       }
-
-//       const paragraph = paragraphs[paragraphs.length - 1];
-//       const lastNode = paragraph[paragraph.length - 1];
-
-//       // Every span is trimmed, so two spans pushed back to back would render
-//       // as "end.Next sentence" with no gap. Re-insert the separator the trim
-//       // removed — but not after a <br>, where the line already breaks.
-//       if (lastNode && lastNode.type !== "br") {
-//         paragraph.push(" ");
-//       }
-
-//       paragraph.push(
-//         <span
-//           key={`${i}-${j}`}
-//           className={`${TEXT_COLORS[seg.color]} ${SEGMENT_MARKERS[seg.color]}`}
-//         >
-//           • {line.trim()}
-//         </span>,
-//       );
-//     });
-//   });
-
-//   const blocks = paragraphs.filter((p) => p.length > 0);
-
-//   return (
-//     <div className="space-y-3">
-//       {blocks.map((parts, i) => (
-//         <p key={i} className="text-sm leading-7 tracking-[0.1px]">
-//           {parts}
-//         </p>
-//       ))}
-//     </div>
-//   );
-// }
 function StoryBody({ segments }: { segments: AiSegments }) {
   const paragraphs: React.ReactNode[][] = [[]];
+
+  // console.log("segments", segments);
 
   segments.forEach((seg, i) => {
     const lines = seg.text.split(/(?<=\.)\s+(?=[A-Z])/);
@@ -111,7 +66,7 @@ function StoryBody({ segments }: { segments: AiSegments }) {
           key={`${i}-${j}`}
           className={`block  w-fit ${TEXT_COLORS[seg.color]} `}
         >
-          <span className="mr-2">•</span>
+          <span className="mr-1">•</span>
           <span
             className={`px-2 ${TEXT_COLORS[seg.color]} w-fit ${SEGMENT_MARKERS[seg.color]}`}
           >
@@ -127,7 +82,7 @@ function StoryBody({ segments }: { segments: AiSegments }) {
   return (
     <div className="space-y-3">
       {blocks.map((parts, i) => (
-        <p key={i} className="text-sm leading-7 tracking-[0.5px]">
+        <p key={i} className="text-[13px] leading-7 tracking-[0.5px]">
           {parts}
         </p>
       ))}
@@ -135,7 +90,13 @@ function StoryBody({ segments }: { segments: AiSegments }) {
   );
 }
 
-/** Small read-only chip used in the header strip. */
+/**
+ * Small read-only chip used in the header strip.
+ *
+ * `green` and `red` are the same pair the story body uses for its highlighted
+ * and flagged lines, so "3 highlights" in the strip reads as a count of the
+ * green lines below it and "1 watch-out" as the red ones.
+ */
 function MetaChip({
   icon,
   children,
@@ -143,11 +104,13 @@ function MetaChip({
 }: {
   icon?: React.ReactNode;
   children: React.ReactNode;
-  tone?: "violet" | "gray";
+  tone?: ChipTone;
 }) {
-  const tones = {
+  const tones: Record<ChipTone, string> = {
     violet: "bg-violet-50 border-violet-100 text-violet-700",
-    gray: "bg-gray-50 border-gray-200 text-gray-500",
+    gray: "bg-gray-50 border-gray-200 text-gray-600",
+    green: "bg-green-50 border-green-200 text-green-700",
+    red: "bg-red-50 border-red-200 text-red-600",
   };
   return (
     <span
@@ -164,21 +127,24 @@ export default function AIBusinessStory() {
   const { status, data, error, model, regenerate } = useAiInsightsResult();
 
   const story = data?.story;
-  const needsSetup =
-    error?.code === "NOT_CONFIGURED" || error?.code === "AI_DISABLED";
 
   // The status strip summarises the model's own output, so it doubles as a
   // quick health read: how much was said, and whether anything is flagged.
-  const metrics = story
+  // Each count takes the colour of the lines it counts: every passage is
+  // counted, so it stays neutral like the plain text; highlights are the
+  // green lines and watch-outs the red ones.
+  const metrics: { label: string; value: number; tone: ChipTone }[] = story
     ? [
-        { label: "passages", value: story.segments.length },
+        { label: "passages", value: story.segments.length, tone: "gray" },
         {
           label: "highlights",
           value: story.segments.filter((s) => s.color === "green").length,
+          tone: "green",
         },
         {
           label: "watch-outs",
           value: story.segments.filter((s) => s.color === "red").length,
+          tone: "red",
         },
       ]
     : [];
@@ -188,7 +154,7 @@ export default function AIBusinessStory() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-4">
         <div className="flex items-start gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center shrink-0 shadow-sm shadow-violet-500/25">
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center shrink-0 shadow-sm shadow-violet-500/25">
             <Sparkles size={16} className="text-white" />
           </div>
           <ComponentHeader
@@ -229,8 +195,10 @@ export default function AIBusinessStory() {
             <MetaChip icon={<Sparkles size={11} />}>{story.vibe}</MetaChip>
           )}
           {metrics.map((m) => (
-            <MetaChip key={m.label} tone="gray">
-              <span className="text-gray-900">{m.value}</span>
+            <MetaChip key={m.label} tone={m.tone}>
+              {/* Bold rather than a fixed near-black, so the number carries
+                  its chip's colour instead of breaking it. */}
+              <span className="font-bold">{m.value}</span>
               {m.label}
             </MetaChip>
           ))}
@@ -257,24 +225,7 @@ export default function AIBusinessStory() {
           )}
 
           {status === "error" && (
-            <div className="rounded-xl border-gray-100 bg-gray-50/70 px-5 py-5 text-center">
-              <p className="text-sm text-gray-600">{error?.message}</p>
-              {needsSetup ? (
-                <a
-                  href="/settings/api-keys"
-                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 rounded-full px-4 py-2 transition-colors"
-                >
-                  <Settings size={13} /> Open API key settings
-                </a>
-              ) : (
-                <button
-                  onClick={regenerate}
-                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 rounded-full px-4 py-2 transition-colors"
-                >
-                  <RefreshCw size={12} /> Try again
-                </button>
-              )}
-            </div>
+            <AiInsightsErrorState error={error} onRetry={regenerate} />
           )}
 
           {status === "success" && story && (
@@ -291,7 +242,7 @@ export default function AIBusinessStory() {
                     <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700">
                       {story.priority.label}
                     </p>
-                    <p className="mt-1 text-sm text-gray-700 leading-relaxed">
+                    <p className="mt-1 text-[13px] tracking-wide text-gray-700 leading-relaxed">
                       {story.priority.text}
                     </p>
                   </div>
@@ -317,18 +268,21 @@ export default function AIBusinessStory() {
       )}
 
       {/* Footer */}
-      <div className="border-t border-gray-100 bg-gray-50/60 px-6 py-3 items-center justify-between gap-2">
+      <div className="border-t border-gray-100 bg-gray-50/60 px-6 py-3 flex items-center justify-between gap-2">
         <span className="inline-flex items-center  gap-1.5 text-[11px] text-gray-400">
           <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
           {model ? `Generated with ${model}` : "Generated by Gemini"}
         </span>
-        <a
-          href="/records"
+        {/* A client-side link rather than a plain anchor. A full page load
+            empties the app's cache, and coming back to the overview would
+            then pay for a fresh Gemini call instead of reusing this story. */}
+        <Link
+          href="/ai-insights"
           className="inline-flex items-center gap-1  ml-2 text-xs font-semibold text-violet-600 hover:text-violet-700 transition-colors"
         >
           See full business details
           <ArrowUpRight size={13} />
-        </a>
+        </Link>
       </div>
     </div>
   );

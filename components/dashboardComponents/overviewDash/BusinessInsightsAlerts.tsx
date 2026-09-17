@@ -1,4 +1,4 @@
-﻿﻿"use client";
+﻿"use client";
 
 import {
   CheckCircle2,
@@ -6,12 +6,12 @@ import {
   Info,
   Package,
   User,
-  Settings,
   Lightbulb,
   BellRing,
 } from "lucide-react";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import { useAiInsightsResult } from "@/components/aiInsights/AiInsightsProvider";
+import AiInsightsErrorState from "@/components/aiInsights/AiInsightsErrorState";
 
 /**
  * One entry per insight severity. `dot` colours the numbered bullet, `label`
@@ -95,11 +95,9 @@ function SectionLabel({
 }
 
 export default function BusinessInsightsAlerts() {
-  const { status, data, error } = useAiInsightsResult();
+  const { status, data, error, regenerate } = useAiInsightsResult();
   const insights = data?.insights ?? [];
   const alerts = data?.alerts ?? [];
-  const needsSetup =
-    error?.code === "NOT_CONFIGURED" || error?.code === "AI_DISABLED";
 
   // Severity tally drives the header chips, so the card tells you how the day
   // is going before you read a single row.
@@ -109,7 +107,10 @@ export default function BusinessInsightsAlerts() {
   const wins = insights.filter((i) => i.type === "success").length;
   const hasContent = insights.length > 0 || alerts.length > 0;
   return (
-    <div className="relative bg-white rounded-2xl border-gray-100 shadow-sm hover:shadow-md transition-shadow p-5 flex-col gap-5">
+    // `flex` is what makes `flex-col gap-5` do anything. Without it the card
+    // was a plain block, the gap never applied, and "What the numbers say"
+    // sat directly against the header.
+    <div className="relative flex flex-col gap-5 bg-white rounded-2xl border-gray-100 shadow-sm hover:shadow-md transition-shadow p-5">
       {/* Header — title on the left, live severity tally on the right */}
       <div className="flex items-start justify-between gap-4">
         <ComponentHeader
@@ -157,17 +158,7 @@ export default function BusinessInsightsAlerts() {
       )}
       {/* Error */}
       {status === "error" && (
-        <div className="rounded-xl border-gray-100 bg-gray-50/70 px-5 py-6 text-center">
-          <p className="text-sm text-gray-600">{error?.message}</p>
-          {needsSetup && (
-            <a
-              href="/settings/api-keys"
-              className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 rounded-full px-4 py-2 transition-colors"
-            >
-              <Settings size={13} /> Open API key settings
-            </a>
-          )}
-        </div>
+        <AiInsightsErrorState error={error} onRetry={regenerate} />
       )}
 
       {/* Success */}
@@ -207,7 +198,7 @@ export default function BusinessInsightsAlerts() {
                           >
                             {s.label}
                           </p>
-                          <p className="mt-0.5 text-xs leading-relaxed text-gray-700">
+                          <p className="mt-0.5 text-xs tracking-wide leading-relaxed text-gray-700">
                             {insight.text}
                           </p>
                         </div>
@@ -244,7 +235,7 @@ export default function BusinessInsightsAlerts() {
                             {card.title}
                           </p>
                           <p
-                            className={`mt-1 text-[11px] leading-snug ${s.sub}`}
+                            className={`mt-1 text-[11px] tracking-wide leading-snug ${s.sub}`}
                           >
                             {card.subtitle}
                           </p>

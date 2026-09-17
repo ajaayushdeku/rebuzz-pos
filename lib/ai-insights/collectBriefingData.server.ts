@@ -26,7 +26,10 @@ import {
   getWinningStats,
 } from "@/services/dashboardServices/apiOverview";
 import { getCustomerStats } from "@/services/dashboardServices/apiCustomerDash";
-import { fetchInventoryProducts } from "@/services/apiInventory";
+import {
+  fetchInventoryProducts,
+  type InventoryItem,
+} from "@/services/apiInventory";
 import { formatVariantName } from "@/utils/helper";
 import type { BriefingData } from "@/lib/ai-insights/contract";
 
@@ -49,7 +52,7 @@ const ok = <T,>(r: PromiseSettledResult<T>, fallback: T): T =>
   r.status === "fulfilled" ? r.value : fallback;
 
 /** The business's currency, read from the session's currency cookie. */
-async function readCurrency(): Promise<BriefingData["currency"]> {
+export async function readCurrency(): Promise<BriefingData["currency"]> {
   // The cookie stores the ISO code (see providers/CurrencyContext); the symbol
   // comes from the shared option list. Anything unrecognised is omitted rather
   // than guessed — a wrong symbol is worse than none.
@@ -61,6 +64,60 @@ async function readCurrency(): Promise<BriefingData["currency"]> {
   } catch {
     return undefined;
   }
+}
+
+/** How many out-of-stock lines the briefing carries, worst first. */
+const MAX_LOW_STOCK_LINES = 8;
+
+/**
+ * The stock lines the model is told about.
+ *
+ * A product with variants is judged only on its variants. It keeps no stock of
+ * its own — its `inStock` is always zero — so judging the product row reported
+ * a fully stocked product as out of stock. That only works when the variants
+ * are present, which is why the list must come from the endpoint that carries
+ * them (see INVENTORY_PRODUCTS_PATH).
+ *
+ * The same rule as the Low Stock card on the overview, so the card and the AI
+ * describe the same shelves. Pulled out of the collector so it can be tested
+ * without a session.
+ */
+export function lowStockAlertsFrom(
+  products: InventoryItem[],
+): NonNullable<BriefingData["lowStockAlerts"]> {
+  const alerts: NonNullable<BriefingData["lowStockAlerts"]> = [];
+
+  for (const p of products) {
+    if (!p.usesStocks) continue;
+
+    if (p.variants && p.variants.length > 0) {
+      for (const v of p.variants) {
+        // Critical or worse only — "running low" halves the briefing's signal.
+        if (v.inStock > v.lowStock) continue;
+        alerts.push({
+          name: formatVariantName(p.name, v.optionValues),
+          currentStock: v.inStock,
+          threshold: v.lowStock,
+          ...(p.categories ? { category: p.categories } : {}),
+        });
+      }
+      continue;
+    }
+
+    if (p.inStock <= p.lowStock) {
+      alerts.push({
+        name: p.name,
+        currentStock: p.inStock,
+        threshold: p.lowStock,
+        ...(p.categories ? { category: p.categories } : {}),
+      });
+    }
+  }
+
+  // Twenty out-of-stock lines would swamp the briefing without changing what
+  // the model should say about the worst ones.
+  alerts.sort((a, b) => a.currentStock - b.currentStock);
+  return alerts.slice(0, MAX_LOW_STOCK_LINES);
 }
 
 export async function collectBriefingData(): Promise<BriefingData> {
@@ -115,36 +172,7 @@ export async function collectBriefingData(): Promise<BriefingData> {
   const transactions = ok(recentSettled, []);
 
   // ── Low stock: same per-variant rule as the LowStockAlerts card ──
-  const products = ok(inventory, []);
-  const lowStockAlerts: NonNullable<BriefingData["lowStockAlerts"]> = [];
-  for (const p of products) {
-    if (!p.usesStocks) continue;
-    if (p.variants && p.variants.length > 0) {
-      for (const v of p.variants) {
-        // Critical or worse only — "running low" halves the briefing's signal.
-        if (v.inStock > v.lowStock) continue;
-        lowStockAlerts.push({
-          name: formatVariantName(p.name, v.optionValues),
-          currentStock: v.inStock,
-          threshold: v.lowStock,
-          ...(p.categories ? { category: p.categories } : {}),
-        });
-      }
-      continue;
-    }
-    if (p.inStock <= p.lowStock) {
-      lowStockAlerts.push({
-        name: p.name,
-        currentStock: p.inStock,
-        threshold: p.lowStock,
-        ...(p.categories ? { category: p.categories } : {}),
-      });
-    }
-  }
-  // Cap it: twenty out-of-stock lines would swamp the briefing without
-  // changing what the model should say about the worst ones. Worst first.
-  lowStockAlerts.sort((a, b) => a.currentStock - b.currentStock);
-  lowStockAlerts.length = Math.min(lowStockAlerts.length, 8);
+  const lowStockAlerts = lowStockAlertsFrom(ok(inventory, []));
 
   // ── Category performance (last 365 days, per getSalesByCategory) ──
   const categorySales = ok(categories, []);

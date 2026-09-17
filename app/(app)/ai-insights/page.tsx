@@ -15,18 +15,22 @@ import SalesRecommendationsSection from "@/components/aiInsights/sections/SalesR
 import CustomerRetentionSection from "@/components/aiInsights/sections/CustomerRetentionSection";
 import StaffingSection from "@/components/aiInsights/sections/StaffingSection";
 import {
-  MOCK_FESTIVALS,
-  MOCK_HOURS,
-  MOCK_MENU_SUGGESTIONS,
   MOCK_PRICING,
   MOCK_RETENTION,
-  MOCK_SALES_RECOMMENDATIONS,
-  MOCK_SLOW_ITEMS,
   MOCK_STAFFING,
 } from "@/lib/mockData/mock-ai-insights";
+import { useAiSection } from "@/hooks/useAiSection";
+import type { FestivalPrep } from "@/lib/ai-insights/sections/festivalPrep";
+import type { HourInsight } from "@/lib/ai-insights/sections/hourPlaybook";
+import type { MenuSuggestion } from "@/lib/ai-insights/sections/menuSuggestions";
+import type { SalesRecommendation } from "@/lib/ai-insights/sections/salesRecommendations";
+import type { SlowItemInsight } from "@/lib/ai-insights/sections/slowItems";
 
 /**
- * AI Insights, on sample data until generation is connected.
+ * AI Insights. Menu Suggestions, Slow Items, the Hour-by-Hour Playbook,
+ * Festival Prep and Sales Recommendations are generated from the business's
+ * own sales and menu; the other sections are still sample data, connected one
+ * at a time.
  *
  * Dismissals and the shortlist are held here rather than inside each section,
  * because the banner at the top summarises all of them. Each section only
@@ -56,12 +60,20 @@ export default function AIInsightPage() {
   const keep = <T extends { id: string }>(items: T[]) =>
     items.filter((item) => !dismissed.has(item.id));
 
-  const menu = keep(MOCK_MENU_SUGGESTIONS);
-  const slow = keep(MOCK_SLOW_ITEMS);
+  const menuSuggestions = useAiSection<MenuSuggestion>("menu-suggestions");
+  const slowItems = useAiSection<SlowItemInsight>("slow-items");
+  const hourPlaybook = useAiSection<HourInsight>("hour-playbook");
+  const festivalPrep = useAiSection<FestivalPrep>("festival-prep");
+  const salesRecommendations = useAiSection<SalesRecommendation>(
+    "sales-recommendations",
+  );
+
+  const menu = keep(menuSuggestions.data?.items ?? []);
+  const slow = keep(slowItems.data?.items ?? []);
   const pricing = keep(MOCK_PRICING);
-  const hours = keep(MOCK_HOURS);
-  const festivals = keep(MOCK_FESTIVALS);
-  const sales = keep(MOCK_SALES_RECOMMENDATIONS);
+  const hours = keep(hourPlaybook.data?.items ?? []);
+  const festivals = keep(festivalPrep.data?.items ?? []);
+  const sales = keep(salesRecommendations.data?.items ?? []);
   const retention = keep(MOCK_RETENTION);
   const staffing = keep(MOCK_STAFFING);
 
@@ -74,8 +86,6 @@ export default function AIInsightPage() {
     sales.length +
     retention.length +
     staffing.length;
-
-  const weeklyUplift = menu.reduce((sum, item) => sum + item.weeklyUplift, 0);
 
   // A dismissed idea is no longer on the shortlist, even though its id stays
   // in the set — un-dismissing is not possible, so there is no need to prune.
@@ -107,7 +117,7 @@ export default function AIInsightPage() {
 
         <AiInsightsHero
           activeInsights={activeInsights}
-          weeklyUplift={weeklyUplift}
+          slowItems={slow.length}
           shortlisted={shortlistedCount}
           onGenerate={generate}
         />
@@ -117,18 +127,18 @@ export default function AIInsightPage() {
         <ChartErrorBoundary>
           <MenuSuggestionsSection
             items={menu}
+            state={menuSuggestions}
             shortlisted={shortlisted}
             onToggleShortlist={toggleShortlist}
             onDismiss={dismiss}
-            onGenerate={generate}
           />
         </ChartErrorBoundary>
 
         <ChartErrorBoundary>
           <SlowItemsSection
             items={slow}
+            state={slowItems}
             onDismiss={dismiss}
-            onGenerate={generate}
           />
         </ChartErrorBoundary>
 
@@ -143,20 +153,24 @@ export default function AIInsightPage() {
         <ChartErrorBoundary>
           <HourPlaybookSection
             items={hours}
+            state={hourPlaybook}
             onDismiss={dismiss}
-            onGenerate={generate}
           />
         </ChartErrorBoundary>
 
         <ChartErrorBoundary>
-          <FestivalPrepSection items={festivals} onDismiss={dismiss} />
+          <FestivalPrepSection
+            items={festivals}
+            state={festivalPrep}
+            onDismiss={dismiss}
+          />
         </ChartErrorBoundary>
 
         <ChartErrorBoundary>
           <SalesRecommendationsSection
             items={sales}
+            state={salesRecommendations}
             onDismiss={dismiss}
-            onGenerate={generate}
           />
         </ChartErrorBoundary>
 

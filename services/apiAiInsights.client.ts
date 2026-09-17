@@ -13,6 +13,15 @@ import type {
   AiInsightsResponse,
   AiInsightsApiResponse,
 } from "@/lib/ai-insights/contract";
+import type { AiSectionResult } from "@/lib/ai-insights/sections/shared";
+
+/** The AI Insights page sections that have a route under /api/ai-insights. */
+export type AiSectionName =
+  | "sales-recommendations"
+  | "slow-items"
+  | "menu-suggestions"
+  | "festival-prep"
+  | "hour-playbook";
 
 /**
  * The service's error codes, as sentences.
@@ -36,7 +45,8 @@ const MESSAGES: Record<AiInsightsErrorCode | string, string> = {
     "Google rejected your saved key. Check it in settings — it may have been deleted.",
   GEMINI_QUOTA_EXCEEDED:
     "Your Gemini key has no quota left. Check your usage in Google AI Studio.",
-  GEMINI_RATE_LIMIT: "Too many requests to Google just now — try again shortly.",
+  GEMINI_RATE_LIMIT:
+    "Too many requests to Google just now — try again shortly.",
   GEMINI_MODEL_UNAVAILABLE:
     "The model saved for this business isn't available for your key. Pick another one in settings.",
   GEMINI_UNAVAILABLE:
@@ -55,6 +65,13 @@ const MESSAGES: Record<AiInsightsErrorCode | string, string> = {
   GEMINI_MALFORMED_RESPONSE:
     "The AI answered in a format we couldn't read. Try again.",
   GEMINI_EMPTY_RESPONSE: "The AI returned nothing. Try again.",
+  // Distinct from a malformed answer: nothing was wrong with the format, the
+  // reply ran out of room before it finished.
+  GEMINI_TRUNCATED:
+    "The AI's answer was cut off before it finished. Try again.",
+
+  // The POS report an AI Insights section is built from did not answer.
+  SALES_DATA_UNAVAILABLE: "Your sales report couldn't be loaded just now.",
 
   // Request problems (should not happen from this client).
   BRIEFING_REQUIRED: "There was no data to analyse.",
@@ -91,6 +108,70 @@ export class AiInsightsError extends Error {
   }
 }
 
+/** A failed response's body as a typed error, shared by every AI request. */
+function errorFromBody(json: {
+  error?: unknown;
+  retryAfter?: unknown;
+}): AiInsightsError {
+  const code = typeof json?.error === "string" ? json.error : "UNKNOWN";
+  // The backend mirrors Retry-After in the body on 429s; surface the wait as
+  // part of the sentence so the user sees "try again in 40 s", not just
+  // "too many". Ignored unless it is a finite positive number.
+  const retryAfter =
+    typeof json?.retryAfter === "number" &&
+    Number.isFinite(json.retryAfter) &&
+    json.retryAfter > 0
+      ? Math.ceil(json.retryAfter)
+      : undefined;
+  const base = toMessage(code);
+  return new AiInsightsError(
+    code,
+    retryAfter !== undefined ? `${base} Try again in ${retryAfter} s.` : base,
+    retryAfter,
+  );
+}
+
+/**
+ * One section of the AI Insights page, e.g. "slow-items".
+ *
+ * Posts nothing but `refresh`: the section's route gathers the figures and
+ * writes the briefing itself. Without `refresh` the route may answer from the
+ * day's cache at no cost; with it, a new answer is generated and paid for.
+ */
+export const fetchAiSection = async <T>(
+  section: AiSectionName,
+  refresh = false,
+): Promise<AiSectionResult<T>> => {
+  let res: Response;
+  try {
+    res = await fetch(`/api/ai-insights/${section}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh }),
+    });
+  } catch {
+    throw new AiInsightsError(
+      "NETWORK",
+      "Couldn't reach the server. Check your connection and try again.",
+    );
+  }
+
+  const json = (await res.json().catch(() => ({}))) as {
+    data?: AiSectionResult<T>;
+    error?: unknown;
+    retryAfter?: unknown;
+  };
+
+  if (!res.ok) throw errorFromBody(json);
+  if (!json.data || !Array.isArray(json.data.items)) {
+    throw new AiInsightsError(
+      "GEMINI_MALFORMED_RESPONSE",
+      toMessage("GEMINI_MALFORMED_RESPONSE"),
+    );
+  }
+  return json.data;
+};
+
 /**
  * Ask for insights on a briefing already built by `buildBriefing`.
  *
@@ -124,24 +205,7 @@ export const fetchAiInsights = async (
     AiInsightsApiResponse & { error?: string; retryAfter?: unknown }
   >;
 
-  if (!res.ok) {
-    const code = typeof json?.error === "string" ? json.error : "UNKNOWN";
-    // The backend mirrors Retry-After in the body on 429s; surface the wait as
-    // part of the sentence so the user sees "try again in 40 s", not just
-    // "too many". Ignored unless it is a finite positive number.
-    const retryAfter =
-      typeof json?.retryAfter === "number" &&
-      Number.isFinite(json.retryAfter) &&
-      json.retryAfter > 0
-        ? Math.ceil(json.retryAfter)
-        : undefined;
-    const base = toMessage(code);
-    throw new AiInsightsError(
-      code,
-      retryAfter !== undefined ? `${base} Try again in ${retryAfter} s.` : base,
-      retryAfter,
-    );
-  }
+  if (!res.ok) throw errorFromBody(json);
 
   const envelope = json?.data;
   if (!envelope?.insights || typeof envelope.insights === "string") {

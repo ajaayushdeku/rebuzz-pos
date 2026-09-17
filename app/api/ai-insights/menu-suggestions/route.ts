@@ -1,0 +1,87 @@
+import { NextRequest, NextResponse } from "next/server";
+
+import { askAiService } from "@/lib/ai-insights/askAiService.server";
+import {
+  MENU_SUGGESTIONS_PROMPT,
+  MENU_SUGGESTIONS_SCHEMA,
+  MENU_SUGGESTIONS_VERSION,
+  buildMenuFacts,
+  menuBriefing,
+  parseMenuSuggestions,
+  type MenuSuggestionsResult,
+} from "@/lib/ai-insights/sections/menuSuggestions";
+import {
+  currencySymbol,
+  fetchMenu,
+  fetchSalesRows,
+  readSectionRequest,
+  salesDataUnavailable,
+} from "@/lib/ai-insights/sections/posData.server";
+import {
+  salesWindows,
+  type MenuProduct,
+  type SalesByItemRow,
+} from "@/lib/ai-insights/sections/shared";
+
+/**
+ * AI Menu Suggestions for the AI Insights page.
+ *
+ * Ideas are built on the last 30 days' best sellers and the real menu, and
+ * checked against that menu before they are shown. No AI call is made when
+ * nothing sold, since there are no best sellers to build on. Otherwise one
+ * call a day, cached by the AI service.
+ */
+export async function POST(req: NextRequest) {
+  const request = await readSectionRequest(req);
+  if (!request.ok) return request.response;
+  const { token, refresh, today } = request;
+
+  const windows = salesWindows(today);
+
+  let menu: MenuProduct[];
+  let current: SalesByItemRow[];
+  try {
+    [menu, current] = await Promise.all([
+      fetchMenu(token),
+      fetchSalesRows(token, windows.current),
+    ]);
+  } catch (error) {
+    return salesDataUnavailable("menu-suggestions", error);
+  }
+
+  const facts = buildMenuFacts(menu, current, windows);
+
+  if (facts.bestSellers.length === 0) {
+    const result: MenuSuggestionsResult = {
+      items: [],
+      windows,
+      reason: "NO_SALES",
+    };
+    return NextResponse.json({ data: result });
+  }
+
+  const answer = await askAiService({
+    token,
+    briefing: menuBriefing(facts, await currencySymbol()),
+    systemInstruction: MENU_SUGGESTIONS_PROMPT,
+    responseSchema: MENU_SUGGESTIONS_SCHEMA,
+    cacheKey: `menu-suggestions:${MENU_SUGGESTIONS_VERSION}:${today}`,
+    refresh,
+  });
+  if (!answer.ok) return answer.response;
+
+  const { insights, model, generatedAt, cached } = answer.data;
+
+  const result: MenuSuggestionsResult = {
+    items: parseMenuSuggestions(insights, menu, `menu-${generatedAt}`),
+    windows,
+    model,
+    generatedAt,
+    cached: cached === true,
+  };
+
+  return NextResponse.json(
+    { data: result },
+    { headers: { "Cache-Control": "no-store" } },
+  );
+}

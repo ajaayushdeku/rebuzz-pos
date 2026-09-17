@@ -2,31 +2,31 @@
 
 import { WandSparkles } from "lucide-react";
 
-import { useMoney } from "../parts";
-
 /**
  * The summary banner at the top of the page.
  *
  * Every figure is derived from what is on the page below, not stored beside
- * it: dismissing a card lowers the insight count, dismissing a menu idea
- * lowers the uplift, and starring one raises the shortlist. A banner that
+ * it: dismissing a card lowers the insight count, dismissing a slow item
+ * lowers that count, and starring a menu idea raises the shortlist. A banner that
  * kept saying "24 insights" after three were closed would be the first thing
  * on the page to stop being true.
  */
 export default function AiInsightsHero({
   activeInsights,
-  weeklyUplift,
+  slowItems,
   shortlisted,
   onGenerate,
 }: {
   activeInsights: number;
-  /** Sum of the menu ideas still on the page. */
-  weeklyUplift: number;
+  /**
+   * Slow items still on the page. This replaced an "estimated menu uplift",
+   * which added up extra-revenue guesses for dishes that have never sold: no
+   * figure the POS holds could back it.
+   */
+  slowItems: number;
   shortlisted: number;
   onGenerate: () => void;
 }) {
-  const money = useMoney();
-
   return (
     // `relative` anchors the screen-reader labels inside, for the reason given
     // in SalesRecommendationsSection: unanchored, they size the window.
@@ -49,11 +49,11 @@ export default function AiInsightsHero({
             <span className="text-xs text-gray-300">active insights</span>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <dt className="sr-only">Estimated menu uplift</dt>
-            <dd className="text-xl font-bold tabular-nums text-emerald-400">
-              {money(weeklyUplift)}/wk
+            <dt className="sr-only">Slow items to fix</dt>
+            <dd className="text-xl font-bold tabular-nums text-rose-400">
+              {slowItems}
             </dd>
-            <span className="text-xs text-gray-300">est. menu uplift</span>
+            <span className="text-xs text-gray-300">slow items to fix</span>
           </div>
           <div className="flex items-baseline gap-1.5">
             <dt className="sr-only">Shortlisted</dt>

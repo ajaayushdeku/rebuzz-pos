@@ -67,25 +67,38 @@ export default async function RootLayout({
     >
       <TooltipProvider delayDuration={200}>
         <Toaster />
-        <SidebarProvider>
-          <div className="fixed top-0 left-0 right-0 z-50 md:h-(--navbar-height)">
-            <Navbar />
-          </div>
+        {/*
+         * One query cache for the navbar, the sidebar and the pages.
+         *
+         * It used to wrap the page area alone, so the shell read the root
+         * layout's separate cache instead. Anything saved on a page then never
+         * reached the shell: saving an AI key refreshed the settings page's
+         * copy of the key status while the sidebar kept its own stale one.
+         *
+         * Still scoped to this layout rather than lifted to the root. Login
+         * returns here by client navigation, not a reload, so this client
+         * being discarded when the app shell unmounts is what keeps one
+         * account's cached data from showing to the next.
+         */}
+        <QueryProvider>
+          <SidebarProvider>
+            <div className="fixed top-0 left-0 right-0 z-50 md:h-(--navbar-height)">
+              <Navbar />
+            </div>
 
-          <div className="fixed top-(--navbar-height) left-0 bottom-0  z-40 hidden md:block">
-            <Sidebar />
-          </div>
+            <div className="fixed top-(--navbar-height) left-0 bottom-0  z-40 hidden md:block">
+              <Sidebar />
+            </div>
 
-          <MobileSidebarOverlay />
+            <MobileSidebarOverlay />
 
-          <MainContent>
-            <QueryProvider>
+            <MainContent>
               <CurrencyProvider initialCurrencyCode={currencyCode}>
                 {children}
               </CurrencyProvider>
-            </QueryProvider>
-          </MainContent>
-        </SidebarProvider>
+            </MainContent>
+          </SidebarProvider>
+        </QueryProvider>
       </TooltipProvider>
     </div>
   );

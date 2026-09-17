@@ -14,10 +14,18 @@ import SidebarSection from "./SidebarSection";
 import SidebarPlanCard from "./SidebarPlanCard";
 import Link from "next/link";
 import { navigationConfig } from "@/lib/config/navigation";
+import { useHasSavedAiKey } from "@/hooks/useAiKey";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { isCollapsed, toggle, closeMobile } = useSidebar();
+  const hasAiKey = useHasSavedAiKey();
+
+  // Entries for features the business has not set up are left out entirely
+  // rather than shown disabled: there is nothing to do with them from here.
+  const visibleNavigation = navigationConfig.filter(
+    (item) => item.type !== "single" || !item.requiresAiKey || hasAiKey,
+  );
 
   const activeSectionFromUrl = navigationConfig.find(
     (item) =>
@@ -74,7 +82,7 @@ export default function Sidebar() {
 
       <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="space-y-1">
-          {navigationConfig.map((item) => {
+          {visibleNavigation.map((item) => {
             const isSectionActive = activeSectionFromUrl?.label === item.label;
             const isOpen =
               openSectionLabel === item.label ||

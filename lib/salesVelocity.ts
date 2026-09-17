@@ -72,7 +72,7 @@ const normalizeName = (name: string) => name.trim().toLowerCase();
  * Returns null only when a product genuinely isn't tracked, so callers can
  * tell "not tracked" apart from "tracked, none left".
  */
-function stockOnHand(product: InventoryItem): number | null {
+export function stockOnHand(product: InventoryItem): number | null {
   const variants = product.variants ?? [];
 
   if (variants.length > 0) {

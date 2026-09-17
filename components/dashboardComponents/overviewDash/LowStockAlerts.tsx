@@ -92,10 +92,11 @@ export default function LowStockAlerts() {
     <div className="relative bg-white rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5 flex flex-col gap-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <div className="flex flex-col items-center gap-1 align-start">
-            {" "}
-            <AlertTriangle size={16} className="text-amber-500" />
+            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <AlertTriangle size={16} />
+            </div>
             {alerts.length > 0 && (
               <span className="text-[11px] font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
                 {alerts.length}

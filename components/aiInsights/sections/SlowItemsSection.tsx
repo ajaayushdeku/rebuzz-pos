@@ -1,35 +1,65 @@
 "use client";
 
-import { Lightbulb, RefreshCw, TriangleAlert } from "lucide-react";
+import {
+  ArrowDownRight,
+  Ban,
+  Lightbulb,
+  Megaphone,
+  Package,
+  Tags,
+  TriangleAlert,
+  Wrench,
+  type LucideIcon,
+} from "lucide-react";
 
-import type { SlowItemInsight } from "@/lib/mockData/mock-ai-insights";
+import type { AiSectionState } from "@/hooks/useAiSection";
+import { SECTION_WINDOW_DAYS } from "@/lib/ai-insights/sections/shared";
+import type {
+  SlowItemInsight,
+  SlowItemMove,
+  SlowKind,
+} from "@/lib/ai-insights/sections/slowItems";
 import {
   ActionButton,
+  AiSectionBody,
   Card,
   CardGrid,
   comingSoon,
   DismissButton,
-  EmptySection,
-  GenerateMoreButton,
   SectionHeader,
+  SectionRefreshButton,
   TipBox,
+  type ActionTone,
 } from "../parts";
 
+/** Each kind of fix has its own colour and icon, so a row of cards scans. */
+const MOVES = {
+  rework: { tone: "amber", icon: Wrench },
+  bundle: { tone: "blue", icon: Package },
+  reprice: { tone: "green", icon: Tags },
+  promote: { tone: "violet", icon: Megaphone },
+  remove: { tone: "pink", icon: Ban },
+} satisfies Record<SlowItemMove, { tone: ActionTone; icon: LucideIcon }>;
+
 /**
- * A falling number and a pattern are different kinds of signal, so they look
- * different: "-27%" is a warning in red, "Morning only" is an observation in a
- * softer rose.
+ * A fall in sales is a warning in red; no sales at all is the loudest; a low
+ * but steady seller is an observation in a softer rose.
  */
-const isChange = (signal: string) => /^[+-]?\d/.test(signal);
+const SIGNAL_CLASS: Record<SlowKind, string> = {
+  drop: "bg-red-50 text-red-600",
+  "no-sales": "bg-red-100 text-red-700",
+  low: "bg-rose-50 text-rose-600",
+};
 
 export default function SlowItemsSection({
   items,
+  state,
   onDismiss,
-  onGenerate,
 }: {
+  /** The cards still on the page, after dismissals. */
   items: SlowItemInsight[];
+  state: AiSectionState<SlowItemInsight>;
   onDismiss: (id: string) => void;
-  onGenerate: () => void;
 }) {
   return (
     <section>
@@ -37,66 +67,72 @@ export default function SlowItemsSection({
         icon={TriangleAlert}
         iconClassName="bg-red-50 text-red-500"
         title="Slow Item Insights"
-        subtitle="Fixes for underperforming items"
+        subtitle={`Items selling slowly over the last ${SECTION_WINDOW_DAYS} days, and how to fix them`}
         actions={
-          <GenerateMoreButton
-            icon={RefreshCw}
-            textClassName="text-red-600"
-            onClick={onGenerate}
-          />
+          <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
+            <SectionRefreshButton state={state} textClassName="text-red-600" />
+          </div>
         }
       />
 
-      {items.length === 0 ? (
-        <EmptySection message="No slow items flagged right now." />
-      ) : (
+      <AiSectionBody
+        state={state}
+        visibleCount={items.length}
+        layout="cards"
+        noSalesMessage={`No sales in the last ${SECTION_WINDOW_DAYS * 2} days, so there is nothing to compare yet.`}
+        nothingFlaggedMessage="Every item on your menu is selling steadily. Nothing to fix right now."
+        emptyMessage="No slow items flagged right now."
+      >
         <CardGrid>
-          {items.map((item) => (
-            <Card key={item.id} className="gap-4">
-              <DismissButton
-                label={item.name}
-                onClick={() => onDismiss(item.id)}
-              />
+          {items.map((item) => {
+            const move = MOVES[item.move];
+            return (
+              <Card key={item.id} className="gap-4">
+                <DismissButton
+                  label={item.name}
+                  onClick={() => onDismiss(item.id)}
+                />
 
-              <div className="flex items-start gap-3 pr-6">
-                <span className="text-2xl leading-none" aria-hidden>
-                  {item.icon}
-                </span>
-                <div>
-                  <h3 className="text-[14px] font-semibold text-gray-900">
-                    {item.name}
-                  </h3>
-                  <p className="mt-1 flex items-center gap-2 text-[11px]">
-                    <span
-                      className={`rounded px-1.5 py-0.5 font-bold ${
-                        isChange(item.signal)
-                          ? "bg-red-50 text-red-600"
-                          : "bg-rose-50 text-rose-600"
-                      }`}
-                    >
-                      {item.signal}
-                    </span>
-                    <span className="text-gray-400">{item.context}</span>
-                  </p>
+                <div className="flex items-start gap-3 pr-6">
+                  <span className="text-2xl leading-none" aria-hidden>
+                    {item.icon}
+                  </span>
+                  <div>
+                    <h3 className="text-[14px] font-semibold text-gray-900">
+                      {item.name}
+                    </h3>
+                    <p className="mt-1 flex items-center gap-2 text-[11px]">
+                      <span
+                        className={`inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 font-bold ${SIGNAL_CLASS[item.kind]}`}
+                      >
+                        {item.kind === "drop" && (
+                          <ArrowDownRight size={11} aria-hidden />
+                        )}
+                        {item.signal}
+                      </span>
+                      <span className="text-gray-400">{item.context}</span>
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              <p className="text-[13px] leading-relaxed text-gray-600">
-                {item.description}
-              </p>
+                <p className="text-[13px] leading-relaxed text-gray-600">
+                  {item.description}
+                </p>
 
-              <TipBox icon={Lightbulb}>{item.tip}</TipBox>
+                <TipBox icon={Lightbulb}>{item.tip}</TipBox>
 
-              <ActionButton
-                tone={item.tone}
-                onClick={() => comingSoon(item.action)}
-              >
-                {item.action}
-              </ActionButton>
-            </Card>
-          ))}
+                <ActionButton
+                  tone={move.tone}
+                  icon={move.icon}
+                  onClick={() => comingSoon(item.action)}
+                >
+                  {item.action}
+                </ActionButton>
+              </Card>
+            );
+          })}
         </CardGrid>
-      )}
+      </AiSectionBody>
     </section>
   );
 }

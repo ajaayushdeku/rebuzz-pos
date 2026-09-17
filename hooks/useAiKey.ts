@@ -26,6 +26,34 @@ export function useAiKeyStatus() {
   });
 }
 
+/**
+ * Whether this business has a Gemini key saved, for hiding AI features that
+ * cannot run without one.
+ *
+ * Reads the same status query as the settings screen, so saving or removing a
+ * key there updates every gate at once — the save and remove hooks invalidate
+ * it, and invalidation refetches every mounted reader whatever its settings.
+ *
+ * With its own freshness settings, though. The sidebar mounts this on every
+ * page, and the settings screen's `staleTime: 0` would refetch the status on
+ * each window focus — a round trip to the AI service and on to the POS API —
+ * for a value that only changes through that screen.
+ *
+ * False while the answer is loading and false if the AI service cannot be
+ * reached. A link to a feature that could only show an error is worse than no
+ * link, and one that appears and then vanishes is worse still.
+ */
+export function useHasSavedAiKey(): boolean {
+  const { data } = useQuery<AiKeyStatus>({
+    queryKey: AI_KEY_QUERY,
+    queryFn: fetchAiKeyStatus,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+  return data?.configured === true;
+}
+
 export function useSaveAiKey() {
   const queryClient = useQueryClient();
   return useMutation({

@@ -1,4 +1,8 @@
 import { cookies } from "next/headers";
+import {
+  INVENTORY_PRODUCTS_PATH,
+  mapInventoryProduct,
+} from "@/lib/inventory/mapInventoryProduct";
 import { authHeaders } from "./authServices/session";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
@@ -57,9 +61,12 @@ export type MergedSalesItem = {
 // ── Fetch product cards (popular products) ────────────────────────────────
 
 export async function fetchInventoryProducts(): Promise<InventoryItem[]> {
-  const res = await fetch(`${BASE}/business/products`, {
+  const res = await fetch(`${BASE}${INVENTORY_PRODUCTS_PATH}`, {
     headers: await authHeaders(),
-    next: { revalidate: 3600 },
+    // Fresh on every read, like the Low Stock card's own request. Cached for
+    // an hour, a restocked item could still be reported to the model as out
+    // of stock long after the card beside it had cleared.
+    cache: "no-store",
   });
 
   if (!res.ok) {
@@ -69,58 +76,7 @@ export async function fetchInventoryProducts(): Promise<InventoryItem[]> {
   const json = await res.json();
   const raw = json?.data?.products ?? [];
 
-  return (
-    raw
-      // Temporarily disabled for testing — include all products regardless of costPrice.
-      // .filter((p: any) => p && typeof p.costPrice === "number" && p.costPrice > 0)
-      .map(
-        (p: any): InventoryItem => ({
-          id: p._id,
-          name: p.name ?? "Unnamed Product",
-          unit: p.soldBy ?? "each",
-          inStock: typeof p.inStock === "number" ? p.inStock : 0,
-          lowStock: typeof p.lowStock === "number" ? p.lowStock : 0,
-          usesStocks: Boolean(p.usesStocks),
-          isTaxable: Boolean(p.isTaxable),
-          isAvailable:
-            p.isAvailable !== undefined ? Boolean(p.isAvailable) : true,
-          orderedCount: typeof p.orderedCount === "number" ? p.orderedCount : 0,
-          costPrice: p.costPrice,
-          price: typeof p.price === "number" ? p.price : 0,
-          categories: p.categories,
-          discounts: Array.isArray(p.discounts)
-            ? p.discounts.filter(
-                (d: unknown): d is string => typeof d === "string",
-              )
-            : undefined,
-          image:
-            typeof p.image === "string" && p.image
-              ? p.image
-              : (p.images?.[0] ?? undefined),
-          images: Array.isArray(p.images)
-            ? p.images.filter(
-                (s: unknown): s is string => typeof s === "string",
-              )
-            : undefined,
-          variants:
-            Array.isArray(p.variants?.variantItems) &&
-            p.variants.variantItems.length > 0
-              ? p.variants.variantItems.map((v: Record<string, unknown>) => ({
-                  id: String(v._id ?? ""),
-                  optionValues: Array.isArray(v.optionValues)
-                    ? (v.optionValues as string[])
-                    : [],
-                  price: typeof v.price === "number" ? v.price : 0,
-                  costPrice: typeof v.costPrice === "number" ? v.costPrice : 0,
-                  inStock: typeof v.inStock === "number" ? v.inStock : 0,
-                  lowStock: typeof v.lowStock === "number" ? v.lowStock : 0,
-                  isAvailable:
-                    v.isAvailable !== undefined ? Boolean(v.isAvailable) : true,
-                }))
-              : undefined,
-        }),
-      )
-  );
+  return raw.map(mapInventoryProduct);
 }
 
 // ── Fetch sales by item (for chart + analysis) ────────────────────────────
