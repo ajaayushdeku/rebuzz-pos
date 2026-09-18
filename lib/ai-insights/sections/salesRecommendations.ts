@@ -15,6 +15,7 @@
  */
 
 import {
+  formatMoney,
   SECTION_WINDOW_DAYS,
   changePct,
   num,
@@ -35,7 +36,7 @@ export const SALES_WINDOW_DAYS = SECTION_WINDOW_DAYS;
  * It is part of the cache key, so answers written under the old instructions
  * stop being served the moment the new ones ship.
  */
-export const SALES_RECOMMENDATIONS_VERSION = "v1";
+export const SALES_RECOMMENDATIONS_VERSION = "v2";
 
 // ── Facts ─────────────────────────────────────────────────────────────────
 
@@ -284,7 +285,7 @@ export function salesBriefing(
   facts: SalesFacts,
   currencySymbol: string,
 ): string {
-  const money = (value: number) => `${currencySymbol} ${whole(value)}`;
+  const money = (value: number) => formatMoney(currencySymbol, value);
   const { current, previous } = facts.windows;
   const t = facts.totals;
 

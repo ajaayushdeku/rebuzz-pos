@@ -13,7 +13,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useRouter } from "next/navigation";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
-import { parseNepalDateTime } from "./staffDetailHelpers";
+import { nepalStamp, timeAgo } from "@/lib/nepalDate";
 import { ComponentHeader } from "@/components/ComponentHeader";
 import RangeBadge from "@/components/ui/RangeBadge";
 import SegmentedControl, {
@@ -321,9 +321,10 @@ export default function InvoiceListSection({
             <tbody>
               {displayTickets.map((ticket, idx) => {
                 const s = getStatusStyle(ticket.paidStatus);
-                const ticketDate = ticket.createdAt
-                  ? parseNepalDateTime(ticket.createdAt)
-                  : null;
+                // `createdAt` is a true UTC instant ("…Z"). The old parser
+                // stripped the Z and read it as Nepal time already, so every
+                // invoice showed 5h45m early. See nepalStamp.
+                const stamp = nepalStamp(ticket.createdAt);
 
                 // An unpaid ticket has no method at all — that still renders
                 // as a dash. Anything present is normalised before lookup.
@@ -344,26 +345,26 @@ export default function InvoiceListSection({
                       {page * pageSize + idx + 1}
                     </td>
                     <td className="py-3 px-4">
-                      <span className="font-semibold text-xs text-gray-900">
+                      <span className="font-semibold text-xs text-gray-900 block">
                         ORD-{ticket.invoice}
                       </span>
+                      {stamp && (
+                        <span className="text-[11px] text-gray-400">
+                          {timeAgo(stamp.instant)}
+                        </span>
+                      )}
                     </td>
                     <td className="py-3 px-4">
-                      {ticketDate ? (
+                      {stamp ? (
                         <div>
-                          <span className="font-medium text-gray-800 text-xs block">
-                            {ticketDate.toLocaleTimeString("en-US", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: false,
-                            })}
+                          <span className="font-medium text-gray-800 text-xs tracking-wide block">
+                            {stamp.time24}
+                            <span className="text-[10px] font-normal text-gray-400">
+                              {"  "}[ {stamp.time12} ]
+                            </span>
                           </span>
                           <span className="text-[11px] text-gray-400">
-                            {ticketDate.toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
+                            {stamp.date}
                           </span>
                         </div>
                       ) : (

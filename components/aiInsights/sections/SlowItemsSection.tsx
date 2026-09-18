@@ -1,16 +1,6 @@
 "use client";
 
-import {
-  ArrowDownRight,
-  Ban,
-  Lightbulb,
-  Megaphone,
-  Package,
-  Tags,
-  TriangleAlert,
-  Wrench,
-  type LucideIcon,
-} from "lucide-react";
+import { TriangleAlert } from "lucide-react";
 
 import type { AiSectionState } from "@/hooks/useAiSection";
 import { SECTION_WINDOW_DAYS } from "@/lib/ai-insights/sections/shared";
@@ -20,38 +10,34 @@ import type {
   SlowKind,
 } from "@/lib/ai-insights/sections/slowItems";
 import {
-  ActionButton,
   AiSectionBody,
-  Card,
+  CardAction,
   CardGrid,
-  CardHeader,
-  Chip,
-  comingSoon,
-  DismissButton,
-  EmojiTile,
+  InsightCard,
+  LeadTile,
+  Recommendation,
   SectionHeader,
   SectionRefreshButton,
-  TipBox,
-  type ActionTone,
+  type AccentName,
 } from "../parts";
 
-/** Each kind of fix has its own colour and icon, so a row of cards scans. */
-const MOVES = {
-  rework: { tone: "amber", icon: Wrench },
-  bundle: { tone: "blue", icon: Package },
-  reprice: { tone: "green", icon: Tags },
-  promote: { tone: "violet", icon: Megaphone },
-  remove: { tone: "pink", icon: Ban },
-} satisfies Record<SlowItemMove, { tone: ActionTone; icon: LucideIcon }>;
+/** Each kind of slow item: its label and the card's accent. */
+const KIND: Record<SlowKind, { label: string; accent: AccentName }> = {
+  drop: { label: "Sales falling", accent: "red" },
+  "no-sales": { label: "No sales", accent: "rose" },
+  low: { label: "Low seller", accent: "amber" },
+};
 
 /**
- * A fall in sales is a warning in red; no sales at all is the loudest; a low
- * but steady seller is an observation in a softer rose.
+ * Where each fix is carried out: prices, recipes and the menu itself on the
+ * products page; a bundle or a push as an offer.
  */
-const SIGNAL_CLASS: Record<SlowKind, string> = {
-  drop: "bg-red-50 text-red-600",
-  "no-sales": "bg-red-100 text-red-700",
-  low: "bg-rose-50 text-rose-600",
+const MOVE_HREF: Record<SlowItemMove, string> = {
+  rework: "/records/products",
+  reprice: "/records/products",
+  remove: "/records/products",
+  bundle: "/offers",
+  promote: "/offers",
 };
 
 export default function SlowItemsSection({
@@ -91,43 +77,40 @@ export default function SlowItemsSection({
       >
         <CardGrid>
           {items.map((item) => {
-            const move = MOVES[item.move];
             return (
-              <Card key={item.id}>
-                <DismissButton
-                  label={item.name}
-                  onClick={() => onDismiss(item.id)}
-                />
-
-                <CardHeader
-                  lead={<EmojiTile>{item.icon}</EmojiTile>}
-                  title={item.name}
-                >
-                  <Chip className={SIGNAL_CLASS[item.kind]}>
-                    {item.kind === "drop" && (
-                      <ArrowDownRight size={11} aria-hidden />
-                    )}
-                    {item.signal}
-                  </Chip>
-                  <span className="text-[11px] text-gray-400">
-                    {item.context}
-                  </span>
-                </CardHeader>
-
+              <InsightCard
+                key={item.id}
+                accent={KIND[item.kind].accent}
+                lead={
+                  <LeadTile accent={KIND[item.kind].accent}>
+                    {item.icon}
+                  </LeadTile>
+                }
+                label={KIND[item.kind].label}
+                title={item.name}
+                onDismiss={() => onDismiss(item.id)}
+                dismissLabel={item.name}
+                metrics={[
+                  {
+                    label: item.kind === "drop" ? "Sales change" : "Status",
+                    value: item.signal,
+                    valueClassName: "text-red-600",
+                  },
+                  { label: "Pace", value: item.context },
+                ]}
+                footer={
+                  <CardAction href={MOVE_HREF[item.move]}>
+                    {item.action}
+                  </CardAction>
+                }
+              >
                 <p className="text-[13px] leading-relaxed text-gray-600">
                   {item.description}
                 </p>
-
-                <TipBox icon={Lightbulb}>{item.tip}</TipBox>
-
-                <ActionButton
-                  tone={move.tone}
-                  icon={move.icon}
-                  onClick={() => comingSoon(item.action)}
-                >
-                  {item.action}
-                </ActionButton>
-              </Card>
+                <div className="mt-auto">
+                  <Recommendation>{item.tip}</Recommendation>
+                </div>
+              </InsightCard>
             );
           })}
         </CardGrid>

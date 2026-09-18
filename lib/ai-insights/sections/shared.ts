@@ -82,6 +82,18 @@ export function changePct(current: number, previous: number): number | null {
 export const whole = (value: number) =>
   Math.round(value).toLocaleString("en-US", { maximumFractionDigits: 0 });
 
+/**
+ * "Rs 1,200", and "-Rs 40" for a loss — the sign before the symbol.
+ *
+ * Written "Rs -40" before, which reads as a price of minus forty rather than
+ * forty lost, and the model copied it into its sentences. The rest of the app
+ * already puts the sign first (see `formatCurrencySymbol`).
+ */
+export function formatMoney(symbol: string, value: number): string {
+  const text = `${symbol} ${whole(Math.abs(value))}`;
+  return value < 0 && Math.round(Math.abs(value)) > 0 ? `-${text}` : text;
+}
+
 export const signed = (pct: number) => `${pct > 0 ? "+" : ""}${pct}%`;
 
 /** Units a week over a window of `days`. */
@@ -197,6 +209,38 @@ export function emojiOr(value: unknown, fallback: string): string {
   return trimmed && trimmed.length <= 8 && !/[\p{L}\p{N}]/u.test(trimmed)
     ? trimmed
     : fallback;
+}
+
+/**
+ * Real names put back into the model's text.
+ *
+ * The model only ever sees people as short codes ("s1332jr", "cyaxai4"), and
+ * is asked to write {name} where a name belongs. It does not always: it
+ * sometimes copies the code it was given ("s1332jr takes 76% of orders").
+ * So both are replaced — {name} with `name`, and every code in `names` with
+ * the person it stands for — and a code can never reach a card.
+ */
+export function putNamesBack(
+  text: string,
+  name: string,
+  names: Map<string, string>,
+): string {
+  let out = text.replace(/\{name\}/gi, name);
+  // Codes are letters and digits only, so they go into the pattern as they
+  // are; anything else is skipped rather than escaped.
+  const codes = [...names.keys()]
+    .filter((code) => /^[a-z0-9]+$/i.test(code))
+    .sort((a, b) => b.length - a.length);
+  if (codes.length > 0) {
+    const byLower = new Map(
+      [...names].map(([code, person]) => [code.toLowerCase(), person]),
+    );
+    out = out.replace(
+      new RegExp(`\\b(${codes.join("|")})\\b`, "gi"),
+      (code) => byLower.get(code.toLowerCase()) ?? code,
+    );
+  }
+  return out;
 }
 
 /** A string from the model, trimmed and capped, or null when unusable. */

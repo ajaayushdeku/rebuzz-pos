@@ -21,6 +21,7 @@
 
 import { buildMenuFacts, type MenuLine } from "./menuSuggestions";
 import {
+  formatMoney,
   shiftIsoDate,
   textOr,
   whole,
@@ -290,7 +291,7 @@ const SLOT_WORDS: Record<SlotKind, string> = {
 };
 
 export function hourBriefing(facts: HourFacts, currencySymbol: string): string {
-  const money = (value: number) => `${currencySymbol} ${whole(value)}`;
+  const money = (value: number) => formatMoney(currencySymbol, value);
 
   const lines = [
     `Window: ${facts.windowStart} to ${facts.windowEnd}, ${HOUR_WINDOW_DAYS} days. Times are Nepal time. Money is before tax, in ${currencySymbol}.`,

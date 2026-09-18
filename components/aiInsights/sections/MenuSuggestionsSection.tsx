@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Sparkles, Star, UtensilsCrossed } from "lucide-react";
+import { Search, Sparkles, Star } from "lucide-react";
 
 import SegmentedControl from "@/components/ui/SegmentedControl";
 import type { AiSectionState } from "@/hooks/useAiSection";
@@ -13,19 +13,18 @@ import type {
 import { SECTION_WINDOW_DAYS } from "@/lib/ai-insights/sections/shared";
 import {
   AiSectionBody,
-  Card,
+  BodyLabel,
+  CardAction,
   CardGrid,
-  CardHeader,
-  CardLabel,
-  Chip,
-  DismissButton,
-  EmojiTile,
-  Fact,
-  Facts,
   EmptySection,
+  InsightCard,
+  LeadTile,
   SectionHeader,
   SectionRefreshButton,
+  TagList,
   useMoney,
+  type AccentName,
+  type Metric,
 } from "../parts";
 
 type DifficultyFilter = "all" | Difficulty;
@@ -42,6 +41,48 @@ const KIND_LABEL: Record<MenuIdeaKind, string> = {
   "new-item": "New item",
   "add-on": "Add-on",
 };
+
+/** Each kind of idea has its own accent, so a row of cards scans by colour. */
+const KIND_ACCENT: Record<MenuIdeaKind, AccentName> = {
+  combo: "blue",
+  "new-item": "emerald",
+  "add-on": "amber",
+};
+
+/** The price to try, what it replaces, and the effort — all from the app. */
+function menuMetrics(
+  item: MenuSuggestion,
+  money: (value: number) => string,
+): Metric[] {
+  const metrics: Metric[] = [];
+  if (item.suggestedPrice !== null) {
+    metrics.push({
+      label: "Try at",
+      value: money(item.suggestedPrice),
+      valueClassName: "text-emerald-700",
+    });
+  }
+  if (
+    item.suggestedPrice !== null &&
+    item.separatePrice !== null &&
+    item.separatePrice > item.suggestedPrice
+  ) {
+    metrics.push({
+      label: "Separately",
+      value: money(item.separatePrice),
+      valueClassName: "text-gray-400 line-through",
+      note: `saves ${money(item.separatePrice - item.suggestedPrice)}`,
+    });
+  } else {
+    metrics.push({
+      label: "Uses",
+      value: `${item.builtFrom.length} item${item.builtFrom.length === 1 ? "" : "s"}`,
+      note: "from your menu",
+    });
+  }
+  metrics.push({ label: "Effort", value: item.difficulty });
+  return metrics;
+}
 
 export default function MenuSuggestionsSection({
   items,
@@ -129,8 +170,19 @@ export default function MenuSuggestionsSection({
             {visible.map((item) => {
               const starred = shortlisted.has(item.id);
               return (
-                <Card key={item.id}>
-                  <div className="absolute right-3 top-3 flex items-center gap-0.5">
+                <InsightCard
+                  key={item.id}
+                  accent={KIND_ACCENT[item.kind]}
+                  lead={
+                    <LeadTile accent={KIND_ACCENT[item.kind]}>
+                      {item.icon}
+                    </LeadTile>
+                  }
+                  label={KIND_LABEL[item.kind]}
+                  title={item.title}
+                  onDismiss={() => onDismiss(item.id)}
+                  dismissLabel={item.title}
+                  corner={
                     <button
                       type="button"
                       onClick={() => onToggleShortlist(item.id)}
@@ -151,76 +203,36 @@ export default function MenuSuggestionsSection({
                         fill={starred ? "currentColor" : "none"}
                       />
                     </button>
-                    <DismissButton
-                      label={item.title}
-                      onClick={() => onDismiss(item.id)}
-                      className=""
-                    />
-                  </div>
-
-                  <CardHeader
-                    lead={
-                      <EmojiTile className="bg-orange-50">
-                        {item.icon}
-                      </EmojiTile>
-                    }
-                    title={item.title}
-                    reserve="pr-14"
-                  >
-                    <Chip className="bg-violet-50 text-violet-700">
-                      {KIND_LABEL[item.kind]}
-                    </Chip>
-                    <Chip>{item.difficulty}</Chip>
-                  </CardHeader>
-
+                  }
+                  metrics={menuMetrics(item, money)}
+                  // A new item is added on the products page.
+                  footer={
+                    <CardAction href="/records/products/add" primary={false}>
+                      Add to menu
+                    </CardAction>
+                  }
+                >
                   <p className="text-[13px] leading-relaxed text-gray-600">
                     {item.description}
                   </p>
 
-                  {/* The price to try, beside what the items cost bought one
-                      by one. Both are only shown when they are real: the
-                      menu's own prices, and a suggestion that covers cost. */}
-                  {item.suggestedPrice !== null && (
-                    <Facts>
-                      <Fact label="Try at" valueClassName="text-emerald-700">
-                        {money(item.suggestedPrice)}
-                      </Fact>
-                      {item.separatePrice !== null &&
-                      item.separatePrice > item.suggestedPrice ? (
-                        <Fact
-                          label="Bought separately"
-                          valueClassName="text-gray-400 line-through"
-                        >
-                          {money(item.separatePrice)}
-                        </Fact>
-                      ) : (
-                        <Fact label="Items used">{item.builtFrom.length}</Fact>
-                      )}
-                    </Facts>
-                  )}
-
-                  <div className="mt-auto border-t border-gray-100 pt-4">
-                    <CardLabel
-                      icon={UtensilsCrossed}
-                      iconClassName="text-violet-500"
-                    >
-                      Built from your menu
-                    </CardLabel>
-                    <ul className="flex flex-wrap gap-1.5">
-                      {item.builtFrom.map((b) => (
-                        <li
-                          key={b.name}
-                          className="rounded-md border border-gray-200 bg-white px-2 py-1 text-[11px] text-gray-700"
-                        >
-                          {b.name}
-                          <span className="ml-1.5 text-gray-400">
-                            {money(b.price)}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
+                  <div className="mt-auto">
+                    <BodyLabel>Built from your menu</BodyLabel>
+                    <TagList
+                      tags={item.builtFrom.map((b) => ({
+                        key: b.name,
+                        content: (
+                          <>
+                            {b.name}
+                            <span className="ml-1.5 text-gray-400">
+                              {money(b.price)}
+                            </span>
+                          </>
+                        ),
+                      }))}
+                    />
                   </div>
-                </Card>
+                </InsightCard>
               );
             })}
           </CardGrid>

@@ -445,7 +445,8 @@ export async function getStaffData(
         const sales = salesMap.get(id);
         const salesFromApi = sales?.totalSales ?? 0;
         const ticketCount = ticketCountMap.get(id) ?? 0;
-        const resolvedOrders = Math.max(salesFromApi, ticketCount);
+        // const resolvedOrders = Math.max(salesFromApi, ticketCount);
+          const resolvedOrders = ticketCount;
 
         return {
           staffId: id,

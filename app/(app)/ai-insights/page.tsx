@@ -5,7 +5,6 @@ import { Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
-import { comingSoon } from "@/components/aiInsights/parts";
 import AiInsightsHero from "@/components/aiInsights/sections/AiInsightsHero";
 import MenuSuggestionsSection from "@/components/aiInsights/sections/MenuSuggestionsSection";
 import SlowItemsSection from "@/components/aiInsights/sections/SlowItemsSection";
@@ -15,23 +14,19 @@ import FestivalPrepSection from "@/components/aiInsights/sections/FestivalPrepSe
 import SalesRecommendationsSection from "@/components/aiInsights/sections/SalesRecommendationsSection";
 import CustomerRetentionSection from "@/components/aiInsights/sections/CustomerRetentionSection";
 import StaffingSection from "@/components/aiInsights/sections/StaffingSection";
-import {
-  MOCK_PRICING,
-  MOCK_RETENTION,
-  MOCK_STAFFING,
-} from "@/lib/mockData/mock-ai-insights";
 import { useAiSection } from "@/hooks/useAiSection";
 import type { FestivalPrep } from "@/lib/ai-insights/sections/festivalPrep";
 import type { HourInsight } from "@/lib/ai-insights/sections/hourPlaybook";
 import type { MenuSuggestion } from "@/lib/ai-insights/sections/menuSuggestions";
+import type { PricingInsight } from "@/lib/ai-insights/sections/pricing";
+import type { RetentionInsight } from "@/lib/ai-insights/sections/retention";
+import type { StaffingInsight } from "@/lib/ai-insights/sections/staffing";
 import type { SalesRecommendation } from "@/lib/ai-insights/sections/salesRecommendations";
 import type { SlowItemInsight } from "@/lib/ai-insights/sections/slowItems";
 
 /**
- * AI Insights. Menu Suggestions, Slow Items, the Hour-by-Hour Playbook,
- * Festival Prep and Sales Recommendations are generated from the business's
- * own sales and menu; the other sections are still sample data, connected one
- * at a time.
+ * AI Insights. Every section is generated from the business's own sales,
+ * menu, customers and staff.
  *
  * Dismissals and the shortlist are held here rather than inside each section,
  * because the banner at the top summarises all of them. Each section only
@@ -66,6 +61,9 @@ export default function AIInsightPage() {
 
   const menuSuggestions = useAiSection<MenuSuggestion>("menu-suggestions");
   const slowItems = useAiSection<SlowItemInsight>("slow-items");
+  const pricingSection = useAiSection<PricingInsight>("pricing");
+  const retentionSection = useAiSection<RetentionInsight>("retention");
+  const staffingSection = useAiSection<StaffingInsight>("staffing");
   const hourPlaybook = useAiSection<HourInsight>("hour-playbook");
   const festivalPrep = useAiSection<FestivalPrep>("festival-prep");
   const salesRecommendations = useAiSection<SalesRecommendation>(
@@ -74,12 +72,12 @@ export default function AIInsightPage() {
 
   const menu = keep(menuSuggestions.data?.items ?? []);
   const slow = keep(slowItems.data?.items ?? []);
-  const pricing = keep(MOCK_PRICING);
+  const pricing = keep(pricingSection.data?.items ?? []);
   const hours = keep(hourPlaybook.data?.items ?? []);
   const festivals = keep(festivalPrep.data?.items ?? []);
   const sales = keep(salesRecommendations.data?.items ?? []);
-  const retention = keep(MOCK_RETENTION);
-  const staffing = keep(MOCK_STAFFING);
+  const retention = keep(retentionSection.data?.items ?? []);
+  const staffing = keep(staffingSection.data?.items ?? []);
 
   const activeInsights =
     menu.length +
@@ -97,16 +95,16 @@ export default function AIInsightPage() {
     shortlisted.has(item.id),
   ).length;
 
-  // The sample sections' own buttons, until they are connected.
-  const generate = () => comingSoon("Generating more insights");
-
   // ── The banner's "Generate insights" ──
   const liveSections = [
     menuSuggestions,
     slowItems,
+    pricingSection,
     hourPlaybook,
     festivalPrep,
     salesRecommendations,
+    retentionSection,
+    staffingSection,
   ];
   const [generating, setGenerating] = useState(false);
 
@@ -219,8 +217,8 @@ export default function AIInsightPage() {
         <ChartErrorBoundary>
           <PricingSection
             items={pricing}
+            state={pricingSection}
             onDismiss={dismiss}
-            onGenerate={generate}
           />
         </ChartErrorBoundary>
 
@@ -251,16 +249,16 @@ export default function AIInsightPage() {
         <ChartErrorBoundary>
           <CustomerRetentionSection
             items={retention}
+            state={retentionSection}
             onDismiss={dismiss}
-            onGenerate={generate}
           />
         </ChartErrorBoundary>
 
         <ChartErrorBoundary>
           <StaffingSection
             items={staffing}
+            state={staffingSection}
             onDismiss={dismiss}
-            onGenerate={generate}
           />
         </ChartErrorBoundary>
       </div>

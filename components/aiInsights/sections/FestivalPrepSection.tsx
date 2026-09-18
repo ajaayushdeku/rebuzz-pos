@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarClock, CalendarDays, Gift, PackagePlus } from "lucide-react";
+import { CalendarClock, CalendarDays } from "lucide-react";
 
 import type { AiSectionState } from "@/hooks/useAiSection";
 import {
@@ -11,21 +11,18 @@ import {
 import { COVERED_BS_YEAR } from "@/lib/holidayCalendar";
 import { daysFromNepalToday } from "@/lib/nepalDate";
 import {
-  ActionButton,
   AiSectionBody,
-  Card,
+  BodyLabel,
+  CardAction,
   CardGrid,
-  CardHeader,
-  CardLabel,
-  Chip,
-  DismissButton,
-  EmojiTile,
-  Fact,
-  Facts,
   GenerateMoreButton,
+  InsightCard,
+  LabelNote,
+  LeadTile,
+  Recommendation,
   SectionHeader,
   SectionRefreshButton,
-  TipBox,
+  TagList,
 } from "../parts";
 
 /** Cards shown before "Show all". */
@@ -62,6 +59,12 @@ function dateRange(start: string, end: string): string {
   return a.month === b.month
     ? `${a.month} ${a.day} – ${b.day}`
     : `${a.month} ${a.day} – ${b.month} ${b.day}`;
+}
+
+/** Days from start to end, both included. */
+function dayCount(start: string, end: string): number {
+  const ms = (iso: string) => Date.parse(`${iso}T00:00:00Z`);
+  return Math.round((ms(end) - ms(start)) / 86_400_000) + 1;
 }
 
 /** Who has the day off, in the words the holiday notice uses. */
@@ -124,71 +127,66 @@ export default function FestivalPrepSection({
           {shown.map((item) => {
             const when = countdown(item.startDate, item.endDate);
             const range = dateRange(item.startDate, item.endDate);
+            const days = dayCount(item.startDate, item.endDate);
 
             return (
-              <Card key={item.id}>
-                <DismissButton
-                  label={item.label}
-                  onClick={() => onDismiss(item.id)}
-                />
-
-                <CardHeader
-                  lead={
-                    <EmojiTile className="bg-amber-50">{item.icon}</EmojiTile>
-                  }
-                  title={item.label}
-                >
-                  {when && (
-                    <Chip className="bg-amber-50 text-amber-700">
-                      <CalendarClock size={11} aria-hidden />
-                      {when}
-                    </Chip>
-                  )}
-                  <Chip>{observedBy(item)}</Chip>
-                </CardHeader>
-
-                {/* Both calendars, each with its own label, rather than three
-                    loose lines of dates under the title. */}
-                <Facts>
-                  <Fact label="Dates">{range}</Fact>
-                  <Fact label="Nepali date" valueClassName="text-emerald-700">
-                    {item.bsLabel}
-                  </Fact>
-                </Facts>
-
+              <InsightCard
+                key={item.id}
+                accent="amber"
+                lead={<LeadTile accent="amber">{item.icon}</LeadTile>}
+                label={
+                  <>
+                    <CalendarClock size={11} aria-hidden />
+                    {when ?? observedBy(item)}
+                    {when && <LabelNote>{observedBy(item)}</LabelNote>}
+                  </>
+                }
+                title={item.label}
+                onDismiss={() => onDismiss(item.id)}
+                dismissLabel={item.label}
+                // Both calendars, each with its own label.
+                metrics={[
+                  {
+                    label: "Dates",
+                    value: range,
+                    note: `${days} day${days === 1 ? "" : "s"}`,
+                  },
+                  {
+                    label: "Nepali date",
+                    value: item.bsLabel,
+                    valueClassName: "text-emerald-700",
+                  },
+                ]}
+                footer={
+                  <CardAction href="/offers">
+                    Plan a {item.label} offer
+                  </CardAction>
+                }
+              >
                 <p className="text-[13px] leading-relaxed text-gray-600">
                   {item.description}
                 </p>
 
                 {item.stockUp.length > 0 && (
                   <div>
-                    <CardLabel
-                      icon={PackagePlus}
-                      iconClassName="text-amber-600"
-                    >
-                      Stock up on
-                    </CardLabel>
-                    <ul className="flex flex-wrap gap-1.5">
-                      {item.stockUp.map((name) => (
-                        <li
-                          key={name}
-                          className="rounded-md border border-amber-100 bg-amber-50/60 px-2 py-1 text-[11px] text-amber-900"
-                        >
-                          {name}
-                        </li>
-                      ))}
-                    </ul>
+                    <BodyLabel>Stock up on</BodyLabel>
+                    <TagList
+                      tags={item.stockUp.map((name) => ({
+                        key: name,
+                        content: name,
+                      }))}
+                    />
                   </div>
                 )}
 
                 {item.offerIdea && (
-                  <TipBox icon={Gift}>{item.offerIdea}</TipBox>
+                  <div className="mt-auto">
+                    <Recommendation title="Offer idea">
+                      {item.offerIdea}
+                    </Recommendation>
+                  </div>
                 )}
-
-                <ActionButton tone="amber" href="/offers">
-                  Plan a {item.label} offer
-                </ActionButton>
-              </Card>
+              </InsightCard>
             );
           })}
         </CardGrid>

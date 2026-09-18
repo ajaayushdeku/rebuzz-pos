@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { parseNepalDateTime } from "./staffDetailHelpers";
+import { nepalStamp, timeAgo } from "@/lib/nepalDate";
 import { useRouter } from "next/navigation";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import {
@@ -391,7 +391,8 @@ export default function BillsSection({
             </thead>
             <tbody>
               {displayBills.map((bill, idx) => {
-                const billDate = parseNepalDateTime(bill.paidAt);
+                // Read as Nepal time on every machine; see nepalStamp.
+                const stamp = nepalStamp(bill.paidAt);
                 const s =
                   statusStyles[bill.isRefunded ? "refunded" : "completed"] ??
                   statusStyles["completed"];
@@ -410,9 +411,14 @@ export default function BillsSection({
                       {page * pageSize + idx + 1}
                     </td>
                     <td className="py-3 px-4">
-                      <span className="font-semibold text-xs text-gray-900">
+                      <span className="font-semibold text-xs text-gray-900 block">
                         BILL-{bill.paidBillNo}
                       </span>
+                      {stamp && (
+                        <span className="text-[11px] text-gray-400">
+                          {timeAgo(stamp.instant)}
+                        </span>
+                      )}
                     </td>
                     <td className="py-3 px-4">
                       <span className="font-semibold text-xs text-gray-900">
@@ -420,21 +426,16 @@ export default function BillsSection({
                       </span>
                     </td>
                     <td className="py-3 px-4">
-                      {billDate ? (
+                      {stamp ? (
                         <div>
-                          <span className="font-medium text-gray-800 text-xs block">
-                            {billDate.toLocaleTimeString("en-US", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: false,
-                            })}
+                          <span className="font-medium text-gray-800 text-xs tracking-wide block">
+                            {stamp.time24}
+                            <span className="text-[10px] font-normal text-gray-400">
+                              {"  "}[ {stamp.time12} ]
+                            </span>
                           </span>
                           <span className="text-[11px] text-gray-400">
-                            {billDate.toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
+                            {stamp.date}
                           </span>
                         </div>
                       ) : (

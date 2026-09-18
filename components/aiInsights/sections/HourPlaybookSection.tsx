@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, Coffee } from "lucide-react";
+import { Clock } from "lucide-react";
 
 import type { AiSectionState } from "@/hooks/useAiSection";
 import {
@@ -11,16 +11,13 @@ import {
 } from "@/lib/ai-insights/sections/hourPlaybook";
 import {
   AiSectionBody,
-  Card,
   CardGrid,
-  CardHeader,
-  DismissButton,
-  Fact,
-  Facts,
+  InsightCard,
+  Recommendation,
   SectionHeader,
   SectionRefreshButton,
-  TipBox,
   useMoney,
+  type AccentName,
 } from "../parts";
 
 /**
@@ -29,25 +26,29 @@ import {
  * eye lands. A quiet hour is red because it is the costly one: the rent and
  * the wages are paid either way.
  */
-function busynessTone(percent: number) {
+function busynessTone(percent: number): {
+  accent: AccentName;
+  pill: string;
+  text: string;
+} {
   if (percent < 34) {
     return {
+      accent: "red",
       pill: "bg-red-50 text-red-600",
       text: "text-red-600",
-      bar: "bg-red-400",
     };
   }
   if (percent < 75) {
     return {
+      accent: "amber",
       pill: "bg-amber-50 text-amber-600",
       text: "text-amber-600",
-      bar: "bg-amber-400",
     };
   }
   return {
+    accent: "emerald",
     pill: "bg-emerald-50 text-emerald-600",
     text: "text-emerald-600",
-    bar: "bg-emerald-500",
   };
 }
 
@@ -98,70 +99,48 @@ export default function HourPlaybookSection({
           {items.map((item) => {
             const tone = busynessTone(item.busynessPct);
             return (
-              <Card key={item.id}>
-                <DismissButton
-                  label={`${item.time} ${item.title}`}
-                  onClick={() => onDismiss(item.id)}
-                />
-
-                <CardHeader
-                  lead={
-                    <span
-                      className={`flex h-10 items-center rounded-lg px-2.5 text-[14px] font-bold ${tone.pill}`}
-                    >
-                      {item.time}
-                    </span>
-                  }
-                  title={item.title}
-                >
-                  <span className="text-[11px] text-gray-400">
-                    {KIND_LABEL[item.kind]}
-                  </span>
-                </CardHeader>
-
-                {/* Busyness, not occupancy: the POS counts orders, not seats,
-                    so the bar compares this hour with the busiest. */}
-                <div className="rounded-lg bg-gray-50 px-3 py-2.5">
-                  <div className="flex items-center justify-between gap-2 text-[10px] font-semibold uppercase tracking-wider">
-                    <span className="text-gray-400">Busyness</span>
-                    <span className={tone.text}>
-                      {item.busynessPct}% of your busiest hour
-                    </span>
-                  </div>
-                  <div
-                    className="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-200/70"
-                    role="meter"
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-valuenow={item.busynessPct}
-                    aria-label="Busyness compared with your busiest hour"
+              <InsightCard
+                key={item.id}
+                accent={tone.accent}
+                lead={
+                  <span
+                    className={`flex h-10 shrink-0 items-center rounded-lg px-2.5 text-[14px] font-bold ${tone.pill}`}
                   >
-                    <div
-                      className={`h-full rounded-full ${tone.bar}`}
-                      style={{ width: `${item.busynessPct}%` }}
-                    />
-                  </div>
-                </div>
-
-                <Facts>
-                  <Fact label="Orders a day">
-                    {ordersLabel(item.ordersPerDay)}
-                  </Fact>
-                  <Fact label="Typical order">
-                    {item.avgOrder === null ? "—" : money(item.avgOrder)}
-                  </Fact>
-                </Facts>
-
+                    {item.time}
+                  </span>
+                }
+                label={KIND_LABEL[item.kind]}
+                title={item.title}
+                onDismiss={() => onDismiss(item.id)}
+                dismissLabel={`${item.time} ${item.title}`}
+                // Busyness, not occupancy: the POS counts orders, not seats,
+                // so this hour is compared with the busiest one.
+                metrics={[
+                  {
+                    label: "Busyness",
+                    value: `${item.busynessPct}%`,
+                    valueClassName: tone.text,
+                    note: "of busiest hour",
+                  },
+                  {
+                    label: "Orders / day",
+                    value: ordersLabel(item.ordersPerDay),
+                  },
+                  {
+                    label: "Per order",
+                    value: item.avgOrder === null ? "—" : money(item.avgOrder),
+                  },
+                ]}
+              >
                 <p className="text-[13px] leading-relaxed text-gray-600">
                   {item.description}
                 </p>
-
                 <div className="mt-auto">
-                  <TipBox icon={Coffee} iconClassName="text-gray-500">
+                  <Recommendation title="Play for this hour">
                     {item.tip}
-                  </TipBox>
+                  </Recommendation>
                 </div>
-              </Card>
+              </InsightCard>
             );
           })}
         </CardGrid>

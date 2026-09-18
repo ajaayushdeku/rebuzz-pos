@@ -21,7 +21,10 @@ export type AiSectionName =
   | "slow-items"
   | "menu-suggestions"
   | "festival-prep"
-  | "hour-playbook";
+  | "hour-playbook"
+  | "pricing"
+  | "retention"
+  | "staffing";
 
 /**
  * The service's error codes, as sentences.

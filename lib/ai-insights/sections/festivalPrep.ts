@@ -23,6 +23,7 @@
 import { HOLIDAY_EVENTS, type HolidayEvent } from "@/lib/holidayCalendar";
 import { buildMenuFacts, type MenuLine } from "./menuSuggestions";
 import {
+  formatMoney,
   changePct,
   productMatcher,
   shiftIsoDate,
@@ -256,7 +257,7 @@ export function festivalBriefing(
   facts: FestivalFacts,
   currencySymbol: string,
 ): string {
-  const money = (value: number) => `${currencySymbol} ${whole(value)}`;
+  const money = (value: number) => formatMoney(currencySymbol, value);
 
   const when = (e: UpcomingEvent) =>
     e.daysAway > 0

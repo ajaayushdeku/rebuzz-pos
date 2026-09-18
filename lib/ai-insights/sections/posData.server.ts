@@ -19,6 +19,11 @@ import { stockOnHand } from "@/lib/salesVelocity";
 import type { DailySalesRow } from "@/lib/ai-insights/sections/festivalPrep";
 import type { ReportBill } from "@/lib/ai-insights/sections/hourPlaybook";
 import type {
+  CustomerRecord,
+  HistoryPurchase,
+} from "@/lib/ai-insights/sections/retention";
+import type { EmployeeRecord } from "@/lib/ai-insights/sections/staffing";
+import type {
   DateWindow,
   MenuProduct,
   SalesByItemRow,
@@ -92,6 +97,19 @@ export async function fetchSalesRows(
   return Array.isArray(json?.data) ? json.data : [];
 }
 
+/**
+ * The sales report once per window, in parallel, oldest first.
+ *
+ * The report has no dates on its rows, only one row per price an item sold
+ * at. Asked week by week, those rows become a timeline of prices.
+ */
+export async function fetchSalesRowsByWindow(
+  token: string,
+  windows: DateWindow[],
+): Promise<SalesByItemRow[][]> {
+  return Promise.all(windows.map((w) => fetchSalesRows(token, w)));
+}
+
 /** Sales per day over a window. Days with no sales are not in the list. */
 export async function fetchDailySales(
   token: string,
@@ -105,16 +123,52 @@ export async function fetchDailySales(
 }
 
 /** Every bill in a window, from the sales report. */
-export async function fetchReportBills(
+export async function fetchReportBills<T = ReportBill>(
   token: string,
   { startDate, endDate }: DateWindow,
-): Promise<ReportBill[]> {
+): Promise<T[]> {
   const json = await posGet(
     token,
     `/business/report?startDate=${startDate}&endDate=${endDate}`,
   );
   const bills = json?.data?.report?.allBills;
   return Array.isArray(bills) ? bills : [];
+}
+
+/** The business's customers, with phone and loyalty points. */
+export async function fetchCustomers(token: string): Promise<CustomerRecord[]> {
+  const json = await posGet(token, "/business/users/roles/user");
+  const users = json?.data?.users;
+  return Array.isArray(users) ? users : [];
+}
+
+/**
+ * One customer's purchases, items included.
+ *
+ * Read only for the few customers a section is about. An empty list when it
+ * fails: a card without "usually orders" is still worth showing.
+ */
+export async function fetchCustomerHistory(
+  token: string,
+  customerId: string,
+): Promise<HistoryPurchase[]> {
+  try {
+    const json = await posGet(
+      token,
+      `/business/users/${encodeURIComponent(customerId)}/history`,
+    );
+    const purchases = json?.customerPurchases;
+    return Array.isArray(purchases) ? purchases : [];
+  } catch {
+    return [];
+  }
+}
+
+/** The people on the staff list. */
+export async function fetchEmployees(token: string): Promise<EmployeeRecord[]> {
+  const json = await posGet(token, "/business/users/roles/employee");
+  const users = json?.data?.users;
+  return Array.isArray(users) ? users : [];
 }
 
 /** Category id → name. An empty map when the list cannot be read. */

@@ -13,9 +13,9 @@ import { ComponentHeader } from "@/components/ComponentHeader";
 import { OrderHistoryTableSkeleton } from "@/components/customer/CustomerDetailSkeletons";
 import TablePagination from "@/components/ui/TablePagination";
 import { DETAIL_CARD, CardHeader } from "./DetailCardShell";
+import { nepalStamp, timeAgo } from "@/lib/nepalDate";
 import {
   ORDER_STATUS_STYLE,
-  parseNepalDate,
   type PurchaseHistoryItem,
 } from "./customerDetailHelpers";
 
@@ -103,8 +103,13 @@ export default function OrderHistorySection({
               </thead>
               <tbody>
                 {paged.map((purchase, idx) => {
-                  const rawDate = purchase.paidAt ?? purchase.createdAt;
-                  const date = rawDate ? parseNepalDate(rawDate) : null;
+                  // Nepal time on every machine; see nepalStamp. The old
+                  // parser shifted paidAt to Nepal time and the cell then
+                  // formatted it in the viewer's zone, adding the 5h45m a
+                  // second time in Nepal: a 1:55pm sale read as 19:40.
+                  const stamp = nepalStamp(
+                    purchase.paidAt ?? purchase.createdAt,
+                  );
 
                   const isRefunded = !!purchase.isRefunded;
                   const statusKey: "completed" | "refunded" = isRefunded
@@ -135,28 +140,31 @@ export default function OrderHistorySection({
                         {safePage * PAGE_SIZE + idx + 1}
                       </td>
                       <td className="px-3 py-3">
-                        <span className="text-xs font-semibold text-gray-900">
+                        <span className="block text-xs font-semibold text-gray-900">
                           {purchase.invoiceNo
                             ? `ORD-${purchase.invoiceNo}`
                             : (purchase.orderId ?? "—")}
                         </span>
+                        {stamp && (
+                          <span className="text-[11px] text-gray-400">
+                            {timeAgo(stamp.instant)}
+                          </span>
+                        )}
                       </td>
                       <td className="px-3 py-3">
-                        {date ? (
+                        {/* The same cell Order History and the invoice
+                            table draw: 24-hour time with the 12-hour reading
+                            beside it, the date under it. */}
+                        {stamp ? (
                           <div>
-                            <span className="block text-xs font-medium tabular-nums text-gray-800">
-                              {date.toLocaleTimeString("en-US", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: false,
-                              })}
+                            <span className="block text-xs font-medium tracking-wide tabular-nums text-gray-800">
+                              {stamp.time24}
+                              <span className="text-[10px] font-normal text-gray-400">
+                                {"  "}[ {stamp.time12} ]
+                              </span>
                             </span>
                             <span className="text-[11px] tabular-nums text-gray-400">
-                              {date.toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })}
+                              {stamp.date}
                             </span>
                           </div>
                         ) : (

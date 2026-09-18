@@ -19,6 +19,7 @@
  */
 
 import {
+  formatMoney,
   SECTION_WINDOW_DAYS,
   emojiOr,
   menuMarginPct,
@@ -121,7 +122,7 @@ export function buildMenuFacts(
 // ── Briefing ──────────────────────────────────────────────────────────────
 
 export function menuBriefing(facts: MenuFacts, currencySymbol: string): string {
-  const money = (value: number) => `${currencySymbol} ${whole(value)}`;
+  const money = (value: number) => formatMoney(currencySymbol, value);
   const { current } = facts.windows;
 
   const describe = (l: MenuLine, withSales: boolean) => {

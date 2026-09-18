@@ -11,6 +11,7 @@
  */
 
 import {
+  formatMoney,
   SECTION_WINDOW_DAYS,
   changePct,
   emojiOr,
@@ -223,7 +224,7 @@ export function slowItemsBriefing(
   facts: SlowItemsFacts,
   currencySymbol: string,
 ): string {
-  const money = (value: number) => `${currencySymbol} ${whole(value)}`;
+  const money = (value: number) => formatMoney(currencySymbol, value);
   const { current, previous } = facts.windows;
 
   const finding = (c: SlowCandidate) => {
