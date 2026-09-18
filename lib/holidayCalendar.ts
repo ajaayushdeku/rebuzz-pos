@@ -369,6 +369,12 @@ export const UNDATED_HOLIDAYS = [
 ];
 
 export interface HolidayEvent extends Omit<HolidaySource, "bs"> {
+  /**
+   * Where the dates came from: the government notice written into this file,
+   * or Google's public Nepal holiday calendar (see lib/holidayFeed.ts), used
+   * for the years and short-notice holidays the notice here does not cover.
+   */
+  source?: "official" | "google";
   /** Gregorian, YYYY-MM-DD. */
   start: string;
   /** Gregorian, YYYY-MM-DD, inclusive. Equal to `start` for one day. */
@@ -415,21 +421,108 @@ function toEvent(source: HolidaySource): HolidayEvent {
           ? `${bs.day} ${startMonth} – ${last.getBS().date} ${endMonth} ${endYear}`
           : `${bs.day} – ${last.getBS().date} ${endMonth} ${endYear}`;
 
-  return { ...rest, start, end, bsLabel };
+  return { ...rest, start, end, bsLabel, source: "official" };
+}
+
+/**
+ * "29 Kartik 2083", "22 – 26 Kartik 2083", "31 Aswin – 6 Kartik 2083" for a
+ * Gregorian range — the same wording the notice's own events get, for dates
+ * that arrive in Gregorian (Google's calendar).
+ */
+export function bsRangeLabel(start: string, end: string): string {
+  const first = new NepaliDate(new Date(`${start}T12:00:00`));
+  const last = new NepaliDate(new Date(`${end}T12:00:00`));
+  const a = first.getBS();
+  const b = last.getBS();
+  const startMonth = first.format("MMMM");
+  const endMonth = last.format("MMMM");
+  if (start === end) return `${a.date} ${startMonth} ${a.year}`;
+  if (a.year !== b.year) {
+    return `${a.date} ${startMonth} ${a.year} – ${b.date} ${endMonth} ${b.year}`;
+  }
+  if (startMonth !== endMonth) {
+    return `${a.date} ${startMonth} – ${b.date} ${endMonth} ${b.year}`;
+  }
+  return `${a.date} – ${b.date} ${endMonth} ${b.year}`;
 }
 
 export const HOLIDAY_EVENTS: HolidayEvent[] = SOURCE.map(toEvent).sort((a, b) =>
   a.start.localeCompare(b.start),
 );
 
+/**
+ * The span the notice in this file covers: 1 Baishakh to the last day of
+ * Chaitra of COVERED_BS_YEAR.
+ */
+export const OFFICIAL_COVERAGE = (() => {
+  const first = new NepaliDate(COVERED_BS_YEAR, 0, 1).getAD();
+  const next = new NepaliDate(COVERED_BS_YEAR + 1, 0, 1).getAD();
+  const start = isoFrom(first);
+  return { start, end: addDaysIso(isoFrom(next), -1) };
+})();
+
+/**
+ * The notice's holidays, with Google's calendar filling what it cannot.
+ *
+ * Inside the notice's year the notice wins: it is the government's own list,
+ * checked date by date. From Google, inside that year, only a holiday on a
+ * day the notice has nothing for is added — the short-notice ones
+ * (elections, extreme weather) the notice could not have known. Outside the
+ * notice's year, Google's calendar is all there is, so it is used whole.
+ *
+ * With nothing from Google — offline, or before it loads — this is the notice
+ * alone, exactly as before.
+ */
+export function mergeHolidayEvents(feed: HolidayEvent[]): HolidayEvent[] {
+  if (feed.length === 0) return HOLIDAY_EVENTS;
+  const { start, end } = OFFICIAL_COVERAGE;
+  const coveredDays = new Set<string>();
+  for (const e of HOLIDAY_EVENTS) {
+    for (let d = e.start; d <= e.end; d = addDaysIso(d, 1)) coveredDays.add(d);
+  }
+
+  const extra = feed.filter((e) => {
+    const outside = e.end < start || e.start > end;
+    if (outside) return true;
+    // A real day off (not an observance), that the notice has no festival or
+    // holiday for on that day.
+    return e.scope !== "occasion" && !coveredDays.has(e.start) && !e.festivalId;
+  });
+
+  return [...HOLIDAY_EVENTS, ...extra].sort((a, b) =>
+    a.start.localeCompare(b.start),
+  );
+}
+
+/** The first and last day a list of holidays covers. */
+export function coverageOf(events: HolidayEvent[]): {
+  start: string;
+  end: string;
+} {
+  let { start, end } = OFFICIAL_COVERAGE;
+  for (const e of events) {
+    if (e.source !== "google") continue;
+    if (e.start < start) start = e.start;
+    if (e.end > end) end = e.end;
+  }
+  return { start, end };
+}
+
 /** Events touching any day from `from` to `to`, both YYYY-MM-DD inclusive. */
-export function eventsBetween(from: string, to: string): HolidayEvent[] {
-  return HOLIDAY_EVENTS.filter((e) => e.start <= to && e.end >= from);
+export function eventsBetween(
+  from: string,
+  to: string,
+  events: HolidayEvent[] = HOLIDAY_EVENTS,
+): HolidayEvent[] {
+  return events.filter((e) => e.start <= to && e.end >= from);
 }
 
 /** Events on one day. */
-export function eventsOn(iso: string): HolidayEvent[] {
-  return eventsBetween(iso, iso);
+export function eventsOn(
+  iso: string,
+  events: HolidayEvent[] = HOLIDAY_EVENTS,
+): HolidayEvent[] {
+  return eventsBetween(iso, iso, events);
 }
 
 // ── Month grids ─────────────────────────────────────────────────────────────

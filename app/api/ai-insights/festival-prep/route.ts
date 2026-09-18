@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { askAiService } from "@/lib/ai-insights/askAiService.server";
+import { mergeHolidayEvents } from "@/lib/holidayCalendar";
+import { fetchHolidayFeed } from "@/lib/holidayFeed.server";
 import {
   FESTIVAL_HISTORY_DAYS,
   FESTIVAL_PREP_PROMPT,
@@ -31,11 +33,11 @@ import {
 /**
  * Upcoming Festival Prep for the AI Insights page.
  *
- * Dates come from the official holiday calendar; how the business trades on
+ * Dates come from Nepal's holiday calendar (the official notice, with
+ * Google's public calendar for later years); how the business trades on
  * holidays and what it sells come from its own sales. The model writes the
  * preparation notes. No AI call is made when nothing is coming up in the next
- * 60 days — including when that runs past the year the calendar covers — or
- * when there were no sales to base advice on. Otherwise one call a day,
+ * 60 days, or when there were no sales to base advice on. Otherwise one call a day,
  * cached by the AI service.
  */
 export async function POST(req: NextRequest) {
@@ -45,9 +47,13 @@ export async function POST(req: NextRequest) {
 
   const windows = salesWindows(today);
 
+  // The notice plus Google's calendar, so this keeps finding festivals after
+  // the notice's year. Never fails: without Google it is the notice alone.
+  const holidays = mergeHolidayEvents(await fetchHolidayFeed());
+
   // Checked before any POS request: with nothing on the calendar there is
   // nothing to prepare for, and no reason to read the reports at all.
-  if (upcomingEvents(today).length === 0) {
+  if (upcomingEvents(today, holidays).length === 0) {
     const result: FestivalPrepResult = {
       items: [],
       windows,
@@ -72,7 +78,14 @@ export async function POST(req: NextRequest) {
     return salesDataUnavailable("festival-prep", error);
   }
 
-  const facts = buildFestivalFacts(today, menu, salesRows, daily, windows);
+  const facts = buildFestivalFacts(
+    today,
+    menu,
+    salesRows,
+    daily,
+    windows,
+    holidays,
+  );
 
   if (facts.bestSellers.length === 0 && facts.weekdays.length === 0) {
     const result: FestivalPrepResult = {

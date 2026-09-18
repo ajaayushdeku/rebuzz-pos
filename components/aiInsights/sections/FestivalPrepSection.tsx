@@ -8,7 +8,6 @@ import {
   FESTIVAL_LOOKAHEAD_DAYS,
   type FestivalPrep,
 } from "@/lib/ai-insights/sections/festivalPrep";
-import { COVERED_BS_YEAR } from "@/lib/holidayCalendar";
 import { daysFromNepalToday } from "@/lib/nepalDate";
 import {
   AiSectionBody,
@@ -94,7 +93,7 @@ export default function FestivalPrepSection({
         icon={CalendarDays}
         iconClassName="bg-amber-50 text-amber-600"
         title="Upcoming Festival Prep"
-        subtitle={`Festivals and public holidays in the next ${FESTIVAL_LOOKAHEAD_DAYS} days, from the official ${COVERED_BS_YEAR} BS calendar`}
+        subtitle={`Festivals and public holidays in the next ${FESTIVAL_LOOKAHEAD_DAYS} days, from Nepal's holiday calendar`}
         actions={
           <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
             {/* Everything is already loaded, so this only reveals cards —
@@ -120,7 +119,7 @@ export default function FestivalPrepSection({
         visibleCount={items.length}
         layout="cards"
         noSalesMessage="No recent sales to base festival advice on yet."
-        nothingFlaggedMessage={`No festivals or public holidays in the next ${FESTIVAL_LOOKAHEAD_DAYS} days in the ${COVERED_BS_YEAR} BS calendar.`}
+        nothingFlaggedMessage={`No festivals or public holidays in the next ${FESTIVAL_LOOKAHEAD_DAYS} days.`}
         emptyMessage="No festivals coming up."
       >
         <CardGrid>

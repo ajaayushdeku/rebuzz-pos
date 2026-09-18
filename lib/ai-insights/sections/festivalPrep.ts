@@ -121,11 +121,14 @@ export interface FestivalFacts {
   bestSellers: MenuLine[];
 }
 
-export function upcomingEvents(today: string): UpcomingEvent[] {
+export function upcomingEvents(
+  today: string,
+  // The notice by default; the route passes it merged with Google's calendar.
+  events: HolidayEvent[] = HOLIDAY_EVENTS,
+): UpcomingEvent[] {
   const horizon = shiftIsoDate(today, FESTIVAL_LOOKAHEAD_DAYS);
-  return HOLIDAY_EVENTS.filter(
-    (e) => matters(e) && e.end >= today && e.start <= horizon,
-  )
+  return events
+    .filter((e) => matters(e) && e.end >= today && e.start <= horizon)
     .slice(0, MAX_EVENTS)
     .map((e) => ({
       id: e.id,
@@ -148,6 +151,7 @@ export function buildFestivalFacts(
   salesRows: SalesByItemRow[],
   daily: DailySalesRow[],
   windows: SalesWindows,
+  events: HolidayEvent[] = HOLIDAY_EVENTS,
 ): FestivalFacts {
   // Sales per day before tax. A day missing from the report sold nothing,
   // and is counted as zero on both sides of every comparison below, so a
@@ -163,7 +167,7 @@ export function buildFestivalFacts(
   const dayRevenue = (iso: string) => byDate.get(iso)?.revenue ?? 0;
 
   const holidayDates = new Set<string>();
-  for (const e of HOLIDAY_EVENTS.filter(matters)) {
+  for (const e of events.filter(matters)) {
     for (let i = 0; i < e.days; i++) holidayDates.add(shiftIsoDate(e.start, i));
   }
 
@@ -195,7 +199,7 @@ export function buildFestivalFacts(
 
   // ── Past holidays this year, against the same weekdays just before ──
   const historyStart = shiftIsoDate(today, -FESTIVAL_HISTORY_DAYS);
-  const past = HOLIDAY_EVENTS.filter(
+  const past = events.filter(
     (e) => matters(e) && e.end < today && e.start >= historyStart,
   );
 
@@ -238,7 +242,7 @@ export function buildFestivalFacts(
 
   return {
     today,
-    upcoming: upcomingEvents(today),
+    upcoming: upcomingEvents(today, events),
     weekdays,
     saturdayVsOtherDaysPct,
     // Most recent first, so the model reads the freshest behaviour first.

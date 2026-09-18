@@ -111,7 +111,7 @@ export default function AiInsightsHero({
     // `relative` anchors the screen-reader labels inside, for the reason given
     // in SalesRecommendationsSection: unanchored, they size the window.
     // `overflow-hidden` clips the glow to the card's rounded corners.
-    <section className="relative overflow-hidden rounded-2xl bg-slate-900 text-white shadow-sm">
+    <section className="relative overflow-hidden rounded-2xl bg-slate-900 mt-4 text-white shadow-sm">
       {/* Decoration only: a soft violet glow behind the heading. */}
       <div
         className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-violet-600/25 blur-3xl"

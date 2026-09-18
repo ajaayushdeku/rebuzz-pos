@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import {
+  ArrowRight,
   CalendarClock,
   CalendarDays,
   Loader2,
+  Lock,
   PartyPopper,
   Sparkles,
   X,
@@ -12,11 +14,18 @@ import {
 import toast from "react-hot-toast";
 
 import { useOfferForm, type ActiveHours } from "@/providers/OfferFormContext";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import OfferStepCard from "./OfferStepCard";
-import { festivalDatesUnknown, festivalWindow } from "./festivalDates";
+import { lockFor, unlockLabel, useAiFillLock } from "./useAiFillLock";
+import { festivalDatesUnknown, festivalOccurrence } from "./festivalDates";
 import { FESTIVALS } from "./festivals";
 import { toBsLabel } from "@/lib/nepaliDate";
 import type { HolidayEvent } from "@/lib/holidayCalendar";
+import { useHolidayEvents } from "@/hooks/useHolidayEvents";
 import OfferCalendarModal, { type CalendarSystem } from "./OfferCalendarModal";
 
 /**
@@ -48,6 +57,22 @@ const FIELD =
 const LABEL = "mb-1.5 block text-[13px] font-medium text-gray-700";
 
 /**
+ * The AI service's error codes, in words. AI Fill runs on the business's own
+ * Gemini key, so its setup problems read the same as on the AI Insights page.
+ */
+const AI_FILL_ERRORS: Record<string, string> = {
+  NOT_CONFIGURED: "Add a Gemini API key in Settings to use AI fill",
+  AI_DISABLED: "AI features are turned off in Settings",
+  GEMINI_KEY_INVALID: "Your Gemini key was rejected — check it in Settings",
+  KEY_UNREADABLE:
+    "Your Gemini key could not be read — add it again in Settings",
+  GEMINI_MODEL_UNAVAILABLE:
+    "That AI model isn't available — pick another in Settings",
+  GEMINI_UNAVAILABLE: "Google's AI is busy — try again in a moment",
+  AUTH_REQUIRED: "Your session has ended — sign in again",
+};
+
+/**
  * The Bikram Sambat reading of a picked date.
  *
  * The input can only speak Gregorian, and a Nepali business plans in BS — so
@@ -55,7 +80,8 @@ const LABEL = "mb-1.5 block text-[13px] font-medium text-gray-700";
  * their head.
  */
 function BsDate({ value }: { value: string }) {
-  const label = toBsLabel(value);
+  // "6 Kartik", not "06 Kartik": the calendar popups write days this way.
+  const label = toBsLabel(value)?.replace(/^0/, "");
   if (!label) return null;
   return (
     <p className="mt-1.5 text-[13px] font-medium text-emerald-600">{label}</p>
@@ -66,6 +92,11 @@ function BsDate({ value }: { value: string }) {
 export default function OfferWhenItRuns() {
   const { form, updateField, patchForm } = useOfferForm();
   const [aiFilling, setAiFilling] = useState(false);
+  // Set while the AI quota is used up; the button dims and says until when.
+  const { lock: aiLock, setLock: setAiLock } = useAiFillLock();
+  // The notice plus Google's calendar, so festivals keep dating themselves
+  // after the notice's year. The same list goes to the calendar popups.
+  const holidays = useHolidayEvents();
   // Which calendar is open, if any. One piece of state rather than two
   // booleans, so both can never be open at once.
   const [calendar, setCalendar] = useState<CalendarSystem | null>(null);
@@ -97,6 +128,11 @@ export default function OfferWhenItRuns() {
    *
    * It also clears a typed event name: the offer now runs for the festival,
    * and leaving the name in the box would say it runs for both.
+   *
+   * The dates come from the same official calendar the Nepali calendar popup
+   * uses, so picking Dashain here and "Use these dates" there give the same
+   * window. A festival the calendar cannot date keeps the current dates and
+   * asks for them (see `needsManualDates`).
    */
   const chooseFestival = (id: string) => {
     if (form.festival === id) {
@@ -104,8 +140,19 @@ export default function OfferWhenItRuns() {
       return;
     }
 
-    const window = festivalWindow(id);
-    patchForm({ festival: id, customFestival: "", ...(window ?? {}) });
+    const occurrence = festivalOccurrence(id, undefined, holidays);
+    patchForm({
+      festival: id,
+      customFestival: "",
+      ...(occurrence
+        ? { startDate: occurrence.startDate, endDate: occurrence.endDate }
+        : {}),
+    });
+    if (occurrence) {
+      toast.success(
+        `Dates set to ${occurrence.label}${occurrence.bsLabel ? ` · ${occurrence.bsLabel}` : ""}`,
+      );
+    }
   };
 
   /**
@@ -124,7 +171,7 @@ export default function OfferWhenItRuns() {
   const customEvent = form.customFestival.trim();
 
   // Selected, but its dates move each year and this app cannot work them out.
-  const needsManualDates = festivalDatesUnknown(form.festival);
+  const needsManualDates = festivalDatesUnknown(form.festival, holidays);
 
   const toggleDay = (day: string) => {
     const next = form.repeatingDays.includes(day)
@@ -141,13 +188,15 @@ export default function OfferWhenItRuns() {
   /**
    * Read the event box as a sentence and set this step from it.
    *
-   * The model only classifies — which occasion, which days, which hours. Dates
-   * for a festival are then taken from `festivalWindow`, the app's own
-   * calendar, so a campaign can never be dated to a festival that has passed.
+   * Gemini, on the business's own key, answers with the occasion, the days,
+   * the hours and the dates. It is given Nepal's holiday calendar (the notice
+   * plus Google's) to take festival dates from, so its dates match the tabs
+   * and the calendar popups; the server checks which dates really came from
+   * that calendar and which the model worked out itself.
    */
   const aiFill = async () => {
     const prompt = customEvent;
-    if (!prompt || aiFilling) return;
+    if (!prompt || aiFilling || aiLock) return;
 
     setAiFilling(true);
     try {
@@ -159,7 +208,21 @@ export default function OfferWhenItRuns() {
       const json = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        toast.error(json?.error ?? "Could not fill the schedule");
+        const code = typeof json?.error === "string" ? json.error : "";
+        const retryAfter =
+          Number(json?.retryAfter ?? res.headers.get("retry-after")) ||
+          undefined;
+        const lock = lockFor(code, retryAfter);
+        if (lock) {
+          setAiLock(lock);
+          toast.error(
+            `${lock.reason} AI fill unlocks ${unlockLabel(lock.until)}.`,
+          );
+          return;
+        }
+        toast.error(
+          AI_FILL_ERRORS[code] || code || "Could not fill the schedule",
+        );
         return;
       }
 
@@ -167,6 +230,7 @@ export default function OfferWhenItRuns() {
         festivalId: string;
         startDate: string;
         endDate: string;
+        dateSource: "calendar" | "estimate" | "explicit" | "";
         repeatingDays: string[];
         startTime: string;
         endTime: string;
@@ -183,11 +247,12 @@ export default function OfferWhenItRuns() {
         // occasion, not a second one.
         patch.festival = d.festivalId;
         patch.customFestival = "";
-        const window = festivalWindow(d.festivalId);
-        if (window) Object.assign(patch, window);
-      } else if (d.startDate) {
+      }
+      // Gemini's dates, checked on the server; for a festival with none, the
+      // server already fell back to the calendar's.
+      if (d.startDate && d.endDate) {
         patch.startDate = d.startDate;
-        if (d.endDate) patch.endDate = d.endDate;
+        patch.endDate = d.endDate;
       }
 
       if (d.repeatingDays.length > 0) patch.repeatingDays = d.repeatingDays;
@@ -205,13 +270,31 @@ export default function OfferWhenItRuns() {
       // The box is no longer cleared on success. It holds the event's name
       // now, not a throwaway search, and wiping it would unname the offer.
       patchForm(patch);
-      toast.success("Schedule filled — check the dates below");
+      toast.success(
+        d.dateSource === "calendar"
+          ? "Schedule filled — dates from Nepal's holiday calendar"
+          : d.dateSource === "estimate"
+            ? "Schedule filled — dates worked out by AI, please double-check them"
+            : d.startDate
+              ? "Schedule filled — check the dates below"
+              : "Schedule filled — dates not known yet, please set them below",
+      );
     } catch {
       toast.error("Could not reach the AI service");
     } finally {
       setAiFilling(false);
     }
   };
+
+  // "7 days", shown beside the heading once both dates are set.
+  const runDays =
+    form.startDate && form.endDate && form.endDate >= form.startDate
+      ? Math.round(
+          (Date.parse(`${form.endDate}T00:00:00Z`) -
+            Date.parse(`${form.startDate}T00:00:00Z`)) /
+            86_400_000,
+        ) + 1
+      : null;
 
   const quickPicks: { label: string; days: string[] }[] = [
     { label: "Every day", days: DAYS },
@@ -265,24 +348,41 @@ export default function OfferWhenItRuns() {
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={aiFill}
-            disabled={!customEvent || aiFilling}
-            title={
-              customEvent
-                ? "Fill this step from what you typed"
-                : "Name or describe the event first"
-            }
-            className="inline-flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-3.5 text-[13px] font-semibold text-violet-700 transition hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {aiFilling ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : (
-              <Sparkles size={14} />
-            )}
-            AI fill
-          </button>
+          {/* The tooltip sits on a wrapper: a disabled button gets no hover
+              events, and the locked state is exactly when it must explain. */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex shrink-0" tabIndex={aiLock ? 0 : -1}>
+                <button
+                  type="button"
+                  onClick={aiFill}
+                  disabled={!customEvent || aiFilling || !!aiLock}
+                  aria-label={aiLock ? "AI fill is locked" : "AI fill"}
+                  className={`inline-flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border px-3.5 text-[13px] font-semibold transition disabled:cursor-not-allowed ${
+                    aiLock
+                      ? "border-gray-200 bg-gray-100 text-gray-400 disabled:pointer-events-none"
+                      : "border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100 disabled:pointer-events-none disabled:opacity-50"
+                  }`}
+                >
+                  {aiFilling ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : aiLock ? (
+                    <Lock size={14} />
+                  ) : (
+                    <Sparkles size={14} />
+                  )}
+                  AI fill
+                </button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-64 text-center">
+              {aiLock
+                ? `${aiLock.reason} AI fill unlocks ${unlockLabel(aiLock.until)}. Festival tabs and the calendars still work.`
+                : customEvent
+                  ? "Fill this step, dates included, from what you typed"
+                  : "Name or describe the event first"}
+            </TooltipContent>
+          </Tooltip>
         </div>
 
         <p className="mt-3 text-[12px] text-gray-500">Or pick a festival</p>
@@ -317,41 +417,101 @@ export default function OfferWhenItRuns() {
         </div>
       </div>
 
-      {/* An occasion whose dates this app cannot compute still labels the
-          offer, so the step says plainly that the dates are the merchant's to
-          set rather than leaving them looking broken. */}
-      {(needsManualDates || customEvent) && (
-        <div className="mt-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-3">
-          <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-          <p className="text-[12px] leading-relaxed text-amber-800">
-            {customEvent
-              ? "Set the start and end dates for your event below."
-              : "This occasion falls on different dates each year, so set the start and end dates below yourself."}
-          </p>
-        </div>
-      )}
+      {/* Dates: one card for everything about when the offer starts and
+          ends — the fields, the calendars to pick them from, and the note
+          when they are the merchant's to set. */}
+      <div className="mt-6 overflow-hidden rounded-xl border border-gray-200">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 bg-gray-50/70 px-4 py-2.5">
+          <div className="flex items-center gap-2">
+            <CalendarDays size={15} className="text-gray-500" />
+            <p className="text-[13px] font-semibold text-gray-800">Dates</p>
+            {runDays !== null && (
+              <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-gray-600 ring-1 ring-gray-200">
+                {runDays} {runDays === 1 ? "day" : "days"}
+              </span>
+            )}
+          </div>
 
-      {/* Calendars */}
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-[13px] font-medium text-gray-700">Dates</p>
-        <div className="flex flex-wrap gap-2">
-          {(
-            [
-              { system: "bs", label: "Nepali calendar" },
-              { system: "ad", label: "English calendar" },
-            ] as const
-          ).map(({ system, label }) => (
+          {/* The calendars in their own colours, matching the popups. */}
+          <div className="flex items-center gap-0.5 rounded-lg bg-white p-0.5 ring-1 ring-gray-200">
+            <span className="px-2 text-[11px] text-gray-400 max-sm:hidden">
+              Browse holidays
+            </span>
             <button
-              key={system}
               type="button"
-              onClick={() => setCalendar(system)}
+              onClick={() => setCalendar("bs")}
               aria-haspopup="dialog"
-              className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[12px] font-medium text-gray-700 transition-colors hover:bg-gray-50"
+              className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-[12px] font-medium text-gray-700 transition-colors hover:bg-rose-50 hover:text-rose-700"
             >
-              <CalendarDays size={14} className="text-violet-600" />
-              {label}
+              <CalendarDays size={14} className="text-rose-500" />
+              Nepali calendar
             </button>
-          ))}
+            <button
+              type="button"
+              onClick={() => setCalendar("ad")}
+              aria-haspopup="dialog"
+              className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-[12px] font-medium text-gray-700 transition-colors hover:bg-teal-50 hover:text-teal-700"
+            >
+              <CalendarDays size={14} className="text-teal-500" />
+              English calendar
+            </button>
+          </div>
+        </div>
+
+        <div className="p-4">
+          {/* An occasion whose dates this app cannot compute still labels the
+              offer, so the card says plainly that the dates are the
+              merchant's to set rather than leaving them looking broken. */}
+          {(needsManualDates || customEvent) && (
+            <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-2.5">
+              <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+              <p className="text-[12px] leading-relaxed text-amber-800">
+                {customEvent
+                  ? "Set the start and end dates for your event, or pick them from a calendar."
+                  : "This year's dates for this occasion aren't in the holiday calendar yet, so set the start and end dates yourself."}
+              </p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-start">
+            <div>
+              <label htmlFor="offer-start-date" className={LABEL}>
+                Start date
+              </label>
+              <input
+                id="offer-start-date"
+                type="date"
+                value={form.startDate}
+                onChange={(e) => updateField("startDate", e.target.value)}
+                className={FIELD}
+              />
+              <BsDate value={form.startDate} />
+            </div>
+
+            <ArrowRight
+              size={16}
+              className="mt-10 hidden text-gray-300 sm:block"
+              aria-hidden
+            />
+
+            <div>
+              <label htmlFor="offer-end-date" className={LABEL}>
+                End date
+              </label>
+              <input
+                id="offer-end-date"
+                type="date"
+                value={form.endDate}
+                // An end before the start would run an offer for negative
+                // days; the browser's own picker enforces it once a start
+                // exists.
+                min={form.startDate || undefined}
+                onChange={(e) => updateField("endDate", e.target.value)}
+                className={FIELD}
+              />
+              <BsDate value={form.endDate} />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -360,37 +520,11 @@ export default function OfferWhenItRuns() {
           system={calendar}
           rangeStart={form.startDate}
           rangeEnd={form.endDate}
+          events={holidays}
           onClose={() => setCalendar(null)}
           onUseDates={applyHolidayDates}
         />
       )}
-
-      {/* Dates */}
-      <div className="mt-3 grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <div>
-          <label className={LABEL}>Start date</label>
-          <input
-            type="date"
-            value={form.startDate}
-            onChange={(e) => updateField("startDate", e.target.value)}
-            className={FIELD}
-          />
-          <BsDate value={form.startDate} />
-        </div>
-        <div>
-          <label className={LABEL}>End date</label>
-          <input
-            type="date"
-            value={form.endDate}
-            // An end before the start would run an offer for negative days;
-            // the browser's own picker enforces it once a start exists.
-            min={form.startDate || undefined}
-            onChange={(e) => updateField("endDate", e.target.value)}
-            className={FIELD}
-          />
-          <BsDate value={form.endDate} />
-        </div>
-      </div>
 
       {/* Days of week */}
       <div className="mt-6">

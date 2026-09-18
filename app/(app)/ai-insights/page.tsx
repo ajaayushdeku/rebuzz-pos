@@ -162,7 +162,7 @@ export default function AIInsightPage() {
 
   return (
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
-      <div className="mx-auto flex w-full  flex-col gap-10">
+      <div className="mx-auto flex w-full  flex-col ">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap- pb-4 border-b border-gray-200">
           <div>
             <h1 className="font-bold text-xl md:text-2xl truncate">
@@ -180,87 +180,81 @@ export default function AIInsightPage() {
           </div>
         </div>
 
-        <AiInsightsHero
-          activeInsights={activeInsights}
-          slowItems={slow.length}
-          shortlisted={shortlistedCount}
-          liveSections={liveSections.length}
-          totalSections={TOTAL_SECTIONS}
-          lastUpdated={lastUpdated}
-          savedAnswers={savedAnswers}
-          isGenerating={
-            generating || liveSections.some((section) => section.isFetching)
-          }
-          onGenerate={() => void generateInsights()}
-        />
-
-        {/* One boundary per section, so a failure in one cannot blank the
+        <div className="flex flex-col gap-10">
+          <AiInsightsHero
+            activeInsights={activeInsights}
+            slowItems={slow.length}
+            shortlisted={shortlistedCount}
+            liveSections={liveSections.length}
+            totalSections={TOTAL_SECTIONS}
+            lastUpdated={lastUpdated}
+            savedAnswers={savedAnswers}
+            isGenerating={
+              generating || liveSections.some((section) => section.isFetching)
+            }
+            onGenerate={() => void generateInsights()}
+          />
+          {/* One boundary per section, so a failure in one cannot blank the
             rest of the page. */}
-        <ChartErrorBoundary>
-          <MenuSuggestionsSection
-            items={menu}
-            state={menuSuggestions}
-            shortlisted={shortlisted}
-            onToggleShortlist={toggleShortlist}
-            onDismiss={dismiss}
-          />
-        </ChartErrorBoundary>
-
-        <ChartErrorBoundary>
-          <SlowItemsSection
-            items={slow}
-            state={slowItems}
-            onDismiss={dismiss}
-          />
-        </ChartErrorBoundary>
-
-        <ChartErrorBoundary>
-          <PricingSection
-            items={pricing}
-            state={pricingSection}
-            onDismiss={dismiss}
-          />
-        </ChartErrorBoundary>
-
-        <ChartErrorBoundary>
-          <HourPlaybookSection
-            items={hours}
-            state={hourPlaybook}
-            onDismiss={dismiss}
-          />
-        </ChartErrorBoundary>
-
-        <ChartErrorBoundary>
-          <FestivalPrepSection
-            items={festivals}
-            state={festivalPrep}
-            onDismiss={dismiss}
-          />
-        </ChartErrorBoundary>
-
-        <ChartErrorBoundary>
-          <SalesRecommendationsSection
-            items={sales}
-            state={salesRecommendations}
-            onDismiss={dismiss}
-          />
-        </ChartErrorBoundary>
-
-        <ChartErrorBoundary>
-          <CustomerRetentionSection
-            items={retention}
-            state={retentionSection}
-            onDismiss={dismiss}
-          />
-        </ChartErrorBoundary>
-
-        <ChartErrorBoundary>
-          <StaffingSection
-            items={staffing}
-            state={staffingSection}
-            onDismiss={dismiss}
-          />
-        </ChartErrorBoundary>
+          <ChartErrorBoundary>
+            <MenuSuggestionsSection
+              items={menu}
+              state={menuSuggestions}
+              shortlisted={shortlisted}
+              onToggleShortlist={toggleShortlist}
+              onDismiss={dismiss}
+            />
+          </ChartErrorBoundary>
+          <ChartErrorBoundary>
+            <SlowItemsSection
+              items={slow}
+              state={slowItems}
+              onDismiss={dismiss}
+            />
+          </ChartErrorBoundary>
+          <ChartErrorBoundary>
+            <PricingSection
+              items={pricing}
+              state={pricingSection}
+              onDismiss={dismiss}
+            />
+          </ChartErrorBoundary>
+          <ChartErrorBoundary>
+            <HourPlaybookSection
+              items={hours}
+              state={hourPlaybook}
+              onDismiss={dismiss}
+            />
+          </ChartErrorBoundary>
+          <ChartErrorBoundary>
+            <FestivalPrepSection
+              items={festivals}
+              state={festivalPrep}
+              onDismiss={dismiss}
+            />
+          </ChartErrorBoundary>
+          <ChartErrorBoundary>
+            <SalesRecommendationsSection
+              items={sales}
+              state={salesRecommendations}
+              onDismiss={dismiss}
+            />
+          </ChartErrorBoundary>
+          <ChartErrorBoundary>
+            <CustomerRetentionSection
+              items={retention}
+              state={retentionSection}
+              onDismiss={dismiss}
+            />
+          </ChartErrorBoundary>
+          <ChartErrorBoundary>
+            <StaffingSection
+              items={staffing}
+              state={staffingSection}
+              onDismiss={dismiss}
+            />
+          </ChartErrorBoundary>
+        </div>
       </div>
     </div>
   );
