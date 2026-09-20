@@ -82,6 +82,9 @@ export async function POST(req: NextRequest) {
     model,
     generatedAt,
     cached: cached === true,
+    // Passed through so the card can say the model in use did not answer.
+    stale: answer.data.stale === true,
+    staleReason: answer.data.staleReason,
   };
 
   return NextResponse.json(

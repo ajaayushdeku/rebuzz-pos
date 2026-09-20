@@ -58,17 +58,16 @@ const LABEL = "mb-1.5 block text-[13px] font-medium text-gray-700";
 
 /**
  * The AI service's error codes, in words. AI Fill runs on the business's own
- * Gemini key, so its setup problems read the same as on the AI Insights page.
+ * provider key, so its setup problems read the same as on the AI Insights page.
  */
 const AI_FILL_ERRORS: Record<string, string> = {
-  NOT_CONFIGURED: "Add a Gemini API key in Settings to use AI fill",
+  NOT_CONFIGURED: "Add an AI provider key in Settings to use AI fill",
   AI_DISABLED: "AI features are turned off in Settings",
-  GEMINI_KEY_INVALID: "Your Gemini key was rejected — check it in Settings",
-  KEY_UNREADABLE:
-    "Your Gemini key could not be read — add it again in Settings",
-  GEMINI_MODEL_UNAVAILABLE:
+  AI_KEY_INVALID: "Your AI key was rejected — check it in Settings",
+  KEY_UNREADABLE: "Your AI key could not be read — add it again in Settings",
+  AI_MODEL_UNAVAILABLE:
     "That AI model isn't available — pick another in Settings",
-  GEMINI_UNAVAILABLE: "Google's AI is busy — try again in a moment",
+  AI_UNAVAILABLE: "Your AI provider is busy — try again in a moment",
   AUTH_REQUIRED: "Your session has ended — sign in again",
 };
 
@@ -221,7 +220,9 @@ export default function OfferWhenItRuns() {
           return;
         }
         toast.error(
-          AI_FILL_ERRORS[code] || code || "Could not fill the schedule",
+          AI_FILL_ERRORS[code.replace(/^GEMINI_/, "AI_")] ||
+            code ||
+            "Could not fill the schedule",
         );
         return;
       }

@@ -36,24 +36,26 @@ export type AiSectionName =
  */
 const MESSAGES: Record<AiInsightsErrorCode | string, string> = {
   // Merchant-side preconditions — the fix is in the settings screen.
-  NOT_CONFIGURED: "Add your Gemini API key to switch the AI insights on.",
+  NOT_CONFIGURED: "Add your AI provider's API key to switch the insights on.",
   AI_DISABLED: "AI insights are switched off. Turn them on in settings.",
 
   // Storage problems.
   KEY_UNREADABLE:
     "Your saved key can't be read any more. Enter it again in settings.",
 
-  // Upstream Gemini failures, inherited from the settings vocabulary.
-  GEMINI_KEY_INVALID:
-    "Google rejected your saved key. Check it in settings — it may have been deleted.",
-  GEMINI_QUOTA_EXCEEDED:
-    "Your Gemini key has no quota left. Check your usage in Google AI Studio.",
-  GEMINI_RATE_LIMIT:
-    "Too many requests to Google just now — try again shortly.",
-  GEMINI_MODEL_UNAVAILABLE:
+  // Upstream provider failures, inherited from the settings vocabulary. The
+  // wording names no provider: the same codes now come back from Gemini or
+  // OpenRouter, whichever the business chose.
+  AI_KEY_INVALID:
+    "Your AI provider rejected the saved key. Check it in settings — it may have been deleted.",
+  AI_QUOTA_EXCEEDED:
+    "Your key has no quota left. Check your usage with your AI provider.",
+  AI_RATE_LIMIT:
+    "Too many requests to your AI provider just now — try again shortly.",
+  AI_MODEL_UNAVAILABLE:
     "The model saved for this business isn't available for your key. Pick another one in settings.",
-  GEMINI_UNAVAILABLE:
-    "Google's AI model is busy right now — it usually recovers in a minute or two. Try again shortly.",
+  AI_UNAVAILABLE:
+    "Your AI provider is busy right now — it usually recovers in a minute or two. Try again shortly.",
 
   // Own rate limits (429, per-business). `retryAfter` carries the wait when
   // the backend sent one — appended here so the user sees "try again in N s"
@@ -65,13 +67,12 @@ const MESSAGES: Record<AiInsightsErrorCode | string, string> = {
   VERIFY_RATE_LIMIT: "Too many key checks just now.",
 
   // Model output problems — retrying is reasonable, the prompt was fine.
-  GEMINI_MALFORMED_RESPONSE:
+  AI_MALFORMED_RESPONSE:
     "The AI answered in a format we couldn't read. Try again.",
-  GEMINI_EMPTY_RESPONSE: "The AI returned nothing. Try again.",
+  AI_EMPTY_RESPONSE: "The AI returned nothing. Try again.",
   // Distinct from a malformed answer: nothing was wrong with the format, the
   // reply ran out of room before it finished.
-  GEMINI_TRUNCATED:
-    "The AI's answer was cut off before it finished. Try again.",
+  AI_TRUNCATED: "The AI's answer was cut off before it finished. Try again.",
 
   // The POS report an AI Insights section is built from did not answer.
   SALES_DATA_UNAVAILABLE: "Your sales report couldn't be loaded just now.",
@@ -84,9 +85,20 @@ const MESSAGES: Record<AiInsightsErrorCode | string, string> = {
   AUTH_REQUIRED: "Your session has expired — sign in again.",
 };
 
+/**
+ * Old `GEMINI_*` codes read as the provider-neutral `AI_*` ones.
+ *
+ * The service renamed them when a second provider arrived, but a cached page
+ * or an older deployment can still send the old spelling, and a code with no
+ * message shows the user a bare "GEMINI_RATE_LIMIT".
+ */
+export function normalizeAiErrorCode(code: string): string {
+  return code.replace(/^GEMINI_/, "AI_");
+}
+
 function toMessage(code: unknown): string {
   if (typeof code !== "string" || !code) return "Something went wrong.";
-  return MESSAGES[code] ?? code;
+  return MESSAGES[normalizeAiErrorCode(code)] ?? code;
 }
 
 /**
@@ -168,8 +180,8 @@ export const fetchAiSection = async <T>(
   if (!res.ok) throw errorFromBody(json);
   if (!json.data || !Array.isArray(json.data.items)) {
     throw new AiInsightsError(
-      "GEMINI_MALFORMED_RESPONSE",
-      toMessage("GEMINI_MALFORMED_RESPONSE"),
+      "AI_MALFORMED_RESPONSE",
+      toMessage("AI_MALFORMED_RESPONSE"),
     );
   }
   return json.data;
@@ -213,8 +225,8 @@ export const fetchAiInsights = async (
   const envelope = json?.data;
   if (!envelope?.insights || typeof envelope.insights === "string") {
     throw new AiInsightsError(
-      "GEMINI_MALFORMED_RESPONSE",
-      toMessage("GEMINI_MALFORMED_RESPONSE"),
+      "AI_MALFORMED_RESPONSE",
+      toMessage("AI_MALFORMED_RESPONSE"),
     );
   }
 

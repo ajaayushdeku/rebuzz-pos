@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 
 import { askAiService } from "@/lib/ai-insights/askAiService.server";
 import {
@@ -30,8 +30,8 @@ import {
  * out of the caller's hands.
  *
  * Cost, in order of what is avoided:
- * - no sales in the window → no AI call at all;
- * - already answered today → served from the AI service's cache, no call;
+ * - no sales in the window â†’ no AI call at all;
+ * - already answered today â†’ served from the AI service's cache, no call;
  * - otherwise one call, which is then cached for the rest of the day.
  * `{ refresh: true }` skips the cache on purpose, for the Refresh button.
  */
@@ -85,6 +85,9 @@ export async function POST(req: NextRequest) {
     model,
     generatedAt,
     cached: cached === true,
+    // Passed through so the card can say the model in use did not answer.
+    stale: answer.data.stale === true,
+    staleReason: answer.data.staleReason,
   };
 
   return NextResponse.json(

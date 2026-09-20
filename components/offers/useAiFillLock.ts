@@ -34,21 +34,22 @@ export function lockFor(
   retryAfterSeconds: number | undefined,
 ): AiFillLock | null {
   const now = Date.now();
-  switch (code) {
+  // A service from before the second provider still answers GEMINI_*.
+  switch (code.replace(/^GEMINI_/, "AI_")) {
     case "INSIGHTS_RATE_LIMIT":
       return {
         until: now + Math.max(1, retryAfterSeconds ?? 3600) * 1000,
         reason: "AI requests for this hour are used up.",
       };
-    case "GEMINI_RATE_LIMIT":
+    case "AI_RATE_LIMIT":
       return {
         until: now + Math.max(1, retryAfterSeconds ?? 60) * 1000,
-        reason: "Gemini is getting too many requests from your key.",
+        reason: "Your AI provider is getting too many requests from your key.",
       };
-    case "GEMINI_QUOTA_EXCEEDED":
+    case "AI_QUOTA_EXCEEDED":
       return {
         until: now + 60 * MINUTE_MS,
-        reason: "Your Gemini key's usage limit is reached.",
+        reason: "Your key's usage limit is reached.",
       };
     default:
       return null;

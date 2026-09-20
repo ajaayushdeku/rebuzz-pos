@@ -9,6 +9,7 @@ import {
   FlaskConical,
   RefreshCw,
   Sparkles,
+  TriangleAlert,
   WandSparkles,
   X,
   type LucideIcon,
@@ -20,6 +21,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useAiProviderLabel } from "@/hooks/useAiKey";
 import type { AiSectionState } from "@/hooks/useAiSection";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatNumber } from "@/utils/helper";
@@ -222,6 +224,31 @@ export function SectionRefreshButton<T>({
 }
 
 /** "10:42 AM", or "Sep 16, 10:42 AM" when it was not today. */
+/**
+ * Why there is no fresh answer, in a merchant's words.
+ *
+ * Each of these is a real difference: a model that answered nothing may work
+ * on the next try, while a spent hourly limit needs waiting, and both are
+ * worth telling apart from "something went wrong".
+ */
+function staleWhy(reason?: string): string {
+  switch (reason) {
+    case "INSIGHTS_RATE_LIMIT":
+    case "AI_RATE_LIMIT":
+      return "AI requests for this hour are used up.";
+    case "AI_QUOTA_EXCEEDED":
+      return "Your key's usage limit is reached.";
+    case "AI_EMPTY_RESPONSE":
+      return "The model in use answered nothing.";
+    case "AI_TRUNCATED":
+      return "The model in use was cut off before finishing.";
+    case "AI_MALFORMED_RESPONSE":
+      return "The model in use answered in a format we couldn't read.";
+    default:
+      return "A fresh answer couldn't be generated.";
+  }
+}
+
 function updatedLabel(iso: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";
@@ -260,6 +287,10 @@ export function AiSectionBody<T>({
   children: ReactNode;
 }) {
   const { data } = state;
+  // Which provider is answering. The cache only serves an answer generated
+  // under the provider and model in use, so this always names the one that
+  // actually wrote what is on screen.
+  const providerLabel = useAiProviderLabel();
 
   if (state.isLoading) {
     return layout === "list" ? (
@@ -304,12 +335,40 @@ export function AiSectionBody<T>({
       >
         {children}
       </div>
-      {data?.generatedAt && (
-        <p className="mt-2.5 text-right text-[11px] text-gray-400">
-          Written by AI from your own sales and menu · Updated{" "}
-          {updatedLabel(data.generatedAt)}
-        </p>
-      )}
+      {data?.generatedAt &&
+        (data.stale ? (
+          /* Not this model's answer. Said plainly and in amber, because the
+             cards are real but older — reading them as today's work from the
+             model just chosen would be the wrong conclusion. */
+          <p className="mt-2.5 flex flex-wrap items-center justify-end gap-x-1.5 text-right text-[11px] text-amber-700">
+            <TriangleAlert className="h-3 w-3 shrink-0" aria-hidden />
+            <span>
+              {staleWhy(data.staleReason)} Showing the last answer
+              {data.model ? (
+                <>
+                  {" from "}
+                  <span className="font-mono">{data.model}</span>
+                </>
+              ) : null}
+              , written {updatedLabel(data.generatedAt)}.
+            </span>
+          </p>
+        ) : (
+          <p className="mt-2.5 text-right text-[11px] text-gray-400">
+            Written by {providerLabel ?? "AI"} from your own sales and menu
+            {/* The model as well as the provider: on OpenRouter's free router
+                the model changes between answers, and "which one wrote this"
+                is the first question when a card reads badly. */}
+            {data.model && (
+              <>
+                {" · "}
+                <span className="font-mono">{data.model}</span>
+              </>
+            )}
+            {" · Updated "}
+            {updatedLabel(data.generatedAt)}
+          </p>
+        ))}
     </>
   );
 }

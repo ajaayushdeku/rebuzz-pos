@@ -19,7 +19,10 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import type { AiInsightsError } from "@/services/apiAiInsights.client";
+import {
+  normalizeAiErrorCode,
+  type AiInsightsError,
+} from "@/services/apiAiInsights.client";
 
 type Tone = "violet" | "red" | "amber" | "gray";
 
@@ -90,8 +93,8 @@ function present(code: string): Presentation {
       return {
         icon: KeyRound,
         tone: "violet",
-        title: "Connect your Gemini key",
-        hint: "Insights run on your own Google Gemini key. Creating one takes about a minute, and the steps are on the settings page.",
+        title: "Connect your AI key",
+        hint: "Insights run on your own key, from Google Gemini or OpenRouter. Creating one takes about a minute, and the steps are on the settings page.",
         action: { label: "Add API key", href: SETTINGS },
       };
     case "AI_DISABLED":
@@ -104,7 +107,7 @@ function present(code: string): Presentation {
         hint: "Your key is still saved. Saving it again in settings turns AI insights back on.",
         action: { label: "Open AI settings", href: SETTINGS },
       };
-    case "GEMINI_KEY_INVALID":
+    case "AI_KEY_INVALID":
     case "KEY_UNREADABLE":
       return {
         icon: ShieldAlert,
@@ -113,7 +116,7 @@ function present(code: string): Presentation {
         hint: "Only the AI features are paused. Your sales data and the rest of the dashboard are not affected.",
         action: { label: "Check API key", href: SETTINGS },
       };
-    case "GEMINI_MODEL_UNAVAILABLE":
+    case "AI_MODEL_UNAVAILABLE":
       return {
         icon: Cpu,
         tone: "red",
@@ -121,14 +124,14 @@ function present(code: string): Presentation {
         hint: "Pick another model in settings. The list only shows models your key can use.",
         action: { label: "Choose a model", href: SETTINGS },
       };
-    case "GEMINI_QUOTA_EXCEEDED":
+    case "AI_QUOTA_EXCEEDED":
       return {
         icon: Gauge,
         tone: "amber",
-        title: "Your Gemini usage limit is reached",
-        hint: "Google caps how much each key can use. Insights work again once the limit resets, or after raising it in Google AI Studio.",
+        title: "Your AI usage limit is reached",
+        hint: "Every provider caps what a free key can use. Insights work again once the limit resets, or after raising it with your provider.",
       };
-    case "GEMINI_RATE_LIMIT":
+    case "AI_RATE_LIMIT":
     case "INSIGHTS_RATE_LIMIT":
       return {
         icon: Timer,
@@ -136,16 +139,16 @@ function present(code: string): Presentation {
         title: "Too many requests just now",
         hint: "Insights were asked for several times in a short while. Give it a moment before trying again.",
       };
-    case "GEMINI_UNAVAILABLE":
+    case "AI_UNAVAILABLE":
       return {
         icon: CloudOff,
         tone: "amber",
-        title: "Google's AI is busy",
-        hint: "It happens during demand spikes on Google's side. Nothing is wrong with your key or your setup.",
+        title: "Your AI provider is busy",
+        hint: "It happens during demand spikes on their side. Nothing is wrong with your key or your setup.",
       };
-    case "GEMINI_TRUNCATED":
-    case "GEMINI_MALFORMED_RESPONSE":
-    case "GEMINI_EMPTY_RESPONSE":
+    case "AI_TRUNCATED":
+    case "AI_MALFORMED_RESPONSE":
+    case "AI_EMPTY_RESPONSE":
       return {
         icon: Bot,
         tone: "amber",
@@ -205,7 +208,10 @@ export default function AiInsightsErrorState({
   error?: AiInsightsError;
   onRetry: () => void;
 }) {
-  const code = error?.code ?? "UNKNOWN";
+  // Normalised first: a deployment from before the second provider still
+  // answers GEMINI_RATE_LIMIT, which would otherwise fall through to the
+  // generic panel and show the raw code.
+  const code = normalizeAiErrorCode(error?.code ?? "UNKNOWN");
   const { icon: Icon, tone, title, hint, action } = present(code);
   const t = TONES[tone];
 

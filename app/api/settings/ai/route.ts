@@ -72,14 +72,17 @@ async function forward(
   const json = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    // The service's error codes carry the meaning — GEMINI_KEY_INVALID needs a
-    // different fix from GEMINI_QUOTA_EXCEEDED — so they pass through intact.
+    // The service's error codes carry the meaning — AI_KEY_INVALID needs a
+    // different fix from AI_QUOTA_EXCEEDED — so they pass through intact.
     return NextResponse.json(
       {
         error: json?.error ?? "Request failed",
         // Present when the model was the problem: the names this key can
         // actually use, so the message can name them instead of guessing.
         available: json?.available ?? undefined,
+        // The provider's own sentence, when it gave one. Our codes say what
+        // kind of problem it is; only they know which plan or limit.
+        detail: json?.detail ?? undefined,
         // Forwarded on a 429. The service sends the wait in the body, and the
         // client turns it into "try again in N s" — but only if it arrives.
         // Rebuilding the body without it made that sentence unreachable.
@@ -100,6 +103,8 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const apiKey = typeof body?.apiKey === "string" ? body.apiKey.trim() : "";
   const model = typeof body?.model === "string" ? body.model.trim() : "";
+  const provider =
+    typeof body?.provider === "string" ? body.provider.trim() : "";
 
   if (!apiKey) {
     return NextResponse.json({ error: "API_KEY_REQUIRED" }, { status: 400 });
@@ -107,25 +112,33 @@ export async function POST(req: NextRequest) {
 
   // `model` is forwarded when supplied so the user can save a key against the
   // model they were told works. Dropping it here was a dead end: the service
-  // answers GEMINI_MODEL_UNAVAILABLE with a list of usable names, and without
-  // this there was no way to act on that answer.
-  return forward("POST", model ? { apiKey, model } : { apiKey });
+  // answers AI_MODEL_UNAVAILABLE with a list of usable names, and without
+  // this there was no way to act on that answer. `provider` says which
+  // provider the key belongs to; the service checks the name itself.
+  return forward("POST", {
+    apiKey,
+    ...(model ? { model } : {}),
+    ...(provider ? { provider } : {}),
+  });
 }
 
 /**
- * Toggle `enabled`, or switch to one of the models the service reported as
- * usable. Cannot change the key — that is POST's job.
+ * Toggle `enabled`, switch provider, or switch to one of the models the
+ * service reported as usable. Cannot change the key — that is POST's job.
  */
 export async function PATCH(req: NextRequest) {
   const body = await req.json().catch(() => null);
 
-  const payload: { enabled?: boolean; model?: string } = {};
+  const payload: { enabled?: boolean; model?: string; provider?: string } = {};
 
   if (typeof body?.enabled === "boolean") {
     payload.enabled = body.enabled;
   }
   if (typeof body?.model === "string" && body.model.trim()) {
     payload.model = body.model.trim();
+  }
+  if (typeof body?.provider === "string" && body.provider.trim()) {
+    payload.provider = body.provider.trim();
   }
 
   if (Object.keys(payload).length === 0) {

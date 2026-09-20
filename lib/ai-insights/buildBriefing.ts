@@ -305,9 +305,7 @@ export function buildBriefing(data: BriefingData): string {
         hour.orders === undefined
           ? ""
           : ` from ${formatNumber(hour.orders)} orders`;
-      lines.push(
-        `${hour.hour}: ${money(hour.revenue)} revenue${orders}`,
-      );
+      lines.push(`${hour.hour}: ${money(hour.revenue)} revenue${orders}`);
     });
     lines.push("");
   }
@@ -429,11 +427,9 @@ export function buildBriefing(data: BriefingData): string {
           ? ` | units sold: ${formatNumber(category.unitsSold)}`
           : "";
       lines.push(
-        `${category.category} | revenue: ${money(
-          category.revenue,
-        )} | ${(category.percentOfTotal ?? 0).toFixed(
-          1,
-        )}% of total${ordersClause}${unitsClause}`,
+        `${category.category} | revenue: ${money(category.revenue)} | ${(
+          category.percentOfTotal ?? 0
+        ).toFixed(1)}% of total${ordersClause}${unitsClause}`,
       );
     });
     lines.push("");

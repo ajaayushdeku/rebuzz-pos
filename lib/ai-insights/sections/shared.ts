@@ -198,6 +198,14 @@ export interface AiSectionResult<T> {
   generatedAt?: string;
   /** True when this answer was served from the day's cache, at no cost. */
   cached?: boolean;
+  /**
+   * True when this is the last answer the service had rather than a fresh one:
+   * the model in use returned nothing usable, or the hourly limit was spent.
+   * `model` and `generatedAt` then describe whoever wrote it, and when.
+   */
+  stale?: boolean;
+  /** Why a fresh answer could not be had, in the usual error vocabulary. */
+  staleReason?: string;
 }
 
 /** A single emoji from the model, or the fallback when it sent anything else. */

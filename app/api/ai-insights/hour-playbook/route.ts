@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 
 import { askAiService } from "@/lib/ai-insights/askAiService.server";
 import {
@@ -91,6 +91,9 @@ export async function POST(req: NextRequest) {
     model,
     generatedAt,
     cached: cached === true,
+    // Passed through so the card can say the model in use did not answer.
+    stale: answer.data.stale === true,
+    staleReason: answer.data.staleReason,
   };
 
   return NextResponse.json(

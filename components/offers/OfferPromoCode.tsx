@@ -134,7 +134,7 @@ export default function OfferPromoCode() {
         <label className="mb-1.5 block text-[13px] font-medium text-gray-700">
           Code
         </label>
-        <div className="  flex  items-center  gap-2.5">
+        <div className=" flex  items-center  gap-2.5">
           <input
             type="text"
             value={form.hasKey}
@@ -145,7 +145,7 @@ export default function OfferPromoCode() {
               updateField("hasKey", e.target.value.toUpperCase())
             }
             placeholder="NEWYEARS23"
-            className="h-12  min-w-0 flex-1 rounded-xl border border-gray-200 bg-gray-50 px-3.5 font-mono text-sm tracking-wider text-gray-800 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 sm:max-w-sm"
+            className="h-12 min-w-0 flex-1 rounded-xl border border-gray-200 bg-gray-50 px-3.5 font-mono text-sm tracking-wider text-gray-800 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 sm:max-w-sm"
           />
 
           <button

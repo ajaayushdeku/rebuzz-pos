@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import GeminiKeyForm from "@/components/settingsComponents/apiKeys/GeminiKeyForm";
-import GeminiKeyGuide from "@/components/settingsComponents/apiKeys/GeminiKeyGuide";
+import ApiKeysScreen from "@/components/settingsComponents/apiKeys/ApiKeysScreen";
 
 export const metadata: Metadata = { title: "API Keys" };
 
 /**
  * Connect the outside services the app's AI features run on.
  *
- * Only Gemini today, but laid out as a list of providers rather than a single
- * form so that adding a second one is a new card, not a redesign.
+ * The screen itself is a client component: which provider is being set up
+ * drives the list, the form and the guide together, and that is state. Adding
+ * a fourth provider is a row in the list, not a redesign.
  */
 export default function Page() {
   return (
@@ -24,14 +24,8 @@ export default function Page() {
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-        <div className="min-w-0 lg:sticky lg:top-4">
-          <GeminiKeyForm />
-        </div>
-
-        <div className="min-w-0 lg:sticky lg:top-4">
-          <GeminiKeyGuide />
-        </div>
+      <div className="mt-6">
+        <ApiKeysScreen />
       </div>
     </div>
   );

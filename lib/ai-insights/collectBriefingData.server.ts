@@ -13,9 +13,7 @@
  */
 
 import { cookies } from "next/headers";
-import {
-  CURRENCY_OPTIONS,
-} from "@/lib/config/currencies";
+import { CURRENCY_OPTIONS } from "@/lib/config/currencies";
 import {
   getHourlySalesData,
   getRecentTransactions,
@@ -48,7 +46,7 @@ function daysAgo(n: number): Date {
 }
 
 /** Unwrap a settled promise, falling back when that source failed. */
-const ok = <T,>(r: PromiseSettledResult<T>, fallback: T): T =>
+const ok = <T>(r: PromiseSettledResult<T>, fallback: T): T =>
   r.status === "fulfilled" ? r.value : fallback;
 
 /** The business's currency, read from the session's currency cookie. */
@@ -138,16 +136,23 @@ export async function collectBriefingData(): Promise<BriefingData> {
   ]);
 
   // Everything else is optional: settle independently, drop what fails.
-  const [winning, topProducts, hourly, daily, categories, inventory, customers] =
-    await Promise.allSettled([
-      getWinningStats(),
-      getTopProducts(),
-      getHourlySalesData(),
-      getWeeklyRevenueData(),
-      getSalesByCategory(),
-      fetchInventoryProducts(),
-      getCustomerStats(),
-    ]);
+  const [
+    winning,
+    topProducts,
+    hourly,
+    daily,
+    categories,
+    inventory,
+    customers,
+  ] = await Promise.allSettled([
+    getWinningStats(),
+    getTopProducts(),
+    getHourlySalesData(),
+    getWeeklyRevenueData(),
+    getSalesByCategory(),
+    fetchInventoryProducts(),
+    getCustomerStats(),
+  ]);
 
   // ── Winning stats ──
   const w = ok(winning, null);
@@ -249,4 +254,3 @@ export async function collectBriefingData(): Promise<BriefingData> {
     categoryPerformance,
   };
 }
-

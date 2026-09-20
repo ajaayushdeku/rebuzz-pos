@@ -1,12 +1,23 @@
 /**
- * The business's Gemini API key, from the browser's side.
+ * The business's AI provider key, from the browser's side.
  *
  * `saveAiKey` is the only function that ever carries the plaintext key, and it
  * only sends it. There is deliberately no counterpart that reads one back:
  * `fetchAiKeyStatus` returns a mask, which is all the settings screen needs.
  */
 
+/** A provider the service can call. Names and links only, never credentials. */
+export interface AiProvider {
+  id: string;
+  label: string;
+  defaultModel: string;
+  /** Where to create a key for this provider. */
+  keysUrl: string;
+}
+
 export interface AiKeyStatus {
+  /** Which provider this business uses; "gemini" until one is chosen. */
+  provider: string;
   configured: boolean;
   enabled: boolean;
   model: string | null;
@@ -14,6 +25,10 @@ export interface AiKeyStatus {
   maskedKey: string | null;
   lastVerifiedAt?: string | null;
   updatedAt?: string | null;
+  /** The choices, sent with the status so the form needs no second request. */
+  providers?: AiProvider[];
+  /** The providers that already hold a key, so switching can say what it needs. */
+  configuredProviders?: string[];
 }
 
 /**
@@ -24,15 +39,17 @@ export interface AiKeyStatus {
  * "something went wrong" leaves nothing to do about it.
  */
 const MESSAGES: Record<string, string> = {
-  GEMINI_KEY_INVALID:
-    "Google rejected that key. Check you copied all of it, and that it hasn't been deleted.",
-  GEMINI_QUOTA_EXCEEDED:
-    "That key has no quota left. Check your usage in Google AI Studio.",
-  GEMINI_RATE_LIMIT:
-    "Too many requests to Google just now — try again shortly.",
-  GEMINI_MODEL_UNAVAILABLE:
+  AI_KEY_INVALID:
+    "That key was rejected. Check you copied all of it, and that it hasn't been deleted.",
+  AI_QUOTA_EXCEEDED:
+    "That key has no quota left. Check your usage with your provider.",
+  AI_RATE_LIMIT:
+    "Too many requests to your AI provider just now — try again shortly.",
+  AI_MODEL_UNAVAILABLE:
     "That model isn't available for this key. Try a different one.",
-  GEMINI_UNAVAILABLE: "Couldn't reach Google. Try again in a moment.",
+  AI_UNAVAILABLE: "Couldn't reach your AI provider. Try again in a moment.",
+  PROVIDER_NOT_CONFIGURED:
+    "Add a key for that provider before switching to it.",
   API_KEY_REQUIRED: "Enter your API key first.",
   AUTH_REQUIRED: "Your session has expired — sign in again.",
   AUTH_INVALID: "Your session has expired — sign in again.",
@@ -41,7 +58,7 @@ const MESSAGES: Record<string, string> = {
   // Codes the service sends that had no sentence, so the form printed the
   // code itself — "VERIFY_RATE_LIMIT" in red under a dropdown.
   // No "try again" here: the wait arrives with every 429 and is appended.
-  VERIFY_RATE_LIMIT: "Too many checks with Google just now.",
+  VERIFY_RATE_LIMIT: "Too many key checks just now.",
   KEY_UNREADABLE:
     "Your saved key can't be read any more. Enter it again to replace it.",
   NOT_CONFIGURED: "Save an API key first.",
@@ -49,15 +66,19 @@ const MESSAGES: Record<string, string> = {
 };
 
 function toMessage(
-  code: unknown,
+  rawCode: unknown,
   available?: unknown,
   retryAfter?: unknown,
+  detail?: unknown,
 ): string {
-  if (typeof code !== "string") return "Something went wrong.";
+  if (typeof rawCode !== "string") return "Something went wrong.";
+  // A service from before the second provider still answers GEMINI_*; the
+  // messages are keyed by the neutral spelling.
+  const code = rawCode.replace(/^GEMINI_/, "AI_");
 
   // A model failure is only actionable if the alternatives are named.
   if (
-    code === "GEMINI_MODEL_UNAVAILABLE" &&
+    code === "AI_MODEL_UNAVAILABLE" &&
     Array.isArray(available) &&
     available.length > 0
   ) {
@@ -76,10 +97,26 @@ function toMessage(
     return `${base} Try again in ${Math.ceil(retryAfter)} s.`;
   }
 
+  /**
+   * The provider's own words, when it gave any.
+   *
+   * Our sentence says what kind of problem it is; theirs says which plan,
+   * which model or when the limit resets — and without it, "that key has no
+   * quota left" on a key created a minute ago is a dead end.
+   */
+  if (typeof detail === "string" && detail.trim()) {
+    return `${base} ${providerLabelPrefix(detail.trim())}`;
+  }
+
   return base;
 }
 
+/** The provider's message, quoted so it is clearly not ours. */
+const providerLabelPrefix = (detail: string) =>
+  `Your provider said: “${detail.replace(/\s+/g, " ")}”`;
+
 const EMPTY: AiKeyStatus = {
+  provider: "gemini",
   configured: false,
   enabled: false,
   model: null,
@@ -89,18 +126,31 @@ const EMPTY: AiKeyStatus = {
 export const fetchAiKeyStatus = async (): Promise<AiKeyStatus> => {
   const res = await fetch("/api/settings/ai", { cache: "no-store" });
   const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(toMessage(json?.error, json?.available, json?.retryAfter));
+  if (!res.ok)
+    throw new Error(
+      toMessage(json?.error, json?.available, json?.retryAfter, json?.detail),
+    );
   return json?.data ?? EMPTY;
 };
 
-export const saveAiKey = async (apiKey: string): Promise<AiKeyStatus> => {
+/**
+ * Save a key. Saving also selects that provider — nobody adds a key for a
+ * provider they did not mean to start using.
+ */
+export const saveAiKey = async (
+  apiKey: string,
+  provider?: string,
+): Promise<AiKeyStatus> => {
   const res = await fetch("/api/settings/ai", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ apiKey }),
+    body: JSON.stringify({ apiKey, ...(provider ? { provider } : {}) }),
   });
   const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(toMessage(json?.error, json?.available, json?.retryAfter));
+  if (!res.ok)
+    throw new Error(
+      toMessage(json?.error, json?.available, json?.retryAfter, json?.detail),
+    );
   return json?.data ?? EMPTY;
 };
 
@@ -112,7 +162,30 @@ export const removeAiKey = async (): Promise<void> => {
   }
 };
 
+/**
+ * Switch to a provider whose key is already saved.
+ *
+ * The service refuses a switch to one with no key (PROVIDER_NOT_CONFIGURED),
+ * because that would leave the business configured with nothing to call.
+ */
+export const switchAiProvider = async (
+  provider: string,
+): Promise<AiKeyStatus> => {
+  const res = await fetch("/api/settings/ai", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ provider }),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok)
+    throw new Error(
+      toMessage(json?.error, json?.available, json?.retryAfter, json?.detail),
+    );
+  return json?.data ?? EMPTY;
+};
+
 export interface AiModelList {
+  provider?: string;
   models: string[];
   current: string | null;
 }
@@ -124,10 +197,20 @@ export interface AiModelList {
  * the same sentence the status screen shows — and the UI simply never calls it
  * unless a key is configured.
  */
-export const fetchAiModels = async (): Promise<AiModelList> => {
-  const res = await fetch("/api/settings/ai/models", { cache: "no-store" });
+export const fetchAiModels = async (
+  provider?: string,
+): Promise<AiModelList> => {
+  const res = await fetch(
+    provider
+      ? `/api/settings/ai/models?provider=${encodeURIComponent(provider)}`
+      : "/api/settings/ai/models",
+    { cache: "no-store" },
+  );
   const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(toMessage(json?.error, json?.available, json?.retryAfter));
+  if (!res.ok)
+    throw new Error(
+      toMessage(json?.error, json?.available, json?.retryAfter, json?.detail),
+    );
   return (
     json?.data ?? {
       models: [],
@@ -140,7 +223,7 @@ export const fetchAiModels = async (): Promise<AiModelList> => {
  * Switch the model the business's stored key runs against.
  *
  * Uses the existing PATCH on /api/settings/ai: the key stays exactly as
- * stored, only the `gemini.model` attribute it points at changes.
+ * stored, only the model recorded for the provider in use changes.
  */
 export const updateAiModel = async (model: string): Promise<AiKeyStatus> => {
   const res = await fetch("/api/settings/ai", {
@@ -149,6 +232,9 @@ export const updateAiModel = async (model: string): Promise<AiKeyStatus> => {
     body: JSON.stringify({ model }),
   });
   const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(toMessage(json?.error, json?.available, json?.retryAfter));
+  if (!res.ok)
+    throw new Error(
+      toMessage(json?.error, json?.available, json?.retryAfter, json?.detail),
+    );
   return json?.data ?? EMPTY;
 };
