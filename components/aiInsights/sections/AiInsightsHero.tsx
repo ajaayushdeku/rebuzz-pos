@@ -12,8 +12,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import AiUsageMeter from "@/components/aiInsights/AiUsageMeter";
-
 /** "10:42 AM", or "Sep 16, 10:42 AM" when it was not today. */
 function updatedLabel(iso: string): string {
   const date = new Date(iso);
@@ -238,9 +236,6 @@ export default function AiInsightsHero({
               The rest show sample data until they are connected.
             </p>
           </div>
-
-          {/* What is left to spend, beside what has been built. */}
-          <AiUsageMeter totalSections={totalSections} />
         </div>
       </div>
     </section>

@@ -5,7 +5,6 @@ import { Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
-import { useRefreshAiQuota } from "@/hooks/useAiQuota";
 import AiInsightsHero from "@/components/aiInsights/sections/AiInsightsHero";
 import MenuSuggestionsSection from "@/components/aiInsights/sections/MenuSuggestionsSection";
 import SlowItemsSection from "@/components/aiInsights/sections/SlowItemsSection";
@@ -108,7 +107,6 @@ export default function AIInsightPage() {
     staffingSection,
   ];
   const [generating, setGenerating] = useState(false);
-  const refreshQuota = useRefreshAiQuota();
 
   /**
    * Loads every connected section again, the way each one's "Try again" does.
@@ -150,9 +148,6 @@ export default function AIInsightPage() {
       }
     } finally {
       setGenerating(false);
-      // Generating is exactly when the hour's allowance changes; waiting for
-      // the meter's own minute would make it look stuck.
-      refreshQuota();
     }
   };
 

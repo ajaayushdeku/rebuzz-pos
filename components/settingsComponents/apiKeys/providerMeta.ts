@@ -286,13 +286,13 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
 
     card: { border: "#F05A28", bg: "#FFE9DD" },
     button: { bg: "#B23A14", ink: "#FFFFFF", hover: "#8C2C0D" },
-    blurb: "The fastest of the free tiers",
-    tagline: "Free tier · card check",
+    blurb: "Very fast, but no longer free",
+    tagline: "Trial credits · card needed",
     placeholder: "Paste your Cerebras key…",
     steps: [
       {
         title: "Create a Cerebras Cloud account",
-        body: "Sign up for the free tier. Cerebras may ask you to verify a payment card even though the free tier is not charged.",
+        body: "Cerebras ended its free tier in August 2026. New accounts get one-off trial credits, and the API stays inactive until a payment method is added.",
         link: { label: "cloud.cerebras.ai", href: "https://cloud.cerebras.ai" },
       },
       {
@@ -316,8 +316,8 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
       },
       {
         icon: "wallet",
-        title: "A large daily allowance",
-        body: "Around a million tokens a day. Insights are generated once a day and kept, so a day's eight sections use a small fraction of that.",
+        title: "Its free tier ended in August 2026",
+        body: "New accounts now get one-off credits that unlock only after a payment method is added, and they expire about a month later. A key with nothing left reports “no quota” when you save it here.",
       },
       {
         icon: "shield",
@@ -388,6 +388,56 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
         icon: "zap",
         title: "Only its chat models are offered",
         body: "Mistral also publishes embedding, moderation, OCR and audio models, which cannot write an insight. The selector leaves them out.",
+      },
+      ...SHARED_FACTS,
+    ],
+  },
+
+  nvidia: {
+    /**
+     * NVIDIA green, #76B900, and shades of it. The brand green is about 2.3:1
+     * on white — a mark, not an ink — so a darkened version carries the text
+     * and the button, and the bright one leads the mark's sweep.
+     */
+    accent: "#4A7700",
+    tint: "#F2FBE0",
+    gradient: ["#A6E000", "#76B900", "#4A7700"],
+    mark: { bg: "#EAF7CF", ink: "#4A7700" },
+    card: { border: "#76B900", bg: "#F0FADC" },
+    button: { bg: "#4A7700", ink: "#FFFFFF", hover: "#3A5D00" },
+    blurb: "Free credits across a large catalogue",
+    tagline: "Free credits · no card",
+    placeholder: "Paste your NVIDIA key…",
+    steps: [
+      {
+        title: "Join the NVIDIA Developer Programme",
+        body: "Sign up on build.nvidia.com. It is free and asks for no card.",
+        link: { label: "build.nvidia.com", href: "https://build.nvidia.com" },
+      },
+      {
+        title: "Open a model and get an API key",
+        body: "Pick any model on the site and choose “Get API Key”. The key works for every model, not just that one.",
+      },
+      {
+        title: "Copy the key",
+        body: "It is one long line beginning with this prefix. Copy the whole thing; NVIDIA will not show it again.",
+        code: ["nvapi-"],
+      },
+      {
+        title: "Paste it here and save",
+        body: "Paste it into the field above, then save. Your key is checked with NVIDIA before it is stored.",
+      },
+    ],
+    facts: [
+      {
+        icon: "wallet",
+        title: "Free inference credits",
+        body: "Joining the developer programme grants credits to spend across their hosted models, with no card. Insights are generated once a day and kept, so a day's eight sections spend very little.",
+      },
+      {
+        icon: "zap",
+        title: "Only some of its models are offered",
+        body: "NVIDIA hosts embedding, vision, safety, translation and parsing models beside the chat ones, and only some can answer in the fixed format insights need. The selector shows just those.",
       },
       ...SHARED_FACTS,
     ],
