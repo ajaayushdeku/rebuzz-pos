@@ -60,6 +60,8 @@ const MESSAGES: Record<string, string> = {
   // so the message does not say "try again shortly".
   AI_PLAN_LIMIT:
     "Your key was refused on its very first request, for every model we tried. On a free plan that usually means these models aren't included yet — check your plan and its per-model limits in your provider's console.",
+  AI_PAYMENT_REQUIRED:
+    "This provider now asks for a card before its free tier works. Add one in their console, or choose a different provider.",
   API_KEY_REQUIRED: "Enter your API key first.",
   AUTH_REQUIRED: "Your session has expired — sign in again.",
   AUTH_INVALID: "Your session has expired — sign in again.",

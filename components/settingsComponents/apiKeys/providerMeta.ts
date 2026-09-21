@@ -57,9 +57,9 @@ export interface ProviderMeta {
   /**
    * The selected card in the provider list. Defaults to `accent` on `tint`.
    *
-   * Given separately because three providers here are orange — Groq, Cerebras
-   * and Mistral — and a tint derived from each of their accents left the
-   * three cards near-identical. Each picks the shade of its own ramp that
+   * Given separately because two providers here are orange — Groq and
+   * Mistral — and a tint derived from each of their accents left the cards
+   * near-identical. Each picks the shade of its own ramp that
    * separates it from the other two, rather than the one nearest its ink.
    */
   card?: { border: string; bg: string };
@@ -264,70 +264,6 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
     ],
   },
 
-  cerebras: {
-    /**
-     * Cerebras orange, #F05A28, and shades of it.
-     *
-     * The brand orange measures about 3.4:1 on white: enough for a mark, not
-     * enough to carry 13px bold white text. So the ramp is darkened for the
-     * ink and the button (#B23A14 is 6:1, #8C2C0D darker still for hover),
-     * lightened for the wash behind the mark, and the orange itself leads the
-     * mark's sweep, where nothing has to be read through it.
-     */
-    accent: "#B23A14",
-    tint: "#FEF0EA",
-    // gradient: ["#FFB08C", "#F7906B", "#F05A28"],
-    // mark: { bg: "#2A1008", ink: "#F05A28" },
-    // Dark end first: the rings are thin, and starting bright left them
-    // washed out on a pale tile. A deeper tile than Groq's, too — both are
-    // orange, and at 20px the tile is what tells them apart in the list.
-    gradient: ["#B23A14", "#F05A28", "#F7906B"],
-    mark: { bg: "#FFDCC9", ink: "#B23A14" },
-
-    card: { border: "#F05A28", bg: "#FFE9DD" },
-    button: { bg: "#B23A14", ink: "#FFFFFF", hover: "#8C2C0D" },
-    blurb: "Very fast, but no longer free",
-    tagline: "Trial credits · card needed",
-    placeholder: "Paste your Cerebras key…",
-    steps: [
-      {
-        title: "Create a Cerebras Cloud account",
-        body: "Cerebras ended its free tier in August 2026. New accounts get one-off trial credits, and the API stays inactive until a payment method is added.",
-        link: { label: "cloud.cerebras.ai", href: "https://cloud.cerebras.ai" },
-      },
-      {
-        title: "Create an API key",
-        body: "In the console, open API Keys and create one. Give it any name you like.",
-      },
-      {
-        title: "Copy the key",
-        body: "Copy the whole line; Cerebras will not show it again.",
-      },
-      {
-        title: "Paste it here and save",
-        body: "Paste it into the field above, then save. Your key is checked with Cerebras before it is stored.",
-      },
-    ],
-    facts: [
-      {
-        icon: "zap",
-        title: "Built on its own hardware",
-        body: "Cerebras runs models on wafer-scale chips, so answers usually come back faster than from any other free tier.",
-      },
-      {
-        icon: "wallet",
-        title: "Its free tier ended in August 2026",
-        body: "New accounts now get one-off credits that unlock only after a payment method is added, and they expire about a month later. A key with nothing left reports “no quota” when you save it here.",
-      },
-      {
-        icon: "shield",
-        title: "Only some of its models are offered",
-        body: "Only some Cerebras models can answer in the fixed format insights need. The selector shows just those.",
-      },
-      ...SHARED_FACTS,
-    ],
-  },
-
   mistral: {
     /**
      * Mistral's own ramp, taken from their site: #FEC63A yellow, #FF8204
@@ -340,7 +276,7 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
     tint: "#FFF7E3",
     gradient: ["#FEC63A", "#FF8204", "#FA500F"],
     // The yellow end of their own ramp, which is the half of it no other
-    // provider here uses — Groq and Cerebras are both red-orange.
+    // provider here uses — Groq is red-orange.
     mark: { bg: "#FFF3CE", ink: "#933800" },
     card: { border: "#FFAF01", bg: "#FFF6DC" },
     button: { bg: "#933800", ink: "#FFFFFF", hover: "#7A2E00" },
