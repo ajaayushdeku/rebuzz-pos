@@ -92,6 +92,14 @@ export default function CreditTimeline({
   const isArchived = state === "archived";
   const isCleared = state === "completed";
 
+  /**
+   * Nothing is owed, so there is no due date to keep: completed, or the dues
+   * have reached zero before the status caught up — the same rule the
+   * invoice page uses. The due date, its reminders and "Send reminder" all
+   * chase money still outstanding, so the whole box goes.
+   */
+  const isSettled = isCleared || Number(credit.dueAmount ?? 0) <= 0;
+
   // ── Due date ──
   // Stored as the instant the day begins in Nepal, so it arrives as the
   // evening before in UTC. Converted rather than sliced — see lib/nepalDate.
@@ -200,135 +208,137 @@ export default function CreditTimeline({
           </div>
         </div>
 
-        {/* Reminders */}
-        <div className="mt-4 ml-13 border border-gray-100 rounded-xl p-4">
-          <div className="flex items-start justify-between gap-3 mb-3">
-            <div className="flex items-center gap-2">
-              <Bell size={13} className="text-gray-500" />
-              <p className="text-xs font-semibold text-gray-700">
-                Due date &amp; automatic reminders
-              </p>
-            </div>
-            {/* An archived credit is a record, so its schedule is frozen with
+        {/* Reminders — hidden once settled: see `isSettled`. */}
+        {!isSettled && (
+          <div className="mt-4 ml-13 border border-gray-100 rounded-xl p-4">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="flex items-center gap-2">
+                <Bell size={13} className="text-gray-500" />
+                <p className="text-xs font-semibold text-gray-700">
+                  Due date &amp; automatic reminders
+                </p>
+              </div>
+              {/* An archived credit is a record, so its schedule is frozen with
                 everything else that could change it. */}
-            {!isArchived && (
-              <button
-                onClick={onSetDueDate}
-                className="text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-4 py-1.5 transition-colors shrink-0"
-              >
-                {dueDate ? "Edit due date" : "Set due date"}
-              </button>
-            )}
-          </div>
-
-          {!dueDate ? (
-            // Reminders are all relative to the due date, so there is nothing
-            // to schedule against until one exists.
-            <p className="text-xs text-gray-500 leading-relaxed">
-              No due date set. Add one to schedule reminders before and after
-              payment falls due.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                <p className="text-xs text-gray-500">
-                  <span className="font-medium text-gray-700">Due:</span>{" "}
-                  <span className="font-semibold text-gray-800">
-                    {formatDueDate(dueDate)}
-                  </span>
-                </p>
-                {/* Only while something is still owed — on a settled or
-                    archived credit the date is history, not a deadline. */}
-                {!isCleared && !isArchived && daysUntilDue !== null && (
-                  <span
-                    className={`text-[11px] font-semibold ${
-                      daysUntilDue < 0
-                        ? "text-red-500"
-                        : daysUntilDue === 0
-                          ? "text-amber-600"
-                          : "text-gray-400"
-                    }`}
-                  >
-                    {daysUntilDue < 0
-                      ? `${Math.abs(daysUntilDue)} ${
-                          Math.abs(daysUntilDue) === 1 ? "day" : "days"
-                        } overdue`
-                      : daysUntilDue === 0
-                        ? "Due today"
-                        : `in ${daysUntilDue} ${
-                            daysUntilDue === 1 ? "day" : "days"
-                          }`}
-                  </span>
-                )}
-              </div>
-
-              <div>
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                  Scheduled reminders before due date
-                </p>
-                {remindersBefore.length === 0 ? (
-                  <p className="text-xs text-gray-400">
-                    None scheduled before the due date.
-                  </p>
-                ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {remindersBefore.map((offset) => (
-                      <span
-                        key={offset}
-                        className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600"
-                      >
-                        {reminderLabel(offset)}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                  Scheduled reminders after due date
-                </p>
-                {remindersAfter.length === 0 ? (
-                  <p className="text-xs text-gray-400">
-                    None scheduled once it falls due.
-                  </p>
-                ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {remindersAfter.map((offset) => (
-                      <span
-                        key={offset}
-                        className={`rounded-lg border px-2.5 py-1.5 text-xs font-medium ${
-                          offset === 0
-                            ? "border-amber-200 bg-amber-50 text-amber-700"
-                            : "border-red-200 bg-red-50 text-red-600"
-                        }`}
-                      >
-                        {reminderLabel(offset)}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
+              {!isArchived && (
+                <button
+                  onClick={onSetDueDate}
+                  className="text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-4 py-1.5 transition-colors shrink-0"
+                >
+                  {dueDate ? "Edit due date" : "Set due date"}
+                </button>
+              )}
             </div>
-          )}
 
-          {/* A due reminder is the one action a credit has that a paid invoice
+            {!dueDate ? (
+              // Reminders are all relative to the due date, so there is nothing
+              // to schedule against until one exists.
+              <p className="text-xs text-gray-500 leading-relaxed">
+                No due date set. Add one to schedule reminders before and after
+                payment falls due.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                  <p className="text-xs text-gray-500">
+                    <span className="font-medium text-gray-700">Due:</span>{" "}
+                    <span className="font-semibold text-gray-800">
+                      {formatDueDate(dueDate)}
+                    </span>
+                  </p>
+                  {/* Only while something is still owed — on a settled or
+                    archived credit the date is history, not a deadline. */}
+                  {!isCleared && !isArchived && daysUntilDue !== null && (
+                    <span
+                      className={`text-[11px] font-semibold ${
+                        daysUntilDue < 0
+                          ? "text-red-500"
+                          : daysUntilDue === 0
+                            ? "text-amber-600"
+                            : "text-gray-400"
+                      }`}
+                    >
+                      {daysUntilDue < 0
+                        ? `${Math.abs(daysUntilDue)} ${
+                            Math.abs(daysUntilDue) === 1 ? "day" : "days"
+                          } overdue`
+                        : daysUntilDue === 0
+                          ? "Due today"
+                          : `in ${daysUntilDue} ${
+                              daysUntilDue === 1 ? "day" : "days"
+                            }`}
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                    Scheduled reminders before due date
+                  </p>
+                  {remindersBefore.length === 0 ? (
+                    <p className="text-xs text-gray-400">
+                      None scheduled before the due date.
+                    </p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {remindersBefore.map((offset) => (
+                        <span
+                          key={offset}
+                          className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600"
+                        >
+                          {reminderLabel(offset)}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                    Scheduled reminders after due date
+                  </p>
+                  {remindersAfter.length === 0 ? (
+                    <p className="text-xs text-gray-400">
+                      None scheduled once it falls due.
+                    </p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {remindersAfter.map((offset) => (
+                        <span
+                          key={offset}
+                          className={`rounded-lg border px-2.5 py-1.5 text-xs font-medium ${
+                            offset === 0
+                              ? "border-amber-200 bg-amber-50 text-amber-700"
+                              : "border-red-200 bg-red-50 text-red-600"
+                          }`}
+                        >
+                          {reminderLabel(offset)}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* A due reminder is the one action a credit has that a paid invoice
               does not, so it is a first-class button rather than a link. */}
-          <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
-            <p className="text-xs text-gray-500">
-              {isCleared
-                ? "This credit is settled — nothing is owed."
-                : "Send a due reminder to the customer now"}
-            </p>
-            <button
-              onClick={onSendReminder}
-              disabled={isArchived}
-              className="text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Send reminder
-            </button>
+            <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+              <p className="text-xs text-gray-500">
+                {isCleared
+                  ? "This credit is settled — nothing is owed."
+                  : "Send a due reminder to the customer now"}
+              </p>
+              <button
+                onClick={onSendReminder}
+                disabled={isArchived}
+                className="text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Send reminder
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <Connector />

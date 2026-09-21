@@ -58,6 +58,14 @@ export default function CreditDetailMeta({
   const daysUntilDue = daysFromNepalToday(dueDate);
 
   /**
+   * Nothing is owed, so there is no due date to show or set: completed, or the
+   * dues have reached zero before the status caught up. Unlike `cleared`,
+   * an archived credit with money still owed keeps its date — archiving
+   * freezes a record, it does not settle it.
+   */
+  const isSettled = state === "completed" || dueAmount <= 0;
+
+  /**
    * Built from the parts, never `new Date(iso)`, which reads a bare date as UTC
    * midnight and renders the day before in any negative offset.
    */
@@ -116,55 +124,58 @@ export default function CreditDetailMeta({
       </div>
 
       <div className="flex flex-row gap-6 font-sans">
-        <div>
-          <MetaLabel>Due date</MetaLabel>
-          {dueDate ? (
-            <div className="text-right relative">
-              <p className="text-xl font-semibold text-gray-800">
-                {formatDueDate(dueDate)}
-              </p>
-              {/* How long is left, and only while something is still owed — on
+        {/* Hidden once settled: see `isSettled`. */}
+        {!isSettled && (
+          <div>
+            <MetaLabel>Due date</MetaLabel>
+            {dueDate ? (
+              <div className="text-right relative">
+                <p className="text-xl font-semibold text-gray-800">
+                  {formatDueDate(dueDate)}
+                </p>
+                {/* How long is left, and only while something is still owed — on
                   a settled or archived credit the date is a record, not a
                   deadline. */}
-              {!cleared && daysUntilDue !== null && (
-                <p
-                  className={` absolute right-0 text-[11px] font-semibold mt-0.5 ${
-                    daysUntilDue < 0
-                      ? "text-red-500"
+                {!cleared && daysUntilDue !== null && (
+                  <p
+                    className={` absolute right-0 text-[11px] font-semibold mt-0.5 ${
+                      daysUntilDue < 0
+                        ? "text-red-500"
+                        : daysUntilDue === 0
+                          ? "text-amber-600"
+                          : "text-gray-400"
+                    }`}
+                  >
+                    {daysUntilDue < 0
+                      ? `${Math.abs(daysUntilDue)} ${
+                          Math.abs(daysUntilDue) === 1 ? "day" : "days"
+                        } overdue`
                       : daysUntilDue === 0
-                        ? "text-amber-600"
-                        : "text-gray-400"
-                  }`}
-                >
-                  {daysUntilDue < 0
-                    ? `${Math.abs(daysUntilDue)} ${
-                        Math.abs(daysUntilDue) === 1 ? "day" : "days"
-                      } overdue`
-                    : daysUntilDue === 0
-                      ? "Due today"
-                      : `in ${daysUntilDue} ${
-                          daysUntilDue === 1 ? "day" : "days"
-                        }`}
-                </p>
-              )}
-            </div>
-          ) : state === "archived" ? (
-            // Nothing about an archived credit can change, so a button here
-            // would open a form that cannot be saved.
-            <p className="text-base text-right font-semibold text-gray-300">
-              —
-            </p>
-          ) : (
-            // A button rather than a dash: the row is where someone looks for
-            // the date, so it is also where they should be able to add one.
-            <button
-              onClick={onSetDueDate}
-              className="text-base font-semibold text-blue-600 tracking-wide cursor-pointer hover:underline"
-            >
-              Set due date
-            </button>
-          )}
-        </div>
+                        ? "Due today"
+                        : `in ${daysUntilDue} ${
+                            daysUntilDue === 1 ? "day" : "days"
+                          }`}
+                  </p>
+                )}
+              </div>
+            ) : state === "archived" ? (
+              // Nothing about an archived credit can change, so a button here
+              // would open a form that cannot be saved.
+              <p className="text-base text-right font-semibold text-gray-300">
+                —
+              </p>
+            ) : (
+              // A button rather than a dash: the row is where someone looks for
+              // the date, so it is also where they should be able to add one.
+              <button
+                onClick={onSetDueDate}
+                className="text-base font-semibold text-blue-600 tracking-wide cursor-pointer hover:underline"
+              >
+                Set due date
+              </button>
+            )}
+          </div>
+        )}
 
         <div>
           <MetaLabel>Credit total</MetaLabel>

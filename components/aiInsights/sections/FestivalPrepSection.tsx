@@ -95,7 +95,7 @@ export default function FestivalPrepSection({
         title="Upcoming Festival Prep"
         subtitle={`Festivals and public holidays in the next ${FESTIVAL_LOOKAHEAD_DAYS} days, from Nepal's holiday calendar`}
         actions={
-          <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
+          <div className="flex flex-row w-full md:w-fit items-end justify-end gap-2 absolute md:relative top-2">
             {/* Everything is already loaded, so this only reveals cards —
                 it costs nothing, unlike Refresh beside it. */}
             {hidden > 0 && (

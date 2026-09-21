@@ -869,7 +869,7 @@ export default function CreditsTable({
         </button>
 
         <span className="text-xs text-gray-400 font-medium">
-          Page {page + 1} of {totalPages} Â· {sorted.length} credits
+          Page {page + 1} of {totalPages} · {sorted.length} credits
         </span>
 
         <button

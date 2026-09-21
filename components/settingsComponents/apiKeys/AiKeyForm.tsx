@@ -448,9 +448,22 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
           )}
 
           {justSaved && !actionError && (
-            <p className="mt-3 flex items-center gap-1.5 text-xs text-green-600">
-              <Check className="h-3.5 w-3.5 shrink-0" />
-              Saved.
+            <p className="mt-3 flex items-start gap-1.5 text-xs text-green-600">
+              <Check className="mt-px h-3.5 w-3.5 shrink-0" />
+              <span>
+                Saved.
+                {/* Said at the moment it happens: a model the merchant never
+                    picked should not first appear in an insight's footer. */}
+                {save.data?.fellBackFrom && save.data.model && (
+                  <>
+                    {" "}
+                    Using <span className="font-mono">{save.data.model}</span>,
+                    because{" "}
+                    <span className="font-mono">{save.data.fellBackFrom}</span>{" "}
+                    isn&apos;t available on your plan.
+                  </>
+                )}
+              </span>
             </p>
           )}
 

@@ -147,8 +147,7 @@ const InvoiceDetailPage = () => {
     queryKey: ["customer-lookup", invoice?.customerEmail, invoice?.phoneNumber],
     queryFn: async () => {
       const creditUser = creditForInvoice?.user as
-        | { phone?: string }
-        | undefined;
+        { phone?: string } | undefined;
       const identifier =
         invoice?.customerEmail || creditUser?.phone || invoice?.phoneNumber;
       if (!identifier) return null;
@@ -575,6 +574,17 @@ const InvoiceDetailPage = () => {
     ? !isCreditArchived && !isCreditCleared
     : !isPaid && !isRefunded;
 
+  /**
+   * Nothing is owed, so there is no due date to keep.
+   *
+   * A paid invoice, a refunded one, or a credited one whose credit is cleared
+   * (by status, or by the dues reaching zero — the same rule `canEditInvoice`
+   * uses above). The due date, its reminder schedule and "Send reminder" are
+   * all about chasing money that is still outstanding; on a settled document
+   * they only offer to set a deadline for something already done.
+   */
+  const isSettled = isCredited ? isCreditCleared : isPaid || isRefunded;
+
   // Amount due to display in the meta/payment sections.
   const amountDueDisplay = isCredited
     ? creditDue
@@ -636,10 +646,9 @@ const InvoiceDetailPage = () => {
                 year: "numeric",
               })}{" "}
               GMT+5:45
-              {/* Only once one is set, and coloured only while it still
-                  matters — an overdue date on a paid invoice is history, not a
-                  warning. */}
-              {dueDateRaw && (
+              {/* Only once one is set, and only while something is still owed —
+                  on a settled invoice a due date is history, not a deadline. */}
+              {dueDateRaw && !isSettled && (
                 <>
                   {" · "}
                   <span
@@ -908,47 +917,50 @@ const InvoiceDetailPage = () => {
               </div>
             </div>
             <div className="flex flex-row justify-content gap-6">
-              <div>
-                <p className="text-[10px] text-right font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
-                  Due date
-                </p>
-                {dueDateRaw ? (
-                  <div className="text-right relative">
-                    <p className="text-xl text-600 font-semibold font-sans text-gray-800">
-                      {formatDueDate(dueDateRaw)}
-                    </p>
-
-                    {!isPaid && !isRefunded && daysUntilDue !== null && (
-                      <p
-                        className={` absolute right-0 text-[11px] font-semibold mt-0.5 ${
-                          daysUntilDue < 0
-                            ? "text-red-500"
-                            : daysUntilDue === 0
-                              ? "text-amber-600"
-                              : "text-gray-400"
-                        }`}
-                      >
-                        {daysUntilDue < 0
-                          ? `${Math.abs(daysUntilDue)} ${
-                              Math.abs(daysUntilDue) === 1 ? "day" : "days"
-                            } overdue`
-                          : daysUntilDue === 0
-                            ? "Due today"
-                            : `in ${daysUntilDue} ${
-                                daysUntilDue === 1 ? "day" : "days"
-                              }`}
+              {/* Hidden once settled: see `isSettled`. */}
+              {!isSettled && (
+                <div>
+                  <p className="text-[10px] text-right font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
+                    Due date
+                  </p>
+                  {dueDateRaw ? (
+                    <div className="text-right relative">
+                      <p className="text-xl text-600 font-semibold font-sans text-gray-800">
+                        {formatDueDate(dueDateRaw)}
                       </p>
-                    )}
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setIsDueDateOpen(true)}
-                    className="text-base font-semibold text-blue-600 tracking-wide cursor-pointer hover:underline"
-                  >
-                    Set due date
-                  </button>
-                )}
-              </div>
+
+                      {!isPaid && !isRefunded && daysUntilDue !== null && (
+                        <p
+                          className={` absolute right-0 text-[11px] font-semibold mt-0.5 ${
+                            daysUntilDue < 0
+                              ? "text-red-500"
+                              : daysUntilDue === 0
+                                ? "text-amber-600"
+                                : "text-gray-400"
+                          }`}
+                        >
+                          {daysUntilDue < 0
+                            ? `${Math.abs(daysUntilDue)} ${
+                                Math.abs(daysUntilDue) === 1 ? "day" : "days"
+                              } overdue`
+                            : daysUntilDue === 0
+                              ? "Due today"
+                              : `in ${daysUntilDue} ${
+                                  daysUntilDue === 1 ? "day" : "days"
+                                }`}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setIsDueDateOpen(true)}
+                      className="text-base font-semibold text-blue-600 tracking-wide cursor-pointer hover:underline"
+                    >
+                      Set due date
+                    </button>
+                  )}
+                </div>
+              )}
 
               <div>
                 <p className="text-[10px] text-right font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
@@ -1051,126 +1063,130 @@ const InvoiceDetailPage = () => {
                 </div>
               </div>
 
-              {/* Reminders section */}
-              <div className="mt-4 ml-13 border border-gray-100 rounded-xl p-4">
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="flex items-center gap-2">
-                    <Bell size={13} className="text-gray-500" />
-                    <p className="text-xs font-semibold text-gray-700">
-                      Scheduled due date &amp; automatic reminders
+              {/* Reminders section — hidden once settled: see `isSettled`. */}
+              {!isSettled && (
+                <div className="mt-4 ml-13 border border-gray-100 rounded-xl p-4">
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="flex items-center gap-2">
+                      <Bell size={13} className="text-gray-500" />
+                      <p className="text-xs font-semibold text-gray-700">
+                        Scheduled due date &amp; automatic reminders
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setIsDueDateOpen(true)}
+                      className="text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-4 py-1.5 transition-colors shrink-0"
+                    >
+                      {dueDateRaw ? "Edit due date" : "Set due date"}
+                    </button>
+                  </div>
+
+                  {!dueDateRaw ? (
+                    // Reminders are all relative to the due date, so there is
+                    // nothing to schedule against until one exists. Saying that
+                    // beats showing a row of options that could not fire.
+                    <p className="text-xs text-gray-500 leading-relaxed">
+                      No due date set. Add one to schedule reminders before and
+                      after payment falls due.
                     </p>
-                  </div>
-                  <button
-                    onClick={() => setIsDueDateOpen(true)}
-                    className="text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-4 py-1.5 transition-colors shrink-0"
-                  >
-                    {dueDateRaw ? "Edit due date" : "Set due date"}
-                  </button>
-                </div>
-
-                {!dueDateRaw ? (
-                  // Reminders are all relative to the due date, so there is
-                  // nothing to schedule against until one exists. Saying that
-                  // beats showing a row of options that could not fire.
-                  <p className="text-xs text-gray-500 leading-relaxed">
-                    No due date set. Add one to schedule reminders before and
-                    after payment falls due.
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                      <p className="text-xs text-gray-500">
-                        <span className="font-medium text-gray-700">Due:</span>{" "}
-                        <span className="font-semibold text-gray-800">
-                          {formatDueDate(dueDateRaw)}
-                        </span>
-                      </p>
-                      {!isPaid && !isRefunded && daysUntilDue !== null && (
-                        <span
-                          className={`text-[11px] font-semibold ${
-                            daysUntilDue < 0
-                              ? "text-red-500"
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                        <p className="text-xs text-gray-500">
+                          <span className="font-medium text-gray-700">
+                            Due:
+                          </span>{" "}
+                          <span className="font-semibold text-gray-800">
+                            {formatDueDate(dueDateRaw)}
+                          </span>
+                        </p>
+                        {!isPaid && !isRefunded && daysUntilDue !== null && (
+                          <span
+                            className={`text-[11px] font-semibold ${
+                              daysUntilDue < 0
+                                ? "text-red-500"
+                                : daysUntilDue === 0
+                                  ? "text-amber-600"
+                                  : "text-gray-400"
+                            }`}
+                          >
+                            {daysUntilDue < 0
+                              ? `${Math.abs(daysUntilDue)} ${
+                                  Math.abs(daysUntilDue) === 1 ? "day" : "days"
+                                } overdue`
                               : daysUntilDue === 0
-                                ? "text-amber-600"
-                                : "text-gray-400"
-                          }`}
-                        >
-                          {daysUntilDue < 0
-                            ? `${Math.abs(daysUntilDue)} ${
-                                Math.abs(daysUntilDue) === 1 ? "day" : "days"
-                              } overdue`
-                            : daysUntilDue === 0
-                              ? "Due today"
-                              : `in ${daysUntilDue} ${
-                                  daysUntilDue === 1 ? "day" : "days"
+                                ? "Due today"
+                                : `in ${daysUntilDue} ${
+                                    daysUntilDue === 1 ? "day" : "days"
+                                  }`}
+                          </span>
+                        )}
+                      </div>
+
+                      <div>
+                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                          Scheduled reminders before due date
+                        </p>
+                        {remindersBefore.length === 0 ? (
+                          <p className="text-xs text-gray-400">
+                            None scheduled before the due date.
+                          </p>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            {remindersBefore.map((offset) => (
+                              <span
+                                key={offset}
+                                className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600"
+                              >
+                                {reminderLabel(offset)}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                          Scheduled reminders after due date
+                        </p>
+                        {remindersAfter.length === 0 ? (
+                          <p className="text-xs text-gray-400">
+                            None scheduled once it falls due.
+                          </p>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            {remindersAfter.map((offset) => (
+                              <span
+                                key={offset}
+                                className={`rounded-lg border px-2.5 py-1.5 text-xs font-medium ${
+                                  offset === 0
+                                    ? "border-amber-200 bg-amber-50 text-amber-700"
+                                    : "border-red-200 bg-red-50 text-red-600"
                                 }`}
-                        </span>
-                      )}
+                              >
+                                {reminderLabel(offset)}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
+                  )}
 
-                    <div>
-                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                        Scheduled reminders before due date
-                      </p>
-                      {remindersBefore.length === 0 ? (
-                        <p className="text-xs text-gray-400">
-                          None scheduled before the due date.
-                        </p>
-                      ) : (
-                        <div className="flex flex-wrap gap-2">
-                          {remindersBefore.map((offset) => (
-                            <span
-                              key={offset}
-                              className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600"
-                            >
-                              {reminderLabel(offset)}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div>
-                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                        Scheduled reminders after due date
-                      </p>
-                      {remindersAfter.length === 0 ? (
-                        <p className="text-xs text-gray-400">
-                          None scheduled once it falls due.
-                        </p>
-                      ) : (
-                        <div className="flex flex-wrap gap-2">
-                          {remindersAfter.map((offset) => (
-                            <span
-                              key={offset}
-                              className={`rounded-lg border px-2.5 py-1.5 text-xs font-medium ${
-                                offset === 0
-                                  ? "border-amber-200 bg-amber-50 text-amber-700"
-                                  : "border-red-200 bg-red-50 text-red-600"
-                              }`}
-                            >
-                              {reminderLabel(offset)}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                  {/* Send reminder quick action */}
+                  <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+                    <p className="text-xs text-gray-500">
+                      Send an invoice reminder to the customer now
+                    </p>
+                    <button
+                      onClick={handleSendReminder}
+                      className="text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Send reminder
+                    </button>
                   </div>
-                )}
-
-                {/* Send reminder quick action */}
-                <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
-                  <p className="text-xs text-gray-500">
-                    Send an invoice reminder to the customer now
-                  </p>
-                  <button
-                    onClick={handleSendReminder}
-                    className="text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    Send reminder
-                  </button>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Connector */}

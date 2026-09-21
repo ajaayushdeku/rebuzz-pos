@@ -29,6 +29,11 @@ export interface AiKeyStatus {
   providers?: AiProvider[];
   /** The providers that already hold a key, so switching can say what it needs. */
   configuredProviders?: string[];
+  /**
+   * Only on a save: the default model this key was refused on, when another
+   * one was kept instead. `model` is the one that was kept.
+   */
+  fellBackFrom?: string;
 }
 
 /**
@@ -50,6 +55,11 @@ const MESSAGES: Record<string, string> = {
   AI_UNAVAILABLE: "Couldn't reach your AI provider. Try again in a moment.",
   PROVIDER_NOT_CONFIGURED:
     "Add a key for that provider before switching to it.",
+  // A brand-new key refused on its first request, and by every model tried:
+  // not traffic, a plan that does not include them yet. Waiting will not help,
+  // so the message does not say "try again shortly".
+  AI_PLAN_LIMIT:
+    "Your key was refused on its very first request, for every model we tried. On a free plan that usually means these models aren't included yet — check your plan and its per-model limits in your provider's console.",
   API_KEY_REQUIRED: "Enter your API key first.",
   AUTH_REQUIRED: "Your session has expired — sign in again.",
   AUTH_INVALID: "Your session has expired — sign in again.",
