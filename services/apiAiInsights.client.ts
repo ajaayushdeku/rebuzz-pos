@@ -96,6 +96,11 @@ export function normalizeAiErrorCode(code: string): string {
   return code.replace(/^GEMINI_/, "AI_");
 }
 
+/** An error code as the sentence the insights screens show for it. */
+export function aiErrorMessage(code: unknown): string {
+  return toMessage(code);
+}
+
 function toMessage(code: unknown): string {
   if (typeof code !== "string" || !code) return "Something went wrong.";
   return MESSAGES[normalizeAiErrorCode(code)] ?? code;

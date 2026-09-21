@@ -80,8 +80,78 @@ export interface DailySalesRow {
 // ── Facts ─────────────────────────────────────────────────────────────────
 
 /** The events worth preparing for: anything the offer builder knows, and every national holiday. */
-const matters = (e: HolidayEvent) =>
+export const matters = (e: HolidayEvent) =>
   Boolean(e.festivalId) || e.scope === "national";
+
+/** Every day covered by an event that matters, as ISO dates. */
+export function holidayDateSet(events: HolidayEvent[]): Set<string> {
+  const dates = new Set<string>();
+  for (const e of events.filter(matters)) {
+    for (let i = 0; i < e.days; i++) dates.add(shiftIsoDate(e.start, i));
+  }
+  return dates;
+}
+
+/**
+ * How this business sold on the holidays already past, each against the same
+ * weekday in the weeks just before it.
+ *
+ * Shared by Festival Prep, which shows it to the model, and the sales
+ * forecast, which applies it to holidays coming up.
+ */
+export function pastHolidayEffect(
+  today: string,
+  dayRevenue: (iso: string) => number,
+  events: HolidayEvent[],
+): { pastHolidays: PastHoliday[]; pct: number | null } {
+  const holidayDates = holidayDateSet(events);
+  const historyStart = shiftIsoDate(today, -FESTIVAL_HISTORY_DAYS);
+  const past = events.filter(
+    (e) => matters(e) && e.end < today && e.start >= historyStart,
+  );
+
+  const pastHolidays: PastHoliday[] = [];
+  let allHoliday = 0;
+  let allUsual = 0;
+  for (const e of past) {
+    let revenue = 0;
+    let usual = 0;
+    for (let i = 0; i < e.days; i++) {
+      const iso = shiftIsoDate(e.start, i);
+      revenue += dayRevenue(iso);
+
+      // The same weekday in each of the weeks before, skipping other holidays.
+      let sum = 0;
+      let count = 0;
+      for (let w = 1; w <= BASELINE_WEEKS; w++) {
+        const earlier = shiftIsoDate(iso, -7 * w);
+        if (holidayDates.has(earlier) || earlier < historyStart) continue;
+        sum += dayRevenue(earlier);
+        count += 1;
+      }
+      usual += count > 0 ? sum / count : 0;
+    }
+    // Nothing sold on the holiday or around it: the business was probably not
+    // trading yet, and the comparison would say nothing.
+    if (revenue === 0 && usual === 0) continue;
+
+    allHoliday += revenue;
+    allUsual += usual;
+    pastHolidays.push({
+      label: e.label,
+      start: e.start,
+      days: e.days,
+      revenue: revenue / e.days,
+      usual: usual / e.days,
+      changePct: changePct(revenue, usual),
+    });
+  }
+
+  return {
+    pastHolidays,
+    pct: pastHolidays.length > 0 ? changePct(allHoliday, allUsual) : null,
+  };
+}
 
 export interface UpcomingEvent {
   id: string;
@@ -166,10 +236,7 @@ export function buildFestivalFacts(
   }
   const dayRevenue = (iso: string) => byDate.get(iso)?.revenue ?? 0;
 
-  const holidayDates = new Set<string>();
-  for (const e of events.filter(matters)) {
-    for (let i = 0; i < e.days; i++) holidayDates.add(shiftIsoDate(e.start, i));
-  }
+  const holidayDates = holidayDateSet(events);
 
   // ── Weekdays over the last eight weeks, holidays left out ──
   const sums = WEEKDAYS.map(() => ({ revenue: 0, orders: 0, days: 0 }));
@@ -198,47 +265,11 @@ export function buildFestivalFacts(
     weekdays.length > 0 ? changePct(saturday, others) : null;
 
   // ── Past holidays this year, against the same weekdays just before ──
-  const historyStart = shiftIsoDate(today, -FESTIVAL_HISTORY_DAYS);
-  const past = events.filter(
-    (e) => matters(e) && e.end < today && e.start >= historyStart,
+  const { pastHolidays, pct: pastHolidaysPct } = pastHolidayEffect(
+    today,
+    dayRevenue,
+    events,
   );
-
-  const pastHolidays: PastHoliday[] = [];
-  let allHoliday = 0;
-  let allUsual = 0;
-  for (const e of past) {
-    let revenue = 0;
-    let usual = 0;
-    for (let i = 0; i < e.days; i++) {
-      const iso = shiftIsoDate(e.start, i);
-      revenue += dayRevenue(iso);
-
-      // The same weekday in each of the weeks before, skipping other holidays.
-      let sum = 0;
-      let count = 0;
-      for (let w = 1; w <= BASELINE_WEEKS; w++) {
-        const earlier = shiftIsoDate(iso, -7 * w);
-        if (holidayDates.has(earlier) || earlier < historyStart) continue;
-        sum += dayRevenue(earlier);
-        count += 1;
-      }
-      usual += count > 0 ? sum / count : 0;
-    }
-    // Nothing sold on the holiday or around it: the business was probably not
-    // trading yet, and the comparison would say nothing.
-    if (revenue === 0 && usual === 0) continue;
-
-    allHoliday += revenue;
-    allUsual += usual;
-    pastHolidays.push({
-      label: e.label,
-      start: e.start,
-      days: e.days,
-      revenue: revenue / e.days,
-      usual: usual / e.days,
-      changePct: changePct(revenue, usual),
-    });
-  }
 
   return {
     today,
@@ -247,8 +278,7 @@ export function buildFestivalFacts(
     saturdayVsOtherDaysPct,
     // Most recent first, so the model reads the freshest behaviour first.
     pastHolidays: pastHolidays.reverse().slice(0, MAX_PAST_HOLIDAYS),
-    pastHolidaysPct:
-      pastHolidays.length > 0 ? changePct(allHoliday, allUsual) : null,
+    pastHolidaysPct,
     bestSellers: buildMenuFacts(menu, salesRows, windows).bestSellers,
   };
 }

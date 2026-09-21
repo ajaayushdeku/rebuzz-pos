@@ -89,7 +89,9 @@ export default async function Page({
           </Suspense>
         </ChartErrorBoundary>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 gap-4">
+        {/* The forecast hides itself without an AI key; the target tracker
+            then takes the whole row rather than half of it. */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 gap-4 lg:[&>*:only-child]:col-span-2">
           <ChartErrorBoundary>
             <Suspense fallback={<ChartSkeleton />}>
               <ForecastCardWrapper />
@@ -159,7 +161,6 @@ export default async function Page({
             </Suspense>
           </ChartErrorBoundary>
         </div>
-
       </div>
     </div>
   );

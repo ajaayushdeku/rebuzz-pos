@@ -9,7 +9,6 @@ import {
   getPeakDaysData,
 } from "@/services/dashboardServices/apiSalesRevenue";
 import ForecastCard from "../dashboardComponents/salesRevenue/ForecastCard";
-import { mockForecastData } from "@/lib/mockData/mock-forecast-data";
 import TargetTrackerCard from "../dashboardComponents/salesRevenue/TargetTrackerCard";
 import CampaignAnalysis from "../dashboardComponents/salesRevenue/CampaignAnalysis";
 import PriceChangeImpact from "../dashboardComponents/salesRevenue/PriceChangeImpact";
@@ -73,7 +72,10 @@ export async function PeakDaysAnalysisWrapper({
 }
 
 export function ForecastCardWrapper() {
-  return <ForecastCard data={mockForecastData} />;
+  // Self-contained: fetches its own forecast, built from the last 150 days of
+  // daily sales. Does NOT use the dashboard's global date filter — a forecast
+  // always looks forward from today.
+  return <ForecastCard />;
 }
 
 export function TargetTrackerWrapper() {
