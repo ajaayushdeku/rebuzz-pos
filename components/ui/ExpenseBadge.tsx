@@ -24,10 +24,23 @@ import {
  * Only put this on a card that genuinely reads expense entries — a badge on
  * one that doesn't is worse than none, because it is then believed.
  */
+/**
+ * `badge` is the small uppercase mark most cards use. `pill` is the outlined
+ * chip of the refreshed card design, sized to sit beside the range pill (see
+ * RangeBadge's `pill`), in the badge's own rose.
+ */
+const VARIANT = {
+  badge:
+    "ml-auto gap-1 bg-rose-50/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-rose-800",
+  pill: "gap-1 border border-rose-200 bg-white px-2 py-0.5 text-[11px] text-rose-800 hover:bg-rose-50/60",
+} as const;
+
 export default function ExpenseBadge({
   className = "",
+  variant = "badge",
 }: {
   className?: string;
+  variant?: keyof typeof VARIANT;
 }) {
   return (
     <Tooltip>
@@ -36,10 +49,10 @@ export default function ExpenseBadge({
             `title` shows on hover only, and never for anyone tabbing. */}
         <span
           tabIndex={0}
-          className={`ml-auto inline-flex shrink-0 cursor-help items-center gap-1 rounded-full bg-rose-50/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-rose-800 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${className}`}
+          className={`inline-flex shrink-0 cursor-help items-center rounded-full outline-none transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 ${VARIANT[variant]} ${className}`}
         >
           <ReceiptText size={11} />
-          Expenses
+          {variant === "pill" ? "Uses expenses" : "Expenses"}
         </span>
       </TooltipTrigger>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Info, type LucideIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, type LucideIcon } from "lucide-react";
 
 import {
   Tooltip as HintTooltip,
@@ -9,6 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import RangeBadge from "../ui/RangeBadge";
+import ExpenseBadge from "../ui/ExpenseBadge";
 
 /**
  * The refreshed dashboard card, shared by the cards that have moved to it
@@ -31,7 +32,14 @@ export const CHART_PALETTE = {
   axis: "#5f6368",
   hover: "#f1f3f4",
   blue: "#1a73e8",
+  darkBlue: "#4D78CE",
   teal: "#12a4af",
+  /** A third series, when there is one: the reference design's magenta. */
+  magenta: "#c5197d",
+  /** Good / warning / bad, for figures that carry a verdict. */
+  good: "#1e8e3e",
+  warn: "#e37400",
+  bad: "#d93025",
 } as const;
 
 /**
@@ -64,9 +72,21 @@ export function niceTicks(min: number, max: number, steps = 4): number[] {
   const raw = (hi - lo) / steps;
   const magnitude = 10 ** Math.floor(Math.log10(raw));
   const norm = raw / magnitude;
-  const step =
-    (norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10) *
-    magnitude;
+
+  // The smallest round step that is big enough — then, if rounding both ends
+  // outward takes more steps than the target, the next round size up. A range
+  // from −237k to 481k in 200k steps runs −400k…600k and leaves a whole empty
+  // step at the bottom; in 250k steps it is −250k…500k.
+  const sizes = [1, 2, 2.5, 5, 10, 20];
+  let i = sizes.findIndex((s) => norm <= s);
+  let step = sizes[i] * magnitude;
+  const span = (s: number) =>
+    Math.round((Math.ceil(hi / s) * s - Math.floor(lo / s) * s) / s);
+  while (span(step) > steps && i < sizes.length - 1) {
+    i += 1;
+    step = sizes[i] * magnitude;
+  }
+
   const start = Math.floor(lo / step) * step;
   const end = Math.ceil(hi / step) * step;
   const ticks: number[] = [];
@@ -103,6 +123,7 @@ export function ChartCard({
   className = "",
   children,
   rangeBadge = false,
+  expenseBadge = false,
 }: {
   icon: LucideIcon;
   /**
@@ -126,6 +147,7 @@ export function ChartCard({
   className?: string;
   children: ReactNode;
   rangeBadge?: boolean;
+  expenseBadge?: boolean;
 }) {
   return (
     <div
@@ -173,7 +195,7 @@ export function ChartCard({
               )}
             </h3>
             <p
-              className="mt-0.5 text-xs"
+              className="mt-0.5 text-xs tracking-wide"
               style={{ color: CHART_PALETTE.subtitle }}
             >
               {subtitle}
@@ -187,6 +209,12 @@ export function ChartCard({
           </div>
         )}
 
+        {expenseBadge && (
+          <div className="block md:hidden">
+            <ExpenseBadge variant="pill" />
+          </div>
+        )}
+
         {controls && <div className="flex items-center gap-2">{controls}</div>}
       </div>
 
@@ -196,19 +224,48 @@ export function ChartCard({
 }
 
 /** Under the chart, on the right. Dot or square per series. */
+/**
+ * A legend swatch. `dot` and `square` for bars and points; `line` for a
+ * solid line series and `dashed` for a reference line, drawn as a short
+ * stroke so they read as lines rather than as more bars.
+ */
+export type LegendShape = "dot" | "square" | "line" | "dashed";
+
+function LegendSwatch({ color, shape }: { color: string; shape: LegendShape }) {
+  if (shape === "line" || shape === "dashed") {
+    return (
+      <svg width="18" height="10" className="shrink-0" aria-hidden>
+        <line
+          x1="1"
+          y1="5"
+          x2="17"
+          y2="5"
+          stroke={color}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeDasharray={shape === "dashed" ? "4 3" : undefined}
+        />
+      </svg>
+    );
+  }
+  return (
+    <span
+      className={`h-2.5 w-2.5 shrink-0 ${shape === "dot" ? "rounded-full" : "rounded-[2px]"}`}
+      style={{ backgroundColor: color }}
+    />
+  );
+}
+
 export function ChartLegend({
   items,
 }: {
-  items: { label: string; color: string; shape: "dot" | "square" }[];
+  items: { label: string; color: string; shape: LegendShape }[];
 }) {
   return (
     <div className="mt-3 flex flex-wrap items-center justify-end gap-x-5 gap-y-1 pr-2">
       {items.map(({ label, color, shape }) => (
         <span key={label} className="flex items-center gap-1.5">
-          <span
-            className={`h-2.5 w-2.5 shrink-0 ${shape === "dot" ? "rounded-full" : "rounded-[2px]"}`}
-            style={{ backgroundColor: color }}
-          />
+          <LegendSwatch color={color} shape={shape} />
           <span className="text-[13px]" style={{ color: CHART_PALETTE.title }}>
             {label}
           </span>
@@ -218,13 +275,75 @@ export function ChartLegend({
   );
 }
 
-/** The box a hovered bar shows: its label, then one row per series. */
+/**
+ * "‹ 1–6 of 14 ›": a small outlined pager for the header's controls, for a
+ * chart that shows its items a page at a time.
+ */
+export function ChartPager({
+  first,
+  last,
+  total,
+  onPrev,
+  onNext,
+  itemLabel,
+}: {
+  first: number;
+  last: number;
+  total: number;
+  onPrev: () => void;
+  onNext: () => void;
+  /** What is being paged, for the buttons' labels: "products", "categories". */
+  itemLabel: string;
+}) {
+  const button =
+    "flex h-5 w-5 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-[#f1f3f4] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent";
+  return (
+    <div
+      className="flex items-center gap-0.5 rounded-full border bg-white px-0.5 py-px"
+      style={{ borderColor: CHART_PALETTE.control }}
+    >
+      <button
+        type="button"
+        onClick={onPrev}
+        disabled={first <= 1}
+        aria-label={`Previous ${itemLabel}`}
+        className={button}
+        style={{ color: CHART_PALETTE.axis }}
+      >
+        <ChevronLeft size={13} />
+      </button>
+      <span
+        className="px-0.5 text-[11px] tabular-nums"
+        style={{ color: CHART_PALETTE.title }}
+      >
+        {first}–{last} of {total}
+      </span>
+      <button
+        type="button"
+        onClick={onNext}
+        disabled={last >= total}
+        aria-label={`Next ${itemLabel}`}
+        className={button}
+        style={{ color: CHART_PALETTE.axis }}
+      >
+        <ChevronRight size={13} />
+      </button>
+    </div>
+  );
+}
+
+/**
+ * The box a hovered bar shows: its label, then one row per series, and an
+ * optional footer under a hairline for figures derived from them.
+ */
 export function ChartTooltipBox({
   label,
   rows,
+  footer,
 }: {
   label: ReactNode;
   rows: { name: string; color: string; value: ReactNode }[];
+  footer?: ReactNode;
 }) {
   return (
     <div
@@ -256,6 +375,14 @@ export function ChartTooltipBox({
           </span>
         </div>
       ))}
+      {footer && (
+        <div
+          className="mt-2 space-y-0.5 border-t pt-2"
+          style={{ borderColor: CHART_PALETTE.grid }}
+        >
+          {footer}
+        </div>
+      )}
     </div>
   );
 }

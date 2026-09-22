@@ -12,10 +12,10 @@ import {
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import RangeBadge from "@/components/ui/RangeBadge";
 import ExpenseBadge from "@/components/ui/ExpenseBadge";
 import type { ScenarioBaseline } from "@/services/dashboardServices/apiProfitCost";
+import { CHART_PALETTE, ChartCard } from "../chartCard";
 
 interface ScenarioAdjustments {
   priceAdjustment: number;
@@ -168,36 +168,49 @@ export default function WhatIfScenarioPlanner({
   const hasData = baseline.revenue > 0;
 
   return (
-    <div className="w-full rounded-2xl border border-gray-200 bg-white p-5">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-50">
-            <SlidersHorizontal size={15} className="text-violet-600" />
-          </div>
-          <ComponentHeader
-            title="What-If Scenario Planner"
-            subHeader="Move a lever to see what it would do to profit"
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <RangeBadge className="ml-0" />
-          <ExpenseBadge className="ml-0" />
+    <ChartCard
+      icon={SlidersHorizontal}
+      // Violet, as before: Tailwind's violet-600 / violet-200 / violet-50.
+      iconColor="#7c3aed"
+      iconBorder="#ddd6fe"
+      iconBg="#f5f3ff"
+      title="What-If Scenario Planner"
+      info={{
+        heading: "Reading this card",
+        // From the projection below and getScenarioBaseline.
+        body: "It starts from the date range at the top of the page: revenue plus side income, less cost of goods, tax and your recorded expenses. Price and volume move revenue and the tax inside it; volume and the stock-cost lever move cost of goods. Side income and other costs stay put. Labor is locked until employees carry a pay rate.",
+      }}
+      subtitle="Move a lever to see what it would do to profit"
+      controls={
+        <>
+          <RangeBadge variant="pill" />
+          <ExpenseBadge variant="pill" />
           {touched && (
             <button
               type="button"
               onClick={() => setAdjustments(DEFAULTS)}
-              className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[12px] font-medium text-gray-600 transition hover:bg-gray-50"
+              className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-full border bg-white px-2 py-0.5 text-[11px] transition-colors hover:bg-[#f8f9fa]"
+              style={{
+                borderColor: CHART_PALETTE.control,
+                color: CHART_PALETTE.title,
+              }}
             >
-              <RotateCcw size={13} />
+              <RotateCcw size={11} />
               Reset
             </button>
           )}
-        </div>
-      </div>
-
+        </>
+      }
+      className="h-full"
+    >
       {!hasData ? (
-        <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center text-[12px] text-gray-400">
+        <p
+          className="rounded-xl border border-dashed px-4 py-10 text-center text-xs"
+          style={{
+            borderColor: CHART_PALETTE.control,
+            color: CHART_PALETTE.subtitle,
+          }}
+        >
           No sales in this period, so there is nothing to model yet.
         </p>
       ) : (
@@ -207,7 +220,7 @@ export default function WhatIfScenarioPlanner({
             <div className="rounded-xl bg-slate-900 p-5 text-white">
               <p className="text-[11px] text-slate-400">Projected net profit</p>
               <div className="mt-1 flex flex-wrap items-baseline gap-2">
-                <p className="text-[28px] font-bold leading-none tabular-nums">
+                <p className="text-[28px] font-semibold leading-none tracking-tight tabular-nums">
                   {money(projected.profit)}
                 </p>
                 {touched && (
@@ -234,7 +247,7 @@ export default function WhatIfScenarioPlanner({
                   <p className="text-[10px] uppercase tracking-wider text-slate-500">
                     Margin
                   </p>
-                  <p className="mt-0.5 text-[15px] font-bold tabular-nums">
+                  <p className="mt-0.5 text-[15px] font-semibold tabular-nums">
                     {projected.margin.toFixed(1)}%
                     {touched && (
                       <span
@@ -252,7 +265,7 @@ export default function WhatIfScenarioPlanner({
                   <p className="text-[10px] uppercase tracking-wider text-slate-500">
                     Orders
                   </p>
-                  <p className="mt-0.5 text-[15px] font-bold tabular-nums">
+                  <p className="mt-0.5 text-[15px] font-semibold tabular-nums">
                     {projected.orders.toLocaleString()}
                   </p>
                 </div>
@@ -327,12 +340,15 @@ export default function WhatIfScenarioPlanner({
                   className={isLocked ? "opacity-50" : undefined}
                 >
                   <div className="mb-1 flex items-baseline justify-between gap-3">
-                    <span className="flex items-center gap-1.5 text-[13px] font-semibold text-gray-800">
+                    <span
+                      className="flex items-center gap-1.5 text-[13px] font-medium"
+                      style={{ color: CHART_PALETTE.title }}
+                    >
                       {isLocked && <Lock size={11} className="shrink-0" />}
                       {slider.label}
                     </span>
                     <span
-                      className={`text-[13px] font-bold tabular-nums ${
+                      className={`text-[13px] font-semibold tabular-nums ${
                         good
                           ? "text-green-600"
                           : bad
@@ -345,7 +361,10 @@ export default function WhatIfScenarioPlanner({
                     </span>
                   </div>
 
-                  <p className="mb-2 text-[11px] leading-relaxed text-gray-400">
+                  <p
+                    className="mb-2 text-[11px] leading-relaxed"
+                    style={{ color: CHART_PALETTE.subtitle }}
+                  >
                     {slider.locked ?? slider.hint}
                   </p>
 
@@ -358,10 +377,13 @@ export default function WhatIfScenarioPlanner({
                     disabled={isLocked}
                     aria-label={slider.label}
                     onChange={(e) => set(slider.key, Number(e.target.value))}
-                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-violet-600 disabled:cursor-not-allowed"
+                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-[#e8eaed] accent-violet-600 disabled:cursor-not-allowed"
                   />
 
-                  <div className="mt-1 flex justify-between text-[10px] tabular-nums text-gray-300">
+                  <div
+                    className="mt-1 flex justify-between text-[10px] tabular-nums"
+                    style={{ color: CHART_PALETTE.subtitle }}
+                  >
                     <span>{slider.min}%</span>
                     <span>0</span>
                     <span>+{slider.max}%</span>
@@ -372,6 +394,6 @@ export default function WhatIfScenarioPlanner({
           </div>
         </div>
       )}
-    </div>
+    </ChartCard>
   );
 }

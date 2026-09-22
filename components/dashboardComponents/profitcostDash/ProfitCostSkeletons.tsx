@@ -1,5 +1,3 @@
-import StatSkeleton from "@/components/ui/statskeleton";
-
 /**
  * Loading skeletons for the Profit & Cost dashboard.
  *
@@ -9,7 +7,16 @@ import StatSkeleton from "@/components/ui/statskeleton";
  * are mock-driven, so they don't get a Suspense skeleton.
  */
 
-/** Title + subtitle stack, matching <ComponentHeader />. */
+/**
+ * The card frame of the shared ChartCard (components/dashboardComponents/
+ * chartCard): hairline border, no shadow, the same padding. Written out
+ * rather than imported — chartCard is a client module and these render on the
+ * server — so keep the two in step.
+ */
+const CARD_FRAME =
+  "w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5 animate-pulse";
+
+/** ChartCard's header: icon tile, title and subtitle, a pill on the right. */
 function HeaderSkeleton({
   titleWidth = "w-44",
   subWidth = "w-72",
@@ -18,9 +25,28 @@ function HeaderSkeleton({
   subWidth?: string;
 }) {
   return (
-    <div className="space-y-2">
-      <div className={`h-4 ${titleWidth} bg-gray-200 rounded`} />
-      <div className={`h-3 ${subWidth} bg-gray-100 rounded`} />
+    <div className="mb-5 flex items-center justify-between gap-3">
+      <div className="flex items-center gap-3">
+        <div className="h-9 w-9 shrink-0 rounded-xl border border-blue-100 bg-blue-50/60" />
+        <div className="space-y-2">
+          <div className={`h-4 ${titleWidth} rounded bg-gray-200`} />
+          <div className={`h-3 ${subWidth} rounded bg-gray-100`} />
+        </div>
+      </div>
+      <div className="h-6 w-28 rounded-full border border-[#dadce0]" />
+    </div>
+  );
+}
+
+/** Matches ProfitCostStatBox: label and icon tile, then the value. */
+function StatTileSkeleton() {
+  return (
+    <div className="rounded-2xl border border-[#e3e3e3] bg-white px-5 py-4 animate-pulse">
+      <div className="mb-3 flex items-center justify-between">
+        <div className="h-3 w-24 rounded bg-gray-200" />
+        <div className="h-8 w-8 rounded-lg border border-gray-100 bg-gray-50" />
+      </div>
+      <div className="h-7 w-32 rounded bg-gray-200" />
     </div>
   );
 }
@@ -30,7 +56,7 @@ export function ProfitStatsSkeleton({ count = 4 }: { count?: number }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 mt-4">
       {Array.from({ length: count }).map((_, i) => (
-        <StatSkeleton key={i} />
+        <StatTileSkeleton key={i} />
       ))}
     </div>
   );
@@ -42,15 +68,11 @@ export function ProfitStatsSkeleton({ count = 4 }: { count?: number }) {
  */
 export function ProfitPerProductSkeleton({ rows = 4 }: { rows?: number }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full overflow-hidden animate-pulse">
-      <div className="min-w-0 mb-4">
-        <HeaderSkeleton titleWidth="w-40" subWidth="w-72" />
-      </div>
+    <div className={`${CARD_FRAME} overflow-hidden`}>
+      <HeaderSkeleton titleWidth="w-40" subWidth="w-72" />
 
       {/* Search */}
-      <div className="flex justify-between items-center gap-2 mb-4">
-        <div className="h-9 w-full sm:w-64 bg-gray-100 rounded-lg" />
-      </div>
+      <div className="mb-3 h-8 w-full rounded-lg border border-[#dadce0]" />
 
       {/* Table */}
       <div className="bg-white overflow-x-auto scrollbar-hide">
@@ -112,10 +134,8 @@ export function DayTimeProfitHeatmapSkeleton() {
   const columns = `repeat(${HEATMAP_HOURS}, minmax(60px, 1fr))`;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full relative select-none animate-pulse">
-      <div className="mb-4">
-        <HeaderSkeleton titleWidth="w-52" subWidth="w-80" />
-      </div>
+    <div className={`${CARD_FRAME} relative select-none`}>
+      <HeaderSkeleton titleWidth="w-52" subWidth="w-80" />
 
       <div className="relative">
         <div className="overflow-x-auto scrollbar-hide">

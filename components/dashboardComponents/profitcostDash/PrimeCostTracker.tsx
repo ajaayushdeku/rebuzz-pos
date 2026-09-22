@@ -13,7 +13,15 @@ import {
   AreaChart,
 } from "recharts";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  AXIS_TICK,
+  CHART_PALETTE,
+  ChartCard,
+  ChartTooltipBox,
+  yAxisTitle,
+} from "../chartCard";
+
+const LINE_COLOR = CHART_PALETTE.darkBlue;
 
 function calculatePrimeCost(cogs: number, labor: number, revenue: number) {
   return revenue > 0 ? ((cogs + labor) / revenue) * 100 : 0;
@@ -34,24 +42,17 @@ const CustomTooltip = ({
   label?: string;
 }) => {
   if (!active || !payload?.length) return null;
-  const value = payload[0].value;
-
   return (
-    <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100">
-      <p className="text-gray-400 text-xs mb-2 font-medium">{label}</p>
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-1.5">
-          <span
-            className="w-2 h-2 rounded-full shrink-0"
-            style={{ backgroundColor: "#3b82f6" }}
-          />
-          <span className="text-xs text-gray-600">Prime Cost</span>
-        </div>
-        <span className="text-xs font-bold text-gray-800">
-          {value.toFixed(1)}%
-        </span>
-      </div>
-    </div>
+    <ChartTooltipBox
+      label={label}
+      rows={[
+        {
+          name: "Prime Cost",
+          color: LINE_COLOR,
+          value: `${payload[0].value.toFixed(1)}%`,
+        },
+      ]}
+    />
   );
 };
 
@@ -72,31 +73,33 @@ export default function PrimeCostTracker() {
   const yMax = 75;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full relative select-none">
-      {/* Lock overlay */}
+    <ChartCard
+      icon={Gauge}
+      // Amber, as before: Tailwind's amber-600 / amber-200 / amber-50.
+      iconColor="#d97706"
+      iconBorder="#fde68a"
+      iconBg="#fffbeb"
+      title="Prime Cost Tracker"
+      subtitle="COGS + Labor as a % of Revenue"
+      // Clipped so the lock overlay follows the card's rounded corners.
+      className="h-full overflow-hidden select-none"
+    >
+      {/* Lock overlay — a direct child of the card, so it covers the header
+          as well as the chart. */}
       <LockDimFeactureOverlay component_name="Prime Cost Tracker" />
 
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
-            <Gauge size={15} className="text-amber-600" />
-          </div>
-          <ComponentHeader
-            title="Prime Cost Tracker"
-            subHeader="COGS + Labor as a % of Revenue"
-          />
-        </div>
-      </div>
-
       {/* Current Prime Cost */}
-      <div className="mb-0">
-        <p className="text-xs text-gray-500 mb-1">Current Prime Cost</p>
+      <div className="mb-2">
+        <p className="mb-1 text-[11px]" style={{ color: CHART_PALETTE.axis }}>
+          Current Prime Cost
+        </p>
         <div className="flex items-baseline gap-2">
-          <p className="text-3xl font-bold text-green-600">
+          <p className="text-3xl font-semibold tracking-tight text-green-600">
             {avgPrimeCost.toFixed(1)}%
           </p>
-          <p className="text-xs text-gray-400">Target: 55%-65%</p>
+          <p className="text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+            Target: 55%-65%
+          </p>
         </div>
       </div>
 
@@ -105,61 +108,65 @@ export default function PrimeCostTracker() {
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}
-            margin={{ top: 10, right: 20, left: 10, bottom: 10 }}
+            margin={{ top: 8, right: 16, left: 8, bottom: 0 }}
           >
             <defs>
               <linearGradient id="pcColor" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                <stop offset="5%" stopColor={LINE_COLOR} stopOpacity={0.18} />
+                <stop offset="95%" stopColor={LINE_COLOR} stopOpacity={0} />
               </linearGradient>
             </defs>
 
-            <CartesianGrid vertical={false} stroke="#f3f4f6" />
+            <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
+
+            <XAxis
+              dataKey="month"
+              axisLine={false}
+              tickLine={{ stroke: CHART_PALETTE.control }}
+              tickSize={6}
+              tick={AXIS_TICK}
+            />
 
             <YAxis
               tickFormatter={formatYAxis}
               axisLine={false}
               tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 12 }}
+              tick={AXIS_TICK}
               ticks={yTicks}
               domain={[0, yMax]}
-              width={52}
+              width={64}
+              label={yAxisTitle("Prime cost")}
             />
 
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip
+              content={<CustomTooltip />}
+              cursor={{ stroke: CHART_PALETTE.control, strokeWidth: 1 }}
+            />
 
             <Area
               type="monotone"
               dataKey="primeCost"
-              stroke="#3b82f6"
+              stroke={LINE_COLOR}
               fill="url(#pcColor)"
-              strokeWidth={2.5}
+              strokeWidth={2}
             />
 
             <Line
               type="monotone"
               dataKey="primeCost"
-              stroke="#1d4ed8"
-              strokeWidth={2.5}
-              dot={{ r: 4, fill: "#3b82f6", stroke: "#fff", strokeWidth: 2 }}
+              stroke={LINE_COLOR}
+              strokeWidth={2}
+              dot={{ r: 3, fill: LINE_COLOR, stroke: "#fff", strokeWidth: 1.5 }}
               activeDot={{
-                r: 6,
-                fill: "#3b82f6",
+                r: 5,
+                fill: LINE_COLOR,
                 stroke: "#fff",
-                strokeWidth: 2,
+                strokeWidth: 1.5,
               }}
-            />
-
-            <XAxis
-              dataKey="month"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 12 }}
-              dy={8}
             />
           </AreaChart>
         </ResponsiveContainer>
       </div>
-    </div>
+    </ChartCard>
   );
 }

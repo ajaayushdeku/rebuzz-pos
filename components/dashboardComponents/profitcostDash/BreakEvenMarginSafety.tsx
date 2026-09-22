@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import { Scale, Info, Loader2 } from "lucide-react";
+import { CHART_PALETTE, ChartCard } from "../chartCard";
 import { MonthYearFilter, MONTHS } from "@/components/ui/MonthYearFilter";
 import ExpenseBadge from "@/components/ui/ExpenseBadge";
 import type { BreakEvenData } from "@/services/dashboardServices/apiProfitCost";
@@ -65,49 +65,44 @@ export default function BreakEvenMarginSafety() {
   const money = (value: number) =>
     formatCurrencySymbol(value, currency.symbol, currency.locale);
 
-  const header = (
-    <div className="mb-8 flex items-start justify-between gap-3 md:flex-row flex-col">
-      <div className="flex flex-row w-full items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-            <Scale size={15} className="text-emerald-600" />
-          </div>
-          <ComponentHeader
-            title="Break-even & Margin of Safety"
-            subHeader="How much revenue is required to cover all costs"
-          />
-        </div>
-
-        <div className="block md:hidden ">
-          <ExpenseBadge className=" md:ml-0" />
-        </div>
-      </div>
-
-      <div className="relative flex items-center justify-between gap-2">
-        <div className="hidden md:block">
-          {" "}
-          <ExpenseBadge className="absolute right-0 bottom-[-28px] " />
-        </div>
-        <MonthYearFilter
-          month={month}
-          year={year}
-          onMonthChange={setMonth}
-          onYearChange={setYear}
-        />
-      </div>
-    </div>
-  );
-
+  /** Every state sits in the same card, header and month picker included. */
   const shell = (children: React.ReactNode) => (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full relative select-none">
-      {header}
+    <ChartCard
+      icon={Scale}
+      // Emerald, as before: Tailwind's emerald-600 / emerald-200 / emerald-50.
+      iconColor="#059669"
+      iconBorder="#a7f3d0"
+      iconBg="#ecfdf5"
+      title="Break-even & Margin of Safety"
+      info={{
+        heading: "Reading this card",
+        // From /api/break-even (see apiProfitCost's break-even notes).
+        body: "For the month chosen on this card — not the date range at the top of the page. Break-even is everything the month cost, fixed and variable together (tax sits in the variable costs); margin of safety is how far revenue, side income included, sits above it, as a share of revenue.",
+      }}
+      subtitle="How much revenue is required to cover all costs"
+      controls={
+        <>
+          <ExpenseBadge variant="pill" />
+          <MonthYearFilter
+            month={month}
+            year={year}
+            onMonthChange={setMonth}
+            onYearChange={setYear}
+          />
+        </>
+      }
+      className="h-full select-none"
+    >
       {children}
-    </div>
+    </ChartCard>
   );
 
   if (isLoading) {
     return shell(
-      <div className="flex flex-col items-center justify-center gap-3 py-16 text-gray-400">
+      <div
+        className="flex flex-col items-center justify-center gap-3 py-16"
+        style={{ color: CHART_PALETTE.subtitle }}
+      >
         <Loader2 className="h-6 w-6 animate-spin" />
         <p className="text-sm">Calculating break-even…</p>
       </div>,
@@ -117,7 +112,7 @@ export default function BreakEvenMarginSafety() {
   if (isError || !data) {
     return shell(
       <div className="py-14 text-center">
-        <p className="text-sm font-medium text-gray-500">
+        <p className="text-sm" style={{ color: CHART_PALETTE.axis }}>
           Could not load break-even for {MONTHS[month - 1]} {year}
         </p>
       </div>,
@@ -173,16 +168,23 @@ export default function BreakEvenMarginSafety() {
       {/* KPI Row */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <p className="text-xs text-gray-500 mb-1">Break-even Point</p>
-          <p className="text-2xl font-bold tracking-wide tabular-nums text-gray-900">
+          <p className="mb-1 text-[11px]" style={{ color: CHART_PALETTE.axis }}>
+            Break-even Point
+          </p>
+          <p
+            className="text-2xl font-semibold tracking-tight tabular-nums"
+            style={{ color: CHART_PALETTE.title }}
+          >
             {hasBreakEven ? money(breakEvenPoint) : "—"}
           </p>
         </div>
 
         <div className="text-right">
-          <p className="text-xs text-gray-500 mb-1">Margin of Safety</p>
+          <p className="mb-1 text-[11px]" style={{ color: CHART_PALETTE.axis }}>
+            Margin of Safety
+          </p>
           <p
-            className={`text-2xl font-bold tracking-wide tabular-nums ${
+            className={`text-2xl font-semibold tracking-tight tabular-nums ${
               !hasBreakEven
                 ? "text-gray-400"
                 : isSafe
@@ -201,24 +203,35 @@ export default function BreakEvenMarginSafety() {
               The bar used to be drawn from the break-even to revenue, which
               computes a negative width the moment revenue falls short — so the
               bar vanished in exactly the case worth showing. */}
-          <div className="mt-6 relative h-3 bg-gray-100 rounded-full overflow-hidden">
+          <div className="relative mt-6 h-3 overflow-hidden rounded-full bg-[#e8eaed]">
             <div
-              className={`absolute top-0 bottom-0 left-0 transition-all duration-500 ${
-                isSafe ? "bg-green-500" : "bg-red-500"
-              }`}
-              style={{ width: `${revenueWidth}%` }}
+              className="absolute bottom-0 left-0 top-0 transition-all duration-500"
+              style={{
+                width: `${revenueWidth}%`,
+                // Past break-even in the palette's green, short of it in red.
+                backgroundColor: isSafe ? "#34a853" : "#ea4335",
+              }}
             />
             <div
-              className="absolute top-0 bottom-0 w-1 bg-gray-700 z-10"
-              style={{ left: `${breakEvenPos}%` }}
+              className="absolute bottom-0 top-0 z-10 w-1"
+              style={{
+                left: `${breakEvenPos}%`,
+                backgroundColor: CHART_PALETTE.title,
+              }}
             />
           </div>
 
           {/* Labels — the right-hand figure is the axis end, not revenue. It
               previously printed axisMax / 1.2, understating the scale by 20%. */}
-          <div className="flex justify-between mt-2 text-xs text-gray-500">
+          <div
+            className="mt-2 flex justify-between text-xs"
+            style={{ color: CHART_PALETTE.axis }}
+          >
             <span className="tracking-wide">{money(0)}</span>
-            <span className="text-gray-400 tracking-wide">
+            <span
+              className="tracking-wide"
+              style={{ color: CHART_PALETTE.subtitle }}
+            >
               {/* Says what is in the figure only when something extra is —
                   otherwise the plain word is the whole truth. */}
               Current{miscIncome > 0 ? " (with misc income)" : ""}:{" "}
@@ -232,7 +245,10 @@ export default function BreakEvenMarginSafety() {
             style={{ marginLeft: `${breakEvenPos}%` }}
           >
             <div className="absolute -translate-x-1/2 -top-5">
-              <span className="whitespace-nowrap text-[10px] font-semibold text-gray-600 bg-white px-1">
+              <span
+                className="whitespace-nowrap bg-white px-1 text-[10px] font-medium tracking-wide"
+                style={{ color: CHART_PALETTE.axis }}
+              >
                 BREAK-EVEN
               </span>
             </div>
@@ -248,22 +264,40 @@ export default function BreakEvenMarginSafety() {
       )}
 
       {/* The working behind the two figures. */}
-      <div className="mt-6 grid grid-cols-3 gap-3 border-t border-gray-100 pt-4">
+      <div
+        className="mt-6 grid grid-cols-3 gap-3 border-t pt-4"
+        style={{ borderColor: CHART_PALETTE.grid }}
+      >
         <div>
-          <p className="text-[11px] text-gray-400">Fixed costs</p>
-          <p className="mt-0.5 text-sm font-semibold tracking-wide tabular-nums text-gray-800">
+          <p className="text-[11px]" style={{ color: CHART_PALETTE.subtitle }}>
+            Fixed costs
+          </p>
+          <p
+            className="mt-0.5 text-sm font-medium tracking-wide tabular-nums"
+            style={{ color: CHART_PALETTE.title }}
+          >
             {money(fixedCosts)}
           </p>
         </div>
         <div>
-          <p className="text-[11px] text-gray-400">Variable costs</p>
-          <p className="mt-0.5 text-sm font-semibold tracking-wide tabular-nums text-gray-800">
+          <p className="text-[11px]" style={{ color: CHART_PALETTE.subtitle }}>
+            Variable costs
+          </p>
+          <p
+            className="mt-0.5 text-sm font-medium tracking-wide tabular-nums"
+            style={{ color: CHART_PALETTE.title }}
+          >
             {money(variableCosts)}
           </p>
         </div>
         <div>
-          <p className="text-[11px] text-gray-400">Contribution margin</p>
-          <p className="mt-0.5 text-sm font-semibold tracking-wide tabular-nums text-gray-800">
+          <p className="text-[11px]" style={{ color: CHART_PALETTE.subtitle }}>
+            Contribution margin
+          </p>
+          <p
+            className="mt-0.5 text-sm font-medium tracking-wide tabular-nums"
+            style={{ color: CHART_PALETTE.title }}
+          >
             {(contributionMarginRatio * 100).toFixed(1)}%
           </p>
         </div>
@@ -273,8 +307,16 @@ export default function BreakEvenMarginSafety() {
             is already inside the revenue above either way. */}
         {miscIncome > 0 && (
           <div>
-            <p className="text-[11px] text-gray-400">Misc income</p>
-            <p className="mt-0.5 text-sm font-semibold tracking-wide tabular-nums text-gray-800">
+            <p
+              className="text-[11px]"
+              style={{ color: CHART_PALETTE.subtitle }}
+            >
+              Misc income
+            </p>
+            <p
+              className="mt-0.5 text-sm font-medium tracking-wide tabular-nums"
+              style={{ color: CHART_PALETTE.title }}
+            >
               {money(miscIncome)}
             </p>
           </div>
@@ -286,8 +328,16 @@ export default function BreakEvenMarginSafety() {
             there is some. */}
         {tax > 0 && (
           <div>
-            <p className="text-[11px] text-gray-400">Tax (in variable)</p>
-            <p className="mt-0.5 text-sm font-semibold tracking-wide tabular-nums text-gray-800">
+            <p
+              className="text-[11px]"
+              style={{ color: CHART_PALETTE.subtitle }}
+            >
+              Tax (in variable)
+            </p>
+            <p
+              className="mt-0.5 text-sm font-medium tracking-wide tabular-nums"
+              style={{ color: CHART_PALETTE.title }}
+            >
               {money(tax)}
             </p>
           </div>

@@ -7,7 +7,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   ReferenceLine,
   Cell,
@@ -20,21 +19,33 @@ import type { MenuCategory } from "@/lib/mockData/mock-profitcost-advanced";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import { Grid2x2 } from "lucide-react";
+import {
+  AXIS_TICK,
+  CHART_PALETTE,
+  ChartCard,
+  ChartLegend,
+  ChartTooltipBox,
+  yAxisTitle,
+} from "../chartCard";
 
 const CATEGORY_COLORS: Record<MenuCategory, string> = {
-  Coffee: "#3b82f6",
-  Food: "#f97316",
-  Bakery: "#a78bfa",
-  Tea: "#10b981",
+  Coffee: CHART_PALETTE.darkBlue,
+  Food: "#f29900",
+  Bakery: "#a142f4",
+  Tea: "#34a853",
 };
 
-const QUADRANT_LABELS = [
-  { label: "Stars", x: "right", y: "top", color: "#10b981" },
-  { label: "Puzzles", x: "left", y: "top", color: "#93c5fd" },
-  { label: "Plowhorses", x: "right", y: "bottom", color: "#fbbf24" },
-  { label: "Dogs", x: "left", y: "bottom", color: "#f87171" },
+/**
+ * The four quadrants' names, each in a soft tint of what the quadrant means:
+ * stars green, puzzles blue, plowhorses amber, dogs red. Faint on purpose —
+ * they label the ground the dots sit on, not the dots.
+ */
+const QUADRANTS = [
+  { label: "Puzzles", position: "top-3 left-4", color: "#aecbfa" },
+  { label: "Stars", position: "top-3 right-4", color: "#81c995" },
+  { label: "Dogs", position: "bottom-3 left-4", color: "#f6aea9" },
+  { label: "Plowhorses", position: "bottom-3 right-4", color: "#fdd663" },
 ];
 
 type TooltipPayloadItem = {
@@ -56,89 +67,71 @@ const CustomTooltip = ({
   const { currency } = useCurrency();
   if (!active || !payload?.length) return null;
   const d = payload[0]?.payload;
+  const color = CATEGORY_COLORS[d.category];
   return (
-    <div className="bg-white border border-gray-100 rounded-xl px-3 py-2.5 shadow-lg text-xs">
-      <p className="font-semibold text-gray-800 mb-1">{d.name}</p>
-      <p className="text-gray-500">{d.category}</p>
-      <div className="mt-1 space-y-0.5">
-        <p>
-          <span className="text-gray-400">Units sold:</span>{" "}
-          <span className="font-semibold">{d.unitsSold}</span>
-        </p>
-        <p>
-          <span className="text-gray-400">Margin:</span>{" "}
-          <span className="font-semibold">
-            {formatCurrencySymbol(
-              d.contributionMargin,
-              currency.symbol,
-              currency.locale,
-            )}
-          </span>
-        </p>
-      </div>
-    </div>
+    <ChartTooltipBox
+      label={
+        <>
+          <span style={{ color: CHART_PALETTE.title }}>{d.name}</span>
+          <span style={{ color: CHART_PALETTE.subtitle }}> · {d.category}</span>
+        </>
+      }
+      rows={[
+        { name: "Units sold", color, value: d.unitsSold },
+        {
+          name: "Margin",
+          color,
+          value: formatCurrencySymbol(
+            d.contributionMargin,
+            currency.symbol,
+            currency.locale,
+          ),
+        },
+      ]}
+    />
   );
 };
-
-const CustomLegend = () => (
-  <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 mt-3">
-    {Object.entries(CATEGORY_COLORS).map(([cat, color]) => (
-      <div key={cat} className="flex items-center gap-1.5">
-        <span
-          className="w-2.5 h-2.5 rounded-full shrink-0"
-          style={{ backgroundColor: color }}
-        />
-        <span className="text-xs text-gray-500">{cat}</span>
-      </div>
-    ))}
-  </div>
-);
 
 export default function MenuEngineeringMatrix() {
   const { currency } = useCurrency();
   const categories = Object.keys(CATEGORY_COLORS) as MenuCategory[];
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full relative select-none">
-      {/* Lock overlay */}
+    <ChartCard
+      icon={Grid2x2}
+      // Indigo, as before: Tailwind's indigo-600 / indigo-200 / indigo-50.
+      iconColor="#4f46e5"
+      iconBorder="#c7d2fe"
+      iconBg="#eef2ff"
+      title="Menu Engineering Matrix"
+      subtitle="Popularity (Units Sold) vs Profitability (Contribution Margin)"
+      // Clipped so the lock overlay follows the card's rounded corners.
+      className="overflow-hidden select-none"
+    >
+      {/* Lock overlay — a direct child of the card, so it covers the header
+          as well as the chart. */}
       <LockDimFeactureOverlay component_name="Menu Engineering Matrix" />
 
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
-            <Grid2x2 size={15} className="text-indigo-600" />
-          </div>
-          <ComponentHeader
-            title="Menu Engineering Matrix"
-            subHeader="Popularity (Units Sold) vs Profitability (Contribution Margin)"
-          />
-        </div>
-      </div>
-
       <div className="relative">
-        {/* Quadrant labels — positioned absolutely inside the chart area */}
+        {/* Quadrant labels — positioned inside the chart's plotting area */}
         <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ left: 45, right: 8, top: 8, bottom: 48 }}
+          className="pointer-events-none absolute inset-0"
+          style={{ left: 80, right: 8, top: 8, bottom: 56 }}
         >
-          <span className="absolute top-3 left-4 text-sm font-bold text-blue-200">
-            Puzzles
-          </span>
-          <span className="absolute top-3 right-4 text-sm font-bold text-emerald-300">
-            Stars
-          </span>
-          <span className="absolute bottom-3 left-4 text-sm font-bold text-red-200">
-            Dogs
-          </span>
-          <span className="absolute bottom-3 right-4 text-sm font-bold text-amber-300">
-            Plowhorses
-          </span>
+          {QUADRANTS.map((q) => (
+            <span
+              key={q.label}
+              className={`absolute text-sm font-semibold ${q.position}`}
+              style={{ color: q.color }}
+            >
+              {q.label}
+            </span>
+          ))}
         </div>
 
         <ResponsiveContainer width="100%" height={340}>
-          <ScatterChart margin={{ top: 10, right: 10, left: 0, bottom: 10 }}>
-            <CartesianGrid stroke="#f3f4f6" />
+          <ScatterChart margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
+            <CartesianGrid stroke={CHART_PALETTE.grid} />
 
             <XAxis
               type="number"
@@ -147,8 +140,16 @@ export default function MenuEngineeringMatrix() {
               domain={[0, 1050]}
               ticks={[0, 250, 500, 750, 1000]}
               axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 11 }}
+              tickLine={{ stroke: CHART_PALETTE.control }}
+              tickSize={6}
+              tick={AXIS_TICK}
+              height={44}
+              label={{
+                value: "Units sold",
+                position: "insideBottom",
+                offset: 0,
+                style: { fill: CHART_PALETTE.axis, fontSize: 12 },
+              }}
             />
 
             <YAxis
@@ -162,27 +163,28 @@ export default function MenuEngineeringMatrix() {
               }
               axisLine={false}
               tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 11 }}
-              width={38}
+              tick={AXIS_TICK}
+              width={72}
+              label={yAxisTitle("Margin per item")}
             />
 
             {/* Quadrant dividers */}
             <ReferenceLine
               x={MENU_MATRIX_MIDPOINTS.unitsSold}
-              stroke="#e2e8f0"
+              stroke={CHART_PALETTE.control}
               strokeDasharray="4 3"
               strokeWidth={1.5}
             />
             <ReferenceLine
               y={MENU_MATRIX_MIDPOINTS.contributionMargin}
-              stroke="#e2e8f0"
+              stroke={CHART_PALETTE.control}
               strokeDasharray="4 3"
               strokeWidth={1.5}
             />
 
             <Tooltip
               content={<CustomTooltip />}
-              cursor={{ strokeDasharray: "3 3" }}
+              cursor={{ strokeDasharray: "3 3", stroke: CHART_PALETTE.control }}
             />
 
             {categories.map((cat) => (
@@ -199,11 +201,17 @@ export default function MenuEngineeringMatrix() {
                   ))}
               </Scatter>
             ))}
-
-            <Legend content={<CustomLegend />} />
           </ScatterChart>
         </ResponsiveContainer>
       </div>
-    </div>
+
+      <ChartLegend
+        items={categories.map((cat) => ({
+          label: cat,
+          color: CATEGORY_COLORS[cat],
+          shape: "dot" as const,
+        }))}
+      />
+    </ChartCard>
   );
 }

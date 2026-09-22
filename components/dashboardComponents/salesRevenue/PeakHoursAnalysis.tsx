@@ -39,7 +39,7 @@ interface PeakHourlyDataProps {
   data: PeakHourlyData[];
 }
 
-const ORDERS_COLOR = CHART_PALETTE.blue;
+const ORDERS_COLOR = CHART_PALETTE.darkBlue;
 /**
  * Revenue is only in the tooltip, never drawn, so its row gets a neutral dot
  * rather than a series colour that would send the reader looking for a bar.

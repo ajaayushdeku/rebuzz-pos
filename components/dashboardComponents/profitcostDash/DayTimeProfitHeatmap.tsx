@@ -9,9 +9,9 @@ import {
 } from "@/components/ui/tooltip";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import RangeBadge from "@/components/ui/RangeBadge";
 import { Grid3x3 } from "lucide-react";
+import { CHART_PALETTE, ChartCard } from "../chartCard";
 
 export interface DayTimeProfitData {
   day: string;
@@ -83,21 +83,22 @@ export default function DayTimeProfitHeatmap({
   }, [data]);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full relative select-none">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
-            <Grid3x3 size={15} className="text-green-600" />
-          </div>
-          <ComponentHeader
-            title=" Day × Time Profit Heatmap"
-            subHeader="Average profit generation by hour and day of week"
-          />
-          <RangeBadge />
-        </div>
-      </div>
-
+    <ChartCard
+      icon={Grid3x3}
+      // Green, as before: Tailwind's green-600 / green-200 / green-50.
+      iconColor="#16a34a"
+      iconBorder="#bbf7d0"
+      iconBg="#f0fdf4"
+      title="Day × Time Profit Heatmap"
+      info={{
+        heading: "Reading this chart",
+        // From formatDayTimeProfitAverages: per-bill average in each bucket.
+        body: "Each cell is the average profit per bill paid in that weekday and hour, over the date range at the top of the page — a bill's total less its items' cost prices, refunds left out. An hour with no bills shows zero. Hover a cell for its exact figure.",
+      }}
+      subtitle="Average profit generation by hour and day of week"
+      controls={<RangeBadge variant="pill" />}
+      className="select-none"
+    >
       {/* Heatmap Grid */}
       <div className="relative">
         {/* Scrollable container with hidden scrollbar */}
@@ -105,13 +106,16 @@ export default function DayTimeProfitHeatmap({
           {/* Flex layout: fixed day labels + scrollable cells */}
           <div className="flex">
             {/* Fixed day labels column */}
-            <div className="sticky left-0 z-10 bg-white shrink-0">
+            <div className="sticky left-0 z-10 shrink-0 bg-white">
               {/* Time header spacer */}
-              <div className="h-6 mb-1 w-12"></div>
+              <div className="mb-1 h-6 w-12"></div>
               {/* Day labels */}
               {DAYS.map((day) => (
-                <div key={day} className="h-10 flex gap-1 items-center mb-1">
-                  <span className="text-xs text-gray-600 font-medium w-12 pl-1">
+                <div key={day} className="mb-1 flex h-10 items-center gap-1">
+                  <span
+                    className="w-12 pl-1 text-xs"
+                    style={{ color: CHART_PALETTE.axis }}
+                  >
                     {day}
                   </span>
                 </div>
@@ -122,7 +126,7 @@ export default function DayTimeProfitHeatmap({
             <div className="min-w-0">
               {/* Time headers */}
               <div
-                className="grid gap-1 mb-1"
+                className="mb-1 grid gap-1"
                 style={{
                   gridTemplateColumns: `repeat(${TIME_COLUMNS.length}, minmax(60px, 1fr))`,
                 }}
@@ -130,7 +134,8 @@ export default function DayTimeProfitHeatmap({
                 {TIME_COLUMNS.map(({ label }) => (
                   <div
                     key={label}
-                    className="text-center text-xs text-gray-500 font-medium h-6 flex items-center justify-center"
+                    className="flex h-6 items-center justify-center text-center text-[11px]"
+                    style={{ color: CHART_PALETTE.subtitle }}
                   >
                     {label}
                   </div>
@@ -141,7 +146,7 @@ export default function DayTimeProfitHeatmap({
               {DAYS.map((day) => (
                 <div
                   key={day}
-                  className="grid gap-1 mb-1 "
+                  className="mb-1 grid gap-1"
                   style={{
                     gridTemplateColumns: `repeat(${TIME_COLUMNS.length}, minmax(60px, 1fr))`,
                   }}
@@ -153,7 +158,7 @@ export default function DayTimeProfitHeatmap({
                       <Tooltip key={`${day}-${label}`}>
                         <TooltipTrigger asChild>
                           <div
-                            className={`h-10 rounded flex items-center justify-center text-[10px] font-medium tracking-wide cursor-default ${getColor(profit)} ${getTextColor(profit)}`}
+                            className={`flex h-10 cursor-default items-center justify-center rounded-md text-[10px] font-medium tracking-wide tabular-nums ${getColor(profit)} ${getTextColor(profit)}`}
                           >
                             {profit >= 10000
                               ? formatCompactCurrency(
@@ -174,9 +179,8 @@ export default function DayTimeProfitHeatmap({
                               {day} {label}
                             </span>
                             <span>
-                              Avg Profit:{" "}
+                              Avg profit per bill:{" "}
                               <strong className="tracking-wide">
-                                {" "}
                                 {formatCurrencySymbol(
                                   profit,
                                   currency.symbol,
@@ -196,23 +200,31 @@ export default function DayTimeProfitHeatmap({
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="flex items-center justify-end gap-2 mt-4">
-        <span className="text-xs text-gray-500">Loss</span>
-        <div className="flex gap-1">
-          <div className="w-4 h-4 rounded bg-red-300"></div>
+      {/* Legend: the colour scale, under the grid on the right */}
+      <div
+        className="mt-3 flex items-center justify-end gap-2 pr-2 text-[13px]"
+        style={{ color: CHART_PALETTE.title }}
+      >
+        <span className="h-2.5 w-2.5 rounded-[2px] bg-red-300" />
+        <span>Loss</span>
+        <span
+          className="mx-1 h-3 w-px"
+          style={{ backgroundColor: CHART_PALETTE.control }}
+        />
+        <span>Low</span>
+        <div className="flex gap-0.5">
+          {[
+            "bg-emerald-100",
+            "bg-emerald-200",
+            "bg-emerald-300",
+            "bg-emerald-400",
+            "bg-emerald-500",
+            "bg-emerald-600",
+          ].map((shade) => (
+            <span key={shade} className={`h-2.5 w-4 rounded-[2px] ${shade}`} />
+          ))}
         </div>
-        <span className="text-xs text-gray-500">|</span>
-        <span className="text-xs text-gray-500">Low</span>
-        <div className="flex gap-1">
-          <div className="w-4 h-4 rounded bg-emerald-100"></div>
-          <div className="w-4 h-4 rounded bg-emerald-200"></div>
-          <div className="w-4 h-4 rounded bg-emerald-300"></div>
-          <div className="w-4 h-4 rounded bg-emerald-400"></div>
-          <div className="w-4 h-4 rounded bg-emerald-500"></div>
-          <div className="w-4 h-4 rounded bg-emerald-600"></div>
-        </div>
-        <span className="text-xs text-gray-500">High Profit</span>
+        <span>High profit</span>
       </div>
 
       {/* Hide scrollbar styles */}
@@ -225,6 +237,6 @@ export default function DayTimeProfitHeatmap({
           display: none;
         }
       `}</style>
-    </div>
+    </ChartCard>
   );
 }

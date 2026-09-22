@@ -9,9 +9,9 @@ import {
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import RangeBadge from "@/components/ui/RangeBadge";
 import type { UnitEconomicsData } from "@/services/dashboardServices/apiProfitCost";
+import { CHART_PALETTE, ChartCard } from "../chartCard";
 
 export default function UnitEconomics({ data }: { data: UnitEconomicsData }) {
   const { currency } = useCurrency();
@@ -69,26 +69,31 @@ export default function UnitEconomics({ data }: { data: UnitEconomicsData }) {
   ];
 
   return (
-    <div className="relative  w-full rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-          <Calculator size={15} className="text-emerald-600" />
-        </div>
-        <ComponentHeader
-          title="Unit Economics"
-          subHeader="What one item, one order and one labor hour earn"
-        />
-        <RangeBadge />
-      </div>
-
-      <div className="grid grid-cols-2 gap-5 mt-6 ">
+    <ChartCard
+      icon={Calculator}
+      // Emerald, as before: Tailwind's emerald-600 / emerald-200 / emerald-50.
+      iconColor="#059669"
+      iconBorder="#a7f3d0"
+      iconBg="#ecfdf5"
+      title="Unit Economics"
+      info={{
+        heading: "Reading this card",
+        // From getUnitEconomics: report + salesByItem + shifts for the range.
+        body: "For the date range at the top of the page. Profit per item is the sales report's profit divided by the units sold; order size is revenue divided by the number of orders; cost per item is the items' cost prices over the units sold; profit per labor hour divides that profit by the hours of the shifts recorded in the range.",
+      }}
+      subtitle="What one item, one order and one labor hour earn"
+      controls={<RangeBadge variant="pill" />}
+      className="h-full"
+    >
+      <div className="grid grid-cols-2 gap-3">
         {metrics.map((item) => {
           const Icon = item.icon;
 
           return (
             <div
               key={item.label}
-              className="rounded-2xl border border-gray-100 bg-white px-5 py-5 transition-shadow hover:shadow-sm"
+              className="rounded-xl border px-4 py-4 transition-colors hover:bg-[#f8f9fa]"
+              style={{ borderColor: CHART_PALETTE.border }}
             >
               <div className="flex items-start gap-2">
                 <Icon
@@ -96,19 +101,28 @@ export default function UnitEconomics({ data }: { data: UnitEconomicsData }) {
                   strokeWidth={2}
                 />
 
-                <p className="whitespace-pre-line text-xs font-medium leading-5 text-gray-500">
+                <p
+                  className="whitespace-pre-line text-[11px] leading-5"
+                  style={{ color: CHART_PALETTE.axis }}
+                >
                   {item.label}
                 </p>
               </div>
 
               {/* Reserved space keeps the four value rows on one baseline
                   whether or not a card carries a secondary line. */}
-              <div className="mt-5 min-h-[2.6rem]">
-                <p className="font-bold tracking-wide tabular-nums text-gray-900">
+              <div className="mt-4 min-h-[2.6rem]">
+                <p
+                  className="text-lg font-semibold tracking-tight tabular-nums"
+                  style={{ color: CHART_PALETTE.title }}
+                >
                   {item.value}
                 </p>
                 {item.sub && (
-                  <p className="mt-0.5 text-[11px] leading-4 tabular-nums text-gray-400">
+                  <p
+                    className="mt-0.5 text-[11px] leading-4 tabular-nums"
+                    style={{ color: CHART_PALETTE.subtitle }}
+                  >
                     {item.sub}
                   </p>
                 )}
@@ -117,6 +131,6 @@ export default function UnitEconomics({ data }: { data: UnitEconomicsData }) {
           );
         })}
       </div>
-    </div>
+    </ChartCard>
   );
 }

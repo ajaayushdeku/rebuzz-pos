@@ -8,11 +8,8 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
-  Rectangle,
 } from "recharts";
-import type { BarShapeProps } from "recharts";
 import type {
   NameType,
   Payload,
@@ -22,9 +19,19 @@ import type {
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { CurrencyConfig, useCurrency } from "@/providers/CurrencyContext";
 import { useSalesByCategory } from "@/hooks/useSalesByCategory";
-import { ChevronLeft, ChevronRight, ChartColumnBig } from "lucide-react";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { ChartColumnBig } from "lucide-react";
 import RangeBadge from "@/components/ui/RangeBadge";
+import {
+  AXIS_TICK,
+  BAR_RADIUS,
+  CHART_PALETTE,
+  ChartCard,
+  ChartLegend,
+  ChartPager,
+  ChartTooltipBox,
+  niceTicks,
+  yAxisTitle,
+} from "../chartCard";
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -35,41 +42,11 @@ type ChartDataPoint = {
   netProfit: number;
 };
 
-// ── Bar shapes ────────────────────────────────────────────────────────────
-
-const GrossRevenueBar = (props: BarShapeProps) => (
-  <Rectangle {...props} radius={[4, 4, 0, 0]} fill="#9ca3af" />
-);
-
-const COGSBar = (props: BarShapeProps) => (
-  <Rectangle {...props} radius={[4, 4, 0, 0]} fill="#f472b6" />
-);
-
-const NetProfitBar = (props: BarShapeProps) => (
-  <Rectangle {...props} radius={[4, 4, 0, 0]} fill="#60a5fa" />
-);
-
-// ── Legend ────────────────────────────────────────────────────────────────
-
-const CustomLegend = () => (
-  <div className="flex flex-wrap items-center justify-center gap-4 mt-2">
-    {[
-      { label: "Gross Revenue", color: "#9ca3af" },
-      { label: "COGS", color: "#f472b6" },
-      { label: "Net Profit", color: "#60a5fa" },
-    ].map(({ label, color }) => (
-      <div key={label} className="flex items-center gap-1.5">
-        <span
-          className="w-3 h-3 rounded-sm shrink-0"
-          style={{ backgroundColor: color }}
-        />
-        <span className="text-xs font-semibold" style={{ color }}>
-          {label}
-        </span>
-      </div>
-    ))}
-  </div>
-);
+// This card's own set, so it does not read as a copy of Revenue vs Profit:
+// revenue in the muted blue, the cost in yellow, profit in a light green.
+const GROSS_COLOR = CHART_PALETTE.darkBlue;
+const COGS_COLOR = "#fbb104";
+const NET_COLOR = "#2dc656";
 
 // ── Tooltip ───────────────────────────────────────────────────────────────
 
@@ -97,31 +74,22 @@ const CustomTooltip = ({
   const netVal = (net?.value as number) ?? 0;
 
   const margin = grossVal > 0 ? Math.round((netVal / grossVal) * 100) : 0;
+  const cogsRatio = grossVal > 0 ? Math.round((cogsVal / grossVal) * 100) : 0;
 
   return (
-    <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100 min-w-44">
-      <p className="text-gray-400 text-xs mb-2 font-medium truncate max-w-40">
-        {label}
-      </p>
-
-      {payload.map((entry) => (
-        <div
-          key={entry.dataKey as string}
-          className="flex items-center justify-between gap-4 mb-0.5"
-        >
-          <div className="flex items-center gap-1.5">
-            <span
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{ backgroundColor: entry.color as string }}
-            />
-            <span className="text-xs text-gray-600">{entry.name}</span>
-          </div>
+    <ChartTooltipBox
+      label={<span className="block max-w-40 truncate">{label}</span>}
+      rows={payload.map((entry) => ({
+        name: String(entry.name),
+        color: entry.color as string,
+        value: (
+          // A loss reads in red.
           <span
-            className={`text-xs font-bold ${
+            style={
               entry.dataKey === "netProfit" && (entry.value as number) < 0
-                ? "text-red-500"
-                : "text-gray-800"
-            }`}
+                ? { color: CHART_PALETTE.bad }
+                : undefined
+            }
           >
             {formatCurrencySymbol(
               entry.value as number,
@@ -129,27 +97,38 @@ const CustomTooltip = ({
               currency.locale,
             )}
           </span>
-        </div>
-      ))}
-
-      {/* Gross → COGS → Net breakdown */}
-      <div className="mt-2 pt-2 border-t border-gray-100 space-y-0.5">
-        <div className="flex justify-between text-xs">
-          <span className="text-gray-400">Margin</span>
-          <span
-            className={`font-bold ${margin >= 40 ? "text-green-500" : margin >= 20 ? "text-yellow-500" : "text-red-400"}`}
-          >
-            {margin}%
-          </span>
-        </div>
-        <div className="flex justify-between text-xs">
-          <span className="text-gray-400">COGS ratio</span>
-          <span className="font-semibold text-pink-500">
-            {grossVal > 0 ? Math.round((cogsVal / grossVal) * 100) : 0}%
-          </span>
-        </div>
-      </div>
-    </div>
+        ),
+      }))}
+      footer={
+        <>
+          {/* Gross → COGS → Net, as shares of the gross. */}
+          <div className="flex justify-between gap-4 text-xs">
+            <span style={{ color: CHART_PALETTE.axis }}>Margin</span>
+            <span
+              className="font-medium"
+              style={{
+                color:
+                  margin >= 40
+                    ? CHART_PALETTE.good
+                    : margin >= 20
+                      ? CHART_PALETTE.warn
+                      : CHART_PALETTE.bad,
+              }}
+            >
+              {margin}%
+            </span>
+          </div>
+          <div className="flex justify-between gap-4 text-xs">
+            <span style={{ color: CHART_PALETTE.axis }}>COGS ratio</span>
+            {/* The COGS yellow is too pale to read as text on white; its
+                dark shade carries the figure. */}
+            <span className="font-medium" style={{ color: "#b06000" }}>
+              {cogsRatio}%
+            </span>
+          </div>
+        </>
+      }
+    />
   );
 };
 
@@ -238,7 +217,7 @@ export default function GrossVsCOGSVsNetProfit({
     setPage((p) => Math.min(totalPages - 1, p + 1));
   }, [totalPages]);
 
-  // ── Dynamic Y-axis (handles negative net profit) ──────────────────────
+  // ── Y-axis: round-number steps, below zero only for a visible loss ────
   const allValues = displayData.flatMap((d) => [
     d.grossRevenue,
     d.cogs,
@@ -246,40 +225,51 @@ export default function GrossVsCOGSVsNetProfit({
   ]);
   const maxValue = Math.max(...allValues, 0);
   const minValue = Math.min(...allValues, 0);
-
-  const yAxisMax = Math.max(1000, Math.ceil(maxValue / 500) * 500 + 500);
-  const yAxisMin = minValue < 0 ? Math.floor(minValue / 500) * 500 - 500 : 0;
-  const tickRange = yAxisMax - yAxisMin;
-  const tickStep = Math.max(500, Math.ceil(tickRange / 6 / 500) * 500);
-  const yTicks = Array.from(
-    { length: Math.ceil(tickRange / tickStep) + 1 },
-    (_, i) => yAxisMin + i * tickStep,
+  // A loss too small to see as a bar does not get its own step below zero;
+  // the tooltip still shows it.
+  const ticks = niceTicks(
+    minValue < 0 && -minValue >= 0.02 * Math.max(maxValue, 1) ? minValue : 0,
+    maxValue,
   );
 
   const formatYAxis = (value: number): string =>
     formatCompactCurrency(value, currency.symbol, currency.locale);
 
-  return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-            <ChartColumnBig size={15} className="text-blue-600" />
-          </div>
-          <ComponentHeader
-            title="Gross Revenue vs COGS vs Net Profit"
-            subHeader="Per-category breakdown of revenue, cost, and profitability"
-          />
-          <RangeBadge />
-        </div>
+  const firstShown = page * ITEMS_PER_PAGE + 1;
+  const lastShown = Math.min(allChartData.length, (page + 1) * ITEMS_PER_PAGE);
 
-        {isError && (
-          <p className="text-xs text-amber-400 mt-1">
-            Could not refresh — showing last known data.
-          </p>
-        )}
-      </div>
+  return (
+    <ChartCard
+      icon={ChartColumnBig}
+      title="Gross Revenue vs COGS vs Net Profit"
+      info={{
+        heading: "Reading this chart",
+        // From the POS category report: net profit there is revenue less
+        // tax and cost price, and COGS here is revenue less that profit.
+        body: "Each category's sales in the date range at the top of the page, highest revenue first. Net profit is revenue less tax and the items' cost prices, and COGS is revenue less that profit — so it includes the tax collected as well as the cost of the goods. Hover a category for its margin and COGS ratio.",
+      }}
+      subtitle="Per-category breakdown of revenue, cost, and profitability"
+      controls={
+        <>
+          {allChartData.length > ITEMS_PER_PAGE && (
+            <ChartPager
+              first={firstShown}
+              last={lastShown}
+              total={allChartData.length}
+              onPrev={goToPrevPage}
+              onNext={goToNextPage}
+              itemLabel="categories"
+            />
+          )}
+          <RangeBadge variant="pill" />
+        </>
+      }
+    >
+      {isError && (
+        <p className="-mt-2 mb-3 text-xs text-amber-600">
+          Could not refresh — showing last known data.
+        </p>
+      )}
 
       {/* Summary pills */}
       {/* {chartData.length > 0 && (
@@ -348,116 +338,92 @@ export default function GrossVsCOGSVsNetProfit({
         </div>
       )} */}
 
-      {/* Chart */}
-      <div
-        className={`transition-opacity duration-200 ${isFetching ? "opacity-60" : "opacity-100"}`}
-      >
-        {/* {isFetching && chartData.length === 0 ? (
-          <div className="h-56 sm:h-72 flex items-end pb-4">
-            <div className="w-full">
-              <ChartSkeleton />
+      {/* Empty state */}
+      {!isFetching && allChartData.length === 0 ? (
+        <div
+          className="flex h-56 flex-col items-center justify-center sm:h-72"
+          style={{ color: CHART_PALETTE.axis }}
+        >
+          <p className="text-sm">No category data for this date range</p>
+          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+            Try adjusting the filter above
+          </p>
+        </div>
+      ) : (
+        <>
+          <div
+            className={`transition-opacity duration-200 ${isFetching ? "opacity-60" : "opacity-100"}`}
+          >
+            <div className="h-56 sm:h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={displayData}
+                  margin={{ top: 8, right: 8, left: 8, bottom: 0 }}
+                  barCategoryGap="15%"
+                  barGap={2}
+                >
+                  <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
+                  <XAxis
+                    dataKey="category"
+                    axisLine={false}
+                    tickLine={{ stroke: CHART_PALETTE.control }}
+                    tickSize={6}
+                    tick={AXIS_TICK}
+                    interval={0}
+                    // Truncate long category names on X axis
+                    tickFormatter={(val: string) =>
+                      val.length > 12 ? val.slice(0, 11) + "…" : val
+                    }
+                  />
+                  <YAxis
+                    tickFormatter={formatYAxis}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={AXIS_TICK}
+                    ticks={ticks}
+                    domain={[ticks[0], ticks[ticks.length - 1]]}
+                    width={72}
+                    label={yAxisTitle("Amount")}
+                  />
+                  <Tooltip
+                    content={<CustomTooltip currency={currency} />}
+                    cursor={{ fill: "rgba(60,64,67,0.04)" }}
+                  />
+                  <Bar
+                    dataKey="grossRevenue"
+                    name="Gross Revenue"
+                    fill={GROSS_COLOR}
+                    maxBarSize={55}
+                    radius={BAR_RADIUS}
+                  />
+                  <Bar
+                    dataKey="cogs"
+                    name="COGS"
+                    fill={COGS_COLOR}
+                    maxBarSize={55}
+                    radius={BAR_RADIUS}
+                  />
+                  <Bar
+                    dataKey="netProfit"
+                    name="Net Profit"
+                    fill={NET_COLOR}
+                    maxBarSize={55}
+                    radius={BAR_RADIUS}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
-        ) : ( */}
-        <div className="h-56 sm:h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={displayData}
-              margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
-              barCategoryGap="20%"
-              barGap={3}
-            >
-              <CartesianGrid vertical={false} stroke="#f3f4f6" />
 
-              <XAxis
-                dataKey="category"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: "#9ca3af", fontSize: 11 }}
-                dy={8}
-                interval={0}
-                // Truncate long category names on X axis
-                tickFormatter={(val: string) =>
-                  val.length > 10 ? val.slice(0, 9) + "…" : val
-                }
-              />
-
-              <YAxis
-                tickFormatter={formatYAxis}
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: "#9ca3af", fontSize: 12 }}
-                ticks={yTicks}
-                domain={[yAxisMin, yAxisMax]}
-                width={58}
-              />
-
-              <Tooltip
-                content={<CustomTooltip currency={currency} />}
-                cursor={{ fill: "rgba(0,0,0,0.03)" }}
-              />
-
-              <Legend content={<CustomLegend />} />
-
-              <Bar
-                dataKey="grossRevenue"
-                name="Gross Revenue"
-                shape={GrossRevenueBar}
-                fill="#9ca3af"
-              />
-              <Bar dataKey="cogs" name="COGS" shape={COGSBar} fill="#f472b6" />
-              <Bar
-                dataKey="netProfit"
-                name="Net Profit"
-                shape={NetProfitBar}
-                fill="#60a5fa"
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        {/* )} */}
-      </div>
-
-      {/* Pagination controls */}
-      {allChartData.length > ITEMS_PER_PAGE && (
-        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
-          <button
-            onClick={goToPrevPage}
-            disabled={page === 0}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              page === 0
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-            }`}
-          >
-            <ChevronLeft size={14} />
-            Prev
-          </button>
-          <span className="text-xs text-gray-400 font-medium">
-            Page {page + 1} of {totalPages} · {allChartData.length} categories
-          </span>
-          <button
-            onClick={goToNextPage}
-            disabled={page >= totalPages - 1}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              page >= totalPages - 1
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-            }`}
-          >
-            Next
-            <ChevronRight size={14} />
-          </button>
-        </div>
+          <ChartLegend
+            items={[
+              { label: "Gross Revenue", color: GROSS_COLOR, shape: "dot" },
+              { label: "COGS", color: COGS_COLOR, shape: "square" },
+              { label: "Net Profit", color: NET_COLOR, shape: "square" },
+            ]}
+          />
+        </>
       )}
-
-      {/* Empty state */}
-      {!isFetching && allChartData.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-          <p className="text-sm">No category data for this date range</p>
-          <p className="text-xs mt-1">Try adjusting the filter above</p>
-        </div>
-      )}
-    </div>
+    </ChartCard>
   );
 }

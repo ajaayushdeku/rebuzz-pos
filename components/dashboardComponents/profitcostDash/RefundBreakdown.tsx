@@ -14,8 +14,8 @@ import {
   totalRefundLoss,
 } from "@/lib/mockData/mock-refundBreakDown";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import { ChartPie } from "lucide-react";
+import { CHART_PALETTE, ChartCard, ChartTooltipBox } from "../chartCard";
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -47,24 +47,21 @@ const CustomTooltip = ({
   const pct = ((entry.amount / total) * 100).toFixed(1);
 
   return (
-    <div
-      className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100 min-w-36 "
-      style={{ zIndex: 100 }}
-    >
-      <div className="flex items-center gap-1.5 mb-1">
-        <span
-          className="w-2.5 h-2.5 rounded-full shrink-0"
-          style={{ backgroundColor: entry.color }}
-        />
-        <span className="text-xs font-semibold text-gray-700">
-          {entry.reason}
-        </span>
-      </div>
-      <p className="text-sm font-bold text-gray-900">
-        {formatCurrencySymbol(entry.amount, currency.symbol, currency.locale)}
-      </p>
-      <p className="text-xs text-gray-400">{pct}% of total</p>
-    </div>
+    <ChartTooltipBox
+      label={entry.reason}
+      rows={[
+        {
+          name: "Value lost",
+          color: entry.color,
+          value: formatCurrencySymbol(
+            entry.amount,
+            currency.symbol,
+            currency.locale,
+          ),
+        },
+        { name: "Share of total", color: entry.color, value: `${pct}%` },
+      ]}
+    />
   );
 };
 
@@ -76,23 +73,23 @@ export default function RefundBreakdown() {
   const total = totalRefundLoss;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full relative select-none">
-      {/* Lock overlay */}
+    <ChartCard
+      icon={ChartPie}
+      // Rose, as before: Tailwind's rose-600 / rose-200 / rose-50.
+      iconColor="#e11d48"
+      iconBorder="#fecdd3"
+      iconBg="#fff1f2"
+      title="Refund Breakdown"
+      subtitle="Value lost by refund reason"
+      // Clipped so the lock overlay follows the card's rounded corners.
+      className="h-full overflow-hidden select-none"
+    >
+      {/* Lock overlay — a direct child of the card, so it covers the header
+          as well as the chart. */}
       <LockDimFeactureOverlay component_name="Refund Breakdown" />
 
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
-          <ChartPie size={15} className="text-rose-600" />
-        </div>
-        <ComponentHeader
-          title="Refund Breakdown"
-          subHeader="Value lost by refund reason"
-        />
-      </div>
-
       {/* Donut chart */}
-      <div className="relative flex items-center justify-center shrink-0">
+      <div className="relative flex shrink-0 items-center justify-center">
         <ResponsiveContainer width={200} height={200}>
           <PieChart>
             <Pie
@@ -118,33 +115,48 @@ export default function RefundBreakdown() {
 
         {/* Center label */}
         <div
-          className="absolute flex flex-col items-center justify-center pointer-events-none"
+          className="pointer-events-none absolute flex flex-col items-center justify-center"
           style={{ zIndex: 1 }}
         >
-          <span className="text-xs text-gray-400">Total Lost</span>
-          <span className="text-2xl font-bold text-red-500">
+          <span className="text-[11px]" style={{ color: CHART_PALETTE.axis }}>
+            Total Lost
+          </span>
+          <span className="text-2xl font-semibold tracking-tight text-red-500">
             {formatCurrencySymbol(total, currency.symbol, currency.locale)}
           </span>
         </div>
       </div>
 
-      {/* Legend list */}
-      <div className="w-full space-y-4 mt-6">
+      {/* Legend list: one row per reason, hairline-separated */}
+      <div className="mt-6 w-full">
         {data.map((item) => (
-          <div key={item.id} className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div
+            key={item.id}
+            className="flex items-center justify-between border-b py-2.5 last:border-0"
+            style={{ borderColor: CHART_PALETTE.grid }}
+          >
+            <div className="flex items-center gap-2.5">
               <span
-                className="w-3 h-3 rounded-full shrink-0"
+                className="h-2.5 w-2.5 shrink-0 rounded-full"
                 style={{ backgroundColor: item.color }}
               />
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-medium text-gray-700">
-                  {item.reason}
-                </span>
-                <span className="text-xs text-gray-400">({item.refunds})</span>
-              </div>
+              <span
+                className="text-[13px]"
+                style={{ color: CHART_PALETTE.title }}
+              >
+                {item.reason}
+              </span>
+              <span
+                className="text-xs tabular-nums"
+                style={{ color: CHART_PALETTE.subtitle }}
+              >
+                ({item.refunds})
+              </span>
             </div>
-            <span className="text-sm font-bold text-gray-900">
+            <span
+              className="text-[13px] font-medium tabular-nums"
+              style={{ color: CHART_PALETTE.title }}
+            >
               {formatCurrencySymbol(
                 item.amount,
                 currency.symbol,
@@ -154,6 +166,6 @@ export default function RefundBreakdown() {
           </div>
         ))}
       </div>
-    </div>
+    </ChartCard>
   );
 }

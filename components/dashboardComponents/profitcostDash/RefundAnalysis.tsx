@@ -15,10 +15,16 @@ import { useRouter } from "next/navigation";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useRefundAnalysis } from "@/hooks/useRefundAnalysis";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import RangeBadge from "@/components/ui/RangeBadge";
+import { CHART_PALETTE, ChartCard } from "../chartCard";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
+
+/** Header cell: quiet grey label, normal weight, clickable to sort. */
+const TH =
+  "px-3 pb-2.5 pt-1 text-[11px] font-normal whitespace-nowrap cursor-pointer select-none transition-colors hover:text-[#3c4043]";
+/** Body cell: small text in the title colour. */
+const TD = "px-3 py-2.5 text-xs";
 
 function renderSortIcon(colKey: string, sortConfig: SortConfig) {
   if (sortConfig?.key === colKey) {
@@ -109,115 +115,134 @@ export default function RefundAnalysis({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full overflow-hidden">
-      <div className="min-w-0 mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
-            <Undo2 size={15} className="text-rose-600" />
-          </div>
-          <ComponentHeader
-            title="Refund Analysis"
-            subHeader="All the refunded bills with lost value."
-          />
-          <RangeBadge />
-        </div>
-      </div>
-
+    <ChartCard
+      icon={Undo2}
+      // Rose, as before: Tailwind's rose-600 / rose-200 / rose-50.
+      iconColor="#e11d48"
+      iconBorder="#fecdd3"
+      iconBg="#fff1f2"
+      title="Refund Analysis"
+      info={{
+        heading: "Reading this card",
+        // From useRefundAnalysis: bills for the range (limit 100), refunded
+        // ones kept, value = the bill's grand total.
+        body: "Refunded bills from the date range at the top of the page. Value lost is the bill's full total; the refund date is when the bill was last updated. Click a row to open the bill.",
+      }}
+      subtitle="All the refunded bills with lost value."
+      controls={<RangeBadge variant="pill" />}
+      className="overflow-hidden"
+    >
       {/* Search */}
-      <div className="flex  justify-between items-center gap-2 mb-4">
-        <div className="relative w-full ">
-          <Search
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="Search refunds..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(0);
-            }}
-            className="w-full pl-9 pr-8 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black-300 focus:border-transparent"
-          />
-          {search && (
-            <button
-              onClick={() => setSearch("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              <X size={14} />
-            </button>
-          )}
-        </div>
+      <div className="relative mb-3 w-full">
+        <Search
+          size={13}
+          className="absolute left-3 top-1/2 -translate-y-1/2"
+          style={{ color: CHART_PALETTE.subtitle }}
+        />
+        <input
+          type="text"
+          placeholder="Search refunds..."
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(0);
+          }}
+          className="w-full rounded-lg border bg-white py-2 pl-8 pr-8 text-[11px] outline-none placeholder:text-[#9aa0a6] focus-visible:ring-2 focus-visible:ring-blue-500"
+          style={{
+            borderColor: CHART_PALETTE.control,
+            color: CHART_PALETTE.title,
+          }}
+        />
+        {search && (
+          <button
+            onClick={() => setSearch("")}
+            aria-label="Clear search"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-[#9aa0a6] hover:text-[#5f6368]"
+          >
+            <X size={13} />
+          </button>
+        )}
       </div>
 
-      {/* Table */}
-      {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
-      <div className="bg-white overflow-x-auto scrollbar-hide">
-        <table className="w-full text-sm min-w-[580px]">
+      {/* Table: no zebra or shadow, hairline rows, quiet grey headings;
+          horizontally scrollable on mobile. */}
+      <div className="overflow-x-auto scrollbar-hide">
+        <table className="w-full min-w-[580px] table-auto">
           <thead>
-            <tr className="text-xs text-gray-400 border-b border-gray-100">
-              <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+            <tr
+              className="border-b text-left"
+              style={{
+                borderColor: CHART_PALETTE.grid,
+                color: CHART_PALETTE.axis,
+              }}
+            >
+              <th className="w-12 px-3 pb-2.5 pt-1 text-[11px] font-normal whitespace-nowrap">
                 S.No
               </th>
-              <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("name")}
-              >
+              <th className={TH} onClick={() => toggleSort("name")}>
                 <span className="flex items-center gap-1">
                   Bill Name {renderSortIcon("name", sortConfig)}
                 </span>
               </th>
-              <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("createdAt")}
-              >
+              <th className={TH} onClick={() => toggleSort("createdAt")}>
                 <span className="flex items-center gap-1">
                   Bill Date {renderSortIcon("createdAt", sortConfig)}
                 </span>
               </th>
-              <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("updatedAt")}
-              >
+              <th className={TH} onClick={() => toggleSort("updatedAt")}>
                 <span className="flex items-center gap-1">
                   Refund Date {renderSortIcon("updatedAt", sortConfig)}
                 </span>
               </th>
-              <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("loss")}
-              >
+              <th className={TH} onClick={() => toggleSort("loss")}>
                 <span className="flex items-center justify-end gap-1">
                   Value Lost {renderSortIcon("loss", sortConfig)}
                 </span>
               </th>
             </tr>
           </thead>
-          <tbody>
+
+          <tbody style={{ color: CHART_PALETTE.title }}>
             {isFetching && !fetchedData ? (
               <tr>
-                <td colSpan={5} className="text-center py-12">
+                <td colSpan={5} className="py-12 text-center">
                   <div className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm text-gray-400">Loading...</span>
+                    <div
+                      className="h-4 w-4 animate-spin rounded-full border-2"
+                      style={{
+                        borderColor: CHART_PALETTE.blue,
+                        borderTopColor: "transparent",
+                      }}
+                    />
+                    <span
+                      className="text-xs"
+                      style={{ color: CHART_PALETTE.axis }}
+                    >
+                      Loading...
+                    </span>
                   </div>
                 </td>
               </tr>
             ) : paged.length === 0 ? (
               <tr>
-                <td
-                  colSpan={5}
-                  className="text-center py-2 text-sm text-gray-400"
-                >
+                <td colSpan={5} className="py-2 text-center">
                   <div className="flex flex-col items-center justify-center py-12">
-                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-                      <Undo2 size={24} className="text-gray-300" />
+                    <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[#f1f3f4]">
+                      <Undo2
+                        size={22}
+                        style={{ color: CHART_PALETTE.subtitle }}
+                      />
                     </div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p
+                      className="text-sm font-medium"
+                      style={{ color: CHART_PALETTE.title }}
+                    >
                       No refund data
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p
+                      className="mt-1 text-xs"
+                      style={{ color: CHART_PALETTE.subtitle }}
+                    >
                       Refunded data will appear here
                     </p>
                   </div>
@@ -228,35 +253,41 @@ export default function RefundAnalysis({
                 <tr
                   key={item.invoiceNo}
                   onClick={() => router.push(`/invoices/${item.invoiceNo}`)}
-                  className="border-b border-gray-50 last:border-0 hover:bg-blue-50 transition-colors cursor-pointer"
+                  // A light blue hover, so the row still reads as a link to
+                  // its bill.
+                  className="cursor-pointer border-b transition-colors last:border-0 hover:bg-blue-50/60"
+                  style={{ borderColor: CHART_PALETTE.grid }}
                 >
-                  <td className="py-3 px-4 text-gray-400 text-xs">
+                  <td
+                    className={`${TD} tabular-nums`}
+                    style={{ color: CHART_PALETTE.subtitle }}
+                  >
                     {page * pageSize + idx + 1}
                   </td>
 
-                  <td className="py-3 px-4">
-                    <span className="font-semibold text-xs text-gray-900">
-                      {item.name}
-                    </span>
-                    <span className="text-gray-400 text-xs ml-2 tracking-wide">
+                  <td className={TD}>
+                    {item.name}
+                    <span
+                      className="ml-2 tabular-nums"
+                      style={{ color: CHART_PALETTE.subtitle }}
+                    >
                       #{item.invoiceNo}
                     </span>
                   </td>
 
-                  <td className="py-3 px-4">
-                    <span className="text-gray-500 text-xs">
-                      {formatDate(item.createdAt)}
-                    </span>
+                  <td className={TD} style={{ color: CHART_PALETTE.axis }}>
+                    {formatDate(item.createdAt)}
                   </td>
 
-                  <td className="py-3 px-4">
-                    <span className="text-gray-500 text-xs">
-                      {formatDate(item.updatedAt)}
-                    </span>
+                  <td className={TD} style={{ color: CHART_PALETTE.axis }}>
+                    {formatDate(item.updatedAt)}
                   </td>
 
-                  <td className="py-3 px-4 text-right font-semibold text-xs tracking-wide text-red-600">
-                    {/* -{formatCurrency(item.loss, currency)} */}-
+                  {/* Money lost, so red and signed. */}
+                  <td
+                    className={`${TD} text-right font-medium tabular-nums text-red-600`}
+                  >
+                    -
                     {formatCurrencySymbol(
                       item.loss,
                       currency.symbol,
@@ -302,6 +333,6 @@ export default function RefundAnalysis({
           <ChevronRight size={14} />
         </button>
       </div>
-    </div>
+    </ChartCard>
   );
 }

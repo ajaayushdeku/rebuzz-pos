@@ -8,15 +8,22 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from "recharts";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { CustomTooltipProps } from "@/lib/types/chart";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import { TrendingUp } from "lucide-react";
 import ChartSkeleton from "@/components/ui/chartskeleton";
+import {
+  AXIS_TICK,
+  CHART_PALETTE,
+  ChartCard,
+  ChartLegend,
+  ChartTooltipBox,
+  niceTicks,
+  yAxisTitle,
+} from "../chartCard";
 
 export interface ProfitTrendData {
   month: string;
@@ -24,19 +31,8 @@ export interface ProfitTrendData {
   netProfit: number;
 }
 
-const getYAxisTicks = (data: ProfitTrendData[]): number[] => {
-  const values = data.flatMap((d) => [d.grossRevenue, d.netProfit]);
-  const max = Math.max(...values, 1);
-
-  // Add 20% padding above
-  const paddedMax = max * 1.2;
-
-  // Round step to a nice number so that we get clean ticks from 0
-  const rawStep = paddedMax / 4;
-  const step = Math.ceil(rawStep / 1000) * 1000 || 1000;
-
-  return [0, step, step * 2, step * 3, step * 4];
-};
+const REVENUE_COLOR = CHART_PALETTE.blue;
+const PROFIT_COLOR = CHART_PALETTE.teal;
 
 const CustomTooltip = ({
   active,
@@ -46,62 +42,28 @@ const CustomTooltip = ({
 }: CustomTooltipProps) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100">
-      <p className="text-gray-400 text-xs mb-2 font-medium">{label}</p>
-      {payload.map((entry) => (
-        <div
-          key={entry.name}
-          className="flex items-center justify-between gap-4"
-        >
-          <div className="flex items-center gap-1.5">
-            <span
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{ backgroundColor: entry.color as string }}
-            />
-            <span className="text-xs text-gray-600">{entry.name}</span>
-          </div>
-          <span className="text-xs font-bold text-gray-800">
-            {/* {formatCurrency(entry.value as number, currency)} */}
-            {formatCurrencySymbol(
-              entry.value as number,
-              currency.symbol,
-              currency.locale,
-            )}
-          </span>
-        </div>
-      ))}
-    </div>
+    <ChartTooltipBox
+      label={label}
+      rows={payload.map((entry) => ({
+        name: String(entry.name),
+        color: entry.color as string,
+        value: formatCurrencySymbol(
+          entry.value as number,
+          currency.symbol,
+          currency.locale,
+        ),
+      }))}
+    />
   );
 };
 
-const CustomLegend = () => (
-  <div className="flex items-center justify-center gap-4 mt-2">
-    {[
-      { label: "Gross Revenue", color: "#60a5fa" },
-      { label: "Net Profit", color: "#34d399" },
-    ].map(({ label, color }) => (
-      <div key={label} className="flex items-center gap-1.5">
-        <span
-          className="w-3 h-3 rounded-full shrink-0"
-          style={{ backgroundColor: color }}
-        />
-        <span className="text-xs font-semibold" style={{ color }}>
-          {label}
-        </span>
-      </div>
-    ))}
-  </div>
-);
-
-// ── Skeleton loader ───────────────────────────────────────────────────────
-
-// const ChartSkeleton = () => (
-//   <div className="animate-pulse space-y-3 p-4">
-//     <div className="h-4 bg-gray-200 rounded w-1/3" />
-//     <div className="h-3 bg-gray-200 rounded w-1/2" />
-//     <div className="h-56 bg-gray-100 rounded-xl mt-4" />
-//   </div>
-// );
+/** A small dot on each month, ringed in white so the two lines stay apart. */
+const dot = (color: string) => ({
+  r: 3,
+  fill: color,
+  stroke: "#fff",
+  strokeWidth: 1.5,
+});
 
 export default function GrossProfitTrendChart() {
   const { currency } = useCurrency();
@@ -124,113 +86,97 @@ export default function GrossProfitTrendChart() {
       .finally(() => setIsLoading(false));
   }, []);
 
-  // const isEmpty =
-  //   !data ||
-  //   data.length === 0 ||
-  //   data.every((d) => d.grossRevenue === 0 && d.netProfit === 0);
-
   const formatYAxis = (value: number): string =>
     formatCompactCurrency(value, currency.symbol, currency.locale);
 
-  const yTicks = getYAxisTicks(data);
-  const yMax = yTicks[yTicks.length - 1] * 1.05;
-
-  if (isLoading)
-    return (
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-md">
-        <ChartSkeleton />
-      </div>
-    );
-
-  if (isError)
-    return (
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-md p-6">
-        <h2 className="text-sm font-bold text-gray-900">
-          Gross vs Net Profit Trend
-        </h2>
-        <div className="flex items-center justify-center h-56 text-gray-400 text-sm">
-          Failed to load profit data
-        </div>
-      </div>
-    );
+  // Round-number steps, reaching below zero only when a month made a loss.
+  const values = data.flatMap((d) => [d.grossRevenue, d.netProfit]);
+  const ticks = niceTicks(
+    values.length > 0 ? Math.min(...values) : 0,
+    values.length > 0 ? Math.max(...values) : 0,
+  );
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full ">
-      <div className="mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-            <TrendingUp size={15} className="text-blue-600" />
+    <ChartCard
+      icon={TrendingUp}
+      title="Gross vs Net Profit Trend"
+      info={{
+        heading: "Reading this chart",
+        // From /api/profit-trend: compare-sales-by-month over the last 12
+        // months, whose net profit is revenue less tax and cost price.
+        body: "One point per calendar month over the last 12 months, this month so far included. Gross revenue is what customers paid on bills that were not refunded; net profit is that less tax and the items' cost prices — other expenses are not taken off. This card does not follow the date range at the top of the page.",
+      }}
+      subtitle="Monthly comparison of revenue and net profit"
+    >
+      {isLoading ? (
+        <ChartSkeleton />
+      ) : isError ? (
+        <div
+          className="flex h-56 items-center justify-center text-sm"
+          style={{ color: CHART_PALETTE.axis }}
+        >
+          Failed to load profit data
+        </div>
+      ) : (
+        <>
+          <div className="h-56 sm:h-64 md:h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={data}
+                margin={{ top: 8, right: 16, left: 8, bottom: 0 }}
+              >
+                <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
+                <XAxis
+                  dataKey="month"
+                  axisLine={false}
+                  tickLine={{ stroke: CHART_PALETTE.control }}
+                  tickSize={6}
+                  tick={AXIS_TICK}
+                />
+                <YAxis
+                  tickFormatter={formatYAxis}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={AXIS_TICK}
+                  ticks={ticks}
+                  domain={[ticks[0], ticks[ticks.length - 1]]}
+                  width={72}
+                  label={yAxisTitle("Amount")}
+                />
+                <Tooltip
+                  content={<CustomTooltip currency={currency} />}
+                  cursor={{ stroke: CHART_PALETTE.control, strokeWidth: 1 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="grossRevenue"
+                  name="Gross Revenue"
+                  stroke={REVENUE_COLOR}
+                  strokeWidth={2}
+                  dot={dot(REVENUE_COLOR)}
+                  activeDot={{ ...dot(REVENUE_COLOR), r: 5 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="netProfit"
+                  name="Net Profit"
+                  stroke={PROFIT_COLOR}
+                  strokeWidth={2}
+                  dot={dot(PROFIT_COLOR)}
+                  activeDot={{ ...dot(PROFIT_COLOR), r: 5 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
-          <ComponentHeader
-            title="Gross vs Net Profit Trend"
-            subHeader="Monthly comparison of revenue and net profit"
+
+          <ChartLegend
+            items={[
+              { label: "Gross Revenue", color: REVENUE_COLOR, shape: "dot" },
+              { label: "Net Profit", color: PROFIT_COLOR, shape: "square" },
+            ]}
           />
-        </div>
-      </div>
-
-      {/* {isEmpty ? (
-        <div className="flex items-center justify-center h-44 sm:h-56 md:h-64 text-sm text-gray-400">
-          No profit data for this period yet.
-        </div>
-      ) : ( */}
-      <div className="h-44 sm:h-56 md:h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={data}
-            margin={{ top: 10, right: 20, left: 10, bottom: 10 }}
-          >
-            <CartesianGrid vertical={false} stroke="#f3f4f6" />
-
-            <YAxis
-              tickFormatter={formatYAxis}
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 12 }}
-              ticks={yTicks}
-              domain={[0, yMax]}
-              width={52}
-            />
-            <Tooltip content={<CustomTooltip currency={currency} />} />
-            <Legend content={<CustomLegend />} />
-            <Line
-              type="monotone"
-              dataKey="grossRevenue"
-              name="Gross Revenue"
-              stroke="#60a5fa"
-              strokeWidth={2.5}
-              dot={{ r: 4, fill: "#60a5fa", stroke: "#fff", strokeWidth: 2 }}
-              activeDot={{
-                r: 6,
-                fill: "#60a5fa",
-                stroke: "#fff",
-                strokeWidth: 2,
-              }}
-            />
-            <Line
-              type="monotone"
-              dataKey="netProfit"
-              name="Net Profit"
-              stroke="#34d399"
-              strokeWidth={2.5}
-              dot={{ r: 4, fill: "#34d399", stroke: "#fff", strokeWidth: 2 }}
-              activeDot={{
-                r: 6,
-                fill: "#34d399",
-                stroke: "#fff",
-                strokeWidth: 2,
-              }}
-            />
-            <XAxis
-              dataKey="month"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 12 }}
-              dy={8}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-      {/* )} */}
-    </div>
+        </>
+      )}
+    </ChartCard>
   );
 }

@@ -37,7 +37,7 @@ export interface SalesTrendsData {
   totalRevenue: number;
 }
 
-const REVENUE_COLOR = CHART_PALETTE.blue;
+const REVENUE_COLOR = CHART_PALETTE.darkBlue;
 
 // Sub-components
 

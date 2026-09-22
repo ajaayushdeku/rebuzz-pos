@@ -15,8 +15,8 @@ import { Product } from "./profit-per-product-column";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useProfitPerProduct } from "@/hooks/useProfitPerProduct";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import RangeBadge from "@/components/ui/RangeBadge";
+import { CHART_PALETTE, ChartCard } from "../chartCard";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -31,6 +31,12 @@ function getProfitColor(profit: number): string {
   if (profit < 0) return "text-red-600";
   return "text-gray-600";
 }
+
+/** Header cell: quiet grey label, normal weight, clickable to sort. */
+const TH =
+  "px-3 pb-2.5 pt-1 text-[11px] font-normal whitespace-nowrap cursor-pointer select-none transition-colors hover:text-[#3c4043]";
+/** Body cell: small text in the title colour. */
+const TD = "px-3 py-2.5 text-xs";
 
 export default function ProfitPerProduct({
   products: initialProducts,
@@ -104,77 +110,76 @@ export default function ProfitPerProduct({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full overflow-hidden">
-      <div className="min-w-0 mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-            <Package size={15} className="text-blue-600" />
-          </div>
-          <ComponentHeader
-            title="Profit per Product"
-            subHeader="Revenue, cost and margins for top selling products."
-          />
-          <RangeBadge />
-        </div>
-      </div>
-
+    <ChartCard
+      icon={Package}
+      title="Profit per Product"
+      info={{
+        heading: "Reading this card",
+        // From lib/profitPerProduct (mergeSalesItems) over salesByItem.
+        body: "Each product sold in the date range at the top of the page, with same-named items merged. COGS is each item's cost price times the units sold; profit is the sales report's own figure for the item, and margin is that profit as a share of its revenue.",
+      }}
+      subtitle="Revenue, cost and margins for top selling products."
+      controls={<RangeBadge variant="pill" />}
+      className="overflow-hidden"
+    >
       {/* Search */}
-      <div className="flex justify-between items-center gap-2 mb-4">
-        <div className="relative w-full ">
-          <Search
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(0);
-            }}
-            className="w-full pl-9 pr-8 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black-300 focus:border-transparent"
-          />
-          {search && (
-            <button
-              onClick={() => setSearch("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              <X size={14} />
-            </button>
-          )}
-        </div>
+      <div className="relative mb-3 w-full">
+        <Search
+          size={13}
+          className="absolute left-3 top-1/2 -translate-y-1/2"
+          style={{ color: CHART_PALETTE.subtitle }}
+        />
+        <input
+          type="text"
+          placeholder="Search products..."
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(0);
+          }}
+          className="w-full rounded-lg border bg-white py-2 pl-8 pr-8 text-[11px] outline-none placeholder:text-[#9aa0a6] focus-visible:ring-2 focus-visible:ring-blue-500"
+          style={{
+            borderColor: CHART_PALETTE.control,
+            color: CHART_PALETTE.title,
+          }}
+        />
+        {search && (
+          <button
+            onClick={() => setSearch("")}
+            aria-label="Clear search"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-[#9aa0a6] hover:text-[#5f6368]"
+          >
+            <X size={13} />
+          </button>
+        )}
       </div>
 
-      {/* Table — horizontally scrollable on mobile */}
-      {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
-      <div className="bg-white overflow-x-auto scrollbar-hide">
-        <table className="w-full text-sm min-w-[600px]">
+      {/* Table: no zebra or shadow, hairline rows, quiet grey headings;
+          horizontally scrollable on mobile. */}
+      <div className="overflow-x-auto scrollbar-hide">
+        <table className="w-full min-w-[600px] table-auto">
           <thead>
-            <tr className="text-xs text-gray-400 border-b border-gray-100">
-              <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+            <tr
+              className="border-b text-left"
+              style={{
+                borderColor: CHART_PALETTE.grid,
+                color: CHART_PALETTE.axis,
+              }}
+            >
+              <th className="w-12 px-3 pb-2.5 pt-1 text-[11px] font-normal whitespace-nowrap">
                 S.No
               </th>
-              <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("name")}
-              >
+              <th className={TH} onClick={() => toggleSort("name")}>
                 <span className="flex items-center gap-1">
                   Product {SortIcon({ colKey: "name" })}
                 </span>
               </th>
-              <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("revenue")}
-              >
+              <th className={TH} onClick={() => toggleSort("revenue")}>
                 <span className="flex items-center justify-end gap-1">
                   Revenue {SortIcon({ colKey: "revenue" })}
                 </span>
               </th>
-              <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("cogs")}
-              >
+              <th className={TH} onClick={() => toggleSort("cogs")}>
                 <span className="flex items-center justify-end gap-1">
                   COGS {SortIcon({ colKey: "cogs" })}
                 </span>
@@ -192,48 +197,60 @@ export default function ProfitPerProduct({
                   </span>
                 </th>
               )} */}
-              <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("profit")}
-              >
+              <th className={TH} onClick={() => toggleSort("profit")}>
                 <span className="flex items-center justify-end gap-1">
                   Profit {SortIcon({ colKey: "profit" })}
                 </span>
               </th>
-              <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("margin")}
-              >
+              <th className={TH} onClick={() => toggleSort("margin")}>
                 <span className="flex items-center justify-end gap-1">
                   Margin {SortIcon({ colKey: "margin" })}
                 </span>
               </th>
             </tr>
           </thead>
-          <tbody>
+
+          <tbody style={{ color: CHART_PALETTE.title }}>
             {isFetching && !fetchedData ? (
               <tr>
-                <td colSpan={hasTax ? 7 : 6} className="text-center py-12">
+                <td colSpan={hasTax ? 7 : 6} className="py-12 text-center">
                   <div className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm text-gray-400">Loading...</span>
+                    <div
+                      className="h-4 w-4 animate-spin rounded-full border-2"
+                      style={{
+                        borderColor: CHART_PALETTE.blue,
+                        borderTopColor: "transparent",
+                      }}
+                    />
+                    <span
+                      className="text-xs"
+                      style={{ color: CHART_PALETTE.axis }}
+                    >
+                      Loading...
+                    </span>
                   </div>
                 </td>
               </tr>
             ) : paged.length === 0 ? (
               <tr>
-                <td
-                  colSpan={hasTax ? 7 : 6}
-                  className="text-center py-2 text-sm text-gray-400"
-                >
+                <td colSpan={hasTax ? 7 : 6} className="py-2 text-center">
                   <div className="flex flex-col items-center justify-center py-12">
-                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-                      <Package size={24} className="text-gray-300" />
+                    <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[#f1f3f4]">
+                      <Package
+                        size={22}
+                        style={{ color: CHART_PALETTE.subtitle }}
+                      />
                     </div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p
+                      className="text-sm font-medium"
+                      style={{ color: CHART_PALETTE.title }}
+                    >
                       No product data
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p
+                      className="mt-1 text-xs"
+                      style={{ color: CHART_PALETTE.subtitle }}
+                    >
                       Profit Per Product data will appear here
                     </p>
                   </div>
@@ -243,24 +260,25 @@ export default function ProfitPerProduct({
               paged.map((product, idx) => (
                 <tr
                   key={product.name + idx}
-                  className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
+                  className="border-b transition-colors last:border-0 hover:bg-[#f8f9fa]"
+                  style={{ borderColor: CHART_PALETTE.grid }}
                 >
-                  <td className="py-3 px-4 text-gray-400 text-xs">
+                  <td
+                    className={`${TD} tabular-nums`}
+                    style={{ color: CHART_PALETTE.subtitle }}
+                  >
                     {page * pageSize + idx + 1}
                   </td>
-                  <td className="py-3 px-4">
-                    <span className="font-semibold text-xs text-gray-900">
-                      {product.name}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-right tracking-wide font-semibold text-xs text-gray-900">
+                  <td className={TD}>{product.name}</td>
+                  <td className={`${TD} text-right tabular-nums`}>
                     {formatCurrencySymbol(
                       product.revenue,
                       currency.symbol,
                       currency.locale,
                     )}
                   </td>
-                  <td className="py-3 px-4 text-right tracking-wide font-semibold text-xs text-red-600">
+                  {/* A cost, so shown as money going out. */}
+                  <td className={`${TD} text-right tabular-nums text-red-600`}>
                     -
                     {formatCurrencySymbol(
                       product.cogs,
@@ -282,7 +300,7 @@ export default function ProfitPerProduct({
                   )} */}
 
                   <td
-                    className={`py-3 px-4 text-right tracking-wide text-xs font-semibold  ${getProfitColor(product.profit)}`}
+                    className={`${TD} text-right tabular-nums font-medium ${getProfitColor(product.profit)}`}
                   >
                     {formatCurrencySymbol(
                       product.profit,
@@ -291,9 +309,9 @@ export default function ProfitPerProduct({
                     )}
                   </td>
 
-                  <td className="py-3 px-4 text-xs tracking-wide text-right">
+                  <td className={`${TD} text-right tabular-nums`}>
                     <span
-                      className={`font-semibold ${getMarginColor(product.margin)}`}
+                      className={`font-medium ${getMarginColor(product.margin)}`}
                     >
                       {product.margin}%
                     </span>
@@ -337,6 +355,6 @@ export default function ProfitPerProduct({
           <ChevronRight size={14} />
         </button>
       </div>
-    </div>
+    </ChartCard>
   );
 }

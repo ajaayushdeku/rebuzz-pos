@@ -20,7 +20,7 @@ import type {
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { CurrencyConfig, useCurrency } from "@/providers/CurrencyContext";
 import { useRevenueVsProfit } from "@/hooks/useRevenueVsProfit";
-import { ChartColumnBig, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChartColumnBig } from "lucide-react";
 import RangeBadge from "@/components/ui/RangeBadge";
 import {
   BAR_RADIUS,
@@ -28,6 +28,7 @@ import {
   CHART_PALETTE,
   ChartCard,
   ChartLegend,
+  ChartPager,
   ChartTooltipBox,
   niceTicks,
   yAxisTitle,
@@ -75,30 +76,6 @@ const CustomTooltip = ({
     />
   );
 };
-
-/** A round button inside the pager pill. */
-const PagerButton = ({
-  onClick,
-  disabled,
-  label,
-  children,
-}: {
-  onClick: () => void;
-  disabled: boolean;
-  label: string;
-  children: React.ReactNode;
-}) => (
-  <button
-    type="button"
-    onClick={onClick}
-    disabled={disabled}
-    aria-label={label}
-    className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-[#f1f3f4] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
-    style={{ color: CHART_PALETTE.axis }}
-  >
-    {children}
-  </button>
-);
 
 // Chart — fetches data via hook
 
@@ -175,31 +152,14 @@ export default function RevenueVsProfitChart({
       controls={
         <>
           {allData.length > ITEMS_PER_PAGE && (
-            <div
-              className="flex items-center gap-0.5 rounded-full border bg-white px-0.5 py-px"
-              style={{ borderColor: CHART_PALETTE.control }}
-            >
-              <PagerButton
-                onClick={goToPrevPage}
-                disabled={page === 0}
-                label="Previous products"
-              >
-                <ChevronLeft size={13} />
-              </PagerButton>
-              <span
-                className="px-0.5 text-[11px] tabular-nums"
-                style={{ color: CHART_PALETTE.title }}
-              >
-                {firstShown}–{lastShown} of {allData.length}
-              </span>
-              <PagerButton
-                onClick={goToNextPage}
-                disabled={page >= totalPages - 1}
-                label="Next products"
-              >
-                <ChevronRight size={13} />
-              </PagerButton>
-            </div>
+            <ChartPager
+              first={firstShown}
+              last={lastShown}
+              total={allData.length}
+              onPrev={goToPrevPage}
+              onNext={goToNextPage}
+              itemLabel="products"
+            />
           )}
           <RangeBadge variant="pill" />
         </>

@@ -22,8 +22,8 @@ import {
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import { MonthYearFilter } from "@/components/ui/MonthYearFilter";
+import { CHART_PALETTE, ChartCard } from "../chartCard";
 import ExpenseBadge from "@/components/ui/ExpenseBadge";
 import { getPurposeColor } from "@/providers/ExpenseContext";
 import { getPurposeIcon } from "@/lib/purpose-icons";
@@ -850,55 +850,56 @@ export default function RevenueFlowSankey() {
   const ownX = chartWidth > 0;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full relative select-none">
-      <div className="mb-4">
-        <div className="flex items-start justify-between gap-3 md:flex-row flex-col">
-          <div className="flex flex-row w-full items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-cyan-50 flex items-center justify-center shrink-0">
-                <Waypoints size={15} className="text-cyan-600" />
-              </div>
-              <ComponentHeader
-                title="Revenue Flow (Sankey Diagram)"
-                subHeader="Income sources → Total Income → Cost of Goods / Tax / Expenses / Refunds / Net Profit"
-              />
-            </div>
-            <div className="block md:hidden ">
-              <ExpenseBadge className=" md:ml-0" />
-            </div>
+    <ChartCard
+      icon={Waypoints}
+      // Cyan, as before: Tailwind's cyan-600 / cyan-200 / cyan-50.
+      iconColor="#0891b2"
+      iconBorder="#a5f3fc"
+      iconBg="#ecfeff"
+      title="Revenue Flow (Sankey Diagram)"
+      expenseBadge={true}
+      info={{
+        heading: "Reading this chart",
+        // From fetchSankeyData: compare-sales for the month, salesByItem for
+        // cost and tax, the expense tracker for side income and costs.
+        body: "For the month chosen on this card — not the date range at the top of the page. Sales and any side income you recorded flow into total income, which then splits into cost of goods (cost price × units sold), tax, refunds, your recorded expenses by category, and what is left as net profit. Hover a flow for its amount.",
+      }}
+      subtitle="Income sources → Total Income → Cost of Goods / Tax / Expenses / Refunds / Net Profit"
+      controls={
+        <>
+          <div className=" hidden md:block">
+            <ExpenseBadge variant="pill" />
           </div>
 
-          <div className="relative flex items-center justify-between gap-2">
-            <div className="hidden md:block">
-              {" "}
-              <ExpenseBadge className="absolute right-0 bottom-[-28px] " />
-            </div>
-
-            {/* Month / Year filter — shared with Break-even. */}
-            <MonthYearFilter
-              month={month}
-              year={year}
-              onMonthChange={setMonth}
-              onYearChange={setYear}
-            />
-          </div>
-        </div>
-      </div>
-
+          {/* Month / Year filter — shared with Break-even. */}
+          <MonthYearFilter
+            month={month}
+            year={year}
+            onMonthChange={setMonth}
+            onYearChange={setYear}
+          />
+        </>
+      }
+      className="select-none"
+    >
       {data.isLoading ? (
         <div
-          className="bg-white p-16 flex flex-col items-center justify-center gap-3 text-gray-400"
-          style={{ height: chartHeight }}
+          className="flex flex-col items-center justify-center gap-3 p-16"
+          style={{ height: chartHeight, color: CHART_PALETTE.subtitle }}
         >
           <Loader2 className="h-6 w-6 animate-spin" />
           <p className="text-sm"> Loading revenue flow…</p>
         </div>
       ) : data.isError || stages.totalIncome <= 0 ? (
         <div
-          className="flex flex-col items-center justify-center text-sm text-gray-400"
-          style={{ height: chartHeight }}
+          className="flex flex-col items-center justify-center text-sm"
+          style={{ height: chartHeight, color: CHART_PALETTE.axis }}
         >
-          <Waypoints size={28} className="text-gray-300 mb-2" />
+          <Waypoints
+            size={28}
+            className="mb-2"
+            style={{ color: CHART_PALETTE.subtitle }}
+          />
           {data.isError
             ? "Failed to load revenue flow data"
             : " No revenue data for this month yet."}
@@ -1087,11 +1088,13 @@ export default function RevenueFlowSankey() {
               >
                 <Tooltip
                   cursor={false}
+                  // The shared hover-box look: hairline border, soft shadow.
                   contentStyle={{
                     fontSize: 12,
-                    borderRadius: 10,
-                    border: "1px solid #e2e8f0",
-                    boxShadow: "0 4px 16px -6px rgba(15,23,42,0.25)",
+                    borderRadius: 8,
+                    border: `1px solid ${CHART_PALETTE.control}`,
+                    boxShadow: "0 1px 2px rgba(60,64,67,0.15)",
+                    color: CHART_PALETTE.title,
                   }}
                   formatter={(value) => fmt(Number(value ?? 0))}
                 />
@@ -1100,6 +1103,6 @@ export default function RevenueFlowSankey() {
           </div>
         </div>
       )}
-    </div>
+    </ChartCard>
   );
 }

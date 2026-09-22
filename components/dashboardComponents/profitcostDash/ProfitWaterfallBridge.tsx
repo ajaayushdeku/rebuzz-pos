@@ -14,21 +14,73 @@ import { ChartColumnDecreasing, Info, Lock } from "lucide-react";
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import RangeBadge from "@/components/ui/RangeBadge";
 import ExpenseBadge from "@/components/ui/ExpenseBadge";
 import type {
   ProfitWaterfall,
   WaterfallStep,
 } from "@/services/dashboardServices/apiProfitCost";
+import {
+  AXIS_TICK,
+  BAR_RADIUS,
+  CHART_PALETTE,
+  ChartCard,
+  ChartLegend,
+  niceTicks,
+  yAxisTitle,
+} from "../chartCard";
 
 const BAR_COLORS: Record<WaterfallStep["type"], string> = {
-  start: "#64748b",
-  deduct: "#f43f5e",
+  start: CHART_PALETTE.darkBlue,
+  // deduct: "#ea4335",
+  deduct: "#F43F5E",
   // Inert, so it is drawn as an absence rather than a cost.
-  locked: "#e2e8f0",
-  result: "#22c55e",
+  locked: CHART_PALETTE.grid,
+  result: "#34a853",
 };
+
+/**
+ * An X-axis label over up to two lines. Step names like "Revenue + Misc
+ * income" are wider than their column and ran into the next one; split at the
+ * space nearest the middle, they fit under their own bar.
+ */
+function WrappedTick({
+  x = 0,
+  y = 0,
+  payload,
+}: {
+  x?: number;
+  y?: number;
+  payload?: { value: string };
+}) {
+  const text = String(payload?.value ?? "");
+  let lines = [text];
+  if (text.length > 14) {
+    const spaces = [...text.matchAll(/ /g)].map((m) => m.index ?? 0);
+    if (spaces.length > 0) {
+      const middle = text.length / 2;
+      const at = spaces.reduce((best, i) =>
+        Math.abs(i - middle) < Math.abs(best - middle) ? i : best,
+      );
+      lines = [text.slice(0, at), text.slice(at + 1)];
+    }
+  }
+  return (
+    <text
+      x={x}
+      y={y + 14}
+      textAnchor="middle"
+      fill={AXIS_TICK.fill}
+      fontSize={11}
+    >
+      {lines.map((line, i) => (
+        <tspan key={i} x={x} dy={i === 0 ? 0 : 13}>
+          {line}
+        </tspan>
+      ))}
+    </text>
+  );
+}
 
 function StepTooltip({
   active,
@@ -47,40 +99,59 @@ function StepTooltip({
   const money = (v: number) =>
     formatCurrencySymbol(v, currency.symbol, currency.locale);
 
+  const row = "flex flex-row justify-between gap-4";
+
   return (
-    <div className="rounded-xl border border-gray-100 bg-white px-3 py-2.5 text-xs shadow-lg">
-      <p className="mb-1 font-semibold text-gray-700">{label}</p>
+    <div
+      className="min-w-44 rounded-lg border bg-white px-3 py-2.5 text-xs shadow-sm"
+      style={{ borderColor: CHART_PALETTE.control, color: CHART_PALETTE.axis }}
+    >
+      <p className="mb-1.5" style={{ color: CHART_PALETTE.title }}>
+        {label}
+      </p>
 
       {step.type === "locked" ? (
-        <p className="max-w-52 leading-relaxed text-gray-500">
+        <p className="max-w-52 leading-relaxed">
           No staff pay was recorded this period, so this step takes nothing.
           Record payroll as an expense and it will appear here.
         </p>
       ) : step.deduction > 0 ? (
         <>
-          <p className="flex flex-row justify-between gap-4 text-gray-500">
+          <p className={row}>
             Before
-            <span className="tabular-nums text-gray-700">
+            <span
+              className="tabular-nums"
+              style={{ color: CHART_PALETTE.title }}
+            >
               {money(step.value + step.deduction)}
             </span>
           </p>
-          <p className="flex flex-row justify-between gap-4 text-red-500">
+          <p className={row} style={{ color: CHART_PALETTE.bad }}>
             Deduction
-            <span className="font-bold tabular-nums">
+            <span className="font-medium tabular-nums">
               −{money(step.deduction)}
             </span>
           </p>
-          <p className="mt-1 flex flex-row justify-between gap-4 border-t border-gray-100 pt-1 text-gray-500">
+          <p
+            className={`${row} mt-1 border-t pt-1`}
+            style={{ borderColor: CHART_PALETTE.grid }}
+          >
             After
-            <span className="font-bold tabular-nums text-gray-800">
+            <span
+              className="font-medium tabular-nums"
+              style={{ color: CHART_PALETTE.title }}
+            >
               {money(step.value)}
             </span>
           </p>
         </>
       ) : (
-        <p className="flex flex-row justify-between gap-4 text-gray-500">
+        <p className={row}>
           Running total
-          <span className="font-bold tabular-nums text-gray-800">
+          <span
+            className="font-medium tabular-nums"
+            style={{ color: CHART_PALETTE.title }}
+          >
             {money(step.value)}
           </span>
         </p>
@@ -107,27 +178,44 @@ export default function ProfitWaterfallBridge({
   const longestLabel = Math.max(...steps.map((s) => s.label.length), 0);
   const chartWidth = steps.length * Math.max(86, longestLabel * 4);
 
+  // Round-number steps; below zero when the costs outran what came in.
+  const values = steps.map((s) => s.value);
+  const ticks = niceTicks(
+    values.length > 0 ? Math.min(...values) : 0,
+    values.length > 0 ? Math.max(...values) : 0,
+  );
+  const locked = steps.some((s) => s.type === "locked");
+
   return (
-    <div className="w-full rounded-2xl border border-gray-200 bg-white p-5">
-      <div className="mb-6 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-teal-50">
-            <ChartColumnDecreasing size={15} className="text-teal-600" />
-          </div>
-          <ComponentHeader
-            title="Profit Waterfall Bridge"
-            subHeader="Where each rupee of revenue goes, from gross to net"
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <RangeBadge />
-          <ExpenseBadge className="ml-0" />
-        </div>
-      </div>
-
+    <ChartCard
+      icon={ChartColumnDecreasing}
+      // Teal, as before: Tailwind's teal-600 / teal-200 / teal-50.
+      iconColor="#0d9488"
+      iconBorder="#99f6e4"
+      iconBg="#f0fdfa"
+      title="Profit Waterfall Bridge"
+      info={{
+        heading: "Reading this chart",
+        // From getProfitWaterfall: revenue (+ side income), then cost of
+        // goods, tax, labor, then expense purposes largest first.
+        body: "It starts from what came in during the date range at the top of the page — sales, plus any side income you recorded — then takes out the cost of goods, tax, staff pay and your recorded expenses, largest first with the smallest grouped together. Each bar is what is left after that step; the last is net profit.",
+      }}
+      subtitle="Where each rupee of revenue goes, from gross to net"
+      controls={
+        <>
+          <RangeBadge variant="pill" />
+          <ExpenseBadge variant="pill" />
+        </>
+      }
+    >
       {!hasData ? (
-        <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-14 text-center text-[12px] text-gray-400">
+        <p
+          className="rounded-xl border border-dashed px-4 py-14 text-center text-xs"
+          style={{
+            borderColor: CHART_PALETTE.control,
+            color: CHART_PALETTE.subtitle,
+          }}
+        >
           No revenue in this period, so there is nothing to break down yet.
         </p>
       ) : (
@@ -137,17 +225,18 @@ export default function ProfitWaterfallBridge({
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart
                   data={steps}
-                  margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+                  margin={{ top: 8, right: 8, left: 8, bottom: 0 }}
                   barCategoryGap="10%"
                 >
-                  <CartesianGrid vertical={false} stroke="#f3f4f6" />
+                  <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
                   <XAxis
                     dataKey="label"
                     axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "#9ca3af", fontSize: 10 }}
+                    tickLine={{ stroke: CHART_PALETTE.control }}
+                    tickSize={6}
+                    tick={<WrappedTick />}
+                    height={40}
                     interval={0}
-                    dy={8}
                   />
                   <YAxis
                     tickFormatter={(v) =>
@@ -155,14 +244,17 @@ export default function ProfitWaterfallBridge({
                     }
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "#9ca3af", fontSize: 11 }}
-                    width={65}
+                    tick={AXIS_TICK}
+                    ticks={ticks}
+                    domain={[ticks[0], ticks[ticks.length - 1]]}
+                    width={72}
+                    label={yAxisTitle("Left after step")}
                   />
                   <Tooltip
                     content={<StepTooltip />}
-                    cursor={{ fill: "rgba(0,0,0,0.03)" }}
+                    cursor={{ fill: "rgba(60,64,67,0.04)" }}
                   />
-                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="value" radius={BAR_RADIUS}>
                     {steps.map((step) => (
                       <Cell key={step.label} fill={BAR_COLORS[step.type]} />
                     ))}
@@ -172,31 +264,72 @@ export default function ProfitWaterfallBridge({
             </div>
           </div>
 
-          <div className="mt-2 flex flex-wrap items-center justify-between tracking-wide gap-3 border-t border-gray-100 pt-3 text-[12px]">
-            <span className="text-gray-500">
-              From:{"  "}
-              <span className="font-semibold tracking-wide tabular-nums text-gray-800">
+          <ChartLegend
+            items={[
+              { label: "Came in", color: BAR_COLORS.start, shape: "dot" },
+              {
+                label: "After a cost",
+                color: BAR_COLORS.deduct,
+                shape: "square",
+              },
+              ...(locked
+                ? [
+                    {
+                      label: "Not recorded",
+                      color: BAR_COLORS.locked,
+                      shape: "square" as const,
+                    },
+                  ]
+                : []),
+              {
+                label: "Net profit",
+                color: BAR_COLORS.result,
+                shape: "square",
+              },
+            ]}
+          />
+
+          {/* From → to: where the money started and where it ended up. */}
+          <div
+            className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t pt-3 text-xs tracking-wide"
+            style={{
+              borderColor: CHART_PALETTE.grid,
+              color: CHART_PALETTE.axis,
+            }}
+          >
+            <span>
+              From{" "}
+              <span
+                className="font-medium tabular-nums"
+                style={{ color: CHART_PALETTE.title }}
+              >
                 {money(revenue)}
               </span>{" "}
-              [{(steps[0]?.label ?? "revenue").toLowerCase()}]
+              <span style={{ color: CHART_PALETTE.subtitle }}>
+                {(steps[0]?.label ?? "revenue").toLowerCase()}
+              </span>
             </span>
 
-            <span className="text-gray-500">
-              To:{" "}
+            <span>
+              to{" "}
               <span
-                className={`font-semibold tracking-wide tabular-nums ${
-                  net >= 0 ? "text-green-600" : "text-red-600"
-                }`}
+                className="font-medium tabular-nums"
+                style={{
+                  color: net >= 0 ? CHART_PALETTE.good : CHART_PALETTE.bad,
+                }}
               >
                 {money(net)}
               </span>{" "}
-              [net profit]
+              <span style={{ color: CHART_PALETTE.subtitle }}>net profit</span>
             </span>
 
             {/* Only while the labor step is inert. Once payroll is recorded
                 the step deducts like any other and needs no caveat. */}
-            {steps.some((s) => s.type === "locked") && (
-              <span className="flex items-center gap-1.5 text-gray-400">
+            {locked && (
+              <span
+                className="flex items-center gap-1.5"
+                style={{ color: CHART_PALETTE.subtitle }}
+              >
                 <Lock size={11} />
                 No staff pay recorded
               </span>
@@ -214,6 +347,6 @@ export default function ProfitWaterfallBridge({
           )}
         </>
       )}
-    </div>
+    </ChartCard>
   );
 }

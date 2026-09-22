@@ -14,19 +14,30 @@ import { ArrowLeftRight, Info } from "lucide-react";
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import ExpenseBadge from "@/components/ui/ExpenseBadge";
 import type {
   ProfitVariance,
   VarianceBar,
 } from "@/services/dashboardServices/apiProfitCost";
+import {
+  AXIS_TICK,
+  BAR_RADIUS,
+  CHART_PALETTE,
+  ChartCard,
+  ChartLegend,
+  niceTicks,
+  yAxisTitle,
+} from "../chartCard";
 
+// The same colours as the Profit Waterfall Bridge above it: revenue in the
+// muted blue, a cost in its red, a gain in the light green, and the two
+// net-profit ends in a neutral grey.
 const BAR_COLORS: Record<VarianceBar["type"], string> = {
-  base: "#94a3b8",
-  revenue: "#3b82f6",
-  positive: "#22c55e",
-  negative: "#f43f5e",
-  result: "#94a3b8",
+  base: CHART_PALETTE.subtitle,
+  revenue: CHART_PALETTE.darkBlue,
+  positive: "#34a853",
+  negative: "#F43F5E",
+  result: CHART_PALETTE.subtitle,
 };
 
 const BELOW_ZERO = "#b91c1c";
@@ -38,11 +49,61 @@ const barFill = (bar: VarianceBar) =>
     : BAR_COLORS[bar.type];
 
 const LEGEND_ITEMS = [
-  { label: "Revenue", color: BAR_COLORS.revenue },
-  { label: "Helped profit", color: BAR_COLORS.positive },
-  { label: "Hurt profit", color: BAR_COLORS.negative },
-  { label: "Net profit", color: BAR_COLORS.base },
+  { label: "Revenue", color: BAR_COLORS.revenue, shape: "dot" as const },
+  {
+    label: "Helped profit",
+    color: BAR_COLORS.positive,
+    shape: "square" as const,
+  },
+  {
+    label: "Hurt profit",
+    color: BAR_COLORS.negative,
+    shape: "square" as const,
+  },
+  { label: "Net profit", color: BAR_COLORS.base, shape: "square" as const },
 ];
+
+/**
+ * An X-axis label over up to two lines, as on the waterfall: cause names wider
+ * than their column wrap at the space nearest the middle.
+ */
+function WrappedTick({
+  x = 0,
+  y = 0,
+  payload,
+}: {
+  x?: number;
+  y?: number;
+  payload?: { value: string };
+}) {
+  const text = String(payload?.value ?? "");
+  let lines = [text];
+  if (text.length > 14) {
+    const spaces = [...text.matchAll(/ /g)].map((m) => m.index ?? 0);
+    if (spaces.length > 0) {
+      const middle = text.length / 2;
+      const at = spaces.reduce((best, i) =>
+        Math.abs(i - middle) < Math.abs(best - middle) ? i : best,
+      );
+      lines = [text.slice(0, at), text.slice(at + 1)];
+    }
+  }
+  return (
+    <text
+      x={x}
+      y={y + 14}
+      textAnchor="middle"
+      fill={AXIS_TICK.fill}
+      fontSize={11}
+    >
+      {lines.map((line, i) => (
+        <tspan key={i} x={x} dy={i === 0 ? 0 : 13}>
+          {line}
+        </tspan>
+      ))}
+    </text>
+  );
+}
 
 function CauseTooltip({
   active,
@@ -64,35 +125,47 @@ function CauseTooltip({
   const isEnd = bar.type === "base" || bar.type === "result";
   const variance = isEnd ? bar.current - bar.previous : bar.impact;
   const helped = variance > 0;
+  const row = "flex flex-row justify-between gap-4";
 
   return (
-    <div className="min-w-44 rounded-xl border border-gray-100 bg-white px-3 py-2.5 text-xs shadow-lg">
-      <p className="mb-1 font-semibold text-gray-700">{label}</p>
+    <div
+      className="min-w-44 rounded-lg border bg-white px-3 py-2.5 text-xs shadow-sm"
+      style={{ borderColor: CHART_PALETTE.control, color: CHART_PALETTE.axis }}
+    >
+      <p className="mb-1.5" style={{ color: CHART_PALETTE.title }}>
+        {label}
+      </p>
 
-      <p className="flex flex-row justify-between gap-4 text-gray-500">
+      <p className={row}>
         This month
-        <span className="font-bold tabular-nums text-gray-800">
+        <span
+          className="font-medium tabular-nums"
+          style={{ color: CHART_PALETTE.title }}
+        >
           {money(bar.current)}
         </span>
       </p>
-      <p className="flex flex-row justify-between gap-4 text-gray-500">
+      <p className={row}>
         Last month
-        <span className="tabular-nums text-gray-700">
+        <span className="tabular-nums" style={{ color: CHART_PALETTE.title }}>
           {money(bar.previous)}
         </span>
       </p>
 
       <p
-        className={`mt-1 flex flex-row justify-between gap-4 border-t border-gray-100 pt-1 ${
-          variance === 0
-            ? "text-gray-400"
-            : helped
-              ? "text-green-600"
-              : "text-red-500"
-        }`}
+        className={`${row} mt-1 border-t pt-1`}
+        style={{
+          borderColor: CHART_PALETTE.grid,
+          color:
+            variance === 0
+              ? CHART_PALETTE.subtitle
+              : helped
+                ? CHART_PALETTE.good
+                : CHART_PALETTE.bad,
+        }}
       >
         Variance
-        <span className="font-bold tabular-nums">
+        <span className="font-medium tabular-nums">
           {variance === 0
             ? "—"
             : `${helped ? "+" : "−"}${money(Math.abs(variance))}`}
@@ -100,12 +173,16 @@ function CauseTooltip({
       </p>
 
       {!isEnd && (
-        <p className="mt-1 flex flex-row justify-between gap-4 border-t border-gray-100 pt-1 text-gray-500">
+        <p
+          className={`${row} mt-1 border-t pt-1`}
+          style={{ borderColor: CHART_PALETTE.grid }}
+        >
           Profit so far
           <span
-            className={`font-bold tabular-nums ${
-              bar.value < 0 ? "text-red-700" : "text-gray-800"
-            }`}
+            className="font-medium tabular-nums"
+            style={{
+              color: bar.value < 0 ? BELOW_ZERO : CHART_PALETTE.title,
+            }}
           >
             {money(bar.value)}
           </span>
@@ -144,21 +221,39 @@ export default function ProfitVarianceBridge({
 
   const dayCount = Number(current.end.slice(8, 10));
 
-  return (
-    <div className="w-full rounded-2xl border border-gray-200 bg-white p-5">
-      <div className="mb-6 flex items-center gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sky-50">
-          <ArrowLeftRight size={15} className="text-sky-600" />
-        </div>
-        <ComponentHeader
-          title="Profit Variance Bridge"
-          subHeader={`Why did net profit move in ${monthName(current.start)} vs ${monthName(previous.start)}?`}
-        />
-        <ExpenseBadge />
-      </div>
+  // Round-number steps; below zero when profit went negative on the way.
+  const values = bars.map((b) => b.value);
+  const ticks = niceTicks(
+    values.length > 0 ? Math.min(...values) : 0,
+    values.length > 0 ? Math.max(...values) : 0,
+  );
 
+  return (
+    <ChartCard
+      icon={ArrowLeftRight}
+      // Sky, as before: Tailwind's sky-600 / sky-200 / sky-50.
+      iconColor="#0284c7"
+      iconBorder="#bae6fd"
+      iconBg="#f0f9ff"
+      title="Profit Variance Bridge"
+      info={{
+        heading: "Reading this chart",
+        // From getProfitVariance and its wrapper: fixed to this calendar
+        // month against the last; bars run from last month's net through
+        // each cause's impact to this month's net.
+        body: "This calendar month against the last one; the date range at the top of the page does not change it. It starts from last month's net profit, then each bar adds how much one cause moved it — revenue as a whole, then each cost — ending at this month's net profit. Hover a bar for both months' figures.",
+      }}
+      subtitle={`Why did net profit move in ${monthName(current.start)} vs ${monthName(previous.start)}?`}
+      controls={<ExpenseBadge variant="pill" />}
+    >
       {!hasData ? (
-        <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-14 text-center text-[12px] text-gray-400">
+        <p
+          className="rounded-xl border border-dashed px-4 py-14 text-center text-xs"
+          style={{
+            borderColor: CHART_PALETTE.control,
+            color: CHART_PALETTE.subtitle,
+          }}
+        >
           Nothing moved between these two months, so there is no change to
           explain yet.
         </p>
@@ -172,33 +267,36 @@ export default function ProfitVarianceBridge({
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart
                   data={bars}
-                  margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+                  margin={{ top: 8, right: 8, left: 8, bottom: 0 }}
                   barCategoryGap="10%"
                 >
-                  <CartesianGrid vertical={false} stroke="#f3f4f6" />
+                  <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
                   <XAxis
                     dataKey="label"
                     axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "#9ca3af", fontSize: 10 }}
+                    tickLine={{ stroke: CHART_PALETTE.control }}
+                    tickSize={6}
+                    tick={<WrappedTick />}
+                    height={40}
                     interval={0}
-                    dy={8}
                   />
-
                   <YAxis
                     tickFormatter={(v) =>
                       formatCompactCurrency(v, currency.symbol, currency.locale)
                     }
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "#9ca3af", fontSize: 11 }}
-                    width={65}
+                    tick={AXIS_TICK}
+                    ticks={ticks}
+                    domain={[ticks[0], ticks[ticks.length - 1]]}
+                    width={72}
+                    label={yAxisTitle("Net profit")}
                   />
                   <Tooltip
                     content={<CauseTooltip />}
-                    cursor={{ fill: "rgba(0,0,0,0.03)" }}
+                    cursor={{ fill: "rgba(60,64,67,0.04)" }}
                   />
-                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="value" radius={BAR_RADIUS}>
                     {bars.map((bar) => (
                       <Cell key={bar.label} fill={barFill(bar)} />
                     ))}
@@ -208,17 +306,7 @@ export default function ProfitVarianceBridge({
             </div>
           </div>
 
-          <div className="mt-2 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5">
-            {LEGEND_ITEMS.map(({ label, color }) => (
-              <div key={label} className="flex items-center gap-1.5">
-                <span
-                  className="h-2.5 w-2.5 shrink-0 rounded-sm"
-                  style={{ backgroundColor: color }}
-                />
-                <span className="text-xs text-gray-500">{label}</span>
-              </div>
-            ))}
-          </div>
+          <ChartLegend items={LEGEND_ITEMS} />
           {/* 
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3 text-[12px] tracking-wide">
             <span className="text-gray-500 text-[12px] tracking-wide">
@@ -273,6 +361,6 @@ export default function ProfitVarianceBridge({
           )}
         </>
       )}
-    </div>
+    </ChartCard>
   );
 }
