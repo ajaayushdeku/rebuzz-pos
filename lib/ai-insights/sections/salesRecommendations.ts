@@ -408,13 +408,23 @@ const MAX_TEXT_CHARS = 300;
  *
  * `idPrefix` should differ per generation: a dismissal is remembered by id,
  * and a fresh answer must not inherit the previous one's dismissals.
+ *
+ * For "Generate more", a recommendation worded the same as one already shown
+ * (`shown`) is dropped, as is a repeat within the answer.
  */
 export function parseSalesRecommendations(
   value: unknown,
   idPrefix: string,
+  shown: string[] = [],
 ): SalesRecommendation[] {
   const list = (value as { recommendations?: unknown } | null)?.recommendations;
   if (!Array.isArray(list)) return [];
+
+  // Compared without case, punctuation or spacing, so a repeat with a
+  // different full stop still counts as one.
+  const key = (text: string) =>
+    text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+  const seen = new Set(shown.map(key));
 
   const out: SalesRecommendation[] = [];
   for (const entry of list) {
@@ -422,6 +432,8 @@ export function parseSalesRecommendations(
     const text = (entry as { text?: unknown })?.text;
     if (!KINDS.includes(kind as RecommendationKind)) continue;
     if (typeof text !== "string" || !text.trim()) continue;
+    if (seen.has(key(text))) continue;
+    seen.add(key(text));
 
     out.push({
       id: `${idPrefix}-${out.length}`,

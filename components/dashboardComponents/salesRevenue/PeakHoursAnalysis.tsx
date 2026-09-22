@@ -14,14 +14,20 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Rectangle,
-  Legend,
 } from "recharts";
-import type { BarShapeProps } from "recharts";
 import RangeBadge from "@/components/ui/RangeBadge";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import { FilterSelect } from "@/components/ui/FilterSelect";
-import { Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import {
+  BAR_RADIUS,
+  AXIS_TICK,
+  CHART_PALETTE,
+  ChartCard,
+  ChartLegend,
+  ChartTooltipBox,
+  niceTicks,
+  yAxisTitle,
+} from "../chartCard";
 
 export interface PeakHourlyData {
   hour: string;
@@ -32,6 +38,13 @@ export interface PeakHourlyData {
 interface PeakHourlyDataProps {
   data: PeakHourlyData[];
 }
+
+const ORDERS_COLOR = CHART_PALETTE.blue;
+/**
+ * Revenue is only in the tooltip, never drawn, so its row gets a neutral dot
+ * rather than a series colour that would send the reader looking for a bar.
+ */
+const REVENUE_DOT = CHART_PALETTE.control;
 
 const clampHour = (value: number): number =>
   Math.max(0, Math.min(23, Math.floor(Number.isNaN(value) ? 0 : value)));
@@ -45,53 +58,35 @@ function toAmPm(hour24: string): string {
   return `${h12}:${String(m).padStart(2, "0")} ${period}`;
 }
 
-const CustomLegend = () => (
-  <div className="flex items-center justify-center gap-5 mt-2">
-    {[{ label: "Avg. Orders", color: "#3a7ced" }].map(({ label, color }) => (
-      <div key={label} className="flex items-center gap-1.5">
-        <span
-          className="w-3 h-3 rounded-sm shrink-0"
-          style={{ backgroundColor: color }}
-        />
-        <span className="text-xs font-semibold" style={{ color }}>
-          {label}
-        </span>
-      </div>
-    ))}
-  </div>
-);
-
 const CustomTooltip = ({
   active,
   payload,
   label,
   currency,
 }: CustomTooltipProps) => {
-  if (active && payload && payload.length) {
-    const point = payload[0].payload as PeakHourlyData;
-    return (
-      <div className="bg-white rounded-xl px-4 py-2.5 shadow-lg border border-gray-100 min-w-44">
-        <p className="text-gray-400 text-xs mb-1.5">{label}</p>
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-xs text-gray-500">Avg. Orders</span>
-          <span className="text-xs font-bold text-blue-800">
-            {point.sales.toFixed(2)}
-          </span>
-        </div>
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-xs text-gray-500">Avg. Revenue</span>
-          <span className="text-xs font-bold text-violet-800">
-            {formatCurrencySymbol(
-              point.revenue,
-              currency.symbol,
-              currency.locale,
-            )}
-          </span>
-        </div>
-      </div>
-    );
-  }
-  return null;
+  if (!active || !payload?.length) return null;
+  const point = payload[0].payload as PeakHourlyData;
+  return (
+    <ChartTooltipBox
+      label={label}
+      rows={[
+        {
+          name: "Avg. Orders",
+          color: ORDERS_COLOR,
+          value: point.sales.toFixed(2),
+        },
+        {
+          name: "Avg. Revenue",
+          color: REVENUE_DOT,
+          value: formatCurrencySymbol(
+            point.revenue,
+            currency.symbol,
+            currency.locale,
+          ),
+        },
+      ]}
+    />
+  );
 };
 
 /**
@@ -107,6 +102,31 @@ const HOUR_RANGE_OPTIONS = [
   })),
   { value: "custom", label: "Custom", disabled: true },
 ];
+
+/** The From / To hour inputs, outlined like the card's other controls. */
+const HOUR_INPUT_CLASS =
+  "w-14 rounded-lg border bg-white px-2 py-2 text-xs focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500";
+
+/** A round arrow over the chart's edge, shown while there is more to scroll. */
+const ScrollButton = ({
+  side,
+  onClick,
+}: {
+  side: "left" | "right";
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-label={side === "left" ? "Scroll left" : "Scroll right"}
+    className={`absolute top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border bg-white transition-colors hover:bg-[#f1f3f4] ${
+      side === "left" ? "left-0" : "right-0"
+    }`}
+    style={{ borderColor: CHART_PALETTE.control, color: CHART_PALETTE.axis }}
+  >
+    {side === "left" ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+  </button>
+);
 
 const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
   const { currency } = useCurrency();
@@ -174,21 +194,15 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
     });
   }, [data, selectedRange]);
 
-  // ── Y-axis for order counts (integers) ──
+  // ── Y-axis for order counts ──
+  // Averages can be fractional, so a step can be too (2.5, 0.5).
   const formatYAxis = (value: number): string =>
     Number.isInteger(value) ? `${value}` : value.toFixed(1);
 
   const maxSales = Math.max(...filteredData.map((d) => d.sales), 0);
-  const domainMax = maxSales <= 0 ? 5 : Math.max(5, Math.ceil(maxSales * 1.15));
-  const tickStep = Math.max(1, Math.ceil(domainMax / 5));
-  const ticks = Array.from(
-    { length: Math.floor(domainMax / tickStep) + 1 },
-    (_, i) => i * tickStep,
-  );
-
-  const CustomBar = (props: BarShapeProps) => (
-    <Rectangle {...props} radius={[8, 8, 0, 0]} fill="#3a7ced" />
-  );
+  // At least 0–4, so a quiet (or empty) range still counts in whole orders
+  // instead of stretching a fraction of one order over the full height.
+  const ticks = niceTicks(0, Math.max(maxSales, 4));
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -219,114 +233,92 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
   };
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
-      {/* HEADER */}
-      <div className=" flex flex-col  md:flex-row md:items-center md:justify-between gap-3 mb-4 md:mb-6">
-        {/* <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"> */}
-
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-            <Clock size={15} className="text-blue-600" />
-          </div>
-          <ComponentHeader
-            title="Peak Hours Analysis"
-            subHeader="Average number of orders per hour across the selected period"
-          />
-          <RangeBadge />
-        </div>
-
-        {/* </div> */}
-
-        {/* Hour Range Filter */}
-        <div className="flex flex-col gap-1.5">
-          <div className="flex flex-wrap items-center gap-2">
-            <FilterSelect
-              value={presetValue}
-              options={HOUR_RANGE_OPTIONS}
-              onChange={handlePresetChange}
-              className="w-[210px]"
-            />
-
-            {/* Vertical divider */}
-            <div className="w-px h-6 bg-gray-300 mx-1" />
-
-            {/* Custom From / To hour inputs */}
-            <div className="flex items-center gap-1.5">
-              <label className="text-xs text-gray-400 whitespace-nowrap">
-                From
-              </label>
-              <input
-                type="number"
-                min={0}
-                max={23}
-                value={fromHour}
-                onChange={(e) => handleFromChange(Number(e.target.value))}
-                className="w-14 text-xs border border-gray-200 rounded-lg px-2 py-2.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    <ChartCard
+      icon={Clock}
+      title="Peak Hours Analysis"
+      rangeBadge={true}
+      info={{
+        heading: "Reading this chart",
+        // Verified against getPeakHoursData + formatPeakHourAverages.
+        body: "Each bar is the average number of paid bills in that hour of the day, over the date range at the top of the page. Refunded bills are left out, and each hour is averaged over only the days that had a sale in it. The hour filter narrows which hours are shown. Hover a bar for the average revenue too.",
+      }}
+      subtitle="Average number of orders per hour across the selected period"
+      controls={
+        <div className="relative  ">
+          {/* Hour Range Filter — a toolbar above the chart rather than in the
+          header, which keeps the header's pills small. */}
+          <div className="mb-4 flex flex-col gap-1.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <FilterSelect
+                value={presetValue}
+                options={HOUR_RANGE_OPTIONS}
+                onChange={handlePresetChange}
+                className="w-[210px]"
               />
-              <label className="text-xs text-gray-400 whitespace-nowrap">
-                To
-              </label>
-              <input
-                type="number"
-                min={0}
-                max={23}
-                value={toHour}
-                onChange={(e) => handleToChange(Number(e.target.value))}
-                className="w-14 text-xs border border-gray-200 rounded-lg px-2 py-2.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+
+              {/* Vertical divider */}
+              <div
+                className="mx-1 h-6 w-px"
+                style={{ backgroundColor: CHART_PALETTE.control }}
               />
+
+              {/* Custom From / To hour inputs */}
+              <div className="flex items-center gap-1.5">
+                <label
+                  className="whitespace-nowrap text-xs"
+                  style={{ color: CHART_PALETTE.axis }}
+                >
+                  From
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  max={23}
+                  value={fromHour}
+                  onChange={(e) => handleFromChange(Number(e.target.value))}
+                  className={HOUR_INPUT_CLASS}
+                  style={{
+                    borderColor: CHART_PALETTE.control,
+                    color: CHART_PALETTE.title,
+                  }}
+                />
+                <label
+                  className="whitespace-nowrap text-xs"
+                  style={{ color: CHART_PALETTE.axis }}
+                >
+                  To
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  max={23}
+                  value={toHour}
+                  onChange={(e) => handleToChange(Number(e.target.value))}
+                  className={HOUR_INPUT_CLASS}
+                  style={{
+                    borderColor: CHART_PALETTE.control,
+                    color: CHART_PALETTE.title,
+                  }}
+                />
+              </div>
             </div>
+
+            {rangeError && <p className="text-xs text-red-500">{rangeError}</p>}
           </div>
 
-          {rangeError && <p className="text-xs text-red-500">{rangeError}</p>}
+          <div className="hidden md:block absolute right-0 bottom-[-15px]">
+            <RangeBadge variant="pill" />
+          </div>
         </div>
-      </div>
-
+      }
+    >
       {/* CHART with horizontal scroll */}
       <div className="relative">
-        {/* Left Arrow Button */}
         {canScrollLeft && (
-          <button
-            onClick={() => scroll("left")}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-2 shadow-md transition-all hover:shadow-lg"
-            aria-label="Scroll left"
-          >
-            <svg
-              className="w-4 h-4 text-gray-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </button>
+          <ScrollButton side="left" onClick={() => scroll("left")} />
         )}
-
-        {/* Right Arrow Button */}
         {canScrollRight && (
-          <button
-            onClick={() => scroll("right")}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-2 shadow-md transition-all hover:shadow-lg"
-            aria-label="Scroll right"
-          >
-            <svg
-              className="w-4 h-4 text-gray-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </button>
+          <ScrollButton side="right" onClick={() => scroll("right")} />
         )}
 
         <div
@@ -339,22 +331,19 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
             <ResponsiveContainer width="100%" height={280}>
               <BarChart
                 data={filteredData}
-                margin={{
-                  top: 10,
-                  right: 10,
-                  left: 10,
-                  bottom: 0,
-                }}
+                margin={{ top: 8, right: 8, left: 8, bottom: 0 }}
                 barCategoryGap="5%"
               >
-                <CartesianGrid vertical={false} stroke="#f3f4f6" />
+                <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
 
                 <XAxis
                   dataKey="hour"
                   axisLine={false}
-                  tickLine={false}
-                  dy={8}
+                  tickLine={{ stroke: CHART_PALETTE.control }}
+                  tickSize={6}
                   interval="preserveStartEnd"
+                  // The 24-hour label with its 12-hour reading beside it,
+                  // smaller and lighter: "14:00 [2:00 PM]".
                   tick={({
                     x,
                     y,
@@ -363,54 +352,56 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
                     x: number | string;
                     y: number | string;
                     payload: { value: string };
-                  }) => {
-                    const ampm = toAmPm(payload.value);
-                    const yNum = Number(y);
-                    return (
-                      <text
-                        x={x}
-                        y={yNum + 8}
-                        textAnchor="middle"
-                        fill="#9ca3af"
-                        fontSize={10}
-                      >
-                        {payload.value}
-                        <tspan fontSize={8} fill="#b0b7c3">
-                          {" "}
-                          [{ampm}]
-                        </tspan>
-                      </text>
-                    );
-                  }}
+                  }) => (
+                    <text
+                      x={x}
+                      y={y}
+                      dy="0.71em"
+                      textAnchor="middle"
+                      fill={AXIS_TICK.fill}
+                      fontSize={10}
+                    >
+                      {payload.value}
+                      <tspan fontSize={8} fill={CHART_PALETTE.subtitle}>
+                        {" "}
+                        [{toAmPm(payload.value)}]
+                      </tspan>
+                    </text>
+                  )}
                 />
 
                 <YAxis
                   tickFormatter={formatYAxis}
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "#9ca3af", fontSize: 12 }}
+                  tick={AXIS_TICK}
                   ticks={ticks}
-                  domain={[0, domainMax]}
-                  allowDecimals={false}
-                  width={45}
+                  domain={[ticks[0], ticks[ticks.length - 1]]}
+                  width={56}
+                  label={yAxisTitle("Avg. orders")}
                 />
 
                 <Tooltip
                   content={<CustomTooltip currency={currency} />}
-                  cursor={{
-                    fill: "rgba(58,124,237,0.06)",
-                  }}
+                  cursor={{ fill: "rgba(60,64,67,0.04)" }}
                 />
 
-                <Legend content={<CustomLegend />} />
-
-                <Bar dataKey="sales" name="Avg. Orders" shape={CustomBar} />
+                <Bar
+                  dataKey="sales"
+                  name="Avg. Orders"
+                  fill={ORDERS_COLOR}
+                  radius={BAR_RADIUS}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
-    </div>
+
+      <ChartLegend
+        items={[{ label: "Avg. Orders", color: ORDERS_COLOR, shape: "dot" }]}
+      />
+    </ChartCard>
   );
 };
 

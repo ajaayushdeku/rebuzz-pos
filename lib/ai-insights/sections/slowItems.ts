@@ -28,7 +28,7 @@ import {
 } from "./shared";
 
 /** Part of the cache key: bump when the prompt or the facts change. */
-export const SLOW_ITEMS_VERSION = "v1";
+export const SLOW_ITEMS_VERSION = "v2";
 
 // ── Facts ─────────────────────────────────────────────────────────────────
 
@@ -234,7 +234,10 @@ export function slowItemsBriefing(
         : `no sales in the last ${SECTION_WINDOW_DAYS * 2} days`;
     }
     if (c.kind === "drop") {
-      return `units sold down ${Math.abs(c.unitsChangePct ?? 0)}%: ${whole(c.units)} vs ${whole(c.previousUnits)} before, now ${c.perWeek} a week`;
+      // Both sides as a weekly pace, the same unit the percent compares. With
+      // only "now N a week" beside it, the model wrote "fell 93.5% to 6.1
+      // weekly" — a percent with nothing to be a percent of.
+      return `sales fell from ${perWeek(c.previousUnits)} a week to ${c.perWeek} a week (${whole(c.previousUnits)} sold in the ${SECTION_WINDOW_DAYS} days before, ${whole(c.units)} in the last ${SECTION_WINDOW_DAYS}), down ${dropPct(c)}%`;
     }
     return `low seller: ${whole(c.units)} sold, ${c.perWeek} a week`;
   };
@@ -293,6 +296,7 @@ For each item:
 Rules:
 - Use only the facts given. Never invent numbers, items, sales forecasts or ingredients the facts do not mention.
 - Only pair an item with a best seller listed in the facts, named exactly as written.
+- When you say sales fell, give both sides in the same unit, then the percent: "fell from 94 a week to 6 a week (down 94%)", using the figures given. Never a percent with only one side, as in "fell 94% to 6 a week".
 - When a lot of stock is sitting unsold, say how much money is tied up.
 - When the margin is unknown, do not judge the margin.
 - Plain words for a busy owner. No markdown. The only emoji goes in icon.`;
@@ -343,7 +347,7 @@ export interface SlowItemInsight {
   kind: SlowKind;
   /** "-27%", "No sales" or "Low seller" — from the app, never the model. */
   signal: string;
-  /** "8/week", "12 sold the month before" — from the app. */
+  /** "94 → 6.1/week", "8/week", "12 sold the month before" — from the app. */
   context: string;
   description: string;
   tip: string;
@@ -357,11 +361,26 @@ function weekly(value: number): string {
   return value < 1 ? "under 1/week" : `${value}/week`;
 }
 
+/**
+ * How far a falling item's sales fell, as a whole percent. One figure for the
+ * model and the card alike: `Math.round(-93.5)` is -93, and a card saying 93%
+ * under a sentence saying 93.5% looks like two different answers.
+ */
+function dropPct(c: SlowCandidate): number {
+  return Math.round(Math.abs(c.unitsChangePct ?? 0));
+}
+
+/** "94 → 6.1/week": the pace before and now, so the percent beside it reads. */
+function weeklyChange(before: number, now: number): string {
+  const side = (value: number) => (value < 1 ? "<1" : `${value}`);
+  return `${side(before)} → ${side(now)}/week`;
+}
+
 function signalFor(c: SlowCandidate): { signal: string; context: string } {
   if (c.kind === "drop") {
     return {
-      signal: `${Math.round(c.unitsChangePct ?? 0)}%`,
-      context: weekly(c.perWeek),
+      signal: `-${dropPct(c)}%`,
+      context: weeklyChange(perWeek(c.previousUnits), c.perWeek),
     };
   }
   if (c.kind === "no-sales") {

@@ -2,8 +2,10 @@
 
 import { askAiService } from "@/lib/ai-insights/askAiService.server";
 import {
+  alreadyShownBriefing,
   currencySymbol,
   fetchSalesRows,
+  moreCacheKey,
   readSectionRequest,
   salesDataUnavailable,
 } from "@/lib/ai-insights/sections/posData.server";
@@ -38,7 +40,7 @@ import {
 export async function POST(req: NextRequest) {
   const request = await readSectionRequest(req);
   if (!request.ok) return request.response;
-  const { token, refresh, today } = request;
+  const { token, refresh, today, more } = request;
 
   const windows = salesWindows(today);
 
@@ -66,21 +68,46 @@ export async function POST(req: NextRequest) {
 
   const answer = await askAiService({
     token,
-    briefing: salesBriefing(facts, await currencySymbol()),
+    // For "Generate more", the recommendations already on screen, not to be
+    // repeated.
+    briefing:
+      salesBriefing(facts, await currencySymbol()) + alreadyShownBriefing(more),
     systemInstruction: SALES_RECOMMENDATIONS_PROMPT,
     responseSchema: SALES_RECOMMENDATIONS_SCHEMA,
     // One answer per day. The version retires old answers when the prompt
-    // changes.
-    cacheKey: `sales-recommendations:${SALES_RECOMMENDATIONS_VERSION}:${today}`,
-    refresh,
+    // changes. Each extra batch is saved under its own key.
+    cacheKey: more
+      ? moreCacheKey(
+          "sales-recommendations",
+          SALES_RECOMMENDATIONS_VERSION,
+          today,
+          more,
+        )
+      : `sales-recommendations:${SALES_RECOMMENDATIONS_VERSION}:${today}`,
+    // A batch is saved once and reused; only the main answer is refreshed.
+    refresh: more ? false : refresh,
   });
 
   if (!answer.ok) return answer.response;
 
+  // An extra batch never falls back to an older saved answer: that would only
+  // repeat cards already on screen. The failure is reported instead.
+  if (more && answer.data.stale) {
+    return NextResponse.json(
+      { error: answer.data.staleReason ?? "AI_UNAVAILABLE" },
+      { status: 502 },
+    );
+  }
+
   const { insights, model, generatedAt, cached } = answer.data;
 
   const result: SalesRecommendationsResult = {
-    items: parseSalesRecommendations(insights, `sales-${generatedAt}`),
+    batch: more?.batch,
+    items: parseSalesRecommendations(
+      insights,
+      more ? `sales-more${more.batch}-${generatedAt}` : `sales-${generatedAt}`,
+      more?.exclude,
+    ),
     windows,
     model,
     generatedAt,

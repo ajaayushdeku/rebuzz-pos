@@ -186,6 +186,9 @@ export function menuMarginPct(product: MenuProduct): number | null {
 
 // ── What a section's route returns ────────────────────────────────────────
 
+/** How many extra batches "Generate more" may add to one answer. */
+export const MAX_MORE_BATCHES = 5;
+
 export interface AiSectionResult<T> {
   items: T[];
   windows: SalesWindows;
@@ -206,6 +209,18 @@ export interface AiSectionResult<T> {
   stale?: boolean;
   /** Why a fresh answer could not be had, in the usual error vocabulary. */
   staleReason?: string;
+  /**
+   * Set on a "Generate more" answer: which extra batch it is. The page adds
+   * its items to the ones already shown rather than replacing them.
+   */
+  batch?: number;
+  /**
+   * How many extra batches have been added to the answer on screen. Kept by
+   * the page, not sent by the server.
+   */
+  moreBatches?: number;
+  /** "Generate more" found nothing new, or the limit is reached. */
+  noMore?: boolean;
 }
 
 /** A single emoji from the model, or the fallback when it sent anything else. */

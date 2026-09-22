@@ -19,12 +19,16 @@ import { cookies } from "next/headers";
  */
 export async function hasSavedAiKey(): Promise<boolean> {
   const serviceUrl = process.env.AI_SERVICE_URL;
+  // [POS backend] To ask khajaGharBackend instead of backend/, use the POS
+  // base URL (NEXT_PUBLIC_API_URL) and the fetch path below:
+  // const serviceUrl = process.env.NEXT_PUBLIC_API_URL;
   if (!serviceUrl) return false;
 
   const token = (await cookies()).get("token")?.value;
   if (!token) return false;
 
   try {
+    // [POS backend] const res = await fetch(`${serviceUrl}/settings/ai`, {
     const res = await fetch(`${serviceUrl}/api/settings/ai`, {
       headers: { Authorization: `Bearer ${token}` },
       // Never cached: the answer changes the moment a key is saved, and Next's

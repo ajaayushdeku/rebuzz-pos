@@ -59,7 +59,12 @@ export default function AIInsightPage() {
   const keep = <T extends { id: string }>(items: T[]) =>
     items.filter((item) => !dismissed.has(item.id));
 
-  const menuSuggestions = useAiSection<MenuSuggestion>("menu-suggestions");
+  // "Generate more" is offered where the AI can keep finding new ones: menu
+  // ideas and sales recommendations. The other sections advise on a set the
+  // app picks — flagged items, festivals, hours — so there is no "more".
+  const menuSuggestions = useAiSection<MenuSuggestion>("menu-suggestions", {
+    describe: (idea) => idea.title,
+  });
   const slowItems = useAiSection<SlowItemInsight>("slow-items");
   const pricingSection = useAiSection<PricingInsight>("pricing");
   const retentionSection = useAiSection<RetentionInsight>("retention");
@@ -68,6 +73,7 @@ export default function AIInsightPage() {
   const festivalPrep = useAiSection<FestivalPrep>("festival-prep");
   const salesRecommendations = useAiSection<SalesRecommendation>(
     "sales-recommendations",
+    { describe: (rec) => rec.text },
   );
 
   const menu = keep(menuSuggestions.data?.items ?? []);

@@ -252,11 +252,14 @@ const MAX_IDEAS = 6;
  *   nowhere.
  * - An idea named the same as something already on the menu is dropped.
  * - A combo's price is only shown when it covers what its items cost.
+ * - For "Generate more", an idea named like one already shown (`shown`) is
+ *   dropped, as is a second idea of the same name in one answer.
  */
 export function parseMenuSuggestions(
   value: unknown,
   menu: MenuProduct[],
   idPrefix: string,
+  shown: string[] = [],
 ): MenuSuggestion[] {
   const list = (value as { ideas?: unknown } | null)?.ideas;
   if (!Array.isArray(list)) return [];
@@ -264,6 +267,7 @@ export function parseMenuSuggestions(
   const onMenu = menu.filter((p) => p.isAvailable && p.price > 0);
   const match = productMatcher(onMenu);
   const existing = new Set(menu.map((p) => normalizeName(p.name)));
+  const seen = new Set(shown.map(normalizeName));
   const out: MenuSuggestion[] = [];
 
   for (const entry of list) {
@@ -278,6 +282,7 @@ export function parseMenuSuggestions(
       : null;
     if (!title || !description || !kind || !difficulty) continue;
     if (existing.has(normalizeName(title))) continue;
+    if (seen.has(normalizeName(title))) continue;
 
     const products: MenuProduct[] = [];
     for (const name of Array.isArray(e.builtFrom) ? e.builtFrom : []) {
@@ -305,6 +310,7 @@ export function parseMenuSuggestions(
           ? null
           : rawPrice;
 
+    seen.add(normalizeName(title));
     out.push({
       id: `${idPrefix}-${out.length}`,
       icon: emojiOr(e.icon, "✨"),

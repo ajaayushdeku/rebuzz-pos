@@ -1,7 +1,6 @@
 "use client";
 
 import RangeBadge from "@/components/ui/RangeBadge";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import { CalendarDays } from "lucide-react";
 import {
   BarChart,
@@ -10,11 +9,18 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
-  Rectangle,
 } from "recharts";
-import type { BarShapeProps } from "recharts";
+import {
+  BAR_RADIUS,
+  AXIS_TICK,
+  CHART_PALETTE,
+  ChartCard,
+  ChartLegend,
+  ChartTooltipBox,
+  niceTicks,
+  yAxisTitle,
+} from "../chartCard";
 
 export interface PeakDayData {
   day: string;
@@ -26,8 +32,8 @@ interface PeakDayDataProps {
   data: PeakDayData[];
 }
 
-const ORDERS_COLOR = "#8B5CF6";
-const SALES_COLOR = "#3d98ee";
+const ORDERS_COLOR = CHART_PALETTE.blue;
+const SALES_COLOR = CHART_PALETTE.teal;
 
 interface DayTooltipProps {
   active?: boolean;
@@ -42,56 +48,24 @@ interface DayTooltipProps {
 }
 
 const CustomTooltip = ({ active, payload, label }: DayTooltipProps) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white rounded-xl px-4 py-2.5 shadow-lg border border-gray-100 min-w-44">
-        <p className="text-gray-400 text-xs mb-1.5">{label}</p>
-        {payload.map((entry) => (
-          <div
-            key={entry.dataKey as string}
-            className="flex items-center justify-between gap-4 mb-0.5"
-          >
-            <div className="flex items-center gap-1.5">
-              <span
-                className="w-2 h-2 rounded-full shrink-0"
-                style={{ backgroundColor: entry.color as string }}
-              />
-              <span className="text-xs text-gray-600">{entry.name}</span>
-            </div>
-            <span className="text-xs font-bold text-gray-800">
-              {(entry.value as number).toFixed(2)}
-            </span>
-          </div>
-        ))}
-      </div>
-    );
-  }
-  return null;
+  if (!active || !payload?.length) return null;
+  return (
+    <ChartTooltipBox
+      label={label}
+      rows={payload.map((entry) => ({
+        name: String(entry.name),
+        color: entry.color as string,
+        value: (entry.value as number).toFixed(2),
+      }))}
+    />
+  );
 };
-
-const CustomLegend = () => (
-  <div className="flex items-center justify-center gap-5 mt-2">
-    {[
-      { label: "Avg. Orders", color: ORDERS_COLOR },
-      { label: "Avg. Sales", color: SALES_COLOR },
-    ].map(({ label, color }) => (
-      <div key={label} className="flex items-center gap-1.5">
-        <span
-          className="w-3 h-3 rounded-sm shrink-0"
-          style={{ backgroundColor: color }}
-        />
-        <span className="text-xs font-semibold" style={{ color }}>
-          {label}
-        </span>
-      </div>
-    ))}
-  </div>
-);
 
 const PeakDaysAnalysis = ({ data }: PeakDayDataProps) => {
   // const hasData = data.some((d) => d.averageOrders > 0 || d.averageSales > 0);
 
-  // ── Y-axis for counts (integers) ──
+  // ── Y-axis for counts ──
+  // Averages can be fractional, so a step can be too (2.5, 0.5).
   const formatYAxis = (value: number): string =>
     Number.isInteger(value) ? `${value}` : value.toFixed(1);
 
@@ -99,34 +73,22 @@ const PeakDaysAnalysis = ({ data }: PeakDayDataProps) => {
     ...data.flatMap((d) => [d.averageOrders, d.averageSales]),
     0,
   );
-  const domainMax = maxVal <= 0 ? 5 : Math.max(5, Math.ceil(maxVal * 1.15));
-  const tickStep = Math.max(1, Math.ceil(domainMax / 5));
-  const ticks = Array.from(
-    { length: Math.floor(domainMax / tickStep) + 1 },
-    (_, i) => i * tickStep,
-  );
-
-  const OrdersBar = (props: BarShapeProps) => (
-    <Rectangle {...props} radius={[6, 6, 0, 0]} fill={ORDERS_COLOR} />
-  );
-  const SalesBar = (props: BarShapeProps) => (
-    <Rectangle {...props} radius={[6, 6, 0, 0]} fill={SALES_COLOR} />
-  );
+  // At least 0–4, so a quiet (or empty) range still counts in whole numbers
+  // instead of stretching a fraction of one over the full height.
+  const ticks = niceTicks(0, Math.max(maxVal, 4));
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
-      {/* HEADER */}
-      <div className="flex items-center gap-3 mb-4 md:mb-6">
-        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-          <CalendarDays size={15} className="text-blue-600" />
-        </div>
-        <ComponentHeader
-          title="Peak Days Analysis"
-          subHeader="Average orders and sales per weekday across the selected period"
-        />
-        <RangeBadge />
-      </div>
-
+    <ChartCard
+      icon={CalendarDays}
+      title="Peak Days Analysis"
+      info={{
+        heading: "Reading this chart",
+        // Verified against getPeakDaysData / averageCountsByWeekday.
+        body: "For each weekday, the average number of orders (tickets created) and sales (bills) per day, over the date range at the top of the page. Both are counts, not amounts, and each weekday is averaged over only the dates that had any. The days run left to right, ending on the range's last day. Hover a day for the exact figures.",
+      }}
+      subtitle="Average orders and sales per weekday across the selected period"
+      controls={<RangeBadge variant="pill" />}
+    >
       {/* CHART */}
       <div
         className="overflow-x-auto pb-2 scrollbar-hide"
@@ -137,49 +99,49 @@ const PeakDaysAnalysis = ({ data }: PeakDayDataProps) => {
           <ResponsiveContainer width="100%" height={300}>
             <BarChart
               data={data}
-              margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
-              barCategoryGap="15%"
+              margin={{ top: 8, right: 8, left: 8, bottom: 0 }}
+              barCategoryGap="22%"
               barGap={2}
             >
-              <CartesianGrid vertical={false} stroke="#f3f4f6" />
+              <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
 
               <XAxis
                 dataKey="day"
                 axisLine={false}
-                tickLine={false}
-                tick={{ fill: "#9ca3af", fontSize: 10 }}
-                dy={8}
+                tickLine={{ stroke: CHART_PALETTE.control }}
+                tickSize={6}
+                tick={AXIS_TICK}
               />
 
               <YAxis
                 tickFormatter={formatYAxis}
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#9ca3af", fontSize: 12 }}
+                tick={AXIS_TICK}
                 ticks={ticks}
-                domain={[0, domainMax]}
-                allowDecimals={false}
-                width={45}
+                domain={[ticks[0], ticks[ticks.length - 1]]}
+                width={56}
+                label={yAxisTitle("Avg. per day")}
               />
 
               <Tooltip
                 content={<CustomTooltip />}
-                cursor={{ fill: "rgba(58,124,237,0.06)" }}
+                cursor={{ fill: "rgba(60,64,67,0.04)" }}
               />
-
-              <Legend content={<CustomLegend />} />
 
               <Bar
                 dataKey="averageOrders"
                 name="Avg. Orders"
-                shape={OrdersBar}
                 fill={ORDERS_COLOR}
+                maxBarSize={44}
+                radius={BAR_RADIUS}
               />
               <Bar
                 dataKey="averageSales"
                 name="Avg. Sales"
-                shape={SalesBar}
                 fill={SALES_COLOR}
+                maxBarSize={44}
+                radius={BAR_RADIUS}
               />
             </BarChart>
           </ResponsiveContainer>
@@ -191,7 +153,14 @@ const PeakDaysAnalysis = ({ data }: PeakDayDataProps) => {
           // )} */}
         </div>
       </div>
-    </div>
+
+      <ChartLegend
+        items={[
+          { label: "Avg. Orders", color: ORDERS_COLOR, shape: "dot" },
+          { label: "Avg. Sales", color: SALES_COLOR, shape: "square" },
+        ]}
+      />
+    </ChartCard>
   );
 };
 

@@ -8,11 +8,8 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
-  Rectangle,
 } from "recharts";
-import type { BarShapeProps } from "recharts";
 
 import type {
   NameType,
@@ -23,9 +20,21 @@ import type {
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { CurrencyConfig, useCurrency } from "@/providers/CurrencyContext";
 import { useRevenueVsProfit } from "@/hooks/useRevenueVsProfit";
-import { ChevronLeft, ChevronRight, ChartColumnBig } from "lucide-react";
+import { ChartColumnBig, ChevronLeft, ChevronRight } from "lucide-react";
 import RangeBadge from "@/components/ui/RangeBadge";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  BAR_RADIUS,
+  AXIS_TICK,
+  CHART_PALETTE,
+  ChartCard,
+  ChartLegend,
+  ChartTooltipBox,
+  niceTicks,
+  yAxisTitle,
+} from "../chartCard";
+
+const REVENUE_COLOR = CHART_PALETTE.blue;
+const PROFIT_COLOR = CHART_PALETTE.teal;
 
 // Types
 
@@ -36,33 +45,6 @@ export interface ProductData {
 }
 
 // Sub-components
-
-const RevenueBar = (props: BarShapeProps) => (
-  <Rectangle {...props} radius={[4, 4, 0, 0]} fill="#60a5fa" />
-);
-
-const ProfitBar = (props: BarShapeProps) => (
-  <Rectangle {...props} radius={[4, 4, 0, 0]} fill="#34d399" />
-);
-
-const CustomLegend = () => (
-  <div className="flex items-center justify-center gap-6 mt-2">
-    {[
-      { label: "Profit", color: "#34d399" },
-      { label: "Revenue", color: "#60a5fa" },
-    ].map(({ label, color }) => (
-      <div key={label} className="flex items-center gap-1.5">
-        <span
-          className="w-3 h-3 rounded-sm shrink-0"
-          style={{ backgroundColor: color }}
-        />
-        <span className="text-xs font-semibold" style={{ color }}>
-          {label}
-        </span>
-      </div>
-    ))}
-  </div>
-);
 
 interface CustomTooltipProps {
   active?: boolean;
@@ -79,37 +61,44 @@ const CustomTooltip = ({
 }: CustomTooltipProps) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100 min-w-36">
-      <p className="text-gray-400 text-xs mb-2 font-medium">{label}</p>
-      {payload.map((entry) => (
-        <div
-          key={entry.name}
-          className="flex items-center justify-between gap-4"
-        >
-          <div className="flex items-center gap-1.5">
-            <span
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{
-                backgroundColor: entry.color as string,
-              }}
-            />
-            <span className="text-xs text-gray-600 capitalize">
-              {entry.name}
-            </span>
-          </div>
-          <span className={`text-xs font-bold text-gray-800 `}>
-            {/* {formatCurrency(entry.value as number, currency)} */}
-            {formatCurrencySymbol(
-              entry.value as number,
-              currency.symbol,
-              currency.locale,
-            )}
-          </span>
-        </div>
-      ))}
-    </div>
+    <ChartTooltipBox
+      label={label}
+      rows={payload.map((entry) => ({
+        name: String(entry.name),
+        color: entry.color as string,
+        value: formatCurrencySymbol(
+          entry.value as number,
+          currency.symbol,
+          currency.locale,
+        ),
+      }))}
+    />
   );
 };
+
+/** A round button inside the pager pill. */
+const PagerButton = ({
+  onClick,
+  disabled,
+  label,
+  children,
+}: {
+  onClick: () => void;
+  disabled: boolean;
+  label: string;
+  children: React.ReactNode;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    disabled={disabled}
+    aria-label={label}
+    className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-[#f1f3f4] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+    style={{ color: CHART_PALETTE.axis }}
+  >
+    {children}
+  </button>
+);
 
 // Chart — fetches data via hook
 
@@ -160,146 +149,130 @@ export default function RevenueVsProfitChart({
   const formatYAxis = (value: number): string =>
     formatCompactCurrency(value, currency.symbol, currency.locale);
 
-  // ── Dynamic Y-axis that handles negative profit ──
-  const allValues =
-    displayData.length > 0
-      ? displayData.flatMap((d) => [d.revenue, d.profit])
-      : [0];
-
+  const allValues = displayData.flatMap((d) => [d.revenue, d.profit]);
   const maxValue = Math.max(...allValues);
   const minValue = Math.min(...allValues);
-
-  const yAxisMax = Math.max(1000, Math.ceil(maxValue / 500) * 500 + 1000);
-  const yAxisMin = minValue < 0 ? Math.floor(minValue / 500) * 500 - 500 : 0;
-
-  const tickRange = yAxisMax - yAxisMin;
-  const tickStep = Math.ceil(tickRange / 5 / 500) * 500;
-  const ticks = Array.from(
-    { length: Math.ceil(tickRange / tickStep) + 1 },
-    (_, i) => yAxisMin + i * tickStep,
+  // A loss too small to see as a bar does not get its own step below zero:
+  // one product losing $50 beside one earning $500k would otherwise spend a
+  // quarter of the chart on empty space. The tooltip still shows it.
+  const ticks = niceTicks(
+    minValue < 0 && -minValue >= 0.02 * Math.max(maxValue, 1) ? minValue : 0,
+    maxValue,
   );
 
+  const firstShown = page * ITEMS_PER_PAGE + 1;
+  const lastShown = Math.min(allData.length, (page + 1) * ITEMS_PER_PAGE);
+
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-            <ChartColumnBig size={15} className="text-blue-600" />
-          </div>
-          <ComponentHeader
-            title="Revenue vs Profit by Product"
-            subHeader="Comparing top-line revenue against net profit per product"
-          />
-          <RangeBadge />
-        </div>
+    <ChartCard
+      icon={ChartColumnBig}
+      title="Revenue vs Profit by Product"
+      info={{
+        heading: "Reading this chart",
+        body: "Revenue is what each product sold for in the date range at the top of the page; profit is what was left after its cost. Hover a bar for the exact figures.",
+      }}
+      subtitle="Comparing top-line revenue against net profit per product"
+      controls={
+        <>
+          {allData.length > ITEMS_PER_PAGE && (
+            <div
+              className="flex items-center gap-0.5 rounded-full border bg-white px-0.5 py-px"
+              style={{ borderColor: CHART_PALETTE.control }}
+            >
+              <PagerButton
+                onClick={goToPrevPage}
+                disabled={page === 0}
+                label="Previous products"
+              >
+                <ChevronLeft size={13} />
+              </PagerButton>
+              <span
+                className="px-0.5 text-[11px] tabular-nums"
+                style={{ color: CHART_PALETTE.title }}
+              >
+                {firstShown}–{lastShown} of {allData.length}
+              </span>
+              <PagerButton
+                onClick={goToNextPage}
+                disabled={page >= totalPages - 1}
+                label="Next products"
+              >
+                <ChevronRight size={13} />
+              </PagerButton>
+            </div>
+          )}
+          <RangeBadge variant="pill" />
+        </>
+      }
+    >
+      {isError && (
+        <p className="-mt-2 mb-3 text-xs text-amber-600">
+          Could not refresh — showing last known data.
+        </p>
+      )}
 
-        {isError && (
-          <p className="text-xs text-amber-400 mt-1">
-            Could not refresh — showing last known data.
-          </p>
-        )}
-      </div>
-
-      {/* Chart */}
       <div
         className={`transition-opacity duration-200 ${isFetching ? "opacity-60" : "opacity-100"}`}
       >
-        <div className="h-56 sm:h-72">
+        <div className="h-64 sm:h-72">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={displayData}
-              margin={{
-                top: 10,
-                right: 10,
-                left: 10,
-                bottom: 10,
-              }}
-              barCategoryGap="15%"
-              barGap={4}
+              margin={{ top: 8, right: 8, left: 8, bottom: 0 }}
+              barCategoryGap="22%"
+              barGap={2}
             >
-              <CartesianGrid vertical={false} stroke="#f3f4f6" />
+              <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
               <XAxis
                 dataKey="product"
                 axisLine={false}
-                tickLine={false}
-                tick={{
-                  fill: "#9ca3af",
-                  fontSize: 12,
-                }}
+                tickLine={{ stroke: CHART_PALETTE.control }}
+                tickSize={6}
+                tick={AXIS_TICK}
                 interval={0}
-                dy={8}
                 tickFormatter={(val: string) =>
-                  val.length > 10 ? val.slice(0, 9) + "…" : val
+                  val.length > 12 ? val.slice(0, 11) + "…" : val
                 }
               />
               <YAxis
                 tickFormatter={formatYAxis}
                 axisLine={false}
                 tickLine={false}
-                tick={{
-                  fill: "#9ca3af",
-                  fontSize: 12,
-                }}
-                domain={[yAxisMin, yAxisMax]}
-                width={55}
+                tick={AXIS_TICK}
+                ticks={ticks}
+                domain={[ticks[0], ticks[ticks.length - 1]]}
+                width={72}
+                label={yAxisTitle("Amount")}
               />
               <Tooltip
                 content={<CustomTooltip currency={currency} />}
-                cursor={{
-                  fill: "rgba(0,0,0,0.03)",
-                }}
+                cursor={{ fill: "rgba(60,64,67,0.04)" }}
               />
-              <Legend content={<CustomLegend />} />
               <Bar
                 dataKey="revenue"
                 name="Revenue"
-                shape={RevenueBar}
-                fill="#60a5fa"
+                fill={REVENUE_COLOR}
+                maxBarSize={44}
+                radius={BAR_RADIUS}
               />
               <Bar
                 dataKey="profit"
                 name="Profit"
-                shape={ProfitBar}
-                fill="#34d399"
+                fill={PROFIT_COLOR}
+                maxBarSize={44}
+                radius={BAR_RADIUS}
               />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Pagination controls */}
-      {allData.length > ITEMS_PER_PAGE && (
-        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
-          <button
-            onClick={goToPrevPage}
-            disabled={page === 0}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              page === 0
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-            }`}
-          >
-            <ChevronLeft size={14} />
-            Prev
-          </button>
-          <span className="text-xs text-gray-400 font-medium">
-            Page {page + 1} of {totalPages} · {allData.length} products
-          </span>
-          <button
-            onClick={goToNextPage}
-            disabled={page >= totalPages - 1}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              page >= totalPages - 1
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-            }`}
-          >
-            Next
-            <ChevronRight size={14} />
-          </button>
-        </div>
-      )}
-    </div>
+      <ChartLegend
+        items={[
+          { label: "Revenue", color: REVENUE_COLOR, shape: "dot" },
+          { label: "Profit", color: PROFIT_COLOR, shape: "square" },
+        ]}
+      />
+    </ChartCard>
   );
 }

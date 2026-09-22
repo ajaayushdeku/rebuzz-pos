@@ -6,6 +6,8 @@ import {
   Calculator,
   Calendar,
   CalendarDays,
+  CalendarRange,
+  Sunrise,
   Loader2,
   PartyPopper,
   RotateCw,
@@ -18,7 +20,6 @@ import toast from "react-hot-toast";
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import { useAiProviderLabel, useHasSavedAiKey } from "@/hooks/useAiKey";
 import { aiErrorMessage } from "@/services/apiAiInsights.client";
 import { fetchSalesForecast } from "@/services/apiSalesForecast.client";
@@ -27,10 +28,11 @@ import type {
   ForecastDriver,
   SalesForecast,
 } from "@/lib/salesForecast";
+import { CHART_PALETTE, ChartCard } from "../chartCard";
 
 const CONFIDENCE_STYLES: Record<ConfidenceLevel, string> = {
   High: "bg-green-50 text-green-700 border-green-200",
-  Likely: "bg-indigo-50 text-indigo-700 border-indigo-200",
+  Likely: "bg-blue-50 text-blue-700 border-blue-200",
   Moderate: "bg-amber-50 text-amber-700 border-amber-200",
   Low: "bg-red-50 text-red-600 border-red-200",
 };
@@ -57,7 +59,38 @@ function DriverIcon({ driver }: { driver: ForecastDriver }) {
       <TrendingUp size={14} className="text-green-600" />
     );
   }
-  return <CalendarDays size={14} className="text-indigo-500" />;
+  return <CalendarDays size={14} style={{ color: CHART_PALETTE.blue }} />;
+}
+
+/** The two forecast tiles' colours: the day in blue, the week in teal. */
+const TILE_THEME = {
+  day: { ink: "#1967d2", wash: "#e8f0fe", border: "#d2e3fc" },
+  week: { ink: "#0d7a82", wash: "#e4f5f6", border: "#c3e7ea" },
+} as const;
+
+/**
+ * "+4% vs usual": how the forecast compares with the usual figure beside it,
+ * worked out here from those two numbers so the chip can never disagree with
+ * them. Nothing when there is no usual figure to compare with.
+ */
+function VsUsual({ value, usual }: { value: number; usual: number }) {
+  if (usual <= 0) return null;
+  const pct = Math.round(((value - usual) / usual) * 100);
+  const tone =
+    pct > 0
+      ? "bg-green-50 text-green-700"
+      : pct < 0
+        ? "bg-red-50 text-red-600"
+        : "bg-gray-100 text-gray-500";
+  return (
+    <span
+      className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums ${tone}`}
+      title="Compared with the usual figure below"
+    >
+      {pct > 0 ? "+" : pct < 0 ? "−" : "±"}
+      {Math.abs(pct)}% vs usual
+    </span>
+  );
 }
 
 function Impact({ value }: { value: number | null }) {
@@ -87,6 +120,11 @@ function Impact({ value }: { value: number | null }) {
   );
 }
 
+/**
+ * The shared dashboard card with this card's icon, title and reading notes,
+ * so every state below (loading, error, no history, the forecast) sits in the
+ * same frame.
+ */
 function Shell({
   subHeader,
   badge,
@@ -97,21 +135,19 @@ function Shell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 h-full relative select-none">
-      <div className="flex items-start justify-between mb-5">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
-            <TrendingUp size={15} className="text-indigo-600" />
-          </div>
-          <ComponentHeader
-            title="What's coming forecast"
-            subHeader={subHeader}
-          />
-        </div>
-        {badge}
-      </div>
+    <ChartCard
+      icon={TrendingUp}
+      title="What's coming forecast"
+      info={{
+        heading: "Reading this card",
+        body: "The day figure is the forecast for tomorrow, or for today when yesterday's saved forecast is showing, beside what that weekday usually sells. The week figure is that day and the six after it, beside a usual week. Usual days are worked out from up to your last 8 weeks of sales. Hover the confidence badge for what its level means.",
+      }}
+      subtitle={subHeader}
+      controls={badge}
+      className="h-full select-none"
+    >
       {children}
-    </div>
+    </ChartCard>
   );
 }
 
@@ -123,7 +159,8 @@ function FallbackNote({ code }: { code: string }) {
         Calculated from your sales.{" "}
         <Link
           href="/settings/api-keys"
-          className="font-medium text-indigo-600 hover:underline"
+          className="font-medium hover:underline"
+          style={{ color: CHART_PALETTE.blue }}
         >
           Add an AI key
         </Link>{" "}
@@ -186,7 +223,10 @@ export default function ForecastCard() {
   if (isLoading) {
     return (
       <Shell subHeader="Based on your recent sales">
-        <div className="flex h-48 items-center justify-center gap-2 text-sm text-gray-400">
+        <div
+          className="flex h-48 items-center justify-center gap-2 text-sm"
+          style={{ color: CHART_PALETTE.subtitle }}
+        >
           <Loader2 className="h-4 w-4 animate-spin" />
           Working out your forecast…
         </div>
@@ -198,14 +238,18 @@ export default function ForecastCard() {
     return (
       <Shell subHeader="Based on your recent sales">
         <div className="flex h-48 flex-col items-center justify-center gap-3 text-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm" style={{ color: CHART_PALETTE.axis }}>
             {(error as Error)?.message ?? "Couldn't load the forecast."}
           </p>
           <button
             type="button"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 transition hover:bg-gray-50 disabled:opacity-50"
+            className="flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-medium transition hover:bg-[#f1f3f4] disabled:opacity-50"
+            style={{
+              borderColor: CHART_PALETTE.control,
+              color: CHART_PALETTE.title,
+            }}
           >
             <RotateCw size={12} className={isFetching ? "animate-spin" : ""} />
             Try again
@@ -220,11 +264,14 @@ export default function ForecastCard() {
     return (
       <Shell subHeader="Based on your recent sales">
         <div className="flex h-48 flex-col items-center justify-center gap-2 px-6 text-center">
-          <CalendarDays size={22} className="text-indigo-300" />
-          <p className="text-sm font-semibold text-gray-700">
+          <CalendarDays size={22} className="text-blue-300" />
+          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
             Not enough sales history yet
           </p>
-          <p className="max-w-xs text-xs leading-relaxed text-gray-400">
+          <p
+            className="max-w-xs text-xs leading-relaxed"
+            style={{ color: CHART_PALETTE.subtitle }}
+          >
             A forecast needs at least two weeks of sales to know what a usual
             day looks like. Check back in {left} day{left === 1 ? "" : "s"}.
           </p>
@@ -241,11 +288,14 @@ export default function ForecastCard() {
     return (
       <Shell subHeader="Based on your recent sales">
         <div className="flex h-48 flex-col items-center justify-center gap-2 px-6 text-center">
-          <CalendarDays size={22} className="text-indigo-300" />
-          <p className="text-sm font-semibold text-gray-700">
+          <CalendarDays size={22} className="text-blue-300" />
+          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
             No sales in the last two weeks
           </p>
-          <p className="max-w-xs text-xs leading-relaxed text-gray-400">
+          <p
+            className="max-w-xs text-xs leading-relaxed"
+            style={{ color: CHART_PALETTE.subtitle }}
+          >
             Your last sale was on {last}. The forecast picks up again once
             you&apos;re selling.
           </p>
@@ -286,14 +336,17 @@ export default function ForecastCard() {
       }
       badge={
         <div
-          className="flex flex-col items-end gap-1"
+          className="flex items-center gap-1.5"
           title={CONFIDENCE_HINT[data.confidence]}
         >
-          <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
+          <span
+            className="text-[11px]"
+            style={{ color: CHART_PALETTE.subtitle }}
+          >
             Confidence
           </span>
           <span
-            className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
+            className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${
               CONFIDENCE_STYLES[data.confidence]
             }`}
           >
@@ -302,55 +355,108 @@ export default function ForecastCard() {
         </div>
       }
     >
-      {/* Forecast numbers, faded while a new forecast is being made */}
+      {/* Forecast numbers, faded while a new forecast is being made. Each
+          tile has its own identity — the day in blue with a sunrise, the week
+          in teal with a calendar — so the two figures are never read for one
+          another at a glance. */}
       <div
-        className={`grid grid-cols-2 gap-3 mb-5 transition-opacity ${busy ? "opacity-50" : ""}`}
+        className={`mb-5 grid grid-cols-2 gap-3 transition-opacity ${busy ? "opacity-50" : ""}`}
       >
-        <div className="bg-gray-50 rounded-xl p-3.5">
-          <p className="text-[10px] font-semibold text-indigo-600 uppercase tracking-wide mb-1.5">
-            {dayLabel}
-          </p>
-          <p className="text-xl font-bold text-gray-900">
-            {fmt(data.tomorrowForecast)}
-          </p>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Usual {data.tomorrowWeekday}: {fmt(data.tomorrowBaseline)}
-          </p>
-        </div>
-        <div className="bg-gray-50 rounded-xl p-3.5">
-          <p className="text-[10px] font-semibold text-indigo-600 uppercase tracking-wide mb-1.5">
-            {weekLabel}
-          </p>
-          <p className="text-xl font-bold text-gray-900">
-            {fmt(data.weeklyProjection)}
-          </p>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Usual week: {fmt(data.weeklyBaseline)}
-          </p>
-        </div>
+        {[
+          {
+            label: dayLabel,
+            icon: Sunrise,
+            value: data.tomorrowForecast,
+            usualLabel: `Usual ${data.tomorrowWeekday}`,
+            usual: data.tomorrowBaseline,
+            theme: TILE_THEME.day,
+          },
+          {
+            label: weekLabel,
+            icon: CalendarRange,
+            value: data.weeklyProjection,
+            usualLabel: "Usual week",
+            usual: data.weeklyBaseline,
+            theme: TILE_THEME.week,
+          },
+        ].map((tile) => {
+          const Icon = tile.icon;
+          return (
+            <div
+              key={tile.label}
+              className="rounded-xl border p-3.5"
+              style={{
+                borderColor: tile.theme.border,
+                background: `linear-gradient(135deg, ${tile.theme.wash} 0%, #ffffff 70%)`,
+              }}
+            >
+              <p
+                className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold"
+                style={{ color: tile.theme.ink }}
+              >
+                <span
+                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white"
+                  style={{
+                    boxShadow: `inset 0 0 0 1px ${tile.theme.border}`,
+                  }}
+                >
+                  <Icon size={11} />
+                </span>
+                <span className="truncate">{tile.label}</span>
+              </p>
+              {/* The chip beside the figure it describes, so the label above
+                  keeps a line to itself on a half-width card. */}
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <p
+                  className="text-2xl font-semibold tracking-tight"
+                  style={{ color: CHART_PALETTE.title }}
+                >
+                  {fmt(tile.value)}
+                </p>
+                <VsUsual value={tile.value} usual={tile.usual} />
+              </div>
+              <p
+                className="mt-0.5 text-xs"
+                style={{ color: CHART_PALETTE.subtitle }}
+              >
+                {tile.usualLabel}: {fmt(tile.usual)}
+              </p>
+            </div>
+          );
+        })}
       </div>
 
       {/* Drivers */}
       {data.drivers.length > 0 && (
         <div className="mb-4">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2.5">
+          <p
+            className="mb-2.5 text-[11px]"
+            style={{ color: CHART_PALETTE.axis }}
+          >
             Key forecast drivers
           </p>
           <div className="space-y-2">
             {data.drivers.map((driver, i) => (
               <div
                 key={`${driver.kind}-${i}`}
-                className="flex items-start justify-between gap-3 py-2.5 border-b border-gray-50 last:border-0"
+                className="flex items-start justify-between gap-3 border-b py-2.5 last:border-0"
+                style={{ borderColor: CHART_PALETTE.grid }}
               >
-                <div className="flex items-start gap-2.5 flex-1 min-w-0">
-                  <div className="w-6 h-6 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 mt-0.5">
+                <div className="flex min-w-0 flex-1 items-start gap-2.5">
+                  <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#f8f9fa]">
                     <DriverIcon driver={driver} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold text-gray-800">
+                    <p
+                      className="text-xs font-medium"
+                      style={{ color: CHART_PALETTE.title }}
+                    >
                       {driver.label}
                     </p>
-                    <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">
+                    <p
+                      className="mt-0.5 text-xs leading-relaxed"
+                      style={{ color: CHART_PALETTE.subtitle }}
+                    >
                       {driver.description}
                     </p>
                   </div>
@@ -363,12 +469,21 @@ export default function ForecastCard() {
       )}
 
       {/* Footer outlook */}
-      <div className="flex items-center justify-between gap-3 pt-3 border-t border-gray-100">
-        <div className="flex items-center gap-1.5 text-gray-400 shrink-0">
+      <div
+        className="flex items-center justify-between gap-3 border-t pt-3"
+        style={{ borderColor: CHART_PALETTE.grid }}
+      >
+        <div
+          className="flex shrink-0 items-center gap-1.5"
+          style={{ color: CHART_PALETTE.subtitle }}
+        >
           <Calendar size={13} />
           <span className="text-xs">Weekly outlook:</span>
         </div>
-        <p className="text-right text-xs font-semibold text-indigo-600">
+        <p
+          className="text-right text-xs font-medium"
+          style={{ color: CHART_PALETTE.blue }}
+        >
           {isAi && data.outlook ? (
             data.outlook
           ) : (
@@ -383,8 +498,11 @@ export default function ForecastCard() {
       </div>
 
       {/* Who made it, and a way to ask again */}
-      <div className="mt-3 flex items-start justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2">
-        <p className="flex items-start gap-1.5 text-[11px] leading-relaxed text-gray-500">
+      <div className="mt-3 flex items-start justify-between gap-3 rounded-lg bg-[#f8f9fa] px-3 py-2">
+        <p
+          className="flex items-start gap-1.5 text-[11px] leading-relaxed"
+          style={{ color: CHART_PALETTE.axis }}
+        >
           {isAi ? (
             <>
               <Sparkles size={12} className="mt-0.5 shrink-0 text-violet-500" />

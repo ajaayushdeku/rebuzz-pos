@@ -11,9 +11,11 @@ import {
   type MenuSuggestionsResult,
 } from "@/lib/ai-insights/sections/menuSuggestions";
 import {
+  alreadyShownBriefing,
   currencySymbol,
   fetchMenu,
   fetchSalesRows,
+  moreCacheKey,
   readSectionRequest,
   salesDataUnavailable,
 } from "@/lib/ai-insights/sections/posData.server";
@@ -34,7 +36,7 @@ import {
 export async function POST(req: NextRequest) {
   const request = await readSectionRequest(req);
   if (!request.ok) return request.response;
-  const { token, refresh, today } = request;
+  const { token, refresh, today, more } = request;
 
   const windows = salesWindows(today);
 
@@ -62,18 +64,37 @@ export async function POST(req: NextRequest) {
 
   const answer = await askAiService({
     token,
-    briefing: menuBriefing(facts, await currencySymbol()),
+    // For "Generate more", the ideas already on screen, not to be repeated.
+    briefing:
+      menuBriefing(facts, await currencySymbol()) + alreadyShownBriefing(more),
     systemInstruction: MENU_SUGGESTIONS_PROMPT,
     responseSchema: MENU_SUGGESTIONS_SCHEMA,
-    cacheKey: `menu-suggestions:${MENU_SUGGESTIONS_VERSION}:${today}`,
-    refresh,
+    cacheKey: more
+      ? moreCacheKey("menu-suggestions", MENU_SUGGESTIONS_VERSION, today, more)
+      : `menu-suggestions:${MENU_SUGGESTIONS_VERSION}:${today}`,
+    // A batch is saved once and reused; only the main answer is refreshed.
+    refresh: more ? false : refresh,
   });
   if (!answer.ok) return answer.response;
+
+  // An extra batch never falls back to an older saved answer: that would only
+  // repeat cards already on screen. The failure is reported instead.
+  if (more && answer.data.stale) {
+    return NextResponse.json(
+      { error: answer.data.staleReason ?? "AI_UNAVAILABLE" },
+      { status: 502 },
+    );
+  }
 
   const { insights, model, generatedAt, cached } = answer.data;
 
   const result: MenuSuggestionsResult = {
-    items: parseMenuSuggestions(insights, menu, `menu-${generatedAt}`),
+    items: parseMenuSuggestions(
+      insights,
+      menu,
+      more ? `menu-more${more.batch}-${generatedAt}` : `menu-${generatedAt}`,
+      more?.exclude,
+    ),
     windows,
     model,
     generatedAt,
@@ -81,6 +102,7 @@ export async function POST(req: NextRequest) {
     // Passed through so the card can say the model in use did not answer.
     stale: answer.data.stale === true,
     staleReason: answer.data.staleReason,
+    batch: more?.batch,
   };
 
   return NextResponse.json(

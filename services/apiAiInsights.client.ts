@@ -157,17 +157,22 @@ function errorFromBody(json: {
  * Posts nothing but `refresh`: the section's route gathers the figures and
  * writes the briefing itself. Without `refresh` the route may answer from the
  * day's cache at no cost; with it, a new answer is generated and paid for.
+ *
+ * `more` asks for the next batch of cards for the answer on screen instead
+ * (see `MoreRequest` on the server) — only the sections that offer "Generate
+ * more" read it.
  */
 export const fetchAiSection = async <T>(
   section: AiSectionName,
   refresh = false,
+  more?: { batch: number; after: string; exclude: string[] },
 ): Promise<AiSectionResult<T>> => {
   let res: Response;
   try {
     res = await fetch(`/api/ai-insights/${section}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refresh }),
+      body: JSON.stringify(more ? { refresh: false, more } : { refresh }),
     });
   } catch {
     throw new AiInsightsError(

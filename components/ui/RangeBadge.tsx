@@ -42,12 +42,25 @@ const COPY = {
   },
 } as const;
 
+/**
+ * `badge` is the small uppercase mark most cards use. `pill` is the outlined
+ * control-style chip of the refreshed card design (see RevenueVsProfitChart),
+ * sized to sit beside other header controls.
+ */
+const VARIANT = {
+  badge:
+    "ml-auto gap-1 bg-gray-50/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-800",
+  pill: "gap-1 border border-[#dadce0] bg-white px-2 py-0.5 text-[11px] text-[#3c4043] hover:bg-[#f8f9fa]",
+} as const;
+
 export default function RangeBadge({
   className = "",
   scope = "range",
+  variant = "badge",
 }: {
   className?: string;
   scope?: keyof typeof COPY;
+  variant?: keyof typeof VARIANT;
 }) {
   const copy = COPY[scope];
 
@@ -58,10 +71,10 @@ export default function RangeBadge({
             `title` shows on hover only, and never for anyone tabbing. */}
         <span
           tabIndex={0}
-          className={`ml-auto inline-flex shrink-0 cursor-help items-center gap-1 rounded-full bg-gray-50/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-800 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${className}`}
+          className={`inline-flex shrink-0 cursor-help items-center rounded-full outline-none transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 ${VARIANT[variant]} ${className}`}
         >
-          <CalendarRange size={9} />
-          Range
+          <CalendarRange size={variant === "pill" ? 11 : 9} />
+          {variant === "pill" ? "Selected range" : "Range"}
         </span>
       </TooltipTrigger>
 

@@ -9,7 +9,7 @@ import {
   formatVariantName,
 } from "@/utils/helper";
 import RangeBadge from "@/components/ui/RangeBadge";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { CHART_PALETTE, ChartCard } from "../chartCard";
 
 type TimePeriod = "morning" | "lunch" | "afternoon" | "evening";
 
@@ -23,10 +23,10 @@ interface TimeWindow {
 
 // Fixed time-of-day windows (matching the original design).
 const WINDOWS: TimeWindow[] = [
-  { period: "morning", title: "MORNING (6AM-11AM)", start: 6, end: 11 },
-  { period: "lunch", title: "LUNCH (11AM-2PM)", start: 11, end: 14 },
-  { period: "afternoon", title: "AFTERNOON (2PM-5PM)", start: 14, end: 17 },
-  { period: "evening", title: "EVENING (5PM-9PM)", start: 17, end: 21 },
+  { period: "morning", title: "Morning (6 AM–11 AM)", start: 6, end: 11 },
+  { period: "lunch", title: "Lunch (11 AM–2 PM)", start: 11, end: 14 },
+  { period: "afternoon", title: "Afternoon (2 PM–5 PM)", start: 14, end: 17 },
+  { period: "evening", title: "Evening (5 PM–9 PM)", start: 17, end: 21 },
 ];
 
 // The list endpoint has no line items — each bill's items come from its own
@@ -206,48 +206,63 @@ export default function TimeWiseProductAnalysis({
   });
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full relative select-none">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-4 md:mb-5">
-        <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
-          <Timer size={16} className="text-violet-600" />
-        </div>
-        <ComponentHeader
-          title="Time-Wise Product Analysis"
-          subHeader="Top performing products specific to times of day"
-        />
-        <RangeBadge />
-      </div>
-
+    <ChartCard
+      icon={Timer}
+      // Purple: Tailwind's violet-600 / violet-200 / violet-50, as CSS colours.
+      iconColor="#7c3aed"
+      iconBorder="#ddd6fe"
+      iconBg="#f5f3ff"
+      title="Time-Wise Product Analysis"
+      info={{
+        heading: "Reading this card",
+        body: "For the date range at the top of the page, bills (refunds left out, up to 120 of them) are grouped by the hour they were rung up: morning 6–11 AM, lunch 11 AM–2 PM, afternoon 2–5 PM, evening 5–9 PM. Each window shows the product, variants counted separately, with the best score of revenue and units sold weighed equally against that window's best. Revenue is unit price times quantity.",
+      }}
+      subtitle="Top performing products specific to times of day"
+      controls={<RangeBadge variant="pill" />}
+      className="select-none"
+    >
       {isLoading ? (
-        <div className="flex items-center justify-center py-10 text-gray-400">
+        <div
+          className="flex items-center justify-center py-10"
+          style={{ color: CHART_PALETTE.axis }}
+        >
           <Loader2 size={18} className="animate-spin" />
-          <span className="ml-2 text-sm">Loading analysis...</span>
+          <span className="ml-2 text-xs">Loading analysis...</span>
         </div>
       ) : isError ? (
-        <div className="py-10 text-center text-sm text-red-500">
+        <div className="py-10 text-center text-xs text-red-600">
           Couldn&apos;t load time-wise analysis. Please try again.
         </div>
       ) : (
+        // The tiles as they were before the card restyle, on the softest grey
+        // border (gray-100) so they sit lightly inside the card's own frame.
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {data.map((item) => (
             <div
               key={item.period}
-              className="rounded-xl border border-gray-100 p-4 hover:bg-gray-50 transition-colors"
+              className="rounded-xl border border-gray-100 p-4 transition-colors hover:bg-gray-50"
             >
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+              {/* Text in the page's type: 11px grey labels, the title colour
+                  for names, 12px secondary lines. */}
+              <p className="text-[11px]" style={{ color: CHART_PALETTE.axis }}>
                 {item.title}
               </p>
 
-              <h3 className="mt-3 text-sm font-semibold text-gray-800">
+              <h4
+                className="mt-2.5 text-sm font-medium"
+                style={{ color: CHART_PALETTE.title }}
+              >
                 {item.productName}
-              </h3>
+              </h4>
 
-              <div className="mt-4 flex items-center justify-between pt-3 border-t border-gray-50">
-                <span className="text-xs text-gray-400 tracking-wide">
+              <div className="mt-4 flex items-center justify-between border-t border-gray-50 pt-3">
+                <span
+                  className="text-xs tabular-nums"
+                  style={{ color: CHART_PALETTE.axis }}
+                >
                   {formatNumber(item.unitsSold, currency.locale)} units sold
                 </span>
-                <span className="text-xs font-semibold text-green-600 tracking-wide">
+                <span className="text-xs font-medium tabular-nums text-green-600">
                   {fmt(item.revenue)}
                 </span>
               </div>
@@ -255,6 +270,6 @@ export default function TimeWiseProductAnalysis({
           ))}
         </div>
       )}
-    </div>
+    </ChartCard>
   );
 }

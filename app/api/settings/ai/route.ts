@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL;
+// [POS backend] To call khajaGharBackend instead of backend/, replace the line
+// above with this import and switch the other [POS backend] lines below:
+// import { POS_API_URL as AI_SERVICE_URL, readAiError } from "@/lib/ai-insights/posAiApi.server";
 
 /**
  * Bridge between the browser and the BYOK AI service.
@@ -36,6 +39,7 @@ async function forward(
 
   let res: Response;
   try {
+    // [POS backend] res = await fetch(`${AI_SERVICE_URL}/settings/ai`, {
     res = await fetch(`${AI_SERVICE_URL}/api/settings/ai`, {
       method,
       headers: {
@@ -72,6 +76,13 @@ async function forward(
   const json = await res.json().catch(() => ({}));
 
   if (!res.ok) {
+    // [POS backend] The POS answers jsend ({ status, data: { code, ... } }):
+    // const { error, available, detail, retryAfter } = readAiError(json);
+    // return NextResponse.json(
+    //   { error, available, detail, retryAfter },
+    //   { status: res.status },
+    // );
+
     // The service's error codes carry the meaning — AI_KEY_INVALID needs a
     // different fix from AI_QUOTA_EXCEEDED — so they pass through intact.
     return NextResponse.json(

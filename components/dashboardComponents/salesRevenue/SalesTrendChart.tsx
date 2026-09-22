@@ -8,18 +8,25 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Rectangle,
 } from "recharts";
-import type { BarShapeProps } from "recharts";
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import type { CustomTooltipProps } from "@/lib/types/chart";
-import type { CompareSalesPoint } from "@/services/dashboardServices/apiSalesCompare";
 import { useSalesTrends } from "@/hooks/useSalesTrends";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import { TrendingUp } from "lucide-react";
 import ChartSkeleton from "@/components/ui/chartskeleton";
+import {
+  BAR_RADIUS,
+  AXIS_TICK,
+  CHART_PALETTE,
+  ChartCard,
+  ChartLegend,
+  ChartTooltipBox,
+  PillSwitch,
+  niceTicks,
+  yAxisTitle,
+} from "../chartCard";
 
 // Types
 type ViewMode = "daily" | "weekly" | "monthly";
@@ -30,17 +37,9 @@ export interface SalesTrendsData {
   totalRevenue: number;
 }
 
-// Helpers
-const getYAxisTicks = (data: CompareSalesPoint[]): number[] => {
-  const max = Math.max(...data.map((d) => d.totalRevenue));
-  const step = Math.ceil(max / 4 / 1000) * 1000;
-  return [0, step, step * 2, step * 3, step * 4];
-};
+const REVENUE_COLOR = CHART_PALETTE.blue;
 
 // Sub-components
-const CustomBar = (props: BarShapeProps) => (
-  <Rectangle {...props} radius={[8, 8, 0, 0]} fill="#4d78ce" />
-);
 
 const CustomTooltip = ({
   active,
@@ -50,22 +49,20 @@ const CustomTooltip = ({
 }: CustomTooltipProps) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100">
-      <p className="text-gray-400 text-xs mb-1">{label}</p>
-
-      <div className="flex flex-row items-center justify-between gap-4">
-        <span className="text-xs text-gray-600 capitalize">Revenue</span>
-
-        <span className="text-xs font-bold text-blue-800">
-          {/* {formatCurrency(payload[0].value as number, currency)} */}
-          {formatCurrencySymbol(
+    <ChartTooltipBox
+      label={label}
+      rows={[
+        {
+          name: "Revenue",
+          color: REVENUE_COLOR,
+          value: formatCurrencySymbol(
             payload[0].value as number,
             currency.symbol,
             currency.locale,
-          )}
-        </span>
-      </div>
-    </div>
+          ),
+        },
+      ]}
+    />
   );
 };
 
@@ -78,14 +75,25 @@ const VIEW_OPTIONS: {
   { label: "Monthly", value: "monthly" },
 ];
 
-// Loading skeleton
-// const ChartSkeleton = () => (
-//   <div className="animate-pulse space-y-3 p-4">
-//     <div className="h-4 bg-gray-200 rounded w-1/3" />
-//     <div className="h-3 bg-gray-200 rounded w-1/2" />
-//     <div className="h-55 sm:h-75 bg-gray-100 rounded-xl mt-4" />
-//   </div>
-// );
+/** A message in the chart's place, the same height so the card does not jump. */
+const ChartMessage = ({
+  title,
+  detail,
+}: {
+  title: string;
+  detail?: string;
+}) => (
+  <div className="flex h-64 flex-col items-center justify-center text-center sm:h-72">
+    <p className="text-sm" style={{ color: CHART_PALETTE.axis }}>
+      {title}
+    </p>
+    {detail && (
+      <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+        {detail}
+      </p>
+    )}
+  </div>
+);
 
 // Chart
 
@@ -94,118 +102,100 @@ export default function SalesTrendChart() {
   const { currency } = useCurrency();
   const { data: rawData, isLoading, isError, error } = useSalesTrends(view);
 
-  // console.log("Sales Compare:", rawData);
-
   const formatYAxis = (value: number): string =>
     formatCompactCurrency(value, currency.symbol, currency.locale);
 
-  const yTicks = rawData ? getYAxisTicks(rawData) : [0, 0, 0, 0, 0];
-  const yMax = yTicks[yTicks.length - 1] * 1.08;
+  const ticks = niceTicks(
+    0,
+    rawData && rawData.length > 0
+      ? Math.max(...rawData.map((d) => d.totalRevenue))
+      : 0,
+  );
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-            <TrendingUp size={15} className="text-blue-600" />
-          </div>
-          <ComponentHeader
-            title="Sales Trends"
-            subHeader=" Revenue over time – switch between daily, weekly, and monthly views"
-          />
-        </div>
-
-        {/* View switcher */}
-        <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 self-start">
-          {VIEW_OPTIONS.map(({ label, value }) => (
-            <button
-              key={value}
-              onClick={() => setView(value)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                view === value
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Loading state */}
+    <ChartCard
+      icon={TrendingUp}
+      // #4D78CE, with its own shades: ~25% of it on white for the frame,
+      // ~8% for the fill.
+      iconColor="#4d78ce"
+      iconBorder="#d3ddf3"
+      iconBg="#f1f4fb"
+      title="Sales Trends"
+      info={{
+        heading: "Reading this chart",
+        // The windows come from useSalesTrends, not the page's date range.
+        body: "Each bar is what you took in that day, week or month: daily shows the last 30 days, weekly about the last six months, monthly the last year. This card does not follow the date range at the top of the page. Hover a bar for the exact figure.",
+      }}
+      subtitle="Revenue over time – switch between daily, weekly, and monthly views"
+      controls={
+        <PillSwitch
+          label="Sales trend view"
+          options={VIEW_OPTIONS}
+          value={view}
+          onChange={setView}
+        />
+      }
+    >
       {isLoading && <ChartSkeleton />}
 
-      {/* Error state */}
       {isError && (
-        <div className="flex flex-col items-center justify-center h-55 sm:h-75 text-gray-400">
-          <p className="text-sm">Failed to load sales data</p>
-          <p className="text-xs mt-1 text-gray-300">
-            {error?.message ?? "Please try again later"}
-          </p>
-        </div>
+        <ChartMessage
+          title="Failed to load sales data"
+          detail={error?.message ?? "Please try again later"}
+        />
       )}
 
-      {/* Empty state */}
-      {/* {!isLoading && !isError && (!rawData || rawData.length === 0) && (
-        <div className="flex items-center justify-center h-55 sm:h-75 text-gray-400">
-          <p className="text-sm">No sales data available</p>
-        </div>
-      )} */}
+      {!isLoading && !isError && (!rawData || rawData.length === 0) && (
+        <ChartMessage title="No sales in this period yet" />
+      )}
 
-      {/* Chart */}
       {!isLoading && !isError && rawData && rawData.length > 0 && (
-        <div className="h-55 sm:h-75">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={rawData}
-              margin={{
-                top: 10,
-                right: 10,
-                left: 10,
-                bottom: 0,
-              }}
-              barCategoryGap="20%"
-            >
-              <CartesianGrid vertical={false} stroke="#f3f4f6" />
+        <>
+          <div className="h-64 sm:h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={rawData}
+                margin={{ top: 8, right: 8, left: 8, bottom: 0 }}
+                barCategoryGap="22%"
+              >
+                <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
+                <XAxis
+                  dataKey="label"
+                  axisLine={false}
+                  tickLine={{ stroke: CHART_PALETTE.control }}
+                  tickSize={6}
+                  tick={AXIS_TICK}
+                />
+                <YAxis
+                  tickFormatter={formatYAxis}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={AXIS_TICK}
+                  ticks={ticks}
+                  domain={[ticks[0], ticks[ticks.length - 1]]}
+                  width={72}
+                  label={yAxisTitle("Revenue")}
+                />
+                <Tooltip
+                  content={<CustomTooltip currency={currency} />}
+                  cursor={{ fill: "rgba(60,64,67,0.04)" }}
+                />
+                <Bar
+                  dataKey="totalRevenue"
+                  name="Revenue"
+                  fill={REVENUE_COLOR}
+                  maxBarSize={56}
+                  radius={BAR_RADIUS}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
 
-              <XAxis
-                dataKey="label"
-                axisLine={false}
-                tickLine={false}
-                tick={{
-                  fill: "#9ca3af",
-                  fontSize: 13,
-                }}
-                dy={8}
-              />
-
-              <YAxis
-                tickFormatter={formatYAxis}
-                axisLine={false}
-                tickLine={false}
-                tick={{
-                  fill: "#9ca3af",
-                  fontSize: 12,
-                }}
-                ticks={yTicks}
-                domain={[0, yMax]}
-                width={40}
-              />
-
-              <Tooltip
-                content={<CustomTooltip currency={currency} />}
-                cursor={{
-                  fill: "rgba(167,139,250,0.06)",
-                }}
-              />
-
-              <Bar dataKey="totalRevenue" shape={CustomBar} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+          <ChartLegend
+            items={[{ label: "Revenue", color: REVENUE_COLOR, shape: "dot" }]}
+          />
+        </>
       )}
-    </div>
+    </ChartCard>
   );
 }

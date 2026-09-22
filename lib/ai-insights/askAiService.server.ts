@@ -16,6 +16,9 @@ import { NextResponse } from "next/server";
 import type { AiInsightsEnvelope } from "@/lib/ai-insights/contract";
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL;
+// [POS backend] To call khajaGharBackend instead of backend/, replace the line
+// above with this import and switch the other [POS backend] lines below:
+// import { POS_API_URL as AI_SERVICE_URL, readAiError } from "@/lib/ai-insights/posAiApi.server";
 
 export interface AskAiServiceInput {
   token: string;
@@ -47,6 +50,7 @@ export async function askAiService(
 
   let res: Response;
   try {
+    // [POS backend] res = await fetch(`${AI_SERVICE_URL}/ai-insights`, {
     res = await fetch(`${AI_SERVICE_URL}/api/ai-insights`, {
       method: "POST",
       headers: {
@@ -80,6 +84,19 @@ export async function askAiService(
 
   if (!res.ok) {
     const retryAfter = res.headers.get("retry-after");
+    // [POS backend] The POS answers jsend ({ status, data: { code, ... } }):
+    // const { error, retryAfter: retryAfterSec } = readAiError(json);
+    // return {
+    //   ok: false,
+    //   response: NextResponse.json(
+    //     { error, retryAfter: retryAfterSec },
+    //     {
+    //       status: res.status,
+    //       headers: retryAfter ? { "Retry-After": retryAfter } : undefined,
+    //     },
+    //   ),
+    // };
+
     return {
       ok: false,
       response: NextResponse.json(

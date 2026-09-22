@@ -5,9 +5,22 @@
  * and Peak Days. The rest of the page's components fetch client-side and render
  * their own loading states, so they don't get (and can't use) a Suspense
  * skeleton.
+ *
+ * Both cards use the shared <ChartCard /> frame, so the skeletons copy it:
+ * hairline border, no shadow, the same radius and padding. The colours are
+ * written out rather than read from CHART_PALETTE because this file renders on
+ * the server and chartCard.tsx is a client module — its constants do not
+ * arrive here as plain values.
  */
 
-/** Title + subtitle stack, matching <ComponentHeader />. */
+/** <ChartCard />'s frame: `border` is CHART_PALETTE.border. */
+const CARD_FRAME =
+  "relative w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5 animate-pulse";
+
+/**
+ * <ChartCard />'s header row: the 36px icon square, title over subtitle, and
+ * the "Selected range" pill on the right.
+ */
 function HeaderSkeleton({
   titleWidth = "w-44",
   subWidth = "w-80",
@@ -16,21 +29,27 @@ function HeaderSkeleton({
   subWidth?: string;
 }) {
   return (
-    <div className="space-y-2">
-      <div className={`h-4 ${titleWidth} bg-gray-200 rounded`} />
-      <div className={`h-3 ${subWidth} bg-gray-100 rounded`} />
+    <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="h-9 w-9 shrink-0 rounded-xl border border-blue-100 bg-blue-50/60" />
+        <div className="min-w-0 space-y-1.5">
+          <div className={`h-4 ${titleWidth} max-w-full rounded bg-gray-200`} />
+          <div className={`h-3 ${subWidth} max-w-full rounded bg-gray-100`} />
+        </div>
+      </div>
+      <div className="h-5 w-28 rounded-full border border-[#dadce0] bg-white" />
     </div>
   );
 }
 
-/** Centered legend chips. */
+/** <ChartLegend />: under the chart, on the right. */
 function LegendSkeleton({ items = 1 }: { items?: number }) {
   return (
-    <div className="flex items-center justify-center gap-6 mt-3">
+    <div className="mt-3 flex items-center justify-end gap-x-5 pr-2">
       {Array.from({ length: items }).map((_, i) => (
         <div key={i} className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-gray-200" />
-          <div className="h-3 w-20 bg-gray-100 rounded" />
+          <div className="h-2.5 w-2.5 rounded-full bg-gray-200" />
+          <div className="h-3 w-20 rounded bg-gray-100" />
         </div>
       ))}
     </div>
@@ -44,35 +63,32 @@ const HOUR_BARS = [
 ];
 
 /**
- * Matches <PeakHoursAnalysis /> — header plus the hour-range filter
- * (preset select over From/To inputs), then a 280px hourly bar chart.
+ * Matches <PeakHoursAnalysis /> — header, the hour-range toolbar (preset
+ * select, then From/To inputs), then a 280px hourly bar chart.
  */
 export function PeakHoursAnalysisSkeleton() {
   return (
-    <div className="bg-surface-card rounded-2xl border border-surface-border shadow-sm p-5 w-full animate-pulse">
-      {/* Header + hour range filter */}
-      <div className="flex flex-row justify-between gap-3 mb-5">
-        <HeaderSkeleton titleWidth="w-44" subWidth="w-80" />
+    <div className={CARD_FRAME}>
+      <HeaderSkeleton titleWidth="w-44" subWidth="w-80" />
 
-        <div className="flex flex-col gap-1.5 items-end shrink-0">
-          <div className="flex flex-col items-center gap-2">
-            <div className="h-7 w-44 bg-gray-100 rounded-lg" />
-            <div className="flex items-center gap-1.5">
-              <div className="h-3 w-8 bg-gray-100 rounded" />
-              <div className="h-7 w-14 bg-gray-100 rounded-lg" />
-              <div className="h-3 w-6 bg-gray-100 rounded" />
-              <div className="h-7 w-14 bg-gray-100 rounded-lg" />
-            </div>
-          </div>
+      {/* Hour range toolbar */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <div className="h-10 w-[210px] rounded-xl border border-gray-200 bg-white" />
+        <div className="mx-1 h-6 w-px bg-[#dadce0]" />
+        <div className="flex items-center gap-1.5">
+          <div className="h-3 w-8 rounded bg-gray-100" />
+          <div className="h-8 w-14 rounded-lg border border-[#dadce0] bg-white" />
+          <div className="h-3 w-6 rounded bg-gray-100" />
+          <div className="h-8 w-14 rounded-lg border border-[#dadce0] bg-white" />
         </div>
       </div>
 
-      {/* Chart */}
-      <div className="h-[280px] w-full flex items-end gap-1 pt-4">
+      {/* Chart — square bars, like the card's */}
+      <div className="flex h-[280px] w-full items-end gap-1 pt-4">
         {HOUR_BARS.map((h, i) => (
           <div
             key={i}
-            className="flex-1 bg-gray-100 rounded-t-lg"
+            className="flex-1 bg-gray-100"
             style={{ height: `${h}%` }}
           />
         ))}
@@ -100,23 +116,15 @@ const DAY_BARS: [number, number][] = [
  */
 export function PeakDaysAnalysisSkeleton() {
   return (
-    <div className="bg-surface-card rounded-2xl border border-surface-border shadow-sm p-5 w-full animate-pulse">
-      <div className="mb-4 md:mb-6">
-        <HeaderSkeleton titleWidth="w-44" subWidth="w-80" />
-      </div>
+    <div className={CARD_FRAME}>
+      <HeaderSkeleton titleWidth="w-44" subWidth="w-80" />
 
-      {/* Chart */}
-      <div className="h-[300px] w-full flex items-end justify-between gap-4 pt-4">
+      {/* Chart — square bars, like the card's */}
+      <div className="flex h-[300px] w-full items-end justify-between gap-4 pt-4">
         {DAY_BARS.map(([a, b], i) => (
-          <div key={i} className="flex-1 flex items-end justify-center gap-1">
-            <div
-              className="w-1/3 bg-gray-100 rounded-t-lg"
-              style={{ height: `${a}%` }}
-            />
-            <div
-              className="w-1/3 bg-gray-100/70 rounded-t-lg"
-              style={{ height: `${b}%` }}
-            />
+          <div key={i} className="flex flex-1 items-end justify-center gap-1">
+            <div className="w-1/3 bg-gray-100" style={{ height: `${a}%` }} />
+            <div className="w-1/3 bg-gray-100/70" style={{ height: `${b}%` }} />
           </div>
         ))}
       </div>

@@ -20,6 +20,7 @@ import {
   InsightCard,
   LeadTile,
   SectionHeader,
+  SectionMoreButton,
   SectionRefreshButton,
   TagList,
   useMoney,
@@ -146,6 +147,10 @@ export default function MenuSuggestionsSection({
                 value={difficulty}
                 onChange={setDifficulty}
                 accent="blue"
+              />
+              <SectionMoreButton
+                state={state}
+                textClassName="text-violet-600 hover:bg-violet-100 border-violet-300 hover:border-violet-400"
               />
               <SectionRefreshButton
                 state={state}

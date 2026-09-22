@@ -12,6 +12,7 @@ import {
   AiSectionBody,
   DismissButton,
   SectionHeader,
+  SectionMoreButton,
   SectionRefreshButton,
 } from "../parts";
 
@@ -52,7 +53,11 @@ export default function SalesRecommendationsSection({
         // following a date filter this page does not have.
         subtitle={`Based on the last ${SALES_WINDOW_DAYS} days, compared with the ${SALES_WINDOW_DAYS} before`}
         actions={
-          <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
+          <div className="flex flex-row w-full md:w-fit items-end justify-end gap-2 absolute md:relative top-2">
+            <SectionMoreButton
+              state={state}
+              textClassName="text-blue-700 hover:bg-blue-100 border-blue-300 hover:border-blue-400"
+            />
             <SectionRefreshButton
               state={state}
               textClassName="text-blue-700 hover:bg-blue-100 border-blue-300 hover:border-blue-400"

@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock } from "lucide-react";
+import { Clock, Coins, Flame, Hourglass, type LucideIcon } from "lucide-react";
 
 import type { AiSectionState } from "@/hooks/useAiSection";
 import {
@@ -58,6 +58,30 @@ const KIND_LABEL: Record<SlotKind, string> = {
   "low-spend": "Lowest spend",
 };
 
+/**
+ * What kind of hour it is, at a glance: the rush, the lull, the small orders.
+ * Drawn in the label's own colour, so it reads as part of the label.
+ */
+const KIND_ICON: Record<SlotKind, LucideIcon> = {
+  peak: Flame,
+  quiet: Hourglass,
+  "low-spend": Coins,
+};
+
+function KindLabel({ kind }: { kind: SlotKind }) {
+  return (
+    <div className="flex flex-row items-center gap-0.5">
+      {/* <Icon
+        size={10}
+        strokeWidth={2.5}
+        aria-hidden
+        className="shrink-0 bg-red-300"
+      /> */}
+      <p>{KIND_LABEL[kind]}</p>
+    </div>
+  );
+}
+
 export default function HourPlaybookSection({
   items,
   state,
@@ -98,18 +122,25 @@ export default function HourPlaybookSection({
         <CardGrid>
           {items.map((item) => {
             const tone = busynessTone(item.busynessPct);
+            const Icon = KIND_ICON[item.kind];
             return (
               <InsightCard
                 key={item.id}
                 accent={tone.accent}
                 lead={
                   <span
-                    className={`flex h-10 shrink-0 items-center rounded-lg px-2.5 text-[14px] font-bold ${tone.pill}`}
+                    className={`flex h-10 shrink-0 items-center gap-1 rounded-lg pr-2.5 text-[14px] font-bold ${tone.pill}`}
                   >
+                    <Icon
+                      size={15}
+                      strokeWidth={2.5}
+                      aria-hidden
+                      className="shrink-0"
+                    />
                     {item.time}
                   </span>
                 }
-                label={KIND_LABEL[item.kind]}
+                label={<KindLabel kind={item.kind} />}
                 title={item.title}
                 onDismiss={() => onDismiss(item.id)}
                 dismissLabel={`${item.time} ${item.title}`}

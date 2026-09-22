@@ -16,8 +16,8 @@ import { SlowProduct } from "./slow-product-columns";
 import { getDaysColor } from "@/lib/utils";
 import { useSlowProducts } from "@/hooks/useSlowProducts";
 import { FilterSelect } from "@/components/ui/FilterSelect";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import { formatNumber } from "@/utils/helper";
+import { CHART_PALETTE, ChartCard } from "../chartCard";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -27,6 +27,12 @@ const DAYS_PRESETS = [
   { value: "14", label: "14 days" },
   { value: "30", label: "30 days" },
 ];
+
+/** Header cell: quiet grey label, normal weight, clickable to sort. */
+const TH =
+  "px-3 pb-2.5 pt-1 text-[11px] font-normal whitespace-nowrap cursor-pointer select-none transition-colors hover:text-[#3c4043]";
+/** Body cell: small text in the title colour. */
+const TD = "px-3 py-2.5 text-xs";
 
 export default function SlowProducts({
   slowProducts: initialData,
@@ -93,47 +99,21 @@ export default function SlowProducts({
     );
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 w-full">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
-          <TrendingDown size={15} className="text-rose-600" />
-        </div>
-        <ComponentHeader
-          title="Slow Moving Products"
-          subHeader="Products with no sales in selected period, attention required."
-        />
-      </div>
-
-      {/* Search + Days preset */}
-      <div className="flex justify-between items-center gap-2 mt-4 mb-4">
-        <div className="relative w-full sm:w-64">
-          <Search
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(0);
-            }}
-            className="w-full pl-9 pr-8 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black-300 focus:border-transparent"
-          />
-          {search && (
-            <button
-              onClick={() => setSearch("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              <X size={14} />
-            </button>
-          )}
-        </div>
-
-        {/* Days preset dropdown + custom input */}
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Custom days input */}
+    <ChartCard
+      icon={TrendingDown}
+      // Red: Tailwind's red-600 / red-200 / red-50, as CSS colours.
+      iconColor="#dc2626"
+      iconBorder="#fecaca"
+      iconBg="#fef2f2"
+      title="Slow Moving Products"
+      info={{
+        heading: "Reading this card",
+        body: "Products, and each variant on its own, with no sales in the last few days up to today. The window is set on this card, not by the date range at the top of the page. Days idle shows that window rather than the exact days since the last sale; stock is the units in stock now.",
+      }}
+      subtitle="Products with no sales in selected period, attention required."
+      controls={
+        // The card's own window: a custom day count or a preset.
+        <div className="flex flex-row items-center gap-2 block md:hidden">
           <div className="flex items-center gap-1">
             <input
               type="number"
@@ -141,6 +121,7 @@ export default function SlowProducts({
               max={365}
               value={customDays}
               placeholder="Custom"
+              aria-label="Custom number of days"
               onChange={(e) => {
                 const val = e.target.value;
                 setCustomDays(val);
@@ -150,11 +131,21 @@ export default function SlowProducts({
                   setPage(0);
                 }
               }}
-              className="w-16 h-9 px-2 text-xs border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+              // Spinner arrows hidden: at this size they covered the
+              // placeholder ("Custo…"), and the field is for typing a number.
+              className="h-[26px] w-[72px] rounded-lg border bg-white px-2.5 text-[11px] outline-none [appearance:textfield] placeholder:text-[#9aa0a6] focus-visible:ring-2 focus-visible:ring-blue-500 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              style={{
+                borderColor: CHART_PALETTE.control,
+                color: CHART_PALETTE.title,
+              }}
             />
-            <span className="text-xs text-gray-400">days</span>
+            <span className="text-[11px]" style={{ color: CHART_PALETTE.axis }}>
+              days
+            </span>
           </div>
 
+          {/* FilterSelect owns its trigger's classes, so the pill look is
+              applied to its button from the wrapper. */}
           <FilterSelect
             value={String(days)}
             options={DAYS_PRESETS}
@@ -164,42 +155,127 @@ export default function SlowProducts({
               setPage(0);
             }}
             placeholder="Select days"
-            className="w-[110px]"
+            className="w-[104px] [&>button]:rounded-lg [&>button]:border-[#dadce0] [&>button]:py-1 [&>button]:pl-2.5 [&>button]:pr-2 [&>button]:text-[11px] [&>button]:text-[#3c4043]"
           />
+        </div>
+      }
+      className="h-full"
+    >
+      <div className="flex flex-row items-center justify-center gap-2  mb-3 w-full">
+        {" "}
+        {/* Search */}
+        <div className="relative  w-full ">
+          <Search
+            size={13}
+            className="absolute left-3 top-1/2 -translate-y-1/2"
+            style={{ color: CHART_PALETTE.subtitle }}
+          />
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
+            className="w-full rounded-lg border bg-white py-2 pl-8 pr-8 text-[11px] outline-none placeholder:text-[#9aa0a6] focus-visible:ring-2 focus-visible:ring-blue-500"
+            style={{
+              borderColor: CHART_PALETTE.control,
+              color: CHART_PALETTE.title,
+            }}
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              aria-label="Clear search"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-[#9aa0a6] hover:text-[#5f6368]"
+            >
+              <X size={13} />
+            </button>
+          )}
+        </div>
+        <div className=" hidden md:block">
+          {" "}
+          <div className=" flex flex-row items-center justify-center w-full gap-2">
+            {" "}
+            <div className="flex flex-row items-center gap-1">
+              <input
+                type="number"
+                min={1}
+                max={365}
+                value={customDays}
+                placeholder="Custom"
+                aria-label="Custom number of days"
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setCustomDays(val);
+                  const num = parseInt(val, 10);
+                  if (!isNaN(num) && num > 0) {
+                    setDays(num);
+                    setPage(0);
+                  }
+                }}
+                // Spinner arrows hidden: at this size they covered the
+                // placeholder ("Custo…"), and the field is for typing a number.
+                className="h-[26px] w-[72px] rounded-lg border bg-white py-2 px-2.5 text-[11px] outline-none [appearance:textfield] placeholder:text-[#9aa0a6] focus-visible:ring-2 focus-visible:ring-blue-500 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                style={{
+                  borderColor: CHART_PALETTE.control,
+                  color: CHART_PALETTE.title,
+                }}
+              />
+              <span
+                className="text-[11px]"
+                style={{ color: CHART_PALETTE.axis }}
+              >
+                days
+              </span>
+            </div>
+            <div
+              className="mx-1 h-6 w-px"
+              style={{ backgroundColor: CHART_PALETTE.control }}
+            />
+            {/* FilterSelect owns its trigger's classes, so the pill look is
+              applied to its button from the wrapper. */}
+            <FilterSelect
+              value={String(days)}
+              options={DAYS_PRESETS}
+              onChange={(val) => {
+                setDays(Number(val));
+                setCustomDays("");
+                setPage(0);
+              }}
+              placeholder="Select days"
+              className="w-[80px] [&>button]:rounded-lg [&>button]:border-[#dadce0] [&>button]:py-1 [&>button]:pl-2.5 [&>button]:pr-2 [&>button]:text-[11px] [&>button]:text-[#3c4043]"
+            />
+          </div>
         </div>
       </div>
 
-      {/* Table */}
-      {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"> */}
-      <div className="bg-white overflow-hidden">
-        <table className="w-full text-sm">
+      {/* Table: no zebra or shadow, hairline rows, quiet grey headings. */}
+      <div className="overflow-x-auto">
+        <table className="w-full">
           <thead>
-            <tr className="text-xs text-gray-400 border-b border-gray-100">
-              <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+            <tr
+              className="border-b text-left"
+              style={{
+                borderColor: CHART_PALETTE.grid,
+                color: CHART_PALETTE.axis,
+              }}
+            >
+              <th className="w-12 px-3 pb-2.5 pt-1 text-[11px] font-normal whitespace-nowrap">
                 S.No
               </th>
-              <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("name")}
-              >
+              <th className={TH} onClick={() => toggleSort("name")}>
                 <span className="flex items-center gap-1">
                   Product {SortIcon({ colKey: "name" })}
                 </span>
               </th>
-
-              <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("days")}
-              >
+              <th className={TH} onClick={() => toggleSort("days")}>
                 <span className="flex items-center gap-1">
                   Days Idle {SortIcon({ colKey: "days" })}
                 </span>
               </th>
-
-              <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
-                onClick={() => toggleSort("stockAmount")}
-              >
+              <th className={TH} onClick={() => toggleSort("stockAmount")}>
                 <span className="flex items-center justify-end gap-1">
                   Stock {SortIcon({ colKey: "stockAmount" })}
                 </span>
@@ -207,30 +283,45 @@ export default function SlowProducts({
             </tr>
           </thead>
 
-          <tbody>
+          <tbody style={{ color: CHART_PALETTE.title }}>
             {isFetching && !fetchedData ? (
               <tr>
-                <td colSpan={4} className="text-center py-12">
+                <td colSpan={4} className="py-12 text-center">
                   <div className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm text-gray-400">Loading...</span>
+                    <div
+                      className="h-4 w-4 animate-spin rounded-full border-2"
+                      style={{
+                        borderColor: CHART_PALETTE.blue,
+                        borderTopColor: "transparent",
+                      }}
+                    />
+                    <span
+                      className="text-xs"
+                      style={{ color: CHART_PALETTE.axis }}
+                    >
+                      Loading...
+                    </span>
                   </div>
                 </td>
               </tr>
             ) : paged.length === 0 ? (
               <tr>
-                <td
-                  colSpan={4}
-                  className="text-center py-2 text-sm text-gray-400"
-                >
+                <td colSpan={4} className="py-2 text-center">
                   <div className="flex flex-col items-center justify-center py-12">
-                    <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mb-3">
-                      <PackageCheck size={24} className="text-green-500" />
+                    {/* Green: an empty list here is good news. */}
+                    <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-50">
+                      <PackageCheck size={22} className="text-green-600" />
                     </div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p
+                      className="text-sm"
+                      style={{ color: CHART_PALETTE.title }}
+                    >
                       No slow moving product data
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p
+                      className="mt-1 text-xs"
+                      style={{ color: CHART_PALETTE.subtitle }}
+                    >
                       All products sales are in good state.
                     </p>
                   </div>
@@ -242,27 +333,31 @@ export default function SlowProducts({
                 return (
                   <tr
                     key={`${product.productName ?? product.name}-${product.variantLabel ?? ""}`}
-                    className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
+                    className="border-b transition-colors last:border-0 hover:bg-[#f8f9fa]"
+                    style={{ borderColor: CHART_PALETTE.grid }}
                   >
-                    <td className="py-3 px-4 text-gray-400 text-xs">
+                    <td
+                      className={`${TD} tabular-nums`}
+                      style={{ color: CHART_PALETTE.subtitle }}
+                    >
                       {page * pageSize + idx + 1}
                     </td>
 
-                    <td className="py-3 px-4">
-                      {/* `name` already reads "Coke [Medium/Cherry]" for a
-                          variant row. */}
-                      <span className="font-medium text-xs text-gray-900">
-                        {product.name}
-                      </span>
-                    </td>
+                    {/* `name` already reads "Coke [Medium/Cherry]" for a
+                        variant row. */}
+                    <td className={TD}>{product.name}</td>
 
-                    <td className="py-3 px-4 text-left font-semibold text-xs text-gray-900">
-                      <span className={`font-semibold ${text}`}>
+                    {/* Orange or red by how long the window is: the status
+                        colour stays, since it is what flags the row. */}
+                    <td className={`${TD} whitespace-nowrap`}>
+                      <span className={`font-medium ${text}`}>
                         {product.days}+ days
                       </span>
                     </td>
 
-                    <td className="py-3 px-4 text-right text-xs tracking-wide text-gray-500">
+                    <td
+                      className={`${TD} whitespace-nowrap text-right tabular-nums`}
+                    >
                       {formatNumber(product.stockAmount)} units
                     </td>
                   </tr>
@@ -305,6 +400,6 @@ export default function SlowProducts({
           <ChevronRight size={14} />
         </button>
       </div>
-    </div>
+    </ChartCard>
   );
 }

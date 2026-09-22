@@ -23,19 +23,67 @@ import type {
   HistoryPurchase,
 } from "@/lib/ai-insights/sections/retention";
 import type { EmployeeRecord } from "@/lib/ai-insights/sections/staffing";
-import type {
-  DateWindow,
-  MenuProduct,
-  SalesByItemRow,
+import {
+  MAX_MORE_BATCHES,
+  type DateWindow,
+  type MenuProduct,
+  type SalesByItemRow,
 } from "@/lib/ai-insights/sections/shared";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
+const MAX_EXCLUDE = 40;
+const MAX_EXCLUDE_CHARS = 200;
+
+/**
+ * A "Generate more" request: the next batch of cards for an answer already
+ * on screen.
+ *
+ * `after` is that answer's `generatedAt`, so each batch is saved against the
+ * answer it extends — a Refresh starts a new answer, and batches written for
+ * the old one are never served as extensions of it. `exclude` is what the
+ * section already shows, dismissed cards included, for the model not to
+ * repeat.
+ */
+export interface MoreRequest {
+  batch: number;
+  after: string;
+  exclude: string[];
+}
+
 type SectionRequest =
-  | { ok: true; token: string; refresh: boolean; today: string }
+  | {
+      ok: true;
+      token: string;
+      refresh: boolean;
+      today: string;
+      more: MoreRequest | null;
+    }
   | { ok: false; response: NextResponse };
 
-/** The session, the refresh flag and today's date in Nepal. */
+function readMore(raw: unknown): MoreRequest | null {
+  const m = (raw ?? null) as Record<string, unknown> | null;
+  if (!m) return null;
+  const batch = m.batch;
+  const after = m.after;
+  if (
+    typeof batch !== "number" ||
+    !Number.isInteger(batch) ||
+    batch < 1 ||
+    batch > MAX_MORE_BATCHES ||
+    typeof after !== "string" ||
+    Number.isNaN(Date.parse(after))
+  ) {
+    return null;
+  }
+  const exclude = (Array.isArray(m.exclude) ? m.exclude : [])
+    .filter((v): v is string => typeof v === "string" && v.trim() !== "")
+    .slice(0, MAX_EXCLUDE)
+    .map((v) => v.trim().slice(0, MAX_EXCLUDE_CHARS));
+  return { batch, after, exclude };
+}
+
+/** The session, the refresh flag, today's date in Nepal, and any "more". */
 export async function readSectionRequest(
   req: NextRequest,
 ): Promise<SectionRequest> {
@@ -54,7 +102,41 @@ export async function readSectionRequest(
     // Strictly `true`, as at the AI service: only a deliberate refresh spends.
     refresh: body?.refresh === true,
     today: nepalToday(),
+    more: readMore(body?.more),
   };
+}
+
+/**
+ * Where a "Generate more" batch is saved.
+ *
+ * Its own section name (`…-more`), so the AI service's fallback to "the last
+ * answer for this section" can never serve an extra batch as the section's
+ * main answer, or the main answer as an extra batch. The answer it extends
+ * and the batch number follow the date, all in the characters the service's
+ * key allows.
+ */
+export function moreCacheKey(
+  section: string,
+  version: string,
+  today: string,
+  more: MoreRequest,
+): string {
+  const stamp = Math.floor(Date.parse(more.after) / 1000).toString(36);
+  return `${section}-more:${version}:${today}-${stamp}-${more.batch}`;
+}
+
+/**
+ * The lines that tell the model what is already on screen. Empty when nothing
+ * is, so a first answer's briefing is unchanged.
+ */
+export function alreadyShownBriefing(more: MoreRequest | null): string {
+  if (!more || more.exclude.length === 0) return "";
+  return [
+    "",
+    "",
+    "Already shown to the owner — do not repeat these or close variations of them. Give different ones:",
+    ...more.exclude.map((line) => `- ${line}`),
+  ].join("\n");
 }
 
 /** The answer when a POS report a section needs did not load. */
