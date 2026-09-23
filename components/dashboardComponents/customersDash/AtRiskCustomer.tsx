@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { TriangleAlert } from "lucide-react";
 import CustomerHistoryModal from "@/components/dashboardComponents/customersDash/CustomerHistoryModal";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { CardInfo, CHART_PALETTE } from "../chartCard";
 
 type SpendingLevel = "High" | "Medium" | "Low";
 
@@ -104,26 +104,44 @@ export default function AtRiskCustomer({
     );
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full overflow-hidden">
+    <div className="w-full overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
-              <UserX size={15} className="text-rose-600" />
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+              style={{ borderColor: "#fecdd3", backgroundColor: "#fff1f2" }}
+            >
+              <UserX size={16} style={{ color: "#e11d48" }} />
             </div>
-            <ComponentHeader
-              title="At-Risk Customers"
-              subHeader=" Inactive customers for over two weeks or with no purchases yet,
-              requiring re-engagement"
-            />
+            <div className="min-w-0">
+              <h3
+                className="flex items-center gap-1.5 text-[15px] font-normal"
+                style={{ color: CHART_PALETTE.title }}
+              >
+                At-Risk Customers
+                <CardInfo
+                  heading="Reading this table"
+                  label="At-Risk Customers"
+                  body="Customers who have not bought in over two weeks, plus anyone enrolled who has never bought at all. The count in the corner is the whole list, not just this page. Use it to pick who to win back."
+                />
+              </h3>
+              <p
+                className="mt-0.5 text-xs tracking-wide"
+                style={{ color: CHART_PALETTE.subtitle }}
+              >
+                Inactive customers for over two weeks or with no purchases yet,
+                requiring re-engagement
+              </p>
+            </div>
           </div>
         </div>
-        <div className="text-yellow-600 border-yellow-500 border bg-yellow-100 flex items-center rounded-2xl px-2 py-0.5 gap-1 shrink-0">
+        <span className="flex shrink-0 items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] text-amber-700">
           <TriangleAlert size={11} className="shrink-0" />
-          <p className="text-[10px] md:text-[12px] font-semibold whitespace-nowrap">
+          <span className="whitespace-nowrap tabular-nums">
             {numCustomers} at risk
-          </p>
-        </div>
+          </span>
+        </span>
       </div>
 
       {/* Search */}
@@ -140,12 +158,12 @@ export default function AtRiskCustomer({
             setSearch(e.target.value);
             setPage(0);
           }}
-          className="w-full pl-9 pr-8 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black-300 focus:border-transparent"
+          className="h-9 w-full rounded-lg border border-[#dadce0] bg-white pl-9 pr-8 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
         {search && (
           <button
             onClick={() => setSearch("")}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#3c4043]"
           >
             <X size={14} />
           </button>
@@ -160,30 +178,32 @@ export default function AtRiskCustomer({
       >
         <table className="w-full text-sm min-w-[600px]">
           <thead>
-            <tr className="text-xs text-gray-400 border-b border-gray-100">
-              <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+            <tr className="border-b border-[#e8eaed] text-[11px] text-[#5f6368]">
+              <th className="text-left px-4 pb-2.5 pt-1 font-normal w-12">
                 S.No
               </th>
               <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                className="text-left px-4 pb-2.5 pt-1 font-normal cursor-pointer select-none hover:text-[#3c4043]"
                 onClick={() => toggleSort("name")}
               >
                 <span className="flex items-center gap-1">
                   Name {SortIcon({ colKey: "name" })}
                 </span>
               </th>
-              <th className="text-left pb-3 pt-3 px-4 font-medium">
+              <th className="text-left px-4 pb-2.5 pt-1 font-normal">
                 Alert Reason
               </th>
               <th
-                className="flex items-center justify-center pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                className="flex items-center justify-center px-4 pb-2.5 pt-1 font-normal cursor-pointer select-none hover:text-[#3c4043]"
                 onClick={() => toggleSort("spendLevel")}
               >
                 <span className="flex  w-fit items-center gap-1">
                   Spending Level {SortIcon({ colKey: "spendLevel" })}
                 </span>
               </th>
-              <th className="text-right pb-3 pt-3 px-4 font-medium">Action</th>
+              <th className="text-right px-4 pb-2.5 pt-1 font-normal">
+                Action
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -194,13 +214,13 @@ export default function AtRiskCustomer({
                   className="text-center py-2 text-sm text-gray-400"
                 >
                   <div className="flex flex-col items-center justify-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                    <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4]">
                       <UserX size={24} className="text-gray-500" />
                     </div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm text-[#3c4043]">
                       No at-risk customer found
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="mt-1 text-xs text-[#9aa0a6]">
                       At-risk customer data will appear here
                     </p>
                   </div>
@@ -210,7 +230,7 @@ export default function AtRiskCustomer({
               paged.map((customer, idx) => (
                 <tr
                   key={customer.rank}
-                  className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
+                  className="border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa]"
                 >
                   <td className="py-3 px-4 text-gray-400 text-xs">
                     {page * pageSize + idx + 1}

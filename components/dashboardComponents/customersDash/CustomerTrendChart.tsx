@@ -18,7 +18,14 @@ import type {
 } from "recharts/types/component/DefaultTooltipContent";
 import SampleDataBadge from "@/components/ui/sampledatabadge";
 import { mockCustomerTrendData } from "@/lib/mockData/mock-customer-data";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  AXIS_TICK,
+  CHART_PALETTE,
+  ChartCard,
+  ChartLegend,
+  ChartTooltipBox,
+  yAxisTitle,
+} from "../chartCard";
 import { TrendingUp } from "lucide-react";
 
 // Types
@@ -109,17 +116,13 @@ const joinedInMonth = (d: CustomerTrendData) =>
 
 /** Reversed, so it reads top-of-stack down — the order the bars appear in. */
 const CustomLegend = () => (
-  <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 md:gap-x-6">
-    {[...SERIES].reverse().map(({ label, color }) => (
-      <div key={label} className="flex items-center gap-1.5">
-        <span
-          className="h-2.5 w-2.5 shrink-0 rounded-sm"
-          style={{ backgroundColor: color }}
-        />
-        <span className="text-xs text-gray-600">{label}</span>
-      </div>
-    ))}
-  </div>
+  <ChartLegend
+    items={[...SERIES].reverse().map(({ label, color }) => ({
+      label,
+      color,
+      shape: "square" as const,
+    }))}
+  />
 );
 
 interface CustomTooltipProps {
@@ -132,34 +135,27 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (!active || !payload?.length) return null;
   const total = payload.reduce((sum, p) => sum + (p.value as number), 0);
   return (
-    <div className="min-w-36 rounded-xl border border-gray-100 bg-white px-3 py-2.5 shadow-lg">
-      <p className="mb-2 text-xs font-medium text-gray-400">{label}</p>
-      {[...payload].reverse().map((entry) => (
-        <div
-          key={entry.name}
-          className="flex items-center justify-between gap-4"
-        >
-          <div className="flex items-center gap-1.5">
-            <span
-              className="h-2 w-2 shrink-0 rounded-full"
-              style={{ backgroundColor: entry.color as string }}
-            />
-            <span className="text-xs capitalize text-gray-600">
-              {entry.name}
-            </span>
-          </div>
-          <span className="text-xs font-bold tabular-nums text-gray-800">
-            {(entry.value as number).toLocaleString()}
+    <ChartTooltipBox
+      label={label}
+      rows={[...payload].reverse().map((entry) => ({
+        name: String(entry.name ?? ""),
+        color: (entry.color as string) ?? CHART_PALETTE.blue,
+        value: (entry.value as number).toLocaleString(),
+      }))}
+      footer={
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-xs" style={{ color: CHART_PALETTE.axis }}>
+            Total
+          </span>
+          <span
+            className="text-xs font-medium"
+            style={{ color: CHART_PALETTE.title }}
+          >
+            {total.toLocaleString()}
           </span>
         </div>
-      ))}
-      <div className="mt-2 flex justify-between border-t border-gray-100 pt-2">
-        <span className="text-xs text-gray-400">Total</span>
-        <span className="text-xs font-bold tabular-nums text-gray-900">
-          {total.toLocaleString()}
-        </span>
-      </div>
-    </div>
+      }
+    />
   );
 };
 
@@ -180,53 +176,54 @@ export default function CustomerTrendChart({ data }: CustomerTrendProps) {
   const latest = displayData[displayData.length - 1];
 
   return (
-    <div className=" w-full min-w-0 rounded-2xl p-5 shadow-sm transition-shadow duration-300 hover:shadow-md">
-      {isEmpty && <SampleDataBadge />}
-
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50">
-            <TrendingUp size={15} className="text-blue-600" />
-          </div>
-          <ComponentHeader
-            title="Customer Trend"
-            subHeader="Monthly breakdown over the last 6 months"
-          />
-        </div>
-
-        {/* Latest month, as a readout. It used to print the month name over a
-            bare number with nothing saying what the number counted — and the
-            number it chose, the full customer base, is the one figure in the
-            chart that hardly moves. The base is still the headline so it ties
-            back to the bar and to the tooltip's Total, but the two figures
-            that describe the month now sit under it. Hidden while showing
-            samples. */}
-        {!isEmpty && latest && (
+    <ChartCard
+      icon={TrendingUp}
+      title="Customer Trend"
+      info={{
+        heading: "Reading this chart",
+        // Each bar is the whole base that month, split by activity.
+        body: "Six months of your customer base, one bar per month. The bar is everyone on the books that month, split by how they behaved — so the bar's height is the base, not new sign-ups. The readout on the right is the latest month: how many bought, and how many joined.",
+      }}
+      subtitle="Monthly breakdown over the last 6 months"
+      controls={
+        !isEmpty &&
+        latest && (
           <div className="flex shrink-0 flex-col items-end">
-            <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+            <span
+              className="text-[11px]"
+              style={{ color: CHART_PALETTE.subtitle }}
+            >
               {latest.month} · total customers
             </span>
-            <p className="mt-0.5 text-base font-bold leading-tight tabular-nums text-gray-900">
+            <p
+              className="mt-0.5 text-base font-semibold leading-tight tracking-tight tabular-nums"
+              style={{ color: CHART_PALETTE.title }}
+            >
               {stackTotal(latest).toLocaleString()}
             </p>
-            <div className="mt-1 flex items-center gap-3 text-[11px] text-gray-500">
+            <div
+              className="mt-1 flex items-center gap-3 text-[11px]"
+              style={{ color: CHART_PALETTE.subtitle }}
+            >
               <span className="tabular-nums">
-                <span className="font-semibold text-gray-700">
+                <span style={{ color: CHART_PALETTE.title }}>
                   {boughtInMonth(latest).toLocaleString()}
                 </span>{" "}
                 bought
               </span>
               <span className="tabular-nums">
-                <span className="font-semibold text-gray-700">
+                <span style={{ color: CHART_PALETTE.title }}>
                   {joinedInMonth(latest).toLocaleString()}
                 </span>{" "}
                 joined
               </span>
             </div>
           </div>
-        )}
-      </div>
+        )
+      }
+      className="min-w-0"
+    >
+      {isEmpty && <SampleDataBadge />}
 
       {/* Chart */}
       <div className="mt-5">
@@ -241,35 +238,30 @@ export default function CustomerTrendChart({ data }: CustomerTrendProps) {
             }}
             barCategoryGap="20%"
           >
-            <CartesianGrid vertical={false} stroke="#f3f4f6" />
+            <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
 
             <XAxis
               dataKey="month"
               axisLine={false}
               tickLine={false}
-              tick={{
-                fill: "#9ca3af",
-                fontSize: 12,
-              }}
+              tick={AXIS_TICK}
               dy={8}
             />
 
             <YAxis
               axisLine={false}
               tickLine={false}
-              tick={{
-                fill: "#9ca3af",
-                fontSize: 12,
-              }}
+              tick={AXIS_TICK}
               ticks={yTicks}
               domain={[0, yMax]}
-              width={35}
+              width={80}
               allowDecimals={false}
+              label={yAxisTitle("Customers")}
             />
 
             <Tooltip
               content={<CustomTooltip />}
-              cursor={{ fill: "rgba(0,0,0,0.03)" }}
+              cursor={{ fill: CHART_PALETTE.hover }}
             />
             <Legend content={<CustomLegend />} />
 
@@ -288,6 +280,6 @@ export default function CustomerTrendChart({ data }: CustomerTrendProps) {
           </BarChart>
         </ResponsiveContainer>
       </div>
-    </div>
+    </ChartCard>
   );
 }

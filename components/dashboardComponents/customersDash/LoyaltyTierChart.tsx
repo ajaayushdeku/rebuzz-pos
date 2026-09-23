@@ -18,8 +18,13 @@ import type {
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
 import { ArrowUp01, Award, List } from "lucide-react";
-import { ComponentHeader } from "@/components/ComponentHeader";
-import TablePagination from "@/components/ui/TablePagination";
+import {
+  AXIS_TICK,
+  CHART_PALETTE,
+  ChartCard,
+  ChartPager,
+  ChartTooltipBox,
+} from "../chartCard";
 
 /**
  * Bars per page.
@@ -112,24 +117,17 @@ const CustomTooltip = ({
     const share = total > 0 ? (members / total) * 100 : 0;
 
     return (
-      <div className="rounded-xl border border-gray-100 bg-white px-3 py-2 shadow-lg">
-        <div className="flex items-center gap-1.5">
-          <span
-            className="h-2 w-2 shrink-0 rounded-full"
-            style={{ backgroundColor: color }}
-          />
-          <span className="text-xs capitalize text-gray-600">{label}</span>
-        </div>
-        <p className="mt-1 text-sm font-bold tabular-nums text-gray-900">
-          {members.toLocaleString()}
-          <span className="ml-1 text-xs font-medium text-gray-500">
-            {members === 1 ? "member" : "members"}
-          </span>
-          <span className="ml-1.5 text-xs font-medium text-gray-400">
-            {share.toFixed(1)}%
-          </span>
-        </p>
-      </div>
+      <ChartTooltipBox
+        label={label}
+        rows={[
+          {
+            name: members === 1 ? "member" : "members",
+            color,
+            value: members.toLocaleString(),
+          },
+          { name: "Share of members", color, value: `${share.toFixed(1)}%` },
+        ]}
+      />
     );
   }
   return null;
@@ -198,25 +196,23 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
   const yAxisWidth = Math.min(120, Math.max(62, longestLabel * 7 + 12));
 
   return (
-    <div className=" w-full min-w-0 rounded-2xl  p-5 shadow-sm transition-shadow duration-300 hover:shadow-md">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-50">
-            <Award size={15} className="text-amber-600" />
-          </div>
-          <ComponentHeader
-            title="Loyalty Tier Breakdown"
-            subHeader="Members by loyalty status"
-          />
-        </div>
-
-        {/* Enrolled total — the chart shows the split but never the size of
-            the programme it is splitting. Counts every tier, not just the
-            page on screen. */}
-        {!isEmpty && (
-          <div className="flex shrink-0 items-center gap-3">
-            <div className="flex items-center gap-0.5 rounded-lg bg-[#e4f2fe]  px-1 py-1 ">
+    <ChartCard
+      icon={Award}
+      // Amber, as before: Tailwind's amber-600 / amber-200 / amber-50.
+      iconColor="#d97706"
+      iconBorder="#fde68a"
+      iconBg="#fffbeb"
+      title="Loyalty Tier Breakdown"
+      info={{
+        heading: "Reading this chart",
+        // Bars are scaled against every tier, not just the page on screen.
+        body: "How many enrolled customers sit in each loyalty tier. Bars are measured against the largest tier in the whole ladder, so they stay comparable as you page through, and each tier keeps the colour it was given in loyalty settings. Enrolled counts every tier, not just this page.",
+      }}
+      subtitle="Members by loyalty status"
+      controls={
+        !isEmpty && (
+          <div className="relative flex flex-row items-center gap-2 mb-4">
+            <div className="flex items-center gap-1 rounded-xl bg-[#e4f2fe] p-1">
               {ORDERS.map(({ id, label, icon, hint }) => (
                 <button
                   key={id}
@@ -229,7 +225,7 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
                   }}
                   aria-pressed={order === id}
                   title={hint}
-                  className={`flex items-center gap-2 rounded-md px-2 py-1 text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] cursor-pointer ${
+                  className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
                     order === id
                       ? "bg-white font-bold text-blue-950 shadow-sm"
                       : "font-semibold text-blue-800 hover:text-blue-950"
@@ -241,30 +237,61 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
               ))}
             </div>
 
-            <div className="h-5 border-1  border-gray-200 mx-2" />
+            <div
+              className="mx-1 h-6 w-px"
+              style={{ backgroundColor: CHART_PALETTE.control }}
+            />
 
+            {/* Enrolled total — the chart shows the split but never the size
+                of the programme it is splitting. */}
             <div className="flex flex-col items-end">
-              <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+              <span
+                className="text-[11px]"
+                style={{ color: CHART_PALETTE.subtitle }}
+              >
                 Enrolled
               </span>
-              <p className="mt-0.5 text-base font-bold leading-tight tabular-nums text-gray-900">
+              <p
+                className="mt-0.5 text-base font-semibold leading-tight tracking-tight tabular-nums"
+                style={{ color: CHART_PALETTE.title }}
+              >
                 {totalMembers.toLocaleString()}
               </p>
             </div>
-          </div>
-        )}
-      </div>
 
+            <div className="absolute right-0 bottom-[-30px]">
+              {totalPages > 1 && (
+                <ChartPager
+                  first={safePage * PAGE_SIZE + 1}
+                  last={Math.min((safePage + 1) * PAGE_SIZE, ordered.length)}
+                  total={ordered.length}
+                  onPrev={() => setPage(Math.max(0, safePage - 1))}
+                  onNext={() => setPage(Math.min(totalPages - 1, safePage + 1))}
+                  itemLabel="tiers"
+                />
+              )}
+            </div>
+          </div>
+        )
+      }
+      className="min-w-0"
+    >
       {/* Chart */}
       {isEmpty ? (
         <div className="flex h-44 flex-col items-center justify-center gap-2 text-center sm:h-56 md:h-64">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-            <Award size={24} className="text-gray-500" />
+          <div
+            className="flex h-16 w-16 items-center justify-center rounded-full"
+            style={{ backgroundColor: CHART_PALETTE.hover }}
+          >
+            <Award size={24} style={{ color: CHART_PALETTE.subtitle }} />
           </div>
-          <p className="text-sm font-medium text-gray-500">
+          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
             No loyalty tier data
           </p>
-          <p className="max-w-[15rem] text-xs text-gray-400">
+          <p
+            className="max-w-[15rem] text-xs"
+            style={{ color: CHART_PALETTE.subtitle }}
+          >
             Tier breakdown appears once tiers are set up in loyalty settings and
             customers are enrolled.
           </p>
@@ -283,16 +310,13 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
               }}
               barCategoryGap="15%"
             >
-              <CartesianGrid horizontal={false} stroke="#f3f4f6" />
+              <CartesianGrid horizontal={false} stroke={CHART_PALETTE.grid} />
 
               <XAxis
                 type="number"
                 axisLine={false}
                 tickLine={false}
-                tick={{
-                  fill: "#9ca3af",
-                  fontSize: 12,
-                }}
+                tick={AXIS_TICK}
                 ticks={xTicks}
                 domain={[0, xDomain]}
                 allowDecimals={false}
@@ -303,19 +327,13 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
                 dataKey="tier"
                 axisLine={false}
                 tickLine={false}
-                tick={{
-                  fill: "#6b7280",
-                  fontSize: 12,
-                  fontWeight: 600,
-                }}
+                tick={AXIS_TICK}
                 width={yAxisWidth}
               />
 
               <Tooltip
                 content={<CustomTooltip total={totalMembers} />}
-                cursor={{
-                  fill: "rgba(96,165,250,0.05)",
-                }}
+                cursor={{ fill: CHART_PALETTE.hover }}
               />
 
               <Bar dataKey="members" shape={CustomBar}>
@@ -323,9 +341,8 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
                   dataKey="members"
                   position="right"
                   style={{
-                    fill: "#374151",
+                    fill: CHART_PALETTE.title,
                     fontSize: 12,
-                    fontWeight: 700,
                     fontVariantNumeric: "tabular-nums",
                   }}
                 />
@@ -334,17 +351,6 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
           </ResponsiveContainer>
         </div>
       )}
-
-      {/* Outside the plot's fixed-height box, which the pager would overflow. */}
-      {!isEmpty && totalPages > 1 && (
-        <TablePagination
-          page={safePage}
-          totalPages={totalPages}
-          total={ordered.length}
-          noun="tiers"
-          onPageChange={setPage}
-        />
-      )}
-    </div>
+    </ChartCard>
   );
 }

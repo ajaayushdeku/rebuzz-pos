@@ -1,5 +1,5 @@
 "use client";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { CHART_PALETTE, ChartCard, ChartTooltipBox } from "../chartCard";
 import { ChartPie } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import type {
@@ -51,21 +51,21 @@ const CustomTooltip = ({
   if (active && payload?.length) {
     const entry = payload[0].payload as SegmentDataWithColor;
     return (
-      <div className="rounded-xl border border-gray-100 bg-white px-3 py-2 shadow-lg">
-        <div className="flex items-center gap-1.5">
-          <span
-            className="h-2 w-2 shrink-0 rounded-full"
-            style={{ backgroundColor: entry.color }}
-          />
-          <span className="text-xs capitalize text-gray-600">{entry.name}</span>
-        </div>
-        <p className="mt-1 text-sm font-bold tabular-nums text-gray-900">
-          {entry.value.toLocaleString()}
-          <span className="ml-1.5 text-xs font-medium text-gray-400">
-            {entry.share.toFixed(1)}%
-          </span>
-        </p>
-      </div>
+      <ChartTooltipBox
+        label={entry.name}
+        rows={[
+          {
+            name: "Customers",
+            color: entry.color,
+            value: entry.value.toLocaleString(),
+          },
+          {
+            name: "Share",
+            color: entry.color,
+            value: `${entry.share.toFixed(1)}%`,
+          },
+        ]}
+      />
     );
   }
   return null;
@@ -88,28 +88,37 @@ export default function CustomerSegmentationChart({
   }));
 
   return (
-    <div className=" w-full min-w-0 rounded-2xl  p-5 shadow-sm transition-shadow duration-300 hover:shadow-md">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sky-50">
-          <ChartPie size={15} className="text-sky-600" />
-        </div>
-        <ComponentHeader
-          title="Customer Segmentation"
-          subHeader="Customer activity distribution over the last 15 days"
-        />
-      </div>
-
+    <ChartCard
+      icon={ChartPie}
+      // Sky, as before: Tailwind's sky-600 / sky-200 / sky-50.
+      iconColor="#0284c7"
+      iconBorder="#bae6fd"
+      iconBg="#f0f9ff"
+      title="Customer Segmentation"
+      info={{
+        heading: "Reading this chart",
+        // Its own 15-day window, independent of the page's range.
+        body: "Customers grouped by how recently they bought, over the last 15 days — this card has its own window and does not follow the date range at the top of the page. The figure in the middle is every customer counted across the segments.",
+      }}
+      subtitle="Customer activity distribution over the last 15 days"
+      className="h-full min-w-0"
+    >
       {/* Pie Chart + Legend */}
       {isEmpty ? (
         <div className="flex h-40 flex-col items-center justify-center gap-2 text-center sm:h-60">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-            <ChartPie size={24} className="text-gray-500" />
+          <div
+            className="flex h-16 w-16 items-center justify-center rounded-full"
+            style={{ backgroundColor: CHART_PALETTE.hover }}
+          >
+            <ChartPie size={24} style={{ color: CHART_PALETTE.subtitle }} />
           </div>
-          <p className="text-sm font-medium text-gray-500">
+          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
             No customer activity
           </p>
-          <p className="max-w-[15rem] text-xs text-gray-400">
+          <p
+            className="max-w-[15rem] text-xs"
+            style={{ color: CHART_PALETTE.subtitle }}
+          >
             Segments appear once customers place orders in the last 15 days.
           </p>
         </div>
@@ -141,10 +150,16 @@ export default function CustomerSegmentationChart({
             </ResponsiveContainer>
 
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-              <p className="text-xl font-bold tabular-nums leading-none text-gray-900 sm:text-2xl">
+              <p
+                className="text-xl font-semibold leading-none tracking-tight tabular-nums sm:text-2xl"
+                style={{ color: CHART_PALETTE.title }}
+              >
                 {total.toLocaleString()}
               </p>
-              <p className="mt-1 text-[10px] font-medium uppercase tracking-wide text-gray-400">
+              <p
+                className="mt-1 text-[11px]"
+                style={{ color: CHART_PALETTE.subtitle }}
+              >
                 Customers
               </p>
             </div>
@@ -153,22 +168,34 @@ export default function CustomerSegmentationChart({
           {/* Legend — aligned rows rather than fixed-width centred blocks, so
               the counts line up in a column and long names can't push the
               value out of the card. */}
-          <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-2 border-t border-gray-100 pt-3 sm:grid-cols-2">
+          <div
+            className="mt-4 grid grid-cols-1 gap-x-6 gap-y-2 border-t pt-3 sm:grid-cols-2"
+            style={{ borderColor: CHART_PALETTE.grid }}
+          >
             {coloredData.map((entry) => (
               <div key={entry.name} className="flex items-center gap-2">
                 <span
                   className="h-2.5 w-2.5 shrink-0 rounded-full"
                   style={{ backgroundColor: entry.color }}
                 />
-                <span className="min-w-0 flex-1 truncate text-xs text-gray-500">
+                <span
+                  className="min-w-0 flex-1 truncate text-[13px]"
+                  style={{ color: CHART_PALETTE.title }}
+                >
                   {entry.name}
                 </span>
                 <span className="flex flex-row items-center">
                   {" "}
-                  <span className="shrink-0 text-xs font-bold tabular-nums text-gray-800">
+                  <span
+                    className="shrink-0 text-[13px] font-medium tabular-nums"
+                    style={{ color: CHART_PALETTE.title }}
+                  >
                     {entry.value.toLocaleString()}
                   </span>
-                  <span className="w-10 shrink-0 text-right text-[11px] tabular-nums text-gray-400">
+                  <span
+                    className="w-10 shrink-0 text-right text-[11px] tabular-nums"
+                    style={{ color: CHART_PALETTE.subtitle }}
+                  >
                     [ {entry.share.toFixed(0)}% ]
                   </span>
                 </span>
@@ -177,6 +204,6 @@ export default function CustomerSegmentationChart({
           </div>
         </div>
       )}
-    </div>
+    </ChartCard>
   );
 }

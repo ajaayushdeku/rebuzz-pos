@@ -282,22 +282,42 @@ export default function TopItemsSales({
   }, [employeeId, dateRange.startDate, dateRange.endDate, reload]);
 
   // ── Normalise both shapes into one list ───────────────────────────────────
-  const rows: TopItemRow[] = useMemo(
-    () =>
-      noEmployeeAnalytics
-        ? items.map((item) => ({
-            id: item.itemId,
-            name: item.itemName,
-            quantity: item.totalQuantity,
-          }))
-        : topItems.map((item) => ({
-            id: item.productId,
-            name: item.name,
-            quantity: item.quantity,
-            revenue: item.revenue,
-          })),
-    [noEmployeeAnalytics, items, topItems],
-  );
+  const rows: TopItemRow[] = useMemo(() => {
+    const raw: TopItemRow[] = noEmployeeAnalytics
+      ? items.map((item) => ({
+          id: item.itemId,
+          name: item.itemName,
+          quantity: item.totalQuantity,
+        }))
+      : topItems.map((item) => ({
+          id: item.productId,
+          name: item.name,
+          quantity: item.quantity,
+          revenue: item.revenue,
+        }));
+
+    // Rows are merged only when the whole name matches — two rows both called
+    // "Jelly [short]" are the same thing counted twice, so their sales add up.
+    // Variants keep their own rows: "Jelly [small]" and "Jelly [large]" sold
+    // separately and are reported separately, even though they share a product
+    // id. The list is re-sorted afterwards, since merging can change the
+    // ranking.
+    const merged = new Map<string, TopItemRow>();
+    for (const row of raw) {
+      const key = row.name.trim();
+      const seen = merged.get(key);
+      if (!seen) {
+        merged.set(key, { ...row });
+        continue;
+      }
+      seen.quantity += row.quantity;
+      if (row.revenue !== undefined) {
+        seen.revenue = (seen.revenue ?? 0) + row.revenue;
+      }
+    }
+
+    return [...merged.values()].sort((a, b) => b.quantity - a.quantity);
+  }, [noEmployeeAnalytics, items, topItems]);
 
   // ── Loading state ─────────────────────────────────────────────────────────
   if (loading) {
@@ -418,7 +438,10 @@ export default function TopItemsSales({
 
       <div className="mt-6 space-y-2.5">
         {pagedRows.map((row, idx) => (
-          <div key={row.id} className={ROW_GRID}>
+          // Keyed by position in the whole list, not by id: the rank is unique
+          // by construction, so a row can never be reused across pages even if
+          // the data ever repeats an id again.
+          <div key={safePage * PAGE_SIZE + idx} className={ROW_GRID}>
             {/* Rank continues across pages — page 2 starts at 9, not 1. */}
             <span
               className="text-[11px] tabular-nums"

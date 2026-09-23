@@ -17,7 +17,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
 import CustomerFormModal from "@/components/invoice/CustomerFormModal";
 import CustomerHistoryModal from "@/components/dashboardComponents/customersDash/CustomerHistoryModal";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { CardInfo, CHART_PALETTE } from "../chartCard";
 import { useTierStyle } from "@/hooks/useLoyaltyTiers";
 import type { LoyaltyTier } from "@/lib/types/customer";
 
@@ -101,23 +101,41 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
     );
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full overflow-hidden">
+    <div className="w-full overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
-            <Trophy size={15} className="text-amber-600" />
+          <div
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+            style={{ borderColor: "#fde68a", backgroundColor: "#fffbeb" }}
+          >
+            <Trophy size={16} style={{ color: "#d97706" }} />
           </div>
-          <ComponentHeader
-            title="Customer Leaderboard"
-            subHeader="Highest value contributors this month"
-          />
+          <div className="min-w-0">
+            <h3
+              className="flex items-center gap-1.5 text-[15px] font-normal"
+              style={{ color: CHART_PALETTE.title }}
+            >
+              Customer Leaderboard
+              <CardInfo
+                heading="Reading this table"
+                label="Customer Leaderboard"
+                body="Your customers ranked by what they have spent this month. Click a column heading to sort by visits, spend or points instead. Loyalty tier is the rung they sit on in loyalty settings."
+              />
+            </h3>
+            <p
+              className="mt-0.5 text-xs tracking-wide"
+              style={{ color: CHART_PALETTE.subtitle }}
+            >
+              Highest value contributors this month
+            </p>
+          </div>
         </div>
 
         <button
           onClick={() => setCreateModalOpen(true)}
-          className="border-blue-300 bg-white text-blue-600  hover:bg-blue-50 active:bg-blue-100 inline-flex h-9 shrink-0 text-[13px] tracking-wide cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-transparent px-3.5 text-sm font-semibold transition-colors outline-none focus-visible:border-blue-500 focus-visible:ring-[3px] focus-visible:ring-blue-500/30 active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
+          className="inline-flex h-8 shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-[#dadce0] bg-white px-3 text-[11px] text-[#3c4043] transition-colors outline-none hover:bg-[#f8f9fa] focus-visible:ring-2 focus-visible:ring-blue-500"
         >
-          <UserPlus className="h-4 w-4" />
+          <UserPlus className="h-3.5 w-3.5" />
           Add New Customer
         </button>
       </div>
@@ -136,12 +154,12 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
             setSearch(e.target.value);
             setPage(0);
           }}
-          className="w-full pl-9 pr-8 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black-300 focus:border-transparent"
+          className="h-9 w-full rounded-lg border border-[#dadce0] bg-white pl-9 pr-8 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
         {search && (
           <button
             onClick={() => setSearch("")}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#3c4043]"
           >
             <X size={14} />
           </button>
@@ -156,12 +174,12 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
       >
         <table className="w-full text-sm min-w-[600px]">
           <thead>
-            <tr className="text-xs text-gray-400 border-b border-gray-100">
-              <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+            <tr className="border-b border-[#e8eaed] text-[11px] text-[#5f6368]">
+              <th className="text-left px-4 pb-2.5 pt-1 font-normal w-12">
                 S.No
               </th>
               <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                className="text-left px-4 pb-2.5 pt-1 font-normal cursor-pointer select-none hover:text-[#3c4043]"
                 onClick={() => toggleSort("customer")}
               >
                 <span className="flex items-center gap-1">
@@ -169,18 +187,18 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                 </span>
               </th>
               <th
-                className="flex items-center justify-center  pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                className="flex items-center justify-center  px-4 pb-2.5 pt-1 font-normal cursor-pointer select-none hover:text-[#3c4043]"
                 onClick={() => toggleSort("numVisits")}
               >
                 <span className="flex w-fit items-center justify-end gap-1">
                   Visits {SortIcon({ colKey: "numVisits" })}
                 </span>
               </th>
-              <th className="text-center pb-3 pt-3 px-4 font-medium">
+              <th className="text-center px-4 pb-2.5 pt-1 font-normal">
                 Loyalty Tier
               </th>
               <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                className="text-right px-4 pb-2.5 pt-1 font-normal cursor-pointer select-none hover:text-[#3c4043]"
                 onClick={() => toggleSort("totalSpent")}
               >
                 <span className="flex items-center justify-end gap-1">
@@ -189,7 +207,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
               </th>
 
               <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                className="text-right px-4 pb-2.5 pt-1 font-normal cursor-pointer select-none hover:text-[#3c4043]"
                 onClick={() => toggleSort("loyaltyPoints")}
               >
                 <span className="flex items-center justify-end gap-1">
@@ -197,7 +215,9 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                 </span>
               </th>
 
-              <th className="text-right pb-3 pt-3 px-4 font-medium">Action</th>
+              <th className="text-right px-4 pb-2.5 pt-1 font-normal">
+                Action
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -208,13 +228,11 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                   className="text-center py-2 text-sm text-gray-400"
                 >
                   <div className="flex flex-col items-center justify-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                    <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4]">
                       <Trophy size={24} className="text-gray-500" />
                     </div>
-                    <p className="text-sm font-medium text-gray-500">
-                      No customer data
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-sm text-[#3c4043]">No customer data</p>
+                    <p className="mt-1 text-xs text-[#9aa0a6]">
                       Customer Leaderboard data will appear here
                     </p>
                   </div>
@@ -224,7 +242,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
               paged.map((customer, idx) => (
                 <tr
                   key={customer.rank}
-                  className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
+                  className="border-b border-[#e8eaed] last:border-0 hover:bg-gray-50 transition-colors"
                 >
                   <td className="py-3 px-4 text-gray-400 text-xs">
                     {page * pageSize + idx + 1}
