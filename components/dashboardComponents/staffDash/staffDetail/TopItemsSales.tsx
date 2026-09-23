@@ -3,11 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, TrendingUp, AlertTriangle } from "lucide-react";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { CardInfo, CHART_PALETTE, ChartPager } from "../../chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import TablePagination from "@/components/ui/TablePagination";
 
 interface TopItem {
   itemId: string;
@@ -156,20 +155,52 @@ function getBarColor(quantity: number, max: number): string {
 const ROW_GRID =
   "grid grid-cols-[1.25rem_5.5rem_1fr_2.75rem] items-center gap-3 md:grid-cols-[1.25rem_7rem_1fr_4rem]";
 
-const CARD = "bg-white rounded-xl border border-gray-200 shadow-sm p-5";
+const CARD =
+  "w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5";
 
 /** Header is identical in all four states; it used to be pasted into each. */
-function Header({ subHeader }: { subHeader: string }) {
+function Header({
+  subHeader,
+  pager,
+}: {
+  subHeader: string;
+  /** The "‹ 1–8 of 24 ›" control, once there is more than one page. */
+  pager?: React.ReactNode;
+}) {
   return (
-    <div className="flex flex-row items-center justify-between  w-full gap-3">
-      <div className="flex flex-row items-center gap-3">
-        {" "}
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50">
-          <TrendingUp size={16} className="text-emerald-500" />
+    <div className="flex w-full flex-row items-center justify-between gap-3">
+      <div className="flex min-w-0 flex-row items-center gap-3">
+        <div
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+          style={{ borderColor: "#a7f3d0", backgroundColor: "#ecfdf5" }}
+        >
+          <TrendingUp size={16} style={{ color: "#059669" }} />
         </div>
-        <ComponentHeader title="Top Items Sold" subHeader={subHeader} />
+        <div className="min-w-0">
+          <h3
+            className="flex items-center gap-1.5 text-[15px] font-normal"
+            style={{ color: CHART_PALETTE.title }}
+          >
+            Top Items Sold
+            <CardInfo
+              heading="Reading this card"
+              label="Top Items Sold"
+              // Ranked over the page's range; the bar is against the top item.
+              body="Units this employee sold of each product over the date range at the top of the page, best seller first. Each bar is measured against the top item in the whole list, so bars stay comparable as you page through. Units in the corner counts every item in the list, not just this page."
+            />
+          </h3>
+          <p
+            className="mt-0.5 text-xs tracking-wide"
+            style={{ color: CHART_PALETTE.subtitle }}
+          >
+            {subHeader}
+          </p>
+        </div>
       </div>
-      <RangeBadge />
+      <div className="flex shrink-0 items-center gap-2">
+        <RangeBadge variant="pill" />
+        {pager}
+      </div>
     </div>
   );
 }
@@ -274,7 +305,11 @@ export default function TopItemsSales({
       <div className={CARD}>
         <Header subHeader="Loading top selling items..." />
         <div className="flex items-center justify-center py-12">
-          <Loader2 size={20} className="animate-spin text-emerald-500" />
+          <Loader2
+            size={20}
+            className="animate-spin"
+            style={{ color: CHART_PALETTE.subtitle }}
+          />
         </div>
       </div>
     );
@@ -289,10 +324,12 @@ export default function TopItemsSales({
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
             <AlertTriangle size={22} className="text-red-400" />
           </div>
-          <p className="text-sm font-medium text-gray-500">{error}</p>
+          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+            {error}
+          </p>
           <button
             onClick={() => setReload((n) => n + 1)}
-            className="mt-3 rounded-lg bg-emerald-500 px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-600"
+            className="mt-3 cursor-pointer rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
           >
             Retry
           </button>
@@ -307,13 +344,16 @@ export default function TopItemsSales({
       <div className={CARD}>
         <Header subHeader="Units sold per item – fast vs slow movers" />
         <div className="py-8 text-center">
-          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-            <TrendingUp size={24} className="text-gray-500" />
+          <div
+            className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full"
+            style={{ backgroundColor: CHART_PALETTE.hover }}
+          >
+            <TrendingUp size={24} style={{ color: CHART_PALETTE.subtitle }} />
           </div>
-          <p className="text-sm font-medium text-gray-500">
+          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
             No sales data available
           </p>
-          <p className="mt-1 text-xs text-gray-400">
+          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
             No top items sold data for this period
           </p>
         </div>
@@ -343,14 +383,34 @@ export default function TopItemsSales({
   return (
     <div className={CARD}>
       <div className="flex items-start justify-between gap-3">
-        <Header subHeader="Units sold per item by the employee" />
+        <Header
+          subHeader="Units sold per item by the employee"
+          pager={
+            totalPages > 1 && (
+              <ChartPager
+                first={safePage * PAGE_SIZE + 1}
+                last={Math.min((safePage + 1) * PAGE_SIZE, rows.length)}
+                total={rows.length}
+                onPrev={() => setPage(Math.max(0, safePage - 1))}
+                onNext={() => setPage(Math.min(totalPages - 1, safePage + 1))}
+                itemLabel="items"
+              />
+            )
+          }
+        />
 
         {/* The list is paged, so the total says how much it covers. */}
         <div className="flex shrink-0 flex-col items-end">
-          <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
+          <span
+            className="text-[11px]"
+            style={{ color: CHART_PALETTE.subtitle }}
+          >
             Units
           </span>
-          <p className="mt-0.5 text-base font-bold leading-tight tabular-nums text-gray-900">
+          <p
+            className="mt-0.5 text-base font-semibold leading-tight tracking-tight tabular-nums"
+            style={{ color: CHART_PALETTE.title }}
+          >
             {totalUnits.toLocaleString()}
           </p>
         </div>
@@ -360,18 +420,25 @@ export default function TopItemsSales({
         {pagedRows.map((row, idx) => (
           <div key={row.id} className={ROW_GRID}>
             {/* Rank continues across pages — page 2 starts at 9, not 1. */}
-            <span className="text-[11px] font-semibold tabular-nums text-gray-300">
+            <span
+              className="text-[11px] tabular-nums"
+              style={{ color: CHART_PALETTE.subtitle }}
+            >
               {safePage * PAGE_SIZE + idx + 1}
             </span>
 
             <span
-              className="min-w-0 truncate text-xs leading-tight text-gray-600"
+              className="min-w-0 truncate text-[13px] leading-tight"
+              style={{ color: CHART_PALETTE.title }}
               title={row.name}
             >
               {row.name}
             </span>
 
-            <div className="relative h-4 overflow-hidden rounded-full bg-gray-100">
+            <div
+              className="relative h-4 overflow-hidden rounded-full"
+              style={{ backgroundColor: CHART_PALETTE.grid }}
+            >
               <div
                 className="h-4 rounded-full transition-all duration-700"
                 style={{
@@ -382,7 +449,10 @@ export default function TopItemsSales({
             </div>
 
             <div className="text-right">
-              <span className="text-xs font-semibold tabular-nums text-gray-700">
+              <span
+                className="text-[13px] font-medium tabular-nums"
+                style={{ color: CHART_PALETTE.title }}
+              >
                 {row.quantity.toLocaleString()}
               </span>
               {/* Only the analytics endpoint carries revenue. */}
@@ -408,7 +478,8 @@ export default function TopItemsSales({
           {axisTicks.map((tick, i) => (
             <span
               key={`${tick}-${i}`}
-              className="text-[10px] tabular-nums text-gray-400"
+              className="text-xs tabular-nums"
+              style={{ color: CHART_PALETTE.axis }}
             >
               {tick}
             </span>
@@ -416,16 +487,6 @@ export default function TopItemsSales({
         </div>
         <span />
       </div>
-
-      {totalPages > 1 && (
-        <TablePagination
-          page={safePage}
-          totalPages={totalPages}
-          total={rows.length}
-          noun="items"
-          onPageChange={setPage}
-        />
-      )}
     </div>
   );
 }

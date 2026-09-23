@@ -15,12 +15,12 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import {
   parseNepalDateTime,
-  extractTime,
+  // extractTime,
   formatShiftDuration,
 } from "./staffDetailHelpers";
 import type { ShiftSummary, ShiftDetail } from "./staffDetailHelpers";
 import ShiftDetailModal from "./ShiftDetailModal";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { CardInfo, CHART_PALETTE } from "../../chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
 
 interface ShiftsSectionProps {
@@ -173,20 +173,38 @@ export default function ShiftsSection({
 
   return (
     <>
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+      <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
         <div className="flex items-center justify-between mb-5">
-          <div className="flex flex-row items-center gap-3">
-            {" "}
-            <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
-              <Clock size={15} className="text-orange-500" />
+          <div className="flex min-w-0 flex-row items-center gap-3">
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+              style={{ borderColor: "#fed7aa", backgroundColor: "#fff7ed" }}
+            >
+              <Clock size={16} style={{ color: "#ea580c" }} />
             </div>
-            <ComponentHeader
-              title="Staff Shifts"
-              subHeader={`${shiftList.length} ${shiftList.length === 1 ? "shift" : "shifts"}
-                recorded`}
-            />
+            <div className="min-w-0">
+              <h3
+                className="flex items-center gap-1.5 text-[15px] font-normal"
+                style={{ color: CHART_PALETTE.title }}
+              >
+                Staff Shifts
+                <CardInfo
+                  heading="Reading this table"
+                  label="Staff Shifts"
+                  // Cash movement and the expected-vs-counted difference.
+                  body="Shifts this employee opened in the date range at the top of the page. Cash movement is pay-ins less pay-outs during the shift; closing cash is what was counted at the end. A shift with no closing time is still open, so its duration reads “—”. Click a row for the full breakdown."
+                />
+              </h3>
+              <p
+                className="mt-0.5 text-xs tracking-wide"
+                style={{ color: CHART_PALETTE.subtitle }}
+              >
+                {shifts.length} {shifts.length === 1 ? "shift" : "shifts"}{" "}
+                recorded
+              </p>
+            </div>
           </div>
-          <RangeBadge className="ml-0" />
+          <RangeBadge variant="pill" />
         </div>
 
         {shiftLoading ? (
@@ -214,7 +232,7 @@ export default function ShiftsSection({
             {onRetry && (
               <button
                 onClick={onRetry}
-                className="mt-3 px-4 py-1.5 text-xs font-medium text-white bg-amber-500 hover:bg-amber-600 rounded-lg transition-colors"
+                className="mt-3 cursor-pointer rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
               >
                 Retry
               </button>
@@ -236,36 +254,38 @@ export default function ShiftsSection({
               <table className="w-full min-w-[1020px] text-sm">
                 <thead>
                   <tr className="text-[11px] text-gray-400  tracking-wider border-b border-gray-100">
-                    <th className="text-left pb-3 pr-3 pl-0 font-semibold w-8">
+                    <th className="text-left pb-2.5 pt-1 pr-3 pl-0 font-normal w-8">
                       S.No.
                     </th>
-                    <th className="text-left pb-3 px-3 font-semibold">Shift</th>
-                    <th className="text-left pb-3 px-3 font-semibold">
+                    <th className="text-left pb-2.5 pt-1 px-3 font-normal">
+                      Shift
+                    </th>
+                    <th className="text-left pb-2.5 pt-1 px-3 font-normal">
                       Total Shift Time
                     </th>
-                    <th className="text-right pb-3 px-3 font-semibold">
+                    <th className="text-right pb-2.5 pt-1 px-3 font-normal">
                       Opening Cash
                     </th>
-                    <th className="text-right pb-3 px-3 font-semibold">
+                    <th className="text-right pb-2.5 pt-1 px-3 font-normal">
                       Cash Movement
                     </th>
-                    <th className="text-right pb-3 px-3 font-semibold">
+                    <th className="text-right pb-2.5 pt-1 px-3 font-normal">
                       Closing Cash
                     </th>
-                    <th className="text-right pb-3 px-3 font-semibold">
+                    <th className="text-right pb-2.5 pt-1 px-3 font-normal">
                       Total Sales
                     </th>
-                    <th className="text-center pb-3 px-3 font-semibold">
+                    <th className="text-center pb-2.5 pt-1 px-3 font-normal">
                       Status
                     </th>
-                    <th className="text-center pb-3 pl-3 pr-0 font-semibold w-10"></th>
+                    <th className="text-center pb-2.5 pt-1 pl-3 pr-0 font-normal w-10"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {pagedShifts.map((shift, idx) => (
                     <tr
                       key={shift.shiftId ?? idx}
-                      className="border-b border-gray-50/80 last:border-0 hover:bg-gray-50/40 transition-colors"
+                      className="border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa]"
                     >
                       <td className="py-3.5 pr-3 pl-0 text-[11px] text-gray-300 font-mono align-top">
                         #{String(shiftPage * pageSize + idx + 1)}
@@ -280,7 +300,7 @@ export default function ShiftsSection({
                           </p>
                           <div className="flex items-center gap-3">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                              <span className="text-[11px] text-[#9aa0a6]">
                                 Open
                               </span>
                               <span className="text-[10px] font-semibold text-gray-900">
@@ -289,7 +309,7 @@ export default function ShiftsSection({
                             </div>
                             <span className="text-gray-300 text-[10px]">|</span>
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                              <span className="text-[11px] text-[#9aa0a6]">
                                 Close
                               </span>
                               <span className="text-[10px] font-semibold text-gray-900">
@@ -344,7 +364,7 @@ export default function ShiftsSection({
                         </span>
                       </td>
                       <td className="py-3.5 px-3 text-right align-top">
-                        <p className="text-[13px] font-bold text-gray-900">
+                        <p className="text-[13px] font-medium text-[#3c4043] tabular-nums">
                           {formatCurrencySymbol(
                             shift.totalSale ?? 0,
                             currency.symbol,
@@ -362,7 +382,7 @@ export default function ShiftsSection({
                           onClick={() =>
                             shift.shiftId && onFetchShiftDetail(shift.shiftId)
                           }
-                          className="p-1.5 text-gray-300 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all duration-150"
+                          className="cursor-pointer rounded-lg p-1.5 text-[#9aa0a6] transition-colors hover:bg-[#f1f3f4] hover:text-[#3c4043]"
                           title="View shift details"
                         >
                           <Eye size={14} />

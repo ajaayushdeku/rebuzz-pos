@@ -14,7 +14,7 @@ import { formatCurrencySymbol } from "@/utils/helper";
 import { useRouter } from "next/navigation";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { nepalStamp, timeAgo } from "@/lib/nepalDate";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { CardInfo, CHART_PALETTE } from "../../chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
 import SegmentedControl, {
   toSegmentOptions,
@@ -169,19 +169,38 @@ export default function InvoiceListSection({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 ">
+      <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
-            <FileText size={16} className="text-orange-500" />
+          <div className="flex min-w-0 items-center gap-3">
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+              style={{ borderColor: "#fed7aa", backgroundColor: "#fff7ed" }}
+            >
+              <FileText size={16} style={{ color: "#ea580c" }} />
+            </div>
+            <div className="min-w-0">
+              <h3
+                className="flex items-center gap-1.5 text-[15px] font-normal"
+                style={{ color: CHART_PALETTE.title }}
+              >
+                Order / Invoice List
+                <CardInfo
+                  heading="Reading this table"
+                  label="Order / Invoice List"
+                  body="Every order this employee rang up in the date range at the top of the page. Use the status buttons to narrow it to paid, unpaid or refunded, and the search box to find one by invoice number, customer name or phone."
+                />
+              </h3>
+              <p
+                className="mt-0.5 text-xs tracking-wide"
+                style={{ color: CHART_PALETTE.subtitle }}
+              >
+                Loading orders/invoices…
+              </p>
+            </div>
           </div>
-
-          <ComponentHeader
-            title="Order / Invoice List"
-            subHeader="Loading orders/invoices..."
-          />
         </div>
         <div className="flex items-center justify-center py-12">
-          <Loader2 size={20} className="animate-spin text-orange-500" />
+          <Loader2 size={20} className="animate-spin text-[#9aa0a6]" />
         </div>
       </div>
     );
@@ -189,25 +208,44 @@ export default function InvoiceListSection({
 
   if (error) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 ">
+      <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
-            <FileText size={16} className="text-orange-500" />
+          <div className="flex min-w-0 items-center gap-3">
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+              style={{ borderColor: "#fed7aa", backgroundColor: "#fff7ed" }}
+            >
+              <FileText size={16} style={{ color: "#ea580c" }} />
+            </div>
+            <div className="min-w-0">
+              <h3
+                className="flex items-center gap-1.5 text-[15px] font-normal"
+                style={{ color: CHART_PALETTE.title }}
+              >
+                Order / Invoice List
+                <CardInfo
+                  heading="Reading this table"
+                  label="Order / Invoice List"
+                  body="Every order this employee rang up in the date range at the top of the page. Use the status buttons to narrow it to paid, unpaid or refunded, and the search box to find one by invoice number, customer name or phone."
+                />
+              </h3>
+              <p
+                className="mt-0.5 text-xs tracking-wide"
+                style={{ color: CHART_PALETTE.subtitle }}
+              >
+                Unable to load data
+              </p>
+            </div>
           </div>
-
-          <ComponentHeader
-            title=" Order / Invoice List"
-            subHeader="Unable to load data"
-          />
         </div>
         <div className="text-center py-8">
-          <p className="text-sm font-medium text-gray-500">{error}</p>
+          <p className="text-sm text-[#3c4043]">{error}</p>
           <button
             onClick={() => {
               setLoading(true);
               setError(null);
             }}
-            className="mt-3 px-4 py-1.5 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg transition-colors"
+            className="mt-3 cursor-pointer rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
           >
             Retry
           </button>
@@ -217,20 +255,38 @@ export default function InvoiceListSection({
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 ">
+    <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
-            <FileText size={16} className="text-orange-500" />
+          <div className="flex min-w-0 items-center gap-3">
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+              style={{ borderColor: "#fed7aa", backgroundColor: "#fff7ed" }}
+            >
+              <FileText size={16} style={{ color: "#ea580c" }} />
+            </div>
+            <div className="min-w-0">
+              <h3
+                className="flex items-center gap-1.5 text-[15px] font-normal"
+                style={{ color: CHART_PALETTE.title }}
+              >
+                Order / Invoice List
+                <CardInfo
+                  heading="Reading this table"
+                  label="Order / Invoice List"
+                  body="Every order this employee rang up in the date range at the top of the page. Use the status buttons to narrow it to paid, unpaid or refunded, and the search box to find one by invoice number, customer name or phone."
+                />
+              </h3>
+              <p
+                className="mt-0.5 text-xs tracking-wide"
+                style={{ color: CHART_PALETTE.subtitle }}
+              >
+                {`${filteredTickets.length} ${filteredTickets.length === 1 ? "order" : "orders"}`}
+              </p>
+            </div>
           </div>
-
-          <ComponentHeader
-            title="Order / Invoice List"
-            subHeader={`${filteredTickets.length}
-              ${filteredTickets.length === 1 ? "order" : "orders"} `}
-          />
         </div>
-        <RangeBadge className="ml-0" />
+        <RangeBadge variant="pill" />
       </div>
 
       {/* Search & Filter Bar */}
@@ -249,7 +305,7 @@ export default function InvoiceListSection({
               setSearchQuery(e.target.value);
               setPage(0);
             }}
-            className="w-full pl-9 pr-8 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            className="h-9 w-full rounded-lg border border-[#dadce0] bg-white pl-9 pr-8 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
           {searchQuery && (
             <button
@@ -276,13 +332,11 @@ export default function InvoiceListSection({
 
       {displayTickets.length === 0 ? (
         <div className="text-center py-12">
-          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4]">
             <FileText size={24} className="text-gray-500" />
           </div>
-          <p className="text-sm font-medium text-gray-500">
-            No order/invoice data found
-          </p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-sm text-[#3c4043]">No order/invoice data found</p>
+          <p className="mt-1 text-xs text-[#9aa0a6]">
             No invoices found for this date range
           </p>
         </div>
@@ -290,30 +344,32 @@ export default function InvoiceListSection({
         <div className="overflow-x-auto scrollbar-hide">
           <table className="w-full text-sm min-w-[800px]">
             <thead>
-              <tr className="text-xs text-gray-400 border-b border-gray-100">
-                <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+              <tr className="border-b border-[#e8eaed] text-[11px] text-[#5f6368]">
+                <th className="text-left px-4 pb-2.5 pt-1 font-normal w-12">
                   S.No
                 </th>
-                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                <th className="text-left px-4 pb-2.5 pt-1 font-normal">
                   Invoice ID
                 </th>
-                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                <th className="text-left px-4 pb-2.5 pt-1 font-normal">
                   Date / Time
                 </th>
-                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                <th className="text-left px-4 pb-2.5 pt-1 font-normal">
                   Invoice Name
                 </th>
-                {/* <th className="text-left pb-3 pt-3 px-4 font-medium">
+                {/* <th className="text-left px-4 pb-2.5 pt-1 font-normal">
                   Customer
                 </th> */}
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                <th className="text-center px-4 pb-2.5 pt-1 font-normal">
                   Payment
                 </th>
-                <th className="text-right pb-3 pt-3 px-4 font-medium">Total</th>
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                <th className="text-right px-4 pb-2.5 pt-1 font-normal">
+                  Total
+                </th>
+                <th className="text-center px-4 pb-2.5 pt-1 font-normal">
                   Status
                 </th>
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                <th className="text-center px-4 pb-2.5 pt-1 font-normal">
                   Arch.
                 </th>
               </tr>
@@ -339,7 +395,7 @@ export default function InvoiceListSection({
                   <tr
                     key={ticket._id}
                     onClick={() => router.push(`/invoices/${ticket.invoice}`)}
-                    className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
+                    className="border-b border-[#e8eaed] last:border-0 cursor-pointer hover:bg-[#f8f9fa] transition-colors"
                   >
                     <td className="py-3 px-4 text-gray-400 text-xs">
                       {page * pageSize + idx + 1}

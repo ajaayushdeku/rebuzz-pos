@@ -61,7 +61,7 @@ export default function StaffBoxContainer({
       `}</style>
 
       {/* Filter bar: role buttons + search */}
-      <div className="flex flex-row items-start sm:items-center justify-between gap-3 mb-8 px-2 sm:px-0">
+      <div className="flex flex-row items-start sm:items-center justify-between gap-3 mb-4 mt-6 px-2 sm:px-0">
         {/* Search */}
         <div className="relative w-full sm:w-64">
           <Search
@@ -73,13 +73,13 @@ export default function StaffBoxContainer({
             placeholder="Search employee..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-9 pl-9 pr-3 py-5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            className="h-9 w-full rounded-lg border border-[#dadce0] bg-white py-5 pl-9 pr-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
 
         {/* Role filter */}
-        <div className="relative flex items-center gap-2">
-          <RangeBadge className="absolute bottom-[-26px] right-0" />
+        <div className="relative flex  items-center  gap-2">
+          <RangeBadge variant="pill" className="absolute top-[-30px] right-0" />{" "}
           <SegmentedControl
             label="Role:"
             accent="blue"
@@ -91,9 +91,11 @@ export default function StaffBoxContainer({
       </div>
 
       {displayStaff.length === 0 ? (
-        <div className="flex flex-col items-center py-8 text-gray-400 text-sm">
-          <span className="font-medium">No staff data available</span>
-          <p className="mt-1 text-xs text-gray-300">
+        <div className="flex flex-col items-center py-8 text-center">
+          <span className="text-sm text-[#3c4043]">
+            No staff data available
+          </span>
+          <p className="mt-1 max-w-sm text-xs text-[#9aa0a6]">
             Try switching to a different date range or filter to see staff
             members and their performance.
           </p>

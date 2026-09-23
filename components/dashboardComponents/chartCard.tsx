@@ -108,6 +108,42 @@ export const yAxisTitle = (value: string) => ({
 });
 
 /**
+ * The ⓘ that sits beside a card title and explains how to read the card.
+ *
+ * ChartCard draws this from its `info` prop. Exported for the cards that
+ * build their own header — a card with several states usually writes the
+ * header out rather than mounting ChartCard four times.
+ */
+export function CardInfo({
+  heading,
+  body,
+  label,
+}: {
+  heading: string;
+  body: ReactNode;
+  /** Names the card for screen readers: "How to read Top Items Sold". */
+  label: string;
+}) {
+  return (
+    <HintTooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          aria-label={`How to read ${label}`}
+          className="flex cursor-help items-center rounded-full font-normal text-gray-400 outline-none transition-colors hover:text-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500"
+        >
+          <Info size={13} />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="top" sideOffset={6} className="max-w-64">
+        <p className="font-semibold">{heading}</p>
+        <p className="mt-1 leading-relaxed opacity-80">{body}</p>
+      </TooltipContent>
+    </HintTooltip>
+  );
+}
+
+/**
  * The card: border, padding, and the header row. Any content goes inside —
  * a chart, a table, a list — so every dashboard card can share the frame.
  */

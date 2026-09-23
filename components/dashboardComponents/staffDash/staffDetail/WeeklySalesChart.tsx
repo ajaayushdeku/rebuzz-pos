@@ -15,7 +15,15 @@ import type { BarShapeProps } from "recharts";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { parseNepalDateTime, type BillItem } from "./staffDetailHelpers";
 import { Loader2 } from "lucide-react";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { BarChart3 } from "lucide-react";
+import {
+  AXIS_TICK,
+  BAR_RADIUS,
+  CHART_PALETTE,
+  ChartCard,
+  ChartTooltipBox,
+  yAxisTitle,
+} from "../../chartCard";
 
 interface WeeklySalesChartProps {
   employeeId: string;
@@ -30,6 +38,9 @@ interface DayData {
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+/** The bars' one colour, shared by the bar shape and the hover box. */
+const BAR_COLOR = "#3b82f6";
+
 const CustomTooltip = ({
   active,
   payload,
@@ -42,17 +53,22 @@ const CustomTooltip = ({
 }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100">
-      <p className="text-gray-400 text-xs mb-1">{label}</p>
-      <span className="text-xs font-bold text-gray-800 ">
-        {payload[0].value} sales
-      </span>
-    </div>
+    <ChartTooltipBox
+      label={label}
+      rows={[
+        {
+          name: "Sales",
+          // The bars are one fixed colour, set on CustomBar below.
+          color: BAR_COLOR,
+          value: String(payload[0].value),
+        },
+      ]}
+    />
   );
 };
 
 const CustomBar = (props: BarShapeProps) => (
-  <Rectangle {...props} radius={[6, 6, 0, 0]} fill="#3b82f6" />
+  <Rectangle {...props} radius={BAR_RADIUS} fill={BAR_COLOR} />
 );
 
 const toDateStr = (d: Date): string => {
@@ -160,37 +176,27 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
   const yMax = maxOrders <= 1 ? 2 : maxOrders * 3;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 ">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-            <svg
-              className="w-4 h-4 text-blue-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-              />
-            </svg>
-          </div>
-
-          <ComponentHeader
-            title="Sales This Week"
-            subHeader={`${weekRange.startDate} to ${weekRange.endDate}  ·
-              ${chartData.reduce((s, d) => s + d.orders, 0)} total sales`}
-          />
-        </div>
-      </div>
-
+    <ChartCard
+      icon={BarChart3}
+      title="Sales This Week"
+      info={{
+        heading: "Reading this chart",
+        // Always the current week, regardless of the page's range.
+        body: "Bills this employee took on each day of the current week — it does not follow the date range at the top of the page. The number above a bar is that day's count.",
+      }}
+      subtitle={`${weekRange.startDate} to ${weekRange.endDate} · ${chartData.reduce(
+        (s, d) => s + d.orders,
+        0,
+      )} total sales`}
+      className="h-full"
+    >
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 size={20} className="animate-spin text-blue-500" />
+          <Loader2
+            size={20}
+            className="animate-spin"
+            style={{ color: CHART_PALETTE.subtitle }}
+          />
         </div>
       ) : error ? (
         <div className="text-center py-12">
@@ -209,10 +215,12 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
               />
             </svg>
           </div>
-          <p className="text-sm font-medium text-gray-500">{error}</p>
+          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+            {error}
+          </p>
           <button
             onClick={() => setReloadFlag((f) => f + 1)}
-            className="mt-3 px-4 py-1.5 text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+            className="mt-3 cursor-pointer rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
           >
             Retry
           </button>
@@ -249,12 +257,12 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
               margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
               barCategoryGap="30%"
             >
-              <CartesianGrid vertical={false} stroke="#f3f4f6" />
+              <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
               <XAxis
                 dataKey="name"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#9ca3af", fontSize: 12, fontWeight: 500 }}
+                tick={AXIS_TICK}
                 dy={8}
                 angle={-20}
                 textAnchor="end"
@@ -264,29 +272,30 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
                 allowDecimals={false}
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#9ca3af", fontSize: 12 }}
-                width={30}
+                tick={AXIS_TICK}
+                width={70}
                 domain={[0, yMax]}
+                label={yAxisTitle("Sales")}
               />
               <Tooltip
                 content={<CustomTooltip currency={currency} />}
-                cursor={{ fill: "rgba(59,130,246,0.05)" }}
+                cursor={{ fill: CHART_PALETTE.hover }}
               />
               <Bar
                 dataKey="orders"
                 shape={CustomBar}
+                radius={BAR_RADIUS}
                 label={{
                   position: "top",
-                  fill: "#6b7280",
+                  fill: CHART_PALETTE.axis,
                   fontSize: 11,
-                  fontWeight: 600,
                 }}
               />
             </BarChart>
           </ResponsiveContainer>
         </div>
       )}
-    </div>
+    </ChartCard>
   );
 };
 

@@ -1,16 +1,16 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Clock, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Clock, Loader2 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import {
   parseNepalDateTime,
-  extractTime,
+  // extractTime,
 } from "../staffDash/staffDetail/staffDetailHelpers";
 import type { ShiftDetail } from "../staffDash/staffDetail/staffDetailHelpers";
 import ShiftDetailModal from "../staffDash/staffDetail/ShiftDetailModal";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { CHART_PALETTE, ChartCard, ChartPager } from "../chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
 import SegmentedControl from "@/components/ui/SegmentedControl";
 // import { DateRangeFilter, type DateRangeValue } from "./DateRangeFilter";
@@ -169,8 +169,8 @@ export default function LatestShifts({
   const getStatusColor = (closingTime: string | undefined) => {
     const isClosed = !!closingTime;
     return isClosed
-      ? "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200"
-      : "bg-green-50 text-green-700 ring-1 ring-inset ring-green-200";
+      ? "border border-amber-200 bg-amber-50 text-amber-700"
+      : "border border-green-200 bg-green-50 text-green-700";
   };
 
   const fetchShiftDetail = useCallback(async (shiftId: string) => {
@@ -195,25 +195,18 @@ export default function LatestShifts({
   }, []);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition duration-300 p-5 w-full">
-      <div className="mb-10 flex items-center justify-between gap-3">
-        {/* {filteredShifts.length}{" "}
-            {filteredShifts.length === 1 ? "shift" : "shifts"} recorded */}
-
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-            <Clock size={15} className="text-blue-600" />
-          </div>
-          <ComponentHeader
-            title="Latest Shifts"
-            subHeader={`
-              Latest Shifts from all the employees`}
-          />
-          {/* The Show segments narrow this card further, but what they narrow
-              is whatever the page range fetched. */}
-        </div>
-
-        <div className="relative flex items-center gap-3">
+    <ChartCard
+      icon={Clock}
+      title="Latest Shifts"
+      rangeBadge={true}
+      info={{
+        heading: "Reading this table",
+        // The window segments narrow what the page range already fetched.
+        body: "Shifts opened in the date range at the top of the page, newest first. The Show buttons narrow that further to the last few days — they never reach past the page's range. Total sales is what was rung up during the shift; click a row for its full detail.",
+      }}
+      subtitle="Latest Shifts from all the employees"
+      controls={
+        <div className="relative flex flex-row  items-center w-full justify-between md:justify-end gap-2 mb-6">
           <SegmentedControl
             label="Show:"
             accent="blue"
@@ -221,21 +214,44 @@ export default function LatestShifts({
             value={activePreset}
             onChange={selectWindow}
           />
-          <RangeBadge className="absolute bottom-[-28px] right-0" />
-        </div>
-      </div>
 
+          {!loading && totalPages > 1 && (
+            <ChartPager
+              first={safePage * pageSize + 1}
+              last={Math.min((safePage + 1) * pageSize, filteredShifts.length)}
+              total={filteredShifts.length}
+              onPrev={() => setPage(Math.max(0, safePage - 1))}
+              onNext={() => setPage(Math.min(totalPages - 1, safePage + 1))}
+              itemLabel="shifts"
+            />
+          )}
+
+          <div className="absolute right-0 bottom-[-30px] hidden md:block">
+            <RangeBadge variant="pill" />
+          </div>
+        </div>
+      }
+    >
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 size={20} className="animate-spin text-amber-500" />
+          <Loader2
+            size={20}
+            className="animate-spin"
+            style={{ color: CHART_PALETTE.subtitle }}
+          />
         </div>
       ) : filteredShifts.length === 0 ? (
         <div className="text-center py-12">
-          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
-            <Clock size={24} className="text-gray-500" />
+          <div
+            className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full"
+            style={{ backgroundColor: CHART_PALETTE.hover }}
+          >
+            <Clock size={24} style={{ color: CHART_PALETTE.subtitle }} />
           </div>
-          <p className="text-sm font-medium text-gray-500">No shifts found</p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+            No shifts found
+          </p>
+          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
             Shift data will appear here
           </p>
         </div>
@@ -244,21 +260,29 @@ export default function LatestShifts({
           <div className="overflow-x-auto">
             <table className="w-full min-w-[500px] text-sm">
               <thead>
-                <tr className="text-[11px] text-gray-400  tracking-wider border-b border-gray-100">
-                  <th className="text-left pb-3 pl-0 font-semibold">S.No.</th>
-                  <th className="text-left pb-3 pl-0 font-semibold">
+                <tr
+                  className="border-b text-[11px]"
+                  style={{
+                    borderColor: CHART_PALETTE.grid,
+                    color: CHART_PALETTE.axis,
+                  }}
+                >
+                  <th className="pb-2.5 pl-0 pt-1 text-left font-normal">
+                    S.No.
+                  </th>
+                  <th className="pb-2.5 pl-0 pt-1 text-left font-normal">
                     Employee
                   </th>
-                  <th className="text-left pb-3 px-3 font-semibold">
-                    Opened At
+                  <th className="px-3 pb-2.5 pt-1 text-left font-normal">
+                    Opened at
                   </th>
-                  <th className="text-left pb-3 px-3 font-semibold">
-                    Closed At
+                  <th className="px-3 pb-2.5 pt-1 text-left font-normal">
+                    Closed at
                   </th>
-                  <th className="text-right pb-3 px-3 font-semibold">
-                    Total Sales
+                  <th className="px-3 pb-2.5 pt-1 text-right font-normal">
+                    Total sales
                   </th>
-                  <th className="text-center pb-3 px-3 font-semibold">
+                  <th className="px-3 pb-2.5 pt-1 text-center font-normal">
                     Status
                   </th>
                 </tr>
@@ -267,11 +291,12 @@ export default function LatestShifts({
                 {pagedShifts.map((shift, idx) => (
                   <tr
                     key={shift.shiftId}
-                    className="border-b border-gray-50/80 last:border-0 transition-colors cursor-pointer"
+                    className="cursor-pointer border-b transition-colors last:border-0"
                     style={{
+                      borderColor: CHART_PALETTE.grid,
                       backgroundColor:
                         hoveredRow === shift.shiftId
-                          ? "#f9fafb"
+                          ? CHART_PALETTE.hover
                           : "transparent",
                     }}
                     onMouseEnter={() => setHoveredRow(shift.shiftId)}
@@ -281,37 +306,58 @@ export default function LatestShifts({
                     }
                   >
                     <td className="py-3 pl-0">
-                      <span className="text-[13px] font-semibold text-gray-400">
+                      <span
+                        className="text-[13px] tabular-nums"
+                        style={{ color: CHART_PALETTE.subtitle }}
+                      >
                         {idx + 1}
                       </span>
                     </td>
                     <td className="py-3 pl-0">
-                      <span className="text-[13px] font-semibold text-gray-900">
+                      <span
+                        className="text-[13px]"
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         {shift.employeeName || "Unknown"}
                       </span>
                     </td>
                     <td className="py-3 px-3">
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                        <span
+                          className="text-[11px]"
+                          style={{ color: CHART_PALETTE.subtitle }}
+                        >
                           {formatFullDate(shift.openingTime)}
                         </span>
-                        <span className="text-[12px] font-medium text-gray-700">
+                        <span
+                          className="text-xs"
+                          style={{ color: CHART_PALETTE.title }}
+                        >
                           {formatDate(shift.openingTime)}
                         </span>
                       </div>
                     </td>
                     <td className="py-3 px-3">
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                        <span
+                          className="text-[11px]"
+                          style={{ color: CHART_PALETTE.subtitle }}
+                        >
                           {formatFullDate(shift.closingTime)}
                         </span>
-                        <span className="text-[12px] font-medium text-gray-700">
+                        <span
+                          className="text-xs"
+                          style={{ color: CHART_PALETTE.title }}
+                        >
                           {formatDate(shift.closingTime)}
                         </span>
                       </div>
                     </td>
                     <td className="py-3 px-3 text-right">
-                      <span className="text-[13px] font-bold text-gray-900 tracking-wide tabular-nums">
+                      <span
+                        className="text-[13px] font-medium tabular-nums"
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         {formatCurrencySymbol(
                           shift.totalSale ?? 0,
                           currency.symbol,
@@ -321,7 +367,7 @@ export default function LatestShifts({
                     </td>
                     <td className="py-3 px-3 text-center">
                       <span
-                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide ${getStatusColor(shift.closingTime)}`}
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] ${getStatusColor(shift.closingTime)}`}
                       >
                         {getStatus(shift.closingTime)}
                       </span>
@@ -331,39 +377,6 @@ export default function LatestShifts({
               </tbody>
             </table>
           </div>
-
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
-              <button
-                onClick={() => setPage(Math.max(0, safePage - 1))}
-                disabled={safePage === 0}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  safePage === 0
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                <ChevronLeft size={14} />
-                Previous
-              </button>
-              <span className="text-xs text-gray-400 font-medium">
-                Page {safePage + 1} of {totalPages} · {filteredShifts.length}{" "}
-                shifts
-              </span>
-              <button
-                onClick={() => setPage(Math.min(totalPages - 1, safePage + 1))}
-                disabled={safePage >= totalPages - 1}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  safePage >= totalPages - 1
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                Next
-                <ChevronRight size={14} />
-              </button>
-            </div>
-          )}
         </>
       )}
 
@@ -373,6 +386,6 @@ export default function LatestShifts({
         loading={modalLoading}
         onClose={handleModalClose}
       />
-    </div>
+    </ChartCard>
   );
 }

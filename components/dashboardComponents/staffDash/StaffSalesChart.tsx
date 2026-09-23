@@ -24,7 +24,13 @@ import {
 } from "lucide-react";
 import SampleDataBadge from "@/components/ui/sampledatabadge";
 import StaffFilterModal from "./StaffFilterModal";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  AXIS_TICK,
+  CHART_PALETTE,
+  ChartCard,
+  ChartTooltipBox,
+  yAxisTitle,
+} from "../chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
 import { FilterSelect } from "@/components/ui/FilterSelect";
 import { HOUR_RANGES } from "@/utils/formatHourReportToday";
@@ -100,26 +106,14 @@ const CustomTooltip = ({
   const activeEntries = payload.filter((p) => (p.value as number) > 0);
   if (!activeEntries.length) return null;
   return (
-    <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100 min-w-32">
-      <p className="text-gray-400 text-xs mb-2 font-medium">{label}</p>
-      {activeEntries.map((entry) => (
-        <div
-          key={entry.name}
-          className="flex items-center justify-between gap-4"
-        >
-          <div className="flex items-center gap-1.5">
-            <span
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{ backgroundColor: entry.color as string }}
-            />
-            <span className="text-xs text-gray-600">{entry.name}</span>
-          </div>
-          <span className="text-xs font-bold text-gray-800">
-            {entry.value as number}
-          </span>
-        </div>
-      ))}
-    </div>
+    <ChartTooltipBox
+      label={label}
+      rows={activeEntries.map((entry) => ({
+        name: String(entry.name ?? ""),
+        color: (entry.color as string) ?? CHART_PALETTE.blue,
+        value: String(entry.value as number),
+      }))}
+    />
   );
 };
 
@@ -130,15 +124,17 @@ const CustomLegend = ({
 }: {
   staffLines: { key: string; color: string }[];
 }) => (
-  <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-2">
+  <div className="mt-3 flex flex-wrap items-center justify-end gap-x-5 gap-y-1.5 pr-2">
     {staffLines.map(({ key, color }) => (
-      <div key={key} className="flex items-center gap-1.5">
+      <span key={key} className="flex items-center gap-1.5">
         <span
-          className="w-2 h-2 rounded-full shrink-0"
+          className="h-2.5 w-2.5 shrink-0 rounded-full"
           style={{ backgroundColor: color }}
         />
-        <span className="text-xs text-gray-600">{key}</span>
-      </div>
+        <span className="text-[13px]" style={{ color: CHART_PALETTE.title }}>
+          {key}
+        </span>
+      </span>
     ))}
   </div>
 );
@@ -303,44 +299,23 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg p-5 transition duration-300 w-full">
-      {isEmpty && <SampleDataBadge />}
-
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-6">
-        <div className="flex flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
-              <TrendingUp size={15} className="text-green-600" />
-            </div>
-            <ComponentHeader
-              title="Sales Per Hour by Employee"
-              subHeader="Throughput breakdown across the day per team member."
-            />
-          </div>
-
-          <div className="block md:hidden flex flex-row items-center gap-2">
-            <RangeBadge className=" md:ml-0" />
-            {/* Employee filter */}
-            {!isEmpty && allStaffNames.length > 0 && (
-              <button
-                onClick={() => setModalOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-xl hover:bg-blue-50 transition-colors shrink-0"
-              >
-                <SlidersHorizontal size={12} />
-                Filter Employee
-                {selectedStaff.length < allStaffNames.length && (
-                  <span className="bg-blue-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold">
-                    {selectedStaff.length}
-                  </span>
-                )}
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <div className="flex flex-row-reverese md:flex-row items-center gap-2">
+    <ChartCard
+      icon={TrendingUp}
+      // Green, as before: Tailwind's green-600 / green-200 / green-50.
+      iconColor="#16a34a"
+      iconBorder="#bbf7d0"
+      iconBg="#f0fdf4"
+      title="Sales Per Hour by Employee"
+      rangeBadge={true}
+      info={{
+        heading: "Reading this chart",
+        // Hour buckets over the page's range, one line per employee.
+        body: "Bills taken per hour of the day by each employee, across the date range at the top of the page — so an hour's figure is the total for that hour over every day in the range. Use the hour range to narrow the day, and Filter employee to pick who is drawn.",
+      }}
+      subtitle="Throughput breakdown across the day per team member."
+      controls={
+        <div className="flex flex-col items-end gap-1.5">
+          <div className="relative flex flex-row items-center gap-2">
             {/* Hour Range Filter — same control as the hourly sales trend */}
             <FilterSelect
               value={presetValue}
@@ -348,10 +323,16 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
               onChange={handlePresetChange}
               className="w-[210px]"
             />
-            <div className="w-px h-6 bg-gray-300 mx-1" />
+            <div
+              className="mx-1 h-6 w-px"
+              style={{ backgroundColor: CHART_PALETTE.control }}
+            />
             {/* Custom From / To hour inputs */}
             <div className="flex items-center gap-1.5">
-              <label className="text-xs text-gray-400 whitespace-nowrap">
+              <label
+                className="whitespace-nowrap text-xs"
+                style={{ color: CHART_PALETTE.subtitle }}
+              >
                 From
               </label>
               <input
@@ -360,9 +341,12 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
                 max={23}
                 value={fromHour}
                 onChange={(e) => handleFromChange(Number(e.target.value))}
-                className="w-14 text-xs border border-gray-200 rounded-lg px-2 py-2.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-2.5 text-xs text-[#3c4043] tabular-nums focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-500"
               />
-              <label className="text-xs text-gray-400 whitespace-nowrap">
+              <label
+                className="whitespace-nowrap text-xs"
+                style={{ color: CHART_PALETTE.subtitle }}
+              >
                 To
               </label>
               <input
@@ -371,34 +355,46 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
                 max={23}
                 value={toHour}
                 onChange={(e) => handleToChange(Number(e.target.value))}
-                className="w-14 text-xs border border-gray-200 rounded-lg px-2 py-2.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-2.5 text-xs text-[#3c4043] tabular-nums focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
 
-            <div className="relative hidden md:block">
-              {/* Employee filter */}
-              {!isEmpty && allStaffNames.length > 0 && (
-                <button
-                  onClick={() => setModalOpen(true)}
-                  className="flex flex-row items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-xl hover:bg-blue-50 transition-colors shrink-0 "
-                >
-                  <SlidersHorizontal size={12} />
-                  Filter Employee
-                  {selectedStaff.length < allStaffNames.length && (
-                    <span className="bg-blue-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold">
-                      {selectedStaff.length}
-                    </span>
-                  )}
-                </button>
-              )}
+            <div
+              className="mx-1 h-6 w-px"
+              style={{ backgroundColor: CHART_PALETTE.control }}
+            />
 
-              <RangeBadge className="absolute right-0 bottom-[-25px] " />
+            {/* Employee filter */}
+            {!isEmpty && allStaffNames.length > 0 && (
+              <button
+                onClick={() => setModalOpen(true)}
+                className="flex shrink-0 cursor-pointer flex-row items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-2.5 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
+              >
+                <SlidersHorizontal size={12} />
+                Filter employee
+                {selectedStaff.length < allStaffNames.length && (
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">
+                    {selectedStaff.length}
+                  </span>
+                )}
+              </button>
+            )}
+
+            <div className="absolute right-0 bottom-[-22px] hidden md:block">
+              {" "}
+              <RangeBadge variant="pill" />
             </div>
           </div>
 
-          {rangeError && <p className="text-xs text-red-500">{rangeError}</p>}
+          {rangeError && (
+            <p className="text-xs" style={{ color: CHART_PALETTE.bad }}>
+              {rangeError}
+            </p>
+          )}
         </div>
-      </div>
+      }
+    >
+      {isEmpty && <SampleDataBadge />}
 
       {/* Selected staff summary pills */}
       {!isEmpty && selectedStaff.length < allStaffNames.length && (
@@ -406,7 +402,7 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
           {selectedStaff.map((name) => (
             <span
               key={name}
-              className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border font-medium"
+              className="flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
               style={{
                 borderColor: colorMap.get(name) + "60",
                 backgroundColor: colorMap.get(name) + "15",
@@ -428,7 +424,7 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
         {canScrollLeft && (
           <button
             onClick={() => scroll("left")}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-2 shadow-md transition-all hover:shadow-lg"
+            className="absolute left-0 top-1/2 z-10 -translate-y-1/2 cursor-pointer rounded-full border border-[#dadce0] bg-white/90 p-2 shadow-sm transition-colors hover:bg-white"
             aria-label="Scroll left"
           >
             <ChevronLeft className="w-4 h-4 text-gray-600" />
@@ -438,7 +434,7 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
         {canScrollRight && (
           <button
             onClick={() => scroll("right")}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-2 shadow-md transition-all hover:shadow-lg"
+            className="absolute right-0 top-1/2 z-10 -translate-y-1/2 cursor-pointer rounded-full border border-[#dadce0] bg-white/90 p-2 shadow-sm transition-colors hover:bg-white"
             aria-label="Scroll right"
           >
             <ChevronRight className="w-4 h-4 text-gray-600" />
@@ -460,7 +456,7 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
                 data={flatData}
                 margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
               >
-                <CartesianGrid vertical={false} stroke="#f3f4f6" />
+                <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
                 <XAxis
                   dataKey="hour"
                   axisLine={false}
@@ -480,11 +476,11 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
                       x={x}
                       y={Number(y) + 8}
                       textAnchor="middle"
-                      fill="#9ca3af"
-                      fontSize={11}
+                      fill={CHART_PALETTE.axis}
+                      fontSize={12}
                     >
                       {payload.value}
-                      <tspan fontSize={9} fill="#b0b7c3">
+                      <tspan fontSize={10} fill={CHART_PALETTE.subtitle}>
                         {" "}
                         [{toAmPm(payload.value)}]
                       </tspan>
@@ -494,10 +490,11 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "#9ca3af", fontSize: 12 }}
+                  tick={AXIS_TICK}
                   ticks={yTicks}
                   domain={[0, paddedMax]}
-                  width={30}
+                  width={70}
+                  label={yAxisTitle("Bills taken")}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend content={<CustomLegend staffLines={staffLines} />} />
@@ -533,6 +530,6 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
         colorMap={colorMap}
         onApply={setSelectedStaff}
       />
-    </div>
+    </ChartCard>
   );
 }

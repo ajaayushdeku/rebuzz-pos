@@ -19,7 +19,7 @@ import {
   normalizePaymentMethod,
   paymentMethodStyle,
 } from "@/lib/config/transaction";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { CardInfo, CHART_PALETTE } from "../../chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
 import SegmentedControl, {
   toSegmentOptions,
@@ -241,19 +241,38 @@ export default function BillsSection({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 ">
+      <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
-            <Receipt size={16} className="text-purple-500" />
+          <div className="flex min-w-0 items-center gap-3">
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+              style={{ borderColor: "#e9d5ff", backgroundColor: "#faf5ff" }}
+            >
+              <Receipt size={16} style={{ color: "#9333ea" }} />
+            </div>
+            <div className="min-w-0">
+              <h3
+                className="flex items-center gap-1.5 text-[15px] font-normal"
+                style={{ color: CHART_PALETTE.title }}
+              >
+                Transactions / Bills
+                <CardInfo
+                  heading="Reading this table"
+                  label="Transactions / Bills"
+                  body="Bills this employee closed in the date range at the top of the page. Use the status buttons to narrow it, and the search box to find one by invoice number, bill number or customer name."
+                />
+              </h3>
+              <p
+                className="mt-0.5 text-xs tracking-wide"
+                style={{ color: CHART_PALETTE.subtitle }}
+              >
+                Loading transactions…
+              </p>
+            </div>
           </div>
-
-          <ComponentHeader
-            title="Transactions / Bills"
-            subHeader="Loading transactions..."
-          />
         </div>
         <div className="flex items-center justify-center py-12">
-          <Loader2 size={20} className="animate-spin text-purple-500" />
+          <Loader2 size={20} className="animate-spin text-[#9aa0a6]" />
         </div>
       </div>
     );
@@ -261,22 +280,41 @@ export default function BillsSection({
 
   if (error) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 ">
+      <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
-            <Receipt size={16} className="text-purple-500" />
+          <div className="flex min-w-0 items-center gap-3">
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+              style={{ borderColor: "#e9d5ff", backgroundColor: "#faf5ff" }}
+            >
+              <Receipt size={16} style={{ color: "#9333ea" }} />
+            </div>
+            <div className="min-w-0">
+              <h3
+                className="flex items-center gap-1.5 text-[15px] font-normal"
+                style={{ color: CHART_PALETTE.title }}
+              >
+                Transactions / Bills
+                <CardInfo
+                  heading="Reading this table"
+                  label="Transactions / Bills"
+                  body="Bills this employee closed in the date range at the top of the page. Use the status buttons to narrow it, and the search box to find one by invoice number, bill number or customer name."
+                />
+              </h3>
+              <p
+                className="mt-0.5 text-xs tracking-wide"
+                style={{ color: CHART_PALETTE.subtitle }}
+              >
+                Unable to load data
+              </p>
+            </div>
           </div>
-
-          <ComponentHeader
-            title="Transactions / Bills"
-            subHeader=" Unable to load data"
-          />
         </div>
         <div className="text-center py-8">
-          <p className="text-sm font-medium text-gray-500">{error}</p>
+          <p className="text-sm text-[#3c4043]">{error}</p>
           <button
             onClick={() => setLoading(true)}
-            className="mt-3 px-4 py-1.5 text-xs font-medium text-white bg-purple-500 hover:bg-purple-600 rounded-lg transition-colors"
+            className="mt-3 cursor-pointer rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
           >
             Retry
           </button>
@@ -286,21 +324,39 @@ export default function BillsSection({
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 ">
+    <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
-            <Receipt size={16} className="text-purple-500" />
+          <div className="flex min-w-0 items-center gap-3">
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+              style={{ borderColor: "#e9d5ff", backgroundColor: "#faf5ff" }}
+            >
+              <Receipt size={16} style={{ color: "#9333ea" }} />
+            </div>
+            <div className="min-w-0">
+              <h3
+                className="flex items-center gap-1.5 text-[15px] font-normal"
+                style={{ color: CHART_PALETTE.title }}
+              >
+                Transactions / Bills
+                <CardInfo
+                  heading="Reading this table"
+                  label="Transactions / Bills"
+                  body="Bills this employee closed in the date range at the top of the page. Use the status buttons to narrow it, and the search box to find one by invoice number, bill number or customer name."
+                />
+              </h3>
+              <p
+                className="mt-0.5 text-xs tracking-wide"
+                style={{ color: CHART_PALETTE.subtitle }}
+              >
+                {`${filteredBills.length} ${filteredBills.length === 1 ? "bill" : "bills"}`}
+              </p>
+            </div>
           </div>
-
-          <ComponentHeader
-            title="Transactions / Bills"
-            subHeader={`${filteredBills.length}
-              ${filteredBills.length === 1 ? "bill" : "bills"}`}
-          />
         </div>
 
-        <RangeBadge className="ml-0" />
+        <RangeBadge variant="pill" />
       </div>
 
       {/* Search & Filter Bar */}
@@ -319,7 +375,7 @@ export default function BillsSection({
               setSearchQuery(e.target.value);
               setPage(0);
             }}
-            className="w-full pl-9 pr-8 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="h-9 w-full rounded-lg border border-[#dadce0] bg-white pl-9 pr-8 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
           {searchQuery && (
             <button
@@ -346,13 +402,11 @@ export default function BillsSection({
 
       {displayBills.length === 0 ? (
         <div className="text-center py-12">
-          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4]">
             <Receipt size={24} className="text-gray-500" />
           </div>
-          <p className="text-sm font-medium text-gray-500">
-            No transaction data found
-          </p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-sm text-[#3c4043]">No transaction data found</p>
+          <p className="mt-1 text-xs text-[#9aa0a6]">
             No transactions found for this date range
           </p>
         </div>
@@ -360,31 +414,31 @@ export default function BillsSection({
         <div className="overflow-x-auto scrollbar-hide">
           <table className="w-full text-sm min-w-[800px]">
             <thead>
-              <tr className="text-xs text-gray-400 border-b border-gray-100">
-                <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+              <tr className="border-b border-[#e8eaed] text-[11px] text-[#5f6368]">
+                <th className="text-left px-4 pb-2.5 pt-1 font-normal w-12">
                   S.No
                 </th>
-                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                <th className="text-left px-4 pb-2.5 pt-1 font-normal">
                   Bill ID
                 </th>
-                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                <th className="text-left px-4 pb-2.5 pt-1 font-normal">
                   Order ID
                 </th>
-                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                <th className="text-left px-4 pb-2.5 pt-1 font-normal">
                   Date / Time
                 </th>
-                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                <th className="text-left px-4 pb-2.5 pt-1 font-normal">
                   Invoice Name
                 </th>
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                <th className="text-center px-4 pb-2.5 pt-1 font-normal">
                   Payment
                 </th>
-                <th className="text-right pb-3 pt-3 px-4 font-medium">
+                <th className="text-right px-4 pb-2.5 pt-1 font-normal">
                   <span className="flex items-center justify-end gap-1">
                     Total
                   </span>
                 </th>
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                <th className="text-center px-4 pb-2.5 pt-1 font-normal">
                   Status
                 </th>
               </tr>
@@ -405,7 +459,7 @@ export default function BillsSection({
                   <tr
                     key={bill._id}
                     onClick={() => router.push(`/invoices/${bill.invoiceNo}`)}
-                    className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
+                    className="border-b border-[#e8eaed] last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
                   >
                     <td className="py-3 px-4 text-gray-400 text-xs">
                       {page * pageSize + idx + 1}

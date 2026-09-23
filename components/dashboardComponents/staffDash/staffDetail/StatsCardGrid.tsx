@@ -61,13 +61,10 @@ function LoadMoreButton({
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-100 hover:text-blue-700"
+      className="flex cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
     >
-      <ChevronDown size={14} />
-      Load More{" "}
-      <span className="text-xs text-blue-400">
-        ( {Math.min(increment, remaining)} more )
-      </span>
+      <ChevronDown size={12} />
+      Show {Math.min(increment, remaining)} more
     </button>
   );
 }
@@ -104,17 +101,17 @@ export default function StatsCardGrid({
   // ── Error state ────────────────────────────────────────────────────────────
   if (error) {
     return (
-      <div className="mb-6 flex items-center justify-between gap-3 rounded-xl border border-red-100 bg-red-50/60 px-4 py-3">
+      <div className="mb-6 flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
         <div className="flex min-w-0 items-center gap-2.5">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100">
             <AlertTriangle size={16} className="text-red-600" />
           </div>
-          <p className="truncate text-sm font-medium text-gray-600">{error}</p>
+          <p className="truncate text-[13px] text-[#3c4043]">{error}</p>
         </div>
         {onRetry && (
           <button
             onClick={onRetry}
-            className="shrink-0 rounded-lg bg-red-500 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-600"
+            className="shrink-0 cursor-pointer rounded-full bg-red-600 px-3 py-1 text-[11px] text-white transition-colors hover:bg-red-700"
           >
             Retry
           </button>
@@ -126,7 +123,7 @@ export default function StatsCardGrid({
   // ── Empty state ────────────────────────────────────────────────────────────
   if (!overview) {
     return (
-      <div className="bg-surface-card border-surface-border mb-6 rounded-xl border px-4 py-8 text-center shadow-sm">
+      <div className="mb-6 rounded-2xl border border-[#e3e3e3] bg-white px-4 py-8 text-center">
         <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-gray-50">
           <BarChart3 size={20} className="text-gray-300" />
         </div>
@@ -338,9 +335,11 @@ export default function StatsCardGrid({
               onClick={() =>
                 setVisibleCount((prev) => Math.max(prev - INCREMENT, 4))
               }
-              className="flex flex-row items-center gap-1 rounded-lg border border-gray-200 bg-gray-100 px-4 py-2 text-xs font-medium text-gray-700 transition hover:bg-gray-200"
+              // The undo of "Show more", so it carries the negative colour
+              // rather than looking like a second way forward.
+              className="flex cursor-pointer flex-row items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11px] text-rose-700 transition-colors hover:bg-rose-100"
             >
-              <ChevronUp size={14} />
+              <ChevronUp size={12} />
               Hide
             </button>
           )}

@@ -26,7 +26,8 @@ export type StatSpec = {
   ranged?: boolean;
 };
 
-export const STAT_CARD = "  rounded-xl  p-4 shadow-sm md:p-5";
+export const STAT_CARD =
+  "rounded-2xl border border-[#e3e3e3] bg-white px-5 py-4";
 
 export default function StatCard({
   label,
@@ -37,23 +38,21 @@ export default function StatCard({
   ranged = false,
 }: Omit<StatSpec, "key">) {
   return (
-    <div
-      className={`${STAT_CARD} transition-shadow duration-200 hover:shadow-md`}
-    >
+    <div className={STAT_CARD}>
       <div className="flex items-center justify-between gap-2">
-        <span className="truncate text-xs font-medium text-gray-500 md:text-[13px]">
-          {label}
-        </span>
+        <span className="truncate text-[13px] text-[#5f6368]">{label}</span>
+        {/* The square takes the icon's colour, so `border-current/20` frames
+            it in the same hue — as the card icons do. */}
         <div
-          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg md:h-8 md:w-8 ${bgColor}`}
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 ${bgColor} ${iconColor}`}
         >
-          <Icon size={15} className={iconColor} />
+          <Icon size={15} />
         </div>
       </div>
 
       {/* Tag rides the value row so it costs no extra height. */}
-      <div className="mt-3 flex items-baseline justify-between gap-2 md:mt-4">
-        <p className="truncate text-xl font-bold tracking-wide tabular-nums text-gray-900 md:text-[22px]">
+      <div className="mt-3 flex items-baseline justify-between gap-2">
+        <p className="truncate text-xl font-semibold tracking-tight tabular-nums text-[#3c4043] md:text-[22px]">
           {value}
         </p>
         {ranged && <RangeTag />}
@@ -68,9 +67,9 @@ export function StatCardSkeleton() {
     <div className={`${STAT_CARD} animate-pulse`}>
       <div className="flex items-center justify-between gap-2">
         <div className="h-3.5 w-20 rounded bg-gray-100" />
-        <div className="h-7 w-7 shrink-0 rounded-lg bg-gray-100 md:h-8 md:w-8" />
+        <div className="h-8 w-8 shrink-0 rounded-lg bg-gray-100" />
       </div>
-      <div className="mt-3 h-6 w-24 rounded bg-gray-100 md:mt-4" />
+      <div className="mt-3 h-6 w-24 rounded bg-gray-100" />
     </div>
   );
 }
