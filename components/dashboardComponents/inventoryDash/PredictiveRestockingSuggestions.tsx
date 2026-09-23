@@ -1,7 +1,7 @@
 import { PackageCheck, Pin, PackagePlus } from "lucide-react";
 import { InventoryItem } from "@/services/apiInventory";
 import { MergedSalesItem } from "@/services/apiInventory";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { CHART_PALETTE, ChartCard } from "../chartCard";
 import { nameTokens } from "@/lib/salesVelocity";
 import { formatVariantName } from "@/utils/helper";
 
@@ -157,15 +157,15 @@ function deriveSuggestions(
 }
 
 const priorityStyles: Record<Priority, string> = {
-  High: "bg-red-100 text-red-600 font-semibold",
-  Medium: "bg-blue-100 text-blue-600 font-semibold",
-  Low: "bg-gray-100 text-gray-500 font-semibold",
+  High: "border border-red-200 bg-red-50 text-red-600",
+  Medium: "border border-blue-200 bg-blue-50 text-blue-600",
+  Low: "border border-gray-200 bg-gray-50 text-gray-500",
 };
 
 const pinColors: Record<Priority, string> = {
-  High: "text-red-400",
-  Medium: "text-blue-400",
-  Low: "text-gray-300",
+  High: "text-red-500",
+  Medium: "text-blue-500",
+  Low: "text-gray-400",
 };
 
 export default function PredictiveRestockingSuggestions({
@@ -178,47 +178,53 @@ export default function PredictiveRestockingSuggestions({
   const suggestions = deriveSuggestions(inventory, sales);
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-      <div className="mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
-            <PackagePlus size={15} className="text-indigo-600" />
-          </div>
-          <ComponentHeader
-            title="Predictive Restocking Suggestions"
-            subHeader="Restock recommendations based on current stock levels & sales velocity"
-          />
-        </div>
-      </div>
-
+    <ChartCard
+      icon={PackagePlus}
+      // Indigo, as before: Tailwind's indigo-600 / indigo-200 / indigo-50.
+      iconColor="#4f46e5"
+      iconBorder="#c7d2fe"
+      iconBg="#eef2ff"
+      title="Predictive Restocking Suggestions"
+      info={{
+        heading: "Reading this table",
+        // From deriveSuggestions above.
+        body: "An item appears when it is at or below its low-stock threshold, or when its recent sales would empty the shelf within five days. The suggested amount tops a below-threshold item up to three times its threshold, and a fast-selling one up to about two weeks of demand. Variants are judged on their own stock, and the six most urgent are shown.",
+      }}
+      subtitle="Restock recommendations based on current stock levels & sales velocity"
+    >
       {suggestions.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-8 text-center">
-          <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mb-2">
-            <PackageCheck size={24} className="text-green-500" />
+          <div className="mb-2 flex h-14 w-14 items-center justify-center rounded-full bg-green-50">
+            <PackageCheck size={24} className="text-green-600" />
           </div>
-          <p className="text-sm font-medium text-gray-500">
+          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
             All stock levels are healthy
           </p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
             No items are running low right now
           </p>
         </div>
       ) : (
-        // <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
-        <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          <table className="w-full text-sm min-w-[300px]">
+        <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <table className="w-full min-w-[300px] text-sm">
             <thead>
-              <tr className="text-xs text-gray-400 border-b border-gray-100">
-                <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
+              <tr
+                className="border-b text-left"
+                style={{
+                  borderColor: CHART_PALETTE.grid,
+                  color: CHART_PALETTE.axis,
+                }}
+              >
+                <th className="px-4 pb-2.5 pt-1 text-[11px] font-normal">
                   Item
                 </th>
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
-                  Suggested Restock
+                <th className="px-4 pb-2.5 pt-1 text-center text-[11px] font-normal">
+                  Suggested restock
                 </th>
-                <th className="text-left pb-3 pt-3 px-4 font-medium pl-4">
+                <th className="px-4 pb-2.5 pt-1 text-[11px] font-normal">
                   Priority
                 </th>
-                <th className="text-left pb-3 pt-3 px-4 font-medium pl-4">
+                <th className="px-4 pb-2.5 pt-1 text-[11px] font-normal">
                   Reason
                 </th>
               </tr>
@@ -227,32 +233,42 @@ export default function PredictiveRestockingSuggestions({
               {suggestions.map((item, idx) => (
                 <tr
                   key={idx}
-                  className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
+                  className="border-b transition-colors last:border-0 hover:bg-[#f8f9fa]"
+                  style={{ borderColor: CHART_PALETTE.grid }}
                 >
-                  <td className="py-3 px-4 text-gray-400 text-xs">
+                  <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <Pin
                         size={13}
                         className={`shrink-0 ${pinColors[item.priority]}`}
                       />
-                      <span className="font-medium text-gray-800">
+                      <span
+                        className="text-[13px]"
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         {item.name}
                       </span>
                     </div>
                   </td>
 
-                  <td className="py-3 text-center font-semibold text-gray-700">
+                  <td
+                    className="px-4 py-3 text-center text-[13px] font-medium tabular-nums"
+                    style={{ color: CHART_PALETTE.title }}
+                  >
                     +{item.suggestedRestock}{" "}
                     {item.suggestedRestock === 1 ? "unit" : "units"}
                   </td>
-                  <td className="py-3 pl-4">
+                  <td className="px-4 py-3">
                     <span
-                      className={`text-xs px-2 py-0.5 rounded-full ${priorityStyles[item.priority]}`}
+                      className={`rounded-full px-2 py-0.5 text-[11px] ${priorityStyles[item.priority]}`}
                     >
                       {item.priority}
                     </span>
                   </td>
-                  <td className="py-3 pl-4 text-xs text-gray-400 max-w-xs">
+                  <td
+                    className="max-w-xs px-4 py-3 text-[11px]"
+                    style={{ color: CHART_PALETTE.subtitle }}
+                  >
                     {item.reason}
                   </td>
                 </tr>
@@ -261,6 +277,6 @@ export default function PredictiveRestockingSuggestions({
           </table>
         </div>
       )}
-    </div>
+    </ChartCard>
   );
 }

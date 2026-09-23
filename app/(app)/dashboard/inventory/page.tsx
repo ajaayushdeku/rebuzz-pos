@@ -116,7 +116,7 @@ export default function InventoryPage() {
           </Suspense>
         </ChartErrorBoundary>
 
-        <div className="flex flex-col-reverse lg:flex-row gap-6 ">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ChartErrorBoundary>
             <Suspense fallback={<PredictiveRestockingSkeleton />}>
               <PredictiveRestockingSuggestionsWrapper />
@@ -129,7 +129,6 @@ export default function InventoryPage() {
             </Suspense>
           </ChartErrorBoundary>
         </div>
-
       </div>
     </div>
   );

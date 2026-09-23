@@ -15,6 +15,7 @@ import { fmtMinutes } from "@/lib/mockData/mock-live-tables";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useTableTicket } from "@/hooks/useTableTicket";
+import { CHART_PALETTE } from "../chartCard";
 
 type OrderRow = {
   name: string;
@@ -24,14 +25,14 @@ type OrderRow = {
 };
 
 const STATUS_BADGE: Record<string, string> = {
-  occupied: "bg-blue-200 text-blue-700",
-  free: "bg-green-100 text-green-700",
+  occupied: "border border-blue-200 bg-blue-50 text-blue-700",
+  free: "border border-green-200 bg-green-50 text-green-700",
 };
 
 const ITEM_STATUS_BADGE: Record<string, string> = {
-  served: "bg-green-100 text-green-700",
-  pending: "bg-amber-100 text-amber-700",
-  preparing: "bg-blue-100 text-blue-700",
+  served: "border border-green-200 bg-green-50 text-green-700",
+  pending: "border border-amber-200 bg-amber-50 text-amber-700",
+  preparing: "border border-blue-200 bg-blue-50 text-blue-700",
 };
 
 interface TableDetailProps {
@@ -116,9 +117,9 @@ export default function TableDetail({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
           {[
             {
-              icon: <DollarSign size={18} className="text-green-500" />,
-              bg: "bg-green-50",
-              label: "Current Bill",
+              icon: <DollarSign size={15} />,
+              iconClass: "bg-green-50 text-green-600",
+              label: "Current bill",
               value: formatCurrencySymbol(
                 currentBill,
                 currency.symbol,
@@ -126,34 +127,45 @@ export default function TableDetail({
               ),
             },
             {
-              icon: <Clock size={18} className="text-blue-500" />,
-              bg: "bg-blue-50",
-              label: "Time Seated",
+              icon: <Clock size={15} />,
+              iconClass: "bg-blue-50 text-blue-600",
+              label: "Time seated",
               value: fmtMinutes(seatedMinutes ?? 0),
             },
             {
-              icon: <Users size={18} className="text-violet-500" />,
-              bg: "bg-violet-50",
+              icon: <Users size={15} />,
+              iconClass: "bg-violet-50 text-violet-600",
               label: "Seats",
               value: `${table.capacity}`,
             },
             {
-              icon: <Sparkles size={18} className="text-amber-500" />,
-              bg: "bg-amber-50",
+              icon: <Sparkles size={15} />,
+              iconClass: "bg-amber-50 text-amber-600",
               label: "Ticket",
               value: `ORD-${ticket?.invoice}` || "—",
             },
-          ].map(({ icon, bg, label, value }) => (
+          ].map(({ icon, iconClass, label, value }) => (
             <div
               key={label}
-              className={`flex items-center gap-3 ${bg} rounded-xl p-3.5`}
+              className="flex items-center gap-3 rounded-xl border px-3.5 py-3"
+              style={{ borderColor: CHART_PALETTE.border }}
             >
-              {icon}
-              <div>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wide">
+              <span
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 ${iconClass}`}
+              >
+                {icon}
+              </span>
+              <div className="min-w-0">
+                <p
+                  className="text-[11px]"
+                  style={{ color: CHART_PALETTE.subtitle }}
+                >
                   {label}
                 </p>
-                <p className="text-sm font-bold text-gray-900 mt-0.5">
+                <p
+                  className="mt-0.5 truncate text-[13px] font-medium tabular-nums"
+                  style={{ color: CHART_PALETTE.title }}
+                >
                   {value}
                 </p>
               </div>
@@ -164,7 +176,10 @@ export default function TableDetail({
 
       {/* ── Order details ── */}
       {isActive && ticketLoading && orders.length === 0 && (
-        <div className="flex items-center justify-center gap-2 py-6 text-gray-400 text-sm">
+        <div
+          className="flex items-center justify-center gap-2 py-6 text-sm"
+          style={{ color: CHART_PALETTE.subtitle }}
+        >
           <Loader2 className="h-4 w-4 animate-spin" />
           Loading order…
         </div>
@@ -175,31 +190,48 @@ export default function TableDetail({
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="text-sm">📋</span>
-              <p className="text-sm font-semibold text-gray-900">
-                Order Details{" "}
+              <p className="text-[13px]" style={{ color: CHART_PALETTE.title }}>
+                Order details
               </p>
             </div>
-            <p className="text-xs text-gray-400">{totalItems} items</p>
+            <p
+              className="text-xs tabular-nums"
+              style={{ color: CHART_PALETTE.subtitle }}
+            >
+              {totalItems} items
+            </p>
           </div>
 
           <div className="space-y-2">
             {orders.map((item, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0"
+                className="flex items-center justify-between gap-2 border-b py-2.5 last:border-0"
+                style={{ borderColor: CHART_PALETTE.grid }}
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400 font-mono">
+                  <span
+                    className="text-xs tabular-nums"
+                    style={{ color: CHART_PALETTE.subtitle }}
+                  >
                     {item.qty}×
                   </span>
-                  <span className="text-sm text-gray-800">{item.name}</span>
                   <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${ITEM_STATUS_BADGE[item.status]}`}
+                    className="text-[13px]"
+                    style={{ color: CHART_PALETTE.title }}
+                  >
+                    {item.name}
+                  </span>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[10px] capitalize ${ITEM_STATUS_BADGE[item.status]}`}
                   >
                     {item.status}
                   </span>
                 </div>
-                <span className="text-sm text-gray-700 font-semibold">
+                <span
+                  className="text-[13px] font-medium tabular-nums"
+                  style={{ color: CHART_PALETTE.title }}
+                >
                   {formatCurrencySymbol(
                     item.price * item.qty,
                     currency.symbol,
@@ -211,11 +243,17 @@ export default function TableDetail({
           </div>
 
           {/* Tax + Total */}
-          <div className="pt-3 mt-1 border-t border-gray-100 space-y-1.5">
+          <div
+            className="mt-1 space-y-1.5 border-t pt-3"
+            style={{ borderColor: CHART_PALETTE.grid }}
+          >
             {ticket && (
               <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-500">Tax</span>
-                <span className="font-medium text-gray-700">
+                <span style={{ color: CHART_PALETTE.axis }}>Tax</span>
+                <span
+                  className="tabular-nums"
+                  style={{ color: CHART_PALETTE.title }}
+                >
                   {formatCurrencySymbol(
                     taxAmount,
                     currency.symbol,
@@ -225,8 +263,16 @@ export default function TableDetail({
               </div>
             )}
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-gray-700">Total</span>
-              <span className="text-base font-bold text-green-600">
+              <span
+                className="text-[13px]"
+                style={{ color: CHART_PALETTE.axis }}
+              >
+                Total
+              </span>
+              <span
+                className="text-base font-semibold tabular-nums"
+                style={{ color: CHART_PALETTE.good }}
+              >
                 {formatCurrencySymbol(total, currency.symbol, currency.locale)}
               </span>
             </div>
@@ -237,24 +283,32 @@ export default function TableDetail({
       {/* Empty state for non-active tables */}
       {!isActive && (
         <div className="flex flex-col items-center justify-center py-6">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-            <Armchair size={24} className="text-gray-500" />
+          <div
+            className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
+            style={{ backgroundColor: CHART_PALETTE.hover }}
+          >
+            <Armchair size={24} style={{ color: CHART_PALETTE.subtitle }} />
           </div>
-          <p className="text-sm font-medium text-gray-500">Free Table</p>
+          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+            Free table
+          </p>
 
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
             {table.status === "free" && "This table is available for seating."}
           </p>
         </div>
       )}
 
-      <div className="flex items-center justify-between mt-2 pt-4  border-t-1 border-gray-300">
-        <span className="text-sm font-semibold text-gray-700">
-          Table Status
+      <div
+        className="mt-2 flex items-center justify-between border-t pt-4"
+        style={{ borderColor: CHART_PALETTE.grid }}
+      >
+        <span className="text-[13px]" style={{ color: CHART_PALETTE.axis }}>
+          Table status
         </span>
 
         <span
-          className={`rounded-full px-3 py-1.5 text-xs font-bold ${STATUS_BADGE[table.status]}`}
+          className={`rounded-full px-2.5 py-0.5 text-[11px] ${STATUS_BADGE[table.status]}`}
         >
           {statusLabel}
         </span>

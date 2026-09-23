@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Flame, TrendingDown, ChevronDown, ChevronUp } from "lucide-react";
+import { Flame, TrendingDown, ArrowUp, ArrowDown } from "lucide-react";
 import { InventoryItem, MergedSalesItem } from "@/services/apiInventory";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import { classifySalesVelocity, type VelocityBasis } from "@/lib/salesVelocity";
+import { CHART_PALETTE, ChartCard, ChartPager } from "../chartCard";
 
 type MovingItem = {
   name: string;
@@ -38,8 +38,6 @@ const classify = (
     sales,
     inventory,
   );
-
-  console.log("Metrics:", metrics);
 
   const toRow = (item: MergedSalesItem): MovingItem => {
     const m = metrics.get(item.name);
@@ -87,64 +85,56 @@ const ItemRow = ({
   type: "fast" | "slow";
 }) => {
   const isFast = type === "fast";
-  const barColor = isFast ? "bg-green-500" : "bg-amber-400";
-  const arrowColor = isFast ? "text-green-400" : "text-amber-500";
+  // The one bit of colour on the row: a rail in the panel's own hue.
+  const accent = isFast ? CHART_PALETTE.good : CHART_PALETTE.warn;
 
   return (
     <div
-      className={`flex items-center justify-between p-3 rounded-xl border ${
-        isFast
-          ? "border-green-100 bg-green-50/30"
-          : "border-amber-100 bg-amber-50/30"
-      }`}
+      className="flex items-center justify-between gap-2 border-b py-3 last:border-0"
+      style={{ borderColor: CHART_PALETTE.grid }}
     >
-      <div className="flex items-center gap-2.5 min-w-0">
-        <div className={`w-1 h-9 rounded-full shrink-0 ${barColor}`} />
+      <div className="flex min-w-0 items-center gap-2.5">
+        <div
+          className="h-9 w-1 shrink-0 rounded-full"
+          style={{ backgroundColor: accent }}
+        />
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-gray-900 truncate">
+          <p
+            className="truncate text-[13px]"
+            style={{ color: CHART_PALETTE.title }}
+          >
             {item.name}
           </p>
-          <p className="text-[11px] text-gray-400 truncate">{item.category}</p>
+          <p
+            className="truncate text-[11px]"
+            style={{ color: CHART_PALETTE.subtitle }}
+          >
+            {item.category}
+          </p>
         </div>
       </div>
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex shrink-0 items-center gap-2">
         <div className="text-right">
-          <p className="text-sm font-bold text-gray-900">
+          <p
+            className="text-[13px] font-medium tabular-nums"
+            style={{ color: CHART_PALETTE.title }}
+          >
             {item.sold.toLocaleString()} sold
           </p>
           {item.sellThrough !== null && (
-            <p className="text-[11px] text-gray-400">
-              {(item.sellThrough * 100).toFixed(2)}% of{" "}
+            <p
+              className="text-[11px] tabular-nums"
+              style={{ color: CHART_PALETTE.subtitle }}
+            >
+              {(item.sellThrough * 100).toFixed(1)}% of{" "}
               {item.openingStock?.toLocaleString()} stock
             </p>
           )}
         </div>
         {isFast ? (
-          <svg
-            className={`w-4 h-4 ${arrowColor}`}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 20V4" />
-            <path d="M5 11l7-7 7 7" />
-          </svg>
+          <ArrowUp size={15} style={{ color: accent }} />
         ) : (
-          <svg
-            className={`w-4 h-4 ${arrowColor}`}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 4v16" />
-            <path d="M19 13l-7 7-7-7" />
-          </svg>
+          <ArrowDown size={15} style={{ color: accent }} />
         )}
       </div>
     </div>
@@ -166,84 +156,82 @@ const Panel = ({
   const start = page * INITIAL_SHOW;
   const displayedItems = items.slice(start, start + INITIAL_SHOW);
 
+  // Said once, in the ⓘ: which of the two rankings is in force right now.
+  const ranking =
+    basis === "sell-through"
+      ? "Ranked by sell-through — units sold as a share of the stock that was there to sell."
+      : "Ranked by share of total units sold, because stock levels were not available.";
+
   return (
-    <div
-      className={`bg-white rounded-2xl border p-5 flex flex-col gap-4 ${
-        isFast ? "border-green-200" : "border-amber-200"
-      }`}
+    <ChartCard
+      icon={isFast ? Flame : TrendingDown}
+      // Green for the bestsellers, amber for the ones needing attention.
+      iconColor={isFast ? "#16a34a" : "#d97706"}
+      iconBorder={isFast ? "#bbf7d0" : "#fde68a"}
+      iconBg={isFast ? "#f0fdf4" : "#fffbeb"}
+      title={isFast ? "Fast Moving Items" : "Slow Moving Items"}
+      info={{
+        heading: "Reading this card",
+        body: `${ranking} Covers the past 30 days. ${
+          isFast
+            ? "These are your bestsellers — worth keeping stocked."
+            : "The weakest mover is shown first, so the most urgent one is on the opening page."
+        }`,
+      }}
+      subtitle={
+        isFast
+          ? "Your bestsellers over the past 30 days"
+          : "These need attention — consider a promo or recipe change"
+      }
+      controls={
+        totalPages > 1 && (
+          <ChartPager
+            first={start + 1}
+            last={Math.min(start + INITIAL_SHOW, items.length)}
+            total={items.length}
+            onPrev={() => setPage((p) => Math.max(0, p - 1))}
+            onNext={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            itemLabel="items"
+          />
+        )
+      }
+      className="h-full"
     >
-      <div className="flex flex-row items-center gap-2">
-        <div className="flex items-center gap-3 mb-0.5">
-          {isFast ? (
-            <Flame size={18} className="text-green-600" />
-          ) : (
-            <TrendingDown size={18} className="text-amber-500" />
-          )}
-        </div>
-
-        <ComponentHeader
-          title={`${isFast ? "Fast Moving Items" : "Slow Moving Items"}`}
-          subHeader={`${
-            isFast
-              ? "Your bestsellers [based on Past 30 Days] — keep stocked and consider expanding"
-              : "These need attention [based on Past 30 Days] — consider a promo or recipe change"
-          }`}
-          titleColor={`${isFast ? "text-green-700" : "text-amber-600"}`}
-        />
-      </div>
-
-      {/* <p className="text-[11px] text-gray-400 -mt-2">
-        {basis === "sell-through"
-          ? "Ranked by sell-through — units sold ÷ opening stock"
-          : "Ranked by share of total units sold"}
-      </p> */}
-
-      <div className="space-y-2">
+      <div>
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+            <div
+              className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
+              style={{ backgroundColor: CHART_PALETTE.hover }}
+            >
               {isFast ? (
-                <Flame size={24} className="text-gray-500" />
+                <Flame size={24} style={{ color: CHART_PALETTE.subtitle }} />
               ) : (
-                <TrendingDown size={24} className="text-gray-500" />
+                <TrendingDown
+                  size={24}
+                  style={{ color: CHART_PALETTE.subtitle }}
+                />
               )}
             </div>
-            <p className="text-sm font-medium text-gray-500">
-              {" "}
+            <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
               No {isFast ? "fast" : "slow"} moving items
             </p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p
+              className="mt-1 text-xs"
+              style={{ color: CHART_PALETTE.subtitle }}
+            >
               {isFast ? "Fast" : "Slow"} moving items data will appear here
             </p>
           </div>
         ) : (
-          displayedItems.map((item) => (
-            <ItemRow key={item.name} item={item} type={type} />
-          ))
+          <div className="border-t" style={{ borderColor: CHART_PALETTE.grid }}>
+            {displayedItems.map((item) => (
+              <ItemRow key={item.name} item={item} type={type} />
+            ))}
+          </div>
         )}
       </div>
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-1">
-          <button
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={page === 0}
-            className="flex items-center gap-1 text-xs font-semibold text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <ChevronUp size={14} className="rotate-[-90deg]" /> Prev
-          </button>
-          <span className="text-xs text-gray-400">
-            {page + 1} / {totalPages}
-          </span>
-          <button
-            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-            disabled={page === totalPages - 1}
-            className="flex items-center gap-1 text-xs font-semibold text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            Next <ChevronDown size={14} className="rotate-[-90deg]" />
-          </button>
-        </div>
-      )}
-    </div>
+    </ChartCard>
   );
 };
 
@@ -258,7 +246,7 @@ const FastSlowMovingItems = ({
   const { fast, slow, basis } = classify(items, inventory);
 
   return (
-    <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="relative grid grid-cols-1 gap-4 md:grid-cols-2">
       <Panel type="fast" items={fast} basis={basis} />
       <Panel type="slow" items={slow} basis={basis} />
     </div>

@@ -17,6 +17,7 @@ import ProductCard from "@/components/product/ProductCard";
 import { FilterSelect } from "@/components/ui/FilterSelect";
 import { useCategories } from "@/hooks/useCategories";
 import { normalizeColor } from "@/services/category.client";
+import { CHART_PALETTE } from "../chartCard";
 
 const INITIAL_COUNT = 8;
 const LOAD_MORE_COUNT = 8;
@@ -73,6 +74,14 @@ const SORT_COMPARATORS: Record<
   "cost-asc": (a, b) => a.costPrice - b.costPrice,
 };
 
+/**
+ * A category filter chip. Selected chips take the category's own colour
+ * through `style`; the rest are the plain outlined control of the other
+ * cards, so one chip standing out means it is the one in force.
+ */
+const CATEGORY_PILL =
+  "cursor-pointer rounded-full border bg-white px-3.5 py-1 text-xs transition-colors hover:bg-[#f8f9fa]";
+
 const SALES_SORT_KEYS: SalesSortKey[] = [
   "revenue-desc",
   "revenue-asc",
@@ -89,7 +98,7 @@ type SaleFigures = {
 /** Skeleton card shown while loading more items */
 function SkeletonCard() {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 relative p-2">
+    <div className="relative rounded-2xl border border-[#e3e3e3] bg-white p-2">
       <div className="h-2 rounded-lg bg-gray-200 mb-3" />
       <div className="h-3 bg-gray-200 rounded w-3/4 mb-2" />
       <div className="h-3 bg-gray-200 rounded w-1/2 mb-3" />
@@ -325,9 +334,9 @@ const ProductCardGrid = ({
   return (
     <div>
       {/* Toolbar: search + sort */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+      <div className="flex flex-col w-full sm:flex-row sm:items-center justify-between gap-3 mb-4">
         {/* Search */}
-        <div className="relative w-full sm:w-72">
+        <div className="relative  w-full sm:w-72">
           <Search
             size={14}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
@@ -337,7 +346,7 @@ const ProductCardGrid = ({
             placeholder="Search products..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-9 pl-9 pr-8 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            className="h-9 w-full rounded-lg border border-[#dadce0] bg-white pl-9 pr-8 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
           {search && (
             <button
@@ -362,66 +371,13 @@ const ProductCardGrid = ({
               className="w-[200px]"
             />
           </div>
-
-          {/* Stock-tracking tabs */}
-          <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-lg w-fit">
-            {STOCK_TABS.map((tab) => (
-              <button
-                key={tab.value}
-                onClick={() => setStockTab(tab.value)}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 ${
-                  stockTab === tab.value
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                {tab.label}
-                <span
-                  className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                    stockTab === tab.value
-                      ? "bg-blue-50 text-blue-600"
-                      : "bg-gray-200 text-gray-500"
-                  }`}
-                >
-                  {stockCounts[tab.value]}
-                </span>
-              </button>
-            ))}
-          </div>
         </div>
       </div>
 
-      <div className="flex items-center flex-wrap gap-2 mb-4">
-        {/* Default filters */}
-        {defaultCategories.map((cat) => {
-          const isActive = selectedCategory === cat._id;
-
-          return (
-            <button
-              key={cat._id ?? cat.name}
-              type="button"
-              onClick={() => setSelectedCategory(cat._id)}
-              className="px-4 py-1.5 rounded-full border text-xs font-medium transition-all duration-200 bg-white border-gray-200 text-gray-700 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-600"
-              style={{
-                color: isActive
-                  ? `color-mix(in oklab, ${categoryColor}, black 45%)`
-                  : undefined,
-                backgroundColor: isActive ? `${categoryColor}20` : undefined,
-                borderColor: isActive ? categoryColor : undefined,
-              }}
-            >
-              {cat.name === "None" ? "Uncategorized" : cat.name}
-            </button>
-          );
-        })}
-
-        {/* Vertical divider */}
-        <div className="mx-1 h-6 w-px bg-gray-300 shrink-0" />
-
-        {/* User categories */}
-        {customCategories
-          .sort((a, b) => a.name.localeCompare(b.name))
-          .map((cat) => {
+      <div className="flex flex-row items-center justify-between mb-4">
+        <div className="flex items-center flex-wrap gap-2 ">
+          {/* Default filters */}
+          {defaultCategories.map((cat) => {
             const isActive = selectedCategory === cat._id;
 
             return (
@@ -429,31 +385,101 @@ const ProductCardGrid = ({
                 key={cat._id ?? cat.name}
                 type="button"
                 onClick={() => setSelectedCategory(cat._id)}
-                className="px-4 py-1.5 rounded-full border text-xs font-semibold transition-all duration-200 bg-white border-gray-200 text-gray-700 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-600"
+                className={CATEGORY_PILL}
                 style={{
                   color: isActive
                     ? `color-mix(in oklab, ${categoryColor}, black 45%)`
-                    : undefined,
+                    : CHART_PALETTE.title,
                   backgroundColor: isActive ? `${categoryColor}20` : undefined,
-                  borderColor: isActive
-                    ? `color-mix(in oklab, ${categoryColor}, black 15%)`
-                    : undefined,
+                  borderColor: isActive ? categoryColor : CHART_PALETTE.control,
                 }}
               >
-                {cat.name}
+                {cat.name === "None" ? "Uncategorized" : cat.name}
               </button>
             );
           })}
+
+          {/* Vertical divider */}
+          <div
+            className="mx-1 h-6 w-px shrink-0"
+            style={{ backgroundColor: CHART_PALETTE.control }}
+          />
+
+          {/* User categories */}
+          {customCategories
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((cat) => {
+              const isActive = selectedCategory === cat._id;
+
+              return (
+                <button
+                  key={cat._id ?? cat.name}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat._id)}
+                  className={CATEGORY_PILL}
+                  style={{
+                    color: isActive
+                      ? `color-mix(in oklab, ${categoryColor}, black 45%)`
+                      : CHART_PALETTE.title,
+                    backgroundColor: isActive
+                      ? `${categoryColor}20`
+                      : undefined,
+                    borderColor: isActive
+                      ? `color-mix(in oklab, ${categoryColor}, black 15%)`
+                      : CHART_PALETTE.control,
+                  }}
+                >
+                  {cat.name}
+                </button>
+              );
+            })}
+        </div>
+
+        {/* Stock-tracking tabs — the invoice table's switch: a pale blue
+              track with the selected tab raised in white, plus a count. */}
+        <div
+          role="radiogroup"
+          aria-label="Stock tracking"
+          className="flex w-fit items-center gap-1 rounded-lg bg-gray-100 p-1"
+        >
+          {STOCK_TABS.map((tab) => {
+            const selected = stockTab === tab.value;
+            return (
+              <button
+                key={tab.value}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                onClick={() => setStockTab(tab.value)}
+                className={`flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                  selected
+                    ? "bg-white font-semibold text-blue-900 shadow-sm"
+                    : "font-semibold text-gray-600 hover:text-blue-950"
+                }`}
+              >
+                {tab.label}
+                <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#e4f2fe] px-1.5 py-px text-[10px] font-bold tabular-nums tracking-wide text-blue-950 ring-1 ring-blue-900/40">
+                  {stockCounts[tab.value]}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Empty state */}
       {processed.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-            <BoxesIcon size={24} className="text-gray-500" />
+          <div
+            className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
+            style={{ backgroundColor: CHART_PALETTE.hover }}
+          >
+            <BoxesIcon size={24} style={{ color: CHART_PALETTE.subtitle }} />
           </div>
-          <p className="text-sm font-medium text-gray-500">No products found</p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+            No products found
+          </p>
+          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
             Filtered product data will appear here
           </p>
 
@@ -503,7 +529,7 @@ const ProductCardGrid = ({
             <button
               onClick={handleLoadMore}
               disabled={loading}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors"
+              className="flex cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] disabled:opacity-50"
             >
               {loading && (
                 <svg
@@ -532,7 +558,7 @@ const ProductCardGrid = ({
                 "Loading..."
               ) : (
                 <span className="flex flex-row items-center gap-1">
-                  <ChevronDown size={14} /> Load More
+                  <ChevronDown size={12} /> Show more
                 </span>
               )}
             </button>
@@ -542,10 +568,10 @@ const ProductCardGrid = ({
             <button
               onClick={handleHide}
               disabled={loading}
-              className="px-4 py-2 rounded-lg border border-gray-200 bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed flex flex-row items-center gap-1"
+              className="flex cursor-pointer flex-row items-center gap-1 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <ChevronUp size={14} />
-              Hide
+              <ChevronUp size={12} />
+              Show less
             </button>
           )}
         </div>

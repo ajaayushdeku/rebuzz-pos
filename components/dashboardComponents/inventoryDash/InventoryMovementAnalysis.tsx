@@ -1,12 +1,12 @@
 import { TrendingUp, TrendingDown, Minus, Activity } from "lucide-react";
 import { MergedSalesItem } from "@/services/apiInventory";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import {
   classifySalesVelocity,
   itemsWithCost,
   marginOverCost,
   unitShare,
 } from "@/lib/salesVelocity";
+import { CHART_PALETTE, ChartCard } from "../chartCard";
 
 /** Names are truncated so one long list can't push the card out of shape. */
 const MAX_NAMES = 6;
@@ -28,32 +28,32 @@ const InventoryMovementAnalysis = ({ items }: { items: MergedSalesItem[] }) => {
   const slowMargin = marginOverCost(slow);
 
   const marginBadge = (margin: number | null) =>
-    margin === null ? "—" : `${margin > 0 ? "+" : ""}${margin}% margin`;
+    margin === null ? "—" : `${margin > 0 ? "+" : ""} ${margin}% margin`;
 
   const categories = [
     {
       label: "Fast Moving",
-      color: "text-green-600",
+      color: CHART_PALETTE.good,
       badge: marginBadge(fastMargin),
-      badgeColor: "bg-green-500 text-white",
+      badgeClass: "border-green-200 font-semibold bg-green-50 text-green-700",
       icon: TrendingUp,
       items: fast,
       note: nameList(fast),
     },
     {
       label: "Normal Velocity",
-      color: "text-blue-600",
+      color: CHART_PALETTE.blue,
       badge: marginBadge(normalMargin),
-      badgeColor: "bg-blue-500 text-white",
+      badgeClass: "border-blue-200 font-semibold bg-blue-50 text-blue-700",
       icon: Minus,
       items: normal,
       note: nameList(normal),
     },
     {
       label: "Slow Moving",
-      color: "text-amber-600",
+      color: CHART_PALETTE.warn,
       badge: marginBadge(slowMargin),
-      badgeColor: "bg-amber-100 text-amber-700 border border-amber-300",
+      badgeClass: "border-amber-200 font-semibold bg-amber-50 text-amber-700",
       icon: TrendingDown,
       items: slow,
       note:
@@ -64,61 +64,65 @@ const InventoryMovementAnalysis = ({ items }: { items: MergedSalesItem[] }) => {
   ];
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex-1">
-      <div className="mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-            <Activity size={15} className="text-blue-600" />
-          </div>
-          <ComponentHeader
-            title="Inventory Movement Analysis"
-            subHeader="Fast-moving vs slow-moving categorization"
-          />
-        </div>
-      </div>
-
+    <ChartCard
+      icon={Activity}
+      title="Inventory Movement Analysis"
+      info={{
+        heading: "Reading this card",
+        // From classifySalesVelocity and marginOverCost.
+        body: "Products split into three bands by how fast they sell compared with the rest of your range, with the share of units each band accounts for. The badge is profit margin over cost for that band — not a change over time — and it only counts products that have a cost price recorded, so it reads “—” when none do.",
+      }}
+      subtitle="Fast-moving vs slow-moving categorization"
+      className="flex-1"
+    >
       {items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-            <Activity size={24} className="text-gray-500" />
+          <div
+            className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
+            style={{ backgroundColor: CHART_PALETTE.hover }}
+          >
+            <Activity size={24} style={{ color: CHART_PALETTE.subtitle }} />
           </div>
-          <p className="text-sm font-medium text-gray-500">
-            {" "}
+          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
             No inventory movement analysis data available
           </p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
             Inventory Movement Analysis data will appear here
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div>
           {categories.map(
             ({
               label,
               color,
               badge,
-              badgeColor,
+              badgeClass,
               icon: Icon,
               items: group,
               note,
             }) => (
               <div
                 key={label}
-                className="border-b border-gray-100 pb-4 last:border-0 last:pb-0"
+                className="border-b py-3.5 first:pt-0 last:border-0 last:pb-0"
+                style={{ borderColor: CHART_PALETTE.grid }}
               >
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-1.5">
-                    <Icon size={14} className={color} />
-                    <span className={`text-sm font-semibold ${color}`}>
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    <Icon size={14} style={{ color }} />
+                    <span className="text-[13px] " style={{ color }}>
                       {label}
                     </span>
-                    <span className="text-[11px] text-gray-400">
+                    <span
+                      className="truncate text-[11px] tabular-nums"
+                      style={{ color: CHART_PALETTE.subtitle }}
+                    >
                       {group.length} {group.length === 1 ? "item" : "items"} ·{" "}
                       {unitShare(group, totalUnits)}% of units
                     </span>
                   </div>
                   <span
-                    className={`text-xs font-bold px-2 py-0.5 rounded-full ${badgeColor}`}
+                    className={`shrink-0 rounded-full border px-2 py-0.5 text-[11px] tabular-nums ${badgeClass}`}
                     title={
                       itemsWithCost(group) > 0
                         ? `Profit margin over cost, based on ${itemsWithCost(group)} of ${group.length} items with a recorded cost price`
@@ -128,7 +132,10 @@ const InventoryMovementAnalysis = ({ items }: { items: MergedSalesItem[] }) => {
                     {badge}
                   </span>
                 </div>
-                <p className="text-xs text-gray-400 ml-5 leading-relaxed">
+                <p
+                  className="ml-5 text-[11px] leading-relaxed"
+                  style={{ color: CHART_PALETTE.subtitle }}
+                >
                   {note}
                 </p>
               </div>
@@ -136,7 +143,7 @@ const InventoryMovementAnalysis = ({ items }: { items: MergedSalesItem[] }) => {
           )}
         </div>
       )}
-    </div>
+    </ChartCard>
   );
 };
 

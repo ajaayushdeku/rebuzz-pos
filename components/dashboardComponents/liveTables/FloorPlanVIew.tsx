@@ -399,20 +399,18 @@ export default function FloorPlanView({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white">
       {/* Header */}
-      <div className="flex flex-col items-start justify-between gap-4 px-5 py-3.5 border-b border-gray-100">
+      <div className="flex flex-col items-start justify-between gap-4 border-b border-[#e8eaed] px-6 py-4">
         <div className="flex flex-col items-start gap-1">
           <div className="flex items-center gap-1.5">
-            <span className="text-lg font-bold text-gray-900">
-              Live Floor Plan
-            </span>
-            <span className="text-[10px] flex flex-row items-center gap-1 font-bold text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">
+            <span className="text-[15px] text-[#3c4043]">Live Floor Plan</span>
+            <span className="flex flex-row items-center gap-1 rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />{" "}
               LIVE
             </span>
           </div>
-          <span className="text-xs text-gray-400">
+          <span className="text-xs tracking-wide text-[#9aa0a6]">
             Real-time seating · updated{" "}
             {new Date().toLocaleTimeString("en-US", {
               hour: "2-digit",
@@ -429,15 +427,19 @@ export default function FloorPlanView({
                 className="w-2 h-2 rounded-full"
                 style={{ backgroundColor: color }}
               />
-              <span className="text-xs text-gray-500">{label}</span>
+              <span className="text-[13px] text-[#3c4043]">{label}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* Zone tabs + Edit Layout controls */}
-      <div className="px-5 py-3 border-b border-gray-50 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 w-fit">
+      <div className="flex items-center justify-between gap-2 border-b border-[#e8eaed] px-6 py-3">
+        <div
+          role="radiogroup"
+          aria-label="Zone"
+          className="flex w-fit items-center gap-1 rounded-xl bg-[#e4f2fe] p-1"
+        >
           {[
             { id: "indoor", label: "Indoor", count: indoorTables.length },
             { id: "outdoor", label: "Outdoor", count: outdoorTables.length },
@@ -445,20 +447,17 @@ export default function FloorPlanView({
             <button
               key={id}
               onClick={() => setZone(id as "indoor" | "outdoor")}
-              className={`flex items-center gap-2.5 px-4 py-1.5 rounded-lg text-sm font-semibold border-[1.5px] transition-all ${
+              type="button"
+              role="radio"
+              aria-checked={zone === id}
+              className={`flex cursor-pointer items-center gap-2 rounded-lg px-3.5 py-1.5 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
                 zone === id
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "border-transparent text-gray-700 hover:text-gray-800"
+                  ? "bg-white font-bold text-blue-950 shadow-sm"
+                  : "font-semibold text-blue-800 hover:text-blue-950"
               }`}
             >
               {label}
-              <span
-                className={`inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold  bg-gray-300/40  ${
-                  zone === id
-                    ? "bg-gray-400 text-white"
-                    : "bg-gray-200 text-gray-500"
-                }`}
-              >
+              <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#e4f2fe] px-1.5 py-px text-[10px] font-bold tabular-nums tracking-wide text-blue-950 ring-1 ring-blue-900/40">
                 {count}
               </span>
             </button>
@@ -470,7 +469,7 @@ export default function FloorPlanView({
           {editing && (
             <button
               onClick={resetLayout}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all"
+              className="flex cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-2.5 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
             >
               <RotateCcw size={13} />
               Reset
@@ -478,10 +477,10 @@ export default function FloorPlanView({
           )}
           <button
             onClick={() => setEditing((v) => !v)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+            className={`flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
               editing
-                ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
-                : "bg-white text-gray-700 border-gray-200 hover:border-gray-300"
+                ? "border-blue-600 bg-blue-600 text-white hover:bg-blue-700"
+                : "border-[#dadce0] bg-white text-[#3c4043] hover:bg-[#f8f9fa]"
             }`}
           >
             {editing ? <Check size={13} /> : <Move size={13} />}

@@ -107,45 +107,54 @@ export default function LiveTablesPage() {
 
         {/* ── Main panel ── */}
         <div className="flex flex-col gap-4">
-          {/* View toggle */}
-          <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 w-fit">
+          {/* View toggle — the invoice table's switch: a pale blue track with
+              the selected view raised in white. */}
+          <div
+            role="radiogroup"
+            aria-label="Table view"
+            className="flex w-fit items-center gap-1 rounded-xl bg-[#e4f2fe] p-1"
+          >
             {[
               { id: "grid", label: "Grid View", icon: LayoutGrid },
               { id: "floor", label: "Floor Plan", icon: Map },
-            ].map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => setTab(id as Tab)}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold border-[1.5px] transition-all ${
-                  tab === id
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "border-transparent text-gray-700 hover:text-gray-800"
-                }`}
-              >
-                <Icon size={14} />
-                {label}
-              </button>
-            ))}
+            ].map(({ id, label, icon: Icon }) => {
+              const selected = tab === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => setTab(id as Tab)}
+                  className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-4 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                    selected
+                      ? "bg-white font-semibold text-blue-950 shadow-sm"
+                      : "font-semibold text-blue-800 hover:text-blue-950"
+                  }`}
+                >
+                  <Icon size={14} />
+                  {label}
+                </button>
+              );
+            })}
           </div>
 
           {isLoading ? (
             <LiveTablesSkeleton />
           ) : isError ? (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 flex flex-col items-center justify-center gap-1.5 text-center">
-              <p className="text-sm font-medium text-red-500">
-                Failed to load tables
-              </p>
-              <p className="text-xs text-gray-400">
+            <div className="flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-[#e3e3e3] bg-white p-16 text-center">
+              <p className="text-sm text-[#d93025]">Failed to load tables</p>
+              <p className="text-xs text-[#9aa0a6]">
                 Please check your connection and try again.
               </p>
             </div>
           ) : tables.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 flex flex-col items-center justify-center gap-3 text-center">
-              <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center">
-                <Utensils className="h-6 w-6 text-gray-300" />
+            <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-[#e3e3e3] bg-white p-16 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f1f3f4]">
+                <Utensils className="h-6 w-6 text-[#9aa0a6]" />
               </div>
-              <p className="text-sm font-medium text-gray-600">No tables yet</p>
-              <p className="text-xs text-gray-400">
+              <p className="text-sm text-[#3c4043]">No tables yet</p>
+              <p className="text-xs text-[#9aa0a6]">
                 Tables you add will appear here.
               </p>
             </div>

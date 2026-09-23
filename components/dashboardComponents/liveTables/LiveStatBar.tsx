@@ -1,9 +1,10 @@
 "use client";
 
-import { Gauge, DoorOpen, TrendingUp } from "lucide-react";
+import { Gauge, DoorOpen, TrendingUp, type LucideIcon } from "lucide-react";
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { CHART_PALETTE } from "../chartCard";
 
 interface LiveStatBarProps {
   occupancyPct: number;
@@ -19,18 +20,24 @@ export default function LiveStatBar({
   const { currency } = useCurrency();
 
   return (
-    <div className="grid grid-cols-3 md:grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-4">
+    <div className="grid grid-cols-3 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-3">
       {/* Occupancy */}
       <StatBox
         label="Occupancy"
         value={`${occupancyPct}%`}
-        icon={<Gauge size={14} className="text-blue-500 sm:size-[16px]" />}
-        iconBg="bg-blue-50"
+        icon={Gauge}
+        iconClass="bg-blue-50 text-blue-600"
       >
-        <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div
+          className="mt-2 h-1.5 overflow-hidden rounded-full"
+          style={{ backgroundColor: CHART_PALETTE.grid }}
+        >
           <div
-            className="h-full bg-blue-500 rounded-full transition-all duration-500"
-            style={{ width: `${occupancyPct}%` }}
+            className="h-full rounded-full transition-all duration-500"
+            style={{
+              width: `${occupancyPct}%`,
+              backgroundColor: CHART_PALETTE.blue,
+            }}
           />
         </div>
       </StatBox>
@@ -39,10 +46,10 @@ export default function LiveStatBar({
       <StatBox
         label="Open Tables"
         value={openTables.toLocaleString()}
-        icon={<DoorOpen size={14} className="text-green-500 sm:size-[16px]" />}
-        iconBg="bg-green-50"
+        icon={DoorOpen}
+        iconClass="bg-green-50 text-green-600"
       >
-        <p className="text-[11px] sm:text-xs text-gray-400">
+        <p className="text-[11px]" style={{ color: CHART_PALETTE.subtitle }}>
           Ready to seat now
         </p>
       </StatBox>
@@ -55,12 +62,10 @@ export default function LiveStatBar({
           currency.symbol,
           currency.locale,
         )}
-        icon={
-          <TrendingUp size={14} className="text-amber-500 sm:size-[16px]" />
-        }
-        iconBg="bg-amber-50"
+        icon={TrendingUp}
+        iconClass="bg-amber-50 text-amber-600"
       >
-        <p className="text-[11px] sm:text-xs text-gray-400">
+        <p className="text-[11px]" style={{ color: CHART_PALETTE.subtitle }}>
           Open checks on floor
         </p>
       </StatBox>
@@ -68,36 +73,46 @@ export default function LiveStatBar({
   );
 }
 
-// ── Shared stat box — mirrors OverviewStatBox layout ──────────────────────────
+// ── Shared stat box — the tile used across the dashboards ────────────────────
 function StatBox({
   label,
   value,
-  icon,
-  iconBg,
+  icon: Icon,
+  iconClass,
   children,
 }: {
   label: string;
   value: string;
-  icon: React.ReactNode;
-  iconBg: string;
+  icon: LucideIcon;
+  /** Icon tile colours; its border takes the icon's own hue. */
+  iconClass: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-surface-card rounded-xl border border-surface-border shadow-sm px-4 sm:px-5 md:px-6 pt-3 sm:pt-4 pb-4 sm:pb-5 hover:shadow-md transition-shadow duration-200">
+    <div
+      className="rounded-2xl border bg-white px-5 py-4"
+      style={{ borderColor: CHART_PALETTE.border }}
+    >
       {/* Label + Icon */}
-      <div className="flex items-center justify-between mb-2 sm:mb-3">
-        <span className="text-xs sm:text-[12px] font-medium text-gray-500 truncate mr-2">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <span
+          className="truncate text-[13px]"
+          style={{ color: CHART_PALETTE.axis }}
+        >
           {label}
         </span>
         <div
-          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg ${iconBg} flex items-center justify-center shrink-0`}
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 ${iconClass}`}
         >
-          {icon}
+          <Icon size={15} />
         </div>
       </div>
 
       {/* Value */}
-      <p className="text-xl sm:text-[20px] md:text-[22px] font-bold text-gray-900 tracking-tight mb-1 sm:mb-1.5">
+      <p
+        className="mb-1.5 truncate text-xl font-semibold tracking-tight tabular-nums md:text-[22px]"
+        style={{ color: CHART_PALETTE.title }}
+      >
         {value}
       </p>
 

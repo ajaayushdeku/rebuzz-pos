@@ -156,15 +156,13 @@ export default function ChangeTableModal({
         {/* From → To. The destination was only visible as a tick buried in
             the list; showing both ends states what is about to happen. */}
         <div className="flex items-stretch gap-2">
-          <div className="min-w-0 flex-1 rounded-xl border border-gray-200 bg-gray-50/60 px-3.5 py-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
-              From
-            </p>
-            <p className="mt-1 truncate text-sm font-bold text-gray-900">
+          <div className="min-w-0 flex-1 rounded-xl border border-[#e3e3e3] bg-white px-3.5 py-3">
+            <p className="text-[11px] text-[#9aa0a6]">From</p>
+            <p className="mt-1 truncate text-[13px] font-medium text-[#3c4043]">
               {tableLabel(currentTable)}
             </p>
             {ticketNumber != null && (
-              <span className="mt-1.5 inline-block rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-medium tabular-nums text-blue-700">
+              <span className="mt-1.5 inline-block rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[11px] tabular-nums text-blue-700">
                 Ticket #{ticketNumber}
               </span>
             )}
@@ -178,15 +176,13 @@ export default function ChangeTableModal({
             className={`min-w-0 flex-1 rounded-xl border px-3.5 py-3 transition-colors ${
               selectedTable
                 ? "border-blue-200 bg-blue-50"
-                : "border-dashed border-gray-200 bg-white"
+                : "border-dashed border-[#dadce0] bg-white"
             }`}
           >
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
-              To
-            </p>
+            <p className="text-[11px] text-[#9aa0a6]">To</p>
             <p
-              className={`mt-1 truncate text-sm font-bold ${
-                selectedTable ? "text-gray-900" : "text-gray-300"
+              className={`mt-1 truncate text-[13px] font-medium ${
+                selectedTable ? "text-[#3c4043]" : "text-[#9aa0a6]"
               }`}
             >
               {selectedTable ? tableLabel(selectedTable) : "Not selected"}
@@ -226,11 +222,11 @@ export default function ChangeTableModal({
           )}
 
           {freeTables.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-gray-200 px-4 py-10 text-center">
-              <div className="mx-auto mb-2.5 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+            <div className="rounded-xl border border-dashed border-[#dadce0] px-4 py-10 text-center">
+              <div className="mx-auto mb-2.5 flex h-12 w-12 items-center justify-center rounded-full bg-[#f1f3f4]">
                 <Armchair size={20} className="text-gray-400" />
               </div>
-              <p className="text-[13px] font-medium text-gray-500">
+              <p className="text-[13px] text-[#3c4043]">
                 No free tables right now
               </p>
               <p className="mt-1 text-xs text-gray-400">
@@ -238,8 +234,8 @@ export default function ChangeTableModal({
               </p>
             </div>
           ) : visibleTables.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-gray-200 px-4 py-8 text-center">
-              <p className="text-[13px] font-medium text-gray-500">
+            <div className="rounded-xl border border-dashed border-[#dadce0] px-4 py-8 text-center">
+              <p className="text-[13px] text-[#3c4043]">
                 No table matches “{search.trim()}”
               </p>
             </div>
@@ -259,7 +255,7 @@ export default function ChangeTableModal({
                     className={`flex w-full items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 text-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                       isSelected
                         ? "border-blue-500 bg-blue-50 text-blue-700 ring-1 ring-blue-500"
-                        : "border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50"
+                        : "border-[#e3e3e3] text-[#3c4043] hover:border-[#dadce0] hover:bg-[#f8f9fa]"
                     }`}
                   >
                     <span className="flex min-w-0 items-center gap-2.5">
@@ -269,13 +265,13 @@ export default function ChangeTableModal({
                           isSelected ? "text-blue-500" : "text-gray-400"
                         }`}
                       />
-                      <span className="truncate font-medium">
+                      <span className="truncate text-[13px]">
                         {tableLabel(t)}
                       </span>
                     </span>
 
                     <span className="flex shrink-0 items-center gap-2">
-                      <span className="text-xs tabular-nums text-gray-400">
+                      <span className="text-xs tabular-nums text-[#9aa0a6]">
                         {t.capacity} {t.capacity === 1 ? "seat" : "seats"}
                       </span>
                       {isSelected && (
@@ -294,10 +290,10 @@ export default function ChangeTableModal({
         {error && (
           <div
             role="alert"
-            className="flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3.5 py-2.5"
+            className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5"
           >
             <AlertCircle size={15} className="mt-0.5 shrink-0 text-red-500" />
-            <p className="text-xs font-medium text-red-600">{error}</p>
+            <p className="text-xs text-red-600">{error}</p>
           </div>
         )}
       </div>

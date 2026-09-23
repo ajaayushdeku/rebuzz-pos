@@ -26,6 +26,7 @@ import {
 import { useCategories } from "@/hooks/useCategories";
 import { useDiscounts } from "@/hooks/useDiscounts";
 import { normalizeColor } from "@/services/category.client";
+import { CHART_PALETTE } from "@/components/dashboardComponents/chartCard";
 
 /**
  * Per-status presentation.
@@ -37,51 +38,51 @@ import { normalizeColor } from "@/services/category.client";
 const statusConfig = {
   healthy: {
     bar: "bg-emerald-500",
-    badge: "bg-emerald-100 text-emerald-700",
+    badge: "border border-emerald-200 bg-emerald-50 text-emerald-700",
     label: "In Stock",
     icon: "✅",
     text: "text-emerald-600",
-    card: "border-gray-200 bg-white hover:border-gray-300",
+    card: "border-[#e3e3e3] bg-white hover:border-[#dadce0]",
     count: "text-gray-900",
   },
 
   warning: {
     bar: "bg-amber-400",
-    badge: "bg-amber-100 text-amber-700",
+    badge: "border border-amber-200 bg-amber-50 text-amber-700",
     label: "Low Stock",
     icon: "⚠️",
     text: "text-amber-600",
-    card: "border-amber-300 bg-amber-50/50 hover:border-amber-400",
+    card: "border-amber-200 bg-amber-50/40 hover:border-amber-300",
     count: "text-amber-600",
   },
 
   critical: {
     bar: "bg-red-500",
-    badge: "bg-red-100 text-red-600",
+    badge: "border border-red-200 bg-red-50 text-red-600",
     label: "Critical",
     icon: "🔴",
     text: "text-red-600",
-    card: "border-red-300 bg-red-50/50 hover:border-red-400",
+    card: "border-red-200 bg-red-50/40 hover:border-red-300",
     count: "text-red-600",
   },
 
   out: {
     bar: "bg-gray-900",
-    badge: "bg-yellow-300 text-gray-900",
+    badge: "border border-yellow-400 bg-yellow-100 text-yellow-900",
     label: "Out of Stock",
     icon: "🚫",
     text: "text-yellow-900",
-    card: "border-yellow-400 bg-yellow-50/70 hover:border-yellow-500",
+    card: "border-yellow-300 bg-yellow-50/50 hover:border-yellow-400",
     count: "text-gray-900",
   },
 
   overstock: {
     bar: "bg-indigo-500",
-    badge: "bg-indigo-100 text-indigo-700",
+    badge: "border border-indigo-200 bg-indigo-50 text-indigo-700",
     label: "Overstocked",
     icon: "📦",
     text: "text-indigo-600",
-    card: "border-indigo-300 bg-indigo-50/50 hover:border-indigo-400",
+    card: "border-indigo-200 bg-indigo-50/40 hover:border-indigo-300",
     count: "text-indigo-600",
   },
 
@@ -92,11 +93,11 @@ const statusConfig = {
    */
   untracked: {
     bar: "bg-slate-300",
-    badge: "bg-slate-100 text-slate-600",
+    badge: "border border-slate-200 bg-slate-50 text-slate-600",
     label: "Not Tracked",
     icon: "♾️",
     text: "text-slate-500",
-    card: "border-dashed border-gray-300 bg-gray-50/60 hover:border-gray-400",
+    card: "border-dashed border-[#dadce0] bg-gray-50/60 hover:border-gray-400",
     count: "text-gray-400",
   },
 };
@@ -143,10 +144,10 @@ function StatRow({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-2">
-      <span className="text-[10px] uppercase tracking-wide text-gray-500">
+      <span className="text-[11px]" style={{ color: CHART_PALETTE.subtitle }}>
         {label}
       </span>
-      <span className={`text-xs font-semibold tabular-nums ${tone}`}>
+      <span className={`text-[13px] font-medium tabular-nums ${tone}`}>
         {value}
       </span>
     </div>
@@ -267,7 +268,7 @@ export default function ProductCard({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl border shadow-xs hover:shadow-md transition-all duration-200 flex flex-col ${cardTone}`}
+      className={`relative flex flex-col overflow-hidden rounded-2xl border transition-colors duration-200 ${cardTone}`}
     >
       {/* The card is `overflow-hidden`, so a rotated strip anchored past the
           corner is clipped into a ribbon. */}
@@ -304,7 +305,7 @@ export default function ProductCard({
               <span className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center">
                 <Expand
                   size={18}
-                  className="text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                 />
               </span>
               {gallery.length > 1 && (
@@ -327,7 +328,7 @@ export default function ProductCard({
               it their card was silent while collapsed, and an unlabelled card
               reads as an ordinary in-stock one. */}
           <span
-            className={`absolute top-2 left-2 text-[10px] font-semibold px-2 py-0.5 rounded-full ${cfg.badge}`}
+            className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10px] ${cfg.badge}`}
           >
             {cfg.icon} {cfg.label}
           </span>
@@ -337,20 +338,23 @@ export default function ProductCard({
         <div className="p-3 flex flex-col flex-1">
           {/* Name + taxable pill */}
           <div className="flex  justify-between gap-2 mb-2">
-            <h3 className="text-[13px]  font-semibold text-gray-800 leading-snug line-clamp-2 flex-1 min-w-0">
+            <h3
+              className="line-clamp-2 min-w-0 flex-1 text-[13px] leading-snug"
+              style={{ color: CHART_PALETTE.title }}
+            >
               {item.name}
             </h3>
 
             <span className="flex flex-row h-fit gap-1">
               {item.isTaxable && (
-                <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-semibold shrink-0">
+                <span className="shrink-0 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] text-blue-600">
                   Taxable
                 </span>
               )}
 
               {item?.categories && (
                 <span
-                  className="text-[10px] px-2 py-0.5 rounded-full border font-semibold shrink-0"
+                  className="shrink-0 rounded-full border px-2 py-0.5 text-[10px]"
                   style={{
                     color: categoryTextColor,
                     backgroundColor: `${categoryColor}20`,
@@ -364,7 +368,7 @@ export default function ProductCard({
               {/* Meta badges */}
               {!item.isAvailable && (
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-semibold">
+                  <span className="rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[10px] text-gray-500">
                     Unavailable
                   </span>
                 </div>
@@ -388,7 +392,7 @@ export default function ProductCard({
                   <>
                     <div className="flex items-baseline gap-1.5">
                       <span
-                        className={`text-2xl font-bold tabular-nums ${cfg.count}`}
+                        className={`text-2xl font-semibold tracking-tight tabular-nums ${cfg.count}`}
                       >
                         {item.inStock.toLocaleString()}
                       </span>
@@ -463,15 +467,18 @@ export default function ProductCard({
 
               {/* Sales row */}
               {hasSales ? (
-                <div className="pt-2 border-t border-gray-400 mb-3 flex flex-col gap-1">
+                <div className="mb-3 flex flex-col gap-1 border-t border-[#e8eaed] pt-2">
                   {/* {sharedVariants > 0 && (
                 <p className="text-[10px] text-amber-600 mb-1.5">
                   Combined across all {sharedVariants} variants
                 </p>
               )} */}
 
-                  <span className="ml-auto text-[9px] uppercase tracking-wide text-gray-700 font-semibold items-center">
-                    Date Range
+                  <span
+                    className="ml-auto text-[10px]"
+                    style={{ color: CHART_PALETTE.subtitle }}
+                  >
+                    Selected range
                   </span>
 
                   <div className="space-y-1">
@@ -497,17 +504,18 @@ export default function ProductCard({
                   </div>
                 </div>
               ) : (
-                <div className="pt-3 border-t border-gray-200 mb-3 flex flex-col items-center gap-1">
-                  <span className="text-[9px] uppercase tracking-wide text-gray-700 font-semibold  text-center">
+                <div className="mb-3 flex flex-col items-center gap-1 border-t border-[#e8eaed] pt-3">
+                  <span
+                    className="text-center text-[10px]"
+                    style={{ color: CHART_PALETTE.subtitle }}
+                  >
                     No sales data for this product in the selected date range.
                   </span>
                 </div>
               )}
 
               {/* Pricing */}
-              <div
-                className={`pt-3 border-t ${hasSales ? " border-gray-400" : "border-gray-200"}`}
-              >
+              <div className="border-t border-[#e8eaed] pt-3">
                 <div className="space-y-1">
                   <StatRow label="Selling price" value={fmt(item.price)} />
                   <StatRow label="Cost price" value={fmt(item.costPrice)} />
@@ -528,8 +536,11 @@ export default function ProductCard({
 
                 {/* Images gallery section */}
                 {gallery.length > 0 && (
-                  <div className="mt-2 pt-3 border-t border-gray-50">
-                    <p className="text-[10px] text-gray-400 uppercase tracking-wide font-medium mb-2">
+                  <div className="mt-2 border-t border-[#e8eaed] pt-3">
+                    <p
+                      className="mb-2 text-[11px]"
+                      style={{ color: CHART_PALETTE.subtitle }}
+                    >
                       Images
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -561,7 +572,7 @@ export default function ProductCard({
             onClick={() => setIsExpanded(!isExpanded)}
             aria-expanded={isExpanded}
             aria-controls={panelId}
-            className="mt-auto pt-2 flex items-center justify-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors"
+            className="mx-auto mt-auto flex cursor-pointer items-center justify-center gap-1 rounded-full border border-[#dadce0] bg-white px-2.5 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
           >
             <span>{isExpanded ? "Hide details" : "Show details"}</span>
             <ChevronDown

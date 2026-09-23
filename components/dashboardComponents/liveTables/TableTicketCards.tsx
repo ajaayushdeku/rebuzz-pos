@@ -8,6 +8,7 @@ import { fmtMinutes } from "@/lib/mockData/mock-live-tables";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useTableTicket } from "@/hooks/useTableTicket";
+import { CHART_PALETTE } from "../chartCard";
 
 type TicketLine = {
   name: string;
@@ -77,23 +78,29 @@ function TableTicketCard({
     <div
       ref={cardRef}
       aria-current={isSelected ? "true" : undefined}
-      className={`flex flex-col rounded-2xl border bg-white p-5 transition ${
+      className={`flex flex-col rounded-2xl border bg-white px-5 py-4 transition-colors ${
         isSelected
           ? "border-blue-400 ring-2 ring-blue-400 ring-offset-1"
-          : "border-gray-200 hover:border-gray-300"
+          : "border-[#e3e3e3] hover:border-[#dadce0]"
       }`}
     >
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-[13px] font-bold text-emerald-700">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-current/20 bg-emerald-50 text-[13px] font-medium text-emerald-700">
             {tableName.charAt(0).toUpperCase()}
           </span>
           <div className="min-w-0">
-            <p className="truncate text-[15px] font-bold text-gray-900">
+            <p
+              className="truncate text-[15px] font-medium"
+              style={{ color: CHART_PALETTE.title }}
+            >
               {tableName}
             </p>
-            <p className="mt-0.5 text-[11px] text-gray-400">
+            <p
+              className="mt-0.5 text-[11px]"
+              style={{ color: CHART_PALETTE.subtitle }}
+            >
               {seatedMinutes != null && <>{fmtMinutes(seatedMinutes)} ago · </>}
               {itemCount} {itemCount === 1 ? "item" : "items"}
             </p>
@@ -101,17 +108,20 @@ function TableTicketCard({
         </div>
 
         <div className="shrink-0 text-right">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.09em] text-gray-400">
+          <p className="text-[11px]" style={{ color: CHART_PALETTE.subtitle }}>
             Total
           </p>
-          <p className="text-[17px] font-bold text-emerald-600 tabular-nums">
+          <p
+            className="text-[17px] font-semibold tracking-tight tabular-nums"
+            style={{ color: CHART_PALETTE.good }}
+          >
             {money(total)}
           </p>
         </div>
       </div>
 
       {/* ── Table badge ── */}
-      <span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
+      <span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] text-emerald-700">
         <Armchair size={12} />
         {tableName}
       </span>
@@ -119,12 +129,18 @@ function TableTicketCard({
       {/* ── Ticket lines ── */}
       <div className="mt-4 flex-1">
         {isLoading && lines.length === 0 ? (
-          <div className="flex items-center justify-center gap-2 py-6 text-[12px] text-gray-400">
+          <div
+            className="flex items-center justify-center gap-2 py-6 text-xs"
+            style={{ color: CHART_PALETTE.subtitle }}
+          >
             <Loader2 size={14} className="animate-spin" />
             Loading ticket
           </div>
         ) : lines.length === 0 ? (
-          <p className="py-6 text-center text-[12px] text-gray-400">
+          <p
+            className="py-6 text-center text-xs"
+            style={{ color: CHART_PALETTE.subtitle }}
+          >
             No items on this ticket yet.
           </p>
         ) : (
@@ -135,20 +151,35 @@ function TableTicketCard({
                 className="flex items-start justify-between gap-3"
               >
                 <div className="flex min-w-0 items-start gap-2.5">
-                  <span className="mt-0.5 shrink-0 rounded-md bg-gray-100 px-1.5 py-0.5 text-[11px] font-semibold text-gray-500 tabular-nums">
+                  <span
+                    className="mt-0.5 shrink-0 rounded-md px-1.5 py-0.5 text-[11px] tabular-nums"
+                    style={{
+                      backgroundColor: CHART_PALETTE.hover,
+                      color: CHART_PALETTE.axis,
+                    }}
+                  >
                     x{line.qty}
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-[13px] text-gray-900">
+                    <p
+                      className="truncate text-[13px]"
+                      style={{ color: CHART_PALETTE.title }}
+                    >
                       {line.name}
                     </p>
-                    <p className="mt-0.5 text-[11px] text-gray-400 tabular-nums">
+                    <p
+                      className="mt-0.5 text-[11px] tabular-nums"
+                      style={{ color: CHART_PALETTE.subtitle }}
+                    >
                       {money(line.unitPrice)} each
                     </p>
                   </div>
                 </div>
 
-                <span className="shrink-0 text-[13px] font-semibold text-gray-900 tabular-nums">
+                <span
+                  className="shrink-0 text-[13px] font-medium tabular-nums"
+                  style={{ color: CHART_PALETTE.title }}
+                >
                   {money(line.unitPrice * line.qty)}
                 </span>
               </div>
@@ -191,8 +222,8 @@ export default function TableTicketCards({
 
   return (
     <div>
-      <h3 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400">
-        <Receipt size={13} />
+      <h3 className="flex flex-row items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+        <Receipt size={14} style={{ color: CHART_PALETTE.subtitle }} />
         Assigned tickets · {ticketed.length}{" "}
         {ticketed.length === 1 ? "table" : "tables"}
       </h3>

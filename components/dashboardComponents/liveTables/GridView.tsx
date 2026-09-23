@@ -18,6 +18,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useTableTicket } from "@/hooks/useTableTicket";
 import ChangeTableModal from "@/components/dashboardComponents/liveTables/ChangeTableModal";
+import { CHART_PALETTE } from "../chartCard";
 
 const STATUS_CONFIG: Record<
   string,
@@ -112,25 +113,18 @@ function TableCard({
   return (
     <div
       onClick={onClick}
-      className={`
-        group
-        bg-white
-        rounded-2xl
-        border
-        ${config.border}
-        px-5 pt-5 pb-2
-        cursor-pointer
-        transition-all
-        hover:shadow-md
-        ${isSelected ? "ring-2 ring-blue-400 ring-offset-1" : "shadow-sm"}
-      `}
+      className={`group cursor-pointer rounded-2xl border bg-white px-5 pb-2 pt-4 transition-colors ${
+        isSelected
+          ? "border-blue-400 ring-2 ring-blue-400 ring-offset-1"
+          : "border-[#e3e3e3] hover:border-[#dadce0]"
+      }`}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className={`flex items-center gap-2 ${config.textColor}`}>
           <Armchair size={17} strokeWidth={2} className={config.iconColor} />
 
-          <span className="text-sm font-medium">{config.label}</span>
+          <span className="text-[13px]">{config.label}</span>
         </div>
 
         <div className="flex items-center gap-0.5">
@@ -170,7 +164,7 @@ function TableCard({
 
             {menuOpen && (
               <div
-                className="absolute right-0 top-7 z-20 w-40 bg-white rounded-xl border border-gray-100 shadow-lg py-1.5"
+                className="absolute right-0 top-7 z-20 w-40 rounded-xl border border-[#dadce0] bg-white py-1.5 shadow-lg"
                 onClick={(e) => e.stopPropagation()}
               >
                 {isOccupied ? (
@@ -218,13 +212,19 @@ function TableCard({
       </div>
 
       {/* Table Name */}
-      <h3 className="text-xl font-semibold text-gray-900 leading-none mb-5">
+      <h3
+        className="mb-5 text-xl font-semibold leading-none tracking-tight"
+        style={{ color: CHART_PALETTE.title }}
+      >
         {table.name || `Table ${table.id}`}
       </h3>
 
       {/* Seats */}
-      <div className="flex items-center gap-2 text-sm text-slate-500">
-        <Users size={16} className="text-slate-500" strokeWidth={1.8} />
+      <div
+        className="flex items-center gap-2 text-[13px]"
+        style={{ color: CHART_PALETTE.axis }}
+      >
+        <Users size={15} strokeWidth={1.8} />
 
         <span>
           {table.capacity} {table.capacity === 1 ? "seat" : "seats"}
@@ -232,13 +232,19 @@ function TableCard({
       </div>
 
       {/* Bottom Information */}
-      <div className="mt-4 pt-3 border-t border-gray-100 min-h-[34px]">
+      <div
+        className="mt-4 min-h-[34px] border-t pt-3"
+        style={{ borderColor: CHART_PALETTE.grid }}
+      >
         {isActive ? (
           <div className="flex items-center justify-between">
             {/* Bill */}
             {bill != null ? (
               <div className="flex items-center gap-1.5">
-                <span className="text-[11px] font-medium text-green-600 font-mono tracking-tight">
+                <span
+                  className="text-xs font-medium tabular-nums"
+                  style={{ color: CHART_PALETTE.good }}
+                >
                   {formatCurrencySymbol(bill, currency.symbol, currency.locale)}
                 </span>
               </div>
@@ -248,7 +254,10 @@ function TableCard({
 
             {/* Time */}
             {seatedMinutes != null && (
-              <div className="flex items-center gap-1.5 text-xs text-slate-400">
+              <div
+                className="flex items-center gap-1.5 text-xs tabular-nums"
+                style={{ color: CHART_PALETTE.subtitle }}
+              >
                 <Clock size={14} strokeWidth={1.8} />
 
                 <span>{fmtMinutes(seatedMinutes)}</span>
@@ -303,33 +312,34 @@ function DeleteTableModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 " onClick={onClose} />
-      <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden">
+      <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white shadow-xl">
         <div className="px-6 py-5">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
-              <Trash2 size={18} className="text-red-500" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-red-200 bg-red-50">
+              <Trash2 size={18} className="text-red-600" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              Delete Table
+            <h3 className="text-[15px]" style={{ color: CHART_PALETTE.title }}>
+              Delete table
             </h3>
           </div>
-          <p className="text-sm text-gray-500 mb-5">
+          <p
+            className="mb-5 text-[13px] leading-relaxed"
+            style={{ color: CHART_PALETTE.axis }}
+          >
             Are you sure you want to delete{" "}
-            <span className="font-semibold text-gray-700">
+            <span style={{ color: CHART_PALETTE.title }}>
               {table.name || `Table ${table.id}`}
             </span>
             ? This action cannot be undone.
           </p>
 
-          {error && (
-            <p className="text-xs font-medium text-red-500 mb-3">{error}</p>
-          )}
+          {error && <p className="mb-3 text-xs text-red-600">{error}</p>}
 
           <div className="flex items-center justify-end gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+              className="cursor-pointer rounded-xl px-5 py-2.5 text-[13px] font-semibold text-gray-600 transition hover:bg-gray-100"
             >
               Cancel
             </button>
@@ -337,7 +347,7 @@ function DeleteTableModal({
               type="button"
               onClick={handleDelete}
               disabled={deleting}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex cursor-pointer items-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-[13px] font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {deleting ? (
                 <Loader2 size={16} className="animate-spin" />
@@ -406,6 +416,8 @@ export default function GridView({
 
   return (
     <div className="space-y-6">
+      {/* Status filter — the loose pills this page has always used: the
+          selected one fills with its status colour. */}
       <div>
         {Object.entries(STATUS_CONFIG).map(([key, config]) => {
           const isActive = tableStatus === config.status;
@@ -415,7 +427,7 @@ export default function GridView({
               key={key}
               type="button"
               onClick={() => setTableStatus(config.status)}
-              className={`inline-flex items-center gap-2 px-4 py-1.5 mr-2 rounded-full border text-xs font-medium transition-all duration-200 ${
+              className={`mr-2 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium transition-all duration-200 ${
                 isActive
                   ? ""
                   : `bg-white border-gray-200 text-gray-700 hover:bg-violet-50 hover:${config.border} hover:${config.textColor}`
@@ -424,19 +436,19 @@ export default function GridView({
                 isActive
                   ? {
                       color: "white",
-                      backgroundColor: `${config.hex}`, // 8-digit hex = ~10% alpha
+                      backgroundColor: `${config.hex}`,
                       borderColor: config.hex,
                     }
                   : undefined
               }
             >
               <span
-                className="inline-block w-2 h-2 rounded-full shrink-0"
+                className="inline-block h-2 w-2 shrink-0 rounded-full"
                 style={{ backgroundColor: isActive ? "white" : config.hex }}
               />
               {config.label}
               <span
-                className={`inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold  bg-gray-300/40 ${
+                className={`inline-flex min-w-6 items-center justify-center rounded-full bg-gray-300/40 px-2 py-0.5 text-xs font-bold ${
                   isActive ? "text-white" : ""
                 }`}
               >
@@ -450,7 +462,7 @@ export default function GridView({
       {/* Indoor */}
       <div>
         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-          Indoor · {indoor.length} tables
+          Indoor · {indoor.length} {indoor.length === 1 ? "table" : "tables"}
         </h3>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -472,7 +484,7 @@ export default function GridView({
       {/* Outdoor */}
       <div>
         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-          Outdoor · {outdoor.length} tables
+          Outdoor · {outdoor.length} {outdoor.length === 1 ? "table" : "tables"}
         </h3>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
