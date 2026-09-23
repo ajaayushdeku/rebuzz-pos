@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { PanelLeftClose, PanelLeftOpen, Plus } from "lucide-react";
+import { ChevronsLeft, ChevronsRight, Plus } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -73,9 +73,9 @@ export default function Sidebar() {
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (
-            <PanelLeftOpen className="h-4 w-4 hidden md:block" />
+            <ChevronsRight className="h-4 w-4 hidden md:block" />
           ) : (
-            <PanelLeftClose className="h-4 w-4 hidden md:block" />
+            <ChevronsLeft className="h-4 w-4 hidden md:block" />
           )}
         </Button>
       </div>

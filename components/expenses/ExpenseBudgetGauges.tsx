@@ -9,15 +9,15 @@ import {
   Percent,
   AlertTriangle,
   Gauge,
-  Info,
   ChevronDown,
   ChevronUp,
+  type LucideIcon,
 } from "lucide-react";
-import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
+import { useTracker } from "@/providers/ExpenseContext";
 import RangeBadge from "@/components/ui/RangeBadge";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { ComponentHeader } from "../ComponentHeader";
+import { CHART_PALETTE, ChartCard } from "../dashboardComponents/chartCard";
 import { ExpenseBudgetGaugesSkeleton } from "./ExpenseAnalyticsSkeletons";
 
 // ── Radial gauge built with SVG ───────────────────────────────────────────
@@ -38,9 +38,13 @@ function RadialGauge({
   const r = 40;
   const circ = 2 * Math.PI * r;
   const filled = (Math.min(clamped, 100) / 100) * circ;
-  // Color logic
-  const strokeColor = pct > 100 ? "#ef4444" : pct >= 90 ? "#f59e0b" : "#22c55e";
-  const textColor = pct > 100 ? "text-red-500" : "text-gray-900";
+  // Over budget reads red, close to it amber, otherwise green.
+  const strokeColor =
+    pct > 100
+      ? CHART_PALETTE.bad
+      : pct >= 90
+        ? CHART_PALETTE.warn
+        : CHART_PALETTE.good;
 
   const fmtK = (v: number) =>
     v >= 1000
@@ -49,9 +53,15 @@ function RadialGauge({
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <p className="text-sm font-semibold text-gray-700">{label}</p>
+      <p
+        className="max-w-full truncate text-[13px]"
+        style={{ color: CHART_PALETTE.title }}
+        title={label}
+      >
+        {label}
+      </p>
 
-      <div className="relative w-24 h-24 flex items-center justify-center">
+      <div className="relative flex h-24 w-24 items-center justify-center">
         <svg width="96" height="96" viewBox="0 0 96 96">
           {/* Track */}
           <circle
@@ -59,7 +69,7 @@ function RadialGauge({
             cy="48"
             r={r}
             fill="none"
-            stroke="#e5e7eb"
+            stroke={CHART_PALETTE.grid}
             strokeWidth="8"
           />
           {/* Fill */}
@@ -76,20 +86,69 @@ function RadialGauge({
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className={`text-lg font-bold tracking-wide ${textColor}`}>
+          <span
+            className="text-lg font-semibold tracking-tight tabular-nums"
+            style={{
+              color: pct > 100 ? CHART_PALETTE.bad : CHART_PALETTE.title,
+            }}
+          >
             {pct}%
           </span>
         </div>
       </div>
 
       <div className="text-center">
-        <p className="text-[10px] text-gray-300  uppercase tracking-widest">
+        <p className="text-[11px]" style={{ color: CHART_PALETTE.subtitle }}>
           Actual / Budget
         </p>
-        <p className="text-xs text-gray-500 tracking-wide  font-bold text-gray-400 mt-0.5">
+        <p
+          className="mt-0.5 text-xs tabular-nums"
+          style={{ color: CHART_PALETTE.axis }}
+        >
           {fmtK(actual)} / {fmtK(budget)}
         </p>
       </div>
+    </div>
+  );
+}
+
+/** One of the five figures under the gauges. */
+function StatTile({
+  label,
+  display,
+  icon: Icon,
+  iconClass,
+}: {
+  label: string;
+  display: string;
+  icon: LucideIcon;
+  /** Icon tile colours; its border takes the icon's own hue. */
+  iconClass: string;
+}) {
+  return (
+    <div
+      className="rounded-2xl border bg-white px-5 py-4"
+      style={{ borderColor: CHART_PALETTE.border }}
+    >
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <p
+          className="truncate text-[13px]"
+          style={{ color: CHART_PALETTE.axis }}
+        >
+          {label}
+        </p>
+        <span
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 ${iconClass}`}
+        >
+          <Icon size={16} />
+        </span>
+      </div>
+      <p
+        className="truncate text-xl font-semibold tracking-tight tabular-nums"
+        style={{ color: CHART_PALETTE.title }}
+      >
+        {display}
+      </p>
     </div>
   );
 }
@@ -109,9 +168,6 @@ export default function ExpenseBudgetGauges() {
 
   const getPurposeName = (purposeId: string) =>
     purposeLookup.get(purposeId)?.name ?? purposeId;
-
-  const getPurposeIcon = (purposeId: string) =>
-    purposeLookup.get(purposeId)?.icon ?? "";
 
   // ── Derive real spend + budget metrics ──────────────────────────────────
   const { gauges, totalExpenses, budgeted, variance, pctOfRevenue, overCount } =
@@ -169,34 +225,37 @@ export default function ExpenseBudgetGauges() {
 
   const stats = [
     {
-      label: "Total Expenses",
+      label: "Total expenses",
       display: fmt(totalExpenses),
-      icon: <DollarSign size={16} />,
-      color: "text-red-500",
+      icon: DollarSign,
+      iconClass: "bg-red-50 text-red-600",
     },
     {
       label: "Budgeted",
       display: fmt(budgeted),
-      icon: <Clock size={16} />,
-      color: "text-gray-500",
+      icon: Clock,
+      iconClass: "bg-gray-50 text-gray-600",
     },
     {
-      label: underBudget ? "Under Budget" : "Over Budget",
+      label: underBudget ? "Under budget" : "Over budget",
       display: fmt(Math.abs(variance)),
-      icon: underBudget ? <TrendingDown size={16} /> : <TrendingUp size={16} />,
-      color: underBudget ? "text-green-500" : "text-red-500",
+      icon: underBudget ? TrendingDown : TrendingUp,
+      iconClass: underBudget
+        ? "bg-green-50 text-green-600"
+        : "bg-red-50 text-red-600",
     },
     {
-      label: "% of Revenue",
+      label: "% of revenue",
       display: pctOfRevenue === null ? "—" : `${pctOfRevenue.toFixed(1)}%`,
-      icon: <Percent size={16} />,
-      color: "text-violet-500",
+      icon: Percent,
+      iconClass: "bg-violet-50 text-violet-600",
     },
     {
-      label: "Over Threshold",
+      label: "Over threshold",
       display: `${overCount} ${overCount === 1 ? "category" : "categories"}`,
-      icon: <AlertTriangle size={16} />,
-      color: overCount > 0 ? "text-red-500" : "text-gray-400",
+      icon: AlertTriangle,
+      iconClass:
+        overCount > 0 ? "bg-red-50 text-red-600" : "bg-gray-50 text-gray-500",
     },
   ];
 
@@ -207,58 +266,44 @@ export default function ExpenseBudgetGauges() {
       </>
     );
 
+  const moreButton =
+    "inline-flex cursor-pointer items-center gap-1 rounded-full border bg-white px-2.5 py-1 text-[11px] transition-colors hover:bg-[#f8f9fa]";
+
   return (
     <div className="relative flex flex-col gap-4">
-      {/* Cost Health */}
       {/* Gauges card */}
-      <div className=" bg-white rounded-2xl border border-gray-200 shadow-sm px-5 pt-5 pb-3">
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-                <Gauge size={15} className="text-blue-600" />
-              </div>
-              <ComponentHeader
-                title="Expense Budget Gauges"
-                subHeader="Current spending vs allocated budget per category"
-              />
-            </div>
-
-            <div className="flex flex-row items-center gap-2">
-              <RangeBadge scope="month" className="ml-0" />
-              {/* Info tooltip */}
-              <div className="relative group shrink-0">
-                <button
-                  type="button"
-                  className="w-7 h-7 rounded-full bg-gray-50 hover:bg-gray-200 text-gray-500 hover:text-gray-700 flex items-center justify-center transition-colors"
-                  aria-label="About this chart"
-                >
-                  <Info size={14} />
-                </button>
-                <div className="absolute right-0 top-full mt-2 w-64 bg-gray-900 text-white text-[11px] leading-relaxed rounded-lg px-3 py-2.5 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-20">
-                  These gauges show only the expense categories that have a
-                  budget set. Categories without a budget are not included here.
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
+      <ChartCard
+        icon={Gauge}
+        title="Expense Budget Gauges"
+        info={{
+          heading: "Reading these gauges",
+          // What the old hover note said, plus what the ring shows.
+          body: "Only the categories you have set a budget for appear here — a category with no budget is left out entirely. Each ring is what you spent against that budget in the month picked at the top of the page: green under 90%, amber close to the limit, red once you are over it. The ring stops at full even when the figure does not.",
+        }}
+        subtitle="Current spending vs allocated budget per category"
+        controls={<RangeBadge scope="month" variant="pill" />}
+      >
         {gauges.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-              <Gauge size={24} className="text-gray-500" />
+            <div
+              className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
+              style={{ backgroundColor: CHART_PALETTE.hover }}
+            >
+              <Gauge size={24} style={{ color: CHART_PALETTE.subtitle }} />
             </div>
-            <p className="text-sm font-medium text-gray-500">
+            <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
               No budgets set yet
             </p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p
+              className="mt-1 text-xs"
+              style={{ color: CHART_PALETTE.subtitle }}
+            >
               Use “Set Budget” to add spending thresholds per category.
             </p>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
               {visibleGauges.map((g) => (
                 <RadialGauge
                   key={g.category}
@@ -272,7 +317,7 @@ export default function ExpenseBudgetGauges() {
 
             {/* Load More / Hide buttons */}
             {gauges.length > 5 && (
-              <div className="flex items-center justify-center gap-3 mt-5">
+              <div className="mt-5 flex items-center justify-center gap-2">
                 {canLoadMore && (
                   <button
                     onClick={() =>
@@ -280,12 +325,14 @@ export default function ExpenseBudgetGauges() {
                         Math.min(prev + 5, gauges.length),
                       )
                     }
-                    className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-gray-600 hover:text-blue-500 transition-colors cursor-pointer"
+                    className={moreButton}
+                    style={{
+                      borderColor: CHART_PALETTE.control,
+                      color: CHART_PALETTE.title,
+                    }}
                   >
-                    <ChevronDown size={14} /> Load More
-                    <span className="text-xs text-gray-400">
-                      ( {gauges.length - visibleCount} more )
-                    </span>
+                    <ChevronDown size={12} />
+                    Show {gauges.length - visibleCount} more
                   </button>
                 )}
                 {canHide && (
@@ -293,35 +340,32 @@ export default function ExpenseBudgetGauges() {
                     onClick={() =>
                       setVisibleCount((prev) => Math.max(prev - 5, 5))
                     }
-                    className="px-4 py-2 text-xs font-medium text-gray-500 hover:text-gray-700  transition disabled:opacity-50 disabled:cursor-not-allowed flex flex-row items-center gap-1 cursor-pointer"
+                    className={moreButton}
+                    style={{
+                      borderColor: CHART_PALETTE.control,
+                      color: CHART_PALETTE.title,
+                    }}
                   >
-                    <ChevronUp size={14} /> Hide
+                    <ChevronUp size={12} />
+                    Show less
                   </button>
                 )}
               </div>
             )}
           </>
         )}
-      </div>
+      </ChartCard>
 
-      {/* Spend Overview */}
-      {/* 5 stat cards */}
-      <div className=" grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      {/* Spend Overview — 5 stat cards */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {stats.map((stat) => (
-          <div
+          <StatTile
             key={stat.label}
-            className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3"
-          >
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold text-gray-600">
-                {stat.label}
-              </p>
-              <span className={`${stat.color}`}>{stat.icon}</span>
-            </div>
-            <p className="text-xl font-bold text-gray-900 tracking-wide">
-              {stat.display}
-            </p>
-          </div>
+            label={stat.label}
+            display={stat.display}
+            icon={stat.icon}
+            iconClass={stat.iconClass}
+          />
         ))}
       </div>
     </div>

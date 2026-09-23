@@ -35,10 +35,13 @@ const COPY = {
   range: {
     title: "Follows the date range",
     body: "These figures update when you change the range at the top of the page. Cards without this mark use their own dates, or none at all.",
+    /** The pill's own label — it names the control it points at. */
+    pill: "Selected range",
   },
   month: {
     title: "Follows the month filter",
     body: "These figures update when you change the month and year at the top of the page. Cards without this mark use their own window, or none at all.",
+    pill: "Selected month",
   },
 } as const;
 
@@ -74,7 +77,7 @@ export default function RangeBadge({
           className={`inline-flex shrink-0 cursor-help items-center rounded-full outline-none transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 ${VARIANT[variant]} ${className}`}
         >
           <CalendarRange size={variant === "pill" ? 11 : 9} />
-          {variant === "pill" ? "Selected range" : "Range"}
+          {variant === "pill" ? copy.pill : "Range"}
         </span>
       </TooltipTrigger>
 

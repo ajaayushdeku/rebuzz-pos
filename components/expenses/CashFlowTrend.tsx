@@ -7,7 +7,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from "recharts";
 import type {
@@ -17,10 +16,20 @@ import type {
 } from "recharts/types/component/DefaultTooltipContent";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
-import { ComponentHeader } from "../ComponentHeader";
+import {
+  AXIS_TICK,
+  CHART_PALETTE,
+  ChartCard,
+  ChartLegend,
+  ChartTooltipBox,
+  yAxisTitle,
+} from "../dashboardComponents/chartCard";
 import { ArrowLeftRight, AlertTriangle } from "lucide-react";
 import { useCashFlowTrend } from "@/hooks/useCashFlowTrend";
 import { CashFlowTrendSkeleton } from "./ExpenseAnalyticsSkeletons";
+
+const INFLOW_COLOR = "#22c55e";
+const OUTFLOW_COLOR = "#ef4444";
 
 /** Coerce a recharts payload value (number | string | array) to a number. */
 const toNumber = (v: ValueType | undefined): number =>
@@ -45,61 +54,34 @@ const CustomTooltip = ({
   const inflow = payload.find((p) => p.dataKey === "inflow");
   const outflow = payload.find((p) => p.dataKey === "outflow");
   const net = toNumber(inflow?.value) - toNumber(outflow?.value);
+
   return (
-    <div className="bg-white border border-gray-100 rounded-xl px-4 py-3 shadow-lg text-xs min-w-40">
-      <p className="font-semibold text-gray-700 mb-2">{label}</p>
-      {payload.map((entry, i) => (
-        <div key={i} className="flex items-center justify-between gap-5 mb-0.5">
-          <div className="flex items-center gap-1.5">
-            <span
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className="text-gray-500">{String(entry.name)}</span>
-          </div>
-          <span className="font-bold text-gray-800 tracking-wide">
-            {fmtK(toNumber(entry.value))}
+    <ChartTooltipBox
+      label={label}
+      rows={payload.map((entry) => ({
+        name: String(entry.name ?? ""),
+        color: entry.color ?? CHART_PALETTE.blue,
+        value: fmtK(toNumber(entry.value)),
+      }))}
+      footer={
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-xs" style={{ color: CHART_PALETTE.axis }}>
+            Net
+          </span>
+          <span
+            className="text-xs font-medium"
+            style={{
+              color: net >= 0 ? CHART_PALETTE.good : CHART_PALETTE.bad,
+            }}
+          >
+            {net >= 0 ? "+" : ""}
+            {fmtK(net)}
           </span>
         </div>
-      ))}
-      <div className="border-t border-gray-100 pt-1.5 mt-1.5 flex justify-between">
-        <span className="text-gray-400">Net</span>
-        <span
-          className={`font-bold tracking-wide ${net >= 0 ? "text-green-600" : "text-red-500"}`}
-        >
-          {net >= 0 ? "+" : ""}
-          {fmtK(net)}
-        </span>
-      </div>
-    </div>
+      }
+    />
   );
 };
-
-const CustomLegend = () => (
-  <div className="flex items-center justify-center gap-6 mt-3">
-    {[
-      { label: "Cash Inflow", color: "#22c55e" },
-      { label: "Cash Outflow", color: "#ef4444" },
-    ].map(({ label, color }) => (
-      <div key={label} className="flex items-center gap-1.5">
-        <svg width="18" height="8">
-          <line x1="0" y1="4" x2="18" y2="4" stroke={color} strokeWidth="2.5" />
-          <circle
-            cx="9"
-            cy="4"
-            r="2.5"
-            fill="white"
-            stroke={color}
-            strokeWidth="1.5"
-          />
-        </svg>
-        <span className="text-xs font-semibold" style={{ color }}>
-          {label}
-        </span>
-      </div>
-    ))}
-  </div>
-);
 
 export default function CashFlowTrend() {
   const { currency } = useCurrency();
@@ -122,36 +104,38 @@ export default function CashFlowTrend() {
     );
 
   return (
-    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
-      {/* <div>
-        <h2 className="text-sm font-bold text-gray-900">Cash Flow Trend</h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Monthly comparison of{" "}
-          <span className="text-green-500 font-semibold">cash inflows</span> vs{" "}
-          <span className="text-red-500 font-semibold">outflows</span>
-        </p>
-      </div> */}
-
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50">
-            <ArrowLeftRight size={15} className="text-emerald-600" />
-          </div>
-          <ComponentHeader
-            title="Cash Flow Trend"
-            subHeader="Monthly comparison of cash inflows vs outflows"
-          />
-        </div>
-
-        {/* States plainly that this card ignores the page's month filter —
-            otherwise the fixed window looks like the filter is broken. */}
-        <span className="shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+    <ChartCard
+      icon={ArrowLeftRight}
+      // Emerald, as before: Tailwind's emerald-600 / emerald-200 / emerald-50.
+      iconColor="#059669"
+      iconBorder="#a7f3d0"
+      iconBg="#ecfdf5"
+      title="Cash Flow Trend"
+      info={{
+        heading: "Reading this chart",
+        // From useCashFlowTrend: income is inflow, everything else outflow.
+        body: "Six months to date, always — it ignores the month picked at the top of the page. Inflow is everything you logged as income that month; outflow is every other entry, so expenses. The hover box shows the two and what they leave behind.",
+      }}
+      subtitle="Monthly comparison of cash inflows vs outflows"
+      controls={
+        // States plainly that this card ignores the page's month filter —
+        // otherwise the fixed window looks like the filter is broken.
+        <span
+          className="shrink-0 rounded-full border bg-white px-2 py-0.5 text-[11px]"
+          style={{
+            borderColor: CHART_PALETTE.control,
+            color: CHART_PALETTE.title,
+          }}
+        >
           Last 6 months
         </span>
-      </div>
-
+      }
+    >
       {failedMonths > 0 && !isError && (
-        <p className="flex items-center gap-1.5 text-[11px] text-amber-600">
+        <p
+          className="mb-3 flex items-center gap-1.5 text-[11px]"
+          style={{ color: CHART_PALETTE.warn }}
+        >
           <AlertTriangle size={12} className="shrink-0" />
           {failedMonths} of 6 months could not be loaded — the chart is
           incomplete.
@@ -162,70 +146,95 @@ export default function CashFlowTrend() {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
             <AlertTriangle size={22} className="text-red-400" />
           </div>
-          <p className="text-sm font-medium text-gray-500">
+          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
             Could not load cash flow
           </p>
-          <p className="mt-1 text-xs text-gray-400">
+          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
             None of the last six months could be fetched.
           </p>
         </div>
       ) : !hasData ? (
         <div className="py-16 text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
-            <ArrowLeftRight size={22} className="text-gray-400" />
+          <div
+            className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full"
+            style={{ backgroundColor: CHART_PALETTE.hover }}
+          >
+            <ArrowLeftRight
+              size={22}
+              style={{ color: CHART_PALETTE.subtitle }}
+            />
           </div>
-          <p className="text-sm font-medium text-gray-500">
+          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
             No income or expenses recorded
           </p>
-          <p className="mt-1 text-xs text-gray-400">
+          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
             Nothing was logged in the last six months.
           </p>
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height={280}>
-          <LineChart
-            data={data}
-            margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
-          >
-            <CartesianGrid vertical={false} stroke="#f3f4f6" />
-            <XAxis
-              dataKey="month"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 11 }}
-              dy={8}
-            />
-            <YAxis
-              tickFormatter={fmtK}
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 11 }}
-              width={42}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend content={<CustomLegend />} />
+        <>
+          <ResponsiveContainer width="100%" height={280}>
+            <LineChart
+              data={data}
+              margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+            >
+              <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
+              <XAxis
+                dataKey="month"
+                axisLine={false}
+                tickLine={false}
+                tick={AXIS_TICK}
+                dy={8}
+              />
+              <YAxis
+                tickFormatter={fmtK}
+                axisLine={false}
+                tickLine={false}
+                tick={AXIS_TICK}
+                width={80}
+                label={yAxisTitle("Amount")}
+              />
+              <Tooltip content={<CustomTooltip />} />
 
-            <Line
-              type="monotone"
-              dataKey="inflow"
-              name="Cash Inflow"
-              stroke="#22c55e"
-              strokeWidth={2.5}
-              dot={{ r: 4, fill: "white", stroke: "#22c55e", strokeWidth: 2 }}
-              activeDot={{ r: 5 }}
-            />
-            <Line
-              type="monotone"
-              dataKey="outflow"
-              name="Cash Outflow"
-              stroke="#ef4444"
-              strokeWidth={2.5}
-              dot={{ r: 4, fill: "white", stroke: "#ef4444", strokeWidth: 2 }}
-              activeDot={{ r: 5 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+              <Line
+                type="monotone"
+                dataKey="inflow"
+                name="Cash Inflow"
+                stroke={INFLOW_COLOR}
+                strokeWidth={2.5}
+                dot={{
+                  r: 4,
+                  fill: "white",
+                  stroke: INFLOW_COLOR,
+                  strokeWidth: 2,
+                }}
+                activeDot={{ r: 5 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="outflow"
+                name="Cash Outflow"
+                stroke={OUTFLOW_COLOR}
+                strokeWidth={2.5}
+                dot={{
+                  r: 4,
+                  fill: "white",
+                  stroke: OUTFLOW_COLOR,
+                  strokeWidth: 2,
+                }}
+                activeDot={{ r: 5 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+
+          <ChartLegend
+            items={[
+              { label: "Cash Inflow", color: INFLOW_COLOR, shape: "line" },
+              { label: "Cash Outflow", color: OUTFLOW_COLOR, shape: "line" },
+            ]}
+          />
+        </>
       )}
-    </div>
+    </ChartCard>
   );
 }

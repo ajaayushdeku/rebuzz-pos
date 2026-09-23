@@ -6,9 +6,13 @@ import RangeBadge from "@/components/ui/RangeBadge";
 import { getPurposeIcon } from "@/lib/purpose-icons";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { ComponentHeader } from "../ComponentHeader";
-import { ChartColumnBig, Info } from "lucide-react";
+import { CHART_PALETTE, ChartCard } from "../dashboardComponents/chartCard";
+import { ChartColumnBig } from "lucide-react";
 import { BudgetVsActualSkeleton } from "./ExpenseAnalyticsSkeletons";
+
+/** The four columns, shared by the header row and the rows. */
+const COLUMNS =
+  "grid grid-cols-[1.4fr_1fr_1fr_1.3fr_1.4fr] items-center gap-3 min-w-[520px]";
 
 function getPctStyle(pct: number): string {
   if (pct >= 100) return "bg-amber-100 text-amber-700";
@@ -23,7 +27,13 @@ const VarianceBadge = ({ variance }: { variance: number }) => {
 
   if (variance === 0) {
     return (
-      <span className="text-[11px] font-semibold text-gray-500 border border-gray-200 rounded-full px-2.5 py-0.5">
+      <span
+        className="rounded-full border px-2 py-0.5 text-[11px]"
+        style={{
+          borderColor: CHART_PALETTE.control,
+          color: CHART_PALETTE.axis,
+        }}
+      >
         on budget
       </span>
     );
@@ -31,10 +41,10 @@ const VarianceBadge = ({ variance }: { variance: number }) => {
   const over = variance > 0;
   return (
     <span
-      className={`inline-flex items-center gap-1 text-[10px] md:text-[11px] tracking-wide font-semibold rounded-full px-2.5 py-0.5 border ${
+      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] tabular-nums md:text-[11px] ${
         over
-          ? "bg-red-50 text-red-600 border-red-200"
-          : "bg-green-50 text-green-600 border-green-200"
+          ? "border-red-200 bg-red-50 text-red-600"
+          : "border-green-200 bg-green-50 text-green-700"
       }`}
     >
       {over ? "↑" : "✓"}{" "}
@@ -103,54 +113,45 @@ export default function BudgetVsActual() {
     );
 
   return (
-    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
-      <div className="mb-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-              <ChartColumnBig size={15} className="text-blue-600" />
-            </div>
-            <ComponentHeader
-              title="Budget vs Actual"
-              subHeader="Spending vs planned budget per category"
-            />
-          </div>
-          <div className="flex flex-row items-center gap-2">
-            <RangeBadge scope="month" className="ml-0" />
-            {/* Info tooltip */}
-            <div className="relative group shrink-0">
-              <button
-                type="button"
-                className="w-7 h-7 rounded-full bg-gray-50 hover:bg-gray-200 text-gray-500 hover:text-gray-700 flex items-center justify-center transition-colors"
-                aria-label="About this chart"
-              >
-                <Info size={14} />
-              </button>
-              <div className="absolute right-0 top-full mt-2 w-64 bg-gray-900 text-white text-[11px] leading-relaxed rounded-lg px-3 py-2.5 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-20">
-                This chart shows only the expense categories that have a budget
-                set. Categories without a budget are not included here.
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <ChartCard
+      icon={ChartColumnBig}
+      title="Budget vs Actual"
+      info={{
+        heading: "Reading this table",
+        // What the old hover note said, plus how the figures are built.
+        body: "Only the categories you have set a budget for appear here — a category with no budget is left out entirely. Actual is everything you logged against that category in the month picked at the top of the page, and the bar and percentage are how much of the budget that spends.",
+      }}
+      subtitle="Spending vs planned budget per category"
+      controls={<RangeBadge scope="month" variant="pill" />}
+    >
       {rows.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-            <ChartColumnBig size={24} className="text-gray-500" />
+          <div
+            className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
+            style={{ backgroundColor: CHART_PALETTE.hover }}
+          >
+            <ChartColumnBig
+              size={24}
+              style={{ color: CHART_PALETTE.subtitle }}
+            />
           </div>
-          <p className="text-sm font-medium text-gray-500">
+          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
             No Budget vs Actual Expense data
           </p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
             No budgets set yet — use “Set Budget” to add thresholds.
           </p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           {/* Table header */}
-          <div className="grid grid-cols-[1.4fr_1fr_1fr_1.3fr_1.4fr] gap-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest pb-2 border-b border-gray-100 min-w-[520px]">
+          <div
+            className={`${COLUMNS} border-b pb-2.5 text-[11px]`}
+            style={{
+              borderColor: CHART_PALETTE.grid,
+              color: CHART_PALETTE.axis,
+            }}
+          >
             <span>Category</span>
             <span className="text-right">Actual</span>
             <span className="text-right">Budget</span>
@@ -159,32 +160,39 @@ export default function BudgetVsActual() {
           </div>
 
           {/* Rows */}
-          <div className="space-y-1 min-w-[520px]">
+          <div>
             {rows.map((row) => (
               <div
                 key={row.category}
-                className="grid grid-cols-[1.4fr_1fr_1fr_1.3fr_1.4fr] gap-3 items-center py-2.5 border-b border-gray-50 last:border-0"
+                className={`${COLUMNS} border-b py-3 last:border-0`}
+                style={{ borderColor: CHART_PALETTE.grid }}
               >
                 {/* Category */}
-                <div className="flex items-center gap-2 min-w-0">
+                <div className="flex min-w-0 items-center gap-2">
                   <span
-                    className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-current/20"
                     style={{
-                      backgroundColor: row.color + "20",
+                      backgroundColor: row.color + "1a",
+                      color: row.color,
                     }}
                   >
                     {createElement(getPurposeIcon(row.icon, row.category), {
                       size: 13,
-                      style: { color: row.color },
                     })}
                   </span>
-                  <span className="text-xs text-gray-800 font-medium truncate">
+                  <span
+                    className="truncate text-[13px]"
+                    style={{ color: CHART_PALETTE.title }}
+                  >
                     {row.category}
                   </span>
                 </div>
 
                 {/* Actual */}
-                <span className="text-xs font-bold text-gray-900 tracking-wide text-right">
+                <span
+                  className="text-right text-[13px] font-medium tabular-nums"
+                  style={{ color: CHART_PALETTE.title }}
+                >
                   {formatCurrencySymbol(
                     row.actual,
                     currency.symbol,
@@ -193,7 +201,10 @@ export default function BudgetVsActual() {
                 </span>
 
                 {/* Budget */}
-                <span className="text-xs text-gray-400 tracking-wide text-right">
+                <span
+                  className="text-right text-[13px] tabular-nums"
+                  style={{ color: CHART_PALETTE.axis }}
+                >
                   {formatCurrencySymbol(
                     row.budget,
                     currency.symbol,
@@ -208,7 +219,10 @@ export default function BudgetVsActual() {
 
                 {/* Status: progress bar + % badge */}
                 <div className="flex items-center justify-end gap-2">
-                  <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-1.5 w-16 overflow-hidden rounded-full"
+                    style={{ backgroundColor: CHART_PALETTE.grid }}
+                  >
                     <div
                       className="h-full rounded-full transition-all duration-500"
                       style={{
@@ -218,7 +232,7 @@ export default function BudgetVsActual() {
                     />
                   </div>
                   <span
-                    className={`text-[10px] tracking-wide font-bold px-1.5 py-0.5 rounded-md shrink-0 ${getPctStyle(row.pct)}`}
+                    className={`shrink-0 rounded-md px-1.5 py-0.5 text-[11px] tabular-nums ${getPctStyle(row.pct)}`}
                   >
                     {row.pct}%
                   </span>
@@ -228,6 +242,6 @@ export default function BudgetVsActual() {
           </div>
         </div>
       )}
-    </div>
+    </ChartCard>
   );
 }

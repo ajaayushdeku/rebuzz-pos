@@ -8,7 +8,7 @@ import { useMonthlySalesRevenue } from "@/hooks/useMonthlySalesRevenue";
 import { getPurposeIcon } from "@/lib/purpose-icons";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { ComponentHeader } from "../ComponentHeader";
+import { CHART_PALETTE, ChartCard } from "../dashboardComponents/chartCard";
 import { isFixedCost } from "@/lib/costClassification";
 import {
   Activity,
@@ -21,6 +21,7 @@ import {
   AlertTriangle,
   TrendingUp,
   TrendingDown,
+  type LucideIcon,
 } from "lucide-react";
 
 const STATUS_STYLES: Record<
@@ -50,6 +51,14 @@ function getBarColor(status: CostHealthStatus): string {
 
 // Default target % for each cost category as share of revenue
 const DEFAULT_TARGET = 30;
+
+/** The small outlined "show more / show less" control, as on the other cards. */
+const MORE_BUTTON =
+  "inline-flex cursor-pointer items-center gap-1 rounded-full border bg-white px-2.5 py-1 text-[11px] transition-colors hover:bg-[#f8f9fa]";
+const MORE_BUTTON_STYLE = {
+  borderColor: CHART_PALETTE.control,
+  color: CHART_PALETTE.title,
+};
 
 function getStatus(pct: number, target: number): CostHealthStatus {
   if (pct > target) return "High";
@@ -103,20 +112,28 @@ function CostHealthCard({ card }: { card: CostCard }) {
     formatCurrencySymbol(value, currency.symbol, currency.locale);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+    <div
+      className="rounded-2xl border bg-white px-5 py-4"
+      style={{ borderColor: CHART_PALETTE.border }}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2">
           {createElement(Icon, {
             size: 15,
             style: { color: card.iconColor },
           })}
-          <p className="text-sm font-semibold text-gray-900">{card.label}</p>
+          <p
+            className="truncate text-[13px]"
+            style={{ color: CHART_PALETTE.title }}
+          >
+            {card.label}
+          </p>
         </div>
 
         {s && (
           <span
-            className={`px-3 py-1 rounded-full border text-[11px] font-semibold ${s.bg} ${s.text} ${s.border}`}
+            className={`shrink-0 rounded-full border px-2 py-0.5 text-[11px] ${s.bg} ${s.text} ${s.border}`}
           >
             {card.status}
           </span>
@@ -138,7 +155,7 @@ function CostHealthCard({ card }: { card: CostCard }) {
               cy="35"
               r={radius}
               fill="none"
-              stroke="#eef2f7"
+              stroke={CHART_PALETTE.grid}
               strokeWidth="7"
             />
             <circle
@@ -161,11 +178,17 @@ function CostHealthCard({ card }: { card: CostCard }) {
         </div>
 
         {/* Percentage + amount */}
-        <div className="flex flex-col tracking-wide">
-          <span className="text-3xl font-bold tracking-tight text-gray-950">
+        <div className="flex flex-col">
+          <span
+            className="text-3xl font-semibold tracking-tight tabular-nums"
+            style={{ color: CHART_PALETTE.title }}
+          >
             {card.pct === null ? "—" : `${card.pct.toFixed(1)}%`}
           </span>
-          <span className="text-xs text-gray-400 font-medium mt-0.5">
+          <span
+            className="mt-0.5 text-xs tabular-nums"
+            style={{ color: CHART_PALETTE.subtitle }}
+          >
             {formatMoney(card.amount)}
           </span>
         </div>
@@ -173,25 +196,64 @@ function CostHealthCard({ card }: { card: CostCard }) {
 
       {/* Progress bar with target marker */}
       <div className="mt-5">
-        <div className="relative h-2 bg-gray-100 rounded-full overflow-visible">
+        <div
+          className="relative h-1.5 overflow-visible rounded-full"
+          style={{ backgroundColor: CHART_PALETTE.grid }}
+        >
           <div
             className="absolute left-0 top-0 h-full rounded-full transition-all duration-500"
             style={{ width: `${barPct}%`, backgroundColor: barColor }}
           />
           {/* Target marker */}
           <div
-            className="absolute top-1/2 -translate-y-1/2 w-[2px] h-4 bg-slate-400"
-            style={{ left: "100%" }}
+            className="absolute top-1/2 h-3.5 w-[2px] -translate-y-1/2"
+            style={{ left: "100%", backgroundColor: CHART_PALETTE.axis }}
           />
         </div>
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between mt-3">
-        <p className="text-xs text-gray-400">
-          {card.pct === null ? "revenue unavailable" : "of revenue"}
+      <div
+        className="mt-3 flex items-center justify-between text-[11px]"
+        style={{ color: CHART_PALETTE.subtitle }}
+      >
+        <p>{card.pct === null ? "revenue unavailable" : "of revenue"}</p>
+        <p className="tabular-nums">target ≤ {card.target}%</p>
+      </div>
+    </div>
+  );
+}
+
+/** One of the four figures along the bottom of the Spend overview. */
+function SummaryFigure({
+  icon: Icon,
+  iconClass,
+  label,
+  value,
+}: {
+  icon: LucideIcon;
+  /** Icon tile colours; its border takes the icon's own hue. */
+  iconClass: string;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <div
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 ${iconClass}`}
+      >
+        <Icon size={15} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[11px]" style={{ color: CHART_PALETTE.subtitle }}>
+          {label}
         </p>
-        <p className="text-xs text-gray-400">target ≤ {card.target}%</p>
+        <p
+          className="truncate text-[13px] font-medium tabular-nums"
+          style={{ color: CHART_PALETTE.title }}
+        >
+          {value}
+        </p>
       </div>
     </div>
   );
@@ -262,33 +324,52 @@ function FixedVariableDonut({
       <div className="space-y-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-gray-800" />
-            <span className="text-xs font-semibold text-gray-800 flex flex-row items-center gap-2">
-              <span className="tracking-wide">
-                {" "}
-                Fixed costs {fixedPct.toFixed(2)}%
+            <span className="h-2.5 w-2.5 rounded-full bg-gray-800" />
+            <span
+              className="flex flex-row items-center gap-2 text-[13px]"
+              style={{ color: CHART_PALETTE.title }}
+            >
+              <span className="tabular-nums">
+                Fixed costs {fixedPct.toFixed(1)}%
               </span>
-              <span className="font-semibold text-gray-500 tracking-wide">
+              <span
+                className="tabular-nums"
+                style={{ color: CHART_PALETTE.axis }}
+              >
                 {fmtRs(fixedAmount)}
               </span>
             </span>
           </div>
-          <p className="text-xs text-gray-400 ml-4 mt-0.5">
+          <p
+            className="ml-4 mt-0.5 text-[11px]"
+            style={{ color: CHART_PALETTE.subtitle }}
+          >
             Rent, utilities, insurance, ...
           </p>
         </div>
 
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-400" />
-            <span className="text-xs font-semibold text-gray-800 flex flex-row items-center gap-2">
-              <span>Variable costs {variablePct.toFixed(2)}%</span>
-              <span className="font-semibold text-gray-500">
+            <span className="h-2.5 w-2.5 rounded-full bg-blue-400" />
+            <span
+              className="flex flex-row items-center gap-2 text-[13px]"
+              style={{ color: CHART_PALETTE.title }}
+            >
+              <span className="tabular-nums">
+                Variable costs {variablePct.toFixed(1)}%
+              </span>
+              <span
+                className="tabular-nums"
+                style={{ color: CHART_PALETTE.axis }}
+              >
                 {fmtRs(variableAmount)}
               </span>
             </span>
           </div>
-          <p className="text-xs text-gray-400 ml-4 mt-0.5">
+          <p
+            className="ml-4 mt-0.5 text-[11px]"
+            style={{ color: CHART_PALETTE.subtitle }}
+          >
             Food, transportation, marketing, ...
           </p>
         </div>
@@ -453,37 +534,60 @@ export default function CostHealth() {
       ====================================================== */}
 
       <section>
-        {/* Section header */}
-        <div className="mb-5">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
-              <Activity size={15} className="text-rose-600" />
+        {/* Section header — the ChartCard header, over a grid of cards
+            rather than inside one. */}
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+              style={{ borderColor: "#fecdd3", backgroundColor: "#fff1f2" }}
+            >
+              <Activity size={16} style={{ color: "#e11d48" }} />
             </div>
-            <ComponentHeader
-              title="Cost health"
-              subHeader={`Each cost as a share of ${revenueLabel}, against a target`}
-            />
-            <RangeBadge scope="month" />
+            <div className="min-w-0">
+              <h3
+                className="text-[15px] font-normal"
+                style={{ color: CHART_PALETTE.title }}
+              >
+                Cost health
+              </h3>
+              <p
+                className="mt-0.5 text-xs tracking-wide"
+                style={{ color: CHART_PALETTE.subtitle }}
+              >
+                {`Each cost as a share of ${revenueLabel}, against a target`}
+              </p>
+            </div>
           </div>
+          <RangeBadge scope="month" variant="pill" />
         </div>
 
         {cards.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+          <div
+            className="rounded-2xl border bg-white p-8"
+            style={{ borderColor: CHART_PALETTE.border }}
+          >
             <div className="flex flex-col items-center justify-center text-center">
-              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                <Activity size={24} className="text-gray-400" />
+              <div
+                className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
+                style={{ backgroundColor: CHART_PALETTE.hover }}
+              >
+                <Activity size={24} style={{ color: CHART_PALETTE.subtitle }} />
               </div>
-              <p className="text-sm font-medium text-gray-500">
+              <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
                 No expense data yet
               </p>
-              <p className="text-xs text-gray-400 mt-1">
+              <p
+                className="mt-1 text-xs"
+                style={{ color: CHART_PALETTE.subtitle }}
+              >
                 Cost health cards will appear once you record expenses
               </p>
             </div>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {visibleCards.map((card) => (
                 <CostHealthCard key={card.purposeId} card={card} />
               ))}
@@ -491,7 +595,7 @@ export default function CostHealth() {
 
             {/* Load More / Hide buttons */}
             {cards.length > 4 && (
-              <div className="flex items-center justify-center gap-3 mt-4">
+              <div className="mt-4 flex items-center justify-center gap-2">
                 {canLoadMore && (
                   <button
                     onClick={() =>
@@ -499,12 +603,11 @@ export default function CostHealth() {
                         Math.min(prev + 4, cards.length),
                       )
                     }
-                    className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-gray-600 hover:text-blue-500 transition-colors cursor-pointer"
+                    className={MORE_BUTTON}
+                    style={MORE_BUTTON_STYLE}
                   >
-                    <ChevronDown size={14} /> Load More
-                    <span className="text-xs text-gray-400">
-                      ( {cards.length - visibleCount} more )
-                    </span>
+                    <ChevronDown size={12} />
+                    Show {cards.length - visibleCount} more
                   </button>
                 )}
                 {canHide && (
@@ -512,9 +615,11 @@ export default function CostHealth() {
                     onClick={() =>
                       setVisibleCount((prev) => Math.max(prev - 4, 4))
                     }
-                    className="px-4 py-2 text-xs font-medium text-gray-500 hover:text-gray-700  transition disabled:opacity-50 disabled:cursor-not-allowed flex flex-row items-center gap-1 cursor-pointer"
+                    className={MORE_BUTTON}
+                    style={MORE_BUTTON_STYLE}
                   >
-                    <ChevronUp size={14} /> Hide
+                    <ChevronUp size={12} />
+                    Show less
                   </button>
                 )}
               </div>
@@ -527,45 +632,51 @@ export default function CostHealth() {
           SPEND OVERVIEW
       ====================================================== */}
 
-      <section>
-        {/* Section header */}
-        <div className="mb-5">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-              <PieChart size={15} className="text-blue-600" />
-            </div>
-            <ComponentHeader
-              title="Spend overview"
-              subHeader="How your money was split this month"
-            />
-            <RangeBadge scope="month" />
-          </div>
-        </div>
-
+      <ChartCard
+        icon={PieChart}
+        title="Spend overview"
+        info={{
+          heading: "Reading this card",
+          // From the memo above: tracker figures, not the shop's P&L.
+          body: "Covers the month picked at the top of the page. Total spend is everything logged as an expense. Net profit here is the tracker's own income less its expenses — miscellaneous money only, with no cost of goods or tax — so it is not the shop's profit. Fixed and variable split those expenses by category.",
+        }}
+        subtitle="How your money was split this month"
+        controls={<RangeBadge scope="month" variant="pill" />}
+      >
         {!hasData ? (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
-            <div className="flex flex-col items-center justify-center text-center">
-              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                <PieChart size={24} className="text-gray-500" />
-              </div>
-              <p className="text-sm font-medium text-gray-500">
-                No spend overview data
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                Has no spend data for this period
-              </p>
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <div
+              className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
+              style={{ backgroundColor: CHART_PALETTE.hover }}
+            >
+              <PieChart size={24} style={{ color: CHART_PALETTE.subtitle }} />
             </div>
+            <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+              No spend overview data
+            </p>
+            <p
+              className="mt-1 text-xs"
+              style={{ color: CHART_PALETTE.subtitle }}
+            >
+              Has no spend data for this period
+            </p>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-7 py-5">
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 lg:gap-12 items-center">
+          <>
+            <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[1fr_auto] lg:gap-12">
               <div className="grid grid-cols-2 gap-4 lg:gap-6">
                 {/* Total spend */}
                 <div>
-                  <p className="text-sm text-gray-500 font-medium mb-2">
+                  <p
+                    className="mb-2 text-[13px]"
+                    style={{ color: CHART_PALETTE.axis }}
+                  >
                     Total spend
                   </p>
-                  <p className="text-3xl font-bold tracking-wide text-gray-950">
+                  <p
+                    className="text-3xl font-semibold tracking-tight tabular-nums"
+                    style={{ color: CHART_PALETTE.title }}
+                  >
                     {fmtRs(overview.totalSpend)}
                   </p>
                   {/* Reads against the same revenue the cards use. Keyed to
@@ -573,11 +684,17 @@ export default function CostHealth() {
                       profitable month where no misc income happened to be
                       logged. */}
                   {overview.revenue !== null && (
-                    <div className="flex items-center gap-1.5 mt-2">
+                    <div className="mt-2 flex items-center gap-1.5">
                       {overview.totalSpend > overview.revenue ? (
                         <>
-                          <TrendingUp size={13} className="text-red-500" />
-                          <span className="text-xs font-semibold text-red-500">
+                          <TrendingUp
+                            size={13}
+                            style={{ color: CHART_PALETTE.bad }}
+                          />
+                          <span
+                            className="text-xs"
+                            style={{ color: CHART_PALETTE.bad }}
+                          >
                             Over revenue
                           </span>
                         </>
@@ -585,9 +702,12 @@ export default function CostHealth() {
                         <>
                           <TrendingDown
                             size={13}
-                            className="text-emerald-500"
+                            style={{ color: CHART_PALETTE.good }}
                           />
-                          <span className="text-xs font-semibold text-emerald-500">
+                          <span
+                            className="text-xs"
+                            style={{ color: CHART_PALETTE.good }}
+                          >
                             Within revenue
                           </span>
                         </>
@@ -598,18 +718,28 @@ export default function CostHealth() {
 
                 {/* Net profit */}
                 <div>
-                  <div className="text-gray-500 font-medium mb-2 flex flex-col mf:flex-row items-start gap-0 md:gap-2">
-                    <span className="text-sm">Net profit</span>
-                    <span className="text-xs text-gray-400">
+                  <div className="mb-2 flex flex-col items-start gap-0 md:flex-row md:gap-2">
+                    <span
+                      className="text-[13px]"
+                      style={{ color: CHART_PALETTE.axis }}
+                    >
+                      Net profit
+                    </span>
+                    <span
+                      className="text-[11px]"
+                      style={{ color: CHART_PALETTE.subtitle }}
+                    >
                       (Miscellaneous Income − Miscellaneous Expenses)
                     </span>
                   </div>
                   <p
-                    className={`text-3xl font-bold tracking-wide ${
-                      overview.netProfit >= 0
-                        ? "text-emerald-600"
-                        : "text-red-500"
-                    }`}
+                    className="text-3xl font-semibold tracking-tight tabular-nums"
+                    style={{
+                      color:
+                        overview.netProfit >= 0
+                          ? CHART_PALETTE.good
+                          : CHART_PALETTE.bad,
+                    }}
                   >
                     {fmtRs(overview.netProfit)}
                   </p>
@@ -620,7 +750,10 @@ export default function CostHealth() {
                       shop's. Hidden entirely when there is no base to divide
                       by, rather than printed as a flat 0%. */}
                   {overview.miscIncome > 0 && (
-                    <p className="text-sm font-medium text-gray-500 tracking-wide mt-1">
+                    <p
+                      className="mt-1 text-[13px] tabular-nums"
+                      style={{ color: CHART_PALETTE.axis }}
+                    >
                       {overview.netProfitMarginPct}% of misc. income
                     </p>
                   )}
@@ -628,7 +761,10 @@ export default function CostHealth() {
               </div>
               {/* Fixed vs variable breakdown */}
               <div className="lg:min-w-[300px]">
-                <p className="text-sm text-gray-500 font-medium mb-2">
+                <p
+                  className="mb-2 text-[13px]"
+                  style={{ color: CHART_PALETTE.axis }}
+                >
                   Fixed vs variable
                 </p>
 
@@ -642,77 +778,42 @@ export default function CostHealth() {
             </div>
 
             {/* Bottom summary row */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2 pt-5 border-t border-gray-100">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
-                  <Wallet size={15} className="text-red-500" />
-                </div>
-                <div>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wide">
-                    Total spend
-                  </p>
-                  <p className="text-sm font-bold text-gray-800 tracking-wide">
-                    {fmtRs(overview.totalSpend)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                  <Target size={15} className="text-blue-500" />
-                </div>
-                <div>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wide">
-                    Fixed costs
-                  </p>
-                  <p className="text-sm font-bold text-gray-800 tracking-wide">
-                    {fmtRs(overview.fixedAmount)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-                  <DollarSign size={15} className="text-emerald-500" />
-                </div>
-                <div>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wide">
-                    Variable costs
-                  </p>
-                  <p className="text-sm font-bold text-gray-800 tracking-wide">
-                    {fmtRs(overview.variableAmount)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2.5">
-                <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                    overview.netProfit < 0 ? "bg-red-50" : "bg-emerald-50"
-                  }`}
-                >
-                  <AlertTriangle
-                    size={15}
-                    className={
-                      overview.netProfit < 0
-                        ? "text-red-500"
-                        : "text-emerald-500"
-                    }
-                  />
-                </div>
-                <div>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wide">
-                    Net profit
-                  </p>
-                  <p className="text-sm font-bold text-gray-800 tracking-wide">
-                    {fmtRs(overview.netProfit)}
-                  </p>
-                </div>
-              </div>
+            <div
+              className="mt-2 grid grid-cols-2 gap-4 border-t pt-5 md:grid-cols-4"
+              style={{ borderColor: CHART_PALETTE.grid }}
+            >
+              <SummaryFigure
+                icon={Wallet}
+                iconClass="bg-red-50 text-red-600"
+                label="Total spend"
+                value={fmtRs(overview.totalSpend)}
+              />
+              <SummaryFigure
+                icon={Target}
+                iconClass="bg-blue-50 text-blue-600"
+                label="Fixed costs"
+                value={fmtRs(overview.fixedAmount)}
+              />
+              <SummaryFigure
+                icon={DollarSign}
+                iconClass="bg-emerald-50 text-emerald-600"
+                label="Variable costs"
+                value={fmtRs(overview.variableAmount)}
+              />
+              <SummaryFigure
+                icon={AlertTriangle}
+                iconClass={
+                  overview.netProfit < 0
+                    ? "bg-red-50 text-red-600"
+                    : "bg-emerald-50 text-emerald-600"
+                }
+                label="Net profit"
+                value={fmtRs(overview.netProfit)}
+              />
             </div>
-          </div>
+          </>
         )}
-      </section>
+      </ChartCard>
     </div>
   );
 }

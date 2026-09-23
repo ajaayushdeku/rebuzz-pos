@@ -12,8 +12,12 @@ import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
 import RangeBadge from "@/components/ui/RangeBadge";
-import { ComponentHeader } from "../ComponentHeader";
-import { ChartPie, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  CHART_PALETTE,
+  ChartCard,
+  ChartTooltipBox,
+} from "../dashboardComponents/chartCard";
+import { ChartPie, ChevronDown } from "lucide-react";
 import { ExpensesByCategorySkeleton } from "./ExpenseAnalyticsSkeletons";
 
 interface SliceData {
@@ -40,15 +44,25 @@ const CustomTooltip = ({
   if (!active || !payload?.length) return null;
   const entry = payload[0].payload as SliceData;
   return (
-    <div className="bg-white rounded-xl px-3 py-2 shadow-lg border border-gray-100">
-      <p className="text-gray-500 text-xs mb-0.5">{entry.purpose}</p>
-      <p className="font-bold text-sm tracking-wide" style={{ color: entry.color }}>
-        {formatCurrencySymbol(entry.amount, currency.symbol, currency.locale)}
-      </p>
-      <p className="text-xs text-gray-400 tracking-wide">
-        {entry.pct.toFixed(0)}% of expenses
-      </p>
-    </div>
+    <ChartTooltipBox
+      label={entry.purpose}
+      rows={[
+        {
+          name: "Spent",
+          color: entry.color,
+          value: formatCurrencySymbol(
+            entry.amount,
+            currency.symbol,
+            currency.locale,
+          ),
+        },
+        {
+          name: "Share of expenses",
+          color: entry.color,
+          value: `${entry.pct.toFixed(0)}%`,
+        },
+      ]}
+    />
   );
 };
 
@@ -126,7 +140,21 @@ export default function ExpensesByCategory() {
     );
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+    <ChartCard
+      icon={ChartPie}
+      // Rose, as before: Tailwind's rose-600 / rose-200 / rose-50.
+      iconColor="#e11d48"
+      iconBorder="#fecdd3"
+      iconBg="#fff1f2"
+      title="Expenses by Category"
+      info={{
+        heading: "Reading this chart",
+        // From the tracker store: expense rows for the selected month.
+        body: "Every expense logged in the month picked at the top of the page, grouped by its category and ordered largest first. Income entries are left out, so the percentages are shares of expenses rather than of all money moved.",
+      }}
+      subtitle="Share of total expenses this month"
+      controls={<RangeBadge scope="month" variant="pill" />}
+    >
       {/* Hide scrollbar styles */}
       <style jsx global>{`
         .scrollbar-hide {
@@ -137,33 +165,25 @@ export default function ExpensesByCategory() {
         }
       `}</style>
 
-      <div className="mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
-            <ChartPie size={15} className="text-rose-600" />
-          </div>
-          <ComponentHeader
-            title="Expenses by Category"
-            subHeader="Share of total expenses this month"
-          />
-          <RangeBadge scope="month" />
-        </div>
-      </div>
-
       {expenseByPurpose.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-            <ChartPie size={24} className="text-gray-500" />
+          <div
+            className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
+            style={{ backgroundColor: CHART_PALETTE.hover }}
+          >
+            <ChartPie size={24} style={{ color: CHART_PALETTE.subtitle }} />
           </div>
-          <p className="text-sm font-medium text-gray-500">No expense data</p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+            No expense data
+          </p>
+          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
             Expenses by Category data will appear here
           </p>
         </div>
       ) : (
-        <div className="flex flex-col sm:flex-row items-start gap-16 px-6">
+        <div className="flex flex-col items-start gap-10 sm:flex-row sm:gap-16">
           {/* ── Donut on the left ── */}
-          <div className="shrink-0 w-full sm:w-48 flex justify-center">
+          <div className="flex w-full shrink-0 justify-center sm:w-48">
             <ResponsiveContainer width={200} height={200}>
               <PieChart>
                 <Pie
@@ -195,10 +215,11 @@ export default function ExpensesByCategory() {
                 {/* Center text */}
                 <text
                   x="50%"
-                  y="48%"
+                  y="47%"
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  className="text-lg font-bold fill-gray-800"
+                  className="text-lg font-semibold"
+                  fill={CHART_PALETTE.title}
                 >
                   {totalExpense > 0
                     ? formatCurrencySymbol(
@@ -213,7 +234,8 @@ export default function ExpensesByCategory() {
                   y="58%"
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  className="text-xs fill-gray-400"
+                  className="text-xs"
+                  fill={CHART_PALETTE.axis}
                 >
                   Total
                 </text>
@@ -222,37 +244,49 @@ export default function ExpensesByCategory() {
           </div>
 
           {/* ── Legend with progress bars on the right ── */}
-          <div className="flex-1 w-full">
+          <div className="w-full flex-1">
             <div
               ref={legendRef}
               onScroll={updateLegendScroll}
-              className="space-y-2 max-h-56 overflow-y-auto pr-1 scrollbar-hide"
+              className="scrollbar-hide max-h-56 overflow-y-auto pr-1"
             >
               {expenseByPurpose.map((entry) => (
                 <div
                   key={entry.purpose}
-                  className="flex items-center gap-2 py-1"
+                  className="flex items-center gap-2.5 py-2"
                 >
                   <span
-                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
                     style={{ backgroundColor: entry.color }}
                   />
-                  <span className="text-xs text-gray-600 w-20 truncate shrink-0">
+                  <span
+                    className="w-20 shrink-0 truncate text-[13px]"
+                    style={{ color: CHART_PALETTE.title }}
+                  >
                     {entry.purpose}
                   </span>
-                  <div className="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                  <div
+                    className="h-1.5 flex-1 overflow-hidden rounded-full"
+                    style={{ backgroundColor: CHART_PALETTE.grid }}
+                  >
                     <div
                       className="h-full rounded-full transition-all duration-700 ease-out"
                       style={{
                         width: `${entry.pct}%`,
-                        background: `linear-gradient(90deg, ${entry.color}, ${entry.color}dd)`,
+                        backgroundColor: entry.color,
                       }}
                     />
                   </div>
-                  <span className="text-xs font-semibold text-gray-700 w-10 text-right shrink-0 tracking-wide">
-                    {entry.pct.toFixed(2)}%
+                  <span
+                    className="w-12 shrink-0 text-right text-xs tabular-nums"
+                    style={{ color: CHART_PALETTE.axis }}
+                  >
+                    {entry.pct.toFixed(1)}%
                   </span>
-                  <span className="text-xs text-gray-400 w-24 text-right shrink-0 tracking-wide">
+                  <span
+                    className="w-24 shrink-0 text-right text-[13px] font-medium tabular-nums"
+                    style={{ color: CHART_PALETTE.title }}
+                  >
                     {formatCurrencySymbol(
                       entry.amount,
                       currency.symbol,
@@ -263,16 +297,19 @@ export default function ExpensesByCategory() {
               ))}
             </div>
 
-            <div className="flex justify-center pt-1.5 animate-bounce">
-              {canScrollMore ? (
-                <ChevronDown size={14} className="text-gray-400" />
-              ) : (
-                <ChevronUp size={14} className="text-gray-400" />
-              )}
-            </div>
+            {/* Only while there is more list below — an up arrow at the end
+                was pointing at nothing to scroll to. */}
+            {canScrollMore && (
+              <div className="flex animate-bounce justify-center pt-1.5">
+                <ChevronDown
+                  size={14}
+                  style={{ color: CHART_PALETTE.subtitle }}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}
-    </div>
+    </ChartCard>
   );
 }

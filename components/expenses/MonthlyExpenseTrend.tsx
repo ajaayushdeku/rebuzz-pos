@@ -8,7 +8,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from "recharts";
 import type {
@@ -20,7 +19,14 @@ import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
 import { useTrailingMonthsTransactions } from "@/hooks/useTrailingMonthsTransactions";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { ComponentHeader } from "../ComponentHeader";
+import {
+  AXIS_TICK,
+  BAR_RADIUS,
+  CHART_PALETTE,
+  ChartCard,
+  ChartTooltipBox,
+  yAxisTitle,
+} from "../dashboardComponents/chartCard";
 import { ChartColumnStacked, AlertTriangle } from "lucide-react";
 import CategoryLegend from "./CategoryLegend";
 import { MonthlyExpenseTrendSkeleton } from "./ExpenseAnalyticsSkeletons";
@@ -61,29 +67,27 @@ const CustomTooltip = ({
   };
 
   return (
-    <div className="bg-white border border-gray-100 rounded-xl px-4 py-3 shadow-lg text-xs min-w-40">
-      <p className="font-semibold text-gray-700 mb-2">{label}</p>
-      {payload.map((entry, i) => (
-        <div key={i} className="flex items-center justify-between gap-4 mb-0.5">
-          <div className="flex items-center gap-1.5">
-            <span
-              className="w-2 h-2 rounded-sm shrink-0"
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className="text-gray-500">{String(entry.dataKey)}</span>
-          </div>
-          <span className="font-semibold text-gray-800 tracking-wide">
-            {fmtK(toNumber(entry.value))}
+    <ChartTooltipBox
+      label={label}
+      rows={payload.map((entry) => ({
+        name: String(entry.dataKey),
+        color: entry.color ?? CHART_PALETTE.blue,
+        value: fmtK(toNumber(entry.value)),
+      }))}
+      footer={
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-xs" style={{ color: CHART_PALETTE.axis }}>
+            Total
+          </span>
+          <span
+            className="text-xs font-medium"
+            style={{ color: CHART_PALETTE.title }}
+          >
+            {fmtK(total)}
           </span>
         </div>
-      ))}
-      <div className="border-t border-gray-100 pt-1.5 mt-1.5 flex justify-between">
-        <span className="text-gray-400">Total</span>
-        <span className="font-bold text-gray-900 tracking-wide yb">
-          {fmtK(total)}
-        </span>
-      </div>
-    </div>
+      }
+    />
   );
 };
 
@@ -171,25 +175,37 @@ export default function MonthlyExpenseTrend() {
     );
 
   return (
-    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
-            <ChartColumnStacked size={15} className="text-violet-600" />
-          </div>
-          <ComponentHeader
-            title="Monthly Expense Trend by Category"
-            subHeader="Stacked breakdown of expenses over the last 6 months"
-          />
-        </div>
-
-        <span className="shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+    <ChartCard
+      icon={ChartColumnStacked}
+      // Violet, as before: Tailwind's violet-600 / violet-200 / violet-50.
+      iconColor="#7c3aed"
+      iconBorder="#ddd6fe"
+      iconBg="#f5f3ff"
+      title="Monthly Expense Trend by Category"
+      info={{
+        heading: "Reading this chart",
+        // From useTrailingMonthsTransactions: fixed six-month window.
+        body: "Six months to date, always — it ignores the month picked at the top of the page. Each bar stacks that month's expenses by category, largest category at the bottom, so the whole bar is what you spent. Income is left out. Hover a bar for the split and the month's total.",
+      }}
+      subtitle="Stacked breakdown of expenses over the last 6 months"
+      controls={
+        // States plainly that this card ignores the page's month filter.
+        <span
+          className="shrink-0 rounded-full border bg-white px-2 py-0.5 text-[11px]"
+          style={{
+            borderColor: CHART_PALETTE.control,
+            color: CHART_PALETTE.title,
+          }}
+        >
           Last 6 months
         </span>
-      </div>
-
+      }
+    >
       {failedMonths > 0 && !isError && (
-        <p className="flex items-center gap-1.5 text-[11px] text-amber-600">
+        <p
+          className="mb-3 flex items-center gap-1.5 text-[11px]"
+          style={{ color: CHART_PALETTE.warn }}
+        >
           <AlertTriangle size={12} className="shrink-0" />
           {failedMonths} of 6 months could not be loaded — the chart is
           incomplete.
@@ -201,67 +217,76 @@ export default function MonthlyExpenseTrend() {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
             <AlertTriangle size={22} className="text-red-400" />
           </div>
-          <p className="text-sm font-medium text-gray-500">
+          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
             Could not load the expense trend
           </p>
-          <p className="mt-1 text-xs text-gray-400">
+          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
             None of the last six months could be fetched.
           </p>
         </div>
       ) : categories.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-            <ChartColumnStacked size={24} className="text-gray-500" />
+          <div
+            className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
+            style={{ backgroundColor: CHART_PALETTE.hover }}
+          >
+            <ChartColumnStacked
+              size={24}
+              style={{ color: CHART_PALETTE.subtitle }}
+            />
           </div>
-          <p className="text-sm font-medium text-gray-500">No expense data</p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+            No expense data
+          </p>
+          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
             No expenses recorded in the last 6 months.
           </p>
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart
-            data={data}
-            margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
-            barCategoryGap="25%"
-          >
-            <CartesianGrid vertical={false} stroke="#f3f4f6" />
-            <XAxis
-              dataKey="month"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 11 }}
-              dy={8}
-            />
-            <YAxis
-              tickFormatter={fmtK}
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 11 }}
-              width={42}
-            />
-            <Tooltip
-              content={<CustomTooltip />}
-              cursor={{ fill: "rgba(0,0,0,0.03)" }}
-            />
-            <Legend
-              content={() => <CategoryLegend categories={categories} />}
-            />
-
-            {categories.map((cat, i) => (
-              <Bar
-                key={cat.name}
-                dataKey={cat.name}
-                stackId="expenses"
-                fill={cat.color}
-                radius={
-                  i === categories.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]
-                }
+        <>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart
+              data={data}
+              margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+              barCategoryGap="25%"
+            >
+              <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
+              <XAxis
+                dataKey="month"
+                axisLine={false}
+                tickLine={false}
+                tick={AXIS_TICK}
+                dy={8}
               />
-            ))}
-          </BarChart>
-        </ResponsiveContainer>
+              <YAxis
+                tickFormatter={fmtK}
+                axisLine={false}
+                tickLine={false}
+                tick={AXIS_TICK}
+                width={80}
+                label={yAxisTitle("Expenses")}
+              />
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={{ fill: CHART_PALETTE.hover }}
+              />
+
+              {categories.map((cat, i) => (
+                <Bar
+                  key={cat.name}
+                  dataKey={cat.name}
+                  stackId="expenses"
+                  fill={cat.color}
+                  // Soft corners on the top of the stack only.
+                  radius={i === categories.length - 1 ? BAR_RADIUS : undefined}
+                />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+
+          <CategoryLegend categories={categories} />
+        </>
       )}
-    </div>
+    </ChartCard>
   );
 }
