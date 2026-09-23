@@ -4,7 +4,7 @@ import { TrendingUp, TrendingDown, Info } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { CHART_PALETTE, ChartCard } from "../chartCard";
 import { TaxComparisonSkeleton } from "./TaxAnalyticsSkeletons";
 
 const VAT_RATE = 0.13; // 13% VAT
@@ -117,51 +117,57 @@ export default function WhatChangedAndWhy() {
   })();
 
   return (
-    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-      <div className="flex items-center gap-3 mb-1">
-        <div
-          className={`w-8 h-8 rounded-lg ${increased ? "bg-amber-50" : "bg-blue-50"} flex items-center justify-center shrink-0`}
-        >
-          {increased ? (
-            <TrendingUp size={14} className="text-amber-500" />
-          ) : (
-            <TrendingDown size={14} className="text-blue-500" />
-          )}
-        </div>
-        <ComponentHeader
-          title="What Changed & Why"
-          subHeader="Your VAT bill this month compared to last"
-        />
-      </div>
-
+    <ChartCard
+      icon={increased ? TrendingUp : TrendingDown}
+      // Amber when the bill grew, blue when it shrank: Tailwind's 600 / 200 / 50.
+      iconColor={increased ? "#d97706" : "#2563eb"}
+      iconBorder={increased ? "#fde68a" : "#bfdbfe"}
+      iconBg={increased ? "#fffbeb" : "#eff6ff"}
+      title="What Changed & Why"
+      info={{
+        heading: "Reading this card",
+        // From the query above: 13% of total revenue, month to date.
+        body: "An estimate, not your filed figure: it takes total sales for each month from the sales report and charges 13% VAT on all of it. This month runs from the 1st to today, so it is compared against a full previous month. It ignores the date range at the top of the page, and it does not use the tax actually charged on each bill.",
+      }}
+      subtitle="Your VAT bill this month compared to last"
+    >
       {isLoading ? (
         <TaxComparisonSkeleton />
       ) : isError || !data ? (
-        <div className="py-10 text-center text-sm text-red-500">
+        <p
+          className="py-10 text-center text-sm"
+          style={{ color: CHART_PALETTE.bad }}
+        >
           Couldn&apos;t load VAT comparison. Please try again.
-        </div>
+        </p>
       ) : (
         <>
           {/* Comparison row */}
           <div className="flex items-center justify-between gap-4">
             {/* Last month */}
             <div>
-              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">
-                Last Month
+              <p
+                className="mb-1 text-[11px]"
+                style={{ color: CHART_PALETTE.subtitle }}
+              >
+                Last month
               </p>
-              <p className="text-xl font-bold text-gray-500 tracking-wide">
+              <p
+                className="text-xl font-semibold tracking-tight tabular-nums"
+                style={{ color: CHART_PALETTE.axis }}
+              >
                 {fmt(data.lastMonth)}
               </p>
             </div>
 
             {/* Change pill — center */}
-            <div className="flex-1 flex justify-center tracking-wide">
-              <div
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${
-                  increased
-                    ? "text-amber-600 bg-amber-50"
-                    : "text-blue-600 bg-blue-50"
-                }`}
+            <div className="flex flex-1 justify-center">
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full border bg-white px-3 py-1 text-xs tabular-nums"
+                style={{
+                  borderColor: CHART_PALETTE.control,
+                  color: increased ? CHART_PALETTE.warn : CHART_PALETTE.blue,
+                }}
               >
                 {increased ? (
                   <TrendingUp size={12} />
@@ -169,34 +175,45 @@ export default function WhatChangedAndWhy() {
                   <TrendingDown size={12} />
                 )}
                 {fmt(Math.abs(data.change))} ({data.changePct}%)
-              </div>
+              </span>
             </div>
 
             {/* This month — blue card */}
-            <div className="bg-blue-600 rounded-2xl px-5 py-3 text-right min-w-[140px]">
-              <p className="text-[10px] font-semibold text-blue-200 uppercase tracking-widest mb-0.5">
-                This Month
-              </p>
-              <p className="text-2xl font-bold text-white leading-none tracking-wide">
+            <div className="min-w-[140px] rounded-2xl bg-blue-600 px-5 py-3 text-right">
+              <p className="mb-0.5 text-[11px] text-blue-100">This month</p>
+              <p className="text-2xl font-semibold leading-none tracking-tight tabular-nums text-white">
                 {fmt(data.thisMonth)}
               </p>
             </div>
           </div>
 
           {/* Reason */}
-          <div className="mt-4 flex items-start gap-2 bg-gray-50 rounded-xl px-3 py-2.5">
-            <Info size={13} className="text-gray-400 shrink-0 mt-0.5" />
+          <div
+            className="mt-4 flex items-start gap-2 rounded-xl border px-3 py-2.5"
+            style={{ borderColor: CHART_PALETTE.border }}
+          >
+            <Info
+              size={13}
+              className="mt-0.5 shrink-0"
+              style={{ color: CHART_PALETTE.subtitle }}
+            />
             <div>
-              <p className="text-[11px] font-semibold text-gray-500 mb-0.5">
+              <p
+                className="mb-0.5 text-[11px] font-medium"
+                style={{ color: CHART_PALETTE.title }}
+              >
                 Why it changed
               </p>
-              <p className="text-[11px] text-gray-500 leading-relaxed">
+              <p
+                className="text-[11px] leading-relaxed"
+                style={{ color: CHART_PALETTE.axis }}
+              >
                 {reason}
               </p>
             </div>
           </div>
         </>
       )}
-    </div>
+    </ChartCard>
   );
 }

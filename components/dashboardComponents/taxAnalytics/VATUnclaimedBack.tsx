@@ -5,72 +5,90 @@ import { mockVATUnclaimedData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { CHART_PALETTE, ChartCard } from "../chartCard";
 
 export default function VATUnclaimedBack() {
   const { currency } = useCurrency();
   const d = mockVATUnclaimedData;
 
-  return (
-    <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col gap-4">
-      <LockDimFeactureOverlay component_name="VAT Unclaimed Back" />
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
-          <CreditCard size={15} className="text-green-600" />
-        </div>
+  const fmt = (v: number) =>
+    formatCurrencySymbol(v, currency.symbol, currency.locale);
 
-        <ComponentHeader
-          title=" VAT You Haven't Claimed Back"
-          subHeader="VAT you paid suppliers but haven't recovered yet"
-        />
-      </div>
+  return (
+    <ChartCard
+      icon={CreditCard}
+      // Green, as before: Tailwind's green-600 / green-200 / green-50.
+      iconColor="#16a34a"
+      iconBorder="#bbf7d0"
+      iconBg="#f0fdf4"
+      title="VAT You Haven't Claimed Back"
+      subtitle="VAT you paid suppliers but haven't recovered yet"
+      // Clipped so the lock overlay follows the card's rounded corners.
+      className="h-full overflow-hidden select-none"
+    >
+      {/* Lock overlay — a direct child of the card, so it covers the header
+          as well as the figures. */}
+      <LockDimFeactureOverlay component_name="VAT Unclaimed Back" />
 
       {/* Big number */}
-      <div className="text-center py-2">
-        <p className="text-4xl font-bold text-green-600">
-          {formatCurrencySymbol(
-            d.stillRecoverable,
-            currency.symbol,
-            currency.locale,
-          )}
+      <div className="py-2 text-center">
+        <p
+          className="text-4xl font-semibold tracking-tight tabular-nums"
+          style={{ color: CHART_PALETTE.good }}
+        >
+          {fmt(d.stillRecoverable)}
         </p>
-        <p className="text-xs text-gray-400 mt-1">still recoverable</p>
+        <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+          still recoverable
+        </p>
       </div>
 
       {/* Progress bar */}
-      <div>
-        <div className="flex items-center justify-between text-xs text-gray-500 mb-1.5">
-          <span>
-            Claimed::{" "}
-            {formatCurrencySymbol(d.claimed, currency.symbol, currency.locale)}
-          </span>
-          <span>
-            Eligible:{" "}
-            {formatCurrencySymbol(d.eligible, currency.symbol, currency.locale)}
-          </span>
+      <div className="mt-4">
+        <div
+          className="mb-1.5 flex items-center justify-between text-xs tabular-nums"
+          style={{ color: CHART_PALETTE.axis }}
+        >
+          <span>Claimed: {fmt(d.claimed)}</span>
+          <span>Eligible: {fmt(d.eligible)}</span>
         </div>
-        <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+        <div
+          className="h-2 overflow-hidden rounded-full"
+          style={{ backgroundColor: CHART_PALETTE.grid }}
+        >
           <div
-            className="h-full bg-green-500 rounded-full transition-all duration-500"
-            style={{ width: `${d.claimedPct}%` }}
+            className="h-full rounded-full transition-all duration-500"
+            style={{
+              width: `${d.claimedPct}%`,
+              backgroundColor: CHART_PALETTE.good,
+            }}
           />
         </div>
-        <p className="text-[11px] text-green-600 font-medium mt-1.5">
+        <p className="mt-1.5 text-[11px]" style={{ color: CHART_PALETTE.good }}>
           {d.claimedPct}% of what you can claim has been claimed
         </p>
       </div>
 
       {/* Info note */}
-      <div className="flex items-start gap-2 bg-gray-50 rounded-xl px-3 py-2.5">
-        <Info size={13} className="text-gray-400 shrink-0 mt-0.5" />
-        <p className="text-[11px] text-gray-500 leading-relaxed">
+      <div
+        className="mt-4 flex items-start gap-2 rounded-xl border px-3 py-2.5"
+        style={{ borderColor: CHART_PALETTE.border }}
+      >
+        <Info
+          size={13}
+          className="mt-0.5 shrink-0"
+          style={{ color: CHART_PALETTE.subtitle }}
+        />
+        <p
+          className="text-[11px] leading-relaxed"
+          style={{ color: CHART_PALETTE.axis }}
+        >
           When you buy supplies, the VAT you pay can be claimed back to lower
           your bill — but only if the purchase is logged with a valid PAN bill.
           This is money you&lsquo;re owed but haven&lsquo;t collected. Find
           these invoices to recover it.
         </p>
       </div>
-    </div>
+    </ChartCard>
   );
 }

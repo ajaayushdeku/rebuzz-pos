@@ -1,11 +1,18 @@
 "use client";
 
 import RangeBadge from "@/components/ui/RangeBadge";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { RefreshCcw, TrendingDown, AlertCircle, Undo2 } from "lucide-react";
+import {
+  RefreshCcw,
+  TrendingDown,
+  AlertCircle,
+  Undo2,
+  Calendar,
+  type LucideIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
+import { CHART_PALETTE, ChartCard } from "../chartCard";
 import { TaxRefundStatsSkeleton } from "./TaxAnalyticsSkeletons";
 
 interface RefundTaxItem {
@@ -14,6 +21,55 @@ interface RefundTaxItem {
   taxRefunded: number;
   reason: string;
   date: string;
+}
+
+/** One of the three figures above the list. */
+function StatTile({
+  icon: Icon,
+  iconClass,
+  label,
+  value,
+  sub,
+}: {
+  icon: LucideIcon;
+  /** Icon tile colours; its border takes the icon's own hue. */
+  iconClass: string;
+  label: string;
+  value: string;
+  sub: string;
+}) {
+  return (
+    <div
+      className="rounded-xl border px-5 py-4"
+      style={{ borderColor: CHART_PALETTE.border }}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <span
+          className="min-w-0 truncate text-[11px]"
+          style={{ color: CHART_PALETTE.axis }}
+        >
+          {label}
+        </span>
+        <div
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-current/20 ${iconClass}`}
+        >
+          <Icon size={15} />
+        </div>
+      </div>
+      <p
+        className="mt-2 truncate text-lg font-semibold tracking-tight tabular-nums"
+        style={{ color: CHART_PALETTE.title }}
+      >
+        {value}
+      </p>
+      <p
+        className="mt-0.5 truncate text-[11px]"
+        style={{ color: CHART_PALETTE.subtitle }}
+      >
+        {sub}
+      </p>
+    </div>
+  );
 }
 
 const TaxOnRefundedBills = ({
@@ -28,177 +84,148 @@ const TaxOnRefundedBills = ({
   const router = useRouter();
   const { currency } = useCurrency();
 
+  const fmt = (v: number) =>
+    formatCurrencySymbol(v, currency.symbol, currency.locale);
+
   const totalRefundedAmount = data.reduce((s, r) => s + r.refundedAmount, 0);
   const totalTaxRefunded = data.reduce((s, r) => s + r.taxRefunded, 0);
   const avgRefundTaxAmount =
     data.length > 0 ? totalTaxRefunded / data.length : 0;
 
   return (
-    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
-          <Undo2 size={15} className="text-rose-600" />
-        </div>
-        <ComponentHeader
-          title="Tax on Refunds"
-          subHeader="Tax reversed for returned items"
-        />
-        <RangeBadge />
-      </div>
-
+    <ChartCard
+      icon={Undo2}
+      // Rose, as before: Tailwind's rose-600 / rose-200 / rose-50.
+      iconColor="#e11d48"
+      iconBorder="#fecdd3"
+      iconBg="#fff1f2"
+      title="Tax on Refunds"
+      info={{
+        heading: "Reading this card",
+        // From the refund hook: refunded bills inside the page's date range.
+        body: "Bills refunded in the date range at the top of the page, newest first. Tax refunded is the tax that was reversed along with the bill. Click a row to open that invoice.",
+      }}
+      subtitle="Tax reversed for returned items"
+      controls={<RangeBadge variant="pill" />}
+    >
       {isLoading ? (
         <TaxRefundStatsSkeleton />
       ) : isError ? (
-        <p className="text-sm text-red-400 text-center py-16">
+        <p
+          className="py-16 text-center text-sm"
+          style={{ color: CHART_PALETTE.bad }}
+        >
           Failed to load Highest Tax Generated
         </p>
       ) : data.length === 0 ? (
         <div className="flex flex-col items-center justify-center pb-4">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-            <Undo2 size={24} className="text-gray-500" />
+          <div
+            className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
+            style={{ backgroundColor: CHART_PALETTE.hover }}
+          >
+            <Undo2 size={24} style={{ color: CHART_PALETTE.subtitle }} />
           </div>
-          <p className="text-sm font-medium text-gray-500">No refunded bills</p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+            No refunded bills
+          </p>
+          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
             Refunded transactions will appear here
           </p>
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-xl p-4 border border-red-100">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
-                  <RefreshCcw size={16} className="text-red-600" />
-                </div>
-                <span className="text-[10px] font-bold text-red-600 uppercase tracking-wider">
-                  Total Refunded
-                </span>
-              </div>
-
-              <p className="text-lg font-bold text-red-700 tracking-wide">
-                {formatCurrencySymbol(
-                  totalRefundedAmount,
-                  currency.symbol,
-                  currency.locale,
-                )}
-              </p>
-              <p className="text-[10px] text-red-500 mt-1 tracking-wide">
-                {data.length} {data.length === 1 ? "bill" : "bills"}
-              </p>
-            </div>
-
-            <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-100">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <TrendingDown size={16} className="text-orange-600" />
-                </div>
-                <p className="text-[10px] font-bold text-orange-600  uppercase tracking-wider mb-1">
-                  Tax Refunded
-                </p>
-              </div>
-
-              <p className="text-lg font-bold text-orange-700 tracking-wide">
-                {formatCurrencySymbol(
-                  totalTaxRefunded,
-                  currency.symbol,
-                  currency.locale,
-                )}
-              </p>
-              <p className="text-[10px] text-orange-500 mt-1 tracking-wide">
-                {totalRefundedAmount > 0
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <StatTile
+              icon={RefreshCcw}
+              iconClass="bg-red-50 text-red-600"
+              label="Total refunded"
+              value={fmt(totalRefundedAmount)}
+              sub={`${data.length} ${data.length === 1 ? "bill" : "bills"}`}
+            />
+            <StatTile
+              icon={TrendingDown}
+              iconClass="bg-orange-50 text-orange-600"
+              label="Tax refunded"
+              value={fmt(totalTaxRefunded)}
+              sub={`${
+                totalRefundedAmount > 0
                   ? `${((totalTaxRefunded / totalRefundedAmount) * 100).toFixed(1)}%`
-                  : "0%"}{" "}
-                of total
-              </p>
-            </div>
-
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <AlertCircle size={16} className="text-blue-600" />
-                </div>
-                <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wider mb-1">
-                  Avg. Tax Refund
-                </p>
-              </div>
-              <p className="text-lg font-bold text-blue-700 tracking-wide">
-                {formatCurrencySymbol(
-                  avgRefundTaxAmount,
-                  currency.symbol,
-                  currency.locale,
-                )}
-              </p>
-              <p className="text-[10px] text-blue-500 mt-1">Per bill</p>
-            </div>
+                  : "0%"
+              } of total`}
+            />
+            <StatTile
+              icon={AlertCircle}
+              iconClass="bg-blue-50 text-blue-600"
+              label="Avg. tax refund"
+              value={fmt(avgRefundTaxAmount)}
+              sub="Per bill"
+            />
           </div>
 
-          <div className="space-y-2">
-            <p className="text-xs font-semibold text-gray-700 mb-3">
-              Recent Refunds
+          <div className="mt-6">
+            <p
+              className="mb-1 text-[13px] font-medium"
+              style={{ color: CHART_PALETTE.title }}
+            >
+              Recent refunds
             </p>
-            <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+
+            <div
+              className="max-h-80 overflow-y-auto border-t"
+              style={{ borderColor: CHART_PALETTE.grid }}
+            >
               {data.map((bill) => (
                 <div
                   key={bill.billNumber}
-                  className="group bg-white border border-gray-200 rounded-lg p-3 hover:border-red-200 hover:shadow-sm transition-all"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => router.push(`/invoices/${bill.billNumber}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      router.push(`/invoices/${bill.billNumber}`);
+                    }
+                  }}
+                  className="flex cursor-pointer items-center justify-between gap-3 border-b px-3 py-3 transition-colors last:border-0 hover:bg-blue-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  style={{ borderColor: CHART_PALETTE.grid }}
                 >
-                  <div
-                    className="flex items-start justify-between gap-3 cursor-pointer"
-                    onClick={() => router.push(`/invoices/${bill.billNumber}`)}
-                  >
-                    <div className="flex items-start gap-3 flex-1 min-w-0">
-                      <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-red-100 transition-colors">
-                        <RefreshCcw size={18} className="text-red-500" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="text-sm font-semibold text-gray-900 tracking-wide truncate">
-                            ORD-{bill.billNumber}
-                          </h4>
-                        </div>
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 bg-rose-50 text-rose-600">
+                      <RefreshCcw size={15} />
+                    </div>
+                    <div className="min-w-0">
+                      <p
+                        className="truncate text-[13px]"
+                        style={{ color: CHART_PALETTE.title }}
+                      >
+                        ORD-{bill.billNumber}
+                      </p>
+                      <p
+                        className="mt-0.5 flex items-center gap-1.5 truncate text-[11px]"
+                        style={{ color: CHART_PALETTE.subtitle }}
+                      >
+                        <span className="truncate">{bill.reason}</span>
+                        <span className="flex shrink-0 items-center gap-1">
+                          <Calendar size={11} />
+                          {bill.date}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
 
-                        <div className="flex flex-row gap-1">
-                          <p className="text-xs text-gray-600 font-medium">
-                            {bill.reason}
-                            {" · "}
-                          </p>
-                          <span className="text-[10px] text-gray-400 font-medium flex items-center gap-1">
-                            <svg
-                              className="w-3 h-3"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                              />
-                            </svg>
-                            {bill.date}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right shrink-0 tracking-wide">
-                      <p className="text-sm font-bold text-red-600 mb-1">
-                        -
-                        {formatCurrencySymbol(
-                          bill.refundedAmount,
-                          currency.symbol,
-                          currency.locale,
-                        )}
-                      </p>
-                      <p className="text-[10px] text-orange-600 font-medium">
-                        Tax: -
-                        {formatCurrencySymbol(
-                          bill.taxRefunded,
-                          currency.symbol,
-                          currency.locale,
-                        )}
-                      </p>
-                    </div>
+                  <div className="shrink-0 text-right">
+                    <p
+                      className="text-[13px] font-medium tabular-nums"
+                      style={{ color: CHART_PALETTE.bad }}
+                    >
+                      −{fmt(bill.refundedAmount)}
+                    </p>
+                    <p
+                      className="mt-0.5 text-[11px] tabular-nums"
+                      style={{ color: CHART_PALETTE.warn }}
+                    >
+                      Tax: −{fmt(bill.taxRefunded)}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -206,7 +233,7 @@ const TaxOnRefundedBills = ({
           </div>
         </>
       )}
-    </div>
+    </ChartCard>
   );
 };
 

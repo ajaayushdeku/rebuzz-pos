@@ -7,135 +7,108 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from "recharts";
-import { Info, ChartSpline } from "lucide-react";
+import type {
+  NameType,
+  Payload,
+  ValueType,
+} from "recharts/types/component/DefaultTooltipContent";
+import { ChartSpline } from "lucide-react";
 import { mockVATTrendData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  AXIS_TICK,
+  CHART_PALETTE,
+  ChartCard,
+  ChartLegend,
+  ChartTooltipBox,
+  yAxisTitle,
+} from "../chartCard";
+
+const INPUT_COLOR = "#22c55e";
+const NET_COLOR = "#f59e0b";
+const OUTPUT_COLOR = "#6366f1";
 
 const FmtRs = (v: number) => {
   const { currency } = useCurrency();
   return formatCompactCurrency(v, currency.symbol, currency.locale);
 };
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: Payload<ValueType, NameType>[];
+  label?: string;
+}) => {
   const { currency } = useCurrency();
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white border border-gray-100 rounded-xl px-4 py-3 shadow-lg text-xs min-w-44">
-      <p className="font-semibold text-gray-700 mb-2">{label}</p>
-      {payload.map((entry: any, i: number) => (
-        <div key={i} className="flex items-center justify-between gap-6 mb-0.5">
-          <div className="flex items-center gap-1.5">
-            <span
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className="text-gray-500">{entry.name}</span>
-          </div>
-          <span className="font-bold text-gray-800">
-            {formatCurrencySymbol(
-              entry.value,
-              currency.symbol,
-              currency.locale,
-            )}
-          </span>
-        </div>
-      ))}
-    </div>
+    <ChartTooltipBox
+      label={label}
+      rows={payload.map((entry) => ({
+        name: String(entry.name ?? ""),
+        color: entry.color ?? CHART_PALETTE.blue,
+        value: formatCurrencySymbol(
+          Number(entry.value) || 0,
+          currency.symbol,
+          currency.locale,
+        ),
+      }))}
+    />
   );
 };
 
-const CustomLegend = () => (
-  <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1.5 mt-3">
-    {[
-      { label: "Input VAT (reclaimed)", color: "#22c55e", dashed: false },
-      { label: "Net Payable", color: "#f59e0b", dashed: true },
-      { label: "Output VAT (collected)", color: "#6366f1", dashed: false },
-    ].map(({ label, color, dashed }) => (
-      <div key={label} className="flex items-center gap-1.5">
-        {dashed ? (
-          <svg width="18" height="8">
-            <line
-              x1="0"
-              y1="4"
-              x2="18"
-              y2="4"
-              stroke={color}
-              strokeWidth="2"
-              strokeDasharray="4 3"
-            />
-          </svg>
-        ) : (
-          <svg width="18" height="8">
-            <line x1="0" y1="4" x2="18" y2="4" stroke={color} strokeWidth="2" />
-            <circle
-              cx="9"
-              cy="4"
-              r="2.5"
-              fill="white"
-              stroke={color}
-              strokeWidth="1.5"
-            />
-          </svg>
-        )}
-        <span className="text-xs text-gray-500">{label}</span>
-      </div>
-    ))}
-  </div>
-);
-
 export default function VATTrendChart() {
   return (
-    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
+    <ChartCard
+      icon={ChartSpline}
+      title="Input vs Output VAT Trend"
+      subtitle="How much VAT you collect vs reclaim, over 6 months"
+      // Clipped so the lock overlay follows the card's rounded corners.
+      className="h-full overflow-hidden select-none"
+    >
+      {/* Lock overlay — a direct child of the card, so it covers the header
+          as well as the chart. */}
       <LockDimFeactureOverlay component_name="VAT Trend Chart" />
-
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-          <ChartSpline size={15} className="text-blue-600" />
-        </div>
-        <ComponentHeader
-          title="Input vs Output VAT Trend"
-          subHeader=" How much VAT you collect vs reclaim, over 6 months"
-        />
-      </div>
 
       <ResponsiveContainer width="100%" height={280}>
         <LineChart
           data={mockVATTrendData}
           margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
         >
-          <CartesianGrid vertical={false} stroke="#f3f4f6" />
+          <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
           <XAxis
             dataKey="month"
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "#9ca3af", fontSize: 11 }}
+            tick={AXIS_TICK}
             dy={8}
           />
           <YAxis
             tickFormatter={FmtRs}
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "#9ca3af", fontSize: 11 }}
+            tick={AXIS_TICK}
             ticks={[0, 40000, 80000, 120000, 160000]}
-            width={52}
+            width={80}
+            label={yAxisTitle("VAT amount")}
           />
           <Tooltip content={<CustomTooltip />} />
-          <Legend content={<CustomLegend />} />
 
           {/* Input VAT — green solid */}
           <Line
             type="monotone"
             dataKey="inputVAT"
             name="Input VAT (reclaimed)"
-            stroke="#22c55e"
+            stroke={INPUT_COLOR}
             strokeWidth={2.5}
-            dot={{ r: 4, fill: "white", stroke: "#22c55e", strokeWidth: 2 }}
+            dot={{ r: 4, fill: "white", stroke: INPUT_COLOR, strokeWidth: 2 }}
             activeDot={{ r: 5 }}
           />
 
@@ -144,10 +117,10 @@ export default function VATTrendChart() {
             type="monotone"
             dataKey="netPayable"
             name="Net Payable"
-            stroke="#f59e0b"
+            stroke={NET_COLOR}
             strokeWidth={2}
             strokeDasharray="6 4"
-            dot={{ r: 3, fill: "white", stroke: "#f59e0b", strokeWidth: 2 }}
+            dot={{ r: 3, fill: "white", stroke: NET_COLOR, strokeWidth: 2 }}
             activeDot={{ r: 5 }}
           />
 
@@ -156,23 +129,29 @@ export default function VATTrendChart() {
             type="monotone"
             dataKey="outputVAT"
             name="Output VAT (collected)"
-            stroke="#6366f1"
+            stroke={OUTPUT_COLOR}
             strokeWidth={2.5}
-            dot={{ r: 4, fill: "white", stroke: "#6366f1", strokeWidth: 2 }}
+            dot={{ r: 4, fill: "white", stroke: OUTPUT_COLOR, strokeWidth: 2 }}
             activeDot={{ r: 5 }}
           />
         </LineChart>
       </ResponsiveContainer>
 
-      {/* Insight note */}
-      <div className="flex items-start gap-2 bg-gray-50 rounded-xl px-3 py-2.5">
-        <Info size={13} className="text-gray-400 shrink-0 mt-0.5" />
-        <p className="text-[11px] text-gray-500 leading-relaxed">
-          The gap between the blue (collected) and green (reclaimed) lines is
-          what you owe IRD — the amber line. If input VAT ever jumps closer to
-          output, either purchases rose or something&lsquo;s worth checking.
-        </p>
-      </div>
-    </div>
+      <ChartLegend
+        items={[
+          {
+            label: "Input VAT (reclaimed)",
+            color: INPUT_COLOR,
+            shape: "line",
+          },
+          { label: "Net Payable", color: NET_COLOR, shape: "dashed" },
+          {
+            label: "Output VAT (collected)",
+            color: OUTPUT_COLOR,
+            shape: "line",
+          },
+        ]}
+      />
+    </ChartCard>
   );
 }

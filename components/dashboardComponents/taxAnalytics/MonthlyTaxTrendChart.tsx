@@ -14,11 +14,19 @@ import type {
   Payload,
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
-import { Info, ChartColumnBig } from "lucide-react";
+import { ChartColumnBig } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useMonthlyTaxTrend } from "@/hooks/useMonthlyTaxTrend";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  AXIS_TICK,
+  BAR_RADIUS,
+  CHART_PALETTE,
+  ChartCard,
+  ChartLegend,
+  ChartTooltipBox,
+  yAxisTitle,
+} from "../chartCard";
 import { TaxTrendChartSkeleton } from "./TaxAnalyticsSkeletons";
 
 const RATE_COLORS = [
@@ -43,35 +51,32 @@ const CustomTooltip = ({
 }) => {
   const { currency } = useCurrency();
   if (!active || !payload?.length) return null;
+  const fmt = (v: number) =>
+    formatCurrencySymbol(v, currency.symbol, currency.locale);
   const total = payload.reduce((s, e) => s + (Number(e.value) || 0), 0);
+
   return (
-    <div className="bg-white border border-gray-100 rounded-xl px-4 py-3 shadow-lg text-xs min-w-40">
-      <p className="font-semibold text-gray-700 mb-2">{label}</p>
-      {payload.map((entry, i) => (
-        <div key={i} className="flex items-center justify-between gap-5 mb-0.5">
-          <div className="flex items-center gap-1.5">
-            <span
-              className="w-2 h-2 rounded-sm shrink-0"
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className="text-gray-500">{entry.name}</span>
-          </div>
-          <span className="font-bold text-gray-800 tracking-wide">
-            {formatCurrencySymbol(
-              Number(entry.value) || 0,
-              currency.symbol,
-              currency.locale,
-            )}
+    <ChartTooltipBox
+      label={label}
+      rows={payload.map((entry) => ({
+        name: String(entry.name ?? ""),
+        color: entry.color ?? CHART_PALETTE.blue,
+        value: fmt(Number(entry.value) || 0),
+      }))}
+      footer={
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-xs" style={{ color: CHART_PALETTE.axis }}>
+            Total
+          </span>
+          <span
+            className="text-xs font-medium"
+            style={{ color: CHART_PALETTE.title }}
+          >
+            {fmt(total)}
           </span>
         </div>
-      ))}
-      <div className="border-t border-gray-100 mt-2 pt-1.5 flex justify-between">
-        <span className="text-gray-400">Total</span>
-        <span className="font-bold text-gray-900 tracking-wide">
-          {formatCurrencySymbol(total, currency.symbol, currency.locale)}
-        </span>
-      </div>
-    </div>
+      }
+    />
   );
 };
 
@@ -81,35 +86,32 @@ export default function MonthlyTaxTrendChart() {
 
   const rows = data?.rows ?? [];
   const series = data?.series ?? [];
-  const hasData = rows.some((r) => r.total > 0);
 
   const formatY = (v: number) =>
     formatCompactCurrency(v, currency.symbol, currency.locale);
 
   return (
-    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-          <ChartColumnBig size={15} className="text-blue-600" />
-        </div>
-        <ComponentHeader
-          title="Monthly Tax Trend"
-          subHeader=" Tax generated over the last 6 months, broken down by applied rate"
-        />
-      </div>
-
+    <ChartCard
+      icon={ChartColumnBig}
+      title="Monthly Tax Trend"
+      info={{
+        heading: "Reading this chart",
+        // From useMonthlyTaxTrend, and the note this card used to carry.
+        body: "Each bar stacks the tax generated that month by the rate applied on the bills, so you can see your total tax load trending over time. It covers the last six calendar months and ignores the date range at the top of the page; refunded bills are left out.",
+      }}
+      subtitle="Tax generated over the last 6 months, broken down by applied rate"
+      className="h-full"
+    >
       {isLoading ? (
         <TaxTrendChartSkeleton />
       ) : isError ? (
-        <div className="flex items-center justify-center h-[280px] text-sm text-red-400">
+        <div
+          className="flex h-[280px] items-center justify-center text-sm"
+          style={{ color: CHART_PALETTE.bad }}
+        >
           Failed to load tax trend
         </div>
       ) : (
-        // ) : !hasData ? (
-        //   <div className="flex items-center justify-center h-[280px] text-sm text-gray-400">
-        //     No tax data available
-        //   </div>
-        // ) : (
         <>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart
@@ -117,24 +119,25 @@ export default function MonthlyTaxTrendChart() {
               margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
               barCategoryGap="30%"
             >
-              <CartesianGrid vertical={false} stroke="#f3f4f6" />
+              <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
               <XAxis
                 dataKey="month"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#9ca3af", fontSize: 11 }}
+                tick={AXIS_TICK}
                 dy={8}
               />
               <YAxis
                 tickFormatter={formatY}
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#9ca3af", fontSize: 11 }}
-                width={56}
+                tick={AXIS_TICK}
+                width={80}
+                label={yAxisTitle("Tax generated")}
               />
               <Tooltip
                 content={<CustomTooltip />}
-                cursor={{ fill: "rgba(0,0,0,0.03)" }}
+                cursor={{ fill: CHART_PALETTE.hover }}
               />
               {series.map((s, i) => (
                 <Bar
@@ -143,37 +146,22 @@ export default function MonthlyTaxTrendChart() {
                   name={s.label}
                   stackId="tax"
                   fill={RATE_COLORS[i % RATE_COLORS.length]}
-                  radius={i === series.length - 1 ? [3, 3, 0, 0] : undefined}
+                  // Soft corners on the top of the stack only.
+                  radius={i === series.length - 1 ? BAR_RADIUS : undefined}
                 />
               ))}
             </BarChart>
           </ResponsiveContainer>
 
-          {/* Legend */}
-          <div className="flex items-center justify-center flex-wrap gap-x-6 gap-y-2">
-            {series.map((s, i) => (
-              <div key={s.key} className="flex items-center gap-1.5">
-                <span
-                  className="w-2.5 h-2.5 rounded-sm shrink-0"
-                  style={{
-                    backgroundColor: RATE_COLORS[i % RATE_COLORS.length],
-                  }}
-                />
-                <span className="text-xs text-gray-500">{s.label}</span>
-              </div>
-            ))}
-          </div>
+          <ChartLegend
+            items={series.map((s, i) => ({
+              label: s.label,
+              color: RATE_COLORS[i % RATE_COLORS.length],
+              shape: "square" as const,
+            }))}
+          />
         </>
       )}
-
-      {/* Insight note */}
-      <div className="flex items-start gap-2 bg-gray-50 rounded-xl px-3 py-2.5">
-        <Info size={13} className="text-gray-400 shrink-0 mt-0.5" />
-        <p className="text-[11px] text-gray-500 leading-relaxed">
-          Each bar stacks the tax generated that month by the rate applied on
-          the bills, so you can see your total tax load trending over time.
-        </p>
-      </div>
-    </div>
+    </ChartCard>
   );
 }

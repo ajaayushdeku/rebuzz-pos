@@ -5,7 +5,7 @@ import { mockTaxReconciliationData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { CHART_PALETTE, ChartCard } from "../chartCard";
 
 export default function TaxReconciliation() {
   const { currency } = useCurrency();
@@ -17,57 +17,76 @@ export default function TaxReconciliation() {
 
   const steps = [
     { label: "Collected", value: fmtRs(d.collected), operator: null },
-    { label: "VAT Paid", value: fmtRs(d.vatPaid), operator: "−" },
+    { label: "VAT paid", value: fmtRs(d.vatPaid), operator: "−" },
     { label: "Refunds", value: fmtRs(d.refunds), operator: "−" },
     { label: "Remitted", value: fmtRs(d.remitted), operator: "−" },
   ];
 
   return (
-    <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col gap-5">
+    <ChartCard
+      icon={Scale}
+      // Emerald, as before: Tailwind's emerald-600 / emerald-200 / emerald-50.
+      iconColor="#059669"
+      iconBorder="#a7f3d0"
+      iconBg="#ecfdf5"
+      title="Tax Reconciliation"
+      subtitle="What you collected, less what you have already settled"
+      // Clipped so the lock overlay follows the card's rounded corners.
+      className="h-full overflow-hidden select-none"
+    >
+      {/* Lock overlay — a direct child of the card, so it covers the header
+          as well as the equation. */}
       <LockDimFeactureOverlay component_name="Tax Reconciliation" />
-
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-          <Scale size={15} className="text-emerald-600" />
-        </div>
-        <ComponentHeader title="Tax Reconciliation" subHeader="" />
-      </div>
 
       {/* Equation row */}
       <div className="overflow-x-auto">
-        <div className="flex items-center gap-2 min-w-max">
-          {steps.map(({ label, value, operator }, i) => (
+        <div className="flex min-w-max items-center gap-2">
+          {steps.map(({ label, value, operator }) => (
             <div key={label} className="flex items-center gap-2">
               {/* Operator */}
               {operator && (
-                <span className="text-gray-300 text-base font-light select-none">
+                <span
+                  className="select-none text-base font-light"
+                  style={{ color: CHART_PALETTE.subtitle }}
+                >
                   {operator}
                 </span>
               )}
 
               {/* Metric box */}
-              <div className="flex flex-col items-center gap-0.5 px-6 py-3 rounded-xl bg-gray-50 border border-gray-100 min-w-[140px]">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              <div
+                className="flex min-w-[140px] flex-col items-center gap-0.5 rounded-xl border px-6 py-3"
+                style={{ borderColor: CHART_PALETTE.border }}
+              >
+                <p
+                  className="text-[11px]"
+                  style={{ color: CHART_PALETTE.subtitle }}
+                >
                   {label}
                 </p>
-                <p className="text-lg font-bold text-gray-900">{value}</p>
+                <p
+                  className="text-lg font-semibold tracking-tight tabular-nums"
+                  style={{ color: CHART_PALETTE.title }}
+                >
+                  {value}
+                </p>
               </div>
             </div>
           ))}
 
           {/* Equals sign */}
-          <span className="text-gray-300 text-base font-light select-none px-1">
+          <span
+            className="select-none px-1 text-base font-light"
+            style={{ color: CHART_PALETTE.subtitle }}
+          >
             =
           </span>
 
-          {/* Still Owed — highlighted */}
-          <div className="flex flex-col items-center gap-0.5 px-6 py-3 rounded-xl border-2 border-blue-200 bg-blue-50 min-w-[160px]">
-            <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">
-              Still Owed
-            </p>
-            <p className="text-xl font-bold text-blue-600">
-              {fmtRs(d.stillOwed)}.00
+          {/* Still Owed — the answer */}
+          <div className="flex min-w-[160px] flex-col items-center gap-0.5 rounded-xl bg-blue-600 px-6 py-3">
+            <p className="text-[11px] text-blue-100">Still owed</p>
+            <p className="text-xl font-semibold tracking-tight tabular-nums text-white">
+              {fmtRs(d.stillOwed)}
             </p>
           </div>
         </div>
@@ -75,33 +94,37 @@ export default function TaxReconciliation() {
 
       {/* Reconciliation status banner */}
       <div
-        className={`flex items-start gap-3 rounded-xl px-4 py-3 border ${
+        className={`mt-5 flex items-start gap-3 rounded-xl border px-4 py-3 ${
           d.isReconciled
-            ? "bg-green-50 border-green-200"
-            : "bg-red-50 border-red-200"
+            ? "border-green-200 bg-green-50"
+            : "border-red-200 bg-red-50"
         }`}
       >
         <CheckCircle2
           size={18}
           className={
             d.isReconciled
-              ? "text-green-500 shrink-0 mt-0.5"
-              : "text-red-500 shrink-0 mt-0.5"
+              ? "mt-0.5 shrink-0 text-green-600"
+              : "mt-0.5 shrink-0 text-red-500"
           }
         />
         <div>
           <p
-            className={`text-sm font-bold ${d.isReconciled ? "text-green-700" : "text-red-700"}`}
+            className={`text-[13px] font-medium ${
+              d.isReconciled ? "text-green-700" : "text-red-700"
+            }`}
           >
             {d.isReconciled ? "Accounts Reconciled" : "Reconciliation Mismatch"}
           </p>
           <p
-            className={`text-[11px] mt-0.5 ${d.isReconciled ? "text-green-600" : "text-red-600"}`}
+            className={`mt-0.5 text-[11px] ${
+              d.isReconciled ? "text-green-600" : "text-red-600"
+            }`}
           >
             {d.reconciliationMessage}
           </p>
         </div>
       </div>
-    </div>
+    </ChartCard>
   );
 }

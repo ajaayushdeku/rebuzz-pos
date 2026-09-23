@@ -5,72 +5,89 @@ import { mockNoVATPurchasesData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { CHART_PALETTE, ChartCard } from "../chartCard";
 
 export default function NoVATPurchases() {
   const { currency } = useCurrency();
   const d = mockNoVATPurchasesData;
 
+  const fmt = (v: number) =>
+    formatCurrencySymbol(v, currency.symbol, currency.locale);
+
   return (
-    <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col gap-4">
+    <ChartCard
+      icon={ShoppingBag}
+      // Indigo, as before: Tailwind's indigo-600 / indigo-200 / indigo-50.
+      iconColor="#4f46e5"
+      iconBorder="#c7d2fe"
+      iconBg="#eef2ff"
+      title="Purchases With No VAT to Claim"
+      subtitle="Tax-free items you bought — nothing to recover on these"
+      // Clipped so the lock overlay follows the card's rounded corners.
+      className="h-full overflow-hidden select-none"
+    >
+      {/* Lock overlay — a direct child of the card, so it covers the header
+          as well as the figures. */}
       <LockDimFeactureOverlay component_name="No VAT Purchases" />
 
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
-          <ShoppingBag size={15} className="text-indigo-600" />
-        </div>
-
-        <ComponentHeader
-          title=" Purchases With No VAT to Claim"
-          subHeader="Tax-free items you bought — nothing to recover on these"
-        />
-      </div>
-
       {/* Two metric cols */}
-      <div className="grid grid-cols-2 gap-4 pt-1">
+      <div className="grid grid-cols-2 gap-4">
         <div>
-          <p className="text-[10px] font-semibold text-indigo-500 uppercase tracking-widest mb-2">
-            No-VAT Purchases
+          <p className="mb-2 text-[11px]" style={{ color: CHART_PALETTE.axis }}>
+            No-VAT purchases
           </p>
-          <p className="text-2xl font-bold text-blue-700">
-            {formatCurrencySymbol(
-              d.noVATPurchases,
-              currency.symbol,
-              currency.locale,
-            )}
+          <p
+            className="text-2xl font-semibold tracking-tight tabular-nums"
+            style={{ color: CHART_PALETTE.blue }}
+          >
+            {fmt(d.noVATPurchases)}
           </p>
-          <p className="text-[11px] text-gray-400 mt-1">
+          <p
+            className="mt-1 text-[11px]"
+            style={{ color: CHART_PALETTE.subtitle }}
+          >
             {d.noVATPct}% of all buying
           </p>
         </div>
         <div>
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">
-            Taxable Purchases
+          <p className="mb-2 text-[11px]" style={{ color: CHART_PALETTE.axis }}>
+            Taxable purchases
           </p>
-          <p className="text-2xl font-bold text-gray-900">
-            {formatCurrencySymbol(
-              d.taxablePurchases,
-              currency.symbol,
-              currency.locale,
-            )}
+          <p
+            className="text-2xl font-semibold tracking-tight tabular-nums"
+            style={{ color: CHART_PALETTE.title }}
+          >
+            {fmt(d.taxablePurchases)}
           </p>
-          <p className="text-[11px] text-gray-400 mt-1">
+          <p
+            className="mt-1 text-[11px]"
+            style={{ color: CHART_PALETTE.subtitle }}
+          >
             VAT claimable on these
           </p>
         </div>
       </div>
 
       {/* Info note */}
-      <div className="flex items-start gap-2 bg-gray-50 rounded-xl px-3 py-2.5">
-        <Info size={13} className="text-gray-400 shrink-0 mt-0.5" />
-        <p className="text-[11px] text-gray-500 leading-relaxed">
+      <div
+        className="mt-4 flex items-start gap-2 rounded-xl border px-3 py-2.5"
+        style={{ borderColor: CHART_PALETTE.border }}
+      >
+        <Info
+          size={13}
+          className="mt-0.5 shrink-0"
+          style={{ color: CHART_PALETTE.subtitle }}
+        />
+        <p
+          className="text-[11px] leading-relaxed"
+          style={{ color: CHART_PALETTE.axis }}
+        >
           Tax-free items (like basic foods) have no VAT — which sounds good, but
           it means there&lsquo;s nothing to claim back on them. If you sell them
           prepared at 13%, your real cost is a bit higher than it looks, since
           you could&lsquo;t recover VAT on the ingredients.
         </p>
       </div>
-    </div>
+    </ChartCard>
   );
 }

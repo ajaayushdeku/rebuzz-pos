@@ -5,7 +5,7 @@ import { mockVAT20SummaryData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { CHART_PALETTE, ChartCard } from "../chartCard";
 
 const STATUS_STYLES = {
   ready: {
@@ -34,25 +34,24 @@ const STATUS_STYLES = {
 function Row({
   label,
   value,
-  bold,
   colored,
 }: {
   label: string;
   value: string;
-  bold?: boolean;
+  /** The line a section adds up to. */
   colored?: boolean;
 }) {
   return (
-    <div
-      className={`flex justify-between items-center ${bold ? "font-semibold" : ""}`}
-    >
-      <span
-        className={`text-sm ${bold ? "font-semibold text-gray-800" : "text-gray-600"}`}
-      >
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-[13px]" style={{ color: CHART_PALETTE.axis }}>
         {label}
       </span>
       <span
-        className={`text-sm ${colored ? "text-blue-600 font-bold" : bold ? "text-gray-800 font-semibold" : "text-gray-800"}`}
+        className="text-[13px] tabular-nums"
+        style={{
+          color: colored ? CHART_PALETTE.blue : CHART_PALETTE.title,
+          fontWeight: colored ? 500 : 400,
+        }}
       >
         {value}
       </span>
@@ -62,7 +61,10 @@ function Row({
 
 function SectionLabel({ label }: { label: string }) {
   return (
-    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-4 mb-2">
+    <p
+      className="mb-2 mt-4 text-[13px] font-medium"
+      style={{ color: CHART_PALETTE.title }}
+    >
       {label}
     </p>
   );
@@ -77,28 +79,24 @@ export default function VAT20ReturnSummary() {
     formatCurrencySymbol(v, currency.symbol, currency.locale);
 
   return (
-    <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col gap-4">
-      <LockDimFeactureOverlay component_name="VAT-20 Return Summary" />
-
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-            <FileText size={15} className="text-blue-600" />
-          </div>
-
-          <ComponentHeader
-            title="VAT-20 Return Summary"
-            subHeader="IRD Tax Return Form Preview"
-          />
-        </div>
+    <ChartCard
+      icon={FileText}
+      title="VAT-20 Return Summary"
+      subtitle="IRD Tax Return Form Preview"
+      controls={
         <span
-          className={`flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border ${status.bg} ${status.text} ${status.border}`}
+          className={`flex shrink-0 items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] ${status.bg} ${status.text} ${status.border}`}
         >
           {status.icon}
           {status.label}
         </span>
-      </div>
+      }
+      // Clipped so the lock overlay follows the card's rounded corners.
+      className="h-full overflow-hidden select-none"
+    >
+      {/* Lock overlay — a direct child of the card, so it covers the header
+          as well as the figures. */}
+      <LockDimFeactureOverlay component_name="VAT-20 Return Summary" />
 
       {/* Section 1 — Sales output */}
       <SectionLabel label="1. Sales (Output)" />
@@ -108,7 +106,10 @@ export default function VAT20ReturnSummary() {
           value={fmt(d.taxableSales)}
         />
         <Row label="Exempt Sales" value={fmt(d.exemptSales)} />
-        <div className="border-t border-gray-100 pt-2">
+        <div
+          className="border-t pt-2.5"
+          style={{ borderColor: CHART_PALETTE.grid }}
+        >
           <Row
             label="Total Output VAT Collected"
             value={fmt(d.totalOutputVAT)}
@@ -122,7 +123,10 @@ export default function VAT20ReturnSummary() {
       <div className="space-y-2.5">
         <Row label="Input VAT Paid on Purchases" value={fmt(d.inputVATPaid)} />
         <Row label="VAT Refunds Claimed" value={fmt(d.vatRefundsClaimed)} />
-        <div className="border-t border-gray-100 pt-2">
+        <div
+          className="border-t pt-2.5"
+          style={{ borderColor: CHART_PALETTE.grid }}
+        >
           <Row
             label="Total Deductible VAT"
             value={fmt(d.totalDeductibleVAT)}
@@ -132,23 +136,31 @@ export default function VAT20ReturnSummary() {
       </div>
 
       {/* Section 3 — Final settlement */}
-      <div className="mt-2 bg-blue-50 rounded-xl px-4 py-3.5 flex items-center justify-between">
+      <div className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-blue-600 px-4 py-3.5">
         <div>
-          <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">
+          <p className="text-[13px] font-medium text-white">
             3. Final Settlement
           </p>
-          <p className="text-xs text-blue-500 mt-0.5">Net VAT Payable to IRD</p>
+          <p className="mt-0.5 text-[11px] text-blue-100">
+            Net VAT Payable to IRD
+          </p>
         </div>
-        <p className="text-xl font-bold text-blue-700">
+        <p className="text-xl font-semibold tracking-tight tabular-nums text-white">
           {fmt(d.netVATPayable)}
         </p>
       </div>
 
       {/* Download button */}
-      <button className="w-full flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold py-3 rounded-xl transition-colors mt-1">
+      <button
+        className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border bg-white py-2.5 text-[13px] transition-colors hover:bg-[#f8f9fa]"
+        style={{
+          borderColor: CHART_PALETTE.control,
+          color: CHART_PALETTE.title,
+        }}
+      >
         <Download size={15} />
         Download Draft VAT-20
       </button>
-    </div>
+    </ChartCard>
   );
 }
