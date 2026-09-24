@@ -33,6 +33,7 @@ import { getPurposeIcon } from "@/lib/purpose-icons";
 import toast from "react-hot-toast";
 import ExpenseIncomeForm from "./ExpenseIncomeForm";
 import { ComponentHeader } from "../ComponentHeader";
+import { CHART_PALETTE } from "../dashboardComponents/chartCard";
 
 // Small wrapper to render a purpose icon without creating a component during render
 function PurposeIcon({
@@ -300,7 +301,13 @@ function SummaryTable({ type }: { type: TransactionType }) {
     <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
       <table className="w-full text-sm min-w-[380px]">
         <thead>
-          <tr className="text-xs text-gray-400 border-b border-gray-100">
+          <tr
+            className="border-b text-[11px] tracking-wider"
+            style={{
+              borderColor: CHART_PALETTE.grid,
+              color: CHART_PALETTE.axis,
+            }}
+          >
             <th className="text-left pb-3 pt-3 px-4 font-medium">Purpose</th>
             <th className="text-center pb-3 pt-3 px-4 font-medium">
               Transactions
@@ -358,16 +365,22 @@ function SummaryTable({ type }: { type: TransactionType }) {
                           )}
                         />
                       </span>
-                      <span className="text-xs font-medium tracking-wide text-gray-900">
+                      <span
+                        className="text-[13px] font-medium tracking-wide "
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         {purposeName}
                       </span>
                     </div>
                   </td>
-                  <td className="py-3 px-4 text-center text-xs text-gray-600">
+                  <td
+                    className="py-3 px-4 text-center text-xs"
+                    style={{ color: CHART_PALETTE.title }}
+                  >
                     {count}
                   </td>
                   <td
-                    className={`py-3 px-4 text-right text-xs tracking-wid font-semibold ${
+                    className={`py-3 px-4 text-right text-[13px] tracking-wid font-medium ${
                       type === "expense" ? "text-red-600" : "text-green-600"
                     }`}
                   >

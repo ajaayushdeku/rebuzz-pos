@@ -187,7 +187,7 @@ export default function Page() {
                         {displayValue}
                       </p>
                       {item.subText && (
-                        <p className="text-[11px] text-gray-500 truncate tracking-wide">
+                        <p className="text-[11px] text-gray-400 truncate tracking-wide">
                           {item.subText}
                         </p>
                       )}

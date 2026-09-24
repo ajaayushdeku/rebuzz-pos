@@ -59,6 +59,7 @@ import ColumnPicker, {
   type TableColumn,
 } from "@/components/ui/ColumnPicker";
 import { useDuplicateInvoiceStore } from "@/stores/useDuplicateInvoiceStore";
+import { CHART_PALETTE } from "../dashboardComponents/chartCard";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -417,7 +418,13 @@ export default function InvoiceTable({
           style={{ minWidth: `${Math.max(640, columnCount * 150)}px` }}
         >
           <thead>
-            <tr className="text-xs text-gray-400 border-b border-gray-100">
+            <tr
+              className="border-b text-[11px] tracking-wider"
+              style={{
+                borderColor: CHART_PALETTE.grid,
+                color: CHART_PALETTE.axis,
+              }}
+            >
               {/* <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
                 S.No
               </th> */}
@@ -536,11 +543,17 @@ export default function InvoiceTable({
                     )}
                     {showColumn("invoice") && (
                       <td className="py-3 px-4">
-                        <span className="font-medium text-xs text-gray-900 block">
+                        <span
+                          className="font-medium text-xs block"
+                          style={{ color: CHART_PALETTE.title }}
+                        >
                           ORD-{inv.invoice}
                         </span>
                         {inv.created_at && (
-                          <span className="text-[11px] text-gray-400">
+                          <span
+                            className="text-[11px]"
+                            style={{ color: CHART_PALETTE.subtitle }}
+                          >
                             {timeAgo(
                               inv.created_at
                                 ? new Date(inv.created_at)
@@ -551,18 +564,27 @@ export default function InvoiceTable({
                       </td>
                     )}
                     {showColumn("ticket_name") && (
-                      <td className="py-3 px-4 text-xs text-gray-600">
+                      <td
+                        className="py-3 px-4 text-[13px]"
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         {inv.ticket_name || "—"}
                       </td>
                     )}
                     {showColumn("customer") && (
-                      <td className="py-3 px-4 text-xs text-gray-600">
+                      <td
+                        className="py-3 px-4 text-[13px]"
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         {inv.customer_name ?? "—"}
                       </td>
                     )}
 
                     {showColumn("amount") && (
-                      <td className="py-3 px-4 text-xs text-right tracking-wide tabular-nums font-semibold text-gray-900">
+                      <td
+                        className="py-3 px-4 text-[13px] text-right tracking-wide tabular-nums font-medium"
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         {formatCurrencySymbol(
                           Number(inv.amount),
                           currency.symbol,
@@ -575,7 +597,10 @@ export default function InvoiceTable({
                       <td className="py-3 px-4 text-right">
                         {invoiceDate ? (
                           <div>
-                            <span className="font-medium text-gray-800 text-xs tracking-wide block">
+                            <span
+                              className=" text-gray-800 text-xs tracking-wide block"
+                              style={{ color: CHART_PALETTE.title }}
+                            >
                               {/* {invoiceDate.toLocaleTimeString("en-US", {
                                 hour: "2-digit",
                                 minute: "2-digit",
@@ -589,7 +614,10 @@ export default function InvoiceTable({
                                   hour12: false,
                                 },
                               )}{" "}
-                              <span className="text-[10px] font-normal text-gray-400">
+                              <span
+                                className="text-[10px] font-normal"
+                                style={{ color: CHART_PALETTE.subtitle }}
+                              >
                                 {"  "}[{" "}
                                 {new Date(inv.created_at).toLocaleString(
                                   undefined,
@@ -601,7 +629,10 @@ export default function InvoiceTable({
                                 ]
                               </span>
                             </span>
-                            <span className="text-[11px]  text-gray-400">
+                            <span
+                              className="text-[11px]"
+                              style={{ color: CHART_PALETTE.subtitle }}
+                            >
                               {invoiceDate.toLocaleDateString("en-US", {
                                 month: "short",
                                 day: "numeric",

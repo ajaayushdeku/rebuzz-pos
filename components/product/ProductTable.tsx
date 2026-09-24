@@ -30,6 +30,7 @@ import ColumnPicker, {
 } from "@/components/ui/ColumnPicker";
 import { useDeleteProduct } from "@/hooks/useProducts";
 import toast from "react-hot-toast";
+import { CHART_PALETTE } from "../dashboardComponents/chartCard";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -299,7 +300,13 @@ export default function ProductTable({
           style={{ minWidth: `${Math.max(640, colCount * 150)}px` }}
         >
           <thead>
-            <tr className="text-xs text-gray-400 border-b border-gray-100">
+            <tr
+              className="border-b text-[11px] tracking-wider"
+              style={{
+                borderColor: CHART_PALETTE.grid,
+                color: CHART_PALETTE.axis,
+              }}
+            >
               {/* <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
                 S.No
               </th> */}
@@ -378,7 +385,7 @@ export default function ProductTable({
                 </td>
               </tr>
             ) : (
-              pagedProducts.map((product, idx) => {
+              pagedProducts.map((product) => {
                 const variants = product.variants ?? [];
                 const variantCount = variants.length;
                 const isExpanded = expandedIds.has(product.id);
@@ -422,7 +429,10 @@ export default function ProductTable({
                     {showColumn("name") && (
                       <td className="py-3  px-4">
                         <span className="flex items-left gap-2">
-                          <span className="font-medium text-xs text-gray-900">
+                          <span
+                            className="font-medium text-[13px] "
+                            style={{ color: CHART_PALETTE.title }}
+                          >
                             {product.name}
                           </span>
                           {variantCount > 0 && (
@@ -464,13 +474,19 @@ export default function ProductTable({
                     )}
                     {showColumn("description") && (
                       <td className="py-3 px-4">
-                        <span className="text-xs text-gray-500 truncate max-w-[200px] block">
+                        <span
+                          className="text-[13px] truncate max-w-[200px] block"
+                          style={{ color: CHART_PALETTE.title }}
+                        >
                           {product.description || "—"}
                         </span>
                       </td>
                     )}
                     {showColumn("price") && (
-                      <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900 tabular-nums">
+                      <td
+                        className="py-3 px-4 text-[13px] text-right font-medium  tabular-nums"
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         {priceLabel(product)}
                       </td>
                     )}
@@ -488,7 +504,10 @@ export default function ProductTable({
                         ) : (
                           <div className="flex items-center justify-center gap-1.5">
                             <Package className="h-3.5 w-3.5 text-blue-500" />
-                            <span className="text-sm font-medium tabular-nums text-gray-700 tracking-wide">
+                            <span
+                              className="text-[13px] font-medium tabular-nums  tracking-wide"
+                              style={{ color: CHART_PALETTE.title }}
+                            >
                               {formatNumber(stockOf(product))}
                             </span>
                             {product.lowStock !== undefined &&
@@ -545,7 +564,10 @@ export default function ProductTable({
                             <td className="py-2.5 pr-4">
                               <span className="flex items-center gap-1.5 pl-6">
                                 <CornerDownRight className="h-3.5 w-3.5 shrink-0 text-gray-300" />
-                                <span className="text-xs font-medium capitalize text-gray-800">
+                                <span
+                                  className="text-xs font-medium capitalize "
+                                  style={{ color: CHART_PALETTE.title }}
+                                >
                                   {variant.optionValues.length > 0
                                     ? variant.optionValues.join(" · ")
                                     : "Default"}
@@ -555,13 +577,19 @@ export default function ProductTable({
                           )}
                           {showColumn("description") && (
                             <td className="py-2.5 px-4">
-                              <span className="block max-w-[200px] truncate text-xs text-gray-400">
+                              <span
+                                className="block max-w-[200px] truncate text-xs "
+                                style={{ color: CHART_PALETTE.title }}
+                              >
                                 Variant of {product.name}
                               </span>
                             </td>
                           )}
                           {showColumn("price") && (
-                            <td className="py-2.5 px-4 text-right text-xs font-semibold tabular-nums text-gray-700">
+                            <td
+                              className="py-2.5 px-4 text-right text-[11px] font-medium tabular-nums "
+                              style={{ color: CHART_PALETTE.title }}
+                            >
                               {fmt(variant.price)}
                             </td>
                           )}
@@ -580,12 +608,12 @@ export default function ProductTable({
                               ) : (
                                 <div className="flex items-center justify-center gap-1.5">
                                   <Package className="h-3.5 w-3.5 text-blue-400" />
-                                  <span className="text-sm font-medium tabular-nums text-gray-600">
-                                    {variant.inStock ?? 0}
+                                  <span className="text-xs font-medium tabular-nums text-gray-600">
+                                    {formatNumber(Number(variant.inStock)) ?? 0}
                                   </span>
                                   {variant.lowStock !== undefined &&
                                     variant.lowStock > 0 && (
-                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 font-semibold border border-amber-200">
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 font-semibold border border-amber-200">
                                         Low: {variant.lowStock}
                                       </span>
                                     )}

@@ -28,6 +28,7 @@ import ColumnPicker, {
   type TableColumn,
 } from "@/components/ui/ColumnPicker";
 import toast from "react-hot-toast";
+import { CHART_PALETTE } from "../chartCard";
 
 /** Relative "time ago" label: moments / min / hours / days ago. */
 function timeAgo(date: Date): string {
@@ -479,7 +480,13 @@ export default function Transactions({
           style={{ minWidth: `${Math.max(640, colCount * 150)}px` }}
         >
           <thead>
-            <tr className="text-xs text-gray-400 border-b border-gray-100">
+            <tr
+              className="border-b text-[11px] tracking-wider"
+              style={{
+                borderColor: CHART_PALETTE.grid,
+                color: CHART_PALETTE.axis,
+              }}
+            >
               {/* <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
                 S.No
               </th> */}
@@ -611,11 +618,17 @@ export default function Transactions({
                     )}
                     {showColumn("billId") && (
                       <td className="py-3 px-4">
-                        <span className="font-semibold text-xs text-gray-900 block">
+                        <span
+                          className="font-medium text-xs block"
+                          style={{ color: CHART_PALETTE.title }}
+                        >
                           BILL-{transaction.billNo}
                         </span>
                         {billDate && (
-                          <span className="text-[11px] text-gray-400">
+                          <span
+                            className="text-[11px] "
+                            style={{ color: CHART_PALETTE.subtitle }}
+                          >
                             {timeAgo(billDate)}
                           </span>
                         )}
@@ -623,18 +636,27 @@ export default function Transactions({
                     )}
                     {showColumn("orderId") && (
                       <td className="py-3 px-4">
-                        <span className="font-semibold text-xs text-gray-900">
+                        <span
+                          className="font-medium text-xs "
+                          style={{ color: CHART_PALETTE.title }}
+                        >
                           ORD-{transaction.invoiceNo}
                         </span>
                       </td>
                     )}
                     {showColumn("invoiceName") && (
-                      <td className="py-3 px-4 text-xs text-gray-600">
+                      <td
+                        className="py-3 px-4 text-[13px]"
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         {transaction.invoiceName || "—"}
                       </td>
                     )}
                     {showColumn("customer") && (
-                      <td className="py-3 px-4 text-xs text-gray-600">
+                      <td
+                        className="py-3 px-4 text-[13px]"
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         {transaction.customer?.name || "—"}
                       </td>
                     )}
@@ -650,7 +672,10 @@ export default function Transactions({
                     )}
 
                     {showColumn("amount") && (
-                      <td className="py-3 px-4 text-right font-semibold text-xs text-gray-900 tracking-wide tabular-nums">
+                      <td
+                        className="py-3 px-4 text-right text-[13px] font-medium tracking-wide tabular-nums"
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         {formatCurrencySymbol(
                           Number(transaction.amount),
                           currency.symbol,
@@ -662,15 +687,24 @@ export default function Transactions({
                     {/* Takes the slot Status has vacated at the end. */}
                     {showColumn("timestamp") && (
                       <td className="py-3 px-4 text-right">
-                        <span className="font-medium text-gray-800 text-xs tracking-wide block">
+                        <span
+                          className=" text-xs tracking-wide block"
+                          style={{ color: CHART_PALETTE.title }}
+                        >
                           {transaction.timestamp}
                           {transaction.timestamp12h && (
-                            <span className="text-[10px] font-normal text-gray-400">
+                            <span
+                              className="text-[10px] font-normal"
+                              style={{ color: CHART_PALETTE.subtitle }}
+                            >
                               {"  "}[ {transaction.timestamp12h} ]
                             </span>
                           )}
                         </span>
-                        <span className="text-[11px] text-gray-400">
+                        <span
+                          className="text-[11px]"
+                          style={{ color: CHART_PALETTE.subtitle }}
+                        >
                           {transaction.date}
                         </span>
                       </td>
@@ -690,6 +724,7 @@ export default function Transactions({
                           onClick={() => setRefundTarget(transaction)}
                           title="Refund this transaction"
                           className="py-1.5 text-xs flex flex-row items-center gap-2 text-gray-400 hover:text-orange-600  transition-colors hover:cursor-pointer tracking-wide font-medium"
+                          style={{ color: CHART_PALETTE.subtitle }}
                         >
                           Refund <RotateCcw size={12} />
                         </button>

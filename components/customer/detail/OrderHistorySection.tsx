@@ -44,8 +44,8 @@ export default function OrderHistorySection({
     <div className={`${DETAIL_CARD} mt-6`}>
       <CardHeader
         icon={Calendar}
-        iconColor="text-purple-500"
-        iconBg="bg-purple-50"
+        iconColor="text-blue-500"
+        iconBg="bg-blue-50"
         action={
           <span className="shrink-0 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] tabular-nums text-[#3c4043]">
             {history.length} {history.length === 1 ? "order" : "orders"}
@@ -91,9 +91,15 @@ export default function OrderHistorySection({
           <div className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <table className="w-full min-w-[850px] text-sm">
               <thead>
-                <tr className="border-b border-[#e8eaed] text-[11px] text-[#5f6368]">
+                <tr
+                  className="border-b text-[11px] tracking-wider"
+                  style={{
+                    borderColor: CHART_PALETTE.grid,
+                    color: CHART_PALETTE.axis,
+                  }}
+                >
                   <th className="w-10 px-3 pb-2.5 pt-1 text-left font-normal">
-                    #
+                    S.No.
                   </th>
                   <th className="px-3 pb-2.5 pt-1 text-left font-normal">
                     Order ID
@@ -152,13 +158,19 @@ export default function OrderHistorySection({
                         {safePage * PAGE_SIZE + idx + 1}
                       </td>
                       <td className="px-3 py-3">
-                        <span className="block text-xs font-semibold text-gray-900">
+                        <span
+                          className="block text-xs font-medium"
+                          style={{ color: CHART_PALETTE.title }}
+                        >
                           {purchase.invoiceNo
                             ? `ORD-${purchase.invoiceNo}`
                             : (purchase.orderId ?? "—")}
                         </span>
                         {stamp && (
-                          <span className="text-[11px] text-[#9aa0a6]">
+                          <span
+                            className="text-[11px] "
+                            style={{ color: CHART_PALETTE.subtitle }}
+                          >
                             {timeAgo(stamp.instant)}
                           </span>
                         )}
@@ -169,13 +181,22 @@ export default function OrderHistorySection({
                             beside it, the date under it. */}
                         {stamp ? (
                           <div>
-                            <span className="block text-xs font-medium tracking-wide tabular-nums text-gray-800">
+                            <span
+                              className="block text-xs  tracking-wide tabular-nums "
+                              style={{ color: CHART_PALETTE.title }}
+                            >
                               {stamp.time24}
-                              <span className="text-[10px] font-normal text-gray-400">
+                              <span
+                                className="text-[10px] font-normal "
+                                style={{ color: CHART_PALETTE.subtitle }}
+                              >
                                 {"  "}[ {stamp.time12} ]
                               </span>
                             </span>
-                            <span className="text-[11px] tabular-nums text-[#9aa0a6]">
+                            <span
+                              className="text-[11px] tabular-nums "
+                              style={{ color: CHART_PALETTE.subtitle }}
+                            >
                               {stamp.date}
                             </span>
                           </div>
@@ -183,10 +204,16 @@ export default function OrderHistorySection({
                           <span className="text-gray-400">—</span>
                         )}
                       </td>
-                      <td className="px-3 py-3 text-xs text-[#5f6368]">
+                      <td
+                        className="px-3 py-3 text-[13px] text-[#5f6368]"
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         {purchase.ticketName || "—"}
                       </td>
-                      <td className="px-3 py-3 text-xs text-[#5f6368]">
+                      <td
+                        className="px-3 py-3 text-[13px] text-[#5f6368]"
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         {customerName || "—"}
                       </td>
                       <td className="px-3 py-3 text-center">
@@ -196,7 +223,10 @@ export default function OrderHistorySection({
                           {paymentMethod}
                         </span>
                       </td>
-                      <td className="px-3 py-3 text-right text-xs font-semibold tabular-nums text-gray-900">
+                      <td
+                        className="px-3 py-3 text-right text-[13px] font-medium tabular-nums "
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         {formatCurrencySymbol(
                           purchase.grandTotal ?? 0,
                           currency.symbol,

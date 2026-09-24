@@ -24,6 +24,7 @@ import {
 } from "@/providers/ExpenseContext";
 import ExpenseIncomeForm from "./ExpenseIncomeForm";
 import { ComponentHeader } from "../ComponentHeader";
+import { CHART_PALETTE } from "../dashboardComponents/chartCard";
 
 type SortKey = "date" | "amount";
 type SortDir = "asc" | "desc";
@@ -238,7 +239,13 @@ export default function RecentTransactions() {
       >
         <table className="w-full text-sm min-w-[700px]">
           <thead>
-            <tr className="text-xs text-gray-400 border-b border-gray-100">
+            <tr
+              className="border-b text-[11px] tracking-wider"
+              style={{
+                borderColor: CHART_PALETTE.grid,
+                color: CHART_PALETTE.axis,
+              }}
+            >
               <th className="text-left pb-3 pt-3 px-4 font-medium">Details</th>
               <th className="text-left pb-3 pt-3 px-4 font-medium">Purpose</th>
               <th
@@ -285,7 +292,7 @@ export default function RecentTransactions() {
               filtered.map((t) => {
                 const isExpense = t.kind === "expense";
                 const Icon = isExpense ? TrendingDown : TrendingUp;
-                const color = isExpense ? "text-red-500" : "text-green-500";
+                const color = isExpense ? "text-red-600" : "text-green-600";
                 const bg = isExpense ? "bg-red-50" : "bg-green-50";
 
                 return (
@@ -302,13 +309,16 @@ export default function RecentTransactions() {
                           <Icon size={13} className={color} />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs font-medium text-gray-900 tracking-wide truncate">
+                          <p
+                            className="text-[13px] font-medium  tracking-wide truncate"
+                            style={{ color: CHART_PALETTE.title }}
+                          >
                             {t.remark || "—"}
                           </p>
                           {t.isRecurring && (
                             <div className="flex items-center gap-0.5 mt-0.5">
                               <RepeatIcon size={9} className="text-blue-400" />
-                              <span className="text-[10px] text-blue-400 capitalize">
+                              <span className="text-[10px] tracking-wide text-blue-400 capitalize">
                                 {t.frequency || "N/A"}
                               </span>
                             </div>
@@ -344,7 +354,7 @@ export default function RecentTransactions() {
 
                     {/* Amount */}
                     <td
-                      className={`py-3 px-4 text-right text-xs tracking-wide font-semibold ${color}`}
+                      className={`py-3 px-4 text-right text-[13px] tracking-wide font-medium ${color}`}
                     >
                       {isExpense ? "− " : "+ "}
                       {formatCurrencySymbol(

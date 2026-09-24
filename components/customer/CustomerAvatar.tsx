@@ -42,7 +42,7 @@ export function CustomerAvatar({
 
   return (
     <div
-      className={`rounded-full bg-gradient-to-br from-cyan-300 to-cyan-400 flex items-center justify-center text-white font-bold ${textClass} ${className}`}
+      className={`rounded-full bg-gradient-to-br from-violet-300 to-rose-400 flex items-center justify-center text-white font-bold ${textClass} ${className}`}
     >
       {/* Two initials where the name has them: one letter puts every Aayush,
           Anil and Asha in the list behind the same "A". */}

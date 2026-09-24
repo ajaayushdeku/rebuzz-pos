@@ -151,9 +151,9 @@ export default function InvoiceListSection({
           <div className="flex min-w-0 items-center gap-3">
             <div
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
-              style={{ borderColor: "#fed7aa", backgroundColor: "#fff7ed" }}
+              style={{ borderColor: "#aadbfe", backgroundColor: "#edf6ff" }}
             >
-              <FileText size={16} style={{ color: "#ea580c" }} />
+              <FileText size={16} style={{ color: "#0c99ea" }} />
             </div>
             <div className="min-w-0">
               <h3
@@ -190,9 +190,9 @@ export default function InvoiceListSection({
           <div className="flex min-w-0 items-center gap-3">
             <div
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
-              style={{ borderColor: "#fed7aa", backgroundColor: "#fff7ed" }}
+              style={{ borderColor: "#aadbfe", backgroundColor: "#edf6ff" }}
             >
-              <FileText size={16} style={{ color: "#ea580c" }} />
+              <FileText size={16} style={{ color: "#0c99ea" }} />
             </div>
             <div className="min-w-0">
               <h3
@@ -238,9 +238,9 @@ export default function InvoiceListSection({
           <div className="flex min-w-0 items-center gap-3">
             <div
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
-              style={{ borderColor: "#fed7aa", backgroundColor: "#fff7ed" }}
+              style={{ borderColor: "#aadbfe", backgroundColor: "#edf6ff" }}
             >
-              <FileText size={16} style={{ color: "#ea580c" }} />
+              <FileText size={16} style={{ color: "#0c99ea" }} />
             </div>
             <div className="min-w-0">
               <h3

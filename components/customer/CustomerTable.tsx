@@ -32,6 +32,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
 import { useTierStyle } from "@/hooks/useLoyaltyTiers";
+import { CHART_PALETTE } from "../dashboardComponents/chartCard";
 
 /**
  * Not a tier, so it is deliberately the quietest thing in the column — it
@@ -295,7 +296,13 @@ export default function CustomerTable({
           style={{ minWidth: `${Math.max(640, colCount * 150)}px` }}
         >
           <thead>
-            <tr className="text-xs text-gray-400 border-b border-gray-100">
+            <tr
+              className="border-b text-[11px] tracking-wider"
+              style={{
+                borderColor: CHART_PALETTE.grid,
+                color: CHART_PALETTE.axis,
+              }}
+            >
               {/* <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
                 S.No
               </th> */}
@@ -420,7 +427,10 @@ export default function CustomerTable({
                   {showColumn("name") && (
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-xs text-gray-900">
+                        <span
+                          className="font-medium text-[13px]"
+                          style={{ color: CHART_PALETTE.title }}
+                        >
                           {customer.name}
                         </span>
                         {customer.isDeactivated && (
@@ -457,7 +467,10 @@ export default function CustomerTable({
                         className="gap-1.5 items-center"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <span className="font-semibold tracking-wide text-gray-800 ">
+                        <span
+                          className="font-medium text-[13px] tracking-wide "
+                          style={{ color: CHART_PALETTE.title }}
+                        >
                           {/* {formatAmount(customer.loyaltyPoint, currency.locale)}{" "} */}
                           {formatAmount(
                             customer.loyaltyPoint ?? 0,
@@ -473,7 +486,7 @@ export default function CustomerTable({
                             setLoyaltyCustomer(customer);
                             setLoyaltyOpen(true);
                           }}
-                          className="p-1 px-2 text-blue-300 hover:text-cyan-500 hover:bg-cyan-50 rounded-md transition-colors"
+                          className="p-1 px-2 text-blue-300 hover:text-cyan-500 hover:bg-cyan-50 rounded-md transition-colors cursor-pointer"
                           title="Update loyalty points"
                         >
                           <Pencil className="h-3 w-3" />
@@ -483,13 +496,19 @@ export default function CustomerTable({
                   )}
 
                   {showColumn("purchases") && (
-                    <td className="py-3 px-4 text-xs text-center tracking-wide text-gray-600">
+                    <td
+                      className="py-3 px-4 text-xs text-center font-medium tracking-wide "
+                      style={{ color: CHART_PALETTE.title }}
+                    >
                       {customer.numberOfPurchases ?? "â€”"}
                     </td>
                   )}
 
                   {showColumn("dueAmount") && (
-                    <td className="py-3 px-4 text-xs text-right tracking-wide font-semibold">
+                    <td
+                      className="py-3 px-4 text-[13px] text-right tracking-wide font-medium"
+                      style={{ color: CHART_PALETTE.title }}
+                    >
                       {customer.totalDueAmount !== undefined
                         ? formatCurrencySymbol(
                             customer.totalDueAmount,

@@ -50,6 +50,7 @@ import ColumnPicker, {
   storeColumns,
   type TableColumn,
 } from "@/components/ui/ColumnPicker";
+import { CHART_PALETTE } from "../dashboardComponents/chartCard";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -419,7 +420,13 @@ export default function CreditsTable({
           style={{ minWidth: `${Math.max(640, colCount * 150)}px` }}
         >
           <thead>
-            <tr className="text-xs text-gray-400 border-b border-gray-100">
+            <tr
+              className="border-b text-[11px] tracking-wider"
+              style={{
+                borderColor: CHART_PALETTE.grid,
+                color: CHART_PALETTE.axis,
+              }}
+            >
               {showColumn("status") && (
                 <th className="text-left pb-3 pt-3 px-4 font-medium">Status</th>
               )}
@@ -600,13 +607,19 @@ export default function CreditsTable({
                       {/* Invoice Number */}
                       {showColumn("invoice") && (
                         <td className="py-3.5 px-4">
-                          <span className="text-xs text-gray-800 block font-semibold">
+                          <span
+                            className="text-xs block font-medium"
+                            style={{ color: CHART_PALETTE.title }}
+                          >
                             {c.invoiceNo ? `ORD-${c.invoiceNo}` : "—"}
                           </span>
                           {(() => {
                             const d = parseNepalDateTime(c.creationDate);
                             return d ? (
-                              <span className="text-[11px] text-gray-400">
+                              <span
+                                className="text-[11px] "
+                                style={{ color: CHART_PALETTE.subtitle }}
+                              >
                                 {timeAgo(d)}
                               </span>
                             ) : null;
@@ -616,14 +629,20 @@ export default function CreditsTable({
 
                       {/* Customer */}
                       {showColumn("customer") && (
-                        <td className="py-3.5 px-4 text-xs text-gray-800">
+                        <td
+                          className="py-3.5 px-4 text-[13px]"
+                          style={{ color: CHART_PALETTE.title }}
+                        >
                           {c.user?.name ?? "—"}
                         </td>
                       )}
 
                       {/* Unpaid by customer (hidden for completed/archived) */}
                       {showDueDate && showColumn("unpaidBy") && (
-                        <td className="py-3.5 px-4 text-xs text-center text-gray-500">
+                        <td
+                          className="py-3.5 px-4 text-xs text-center "
+                          style={{ color: CHART_PALETTE.subtitle }}
+                        >
                           {!cleared &&
                           !(c.status === "archived") &&
                           ubc &&
@@ -634,14 +653,17 @@ export default function CreditsTable({
                       )}
                       {/* Total Credit */}
                       {showColumn("grandTotal") && (
-                        <td className="py-3.5 px-5 text-xs text-right tracking-wide font-semibold text-gray-800">
+                        <td
+                          className="py-3.5 px-5 text-[13px] text-right tracking-wide font-medium "
+                          style={{ color: CHART_PALETTE.title }}
+                        >
                           {fmt(c.grandTotal ?? 0)}
                         </td>
                       )}
 
                       {/* Amount due */}
                       {showColumn("dueAmount") && (
-                        <td className="py-3.5 px-5  text-xs text-right tracking-wide font-semibold text-red-900">
+                        <td className="py-3.5 px-5  text-[13px] text-right tracking-wide font-medium text-red-900">
                           {fmt(c.dueAmount ?? 0)}
                         </td>
                       )}
@@ -654,13 +676,19 @@ export default function CreditsTable({
                             // console.log("invoiceDate", d, c.creationDate);
                             return d ? (
                               <div>
-                                <span className="font-medium tracking-wide text-gray-800 text-xs block">
+                                <span
+                                  className=" tracking-wide text-xs block"
+                                  style={{ color: CHART_PALETTE.title }}
+                                >
                                   {d.toLocaleTimeString("en-US", {
                                     hour: "2-digit",
                                     minute: "2-digit",
                                     hour12: false,
                                   })}
-                                  <span className="text-[10px] font-normal text-gray-400">
+                                  <span
+                                    className="text-[10px] font-normal "
+                                    style={{ color: CHART_PALETTE.subtitle }}
+                                  >
                                     {"  "}[{" "}
                                     {d.toLocaleTimeString("en-US", {
                                       hour: "2-digit",
@@ -670,7 +698,10 @@ export default function CreditsTable({
                                     ]
                                   </span>
                                 </span>
-                                <span className="text-[11px] text-gray-400">
+                                <span
+                                  className="text-[11px] "
+                                  style={{ color: CHART_PALETTE.subtitle }}
+                                >
                                   {d.toLocaleDateString("en-US", {
                                     month: "short",
                                     day: "numeric",

@@ -246,9 +246,9 @@ export default function BillsSection({
           <div className="flex min-w-0 items-center gap-3">
             <div
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
-              style={{ borderColor: "#e9d5ff", backgroundColor: "#faf5ff" }}
+              style={{ borderColor: "#d5ffed", backgroundColor: "#f5fffa" }}
             >
-              <Receipt size={16} style={{ color: "#9333ea" }} />
+              <Receipt size={16} style={{ color: "#24bc36" }} />
             </div>
             <div className="min-w-0">
               <h3
@@ -285,9 +285,9 @@ export default function BillsSection({
           <div className="flex min-w-0 items-center gap-3">
             <div
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
-              style={{ borderColor: "#e9d5ff", backgroundColor: "#faf5ff" }}
+              style={{ borderColor: "#d5ffed", backgroundColor: "#f5fffa" }}
             >
-              <Receipt size={16} style={{ color: "#9333ea" }} />
+              <Receipt size={16} style={{ color: "#24bc36" }} />
             </div>
             <div className="min-w-0">
               <h3
@@ -330,9 +330,9 @@ export default function BillsSection({
           <div className="flex min-w-0 items-center gap-3">
             <div
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
-              style={{ borderColor: "#e9d5ff", backgroundColor: "#faf5ff" }}
+              style={{ borderColor: "#8ff59c", backgroundColor: "#f5fffa" }}
             >
-              <Receipt size={16} style={{ color: "#9333ea" }} />
+              <Receipt size={16} style={{ color: "#28d23c" }} />
             </div>
             <div className="min-w-0">
               <h3
