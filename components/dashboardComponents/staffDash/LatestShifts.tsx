@@ -169,7 +169,7 @@ export default function LatestShifts({
   const getStatusColor = (closingTime: string | undefined) => {
     const isClosed = !!closingTime;
     return isClosed
-      ? "border border-amber-200 bg-amber-50 text-amber-700"
+      ? "border border-rose-200 bg-rose-50 text-rose-700"
       : "border border-green-200 bg-green-50 text-green-700";
   };
 
@@ -261,7 +261,7 @@ export default function LatestShifts({
             <table className="w-full min-w-[500px] text-sm">
               <thead>
                 <tr
-                  className="border-b text-[11px]"
+                  className="border-b text-[11px] tracking-wider"
                   style={{
                     borderColor: CHART_PALETTE.grid,
                     color: CHART_PALETTE.axis,
@@ -307,10 +307,10 @@ export default function LatestShifts({
                   >
                     <td className="py-3 pl-0">
                       <span
-                        className="text-[13px] tabular-nums"
+                        className="text-[11px] tabular-nums"
                         style={{ color: CHART_PALETTE.subtitle }}
                       >
-                        {idx + 1}
+                        #{idx + 1}
                       </span>
                     </td>
                     <td className="py-3 pl-0">

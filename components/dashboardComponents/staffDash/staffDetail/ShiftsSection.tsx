@@ -258,7 +258,13 @@ export default function ShiftsSection({
             <div className="overflow-x-auto scrollbar-hide">
               <table className="w-full min-w-[1020px] text-sm">
                 <thead>
-                  <tr className="text-[11px] text-gray-400  tracking-wider border-b border-gray-100">
+                  <tr
+                    className="border-b text-[11px] tracking-wider"
+                    style={{
+                      borderColor: CHART_PALETTE.grid,
+                      color: CHART_PALETTE.axis,
+                    }}
+                  >
                     <th className="text-left pb-2.5 pt-1 pr-3 pl-0 font-normal w-8">
                       S.No.
                     </th>
@@ -319,7 +325,10 @@ export default function ShiftsSection({
                               <span className="text-[11px] text-[#9aa0a6]">
                                 Open
                               </span>
-                              <span className="text-[11px] font-semibold text-gray-900">
+                              <span
+                                className="text-[11px] "
+                                style={{ color: CHART_PALETTE.title }}
+                              >
                                 {extractTimeWithAmPm(shift.openingTime)}
                               </span>
                             </div>
@@ -328,7 +337,10 @@ export default function ShiftsSection({
                               <span className="text-[11px] text-[#9aa0a6]">
                                 Close
                               </span>
-                              <span className="text-[11px] font-semibold text-gray-900">
+                              <span
+                                className="text-[11px] "
+                                style={{ color: CHART_PALETTE.title }}
+                              >
                                 {extractTimeWithAmPm(shift.closingTIme)}
                               </span>
                             </div>
@@ -336,13 +348,19 @@ export default function ShiftsSection({
                         </div>
                       </td>
                       <td className="py-3.5 px-3 align-top">
-                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold tabular-nums text-gray-900">
+                        <span
+                          className="inline-flex items-center gap-1.5 text-[13px]  tabular-nums font-medium"
+                          style={{ color: CHART_PALETTE.title }}
+                        >
                           <Timer size={12} className="shrink-0 text-gray-400" />
                           {shiftDuration(shift)}
                         </span>
                       </td>
                       <td className="py-3.5 px-3 text-right align-top">
-                        <span className="text-xs font-semibold tabular-nums text-gray-900">
+                        <span
+                          className="text-[13px]  font-medium tabular-nums "
+                          style={{ color: CHART_PALETTE.title }}
+                        >
                           {formatCurrencySymbol(
                             shift.openingCash ?? 0,
                             currency.symbol,
@@ -371,7 +389,10 @@ export default function ShiftsSection({
                         </div>
                       </td>
                       <td className="py-3.5 px-3 text-right align-top">
-                        <span className="text-xs font-semibold tabular-nums text-gray-900">
+                        <span
+                          className="text-[13px]  font-medium tabular-nums "
+                          style={{ color: CHART_PALETTE.title }}
+                        >
                           {formatCurrencySymbol(
                             shift.closingCash ?? 0,
                             currency.symbol,
@@ -380,13 +401,16 @@ export default function ShiftsSection({
                         </span>
                       </td>
                       <td className="py-3.5 px-3 text-right align-top">
-                        <p className="text-xs font-semibold tabular-nums text-gray-900">
+                        <span
+                          className="text-[13px]  font-medium tabular-nums "
+                          style={{ color: CHART_PALETTE.title }}
+                        >
                           {formatCurrencySymbol(
                             shift.totalSale ?? 0,
                             currency.symbol,
                             currency.locale,
                           )}
-                        </p>
+                        </span>
                       </td>
                       <td className="py-3.5 px-3 text-center align-top">
                         <div className="inline-flex">

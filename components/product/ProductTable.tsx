@@ -2,11 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useCurrency } from "@/providers/CurrencyContext";
-import {
-  formatAmount,
-  formatCurrencySymbol,
-  formatNumber,
-} from "@/utils/helper";
+import { formatCurrencySymbol, formatNumber } from "@/utils/helper";
 import {
   Search,
   ChevronDown,
@@ -37,11 +33,6 @@ import toast from "react-hot-toast";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
-/**
- * Columns in the order they are drawn. Actions is locked: it holds edit and
- * delete, and taking it away removes what a row can do rather than what it
- * shows.
- */
 const PRODUCT_COLUMNS: TableColumn[] = [
   { key: "profile", label: "Profile" },
   { key: "name", label: "Product" },
@@ -55,14 +46,6 @@ const PRODUCT_COLUMNS: TableColumn[] = [
 const COLUMNS_STORAGE_KEY = "rebuzz-product-table-columns";
 const MIN_COLUMNS = 3;
 
-/**
- * A product's picture, or its initials.
- *
- * Square rather than the round avatar customers get: these are things, not
- * people, and the two lists sit a click apart. The initials are a real
- * fallback rather than a generic box icon — at a glance down the column they
- * still tell one unphotographed product from another.
- */
 function ProductThumb({
   name,
   src,
@@ -70,12 +53,9 @@ function ProductThumb({
 }: {
   name: string;
   src?: string | null;
-  /** Opens the photo full-size. Not wired to the initials fallback, so the
-   *  cursor never promises a picture that is not there. */
+
   onOpen?: () => void;
 }) {
-  // Reset by key when the row's product changes, so a broken image on one
-  // product does not suppress the next one's photo.
   const [failed, setFailed] = useState(false);
 
   if (src && !failed) {
@@ -327,18 +307,18 @@ export default function ProductTable({
                   it would be wider than the thing it names. */}
               {/* <th className="w-12 pb-3 pt-3 px-4 font-medium" /> */}
               {showColumn("profile") && (
-                <th className=" text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600">
+                <th className=" text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600">
                   Profile
                 </th>
               )}
               {showColumn("name") && (
                 <th
-                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className="text-left pb-3 pt-3 px-4  font-normal cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("name")}
                 >
                   <span className="flex items-center gap-1">
                     Product
-                    <SortIcon colKey="name" />
+                    {SortIcon({ colKey: "name" })}
                   </span>
                 </th>
               )}
@@ -354,7 +334,7 @@ export default function ProductTable({
                 >
                   <span className="flex items-center justify-end gap-1">
                     Price
-                    <SortIcon colKey="price" />
+                    {SortIcon({ colKey: "price" })}
                   </span>
                 </th>
               )}
@@ -440,8 +420,17 @@ export default function ProductTable({
                       </td>
                     )}
                     {showColumn("name") && (
-                      <td className="py-3 px-4">
-                        <span className="flex items-center gap-2">
+                      <td className="py-3  px-4">
+                        <span className="flex items-left gap-2">
+                          <span className="font-medium text-xs text-gray-900">
+                            {product.name}
+                          </span>
+                          {variantCount > 0 && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-purple-50 text-purple-600 border border-purple-200">
+                              {variantCount} variant
+                              {variantCount > 1 ? "s" : ""}
+                            </span>
+                          )}
                           {/* Expander sits in the name cell rather than taking a
                               column of its own, so the header stays unchanged. */}
                           {variantCount > 0 ? (
@@ -469,16 +458,6 @@ export default function ProductTable({
                             // Keeps names aligned down the column whether or not
                             // a product has variants.
                             <span className="w-[1.125rem] shrink-0" />
-                          )}
-
-                          <span className="font-medium text-xs text-gray-900">
-                            {product.name}
-                          </span>
-                          {variantCount > 0 && (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-purple-50 text-purple-600 border border-purple-200">
-                              {variantCount} variant
-                              {variantCount > 1 ? "s" : ""}
-                            </span>
                           )}
                         </span>
                       </td>
@@ -563,7 +542,7 @@ export default function ProductTable({
                             <td className="py-2.5 px-4" />
                           )}
                           {showColumn("name") && (
-                            <td className="py-2.5 px-4">
+                            <td className="py-2.5 pr-4">
                               <span className="flex items-center gap-1.5 pl-6">
                                 <CornerDownRight className="h-3.5 w-3.5 shrink-0 text-gray-300" />
                                 <span className="text-xs font-medium capitalize text-gray-800">

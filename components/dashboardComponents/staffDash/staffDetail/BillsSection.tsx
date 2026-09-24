@@ -414,9 +414,15 @@ export default function BillsSection({
         <div className="overflow-x-auto scrollbar-hide">
           <table className="w-full text-sm min-w-[800px]">
             <thead>
-              <tr className="border-b border-[#e8eaed] text-[11px] text-[#5f6368]">
+              <tr
+                className="border-b text-[11px] tracking-wider"
+                style={{
+                  borderColor: CHART_PALETTE.grid,
+                  color: CHART_PALETTE.axis,
+                }}
+              >
                 <th className="text-left px-4 pb-2.5 pt-1 font-normal w-12">
-                  S.No
+                  S.No.
                 </th>
                 <th className="text-left px-4 pb-2.5 pt-1 font-normal">
                   Bill ID
@@ -462,30 +468,45 @@ export default function BillsSection({
                       {page * pageSize + idx + 1}
                     </td>
                     <td className="py-3 px-4">
-                      <span className="font-semibold text-xs text-gray-900 block">
+                      <span
+                        className="font-medium text-xs  block"
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         BILL-{bill.paidBillNo}
                       </span>
                       {stamp && (
-                        <span className="text-[11px] text-gray-400">
+                        <span className="text-[11px] font-normal text-gray-400">
                           {timeAgo(stamp.instant)}
                         </span>
                       )}
                     </td>
                     <td className="py-3 px-4">
-                      <span className="font-semibold text-xs text-gray-900">
+                      <span
+                        className="font-medium text-xs"
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         ORD-{bill.invoiceNo}
                       </span>
                     </td>
                     <td className="py-3 px-4">
                       {stamp ? (
                         <div>
-                          <span className="font-medium text-gray-800 text-xs tracking-wide block">
+                          <span
+                            className=" text-xs tracking-wide block"
+                            style={{ color: CHART_PALETTE.title }}
+                          >
                             {stamp.time24}
-                            <span className="text-[10px] font-normal text-gray-400">
+                            <span
+                              className="text-[10px] font-normal "
+                              style={{ color: CHART_PALETTE.subtitle }}
+                            >
                               {"  "}[ {stamp.time12} ]
                             </span>
                           </span>
-                          <span className="text-[11px] text-gray-400">
+                          <span
+                            className="text-[11px] "
+                            style={{ color: CHART_PALETTE.subtitle }}
+                          >
                             {stamp.date}
                           </span>
                         </div>
@@ -494,7 +515,10 @@ export default function BillsSection({
                       )}
                     </td>
 
-                    <td className="py-3 px-4 text-xs text-gray-600">
+                    <td
+                      className="py-3 px-4 text-[13px]"
+                      style={{ color: CHART_PALETTE.title }}
+                    >
                       {bill.ticketName || "—"}
                     </td>
 
@@ -506,7 +530,10 @@ export default function BillsSection({
                       </span>
                     </td>
 
-                    <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
+                    <td
+                      className="py-3 px-4 text-[13px] text-right font-medium "
+                      style={{ color: CHART_PALETTE.title }}
+                    >
                       {formatCurrencySymbol(
                         bill.grandTotal ?? 0,
                         currency.symbol,

@@ -321,7 +321,13 @@ export default function InvoiceListSection({
         <div className="overflow-x-auto scrollbar-hide">
           <table className="w-full text-sm min-w-[800px]">
             <thead>
-              <tr className="border-b border-[#e8eaed] text-[11px] text-[#5f6368]">
+              <tr
+                className="border-b text-[11px] tracking-wider"
+                style={{
+                  borderColor: CHART_PALETTE.grid,
+                  color: CHART_PALETTE.axis,
+                }}
+              >
                 <th className="text-left px-4 pb-2.5 pt-1 font-normal w-12">
                   S.No
                 </th>
@@ -377,11 +383,17 @@ export default function InvoiceListSection({
                       {page * pageSize + idx + 1}
                     </td>
                     <td className="py-3 px-4">
-                      <span className="font-semibold text-xs text-gray-900 block">
+                      <span
+                        className="font-medium text-xs block"
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         ORD-{ticket.invoice}
                       </span>
                       {stamp && (
-                        <span className="text-[11px] text-gray-400">
+                        <span
+                          className="text-[11px] "
+                          style={{ color: CHART_PALETTE.subtitle }}
+                        >
                           {timeAgo(stamp.instant)}
                         </span>
                       )}
@@ -389,9 +401,15 @@ export default function InvoiceListSection({
                     <td className="py-3 px-4">
                       {stamp ? (
                         <div>
-                          <span className="font-medium text-gray-800 text-xs tracking-wide block">
+                          <span
+                            className="text-xs tracking-wide block"
+                            style={{ color: CHART_PALETTE.title }}
+                          >
                             {stamp.time24}
-                            <span className="text-[10px] font-normal text-gray-400">
+                            <span
+                              className="text-[10px] font-normal"
+                              style={{ color: CHART_PALETTE.subtitle }}
+                            >
                               {"  "}[ {stamp.time12} ]
                             </span>
                           </span>
@@ -404,7 +422,10 @@ export default function InvoiceListSection({
                       )}
                     </td>
 
-                    <td className="py-3 px-4 text-xs text-gray-600">
+                    <td
+                      className="py-3 px-4 text-[13px]"
+                      style={{ color: CHART_PALETTE.title }}
+                    >
                       {ticket.ticketName || "—"}
                     </td>
                     {/* <td className="py-3 px-4 text-gray-600">
@@ -421,7 +442,10 @@ export default function InvoiceListSection({
                         <span className="text-gray-400">—</span>
                       )}
                     </td>
-                    <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
+                    <td
+                      className="py-3 px-4 text-[13px] text-right font-medium "
+                      style={{ color: CHART_PALETTE.title }}
+                    >
                       {formatCurrencySymbol(
                         ticket.grandTotal ?? 0,
                         currency.symbol,
