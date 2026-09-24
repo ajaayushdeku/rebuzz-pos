@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { InvoiceStatsProps } from "@/lib/types/invoice";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { CHART_PALETTE } from "../dashboardComponents/chartCard";
 
 function fmtLocalDate(date: Date): string {
   const y = date.getFullYear();
@@ -75,7 +76,7 @@ export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
       icon: DollarSign,
       iconColor: "text-blue-600",
       bgColor: "bg-blue-50",
-      valueColor: "text-gray-900",
+      valueColor: "text-gray-700",
       format: "currency" as const,
       subText: "Invoices created today",
     },
@@ -95,7 +96,7 @@ export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
       icon: Receipt,
       iconColor: "text-violet-600",
       bgColor: "bg-violet-50",
-      valueColor: "text-gray-900",
+      valueColor: "text-gray-700",
       format: "number" as const,
       subText: `${totalOrderCount === 1 ? "Order" : "Orders"} Total`,
     },
@@ -120,22 +121,27 @@ export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
               className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-gray-400 font-medium">
+                <span
+                  className="truncate text-[13px] font-medium"
+                  style={{ color: CHART_PALETTE.axis }}
+                >
                   {item.label}
                 </span>
                 <div
-                  className={`w-7 h-7 rounded-lg ${item.bgColor} flex items-center justify-center shrink-0`}
+                  // className={`w-7 h-7 rounded-lg ${item.bgColor} flex items-center justify-center shrink-0`}
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 ${item.bgColor ?? "bg-gray-50"} ${item.iconColor ?? "text-gray-500"} `}
                 >
-                  <item.icon size={16} className={item.iconColor} />
+                  <item.icon size={16} />
                 </div>
               </div>
               <p
-                className={`text-lg font-bold tracking-wide truncate  ${item.valueColor}`}
+                className={`truncate text-2xl font-semibold tracking-tight tabular-nums  ${item.valueColor}`}
+                // style={{ color: CHART_PALETTE.title }}
               >
                 {displayValue}
               </p>
               {item.subText && (
-                <p className="text-[11px] text-gray-400 truncate">
+                <p className="text-[11px] text-gray-500 truncate tracking-wide">
                   {item.subText}
                 </p>
               )}

@@ -8,6 +8,7 @@ import {
   TrendingUp,
   TrendingDown,
 } from "lucide-react";
+import { CHART_PALETTE } from "../../chartCard";
 
 interface GrowthTrackCardProps {
   label: string;
@@ -74,10 +75,12 @@ export default function GrowthTrackCard({
     <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white p-4 md:p-5">
       {/* Label + trend icon */}
       <div className="flex items-center justify-between gap-2">
-        <p className="truncate text-xs text-[#5f6368] md:text-[13px]">
+        <p
+          className="truncate text-[13px] font-medium"
+          style={{ color: CHART_PALETTE.axis }}
+        >
           {label}
         </p>
-
         {/* The tile carries the icon's colour, so `border-current/20` frames
             it in the same hue — the idiom the other stat tiles use. */}
         <div

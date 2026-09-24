@@ -5,6 +5,7 @@ import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { TrendingUp, TrendingDown, Scale } from "lucide-react";
 import { useTracker } from "@/providers/ExpenseContext";
+import { CHART_PALETTE } from "../dashboardComponents/chartCard";
 
 export default function ExpenseTrackerStats() {
   const { transactions } = useTracker();
@@ -33,9 +34,9 @@ export default function ExpenseTrackerStats() {
       label: "Miscellaneous Expenses",
       value: totalExpense,
       icon: TrendingDown,
-      iconColor: "text-red-600",
+      iconColor: "text-rose-600",
       bgColor: "bg-red-50",
-      valueColor: "text-red-600",
+      valueColor: "text-rose-600",
       subText: "Total expenses recorded",
       prefix: "",
     },
@@ -70,26 +71,31 @@ export default function ExpenseTrackerStats() {
             className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-gray-400 font-medium tracking-wide">
+              <span
+                className="truncate text-[13px] font-medium"
+                style={{ color: CHART_PALETTE.axis }}
+              >
                 {item.label}
               </span>
               <div
-                className={`w-7 h-7 rounded-lg ${item.bgColor} flex items-center justify-center shrink-0`}
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 ${item.bgColor ?? "bg-gray-50"} ${item.iconColor ?? "text-gray-500"} `}
               >
-                <item.icon size={16} className={item.iconColor} />
+                <item.icon size={16} />
               </div>
             </div>
             <p
-              className={`text-lg font-bold tracking-wide truncate ${item.valueColor}`}
+              className={`truncate text-2xl font-semibold tracking-tight tabular-nums  ${item.valueColor}`}
             >
-              {item.prefix}
+              {item.prefix}{" "}
               {formatCurrencySymbol(
                 item.value,
                 currency.symbol,
                 currency.locale,
               )}
             </p>
-            <p className="text-[11px] text-gray-400 truncate">{item.subText}</p>
+            <p className="text-[11px] text-gray-500 truncate tracking-wide">
+              {item.subText}
+            </p>
           </div>
         ))}
       </div>

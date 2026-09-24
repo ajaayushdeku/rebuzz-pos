@@ -6,6 +6,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import RangeTag from "@/components/ui/RangeTag";
+import { CHART_PALETTE } from "../chartCard";
 
 interface StatBoxProps {
   label: string;
@@ -34,7 +35,7 @@ const ICON_BG_MAP: Record<string, string> = {
 };
 
 const CARD =
-  "bg-surface-card border-surface-border rounded-xl border shadow-sm p-4 md:p-5";
+  "bg-surface-card border-surface-border rounded-xl border  p-4 md:p-5";
 
 const OverviewStatBox = ({
   label,
@@ -82,10 +83,14 @@ const OverviewStatBox = ({
   return (
     <div
       className={`${CARD} transition-shadow font-sans duration-200 hover:shadow-md`}
+      style={{ borderColor: CHART_PALETTE.border }}
     >
       {/* Label + icon */}
       <div className="flex items-center justify-between gap-2">
-        <span className="truncate text-xs text-gray-500 md:text-[13px]">
+        <span
+          className="truncate text-[13px] font-medium"
+          style={{ color: CHART_PALETTE.axis }}
+        >
           {label}
         </span>
         {/* The tile carries the icon's colour, so `border-current/20` frames
@@ -99,7 +104,10 @@ const OverviewStatBox = ({
 
       {/* Value */}
       <div className="mt-3 flex items-baseline justify-between gap-2 md:mt-4">
-        <p className="truncate font-sans text-xl font-semibold tracking-tight text-gray-900 tabular-nums md:text-[22px]">
+        <p
+          className="truncate font-sans text-xl font-semibold tracking-tight text-gray-900 tabular-nums md:text-[22px]"
+          style={{ color: CHART_PALETTE.title }}
+        >
           {formattedValue}
         </p>
         <RangeTag />

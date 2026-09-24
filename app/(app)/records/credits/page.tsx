@@ -13,6 +13,7 @@ import {
   fetchCreditsClient,
   fetchCreditsByStatus,
 } from "@/services/apiCredit.client";
+import { CHART_PALETTE } from "@/components/dashboardComponents/chartCard";
 
 type TabKey = "credited" | "completed" | "archived";
 
@@ -76,7 +77,7 @@ export default function Page() {
       icon: Users,
       iconColor: "text-blue-600",
       bgColor: "bg-blue-50",
-      valueColor: "text-gray-900",
+      valueColor: "text-gray-700",
       format: "number" as const,
       subText: `${stats.count === 1 ? "Credit" : "Credits"} Total`,
     },
@@ -86,7 +87,7 @@ export default function Page() {
       icon: Wallet,
       iconColor: "text-violet-600",
       bgColor: "bg-violet-50",
-      valueColor: "text-gray-900",
+      valueColor: "text-gray-700",
       format: "currency" as const,
       subText: "Total value of all credits",
     },
@@ -94,9 +95,9 @@ export default function Page() {
       label: "Outstanding Due",
       value: stats.totalDue,
       icon: HandCoins,
-      iconColor: "text-red-600",
+      iconColor: "text-rose-600",
       bgColor: "bg-red-50",
-      valueColor: "text-red-700",
+      valueColor: "text-rose-700",
       format: "currency" as const,
       subText: "Total amount due",
     },
@@ -168,22 +169,25 @@ export default function Page() {
                       className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-gray-400 font-medium">
+                        <span
+                          className="truncate text-[13px] font-medium"
+                          style={{ color: CHART_PALETTE.axis }}
+                        >
                           {item.label}
                         </span>
                         <div
-                          className={`w-7 h-7 rounded-lg ${item.bgColor} flex items-center justify-center shrink-0`}
+                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 ${item.bgColor ?? "bg-gray-50"} ${item.iconColor ?? "text-gray-500"} `}
                         >
-                          <item.icon size={16} className={item.iconColor} />
+                          <item.icon size={16} />
                         </div>
                       </div>
                       <p
-                        className={`text-lg font-bold truncate tracking-wide ${item.valueColor}`}
+                        className={`truncate text-2xl font-semibold tracking-tight tabular-nums  ${item.valueColor}`}
                       >
                         {displayValue}
                       </p>
                       {item.subText && (
-                        <p className="text-[11px] text-gray-400 truncate">
+                        <p className="text-[11px] text-gray-500 truncate tracking-wide">
                           {item.subText}
                         </p>
                       )}

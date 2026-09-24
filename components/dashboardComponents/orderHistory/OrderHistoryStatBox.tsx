@@ -3,6 +3,7 @@
 import { LucideIcon } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { CHART_PALETTE } from "../chartCard";
 
 interface OrderHistoryStatBoxProps {
   label: string;
@@ -54,18 +55,27 @@ const OrderHistoryStatBox = ({
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs text-gray-400 font-medium">{label}</span>
-        <div
-          className={`w-7 h-7 rounded-lg ${bgColor} flex items-center justify-center shrink-0`}
+        <span
+          className="truncate text-[13px] font-medium"
+          style={{ color: CHART_PALETTE.axis }}
         >
-          <Icon size={16} className={iconColor} />
+          {label}
+        </span>
+        <div
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 ${bgColor ?? "bg-gray-50"} ${iconColor ?? "text-gray-500"} `}
+        >
+          <Icon size={16} />
         </div>
       </div>
-      <p className={`text-lg font-bold truncate tracking-wide ${valueColor}`}>
+      <p
+        className={`truncate text-2xl font-semibold tracking-tight tabular-nums  ${valueColor}`}
+      >
         {displayValue}
       </p>
       {subText && (
-        <p className="text-[11px] text-gray-400 truncate">{subText}</p>
+        <p className="text-[11px] text-gray-500 truncate tracking-wide">
+          {subText}
+        </p>
       )}
     </div>
   );
