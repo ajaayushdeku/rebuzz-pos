@@ -11,7 +11,11 @@ import { useEffect, useRef, useState } from "react";
 import { PaymentMethodRevenue } from "@/services/paymentMethods.client";
 import { usePaymentMethods } from "@/hooks/usePaymentMethods";
 import { ChevronDown, CreditCard } from "lucide-react";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  CHART_PALETTE,
+  ChartCard,
+  ChartTooltipBox,
+} from "@/components/dashboardComponents/chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
 
 interface PaymentMethodDataWithColor extends PaymentMethodRevenue {
@@ -58,37 +62,30 @@ const CustomTooltip = ({
     const entry = payload[0].payload as PaymentMethodDataWithColor;
     const sales = entry.transactionCount;
     return (
-      <div className="bg-white rounded-xl px-4 py-2 shadow-lg border border-gray-100">
-        <p className="text-gray-500 text-xs">
-          {entry.paymentMethod === "Qr payment"
+      <ChartTooltipBox
+        label={
+          entry.paymentMethod === "Qr payment"
             ? "QR Payment"
-            : entry.paymentMethod}
-        </p>
-        <p className="font-bold text-sm" style={{ color: entry.color }}>
-          {entry.percentage.toFixed(1)}%
-        </p>
-
-        <div className="flex flex-col gap-1 mt-2">
-          <div className="flex items-center justify-between  gap-4">
-            {" "}
-            <span className="text-xs text-gray-500 items-left">Revenue</span>
-            <span className="text-xs items-right font-bold  text-gray-600">
-              {formatCurrencySymbol(
-                entry.totalRevenue,
-                currency.symbol,
-                currency.locale,
-              )}
-            </span>
-          </div>
-          <div className="flex items-center justify-between gap-4">
-            {" "}
-            <span className="text-xs text-gray-500 items-left">Sales</span>
-            <span className="text-xs font-bold text-gray-600">
-              {formatNumber(sales)}
-            </span>
-          </div>
-        </div>
-      </div>
+            : entry.paymentMethod
+        }
+        rows={[
+          {
+            name: "Share",
+            color: entry.color,
+            value: `${entry.percentage.toFixed(1)}%`,
+          },
+          {
+            name: "Revenue",
+            color: entry.color,
+            value: formatCurrencySymbol(
+              entry.totalRevenue,
+              currency.symbol,
+              currency.locale,
+            ),
+          },
+          { name: "Sales", color: entry.color, value: formatNumber(sales) },
+        ]}
+      />
     );
   }
   return null;
@@ -138,29 +135,29 @@ const PaymentMethodsChart = ({
   }, [coloredData]);
 
   return (
-    <div className="w-full  bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5 ">
-      {/* Header — follows the global date range */}
-      <div className="mb-4 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-          <CreditCard size={16} />
-        </div>
-        <ComponentHeader
-          title="Payment Methods"
-          subHeader=" Revenue split by payment type"
-        />
-        <RangeBadge />
-      </div>
-
+    <ChartCard
+      icon={CreditCard}
+      // Emerald, as before: Tailwind's emerald-600 / emerald-200 / 50.
+      iconColor="#059669"
+      iconBorder="#a7f3d0"
+      iconBg="#ecfdf5"
+      title="Payment Methods"
+      info={{
+        heading: "Reading this chart",
+        // Revenue share, not transaction counts.
+        body: "Each slice is a payment type's share of revenue over the selected date range — not how many transactions used it. Hover a slice for its revenue and sale count.",
+      }}
+      subtitle="Revenue split by payment type"
+      controls={<RangeBadge variant="pill" />}
+    >
       {data.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-10 text-center">
-          <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-            <CreditCard size={24} className="text-gray-400" />
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4]">
+            <CreditCard size={24} className="text-gray-500" />
           </div>
-          <p className="text-sm font-medium text-gray-500">
-            No payment method data found
-          </p>
-          <p className="text-xs text-gray-400 mt-1">
-            No sales recorded for the selected date range.
+          <p className="text-sm text-[#3c4043]">No payment method data found</p>
+          <p className="mt-1 text-xs text-[#9aa0a6]">
+            No sales recorded for the selected date range
           </p>
         </div>
       ) : (
@@ -218,7 +215,10 @@ const PaymentMethodsChart = ({
                         backgroundColor: entry.color,
                       }}
                     />
-                    <span className="text-xs text-gray-700 truncate">
+                    <span
+                      className="truncate text-xs"
+                      style={{ color: CHART_PALETTE.title }}
+                    >
                       {entry.paymentMethod === "Qr payment"
                         ? "QR Payment"
                         : entry.paymentMethod}
@@ -226,7 +226,7 @@ const PaymentMethodsChart = ({
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <div className="w-30 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                    <div className="h-1.5 w-30 overflow-hidden rounded-full bg-[#f1f3f4]">
                       <div
                         className="h-full rounded-full"
                         style={{
@@ -243,7 +243,7 @@ const PaymentMethodsChart = ({
                         digits so the amounts beside it stay in one column.
                         A share that rounds to 0.0% but is not zero is shown as
                         "<0.1%" rather than as nothing. */}
-                    <span className="w-11 shrink-0 text-right text-[11px] font-medium tabular-nums text-gray-500">
+                    <span className="w-11 shrink-0 text-right text-[11px] tabular-nums text-[#5f6368]">
                       {entry.percentage > 0 && entry.percentage < 0.1
                         ? "<0.1"
                         : entry.percentage.toFixed(1)}
@@ -264,13 +264,13 @@ const PaymentMethodsChart = ({
 
             {showScrollHint && (
               <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex justify-center bg-gradient-to-t from-white via-white/90 to-transparent pt-6 pb-1">
-                <ChevronDown className="h-4 w-4 text-gray-400 animate-bounce" />
+                <ChevronDown className="h-4 w-4 animate-bounce text-[#9aa0a6]" />
               </div>
             )}
           </div>
         </div>
       )}
-    </div>
+    </ChartCard>
   );
 };
 

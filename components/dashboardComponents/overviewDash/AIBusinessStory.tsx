@@ -11,7 +11,6 @@ import {
   RefreshCw,
   ArrowUpRight,
 } from "lucide-react";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import { useAiInsightsResult } from "@/components/aiInsights/AiInsightsProvider";
 import AiInsightsErrorState from "@/components/aiInsights/AiInsightsErrorState";
 
@@ -150,19 +149,21 @@ export default function AIBusinessStory() {
     : [];
 
   return (
-    <div className="relative w-full bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="relative w-full overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white">
       {/* Header */}
       <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-4">
         <div className="flex items-start gap-3 min-w-0">
           <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center shrink-0 shadow-sm shadow-violet-500/25">
             <Sparkles size={16} className="text-white" />
           </div>
-          <ComponentHeader
-            title={story?.title ?? "AI Business Story"}
-            subHeader={
-              story?.subtitle ?? "Synthesizing sales, inventory & customers"
-            }
-          />
+          <div className="min-w-0">
+            <h3 className="text-[15px] font-normal text-[#3c4043]">
+              {story?.title ?? "AI Business Story"}
+            </h3>
+            <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6]">
+              {story?.subtitle ?? "Synthesizing sales, inventory & customers"}
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
@@ -170,7 +171,7 @@ export default function AIBusinessStory() {
             onClick={regenerate}
             title="Generate again"
             aria-label="Generate again"
-            className="p-2 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50 transition-colors"
+            className="cursor-pointer rounded-lg p-1.5 text-[#9aa0a6] transition-colors hover:bg-violet-50 hover:text-violet-600"
           >
             <RefreshCw
               size={14}
@@ -181,7 +182,7 @@ export default function AIBusinessStory() {
             onClick={() => setCollapsed((p) => !p)}
             aria-expanded={!collapsed}
             aria-label={collapsed ? "Expand story" : "Collapse story"}
-            className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+            className="cursor-pointer rounded-lg p-1.5 text-[#9aa0a6] transition-colors hover:bg-[#f1f3f4] hover:text-[#3c4043]"
           >
             {collapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
           </button>
@@ -217,9 +218,9 @@ export default function AIBusinessStory() {
                   style={{ width: `${100 - i * 12}%` }}
                 />
               ))}
-              <p className="flex items-center gap-1.5 text-xs text-gray-400 pt-1">
+              <p className="flex items-center gap-1.5 pt-1 text-xs text-[#9aa0a6]">
                 <Hourglass size={12} className="animate-pulse" />
-                Reading today&apos;s numbersâ€¦
+                Reading today&apos;s numbers ¦
               </p>
             </div>
           )}
@@ -234,7 +235,7 @@ export default function AIBusinessStory() {
 
               {/* Priority block â€” omitted when the model found nothing pressing */}
               {story.priority && (
-                <div className="mt-5 flex gap-3 rounded-xl border-amber-200 bg-amber-50/70 p-4">
+                <div className="mt-5 flex gap-3 rounded-xl border border-amber-200 bg-amber-50/70 p-4">
                   <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
                     <Flag size={14} className="text-amber-600" />
                   </div>
@@ -253,12 +254,12 @@ export default function AIBusinessStory() {
 
           {status === "success" && !story && (
             <div className="py-6 text-center">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-[#3c4043]">
                 The AI returned no story this time.
               </p>
               <button
                 onClick={regenerate}
-                className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold border-blue-500 text-blue-600 hover:bg-blue-50 rounded-full px-4 py-2 transition-colors"
+                className="mt-3 inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
               >
                 <RefreshCw size={12} /> Generate again
               </button>
@@ -268,8 +269,8 @@ export default function AIBusinessStory() {
       )}
 
       {/* Footer */}
-      <div className="border-t border-gray-100 bg-gray-50/60 px-6 py-3 flex items-center justify-between gap-2">
-        <span className="inline-flex items-center  gap-1.5 text-[11px] text-gray-400">
+      <div className="flex items-center justify-between gap-2 border-t border-[#e8eaed] bg-[#f8f9fa] px-6 py-3">
+        <span className="inline-flex items-center gap-1.5 text-[11px] text-[#9aa0a6]">
           <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
           {model ? `Generated with ${model}` : "Generated by Gemini"}
         </span>

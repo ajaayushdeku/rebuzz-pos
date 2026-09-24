@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { AlertTriangle, ChevronRight, PackageCheck } from "lucide-react";
 import { useInventoryQuery } from "@/hooks/useInventory";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { ChartCard } from "@/components/dashboardComponents/chartCard";
 import { formatVariantName } from "@/utils/helper";
 
 type Level = "out" | "critical" | "warning";
@@ -30,10 +30,20 @@ function levelFor(inStock: number, lowStock: number): Level | null {
   return null;
 }
 
+/** Severity pills, framed in their own hue like the other status chips. */
 const LEVEL_STYLES: Record<Level, { badge: string; label: string }> = {
-  out: { badge: "bg-red-200 text-red-800", label: "out of stock" },
-  critical: { badge: "bg-red-100 text-red-600", label: "critical" },
-  warning: { badge: "bg-amber-100 text-amber-700", label: "warning" },
+  out: {
+    badge: "border-red-200 bg-red-50 text-red-700",
+    label: "out of stock",
+  },
+  critical: {
+    badge: "border-red-200 bg-red-50 text-red-600",
+    label: "critical",
+  },
+  warning: {
+    badge: "border-amber-200 bg-amber-50 text-amber-700",
+    label: "warning",
+  },
 };
 
 const LEVEL_ORDER: Record<Level, number> = { out: 0, critical: 1, warning: 2 };
@@ -88,43 +98,46 @@ export default function LowStockAlerts() {
   const visible = alerts.slice(0, MAX_VISIBLE);
 
   return (
-    // <div className="relative bg-white rounded-2xl border-l-4 border-l-amber-400 border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
-    <div className="relative bg-white rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5 flex flex-col gap-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex flex-col items-center gap-1 align-start">
-            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-              <AlertTriangle size={16} />
-            </div>
-            {alerts.length > 0 && (
-              <span className="text-[11px] font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
-                {alerts.length}
-              </span>
-            )}
-          </div>
-
-          <ComponentHeader
-            title=" Low Stock Alerts
-              "
-            subHeader="  Items running out soon"
-          />
-        </div>
-        <Link
-          href="/dashboard/inventory"
-          className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
-        >
-          Restock <ChevronRight size={13} />
-        </Link>
-      </div>
-
+    <ChartCard
+      icon={AlertTriangle}
+      // Amber, as before: Tailwind's amber-600 / amber-200 / amber-50.
+      iconColor="#d97706"
+      iconBorder="#fde68a"
+      iconBg="#fffbeb"
+      title="Low Stock Alerts"
+      info={{
+        heading: "Reading this card",
+        // Variants count separately; the thresholds come from the product.
+        body: "Products at or near their low-stock level, worst first. A product with variants is listed per variant, since each one sells on its own. Critical is at or below the product's low-stock number, warning is within twice it.",
+      }}
+      subtitle="Items running out soon"
+      controls={
+        <>
+          {alerts.length > 0 && (
+            <span className="shrink-0 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] tabular-nums text-amber-700">
+              {alerts.length} low
+            </span>
+          )}
+          <Link
+            href="/dashboard/inventory"
+            className="group flex items-center gap-1 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
+          >
+            Restock
+            <ChevronRight
+              size={12}
+              className="transition-transform duration-200 group-hover:translate-x-0.5"
+            />
+          </Link>
+        </>
+      }
+    >
       {/* Body */}
       {isLoading ? (
         <div className="space-y-2">
           {Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
-              className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0"
+              className="flex items-center justify-between border-b border-[#e8eaed] py-3 last:border-0"
             >
               <div className="space-y-1.5">
                 <div className="h-3.5 w-40 bg-gray-100 rounded animate-pulse" />
@@ -139,14 +152,12 @@ export default function LowStockAlerts() {
           Failed to load stock alerts
         </p>
       ) : alerts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-8 text-center">
-          <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mb-2">
-            <PackageCheck size={24} className="text-green-500" />
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
+            <PackageCheck size={24} className="text-green-600" />
           </div>
-          <p className="text-sm font-medium text-gray-500">
-            All items are well stocked
-          </p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-sm text-[#3c4043]">All items are well stocked</p>
+          <p className="mt-1 text-xs text-[#9aa0a6]">
             No items are running low right now
           </p>
         </div>
@@ -157,21 +168,21 @@ export default function LowStockAlerts() {
             return (
               <div
                 key={alert.key}
-                className="flex items-center justify-between py-3 px-4 border-b border-gray-50 last:border-0"
+                className="flex items-center justify-between border-b border-[#e8eaed] px-4 py-3 last:border-0"
               >
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">
+                  <p className="truncate text-[13px] font-medium text-[#3c4043]">
                     {alert.name}
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="mt-0.5 text-[11px] text-[#9aa0a6]">
                     Remaining:{" "}
-                    <span className="font-bold text-gray-700">
+                    <span className="font-semibold tabular-nums text-[#5f6368]">
                       {alert.remaining}
                     </span>
                   </p>
                 </div>
                 <span
-                  className={`text-[11px] font-semibold px-3 py-1 rounded-full shrink-0 ${s.badge}`}
+                  className={`shrink-0 rounded-full border px-3 py-0.5 text-[11px] font-semibold ${s.badge}`}
                 >
                   {s.label}
                 </span>
@@ -182,13 +193,13 @@ export default function LowStockAlerts() {
           {alerts.length > MAX_VISIBLE && (
             <Link
               href="/dashboard/inventory"
-              className="block text-center text-xs font-medium text-gray-500 hover:text-gray-700 pt-1"
+              className="block pt-2 text-center text-[11px] text-[#5f6368] hover:text-[#3c4043]"
             >
               +{alerts.length - MAX_VISIBLE} more low-stock items
             </Link>
           )}
         </div>
       )}
-    </div>
+    </ChartCard>
   );
 }

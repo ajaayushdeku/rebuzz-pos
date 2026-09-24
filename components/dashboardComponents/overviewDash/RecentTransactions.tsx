@@ -3,9 +3,10 @@ import Link from "next/link";
 import { ChevronRight, Receipt } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { Transaction } from "../orderHistory/transaction-columns";
-import { statusStyles, paymentMethods } from "@/lib/config/transaction";
+import { paymentMethods } from "@/lib/config/transaction";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { ChartCard } from "@/components/dashboardComponents/chartCard";
+import StatusPill from "@/components/ui/StatusPill";
 
 type RecentTransactionsProps = {
   title?: string;
@@ -44,40 +45,52 @@ export default function RecentTransactions({
 }: RecentTransactionsProps) {
   const { currency } = useCurrency();
   return (
-    <div className="flex-1 bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-            <Receipt size={16} />
-          </div>
-          <ComponentHeader title={title} subHeader={description} />
-        </div>
-
+    <ChartCard
+      icon={Receipt}
+      // Indigo, as before: Tailwind's indigo-600 / indigo-200 / indigo-50.
+      iconColor="#4f46e5"
+      iconBorder="#c7d2fe"
+      iconBg="#eef2ff"
+      title={title}
+      info={{
+        heading: "Reading this table",
+        // The newest handful, with the full list a click away.
+        body: "The most recent paid orders, newest first. Amount is the order total; status is how it was settled. Use View all for the complete order history.",
+      }}
+      subtitle={description}
+      controls={
         <Link
           href={viewAllHref}
-          className="group flex items-center gap-1 rounded-xl px-3 py-2 text-xs font-medium text-blue-600 transition-all hover:bg-blue-50"
+          className="group flex items-center gap-1 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
         >
           View all
           <ChevronRight
-            size={13}
+            size={12}
             className="transition-transform duration-200 group-hover:translate-x-0.5"
           />
         </Link>
-      </div>
-
+      }
+      className="flex-1"
+    >
       {/* Horizontally scrollable table wrapper for mobile */}
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
       <div className="bg-white  overflow-x-auto">
         <table className="w-full text-sm min-w-[500px]">
           <thead>
-            <tr className="text-xs text-gray-400 border-b border-gray-100">
-              <th className="text-left pb-3 pt-3 px-4 font-medium">Order</th>
-              <th className="text-left pb-3 pt-3 px-4 font-medium">Customer</th>
-              <th className="text-center pb-3 pt-3 px-4 font-medium">
+            <tr className="border-b border-[#e8eaed] text-[11px] text-[#5f6368]">
+              <th className="px-4 pb-2.5 pt-1 text-left font-normal">Order</th>
+              <th className="px-4 pb-2.5 pt-1 text-left font-normal">
+                Customer
+              </th>
+              <th className="px-4 pb-2.5 pt-1 text-center font-normal">
                 Payment
               </th>
-              <th className="text-right pb-3 pt-3 px-4 font-medium">Amount</th>
-              <th className="text-center pb-3 pt-3 px-4 font-medium">Status</th>
+              <th className="px-4 pb-2.5 pt-1 text-right font-normal">
+                Amount
+              </th>
+              <th className="px-4 pb-2.5 pt-1 text-center font-normal">
+                Status
+              </th>
             </tr>
           </thead>
 
@@ -88,40 +101,39 @@ export default function RecentTransactions({
                   colSpan={4}
                   className="text-center py-2 text-sm text-gray-400"
                 >
-                  <div className="flex flex-col items-center justify-center py-10 text-gray-400">
-                    <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-2">
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4]">
                       <Receipt size={24} className="text-gray-500" />
                     </div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm text-[#3c4043]">
                       No recent transactions found
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      Recently made transaction will appear here
+                    <p className="mt-1 text-xs text-[#9aa0a6]">
+                      Recent transactions will appear here
                     </p>
                   </div>
                 </td>
               </tr>
             ) : (
               transactions.map((tx) => {
-                const styles = statusStyles[tx.status];
                 const paymentStyles = paymentMethods[tx.paymentMethod];
                 const txDate = getTxDate(tx);
                 return (
                   <tr
                     key={tx.id}
-                    className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
+                    className="border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa]"
                   >
                     <td className="py-3 px-4">
-                      <p className="text-xs font-semibold text-gray-900">
+                      <p className="text-xs font-semibold text-[#3c4043]">
                         {tx.id}
                       </p>
                       {txDate && (
-                        <p className="text-[11px] text-gray-400">
+                        <p className="text-[11px] text-[#9aa0a6]">
                           {timeAgo(txDate)}
                         </p>
                       )}
                     </td>
-                    <td className="py-3 px-4 text-xs text-gray-700">
+                    <td className="px-4 py-3 text-xs text-[#5f6368]">
                       {tx.invoiceName}
                     </td>
                     <td className="py-3 px-4 text-center">
@@ -132,7 +144,7 @@ export default function RecentTransactions({
                           tx.paymentMethod.slice(1)}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
+                    <td className="px-4 py-3 text-right text-xs font-semibold tabular-nums text-[#3c4043]">
                       {/* {formatCurrency(Number(tx.amount), currency)} */}
                       {formatCurrencySymbol(
                         Number(tx.amount),
@@ -140,12 +152,8 @@ export default function RecentTransactions({
                         currency.locale,
                       )}
                     </td>
-                    <td className="py-3 px-4 text-center">
-                      <span
-                        className={`${styles.badge} ${styles.cell} inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold`}
-                      >
-                        {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
-                      </span>
+                    <td className="px-4 py-3 text-center">
+                      <StatusPill label={tx.status} />
                     </td>
                   </tr>
                 );
@@ -154,6 +162,6 @@ export default function RecentTransactions({
           </tbody>
         </table>
       </div>
-    </div>
+    </ChartCard>
   );
 }

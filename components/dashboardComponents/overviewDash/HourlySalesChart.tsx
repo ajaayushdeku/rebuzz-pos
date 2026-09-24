@@ -15,7 +15,13 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  AXIS_TICK,
+  CHART_PALETTE,
+  ChartCard,
+  ChartTooltipBox,
+  yAxisTitle,
+} from "@/components/dashboardComponents/chartCard";
 import { FilterSelect } from "@/components/ui/FilterSelect";
 import { Clock } from "lucide-react";
 
@@ -36,23 +42,27 @@ const CustomTooltip = ({
 }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white rounded-xl px-4 py-2 shadow-lg border border-gray-100">
-        <p className="text-gray-400 text-xs">{label}</p>
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-xs text-gray-500">Revenue</span>
-          <span className="text-xs font-bold text-violet-800">
-            {formatCurrencySymbol(
+      <ChartTooltipBox
+        label={label}
+        rows={[
+          {
+            name: "Revenue",
+            color: AREA_COLOR,
+            value: formatCurrencySymbol(
               payload[0].value as number,
               currency.symbol,
               currency.locale,
-            )}
-          </span>
-        </div>
-      </div>
+            ),
+          },
+        ]}
+      />
     );
   }
   return null;
 };
+
+/** The one violet the area, its dots and the hover box share. */
+const AREA_COLOR = "#7c3aed";
 
 const clampHour = (value: number): number =>
   Math.max(0, Math.min(23, Math.floor(Number.isNaN(value) ? 0 : value)));
@@ -185,20 +195,20 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
   };
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5  w-full">
-      {/* HEADER */}
-      <div className=" flex flex-col  md:flex-row md:items-center md:justify-between gap-3 mb-4 md:mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center shrink-0">
-            <Clock size={15} />
-          </div>
-          <ComponentHeader
-            title="Hourly Sales Trend"
-            subHeader="Revenue throughput across all operating hours today"
-          />
-        </div>
-
-        {/* Hour Range Filter */}
+    <ChartCard
+      icon={Clock}
+      // Violet, matching the area: Tailwind's violet-600 / violet-200 / 50.
+      iconColor={AREA_COLOR}
+      iconBorder="#ddd6fe"
+      iconBg="#f5f3ff"
+      title="Hourly Sales Trend"
+      info={{
+        heading: "Reading this chart",
+        // Today only, and the range picker belongs to this card.
+        body: "Revenue taken in each hour of today. The hour range is this card's own filter — it does not follow the date filter at the top of the page. Set From and To for a window the presets do not cover.",
+      }}
+      subtitle="Revenue throughput across all operating hours today"
+      controls={
         <div className="flex flex-col gap-1.5">
           <div className="flex flex-wrap items-center gap-2">
             <FilterSelect
@@ -209,11 +219,11 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
             />
 
             {/* Vertical divider */}
-            <div className="w-px h-6 bg-gray-300 mx-1" />
+            <div className="mx-1 h-6 w-px bg-[#dadce0]" />
 
             {/* Custom From / To hour inputs */}
             <div className="flex items-center gap-1.5">
-              <label className="text-xs text-gray-400 whitespace-nowrap">
+              <label className="whitespace-nowrap text-xs text-[#9aa0a6]">
                 From
               </label>
               <input
@@ -222,9 +232,9 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                 max={23}
                 value={fromHour}
                 onChange={(e) => handleFromChange(Number(e.target.value))}
-                className="w-14 text-xs border border-gray-200 rounded-lg px-2 py-2.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                className="w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-2.5 text-xs text-[#3c4043] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500"
               />
-              <label className="text-xs text-gray-400 whitespace-nowrap">
+              <label className="whitespace-nowrap text-xs text-[#9aa0a6]">
                 To
               </label>
               <input
@@ -233,26 +243,26 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                 max={23}
                 value={toHour}
                 onChange={(e) => handleToChange(Number(e.target.value))}
-                className="w-14 text-xs border border-gray-200 rounded-lg px-2 py-2.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                className="w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-2.5 text-xs text-[#3c4043] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500"
               />
             </div>
           </div>
 
           {rangeError && <p className="text-xs text-red-500">{rangeError}</p>}
         </div>
-      </div>
-
+      }
+    >
       {/* CHART with horizontal scroll */}
       <div className="relative">
         {/* Left Arrow Button */}
         {canScrollLeft && (
           <button
             onClick={() => scroll("left")}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-2 shadow-md transition-all hover:shadow-lg"
+            className="absolute left-0 top-1/2 z-10 -translate-y-1/2 cursor-pointer rounded-full border border-[#dadce0] bg-white/95 p-2 text-[#5f6368] transition-colors hover:bg-[#f8f9fa] hover:text-[#3c4043]"
             aria-label="Scroll left"
           >
             <svg
-              className="w-4 h-4 text-gray-600"
+              className="h-4 w-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -271,11 +281,11 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
         {canScrollRight && (
           <button
             onClick={() => scroll("right")}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-2 shadow-md transition-all hover:shadow-lg"
+            className="absolute right-0 top-1/2 z-10 -translate-y-1/2 cursor-pointer rounded-full border border-[#dadce0] bg-white/95 p-2 text-[#5f6368] transition-colors hover:bg-[#f8f9fa] hover:text-[#3c4043]"
             aria-label="Scroll right"
           >
             <svg
-              className="w-4 h-4 text-gray-600"
+              className="h-4 w-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -315,16 +325,20 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                     x2="0"
                     y2="1"
                   >
-                    <stop offset="0%" stopColor="#7c3aed" stopOpacity={0.18} />
+                    <stop
+                      offset="0%"
+                      stopColor={AREA_COLOR}
+                      stopOpacity={0.18}
+                    />
                     <stop
                       offset="100%"
-                      stopColor="#7c3aed"
+                      stopColor={AREA_COLOR}
                       stopOpacity={0.01}
                     />
                   </linearGradient>
                 </defs>
 
-                <CartesianGrid vertical={false} stroke="#f3f4f6" />
+                <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
 
                 <XAxis
                   dataKey="hour"
@@ -348,11 +362,11 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                         x={x}
                         y={yNum + 8}
                         textAnchor="middle"
-                        fill="#9ca3af"
+                        fill={CHART_PALETTE.axis}
                         fontSize={11}
                       >
                         {payload.value}
-                        <tspan fontSize={9} fill="#b0b7c3">
+                        <tspan fontSize={9} fill={CHART_PALETTE.subtitle}>
                           {" "}
                           [{ampm}]
                         </tspan>
@@ -365,16 +379,17 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                   tickFormatter={formatYAxis}
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "#9ca3af", fontSize: 12 }}
+                  tick={AXIS_TICK}
                   ticks={ticks}
                   domain={[0, domainMax]}
-                  width={65}
+                  width={85}
+                  label={yAxisTitle("Revenue")}
                 />
 
                 <Tooltip
                   content={<CustomTooltip currency={currency} />}
                   cursor={{
-                    stroke: "#7c3aed",
+                    stroke: AREA_COLOR,
                     strokeWidth: 1,
                     strokeDasharray: "4 4",
                   }}
@@ -383,18 +398,18 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                 <Area
                   type="monotone"
                   dataKey="revenue"
-                  stroke="#7c3aed"
+                  stroke={AREA_COLOR}
                   strokeWidth={2.5}
                   fill="url(#revenueGradient)"
                   dot={{
                     r: 4,
-                    fill: "#7c3aed",
+                    fill: AREA_COLOR,
                     stroke: "#fff",
                     strokeWidth: 2,
                   }}
                   activeDot={{
                     r: 6,
-                    fill: "#7c3aed",
+                    fill: AREA_COLOR,
                     stroke: "#fff",
                     strokeWidth: 2,
                   }}
@@ -404,6 +419,6 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
           </div>
         </div>
       </div>
-    </div>
+    </ChartCard>
   );
 }

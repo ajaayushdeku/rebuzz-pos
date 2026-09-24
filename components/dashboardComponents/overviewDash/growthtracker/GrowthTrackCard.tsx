@@ -31,13 +31,17 @@ function isGood(percent: number, inverseColor: boolean) {
 const TONE = {
   good: {
     icon: "bg-emerald-50 text-emerald-600",
-    badge: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+    badge: "border-emerald-200 bg-emerald-50 text-emerald-700",
   },
   bad: {
     icon: "bg-red-50 text-red-600",
-    badge: "bg-red-50 text-red-700 ring-red-100",
+    badge: "border-red-200 bg-red-50 text-red-700",
   },
 };
+
+/** The month chip worn by both the current and previous figures. */
+const MONTH_CHIP =
+  "shrink-0 rounded-md bg-[#f1f3f4] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#5f6368]";
 
 export default function GrowthTrackCard({
   label,
@@ -67,15 +71,17 @@ export default function GrowthTrackCard({
   };
 
   return (
-    <div className="bg-surface-card border-surface-border w-full rounded-xl border p-4 shadow-sm transition-shadow duration-200 hover:shadow-md md:p-5">
+    <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white p-4 md:p-5">
       {/* Label + trend icon */}
       <div className="flex items-center justify-between gap-2">
-        <p className="truncate text-xs font-medium text-gray-500 md:text-[13px]">
+        <p className="truncate text-xs text-[#5f6368] md:text-[13px]">
           {label}
         </p>
 
+        {/* The tile carries the icon's colour, so `border-current/20` frames
+            it in the same hue — the idiom the other stat tiles use. */}
         <div
-          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg md:h-8 md:w-8 ${tone.icon}`}
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-current/20 md:h-8 md:w-8 ${tone.icon}`}
         >
           <TrendIcon size={15} />
         </div>
@@ -83,36 +89,30 @@ export default function GrowthTrackCard({
 
       {/* Current month */}
       <div className="mt-3 flex items-baseline gap-1.5 md:mt-4">
-        <p className="truncate text-xl font-bold tracking-wide text-gray-900 tabular-nums md:text-[22px] ">
+        <p className="truncate text-xl font-semibold tracking-tight text-[#3c4043] tabular-nums md:text-[22px]">
           {formatValue(value)}
         </p>
-        {currentLabel && (
-          <span className="shrink-0 rounded-md bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500">
-            {currentLabel}
-          </span>
-        )}
+        {currentLabel && <span className={MONTH_CHIP}>{currentLabel}</span>}
       </div>
 
       {/* Previous month — separated so the two periods don't read as one line */}
-      <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-gray-100 pt-2.5">
+      <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-[#e8eaed] pt-2.5">
         {/* The month reads as a ghost of the chip above, so the two periods
             pair up visually; without a month it falls back to the plain word. */}
-        <p className="flex min-w-0 items-baseline gap-1.5 text-[11px] text-gray-400 md:text-xs">
-          <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+        <p className="flex min-w-0 items-baseline gap-1.5 text-[11px] text-[#9aa0a6] md:text-xs">
+          <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-[#9aa0a6]">
             prev:
           </span>
-          <span className="truncate  tracking-wide tabular-nums">
+          <span className="truncate tracking-wide tabular-nums">
             {formatValue(prev)}{" "}
             {previousLabel && (
-              <span className="shrink-0 rounded-md bg-gray-100 ml-1 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500">
-                {previousLabel}
-              </span>
+              <span className={`ml-1 ${MONTH_CHIP}`}>{previousLabel}</span>
             )}
           </span>
         </p>
 
         <div
-          className={`flex shrink-0 items-center gap-0.5 rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums ring-1 md:text-xs ${tone.badge}`}
+          className={`flex shrink-0 items-center gap-0.5 rounded-full border px-2 py-0.5 text-[11px] font-semibold tabular-nums md:text-xs ${tone.badge}`}
         >
           <ArrowIcon size={12} />
           <span>

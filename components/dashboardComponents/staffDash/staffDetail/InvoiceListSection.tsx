@@ -16,6 +16,7 @@ import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/
 import { nepalStamp, timeAgo } from "@/lib/nepalDate";
 import { CardInfo, CHART_PALETTE } from "../../chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
+import StatusPill from "@/components/ui/StatusPill";
 import SegmentedControl, {
   toSegmentOptions,
 } from "@/components/ui/SegmentedControl";
@@ -45,30 +46,6 @@ interface InvoiceListSectionProps {
 
 const STATUS_OPTIONS = toSegmentOptions(["all", "paid", "unpaid"] as const);
 type StatusFilter = (typeof STATUS_OPTIONS)[number]["value"];
-
-const statusStyles: Record<string, { cell: string; badge: string }> = {
-  settled: {
-    cell: "text-emerald-600",
-    badge: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-  },
-  pending: {
-    cell: "text-amber-600",
-    badge: "bg-amber-50 text-amber-700 border border-amber-200",
-  },
-  unpaid: {
-    cell: "text-red-600",
-    badge: "bg-red-50 text-red-700 border border-red-200",
-  },
-  default: {
-    cell: "text-gray-600",
-    badge: "bg-gray-50 text-gray-700 border border-gray-200",
-  },
-};
-
-function getStatusStyle(status: string) {
-  const key = status?.toLowerCase();
-  return statusStyles[key] ?? statusStyles.default;
-}
 
 export default function InvoiceListSection({
   employeeId,
@@ -376,7 +353,6 @@ export default function InvoiceListSection({
             </thead>
             <tbody>
               {displayTickets.map((ticket, idx) => {
-                const s = getStatusStyle(ticket.paidStatus);
                 // `createdAt` is a true UTC instant ("…Z"). The old parser
                 // stripped the Z and read it as Nepal time already, so every
                 // invoice showed 5h45m early. See nepalStamp.
@@ -453,22 +429,13 @@ export default function InvoiceListSection({
                       )}
                     </td>
                     <td className="py-3 px-4 text-center">
-                      <span
-                        className={`${s.badge} ${s.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block capitalize`}
-                      >
-                        {ticket.paidStatus}
-                      </span>
+                      <StatusPill label={ticket.paidStatus} />
                     </td>
                     <td className="py-3 px-4 text-center">
-                      <span
-                        className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full capitalize ${
-                          ticket.archivedAt
-                            ? "bg-orange-50 text-orange-700 border border-orange-200"
-                            : "bg-gray-50 text-gray-500 border border-gray-200"
-                        }`}
-                      >
-                        {ticket.archivedAt ? "Archived" : "Unarchived"}
-                      </span>
+                      <StatusPill
+                        label={ticket.archivedAt ? "Archived" : "Unarchived"}
+                        tone={ticket.archivedAt ? "warning" : "neutral"}
+                      />
                     </td>
                   </tr>
                 );

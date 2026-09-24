@@ -8,7 +8,6 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Circle,
-  Eye,
   Timer,
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
@@ -140,7 +139,7 @@ function StatusBadge({ closingTime }: { closingTime?: string }) {
     >
       <Circle
         size={5}
-        className={isClosed ? "fill-amber-500" : "fill-green-400"}
+        className={isClosed ? "fill-red-500" : "fill-green-400"}
       />
       {isClosed ? "Closed" : "Open"}
     </span>
@@ -165,7 +164,13 @@ export default function ShiftsSection({
 }: ShiftsSectionProps) {
   const { currency } = useCurrency();
 
-  const shiftList = shifts.filter((s) => s.shiftId);
+  const shiftList = [...shifts]
+    .filter((s) => s.shiftId)
+    .sort((a, b) => {
+      const at = parseNepalDateTime(a.openingTime ?? "")?.getTime() ?? 0;
+      const bt = parseNepalDateTime(b.openingTime ?? "")?.getTime() ?? 0;
+      return bt - at;
+    });
   const pagedShifts = shiftList.slice(
     shiftPage * pageSize,
     (shiftPage + 1) * pageSize,
@@ -278,21 +283,32 @@ export default function ShiftsSection({
                     <th className="text-center pb-2.5 pt-1 px-3 font-normal">
                       Status
                     </th>
-                    <th className="text-center pb-2.5 pt-1 pl-3 pr-0 font-normal w-10"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {pagedShifts.map((shift, idx) => (
                     <tr
                       key={shift.shiftId ?? idx}
-                      className="border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa]"
+                      onClick={() =>
+                        shift.shiftId && onFetchShiftDetail(shift.shiftId)
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          if (shift.shiftId) onFetchShiftDetail(shift.shiftId);
+                        }
+                      }}
+                      tabIndex={shift.shiftId ? 0 : -1}
+                      role="button"
+                      title="View shift details"
+                      className="cursor-pointer border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa] focus:bg-[#f8f9fa] focus:outline-none"
                     >
-                      <td className="py-3.5 pr-3 pl-0 text-[11px] text-gray-300 font-mono align-top">
+                      <td className="py-3.5 pr-3 pl-0 font-mono text-[11px] text-gray-400 align-top">
                         #{String(shiftPage * pageSize + idx + 1)}
                       </td>
                       <td className="py-3.5 px-3 align-top">
                         <div className="leading-snug">
-                          <p className="text-[11px] text-gray-500 mb-1.5 font-medium">
+                          <p className="mb-1.5 text-[11px] text-gray-400">
                             {formatShiftDateRange(
                               shift.openingTime,
                               shift.closingTIme,
@@ -303,7 +319,7 @@ export default function ShiftsSection({
                               <span className="text-[11px] text-[#9aa0a6]">
                                 Open
                               </span>
-                              <span className="text-[10px] font-semibold text-gray-900">
+                              <span className="text-[11px] font-semibold text-gray-900">
                                 {extractTimeWithAmPm(shift.openingTime)}
                               </span>
                             </div>
@@ -312,7 +328,7 @@ export default function ShiftsSection({
                               <span className="text-[11px] text-[#9aa0a6]">
                                 Close
                               </span>
-                              <span className="text-[10px] font-semibold text-gray-900">
+                              <span className="text-[11px] font-semibold text-gray-900">
                                 {extractTimeWithAmPm(shift.closingTIme)}
                               </span>
                             </div>
@@ -320,13 +336,13 @@ export default function ShiftsSection({
                         </div>
                       </td>
                       <td className="py-3.5 px-3 align-top">
-                        <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold tabular-nums text-gray-800">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold tabular-nums text-gray-900">
                           <Timer size={12} className="shrink-0 text-gray-400" />
                           {shiftDuration(shift)}
                         </span>
                       </td>
                       <td className="py-3.5 px-3 text-right align-top">
-                        <span className="text-[13px] font-semibold text-gray-800">
+                        <span className="text-xs font-semibold tabular-nums text-gray-900">
                           {formatCurrencySymbol(
                             shift.openingCash ?? 0,
                             currency.symbol,
@@ -355,7 +371,7 @@ export default function ShiftsSection({
                         </div>
                       </td>
                       <td className="py-3.5 px-3 text-right align-top">
-                        <span className="text-[13px] font-semibold text-gray-800">
+                        <span className="text-xs font-semibold tabular-nums text-gray-900">
                           {formatCurrencySymbol(
                             shift.closingCash ?? 0,
                             currency.symbol,
@@ -364,7 +380,7 @@ export default function ShiftsSection({
                         </span>
                       </td>
                       <td className="py-3.5 px-3 text-right align-top">
-                        <p className="text-[13px] font-medium text-[#3c4043] tabular-nums">
+                        <p className="text-xs font-semibold tabular-nums text-gray-900">
                           {formatCurrencySymbol(
                             shift.totalSale ?? 0,
                             currency.symbol,
@@ -376,17 +392,6 @@ export default function ShiftsSection({
                         <div className="inline-flex">
                           <StatusBadge closingTime={shift.closingTIme} />
                         </div>
-                      </td>
-                      <td className="py-3.5 pl-3 pr-0 text-center align-top">
-                        <button
-                          onClick={() =>
-                            shift.shiftId && onFetchShiftDetail(shift.shiftId)
-                          }
-                          className="cursor-pointer rounded-lg p-1.5 text-[#9aa0a6] transition-colors hover:bg-[#f1f3f4] hover:text-[#3c4043]"
-                          title="View shift details"
-                        >
-                          <Eye size={14} />
-                        </button>
                       </td>
                     </tr>
                   ))}

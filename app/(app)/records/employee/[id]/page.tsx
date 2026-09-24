@@ -1,12 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import {
-  DateRangeFilter,
-  type DateRangeValue,
-} from "@/components/dashboardComponents/staffDash/DateRangeFilter";
-import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
+import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
 import type {
   StaffOverview,
@@ -25,7 +21,7 @@ import PerformanceRadar from "@/components/dashboardComponents/staffDash/staffDe
 import TopItemsSales from "@/components/dashboardComponents/staffDash/staffDetail/TopItemsSales";
 import InvoiceListSection from "@/components/dashboardComponents/staffDash/staffDetail/InvoiceListSection";
 import { StaffDetailSkeleton } from "@/components/dashboardComponents/staffDash/staffDetail/StaffDetailSkeletons";
-import { CustomerAvatar } from "@/components/customer/CustomerAvatar";
+import StaffDetailHeader from "@/components/dashboardComponents/staffDash/staffDetail/StaffDetailHeader";
 
 export interface StaffUser {
   _id: string;
@@ -75,8 +71,6 @@ export default function StaffDetailPage() {
   const [modalDetail, setModalDetail] = useState<ShiftDetail | null>(null);
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
-
-  const router = useRouter();
 
   const [shiftPage, setShiftPage] = useState(0);
   const pageSize = 5;
@@ -405,6 +399,13 @@ export default function StaffDetailPage() {
 
   // ── Derived data ────────────────────────────────────────────────────────
 
+  // /api/profile returns the logged-in user, who is this page's subject only
+  // when the owner opens their own record. Falling back to it otherwise put
+  // the owner's name, role and contact details on a staff member's header
+  // while /api/staff/[id] was still in flight.
+  const headerUser =
+    employeeDetail ?? (ownerDetail?._id === employeeId ? ownerDetail : null);
+
   const overallShift = shifts.find((s) => s.employee);
   const shiftList = shifts.filter((s) => s.shiftId);
 
@@ -432,47 +433,16 @@ export default function StaffDetailPage() {
     // <div className="min-h-screen bg-gray-50/50 px-6 py-8 md:px-10">
     <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
       <div>
-        {/* ── Inline StaffDetailHeader ──────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => router.push("/dashboard/employee")}
-              className="p-2 text-gray-400 hover:text-gray-700 hover:bg-white rounded-lg transition-colors shadow-sm"
-            >
-              <ArrowLeft size={18} />
-            </button>
-            <div className="flex items-center gap-3">
-              <CustomerAvatar
-                src={null}
-                name={
-                  employeeDetail?.name ??
-                  ownerDetail?.name ??
-                  overview?.name ??
-                  "Staff"
-                }
-                className="w-12 h-12 shrink-0 ring-2 ring-white shadow-md"
-                textClass="text-base"
-              />
-              <div>
-                <h1 className="font-bold text-xl md:text-2xl text-gray-900">
-                  {employeeDetail?.name ??
-                    ownerDetail?.name ??
-                    overview?.name ??
-                    "Staff"}
-                </h1>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  Employee ID: {employeeId.slice(0, 8)}...
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <DateRangeFilter
-            value={dateRange}
-            onChange={handleDateRangeChange}
-            storageKey="rebuzz-employee-detail-date-filter"
-          />
-        </div>
+        <StaffDetailHeader
+          employeeId={employeeId}
+          name={headerUser?.name ?? overview?.name ?? ""}
+          role={headerUser?.role}
+          phone={headerUser?.phone}
+          email={headerUser?.email}
+          dateRange={dateRange}
+          onDateRangeChange={handleDateRangeChange}
+          storageKey="rebuzz-employee-detail-date-filter"
+        />
 
         {loading ? (
           <StaffDetailSkeleton />

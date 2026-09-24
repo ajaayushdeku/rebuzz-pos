@@ -3,7 +3,10 @@
 import { Trophy } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  CHART_PALETTE,
+  ChartCard,
+} from "@/components/dashboardComponents/chartCard";
 
 type Rank = 1 | 2 | 3;
 
@@ -22,10 +25,11 @@ type SingleProductProps = {
   product: TopProduct;
 };
 
-const rankStyles: Record<Rank, { ring: string; text: string }> = {
-  1: { ring: "ring-amber-200", text: "text-amber-500" },
-  2: { ring: "ring-gray-200", text: "text-gray-500" },
-  3: { ring: "ring-orange-200", text: "text-orange-500" },
+/** The medal colours, as a tinted disc framed in its own hue. */
+const rankStyles: Record<Rank, string> = {
+  1: "border-amber-200 bg-amber-50 text-amber-600",
+  2: "border-gray-200 bg-gray-50 text-gray-600",
+  3: "border-orange-200 bg-orange-50 text-orange-600",
 };
 
 const TopProductItem = ({ product }: SingleProductProps) => {
@@ -33,23 +37,32 @@ const TopProductItem = ({ product }: SingleProductProps) => {
   const { currency } = useCurrency();
 
   return (
-    <div className="group flex items-center justify-between gap-3 py-3 border-b border-gray-100 last:border-0 transition-colors hover:bg-gray-50/50 -mx-2 px-2 rounded-md">
-      <div className="flex items-center gap-3 min-w-0">
+    <div className="-mx-2 flex items-center justify-between gap-3 rounded-md border-b border-[#e8eaed] px-2 py-3 transition-colors last:border-0 hover:bg-[#f8f9fa]">
+      <div className="flex min-w-0 items-center gap-3">
         <span
-          className={`shrink-0 w-8 h-8 flex items-center justify-center rounded-full ring-1 ${styles.ring} bg-white text-sm font-semibold ${styles.text}`}
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${styles}`}
         >
           {product.rank}
         </span>
         <div className="min-w-0">
-          <p className="font-medium text-xs text-gray-900 truncate">
+          <p
+            className="truncate text-xs font-medium"
+            style={{ color: CHART_PALETTE.title }}
+          >
             {product.productName}
           </p>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p
+            className="mt-0.5 text-[11px]"
+            style={{ color: CHART_PALETTE.subtitle }}
+          >
             {product.noOfSale} {product.noOfSale === 1 ? "sale" : "sales"}
           </p>
         </div>
       </div>
-      <span className="shrink-0 text-xs font-semibold text-green-600">
+      <span
+        className="shrink-0 text-xs font-semibold tabular-nums"
+        style={{ color: CHART_PALETTE.good }}
+      >
         {/* {formatCurrency(product.totalRevenue, currency)} */}
         {formatCurrencySymbol(
           product.totalRevenue,
@@ -65,29 +78,31 @@ const TopItems = ({ topProducts }: TopProductProps) => {
   const hasData = topProducts && topProducts.length > 0;
 
   return (
-    <div className="flex-1 bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
-          <Trophy size={15} className="text-amber-600" />
-        </div>
-        <ComponentHeader
-          title="Top 3 Items Today"
-          subHeader=" Best performers in today's session"
-        />
-      </div>
-
-      {/* Divider */}
-      <div className="h-px bg-gray-100 mb-1" />
-
+    <ChartCard
+      icon={Trophy}
+      // Amber, as before: Tailwind's amber-600 / amber-200 / amber-50.
+      iconColor="#d97706"
+      iconBorder="#fde68a"
+      iconBg="#fffbeb"
+      title="Top 3 Items Today"
+      info={{
+        heading: "Reading this card",
+        // Today only, ranked by revenue.
+        body: "The three products that brought in the most revenue today — not the date range at the top of the page. The figure on the right is each one's revenue; the line beneath the name is how many were sold.",
+      }}
+      subtitle="Best performers in today's session"
+      className="flex-1"
+    >
       {/* Body */}
       {!hasData ? (
-        <div className="flex flex-col items-center justify-center py-10 text-gray-400">
-          <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-2">
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4]">
             <Trophy size={24} className="text-gray-500" />
           </div>
-          <p className="text-sm font-medium text-gray-500">No sales yet</p>
-          <p className="text-xs text-gray-400 mt-1">No items sales for today</p>
+          <p className="text-sm text-[#3c4043]">No sales yet</p>
+          <p className="mt-1 text-xs text-[#9aa0a6]">
+            Today&apos;s best sellers will appear here
+          </p>
         </div>
       ) : (
         <div className="mt-1">
@@ -96,7 +111,7 @@ const TopItems = ({ topProducts }: TopProductProps) => {
           ))}
         </div>
       )}
-    </div>
+    </ChartCard>
   );
 };
 

@@ -10,7 +10,11 @@ import type {
   Payload,
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  CHART_PALETTE,
+  ChartCard,
+  ChartTooltipBox,
+} from "@/components/dashboardComponents/chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
 
 export interface CategorySalesData {
@@ -63,33 +67,30 @@ const CustomTooltip = ({
     const entry = payload[0].payload as CategorySalesDataWithColor;
     const sales = entry.totalSales;
     return (
-      <div className="bg-white rounded-xl px-4 py-2 shadow-lg border border-gray-100">
-        <p className="text-gray-500 text-xs">{entry.name}</p>
-        <p className="font-bold text-sm" style={{ color: entry.color }}>
-          {entry.percentage.toFixed(1)}%
-        </p>
-
-        <div className="flex flex-col gap-1 mt-2">
-          <div className="flex items-center justify-between  gap-4">
-            {" "}
-            <span className="text-xs text-gray-500 items-left">Revenue</span>
-            <span className="text-xs items-right font-bold  text-gray-600">
-              {formatCurrencySymbol(
-                entry.totalRevenue,
-                currency.symbol,
-                currency.locale,
-              )}
-            </span>
-          </div>
-          <div className="flex items-center justify-between gap-4">
-            {" "}
-            <span className="text-xs text-gray-500 items-left">Items Sold</span>
-            <span className="text-xs font-bold text-gray-600">
-              {formatNumber(sales)}
-            </span>
-          </div>
-        </div>
-      </div>
+      <ChartTooltipBox
+        label={entry.name}
+        rows={[
+          {
+            name: "Share",
+            color: entry.color,
+            value: `${entry.percentage.toFixed(1)}%`,
+          },
+          {
+            name: "Revenue",
+            color: entry.color,
+            value: formatCurrencySymbol(
+              entry.totalRevenue,
+              currency.symbol,
+              currency.locale,
+            ),
+          },
+          {
+            name: "Items sold",
+            color: entry.color,
+            value: formatNumber(sales),
+          },
+        ]}
+      />
     );
   }
   return null;
@@ -147,29 +148,29 @@ const SalesCategoryChart = ({
   }, [coloredData]);
 
   return (
-    <div className="w-full bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
-      {/* Header — follows the global date range */}
-      <div className="mb-4 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
-          <ChartPie size={16} />
-        </div>
-        <ComponentHeader
-          title="Sales by Category"
-          subHeader=" Revenue share across product categories"
-        />
-        <RangeBadge />
-      </div>
-
+    <ChartCard
+      icon={ChartPie}
+      // Sky, as before: Tailwind's sky-600 / sky-200 / sky-50.
+      iconColor="#0284c7"
+      iconBorder="#bae6fd"
+      iconBg="#f0f9ff"
+      title="Sales by Category"
+      info={{
+        heading: "Reading this chart",
+        // Revenue share, not item counts.
+        body: "Each slice is a category's share of revenue over the selected date range — not how many items it sold. The list below repeats the shares in order, largest first; hover a slice for its revenue and item count.",
+      }}
+      subtitle="Revenue share across product categories"
+      controls={<RangeBadge variant="pill" />}
+    >
       {data.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-10 text-center">
-          <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-            <ChartPie size={24} className="text-gray-400" />
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4]">
+            <ChartPie size={24} className="text-gray-500" />
           </div>
-          <p className="text-sm font-medium text-gray-500">
-            No category data found
-          </p>
-          <p className="text-xs text-gray-400 mt-1">
-            No sales recorded for the selected date range.
+          <p className="text-sm text-[#3c4043]">No category data found</p>
+          <p className="mt-1 text-xs text-[#9aa0a6]">
+            No sales recorded for the selected date range
           </p>
         </div>
       ) : (
@@ -223,13 +224,16 @@ const SalesCategoryChart = ({
                         backgroundColor: entry.color,
                       }}
                     />
-                    <span className="text-xs text-gray-700 truncate">
+                    <span
+                      className="truncate text-xs"
+                      style={{ color: CHART_PALETTE.title }}
+                    >
                       {entry.name}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <div className="w-30 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                    <div className="h-1.5 w-30 overflow-hidden rounded-full bg-[#f1f3f4]">
                       <div
                         className="h-full rounded-full"
                         style={{
@@ -246,7 +250,7 @@ const SalesCategoryChart = ({
                         digits so the amounts beside it stay in one column.
                         A share that rounds to 0.0% but is not zero is shown as
                         "<0.1%" rather than as nothing. */}
-                    <span className="w-11 shrink-0 text-right text-[11px] font-medium tabular-nums text-gray-500">
+                    <span className="w-11 shrink-0 text-right text-[11px] tabular-nums text-[#5f6368]">
                       {entry.percentage > 0 && entry.percentage < 0.1
                         ? "<0.1"
                         : entry.percentage.toFixed(1)}
@@ -267,15 +271,15 @@ const SalesCategoryChart = ({
 
             <div className="pointer-events-none absolute bottom-[-15px] left-0 right-0 flex justify-center pt-8 pb-1">
               {showScrollHint ? (
-                <ChevronDown className="h-4 w-4 text-gray-400 animate-bounce" />
+                <ChevronDown className="h-4 w-4 animate-bounce text-[#9aa0a6]" />
               ) : (
-                <ChevronUp className="h-4 w-4 text-gray-400 animate-bounce" />
+                <ChevronUp className="h-4 w-4 animate-bounce text-[#9aa0a6]" />
               )}
             </div>
           </div>
         </div>
       )}
-    </div>
+    </ChartCard>
   );
 };
 

@@ -15,7 +15,14 @@ import type { BarShapeProps } from "recharts";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { CustomTooltipProps, DataPoint } from "@/lib/types/chart";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  AXIS_TICK,
+  BAR_RADIUS,
+  CHART_PALETTE,
+  ChartCard,
+  ChartTooltipBox,
+  yAxisTitle,
+} from "@/components/dashboardComponents/chartCard";
 import { ChartColumnBig } from "lucide-react";
 
 interface WeeklyRevenueChartProps {
@@ -23,8 +30,8 @@ interface WeeklyRevenueChartProps {
   peakDay: string;
 }
 
-const BAR_COLOR_DEFAULT = "#60a5fa";
-const BAR_COLOR_PEAK = "#2563eb";
+const BAR_COLOR_DEFAULT = "#8ab4f8";
+const BAR_COLOR_PEAK = CHART_PALETTE.blue;
 
 const CustomTooltip = ({
   active,
@@ -34,21 +41,20 @@ const CustomTooltip = ({
 }: CustomTooltipProps) => {
   if (active && payload?.length) {
     return (
-      <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100">
-        <p className="text-gray-400 text-xs mb-1">{label}</p>
-        <div className="flex items-center justify-between gap-4">
-          {" "}
-          <span className="text-xs text-gray-500 items-left">Revenue</span>
-          <span className="text-xs font-bold text-blue-600">
-            {/* {formatCurrency(payload[0].value as number, currency)} */}
-            {formatCurrencySymbol(
+      <ChartTooltipBox
+        label={label}
+        rows={[
+          {
+            name: "Revenue",
+            color: CHART_PALETTE.blue,
+            value: formatCurrencySymbol(
               payload[0].value as number,
               currency.symbol,
               currency.locale,
-            )}
-          </span>
-        </div>
-      </div>
+            ),
+          },
+        ]}
+      />
     );
   }
   return null;
@@ -63,7 +69,7 @@ const WeeklyRevenueChart = ({ data, peakDay }: WeeklyRevenueChartProps) => {
       <Rectangle
         {...props}
         fill={isPeak ? BAR_COLOR_PEAK : BAR_COLOR_DEFAULT}
-        radius={[4, 4, 0, 0]}
+        radius={BAR_RADIUS}
       />
     );
   };
@@ -76,17 +82,16 @@ const WeeklyRevenueChart = ({ data, peakDay }: WeeklyRevenueChartProps) => {
     formatCompactCurrency(value, currency.symbol, currency.locale);
 
   return (
-    <div className="w-full bg-surface-card rounded-2xl border border-surface-border shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-          <ChartColumnBig size={16} />
-        </div>
-        <ComponentHeader
-          title="Daily Sales Trend"
-          subHeader="  Revenue performance – current week"
-        />
-      </div>
-
+    <ChartCard
+      icon={ChartColumnBig}
+      title="Daily Sales Trend"
+      info={{
+        heading: "Reading this chart",
+        // The darker bar is the week's best day.
+        body: "Revenue taken on each day of the current week. The darker bar is the week's busiest day — it does not follow the date filter at the top of the page.",
+      }}
+      subtitle="Revenue performance – current week"
+    >
       <div className="h-56 md:h-72">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
@@ -99,38 +104,31 @@ const WeeklyRevenueChart = ({ data, peakDay }: WeeklyRevenueChartProps) => {
             }}
             barCategoryGap="15%"
           >
-            <CartesianGrid vertical={false} stroke="#f3f4f6" />
+            <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
             <XAxis
               dataKey="day"
               axisLine={false}
               tickLine={false}
-              tick={{
-                fill: "#9ca3af",
-                fontSize: 12,
-              }}
+              tick={AXIS_TICK}
             />
             <YAxis
               tickFormatter={formatYAxis}
               axisLine={false}
               tickLine={false}
-              tick={{
-                fill: "#9ca3af",
-                fontSize: 12,
-              }}
+              tick={AXIS_TICK}
               domain={[0, domainMax]}
-              width={60}
+              width={80}
+              label={yAxisTitle("Revenue")}
             />
             <Tooltip
               content={<CustomTooltip currency={currency} />}
-              cursor={{
-                fill: "rgba(59,130,246,0.05)",
-              }}
+              cursor={{ fill: CHART_PALETTE.hover }}
             />
             <Bar dataKey="revenue" shape={CustomBar} />
           </BarChart>
         </ResponsiveContainer>
       </div>
-    </div>
+    </ChartCard>
   );
 };
 

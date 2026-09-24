@@ -6,7 +6,11 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  CHART_PALETTE,
+  ChartCard,
+  PillSwitch,
+} from "@/components/dashboardComponents/chartCard";
 import { Grid3x3 } from "lucide-react";
 
 // Types
@@ -316,15 +320,10 @@ const VIEW_OPTIONS: {
   { label: "Current Month", value: "currentMonth" },
 ];
 
-interface LegendProps {
-  scheme: ColorScheme;
-  min: number;
-  max: number;
-}
-const Legend = ({ scheme, min, max }: LegendProps) => (
-  <div className="flex items-center gap-2 text-xs text-gray-400 shrink-0">
+const Legend = ({ scheme }: { scheme: ColorScheme }) => (
+  <div className="flex shrink-0 items-center gap-2 text-[11px] text-[#9aa0a6]">
     <span>Low</span>
-    <div className="flex rounded overflow-hidden h-4 w-24">
+    <div className="flex h-4 w-24 overflow-hidden rounded">
       {Array.from({ length: 12 }).map((_, i) => (
         <div
           key={i}
@@ -383,65 +382,49 @@ export default function Heatmap({
     : 0;
   const currentMonthStats = deriveCurrentMonthStats(data.currentMonth);
 
-  const min = view === "currentWeek" ? currentWeekMin : currentMonthMin;
-  const max = view === "currentWeek" ? currentWeekMax : currentMonthMax;
+  // The icon tile follows the active colour scheme, so the card's own mark
+  // reads as a key to the cells below it.
+  const schemeRgb = scheme.stops[1].join(",");
 
   return (
-    <div className="bg-white w-full">
-      {/* Header */}
-      <div className="flex flex-row items-start justify-between mb-5 gap-3">
-        <div className="flex items-center gap-3">
-          {/* Icon tint follows the active heatmap color scheme. */}
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-            style={{
-              backgroundColor: `rgba(${scheme.stops[1].join(",")}, 0.12)`,
-              color: `rgb(${scheme.stops[1].join(",")})`,
-            }}
-          >
-            <Grid3x3 size={16} />
-          </div>
-          <ComponentHeader
-            title="Sales Activity Heatmap"
-            subHeader="Order counts by day and hour — darker cells = more orders"
-          />
-        </div>
-
-        <Legend scheme={scheme} min={min} max={max} />
-      </div>
-
+    <ChartCard
+      icon={Grid3x3}
+      iconColor={`rgb(${schemeRgb})`}
+      iconBorder={`rgba(${schemeRgb}, 0.25)`}
+      iconBg={`rgba(${schemeRgb}, 0.08)`}
+      title="Sales Activity Heatmap"
+      info={{
+        heading: "Reading this chart",
+        // Shading is relative to this view, not to an absolute count.
+        body: "How many orders were taken in each slot. Shading runs from the quietest slot to the busiest one in the view you are on, so a cell's darkness is relative to that view — switching between week and month rescales it. In the month view, days before the 1st are dimmed and future days are left blank.",
+      }}
+      subtitle="Order counts by day and hour — darker cells = more orders"
+      controls={<Legend scheme={scheme} />}
+    >
       {/* Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-5 gap-3">
-        {/* View toggle — full width on mobile */}
-        <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 w-full sm:w-auto">
-          {VIEW_OPTIONS.map(({ label, value }) => (
-            <button
-              key={value}
-              onClick={() => setView(value)}
-              className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                view === value
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <PillSwitch
+          options={VIEW_OPTIONS}
+          value={view}
+          onChange={setView}
+          label="Heatmap view"
+        />
 
         {/* Color scheme picker */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400">Color:</span>
+          <span className="text-[11px] text-[#9aa0a6]">Color:</span>
           <div className="flex gap-1.5">
             {Object.entries(COLOR_SCHEMES).map(([key, s]) => (
               <button
                 key={key}
                 onClick={() => setSchemeKey(key)}
                 title={s.name}
-                className={`w-6 h-6 rounded-full border-2 transition-all ${
+                aria-label={`${s.name} colour scheme`}
+                aria-pressed={schemeKey === key}
+                className={`h-6 w-6 cursor-pointer rounded-full transition-all ${
                   schemeKey === key
-                    ? "border-gray-400 scale-110"
-                    : "border-transparent"
+                    ? "scale-110 ring-2 ring-[#5f6368] ring-offset-1"
+                    : "hover:scale-105"
                 }`}
                 style={{
                   backgroundColor: `rgb(${s.stops[1].join(",")})`,
@@ -461,7 +444,7 @@ export default function Heatmap({
               {HOURS.map((hour) => (
                 <div
                   key={hour}
-                  className="flex-1 text-center text-xs text-gray-400 font-medium"
+                  className="flex-1 text-center text-[11px] text-[#5f6368]"
                 >
                   <span className="sm:hidden">
                     {hour.replace("am", "").replace("pm", "")}
@@ -475,11 +458,11 @@ export default function Heatmap({
               {DAYS.map((day) => (
                 <div key={day} className="flex items-center mb-1">
                   <div className="w-14 shrink-0 pr-1 leading-tight">
-                    <span className="block text-xs sm:text-sm text-gray-500 font-medium">
+                    <span className="block text-[11px] text-[#5f6368] sm:text-xs">
                       {day}
                     </span>
                     {data.weekDates?.[day] && (
-                      <span className="block text-[10px] text-gray-400">
+                      <span className="block text-[10px] text-[#9aa0a6]">
                         {formatCellDate(data.weekDates[day])}
                       </span>
                     )}
@@ -491,7 +474,7 @@ export default function Heatmap({
                         <Tooltip key={hour}>
                           <TooltipTrigger asChild>
                             <div
-                              className="flex-1 rounded-md sm:rounded-sm flex items-center justify-center text-xs font-bold cursor-default select-none transition-transform hover:scale-105 h-8 sm:h-10"
+                              className="flex h-8 flex-1 cursor-default select-none items-center justify-center rounded-md text-xs font-semibold transition-transform hover:scale-105 sm:h-10 sm:rounded-sm"
                               style={{
                                 backgroundColor: getCellColor(
                                   value,
@@ -537,7 +520,7 @@ export default function Heatmap({
               {DAYS.map((day) => (
                 <div
                   key={day}
-                  className="flex-1 text-center text-xs text-gray-400 font-medium"
+                  className="flex-1 text-center text-[11px] text-[#5f6368]"
                 >
                   <span className="sm:hidden">{day.slice(0, 2)}</span>{" "}
                   {/* Mo, Tu, We... */}
@@ -550,11 +533,11 @@ export default function Heatmap({
               {monthWeeks.map((week) => (
                 <div key={week} className="flex items-center mb-1.5">
                   <div className="w-16 shrink-0 pr-1 leading-tight">
-                    <span className="block text-xs sm:text-sm text-gray-500 font-medium">
+                    <span className="block text-[11px] text-[#5f6368] sm:text-xs">
                       {week}
                     </span>
                     {data.monthName && (
-                      <span className="block text-[10px] text-gray-400">
+                      <span className="block text-[10px] text-[#9aa0a6]">
                         ({data.monthName})
                       </span>
                     )}
@@ -571,9 +554,9 @@ export default function Heatmap({
                         return (
                           <div
                             key={day}
-                            className="flex-1 rounded-md sm:rounded-lg flex flex-col items-center justify-center select-none h-12 sm:h-16 bg-gray-50 border border-dashed border-gray-200"
+                            className="flex h-12 flex-1 select-none flex-col items-center justify-center rounded-md border border-dashed border-[#e8eaed] bg-[#f8f9fa] sm:h-16 sm:rounded-lg"
                           >
-                            <span className="text-[9px] sm:text-[10px] text-gray-300 font-medium">
+                            <span className="text-[9px] text-[#9aa0a6] sm:text-[10px]">
                               {dateLabel}
                             </span>
                           </div>
@@ -587,7 +570,7 @@ export default function Heatmap({
                               className={`flex-1 rounded-md sm:rounded-lg flex flex-col items-center justify-center cursor-default select-none transition-transform hover:scale-105 h-12 sm:h-16 ${
                                 cell.inMonth
                                   ? ""
-                                  : "opacity-70 ring-1 ring-inset ring-gray-300"
+                                  : "opacity-70 ring-1 ring-inset ring-[#dadce0]"
                               }`}
                               style={{
                                 backgroundColor: getCellColor(
@@ -607,7 +590,7 @@ export default function Heatmap({
                               <span className="text-[9px] sm:text-[10px] font-medium opacity-80 leading-none">
                                 {dateLabel}
                               </span>
-                              <span className="text-xs sm:text-sm font-bold leading-tight mt-0.5">
+                              <span className="mt-0.5 text-xs font-semibold leading-tight sm:text-sm">
                                 {cell.count}
                               </span>
                             </div>
@@ -640,7 +623,7 @@ export default function Heatmap({
       </div>
 
       {/* Stats footer */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-4 border-t border-gray-100">
+      <div className="mt-6 grid grid-cols-1 gap-3 border-t border-[#e8eaed] pt-4 sm:grid-cols-3">
         {view === "currentWeek" ? (
           <>
             {[
@@ -660,20 +643,22 @@ export default function Heatmap({
                 label: "Busiest Day",
                 primary: currentWeekStats.busiestDay,
                 secondary: `${currentWeekStats.busiestDayTotal} total orders`,
-                secondaryColor: "#22c55e",
+                secondaryColor: CHART_PALETTE.good,
               },
             ].map(({ label, primary, secondary, secondaryColor }) => (
               <div
                 key={label}
                 className="flex items-center justify-between sm:flex-col sm:items-center border-b sm:border-b-0 pb-3 sm:pb-0 last:border-b-0 last:pb-0"
               >
-                <p className="text-xs text-gray-400 sm:mb-1">{label}</p>
+                <p className="text-[11px] text-[#9aa0a6] sm:mb-1">{label}</p>
                 <div className="text-right sm:text-center">
-                  <p className="text-sm font-bold text-gray-900">{primary}</p>
+                  <p className="text-sm font-semibold text-[#3c4043]">
+                    {primary}
+                  </p>
                   <p
-                    className="text-xs sm:text-sm font-medium"
+                    className="text-xs font-medium sm:text-sm"
                     style={{
-                      color: secondaryColor ?? "#9ca3af",
+                      color: secondaryColor ?? CHART_PALETTE.subtitle,
                     }}
                   >
                     {secondary}
@@ -701,20 +686,22 @@ export default function Heatmap({
                 label: "Busiest Week",
                 primary: currentMonthStats.busiestWeek,
                 secondary: `${currentMonthStats.busiestWeekTotal} total orders`,
-                secondaryColor: "#22c55e",
+                secondaryColor: CHART_PALETTE.good,
               },
             ].map(({ label, primary, secondary, secondaryColor }) => (
               <div
                 key={label}
                 className="flex items-center justify-between sm:flex-col sm:items-center border-b sm:border-b-0 pb-3 sm:pb-0 last:border-b-0 last:pb-0"
               >
-                <p className="text-xs text-gray-400 sm:mb-1">{label}</p>
+                <p className="text-[11px] text-[#9aa0a6] sm:mb-1">{label}</p>
                 <div className="text-right sm:text-center">
-                  <p className="text-sm font-bold text-gray-900">{primary}</p>
+                  <p className="text-sm font-semibold text-[#3c4043]">
+                    {primary}
+                  </p>
                   <p
-                    className="text-xs sm:text-sm font-medium"
+                    className="text-xs font-medium sm:text-sm"
                     style={{
-                      color: secondaryColor ?? "#9ca3af",
+                      color: secondaryColor ?? CHART_PALETTE.subtitle,
                     }}
                   >
                     {secondary}
@@ -725,6 +712,6 @@ export default function Heatmap({
           </>
         )}
       </div>
-    </div>
+    </ChartCard>
   );
 }

@@ -41,6 +41,8 @@ export default function CustomerDetailStats({
     );
   }
 
+  const owesMoney = (customer.totalDueAmount ?? 0) > 0;
+
   const stats: StatSpec[] = [
     {
       key: "loyalty",
@@ -79,8 +81,11 @@ export default function CustomerDetailStats({
           ? money(customer.totalDueAmount)
           : "—",
       icon: CreditCard,
-      iconColor: "text-red-500",
-      bgColor: "bg-red-50",
+      // Red only while something is actually owed — a customer who owes
+      // nothing was reading as a warning.
+      ...(owesMoney
+        ? { iconColor: "text-red-500", bgColor: "bg-red-50" }
+        : { iconColor: "text-emerald-500", bgColor: "bg-emerald-50" }),
     },
   ];
 

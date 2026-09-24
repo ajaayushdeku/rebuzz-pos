@@ -9,7 +9,7 @@ import {
   Lightbulb,
   BellRing,
 } from "lucide-react";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { ChartCard } from "@/components/dashboardComponents/chartCard";
 import { useAiInsightsResult } from "@/components/aiInsights/AiInsightsProvider";
 import AiInsightsErrorState from "@/components/aiInsights/AiInsightsErrorState";
 
@@ -84,10 +84,10 @@ function SectionLabel({
   return (
     <div className="flex items-center gap-2">
       <span className="text-gray-400">{icon}</span>
-      <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-[#5f6368]">
         {children}
       </p>
-      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-500">
+      <span className="rounded-full bg-[#f1f3f4] px-2 py-0.5 text-[10px] font-semibold tabular-nums text-[#5f6368]">
         {count}
       </span>
     </div>
@@ -107,34 +107,42 @@ export default function BusinessInsightsAlerts() {
   const wins = insights.filter((i) => i.type === "success").length;
   const hasContent = insights.length > 0 || alerts.length > 0;
   return (
-    // `flex` is what makes `flex-col gap-5` do anything. Without it the card
-    // was a plain block, the gap never applied, and "What the numbers say"
-    // sat directly against the header.
-    <div className="relative flex flex-col gap-5 bg-white rounded-2xl border-gray-100 shadow-sm hover:shadow-md transition-shadow p-5">
-      {/* Header — title on the left, live severity tally on the right */}
-      <div className="flex items-start justify-between gap-4">
-        <ComponentHeader
-          title="Business Insights & Alerts"
-          subHeader="Auto-generated insights based on today's data"
-        />
-        {status === "success" && hasContent && (
-          <div className="flex items-center gap-1.5 shrink-0">
+    <ChartCard
+      icon={Lightbulb}
+      // Violet, the AI cards' colour: violet-600 / violet-200 / violet-50.
+      iconColor="#7c3aed"
+      iconBorder="#ddd6fe"
+      iconBg="#f5f3ff"
+      title="Business Insights & Alerts"
+      info={{
+        heading: "Reading this card",
+        // Model output, grouped by how urgent it is.
+        body: "What the AI read in today's numbers. The first group is observations, grouped as on track, needs attention or for your info. Action needed lists the things worth doing something about now.",
+      }}
+      subtitle="Auto-generated insights based on today's data"
+      controls={
+        status === "success" && hasContent ? (
+          <>
             {wins > 0 && (
-              <span className="inline-flex items-center gap-1 rounded-full border-green-100 bg-green-50 px-2.5 py-1 text-[11px] font-bold text-green-700">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-green-200 bg-green-50 px-2.5 py-0.5 text-[11px] font-semibold text-green-700">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
                 {wins} going well
               </span>
             )}
             {concerns > 0 && (
-              <span className="inline-flex items-center gap-1 rounded-full border-amber-100 bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-700">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold text-amber-700">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                 {concerns} to check
               </span>
             )}
-          </div>
-        )}
-      </div>
-
+          </>
+        ) : undefined
+      }
+      // `flex` is what makes `flex-col gap-5` do anything. Without it the
+      // card was a plain block, the gap never applied, and "What the numbers
+      // say" sat directly against the header.
+      className="flex flex-col gap-5"
+    >
       {/* Loading */}
       {status === "loading" && (
         <div className="flex flex-col gap-5" aria-busy>
@@ -164,12 +172,12 @@ export default function BusinessInsightsAlerts() {
       {/* Success */}
       {status === "success" &&
         (!hasContent ? (
-          <div className="rounded-xl border-gray-100 bg-gray-50/70 py-8 text-center">
-            <p className="text-sm text-gray-500">
-              No insights for this period yet.
+          <div className="rounded-xl border border-[#e3e3e3] py-12 text-center">
+            <p className="text-sm text-[#3c4043]">
+              No insights for this period yet
             </p>
-            <p className="mt-1 text-xs text-gray-400">
-              They appear once the AI has a full day to read.
+            <p className="mt-1 text-xs text-[#9aa0a6]">
+              They appear once the AI has a full day to read
             </p>
           </div>
         ) : (
@@ -198,7 +206,7 @@ export default function BusinessInsightsAlerts() {
                           >
                             {s.label}
                           </p>
-                          <p className="mt-0.5 text-xs tracking-wide leading-relaxed text-gray-700">
+                          <p className="mt-0.5 text-xs leading-relaxed tracking-wide text-[#5f6368]">
                             {insight.text}
                           </p>
                         </div>
@@ -231,7 +239,7 @@ export default function BusinessInsightsAlerts() {
                           {ALERT_ICONS[card.icon]}
                         </div>
                         <div className="min-w-0">
-                          <p className={`text-xs font-bold ${s.title}`}>
+                          <p className={`text-xs font-semibold ${s.title}`}>
                             {card.title}
                           </p>
                           <p
@@ -248,6 +256,6 @@ export default function BusinessInsightsAlerts() {
             )}
           </div>
         ))}
-    </div>
+    </ChartCard>
   );
 }

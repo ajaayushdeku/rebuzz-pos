@@ -1,12 +1,19 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowUpRight, ArrowDownRight, Minus, TrendingUp } from "lucide-react";
+import {
+  ArrowUpRight,
+  ArrowDownRight,
+  ChevronDown,
+  ChevronUp,
+  Minus,
+  TrendingUp,
+} from "lucide-react";
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatNumber } from "@/utils/helper";
 import { useSalesByCategory } from "@/hooks/useSalesByCategory";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import { ChartCard } from "@/components/dashboardComponents/chartCard";
 
 /** Format a Date as YYYY-MM-DD (local). */
 function toDateStr(d: Date): string {
@@ -126,24 +133,29 @@ export default function GrowthByCategory() {
   };
 
   return (
-    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-          <TrendingUp size={16} />
-        </div>
-        <ComponentHeader
-          title="Growth by Category"
-          subHeader="Revenue growth per product category"
-        />
-
-        {/* The comparison the whole panel rests on. It was only in the code
-            before, so every percentage on screen was against an unstated
-            baseline. */}
-        <span className="ml-auto shrink-0 rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-semibold text-gray-500">
+    <ChartCard
+      icon={TrendingUp}
+      // Emerald, as before: Tailwind's emerald-600 / emerald-200 / 50.
+      iconColor="#059669"
+      iconBorder="#a7f3d0"
+      iconBg="#ecfdf5"
+      title="Growth by Category"
+      info={{
+        heading: "Reading this card",
+        // Bar length is size, the badge is direction.
+        body: "Each category's revenue over the last 30 days, compared with the 30 days before. The bar is the category's size against the biggest one, so the lengths are comparable; the badge beside it is the change. New means it sold nothing last period.",
+      }}
+      subtitle="Revenue growth per product category"
+      controls={
+        // The comparison the whole panel rests on. It was only in the code
+        // before, so every percentage on screen was against an unstated
+        // baseline.
+        <span className="shrink-0 rounded-full border border-[#dadce0] bg-white px-2.5 py-1 text-[11px] text-[#3c4043]">
           Last 30 days vs previous 30
         </span>
-      </div>
-
+      }
+      className="flex flex-col gap-6"
+    >
       {isLoading ? (
         <div className="space-y-4">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -157,16 +169,16 @@ export default function GrowthByCategory() {
           ))}
         </div>
       ) : isError ? (
-        <div className="flex items-center justify-center py-10 text-sm text-gray-400">
+        <div className="flex items-center justify-center py-10 text-sm text-[#9aa0a6]">
           Failed to load category growth
         </div>
       ) : rows.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-10 text-gray-400">
-          <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-2">
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4]">
             <TrendingUp size={24} className="text-gray-500" />
           </div>
-          <p className="text-sm font-medium text-gray-500">No category found</p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-sm text-[#3c4043]">No category found</p>
+          <p className="mt-1 text-xs text-[#9aa0a6]">
             Category growth data will appear here
           </p>
         </div>
@@ -183,10 +195,10 @@ export default function GrowthByCategory() {
                   ? "bg-red-500"
                   : "bg-gray-300";
               const badgeStyle = positive
-                ? "bg-emerald-50 text-emerald-700"
+                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                 : negative
-                  ? "bg-red-50 text-red-600"
-                  : "bg-gray-100 text-gray-500";
+                  ? "border-red-200 bg-red-50 text-red-600"
+                  : "border-[#dadce0] bg-[#f8f9fa] text-[#5f6368]";
               const TrendIcon = positive
                 ? ArrowUpRight
                 : negative
@@ -211,11 +223,11 @@ export default function GrowthByCategory() {
                 >
                   {/* Name and direction */}
                   <div className="flex items-center justify-between gap-3">
-                    <span className="truncate text-[13px] font-semibold text-gray-800">
+                    <span className="truncate text-[13px] font-medium text-[#3c4043]">
                       {row.name}
                     </span>
                     <div
-                      className={`flex shrink-0 items-center gap-0.5 rounded-full px-2 py-0.5 text-[11px] font-semibold tracking-wide tabular-nums ${badgeStyle}`}
+                      className={`flex shrink-0 items-center gap-0.5 rounded-full border px-2 py-0.5 text-[11px] font-semibold tracking-wide tabular-nums ${badgeStyle}`}
                     >
                       <TrendIcon size={12} />
                       <span>{badgeLabel}</span>
@@ -226,20 +238,20 @@ export default function GrowthByCategory() {
                       computed but never rendered before, which left a bar with
                       no number to anchor it. */}
                   <div className="mt-2 flex items-center gap-3">
-                    <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-gray-100">
+                    <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-[#f1f3f4]">
                       <div
                         className={`h-full rounded-full transition-all duration-700 ${barColor}`}
                         style={{ width: `${share}%` }}
                       />
                     </div>
-                    <span className="w-24 shrink-0 text-right text-[12px] font-semibold tabular-nums text-gray-800 tracking-wide">
+                    <span className="w-24 shrink-0 text-right text-[12px] font-semibold tracking-wide tabular-nums text-[#3c4043]">
                       {fmt(row.current)}
                     </span>
                   </div>
 
                   {/* What it is being compared against — a percentage with no
                       baseline on screen is a number nobody can check. */}
-                  <p className="mt-1 text-[11px] tabular-nums tracking-wide text-gray-400">
+                  <p className="mt-1 text-[11px] tracking-wide tabular-nums text-[#9aa0a6]">
                     {row.previous > 0
                       ? `from ${fmt(row.previous)} last period`
                       : "nothing sold last period"}
@@ -251,41 +263,18 @@ export default function GrowthByCategory() {
           {loadMoreCategory < rows.length ? (
             <button
               onClick={handleLoadMore}
-              className="mt-5 mx-auto flex items-center justify-center gap-1.5 text-xs font-semibold text-gray-500  hover:bg-gray-100 hover:text-gray-700 border border-gray-200 hover:border-gray-300 py-1.5 px-3 rounded-xl transition-all duration-200 active:scale-[0.98]"
+              className="mx-auto mt-5 flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
             >
-              <svg
-                className="w-3.5 h-3.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-              Load More ({rows.length - loadMoreCategory})
+              <ChevronDown size={12} />
+              Show {rows.length - loadMoreCategory} more
             </button>
           ) : (
             <button
               onClick={() => setLoadMoreCategory(4)}
-              className="mt-5 mx-auto flex items-center justify-center gap-1.5 text-xs font-semibold text-gray-400 bg-white-50 hover:bg-gray-100 hover:text-gray-600 border border-gray-200 hover:border-gray-300 py-1.5 px-3 rounded-xl transition-all duration-200 active:scale-[0.98]"
+              // Negative colour, as the employee grid's Hide uses.
+              className="mx-auto mt-5 flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11px] text-rose-700 transition-colors hover:bg-rose-100"
             >
-              <svg
-                className="w-3.5 h-3.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M5 15l7-7 7 7"
-                />
-              </svg>
+              <ChevronUp size={12} />
               Hide
             </button>
           )}
@@ -311,6 +300,6 @@ export default function GrowthByCategory() {
           overflow: hidden;
         }
       `}</style>
-    </div>
+    </ChartCard>
   );
 }

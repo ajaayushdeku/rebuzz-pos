@@ -4,7 +4,10 @@ import { Star, ShoppingBag, DollarSign, Pencil } from "lucide-react";
 import type { Customer } from "@/lib/types/customer";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  CardInfo,
+  CHART_PALETTE,
+} from "@/components/dashboardComponents/chartCard";
 import DetailRow from "./DetailRow";
 import { DETAIL_CARD, CardHeader } from "./DetailCardShell";
 import { NO_TIER_STYLE } from "./customerDetailHelpers";
@@ -72,43 +75,77 @@ export default function LoyaltyCard({
         action={
           <button
             onClick={onEdit}
-            className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-orange-50 hover:text-orange-500"
             title="Edit loyalty points"
+            className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
           >
-            <Pencil size={14} />
+            <Pencil size={11} />
+            Edit
           </button>
         }
       >
-        <ComponentHeader
-          title="Loyalty Program"
-          subHeader="Customer's loyalty points, due amount and total spending"
-        />
+        <div className="min-w-0">
+          <h3
+            className="flex items-center gap-1.5 text-[15px] font-normal"
+            style={{ color: CHART_PALETTE.title }}
+          >
+            Loyalty Program
+            <CardInfo
+              heading="Reading this card"
+              label="Loyalty Program"
+              // Points and the tier they buy, plus what the customer owes.
+              body="The tier this customer has reached and the points behind it — the tier ladder itself is set in loyalty settings. Purchases and spending are all-time. A due amount is money still owed on past orders."
+            />
+          </h3>
+          <p
+            className="mt-0.5 text-xs tracking-wide"
+            style={{ color: CHART_PALETTE.subtitle }}
+          >
+            Customer&lsquo;s loyalty points, due amount and total spending
+          </p>
+        </div>
       </CardHeader>
 
       {/* Tier & points */}
-      <div className="mb-4 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100/50 p-4">
+      <div className="mb-4 rounded-xl  bg-gray-50 px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <span
-              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold ${tierClass}`}
+              className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold ${tierClass}`}
             >
               {loyaltyStatus}
             </span>
             <div className="min-w-0">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
-                Loyalty Points
+              <p
+                className="text-[11px] uppercase tracking-wide"
+                style={{ color: CHART_PALETTE.subtitle }}
+              >
+                Loyalty points
               </p>
-              <p className="truncate text-2xl font-bold tabular-nums text-gray-900">
+              <p
+                className="truncate text-[22px] font-semibold tracking-tight tabular-nums"
+                style={{ color: CHART_PALETTE.title }}
+              >
                 {formatAmount(customer.loyaltyPoint ?? 0, currency.locale)}{" "}
-                <span className=" text-[11px] text-gray-400">pts</span>
+                <span
+                  className="text-[11px] font-normal"
+                  style={{ color: CHART_PALETTE.subtitle }}
+                >
+                  pts
+                </span>
               </p>
             </div>
           </div>
           <div className="shrink-0 text-right">
-            <p className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
+            <p
+              className="text-[11px] uppercase tracking-wide"
+              style={{ color: CHART_PALETTE.subtitle }}
+            >
               Purchases
             </p>
-            <p className="text-lg font-bold tabular-nums text-gray-900">
+            <p
+              className="text-lg font-semibold tabular-nums"
+              style={{ color: CHART_PALETTE.title }}
+            >
               {(customer.numberOfPurchases ?? 0).toLocaleString()}
             </p>
           </div>

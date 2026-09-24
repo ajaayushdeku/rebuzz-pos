@@ -11,10 +11,12 @@ export const ComponentHeader = ({
 }) => {
   return (
     <div>
-      <h2 className={`text-sm font-semibold tracking-[0.5px] ${titleColor}`}>
+      <h2
+        className={`text-[15px] font-semibold tracking-[0.5px] ${titleColor}`}
+      >
         {title}
       </h2>
-      <p className="text-[11px] text-gray-400 mt-0.5  tracking-[0.5px] ">
+      <p className="text-xs text-gray-400 mt-0.5  tracking-[0.5px] ">
         {subHeader}
       </p>
     </div>

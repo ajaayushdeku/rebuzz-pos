@@ -85,19 +85,21 @@ const OverviewStatBox = ({
     >
       {/* Label + icon */}
       <div className="flex items-center justify-between gap-2">
-        <span className="truncate text-xs font-medium text-gray-500 md:text-[13px]">
+        <span className="truncate text-xs text-gray-500 md:text-[13px]">
           {label}
         </span>
+        {/* The tile carries the icon's colour, so `border-current/20` frames
+            it in the same hue — the idiom the other stat tiles use. */}
         <div
-          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg md:h-8 md:w-8 ${iconBg}`}
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-current/20 md:h-8 md:w-8 ${iconBg} ${iconColor}`}
         >
-          <Icon size={15} className={iconColor} />
+          <Icon size={15} />
         </div>
       </div>
 
       {/* Value */}
       <div className="mt-3 flex items-baseline justify-between gap-2 md:mt-4">
-        <p className="truncate text-xl font-bold tracking-wide text-gray-900 tabular-nums md:text-[22px] font-sans">
+        <p className="truncate font-sans text-xl font-semibold tracking-tight text-gray-900 tabular-nums md:text-[22px]">
           {formattedValue}
         </p>
         <RangeTag />

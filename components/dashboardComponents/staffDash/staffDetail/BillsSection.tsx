@@ -15,12 +15,12 @@ import { nepalStamp, timeAgo } from "@/lib/nepalDate";
 import { useRouter } from "next/navigation";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import {
-  statusStyles,
   normalizePaymentMethod,
   paymentMethodStyle,
 } from "@/lib/config/transaction";
 import { CardInfo, CHART_PALETTE } from "../../chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
+import StatusPill from "@/components/ui/StatusPill";
 import SegmentedControl, {
   toSegmentOptions,
 } from "@/components/ui/SegmentedControl";
@@ -447,9 +447,6 @@ export default function BillsSection({
               {displayBills.map((bill, idx) => {
                 // Read as Nepal time on every machine; see nepalStamp.
                 const stamp = nepalStamp(bill.paidAt);
-                const s =
-                  statusStyles[bill.isRefunded ? "refunded" : "completed"] ??
-                  statusStyles["completed"];
                 // Normalise before indexing — the raw value is inconsistently
                 // cased ("cash", "Qr Payment"), which missed the lookup and
                 // fell back to grey. The key is also the display label.
@@ -518,11 +515,9 @@ export default function BillsSection({
                     </td>
 
                     <td className="py-3 px-4 text-center">
-                      <span
-                        className={`${s.badge} ${s.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
-                      >
-                        {bill.isRefunded ? "Refunded" : "Completed"}
-                      </span>
+                      <StatusPill
+                        label={bill.isRefunded ? "Refunded" : "Completed"}
+                      />
                     </td>
                   </tr>
                 );

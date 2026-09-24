@@ -18,9 +18,20 @@ import SampleDataBadge from "@/components/ui/sampledatabadge";
 import { CustomTooltipProps } from "@/lib/types/chart";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  AXIS_TICK,
+  CHART_PALETTE,
+  ChartCard,
+  ChartLegend,
+  ChartTooltipBox,
+  yAxisTitle,
+} from "@/components/dashboardComponents/chartCard";
 import { fetchTargets } from "@/services/apiTarget.client";
-import { Target } from "lucide-react";
+import { SquarePen, Target } from "lucide-react";
+
+/** The two series' colours, shared by the chart, legend and hover box. */
+const ACTUAL_COLOR = CHART_PALETTE.blue;
+const TARGET_COLOR = CHART_PALETTE.subtitle;
 
 export interface TargetActualData {
   month: string;
@@ -66,67 +77,46 @@ const CustomTooltip = ({
       : null;
 
   return (
-    <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100 min-w-40">
-      <p className="text-gray-400 text-xs mb-2 font-medium">{label}</p>
-      {payload.map((entry, idx) => (
-        <div
-          key={`${entry.name ?? "tip"}-${idx}`}
-          className="flex items-center justify-between gap-4"
-        >
-          <div className="flex items-center gap-1.5">
+    <ChartTooltipBox
+      label={label}
+      rows={payload.map((entry) => ({
+        name: String(entry.name ?? ""),
+        color: (entry.color as string) ?? ACTUAL_COLOR,
+        value: formatCurrencySymbol(
+          entry.value as number,
+          currency.symbol,
+          currency.locale,
+        ),
+      }))}
+      footer={
+        variance !== null ? (
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-xs" style={{ color: CHART_PALETTE.axis }}>
+              Variance
+            </span>
             <span
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{ backgroundColor: entry.color as string }}
-            />
-            <span className="text-xs text-gray-600">{entry.name}</span>
+              className="text-xs font-medium tabular-nums"
+              style={{
+                color: variance >= 0 ? CHART_PALETTE.good : CHART_PALETTE.bad,
+              }}
+            >
+              {variance >= 0 ? "+" : ""}
+              {formatCurrencySymbol(variance, currency.symbol, currency.locale)}
+            </span>
           </div>
-          <span className="text-xs font-bold text-gray-800">
-            {/* {formatCurrency(entry.value as number, currency)} */}
-            {formatCurrencySymbol(
-              entry.value as number,
-              currency.symbol,
-              currency.locale,
-            )}
-          </span>
-        </div>
-      ))}
-      {variance !== null && (
-        <div className="border-t border-gray-100 mt-2 pt-2 flex justify-between">
-          <span className="text-xs text-gray-400">Variance</span>
-          <span
-            className={`text-xs font-bold ${variance >= 0 ? "text-green-500" : "text-red-400"}`}
-          >
-            {variance >= 0 ? "+" : ""}
-            {/* {formatCurrency(variance, currency)} */}
-            {formatCurrencySymbol(variance, currency.symbol, currency.locale)}
-          </span>
-        </div>
-      )}
-    </div>
+        ) : undefined
+      }
+    />
   );
 };
 
 const CustomLegend = () => (
-  <div className="flex items-center justify-center gap-6 mt-2">
-    <div className="flex items-center gap-1.5">
-      <span className="w-2 h-2 rounded-full bg-blue-400" />
-      <span className="text-xs font-semibold text-blue-500">Actual</span>
-    </div>
-    <div className="flex items-center gap-2">
-      <svg width="20" height="8">
-        <line
-          x1="0"
-          y1="4"
-          x2="20"
-          y2="4"
-          stroke="#9ca3af"
-          strokeWidth="2"
-          strokeDasharray="4 3"
-        />
-      </svg>
-      <span className="text-xs font-semibold text-gray-400">Target</span>
-    </div>
-  </div>
+  <ChartLegend
+    items={[
+      { label: "Actual", color: ACTUAL_COLOR, shape: "dot" },
+      { label: "Target", color: TARGET_COLOR, shape: "dashed" },
+    ]}
+  />
 );
 
 // ── Skeleton ──────────────────────────────────────────────────────────────
@@ -185,39 +175,26 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
 
   return (
     <>
-      <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5  w-full">
-        {isEmpty && <SampleDataBadge />}
-
-        {/* Header */}
-        <div className="flex items-start justify-between mb-6">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-              <Target size={16} />
-            </div>
-            <ComponentHeader
-              title="Target vs Actual Revenue"
-              subHeader="Monthly performance against set targets"
-            />
-          </div>
-
+      <ChartCard
+        icon={Target}
+        title="Target vs Actual Revenue"
+        info={{
+          heading: "Reading this chart",
+          // Targets are entered here, actuals come from paid bills.
+          body: "Each month's revenue against the target you set for it. The filled line is what you took, the dashed line is the target — a month with no target set reads as zero. Use Set Targets to enter them.",
+        }}
+        subtitle="Monthly performance against set targets"
+        controls={
           <button
             onClick={() => setModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-xl hover:bg-blue-50 transition-colors shrink-0"
+            className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
           >
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-            </svg>
+            <SquarePen size={11} />
             Set Targets
           </button>
-        </div>
+        }
+      >
+        {isEmpty && <SampleDataBadge />}
 
         <ResponsiveContainer width="100%" height={300}>
           <ComposedChart
@@ -226,42 +203,50 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
           >
             <defs>
               <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#60a5fa" stopOpacity={0.2} />
-                <stop offset="100%" stopColor="#60a5fa" stopOpacity={0.02} />
+                <stop offset="0%" stopColor={ACTUAL_COLOR} stopOpacity={0.2} />
+                <stop
+                  offset="100%"
+                  stopColor={ACTUAL_COLOR}
+                  stopOpacity={0.02}
+                />
               </linearGradient>
             </defs>
 
-            <CartesianGrid vertical={false} stroke="#f3f4f6" />
+            <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
             <XAxis
               dataKey="month"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 12 }}
+              tick={AXIS_TICK}
               dy={8}
             />
             <YAxis
               tickFormatter={formatYAxis}
               axisLine={false}
               tickLine={false}
-              tick={{ fill: "#9ca3af", fontSize: 12 }}
+              tick={AXIS_TICK}
               ticks={yTicks}
               domain={[0, yMax]}
-              width={50}
+              width={80}
+              label={yAxisTitle("Revenue")}
             />
-            <Tooltip content={<CustomTooltip currency={currency} />} />
+            <Tooltip
+              content={<CustomTooltip currency={currency} />}
+              cursor={{ stroke: CHART_PALETTE.control, strokeWidth: 1 }}
+            />
             <Legend content={<CustomLegend />} />
 
             <Area
               type="monotone"
               dataKey="actual"
               name="Actual"
-              stroke="#60a5fa"
+              stroke={ACTUAL_COLOR}
               strokeWidth={2.5}
               fill="url(#actualGradient)"
-              dot={{ r: 4, fill: "#60a5fa", stroke: "#fff", strokeWidth: 2 }}
+              dot={{ r: 4, fill: ACTUAL_COLOR, stroke: "#fff", strokeWidth: 2 }}
               activeDot={{
                 r: 6,
-                fill: "#60a5fa",
+                fill: ACTUAL_COLOR,
                 stroke: "#fff",
                 strokeWidth: 2,
               }}
@@ -270,20 +255,20 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
               type="monotone"
               dataKey="target"
               name="Target"
-              stroke="#9ca3af"
+              stroke={TARGET_COLOR}
               strokeWidth={2}
               strokeDasharray="6 4"
               dot={false}
               activeDot={{
                 r: 4,
-                fill: "#9ca3af",
+                fill: TARGET_COLOR,
                 stroke: "#fff",
                 strokeWidth: 2,
               }}
             />
           </ComposedChart>
         </ResponsiveContainer>
-      </div>
+      </ChartCard>
 
       <SetTargetsModal
         isOpen={modalOpen}

@@ -9,15 +9,16 @@ import {
   normalizePaymentMethod,
   paymentMethodStyle,
 } from "@/lib/config/transaction";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  CardInfo,
+  CHART_PALETTE,
+} from "@/components/dashboardComponents/chartCard";
+import StatusPill from "@/components/ui/StatusPill";
 import { OrderHistoryTableSkeleton } from "@/components/customer/CustomerDetailSkeletons";
 import TablePagination from "@/components/ui/TablePagination";
 import { DETAIL_CARD, CardHeader } from "./DetailCardShell";
 import { nepalStamp, timeAgo } from "@/lib/nepalDate";
-import {
-  ORDER_STATUS_STYLE,
-  type PurchaseHistoryItem,
-} from "./customerDetailHelpers";
+import { type PurchaseHistoryItem } from "./customerDetailHelpers";
 
 const PAGE_SIZE = 5;
 
@@ -46,57 +47,73 @@ export default function OrderHistorySection({
         iconColor="text-purple-500"
         iconBg="bg-purple-50"
         action={
-          <span className="shrink-0 text-xs font-medium tabular-nums text-gray-400">
+          <span className="shrink-0 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] tabular-nums text-[#3c4043]">
             {history.length} {history.length === 1 ? "order" : "orders"}
           </span>
         }
       >
-        <ComponentHeader
-          title="Order History"
-          subHeader="Customer's Order/Transaction History"
-        />
+        <div className="min-w-0">
+          <h3
+            className="flex items-center gap-1.5 text-[15px] font-normal"
+            style={{ color: CHART_PALETTE.title }}
+          >
+            Order History
+            <CardInfo
+              heading="Reading this table"
+              label="Order History"
+              // Rows open the invoice; times are Nepal time.
+              body="Every order this customer has paid for, newest page first. Times are Nepal time, with the 12-hour reading beside them. Click a row to open its invoice."
+            />
+          </h3>
+          <p
+            className="mt-0.5 text-xs tracking-wide"
+            style={{ color: CHART_PALETTE.subtitle }}
+          >
+            All orders placed by this customer
+          </p>
+        </div>
       </CardHeader>
 
       {loading ? (
         <OrderHistoryTableSkeleton />
       ) : history.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-8 text-center">
-          <div className="mb-2 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4]">
             <ShoppingBag size={24} className="text-gray-500" />
           </div>
-          <p className="text-sm font-medium text-gray-500">
-            No order history data available
+          <p className="text-sm text-[#3c4043]">No orders yet</p>
+          <p className="mt-1 text-xs text-[#9aa0a6]">
+            This customer&apos;s orders will appear here
           </p>
-          <p className="mt-1 text-xs text-gray-400">No order history found</p>
         </div>
       ) : (
         <>
           <div className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <table className="w-full min-w-[850px] text-sm">
               <thead>
-                <tr className="border-b border-gray-100 text-xs text-gray-400">
-                  <th className="w-10 px-3 pb-3 pt-3 text-left font-medium">
+                <tr className="border-b border-[#e8eaed] text-[11px] text-[#5f6368]">
+                  <th className="w-10 px-3 pb-2.5 pt-1 text-left font-normal">
                     #
                   </th>
-                  <th className="px-3 pb-3 pt-3 text-left font-medium">
+                  <th className="px-3 pb-2.5 pt-1 text-left font-normal">
                     Order ID
                   </th>
-                  <th className="px-3 pb-3 pt-3 text-left font-medium">
+                  <th className="px-3 pb-2.5 pt-1 text-left font-normal">
                     Date / Time
                   </th>
-                  <th className="px-3 pb-3 pt-3 text-left font-medium">
+                  <th className="px-3 pb-2.5 pt-1 text-left font-normal">
                     Invoice Name
                   </th>
-                  <th className="px-3 pb-3 pt-3 text-left font-medium">
+                  <th className="px-3 pb-2.5 pt-1 text-left font-normal">
                     Customer
                   </th>
-                  <th className="px-3 pb-3 pt-3 text-center font-medium">
+                  <th className="px-3 pb-2.5 pt-1 text-center font-normal">
                     Payment
                   </th>
-                  <th className="px-3 pb-3 pt-3 text-right font-medium">
+                  <th className="px-3 pb-2.5 pt-1 text-right font-normal">
                     Total
                   </th>
-                  <th className="px-3 pb-3 pt-3 text-center font-medium">
+                  <th className="px-3 pb-2.5 pt-1 text-center font-normal">
                     Status
                   </th>
                 </tr>
@@ -111,13 +128,8 @@ export default function OrderHistorySection({
                     purchase.paidAt ?? purchase.createdAt,
                   );
 
-                  const isRefunded = !!purchase.isRefunded;
-                  const statusKey: "completed" | "refunded" = isRefunded
-                    ? "refunded"
-                    : "completed";
-                  const orderStatusStyle =
-                    ORDER_STATUS_STYLE[statusKey] ??
-                    "bg-gray-50 text-gray-600 border-gray-200";
+                  const statusKey: "completed" | "refunded" =
+                    purchase.isRefunded ? "refunded" : "completed";
 
                   // Normalise rather than cast — the raw value is
                   // inconsistently cased, so a cast asserts a shape the data
@@ -134,9 +146,9 @@ export default function OrderHistorySection({
                         purchase.invoiceNo &&
                         router.push(`/invoices/${purchase.invoiceNo}`)
                       }
-                      className="cursor-pointer border-b border-gray-50 transition-colors last:border-0 hover:bg-gray-50/50"
+                      className="cursor-pointer border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa]"
                     >
-                      <td className="px-3 py-3 text-xs tabular-nums text-gray-400">
+                      <td className="px-3 py-3 text-xs tabular-nums text-[#9aa0a6]">
                         {safePage * PAGE_SIZE + idx + 1}
                       </td>
                       <td className="px-3 py-3">
@@ -146,7 +158,7 @@ export default function OrderHistorySection({
                             : (purchase.orderId ?? "—")}
                         </span>
                         {stamp && (
-                          <span className="text-[11px] text-gray-400">
+                          <span className="text-[11px] text-[#9aa0a6]">
                             {timeAgo(stamp.instant)}
                           </span>
                         )}
@@ -163,7 +175,7 @@ export default function OrderHistorySection({
                                 {"  "}[ {stamp.time12} ]
                               </span>
                             </span>
-                            <span className="text-[11px] tabular-nums text-gray-400">
+                            <span className="text-[11px] tabular-nums text-[#9aa0a6]">
                               {stamp.date}
                             </span>
                           </div>
@@ -171,10 +183,10 @@ export default function OrderHistorySection({
                           <span className="text-gray-400">—</span>
                         )}
                       </td>
-                      <td className="px-3 py-3 text-xs text-gray-600">
+                      <td className="px-3 py-3 text-xs text-[#5f6368]">
                         {purchase.ticketName || "—"}
                       </td>
-                      <td className="px-3 py-3 text-xs text-gray-600">
+                      <td className="px-3 py-3 text-xs text-[#5f6368]">
                         {customerName || "—"}
                       </td>
                       <td className="px-3 py-3 text-center">
@@ -192,11 +204,7 @@ export default function OrderHistorySection({
                         )}
                       </td>
                       <td className="px-3 py-3 text-center">
-                        <span
-                          className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${orderStatusStyle}`}
-                        >
-                          {statusKey}
-                        </span>
+                        <StatusPill label={statusKey} />
                       </td>
                     </tr>
                   );

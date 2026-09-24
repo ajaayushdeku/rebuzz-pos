@@ -18,8 +18,20 @@ import { CustomTooltipProps } from "@/lib/types/chart";
 import { mockYearOverYearData } from "@/lib/mockData/mock-growthtrackerdata";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
-import { ComponentHeader } from "@/components/ComponentHeader";
+import {
+  AXIS_TICK,
+  BAR_RADIUS,
+  CHART_PALETTE,
+  ChartCard,
+  ChartLegend,
+  ChartTooltipBox,
+  yAxisTitle,
+} from "@/components/dashboardComponents/chartCard";
 import { ChartColumnBig } from "lucide-react";
+
+/** The two years' colours, shared by the bars, legend and hover box. */
+const LAST_YEAR_COLOR = CHART_PALETTE.control;
+const THIS_YEAR_COLOR = CHART_PALETTE.blue;
 // Types
 
 export interface YoYData {
@@ -42,39 +54,20 @@ const getYAxisTicks = (data: YoYData[]): number[] => {
 // Sub-components
 
 const LastYearBar = (props: BarShapeProps) => (
-  <Rectangle {...props} radius={[4, 4, 0, 0]} fill="#e2e8f0" />
+  <Rectangle {...props} radius={BAR_RADIUS} fill={LAST_YEAR_COLOR} />
 );
 
 const ThisYearBar = (props: BarShapeProps) => (
-  <Rectangle {...props} radius={[4, 4, 0, 0]} fill="#60a5fa" />
+  <Rectangle {...props} radius={BAR_RADIUS} fill={THIS_YEAR_COLOR} />
 );
 
 const CustomLegend = () => (
-  <div className="flex items-center justify-center gap-6 mt-2">
-    {[
-      {
-        label: "Last Year",
-        color: "#e2e8f0",
-        textColor: "#9ca3af",
-      },
-      {
-        label: "This Year",
-        color: "#60a5fa",
-        textColor: "#60a5fa",
-      },
-    ].map(({ label, color, textColor }) => (
-      <div key={label} className="flex items-center gap-1.5">
-        <span
-          className="w-3 h-3 rounded-sm shrink-0"
-          style={{ backgroundColor: color }}
-        />
-
-        <span className="text-xs font-semibold" style={{ color: textColor }}>
-          {label}
-        </span>
-      </div>
-    ))}
-  </div>
+  <ChartLegend
+    items={[
+      { label: "Last Year", color: LAST_YEAR_COLOR, shape: "square" },
+      { label: "This Year", color: THIS_YEAR_COLOR, shape: "square" },
+    ]}
+  />
 );
 
 const CustomTooltip = ({
@@ -109,49 +102,37 @@ const CustomTooltip = ({
   }
 
   return (
-    <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100 min-w-40">
-      <p className="text-gray-400 text-xs mb-2 font-medium">{label}</p>
-
-      {payload.map((entry, idx) => (
-        <div
-          key={`${entry.name ?? "tooltip"}-${idx}`}
-          className="flex items-center justify-between gap-4"
-        >
-          <div className="flex items-center gap-1.5">
+    <ChartTooltipBox
+      label={label}
+      rows={payload.map((entry) => ({
+        name: String(entry.name ?? ""),
+        color: (entry.color as string) ?? THIS_YEAR_COLOR,
+        value: formatCurrencySymbol(
+          entry.value as number,
+          currency.symbol,
+          currency.locale,
+        ),
+      }))}
+      footer={
+        growth !== null ? (
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-xs" style={{ color: CHART_PALETTE.axis }}>
+              YoY Growth
+            </span>
             <span
-              className="w-2 h-2 rounded-full shrink-0"
+              className="text-xs font-medium tabular-nums"
               style={{
-                backgroundColor: entry.color as string,
+                color:
+                  Number(growth) >= 0 ? CHART_PALETTE.good : CHART_PALETTE.bad,
               }}
-            />
-
-            <span className="text-xs text-gray-600">{entry.name}</span>
+            >
+              {Number(growth) >= 0 ? "+" : ""}
+              {growth}%
+            </span>
           </div>
-
-          <span className="text-xs font-bold text-gray-800">
-            {/* {formatCurrency(entry.value as number, currency)} */}
-            {formatCurrencySymbol(
-              entry.value as number,
-              currency.symbol,
-              currency.locale,
-            )}
-          </span>
-        </div>
-      ))}
-
-      {growth !== null && (
-        <div className="border-t border-gray-100 mt-2 pt-2 flex justify-between">
-          <span className="text-xs text-gray-400">YoY Growth</span>
-
-          <span
-            className={`text-xs font-bold ${Number(growth) >= 0 ? "text-green-500" : "text-red-400"}`}
-          >
-            {Number(growth) >= 0 ? "+" : ""}
-            {growth}%
-          </span>
-        </div>
-      )}
-    </div>
+        ) : undefined
+      }
+    />
   );
 };
 
@@ -172,19 +153,17 @@ export default function YearOverYearChart({ data }: YearOverYearProps) {
   const yMax = yTicks[yTicks.length - 1] * 1.05;
 
   return (
-    <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm  p-5 w-full">
+    <ChartCard
+      icon={ChartColumnBig}
+      title="Year-over-Year Revenue"
+      info={{
+        heading: "Reading this chart",
+        // Same month, two years, side by side.
+        body: "Each month's revenue this year beside the same month last year. Hover a month for both figures and the growth between them. A month last year with no sales counts as +100% growth rather than an impossible percentage.",
+      }}
+      subtitle="This year vs last year — monthly comparison"
+    >
       {isEmpty && <SampleDataBadge />}
-
-      {/* Header */}
-      <div className="mb-2 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-          <ChartColumnBig size={16} />
-        </div>
-        <ComponentHeader
-          title=" Year-over-Year Revenue"
-          subHeader="This year vs last year — monthly comparison"
-        />
-      </div>
 
       <ResponsiveContainer width="100%" height={300}>
         <BarChart
@@ -198,16 +177,13 @@ export default function YearOverYearChart({ data }: YearOverYearProps) {
           barCategoryGap="25%"
           barGap={3}
         >
-          <CartesianGrid vertical={false} stroke="#f3f4f6" />
+          <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
 
           <XAxis
             dataKey="month"
             axisLine={false}
             tickLine={false}
-            tick={{
-              fill: "#9ca3af",
-              fontSize: 12,
-            }}
+            tick={AXIS_TICK}
             dy={8}
           />
 
@@ -215,18 +191,16 @@ export default function YearOverYearChart({ data }: YearOverYearProps) {
             tickFormatter={formatYAxis}
             axisLine={false}
             tickLine={false}
-            tick={{
-              fill: "#9ca3af",
-              fontSize: 12,
-            }}
+            tick={AXIS_TICK}
             ticks={yTicks}
             domain={[0, yMax]}
-            width={50}
+            width={80}
+            label={yAxisTitle("Revenue")}
           />
 
           <Tooltip
             content={<CustomTooltip currency={currency} />}
-            cursor={{ fill: "rgba(0,0,0,0.03)" }}
+            cursor={{ fill: CHART_PALETTE.hover }}
           />
 
           <Legend content={<CustomLegend />} />
@@ -236,6 +210,6 @@ export default function YearOverYearChart({ data }: YearOverYearProps) {
           <Bar dataKey="thisYear" name="This Year" shape={ThisYearBar} />
         </BarChart>
       </ResponsiveContainer>
-    </div>
+    </ChartCard>
   );
 }

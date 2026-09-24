@@ -254,8 +254,8 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={displayData}
-              margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
-              barCategoryGap="30%"
+              margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+              barCategoryGap="20%"
             >
               <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
               <XAxis
