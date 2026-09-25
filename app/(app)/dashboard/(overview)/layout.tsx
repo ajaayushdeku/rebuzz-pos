@@ -33,13 +33,13 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       {/* ── Header ── */}
-      <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
-        <div>
-          <h1 className="font-bold text-xl md:text-2xl truncate">
+      <div className="flex w-full flex-col justify-between gap-4 pb-5 sm:flex-row sm:items-end">
+        <div className="min-w-0">
+          <h1 className="truncate text-[22px] font-semibold tracking-[1px] text-[#3c4043] md:text-[26px]">
             Dashboard Overview
           </h1>
           {!isLoading && (
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-[#5f6368]">
               Welcome back, {profile?.name}. Here&lsquo;s what&lsquo;s happening
               with Rebuzz POS
             </p>
@@ -55,6 +55,11 @@ export default function DashboardLayout({
           />
         </div>
       </div>
+
+      <div
+        aria-hidden
+        className="h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent"
+      />
 
       {/* ── Tabs + Calendar — single row on all screen sizes ── */}
       <div className="flex items-center justify-between gap-2 pt-4">

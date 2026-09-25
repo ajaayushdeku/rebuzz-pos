@@ -17,36 +17,27 @@ export default function Page() {
 
   const { tier } = parseSubscription(subscriptionType);
 
-  /**
-   * The limit only applies while we know the plan is Free.
-   *
-   * `planLoading` is checked because the hook returns null until the profile
-   * lands, and null parses as Free — without this the page would flash a limit
-   * warning at a paying business on every load.
-   */
   const isFree = !planLoading && tier === "free";
 
-  // Base products only. Variants belong to a product rather than being
-  // products, so `products.length` is already the right count.
   const used = products.length;
   const remaining = Math.max(0, FREE_PRODUCT_LIMIT - used);
   const atLimit = isFree && used >= FREE_PRODUCT_LIMIT;
-  // Warn before the wall, not at it: finding out at product 20 that there is
-  // no 21st is worse than knowing at 15.
+
   const nearLimit = isFree && !atLimit && remaining <= 5;
 
   return (
-    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       <div className="w-full mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2 pb-4 border-b border-gray-200">
-          <div>
-            <h1 className="font-bold text-xl md:text-2xl truncate">Products</h1>
-            <p className="text-xs text-gray-400 mt-0.5">
+        <div className="flex flex-col justify-between gap-4 pb-5 sm:flex-row sm:items-end">
+          <div className="min-w-0">
+            <h1 className="truncate text-[22px] font-semibold tracking-[1px] text-[#3c4043] md:text-[26px]">
+              Products
+            </h1>
+            <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-[#5f6368]">
               Manage your product inventory
             </p>
           </div>
-          {/* Still clickable at the limit: the modal explains why nothing can
-              be added, which a disabled button never could. */}
+
           <HeaderActionButton
             variant="dashed"
             icon={PackagePlus}
@@ -56,8 +47,11 @@ export default function Page() {
           />
         </div>
 
-        {/* The plan's ceiling, where it can be seen before it is hit rather
-            than only in the dialog that refuses the click. */}
+        <div
+          aria-hidden
+          className="mb-6 h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent"
+        />
+
         {isFree && !isLoading && (atLimit || nearLimit) && (
           <div
             role={atLimit ? "alert" : undefined}

@@ -75,8 +75,8 @@ export default function Page() {
   };
 
   return (
-    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
-      <div className="w-full mx-auto space-y-8">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+      <div className="w-full mx-auto ">
         <InvoiceHeader />
 
         {/* Loading and error swap the body only — the header stays put in

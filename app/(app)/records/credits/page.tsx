@@ -60,13 +60,25 @@ export default function Page() {
   // Extracted because the header renders above whichever body state is
   // showing; keeping it in one place stops the three from drifting.
   const header = (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2 pb-4 border-b border-gray-200">
-      <div>
-        <h1 className="font-bold text-xl md:text-2xl truncate">Credits</h1>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Invoices moved to credit and their outstanding dues
-        </p>
+    <div>
+      <div className="flex flex-col justify-between gap-4 pb-5 sm:flex-row sm:items-end">
+        <div className="min-w-0">
+          <h1 className="truncate text-[22px] font-semibold tracking-[1px] text-[#3c4043] md:text-[26px]">
+            Credits
+          </h1>
+          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-[#5f6368]">
+            Invoices moved to credit and their outstanding dues
+          </p>
+        </div>
       </div>
+
+      {/* The rule, drawn rather than bordered: it holds the hairline
+          under the title and fades out across the page, so it separates
+          the header without ruling a hard line across the whole screen. */}
+      <div
+        aria-hidden
+        className="mb-6 h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent"
+      />
     </div>
   );
 
@@ -134,11 +146,11 @@ export default function Page() {
   };
 
   return (
-    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
-      <div className="w-full mx-auto space-y-8">
-        {/* Header */}
-        {header}
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+      {/* Header */}
+      {header}
 
+      <div className="w-full mx-auto space-y-8">
         {/* Loading and error swap the body only — the header stays put in
             every state, matching the products page. */}
         {error ? (
@@ -151,7 +163,7 @@ export default function Page() {
         ) : (
           <>
             {/* Stats — always reflect all credits, regardless of the selected tab */}
-            <div className="bg-white py-2 mb-4">
+            <div className="bg-white pb-2 mb-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {statItems.map((item) => {
                   const displayValue =
@@ -166,7 +178,7 @@ export default function Page() {
                   return (
                     <div
                       key={item.label}
-                      className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+                      className="bg-white rounded-xl border border-[#e3e3e3] p-4"
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span
@@ -187,7 +199,7 @@ export default function Page() {
                         {displayValue}
                       </p>
                       {item.subText && (
-                        <p className="text-[11px] text-gray-400 truncate tracking-wide">
+                        <p className="text-[11px] text-gray-500 truncate tracking-wide">
                           {item.subText}
                         </p>
                       )}

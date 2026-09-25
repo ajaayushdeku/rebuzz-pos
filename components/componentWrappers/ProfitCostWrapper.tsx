@@ -52,7 +52,7 @@ export async function ProfitStatsWrapper({
     }));
 
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:gap-3 lg:grid-cols-4 mt-4">
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:gap-3 lg:grid-cols-4">
       <ProfitCostStatBoxGrid stats={stats} />
     </div>
   );

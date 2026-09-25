@@ -103,7 +103,7 @@ export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
   ];
 
   return (
-    <div className="relative bg-white py-2 mb-8">
+    <div className="relative bg-white pb-2 mb-8">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {statItems.map((item) => {
           const displayValue =
@@ -118,7 +118,7 @@ export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
           return (
             <div
               key={item.label}
-              className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+              className="bg-white rounded-xl border border-[#e3e3e3] p-4"
             >
               <div className="flex items-center justify-between mb-2">
                 <span

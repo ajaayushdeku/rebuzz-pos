@@ -48,35 +48,42 @@ export default function InventoryPage() {
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
-      <div className="w-full mx-auto flex flex-col gap-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap- pb-4 border-b border-gray-200">
-          <div>
-            <h1 className="font-bold text-xl md:text-2xl truncate">
-              Inventory Management
-            </h1>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Monitor stock levels and manage supply intake.
-            </p>
-          </div>
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+      {/* ── Header ── */}
 
-          <div className="flex items-center gap-2">
-            <DateRangeFilter
-              value={dateRange}
-              onChange={setDateRange}
-              storageKey="rebuzz-inventory-date-filter"
-            />
-
-            <HeaderActionButton
-              variant="dashed"
-              icon={Box}
-              label="Add Stock"
-              hideLabelOnMobile
-              onClick={() => setModalOpen(true)}
-            />
-          </div>
+      <div className="w-full flex flex-col justify-between gap-4 pb-5 sm:flex-row sm:items-end">
+        <div className="min-w-0">
+          <h1 className="truncate text-[22px] font-semibold tracking-[1px] text-[#3c4043] md:text-[26px]">
+            Inventory Management
+          </h1>
+          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-[#5f6368]">
+            Monitor stock levels and manage supply intake.
+          </p>
         </div>
 
+        <div className="flex items-center gap-2">
+          <DateRangeFilter
+            value={dateRange}
+            onChange={setDateRange}
+            storageKey="rebuzz-inventory-date-filter"
+          />
+
+          <HeaderActionButton
+            variant="dashed"
+            icon={Box}
+            label="Add Stock"
+            hideLabelOnMobile
+            onClick={() => setModalOpen(true)}
+          />
+        </div>
+      </div>
+
+      <div
+        aria-hidden
+        className="mb-6 h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent"
+      />
+
+      <div className="space-y-6">
         {/* Modal renders immediately (non-suspense) so it can open on demand. */}
         <ProductStockEditModalWrapper
           open={modalOpen}

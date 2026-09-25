@@ -68,7 +68,7 @@ export default function ExpenseTrackerStats() {
         {statItems.map((item) => (
           <div
             key={item.label}
-            className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+            className="bg-white rounded-xl border border-[#e3e3e3] p-4"
           >
             <div className="flex items-center justify-between mb-2">
               <span

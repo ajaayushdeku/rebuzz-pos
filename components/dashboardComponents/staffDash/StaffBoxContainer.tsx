@@ -49,7 +49,7 @@ export default function StaffBoxContainer({
   const displayStaff = filteredList;
 
   return (
-    <div className="mt-4 -mx-2 sm:mx-0">
+    <div className=" -mx-2 sm:mx-0">
       {/* Custom thin scrollbar styles */}
       <style jsx global>{`
         .scrollbar-custom {

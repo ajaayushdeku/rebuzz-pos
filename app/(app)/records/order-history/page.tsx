@@ -29,18 +29,6 @@ function getDefaultDateRange(): DateRangeValue {
   return { startDate: start, endDate: end };
 }
 
-/**
- * Both requests for one date range.
- *
- * Returns the data rather than writing it, so the effect below and the refresh
- * the table triggers can share it without also sharing a loading flag — the
- * refresh has to be silent, since the row it follows has already updated and
- * blanking the cards would read as a step backwards.
- *
- * `no-store` on both: the routes no longer cache, but the browser would still
- * reuse its own copy of an identical GET, which is the same staleness one
- * layer up.
- */
 async function loadOrderHistory(range: DateRangeValue): Promise<{
   transactions: Transaction[];
   stats: StatsData | null;
@@ -100,15 +88,6 @@ export default function OrderHistoryPage() {
     };
   }, [startDate, endDate]);
 
-  /**
-   * Re-read the figures without a loading state.
-   *
-   * Called after a refund: the table has already flipped that row itself, so
-   * what is left to correct is the revenue, refund total and refund rate,
-   * which the server computes from the whole bill list. A failure leaves what
-   * is on screen alone rather than blanking a page that is still broadly
-   * right.
-   */
   const refresh = useCallback(async () => {
     try {
       const data = await loadOrderHistory({ startDate, endDate });
@@ -123,17 +102,17 @@ export default function OrderHistoryPage() {
   // const displayData = isEmpty ? mockTransactions : transactions;
 
   return (
-    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       {/* ── Header ── */}
-      <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+      <div className="flex w-full flex-col justify-between gap-4 pb-5 sm:flex-row sm:items-end">
         {isEmpty && !loading && <SampleDataBadge />}
 
-        <div>
-          <h1 className="font-bold text-xl md:text-2xl truncate">
+        <div className="min-w-0">
+          <h1 className="truncate text-[22px] font-semibold tracking-[1px] text-[#3c4043] md:text-[26px]">
             Order History
           </h1>
 
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-[#5f6368]">
             Browse and search all transactions
           </p>
         </div>
@@ -145,8 +124,13 @@ export default function OrderHistoryPage() {
         />
       </div>
 
+      <div
+        aria-hidden
+        className="mb-6 h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent"
+      />
+
       {/* ── Stats ── */}
-      <div className="mt-2">
+      <div>
         <OrderHistoryStats stats={stats} isLoading={loading} />
       </div>
 

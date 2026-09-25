@@ -33,7 +33,7 @@ const OrderHistoryStatBox = ({
   if (isLoading) {
     return (
       <div
-        className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 animate-pulse"
+        className="bg-white rounded-xl border border-[#e3e3e3] p-4 animate-pulse"
         aria-busy="true"
         aria-live="polite"
       >
@@ -53,7 +53,7 @@ const OrderHistoryStatBox = ({
       : value.toLocaleString();
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+    <div className="bg-white rounded-xl border border-[#e3e3e3] p-4">
       <div className="flex items-center justify-between mb-2">
         <span
           className="truncate text-[13px] font-medium"

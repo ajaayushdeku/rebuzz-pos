@@ -3,8 +3,6 @@ import Link from "next/link";
 
 import { UserPlus } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import TableSkeleton from "@/components/ui/tableskeleton";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import {
   StaffStatsSkeleton,
@@ -14,7 +12,6 @@ import {
 } from "@/components/dashboardComponents/staffDash/StaffSkeletons";
 import EmployeeDateFilter from "@/components/dashboardComponents/staffDash/EmployeeDateFilter";
 import {
-  ShiftAnalysisWrapper,
   StaffSalesChartWrapper,
   StaffRevenueWrapper,
   StaffStatWrapper,
@@ -39,15 +36,15 @@ const Page = async ({
   const hasCustomDates = !!startDate && !!endDate;
 
   return (
-    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       {/* ── Header ── */}
-      <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
-        <div>
-          <h1 className="font-bold text-xl md:text-2xl truncate">
+      <div className="flex w-full flex-col justify-between gap-4 pb-5 sm:flex-row sm:items-end">
+        <div className="min-w-0">
+          <h1 className="truncate text-[22px] font-semibold tracking-[1px] text-[#3c4043] md:text-[26px]">
             Employee Performance
           </h1>
 
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-[#5f6368]">
             Insights into employee productivity and shift efficiency.
           </p>
         </div>
@@ -69,6 +66,11 @@ const Page = async ({
           </button>
         </div>
       </div>
+
+      <div
+        aria-hidden
+        className="mb-4 h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent"
+      />
 
       <div className="flex flex-col gap-6">
         <ChartErrorBoundary>
@@ -121,7 +123,6 @@ const Page = async ({
           </Suspense>
         </ChartErrorBoundary>
         {/* </div> */}
-
       </div>
     </div>
   );

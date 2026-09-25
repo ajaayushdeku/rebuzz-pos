@@ -89,15 +89,15 @@ export default async function Page({
   }
 
   return (
-    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       {/* ── Header ── */}
-      <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
-        <div>
-          <h1 className="font-bold text-xl md:text-2xl truncate">
+      <div className="flex w-full flex-col justify-between gap-4 pb-5 sm:flex-row sm:items-end">
+        <div className="min-w-0">
+          <h1 className="truncate text-[22px] font-semibold tracking-[1px] text-[#3c4043] md:text-[26px]">
             Customer Analytics
           </h1>
 
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-[#5f6368]">
             Insights into customer behavior and retention.
           </p>
         </div>
@@ -110,10 +110,15 @@ export default async function Page({
         </div>
       </div>
 
+      <div
+        aria-hidden
+        className="mb-6 h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent"
+      />
+
       <div className="flex flex-col gap-6">
         <Suspense
           fallback={
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 mt-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 ">
               {Array.from({ length: 4 }).map((_, i) => (
                 <StatSkeleton key={i} />
               ))}
