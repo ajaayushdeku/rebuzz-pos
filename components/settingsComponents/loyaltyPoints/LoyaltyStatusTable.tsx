@@ -36,12 +36,12 @@ export default function LoyaltyStatusTable({
   const visible = statuses.slice(start, start + PAGE_SIZE);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white py-2 px-2 shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white px-2 py-2">
       {/* Count header — the table gave no sense of how many tiers exist
           without counting the rows. */}
-      <div className="flex items-center justify-between gap-2 border-b border-gray-200 px-4 py-3">
-        <p className="text-sm font-semibold text-gray-900">Loyalty Tiers</p>
-        <span className="text-xs font-medium tabular-nums text-gray-400">
+      <div className="flex items-center justify-between gap-2 border-b border-[#e8eaed] px-4 py-3">
+        <p className="text-[15px] font-normal text-[#3c4043]">Loyalty Tiers</p>
+        <span className="rounded-full border border-[#dadce0] bg-white px-2 py-0.5 text-[11px] tabular-nums text-[#3c4043]">
           {statuses.length} {statuses.length === 1 ? "tier" : "tiers"}
         </span>
       </div>
@@ -71,18 +71,18 @@ export default function LoyaltyStatusTable({
               <th className="px-4 py-3 text-right font-normal">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-[#e8eaed]">
             {statuses.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-4 py-10">
                   <div className="flex flex-col items-center text-center">
-                    <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
-                      <Trophy size={22} className="text-gray-400" />
+                    <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4]">
+                      <Trophy size={22} className="text-gray-500" />
                     </div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm text-[#3c4043]">
                       No loyalty tiers yet
                     </p>
-                    <p className="mt-1 text-xs text-gray-400">
+                    <p className="mt-1 text-xs text-[#9aa0a6]">
                       Add one to start ranking customers.
                     </p>
                   </div>
@@ -101,10 +101,10 @@ export default function LoyaltyStatusTable({
                   <tr
                     key={status.id}
                     className={`transition-colors ${
-                      isEditing ? "bg-blue-50/60" : "hover:bg-gray-50"
+                      isEditing ? "bg-blue-50/60" : "hover:bg-[#f8f9fa]"
                     }`}
                   >
-                    <td className="px-4 py-3 text-xs font-semibold tabular-nums text-gray-300">
+                    <td className="px-4 py-3 text-xs font-semibold tabular-nums text-[#9aa0a6]">
                       #{idx + 1}
                     </td>
                     <td className="px-4 py-3">
@@ -121,7 +121,7 @@ export default function LoyaltyStatusTable({
                       >
                         {pointRange(status, statuses[idx + 1])}
                       </span>
-                      <span className="ml-1 text-xs text-gray-400">pts</span>
+                      <span className="ml-1 text-xs text-[#9aa0a6]">pts</span>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1.5">
@@ -131,7 +131,7 @@ export default function LoyaltyStatusTable({
                           className={`rounded-md p-1.5 transition-colors ${
                             isEditing
                               ? "bg-blue-100 text-blue-600"
-                              : "text-gray-400 hover:bg-blue-50 hover:text-blue-600"
+                              : "text-[#9aa0a6] hover:bg-blue-50 hover:text-blue-600"
                           }`}
                           title="Edit"
                         >
@@ -140,7 +140,7 @@ export default function LoyaltyStatusTable({
                         <button
                           type="button"
                           onClick={() => onDelete(status)}
-                          className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                          className="rounded-md p-1.5 text-[#9aa0a6] transition-colors hover:bg-red-50 hover:text-red-600"
                           title="Delete"
                         >
                           <Trash2 className="h-3.5 w-3.5" />

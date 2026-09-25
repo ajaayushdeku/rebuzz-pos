@@ -63,11 +63,11 @@ export default function ProviderGuide({
   return (
     <div className="space-y-5">
       {part !== "facts" && (
-        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+        <div className="overflow-hidden rounded-2xl border border-[#dadce0] bg-white">
           <div className="p-6">
             {/* "your", not "a": a label starting with a vowel would need "an",
               and the article is not worth deriving from a provider's name. */}
-            <h3 className="text-[13px] font-bold text-gray-900">
+            <h3 className="text-[13px] font-semibold text-[#3c4043]">
               How to get your {label} key
             </h3>
 
@@ -81,10 +81,10 @@ export default function ProviderGuide({
                     {index + 1}
                   </span>
                   <div className="min-w-0">
-                    <p className="text-[13px] font-semibold text-gray-800">
+                    <p className="text-[13px] font-medium text-[#3c4043]">
                       {step.title}
                     </p>
-                    <p className="mt-0.5 text-[12px] leading-relaxed text-gray-500">
+                    <p className="mt-0.5 text-[12px] leading-relaxed text-[#5f6368]">
                       {step.body}
                     </p>
 
@@ -93,7 +93,7 @@ export default function ProviderGuide({
                         {step.code.map((code) => (
                           <span
                             key={code}
-                            className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[11px] text-gray-700"
+                            className="rounded bg-[#f1f3f4] px-1.5 py-0.5 font-mono text-[11px] text-[#3c4043]"
                           >
                             {code}
                           </span>
@@ -122,8 +122,10 @@ export default function ProviderGuide({
       )}
 
       {part !== "steps" && (
-        <div className="rounded-2xl border border-gray-200 bg-white p-6">
-          <h3 className="text-[13px] font-bold text-gray-900">How it works</h3>
+        <div className="rounded-2xl border border-[#dadce0] bg-white p-6">
+          <h3 className="text-[13px] font-semibold text-[#3c4043]">
+            How it works
+          </h3>
 
           <div className="mt-4 space-y-4">
             {meta.facts.map(({ icon, title, body }, index) => {
@@ -140,10 +142,10 @@ export default function ProviderGuide({
                     }}
                   />
                   <div className="min-w-0">
-                    <p className="text-[13px] font-semibold text-gray-800">
+                    <p className="text-[13px] font-medium text-[#3c4043]">
                       {title}
                     </p>
-                    <p className="mt-0.5 text-[12px] leading-relaxed text-gray-500">
+                    <p className="mt-0.5 text-[12px] leading-relaxed text-[#5f6368]">
                       {body}
                     </p>
                   </div>

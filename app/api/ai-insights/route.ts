@@ -34,6 +34,28 @@ function retryAfterHeader(res: Response): HeadersInit | undefined {
   const value = res.headers.get("retry-after");
   return value ? { "Retry-After": value } : undefined;
 }
+
+/**
+ * The service's rate-limit headers, copied onto our answer.
+ *
+ * `fetch` gives this route the upstream headers, but the browser only sees the
+ * ones we write ourselves — so the quota meter would be blind without this.
+ * They ride on every answer, including the cached ones that cost no quota.
+ */
+const RATE_LIMIT_HEADERS = [
+  "X-RateLimit-Limit",
+  "X-RateLimit-Remaining",
+  "X-RateLimit-Reset",
+] as const;
+
+function rateLimitHeaders(res: Response): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const name of RATE_LIMIT_HEADERS) {
+    const value = res.headers.get(name);
+    if (value) out[name] = value;
+  }
+  return out;
+}
 const MAX_BRIEFING_CHARS = 16_000;
 
 export async function POST(req: NextRequest) {
@@ -118,10 +140,12 @@ export async function POST(req: NextRequest) {
       },
       {
         status: res.status,
-        headers: retryAfterHeader(res),
+        headers: { ...rateLimitHeaders(res), ...retryAfterHeader(res) },
       },
     );
   }
 
-  return NextResponse.json(json, { headers: { "Cache-Control": "no-store" } });
+  return NextResponse.json(json, {
+    headers: { "Cache-Control": "no-store", ...rateLimitHeaders(res) },
+  });
 }

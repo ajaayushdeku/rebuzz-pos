@@ -30,14 +30,14 @@ export default function SubscriptionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       <div className="w-full mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-gray-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-[#e8eaed]">
           <div>
             <h1 className="font-bold text-xl md:text-2xl truncate">
               Subscription
             </h1>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="mt-0.5 text-xs text-[#9aa0a6]">
               Choose the plan that fits your business needs and budget
             </p>
           </div>
@@ -62,12 +62,12 @@ export default function SubscriptionPage() {
           ))}
         </div>
 
-        <p className="mt-5 text-[11px] text-gray-400">
+        <p className="mt-5 text-[11px] text-[#9aa0a6]">
           Prices are in NPR and include all taxes. Plans renew automatically and
           can be cancelled at any time.
         </p>
 
-        <div className="border-t border-gray-200 my-8" />
+        <div className="my-8 border-t border-[#e8eaed]" />
 
         <PlanFaq />
       </div>

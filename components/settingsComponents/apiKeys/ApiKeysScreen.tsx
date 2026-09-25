@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import AiKeyForm from "./AiKeyForm";
+import AiQuotaMeter from "./AiQuotaMeter";
 import ProviderGuide from "./ProviderGuide";
 import ProviderMarkDefs from "./ProviderMarkDefs";
 import ProviderPicker from "./ProviderPicker";
@@ -61,6 +62,11 @@ export default function ApiKeysScreen() {
           themselves from these, and two copies would be two elements sharing
           one id. */}
       <ProviderMarkDefs />
+
+      {/* First thing on the screen: the allowance governs everything set up
+          below it, and under the form it sat past the fold where the merchant
+          only met it as an error. */}
+      <AiQuotaMeter />
 
       <ProviderPicker
         providers={providers}

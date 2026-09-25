@@ -15,7 +15,6 @@ import {
 
 import ProviderLogo from "./ProviderLogo";
 import { markPaint, metaFor } from "./providerMeta";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import {
   useAiKeyStatus,
   useAiModels,
@@ -109,7 +108,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center gap-2 rounded-2xl border border-gray-200 bg-white p-6 text-sm text-gray-400">
+      <div className="flex justify-center items-center gap-2 rounded-2xl border border-[#dadce0] bg-white p-6 text-sm text-[#9aa0a6]">
         <Loader2 className="h-4 w-4 animate-spin" />
         Loading key status…
       </div>
@@ -117,7 +116,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+    <div className="overflow-hidden rounded-2xl border border-[#dadce0] bg-white">
       <div className="p-6">
         <div className="flex items-center gap-3">
           <div
@@ -129,11 +128,18 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
           </div>
 
           <div className="min-w-0 flex-1">
-            <ComponentHeader title={provider.label} subHeader={meta.blurb} />
+            <div className="min-w-0">
+              <h2 className="text-[15px] font-normal text-[#3c4043]">
+                {provider.label}
+              </h2>
+              <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6]">
+                {meta.blurb}
+              </p>
+            </div>
           </div>
 
           {isActive && (
-            <span className="shrink-0 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-green-700">
+            <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-green-700">
               In use
             </span>
           )}
@@ -152,7 +158,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
               } as React.CSSProperties
             }
           >
-            <p className="text-[12px] leading-relaxed text-gray-700">
+            <p className="text-[12px] leading-relaxed text-[#3c4043]">
               A key for {provider.label} is saved. AI features are using{" "}
               {providers.find((p) => p.id === activeProvider)?.label ??
                 activeProvider}{" "}
@@ -224,7 +230,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
                   type="button"
                   onClick={() => setConfirmingRemove(false)}
                   disabled={remove.isPending}
-                  className="cursor-pointer rounded-lg px-2 py-1.5 text-[12px] font-medium text-gray-500 transition hover:text-gray-700"
+                  className="cursor-pointer rounded-lg px-2 py-1.5 text-[12px] font-medium text-[#5f6368] transition hover:text-[#3c4043]"
                 >
                   Cancel
                 </button>
@@ -233,7 +239,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
               <button
                 type="button"
                 onClick={() => setConfirmingRemove(true)}
-                className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-gray-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-[#dadce0] bg-white px-2.5 py-1.5 text-[12px] font-medium text-[#5f6368] transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
               >
                 <Trash2 className="h-3.5 w-3.5" />
                 Remove
@@ -246,16 +252,16 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
             models it reports this key can actually call, fetched with the
             stored credential; there is nothing to ask about otherwise. */}
         {configured && (
-          <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3">
+          <div className="mt-3 rounded-xl border border-[#dadce0] bg-[#f8f9fa] px-3.5 py-3">
             <div className="flex items-center justify-between gap-2">
               <label
                 htmlFor="ai-model"
-                className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.06em] text-gray-400"
+                className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.06em] text-[#9aa0a6]"
               >
                 Model
               </label>
               {models.isFetching && (
-                <span className="mb-1.5 flex items-center gap-1 text-[11px] text-gray-400">
+                <span className="mb-1.5 flex items-center gap-1 text-[11px] text-[#9aa0a6]">
                   <Loader2 className="h-3 w-3 animate-spin" />
                   Loading models…
                 </span>
@@ -279,7 +285,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
                   updateModel.isPending || selectableModels.length === 0
                 }
                 style={{ outlineColor: meta.accent }}
-                className="h-9 w-full cursor-pointer rounded-lg border border-gray-200 bg-white px-2.5 text-[13px] font-medium text-gray-800 outline-none transition focus:border-gray-400 focus:ring-2 focus:ring-gray-300/40 disabled:cursor-not-allowed disabled:opacity-60"
+                className="h-9 w-full cursor-pointer rounded-lg border border-[#dadce0] bg-white px-2.5 text-[13px] font-medium text-[#3c4043] outline-none transition focus:border-gray-400 focus:ring-2 focus:ring-gray-300/40 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {/* The stored model stays selectable even when the provider no
                     longer reports it, so the selector never shows a value the
@@ -294,10 +300,10 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
                 ))}
               </select>
               {updateModel.isPending && (
-                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-gray-400" />
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-[#9aa0a6]" />
               )}
             </div>
-            <p className="mt-1.5 text-[11px] leading-relaxed text-gray-400">
+            <p className="mt-1.5 text-[11px] leading-relaxed text-[#9aa0a6]">
               AI features run on this model. Changing it does not touch your
               key.
             </p>
@@ -326,7 +332,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
           <div className="mb-1.5 flex items-center justify-between gap-2">
             <label
               htmlFor="ai-key"
-              className="block text-[11px] font-medium uppercase tracking-[0.06em] text-gray-400"
+              className="block text-[11px] font-medium uppercase tracking-[0.06em] text-[#9aa0a6]"
             >
               {hasKey ? "Replace key" : "API key"}
             </label>
@@ -334,7 +340,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
               href={provider.keysUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-[11px] font-medium text-gray-500 transition hover:text-gray-800"
+              className="flex items-center gap-1 text-[11px] font-medium text-[#5f6368] transition hover:text-[#3c4043]"
             >
               Get a key
               <ExternalLink className="h-3 w-3" />
@@ -345,7 +351,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
             <KeyRound
               size={15}
               stroke={markPaint(selected)}
-              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9aa0a6]"
             />
             <input
               id="ai-key"
@@ -357,17 +363,17 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder={meta.placeholder}
-              className={`h-11 w-full rounded-xl border bg-white pl-10 pr-11 font-mono text-[13px] text-gray-800 outline-none transition focus:ring-2 ${
+              className={`h-11 w-full rounded-xl border bg-white pl-10 pr-11 font-mono text-[13px] text-[#3c4043] outline-none transition focus:ring-2 ${
                 looksWrong
                   ? "border-red-300 focus:border-red-400 focus:ring-red-500/20"
-                  : "border-gray-200 focus:border-gray-400 focus:ring-gray-300/40"
+                  : "border-[#dadce0] focus:border-gray-400 focus:ring-gray-300/40"
               }`}
             />
             <button
               type="button"
               onClick={() => setRevealed((r) => !r)}
               aria-label={revealed ? "Hide API key" : "Show API key"}
-              className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer rounded p-0.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer rounded p-0.5 text-[#9aa0a6] transition hover:bg-[#f1f3f4] hover:text-[#5f6368]"
             >
               {revealed ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
@@ -416,7 +422,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = meta.button.bg;
               }}
-              className="flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-xl px-5 text-[13px] font-bold transition disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-xl px-5 text-[13px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
             >
               {save.isPending ? (
                 <>
@@ -433,7 +439,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
               type="button"
               onClick={() => setApiKey("")}
               disabled={!apiKey || save.isPending}
-              className="h-9 shrink-0 cursor-pointer rounded-xl border border-gray-200 bg-white px-4 text-[13px] font-medium text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-9 shrink-0 cursor-pointer rounded-xl border border-[#dadce0] bg-white px-4 text-[13px] font-medium text-[#5f6368] transition hover:bg-[#f8f9fa] disabled:cursor-not-allowed disabled:opacity-50"
             >
               Clear
             </button>
@@ -442,7 +448,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
           {/* Saving a key also selects the provider, which is the one thing
               about this form that is not obvious from the button. */}
           {!isActive && !hasKey && (
-            <p className="mt-3 text-[11px] leading-relaxed text-gray-400">
+            <p className="mt-3 text-[11px] leading-relaxed text-[#9aa0a6]">
               Saving a key here also switches AI features to {provider.label}.
             </p>
           )}

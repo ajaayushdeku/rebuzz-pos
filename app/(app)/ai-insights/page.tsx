@@ -5,6 +5,7 @@ import { Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
+import AiQuotaMeter from "@/components/settingsComponents/apiKeys/AiQuotaMeter";
 import AiInsightsHero from "@/components/aiInsights/sections/AiInsightsHero";
 import MenuSuggestionsSection from "@/components/aiInsights/sections/MenuSuggestionsSection";
 import SlowItemsSection from "@/components/aiInsights/sections/SlowItemsSection";
@@ -184,6 +185,15 @@ export default function AIInsightPage() {
               />
             </p>
           </div>
+
+          {/* Every section below spends from the same hourly allowance, and
+              "Generate insights" sits directly under this — so the number
+              belongs here rather than only on the settings screen. */}
+          {/* `self-end`: stacked under the title the row stretches its items,
+              which made the pill full width and left the reveal nowhere to
+              open into. Hugging the right edge keeps it a pill and keeps the
+              expansion pointing into free space at every width. */}
+          <AiQuotaMeter variant="inline" className="mt-3 self-end sm:mt-0" />
         </div>
 
         <div className="flex flex-col gap-10">

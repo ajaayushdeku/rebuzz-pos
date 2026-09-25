@@ -24,9 +24,9 @@ import { Input } from "@/components/ui/input";
 import businessLogo from "@/public/rebuzz.png";
 
 const inputClass =
-  "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+  "w-full rounded-lg border border-[#dadce0] px-3 py-2.5 text-sm text-[#3c4043] transition placeholder:text-[#9aa0a6] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500";
 const inputErrorClass =
-  "w-full border border-red-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition";
+  "w-full rounded-lg border border-red-300 px-3 py-2.5 text-sm text-[#3c4043] transition placeholder:text-[#9aa0a6] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-red-400";
 
 /** Logo guidance, stated once and reused by the validator and the hint. */
 const LOGO_WARN_MB = 1;
@@ -77,8 +77,8 @@ function Field({
   return (
     <div className="min-w-0">
       <div className="mb-1.5 flex items-center gap-1.5">
-        <Icon className="h-3.5 w-3.5 shrink-0 text-gray-400" />
-        <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-400">
+        <Icon className="h-3.5 w-3.5 shrink-0 text-[#9aa0a6]" />
+        <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#9aa0a6]">
           {label}
         </span>
       </div>
@@ -89,13 +89,13 @@ function Field({
           {error ? (
             <p className="mt-1 text-[11px] text-red-500">{error}</p>
           ) : hint ? (
-            <p className="mt-1 text-[11px] text-gray-400">{hint}</p>
+            <p className="mt-1 text-[11px] text-[#9aa0a6]">{hint}</p>
           ) : null}
         </>
       ) : (
         <p
           className={`truncate text-sm font-medium ${
-            value ? "text-gray-900" : "text-gray-300"
+            value ? "text-[#3c4043]" : "text-[#9aa0a6]"
           }`}
           title={value ?? undefined}
         >
@@ -124,10 +124,10 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border-t border-gray-100 px-6 py-5">
+    <div className="border-t border-[#e8eaed] px-6 py-5">
       <div className="mb-4">
-        <h3 className="text-[13px] font-bold text-gray-900">{title}</h3>
-        <p className="mt-0.5 text-[11px] text-gray-400">{description}</p>
+        <h3 className="text-[13px] font-semibold text-[#3c4043]">{title}</h3>
+        <p className="mt-0.5 text-[11px] text-[#9aa0a6]">{description}</p>
       </div>
       <div className="grid gap-5 sm:grid-cols-2">{children}</div>
     </div>
@@ -136,7 +136,7 @@ function Section({
 
 function ProfileSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white">
       <div className="flex items-center gap-5 p-6">
         <div className="h-20 w-20 shrink-0 animate-pulse rounded-xl bg-gray-100" />
         <div className="space-y-2">
@@ -144,7 +144,7 @@ function ProfileSkeleton() {
           <div className="h-3 w-24 animate-pulse rounded bg-gray-100" />
         </div>
       </div>
-      <div className="border-t border-gray-100 p-6">
+      <div className="border-t border-[#e8eaed] p-6">
         <div className="grid gap-6 sm:grid-cols-2">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="space-y-2">
@@ -293,15 +293,15 @@ export default function BusinessSettingsPage() {
   const isComplete = filledCount === totalFields;
 
   return (
-    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       <div className="mx-auto w-full">
         {/* ── Header ── */}
-        <div className="mb-5 flex flex-col gap-4 border-b border-gray-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-5 flex flex-col gap-4 border-b border-[#e8eaed] pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <h1 className="truncate text-xl font-bold md:text-2xl">
               Business Settings
             </h1>
-            <p className="mt-0.5 text-xs text-gray-400">
+            <p className="mt-0.5 text-xs text-[#9aa0a6]">
               {editing
                 ? "Changes are saved only when you press Save."
                 : "Your business profile as it appears on invoices and receipts."}
@@ -311,7 +311,7 @@ export default function BusinessSettingsPage() {
           {!editing && !isLoading && (
             <Button
               onClick={startEdit}
-              className="flex shrink-0 items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm text-white hover:bg-blue-700"
+              className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm text-white hover:bg-blue-700"
             >
               <Pencil className="h-4 w-4" />
               Edit business
@@ -323,7 +323,7 @@ export default function BusinessSettingsPage() {
           <ProfileSkeleton />
         ) : (
           /* ── One card, two modes — so nothing is shown twice ── */
-          <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+          <div className="overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white">
             {/* Identity.
                 This is the business's own page and the profile it describes is
                 what customers see on every receipt, so it leads the card —
@@ -341,15 +341,15 @@ export default function BusinessSettingsPage() {
               />
               <div
                 aria-hidden
-                className="pointer-events-none absolute left-1/2 top-6 h-44 w-44 -translate-x-1/2 rounded-full border border-gray-200/70"
+                className="pointer-events-none absolute left-1/2 top-6 h-44 w-44 -translate-x-1/2 rounded-full border border-[#dadce0]/70"
               />
               <div
                 aria-hidden
-                className="pointer-events-none absolute left-1/2 top-1 h-54 w-54 -translate-x-1/2 rounded-full border border-gray-100"
+                className="pointer-events-none absolute left-1/2 top-1 h-54 w-54 -translate-x-1/2 rounded-full border border-[#e8eaed]"
               />
 
               <div className="group relative z-10 h-36 w-36 shrink-0">
-                <div className="h-36 w-36 overflow-hidden rounded-full border-4 border-white bg-white shadow-md ring-1 ring-gray-200/80">
+                <div className="h-36 w-36 overflow-hidden rounded-full border-4 border-white bg-white shadow-md ring-1 ring-[#dadce0]/80">
                   <Image
                     src={displayLogo || businessLogo}
                     alt=""
@@ -391,8 +391,8 @@ export default function BusinessSettingsPage() {
                 {editing ? (
                   <>
                     <label className="mb-1.5 flex items-center justify-center gap-1.5">
-                      <Building2 className="h-3.5 w-3.5 text-gray-400" />
-                      <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-400">
+                      <Building2 className="h-3.5 w-3.5 text-[#9aa0a6]" />
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#9aa0a6]">
                         Business name
                       </span>
                     </label>
@@ -413,21 +413,21 @@ export default function BusinessSettingsPage() {
                   </>
                 ) : (
                   <>
-                    <h2 className="truncate text-[22px] font-bold leading-tight text-gray-900">
+                    <h2 className="truncate text-[22px] font-semibold leading-tight tracking-tight text-[#3c4043]">
                       {business?.businessName || "My Business"}
                     </h2>
                     <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-                      <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700">
+                      <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-[11px] font-semibold text-blue-700">
                         {business?.businessType || "Business"}
                       </span>
 
                       {/* Green only when there is nothing left to add, so the
                           colour means something rather than always being on. */}
                       <span
-                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${
                           isComplete
-                            ? "bg-green-50 text-green-700"
-                            : "bg-amber-50 text-amber-700"
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                            : "border-amber-200 bg-amber-50 text-amber-700"
                         }`}
                       >
                         {isComplete ? (
@@ -447,7 +447,7 @@ export default function BusinessSettingsPage() {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="mt-2 text-xs font-semibold text-blue-600 transition-colors hover:text-blue-700"
+                    className="mt-2 cursor-pointer text-xs font-semibold text-blue-600 transition-colors hover:text-blue-700"
                   >
                     {displayLogo ? "Change logo" : "Upload logo"}
                   </button>
@@ -469,7 +469,7 @@ export default function BusinessSettingsPage() {
                     </p>
                   </div>
                 ) : (
-                  <p className="text-[11px] text-gray-400">
+                  <p className="text-[11px] text-[#9aa0a6]">
                     PNG, JPG or WEBP. Keep it under {LOGO_WARN_MB} MB for faster
                     loading — {LOGO_MAX_MB} MB is the limit.
                   </p>
@@ -576,12 +576,12 @@ export default function BusinessSettingsPage() {
 
             {/* Actions */}
             {editing && (
-              <div className="flex items-center justify-end gap-3 border-t border-gray-100 bg-gray-50 px-6 py-4">
+              <div className="flex items-center justify-end gap-3 border-t border-[#e8eaed] bg-[#f8f9fa] px-6 py-4">
                 <Button
                   onClick={cancelEdit}
                   variant="outline"
                   disabled={saving}
-                  className="flex items-center gap-2 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100"
+                  className="flex cursor-pointer items-center gap-2 rounded-lg border-[#dadce0] text-[#3c4043] hover:bg-[#f1f3f4]"
                 >
                   <X className="h-4 w-4" />
                   Cancel
@@ -590,7 +590,7 @@ export default function BusinessSettingsPage() {
                 <Button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex items-center gap-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                  className="flex cursor-pointer items-center gap-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
                 >
                   {saving ? (
                     <>

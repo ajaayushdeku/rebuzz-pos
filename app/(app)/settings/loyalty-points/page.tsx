@@ -22,7 +22,6 @@ import {
   LoyaltyPointPayload,
 } from "@/services/apiLoyaltyPoint";
 import { useBusiness } from "@/hooks/useBusiness";
-import { ComponentHeader } from "@/components/ComponentHeader";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import LoyaltyStatusTable from "@/components/settingsComponents/loyaltyPoints/LoyaltyStatusTable";
 import LoyaltyStatusModal, {
@@ -38,7 +37,7 @@ import {
 } from "@/hooks/useLoyaltyTiers";
 
 const inputClass =
-  "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+  "w-full rounded-lg border border-[#dadce0] px-3 py-2.5 text-sm text-[#3c4043] transition placeholder:text-[#9aa0a6] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500";
 
 function FieldCard({
   icon: Icon,
@@ -52,14 +51,15 @@ function FieldCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex flex-col sm:flex-row sm:items-start gap-4">
-      <div className="shrink-0 w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
-        <Icon className="h-4 w-4 text-blue-600" />
+    <div className="flex flex-col gap-4 rounded-2xl border border-[#e3e3e3] bg-white p-5 sm:flex-row sm:items-start">
+      {/* `border-current/20` frames the tile in the icon's own hue. */}
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-current/20 bg-blue-50 text-blue-600">
+        <Icon className="h-4 w-4" />
       </div>
       <div className="flex-1 space-y-3">
         <div>
-          <p className="text-sm font-semibold text-gray-900">{title}</p>
-          <p className="text-xs text-gray-400 mt-0.5">{description}</p>
+          <p className="text-[15px] font-normal text-[#3c4043]">{title}</p>
+          <p className="mt-0.5 text-xs text-[#9aa0a6]">{description}</p>
         </div>
         {children}
       </div>
@@ -271,15 +271,15 @@ export default function LoyaltyPointPage() {
       : null;
 
   return (
-    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       <div className="w-full mx-auto ">
         {/* ── Header ─────────────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-gray-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-[#e8eaed]">
           <div>
             <h1 className="font-bold text-xl md:text-2xl truncate">
               Loyalty Points
             </h1>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="mt-0.5 text-xs text-[#9aa0a6]">
               Configure how customers earn and redeem loyalty points on
               invoices.
             </p>
@@ -287,7 +287,7 @@ export default function LoyaltyPointPage() {
           <Button
             onClick={handleSave}
             disabled={saving || isLoading || !hasChanges}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
+            className="flex cursor-pointer items-center gap-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
           >
             {saving ? (
               <>
@@ -307,35 +307,32 @@ export default function LoyaltyPointPage() {
         ) : (
           <div className="space-y-4">
             {settings && (
-              <div className="bg-blue-50 border border-blue-100 rounded-xl px-5 py-4 space-y-2">
-                <div className="w-full  flex items-center justify-center gap-2.5 mb-4">
-                  <p
-                    className="text-xs 
-            w-fit font-bold text-blue-700 uppercase tracking-wide"
-                  >
+              <div className="space-y-2 rounded-2xl border border-blue-200 bg-blue-50/60 px-5 py-4">
+                <div className="mb-4 flex w-full items-center justify-center gap-2.5">
+                  <p className="w-fit text-[11px] font-semibold uppercase tracking-wide text-blue-700">
                     Current saved settings
                   </p>
                 </div>
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <p className="text-lg font-bold text-blue-800">
+                    <p className="text-lg font-semibold tabular-nums text-blue-800">
                       {settings.loyaltyPointPercentage}%
                     </p>
-                    <p className="text-xs text-blue-500">Earn rate</p>
+                    <p className="text-xs text-blue-600">Earn rate</p>
                   </div>
 
                   <div>
-                    <p className="text-lg font-bold text-blue-800">
+                    <p className="text-lg font-semibold tabular-nums text-blue-800">
                       {settings.redeemLimit}%
                     </p>
-                    <p className="text-xs text-blue-500">Redeem limit</p>
+                    <p className="text-xs text-blue-600">Redeem limit</p>
                   </div>
 
                   <div>
-                    <p className="text-lg font-bold text-blue-800">
+                    <p className="text-lg font-semibold tabular-nums text-blue-800">
                       {settings.basePoint}
                     </p>
-                    <p className="text-xs text-blue-500">Base point</p>
+                    <p className="text-xs text-blue-600">Base point</p>
                   </div>
                 </div>
               </div>
@@ -347,7 +344,7 @@ export default function LoyaltyPointPage() {
               description="Percentage of the invoice total awarded as loyalty points to the customer."
             >
               <div>
-                <Label className="text-xs text-gray-500 mb-1.5 block">
+                <Label className="mb-1.5 block text-xs text-[#5f6368]">
                   Percentage (%)
                 </Label>
                 <div className="relative max-w-xs">
@@ -362,7 +359,7 @@ export default function LoyaltyPointPage() {
                     className={`${inputClass} pr-8 ${errors.loyaltyPoint ? "border-red-300 focus:ring-red-400" : ""}`}
                     placeholder="e.g. 30"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#9aa0a6]">
                     %
                   </span>
                 </div>
@@ -371,7 +368,7 @@ export default function LoyaltyPointPage() {
                     Enter a value between 1 and 100.
                   </p>
                 )}
-                <p className="text-xs text-gray-400 mt-1.5">
+                <p className="mt-1.5 text-xs text-[#9aa0a6]">
                   Example: 30% on a Rs 100 invoice → customer earns 30 points.
                 </p>
               </div>
@@ -383,7 +380,7 @@ export default function LoyaltyPointPage() {
               description="Maximum number of loyalty points a customer can redeem on a single invoice."
             >
               <div>
-                <Label className="text-xs text-gray-500 mb-1.5 block">
+                <Label className="mb-1.5 block text-xs text-[#5f6368]">
                   Max points per invoice in percentage (%)
                 </Label>
                 <div className="relative max-w-xs">
@@ -396,7 +393,7 @@ export default function LoyaltyPointPage() {
                     className={`${inputClass} ${errors.redeemLimit ? "border-red-300 focus:ring-red-400" : ""}`}
                     placeholder="e.g. 50"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#9aa0a6]">
                     %
                   </span>
                 </div>
@@ -405,7 +402,7 @@ export default function LoyaltyPointPage() {
                     Redeem limit must be greater than 0.
                   </p>
                 )}
-                <p className="text-xs text-gray-400 mt-1.5">
+                <p className="mt-1.5 text-xs text-[#9aa0a6]">
                   Example: 50% means a customer can redeem up to 50% points of
                   the total price before tax (if applied) per invoice.
                 </p>
@@ -418,7 +415,7 @@ export default function LoyaltyPointPage() {
               description="Number of points awarded per base unit of spend (e.g. per Rs 10 spent)."
             >
               <div>
-                <Label className="text-xs text-gray-500 mb-1.5 block">
+                <Label className="mb-1.5 block text-xs text-[#5f6368]">
                   Points per unit
                 </Label>
                 <div className="max-w-xs">
@@ -436,7 +433,7 @@ export default function LoyaltyPointPage() {
                     Base point must be greater than 0.
                   </p>
                 )}
-                <p className="text-xs text-gray-400 mt-1.5">
+                <p className="mt-1.5 text-xs text-[#9aa0a6]">
                   Example: 10 base points means 1 point per Rs 10 spent.
                 </p>
               </div>
@@ -447,22 +444,27 @@ export default function LoyaltyPointPage() {
         {/* ═══════════════════════════════════════════════════════════════════ */}
         {/* ── CUSTOMER LOYALTY STATUS SECTION ── */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
-        <div className="border-t pt-8">
+        <div className="border-t border-[#e8eaed] pt-8">
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50">
-                <Trophy className="h-4 w-4 text-blue-500" />
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-current/20 bg-blue-50 text-blue-600">
+                <Trophy className="h-4 w-4" />
               </div>
-              <ComponentHeader
-                title="Customer Loyalty Status"
-                subHeader="Define loyalty tiers and the point thresholds a customer crosses to reach them."
-              />
+              <div className="min-w-0">
+                <h2 className="text-[15px] font-normal text-[#3c4043]">
+                  Customer Loyalty Status
+                </h2>
+                <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6]">
+                  Define loyalty tiers and the point thresholds a customer
+                  crosses to reach them.
+                </p>
+              </div>
             </div>
 
             <Button
               onClick={openAddStatus}
               disabled={tiersLoading || !!tiersError}
-              className="shrink-0 rounded-lg bg-blue-600 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="shrink-0 cursor-pointer rounded-lg bg-blue-600 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Plus className="mr-1.5 h-4 w-4" />
               Add Tier
@@ -488,7 +490,7 @@ export default function LoyaltyPointPage() {
               list needs — and an empty one says what to do rather than
               rendering a table with no rows. */}
           {tiersLoading ? (
-            <div className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 py-12 text-sm text-gray-400">
+            <div className="flex items-center justify-center gap-2 rounded-xl border border-[#e3e3e3] py-12 text-sm text-[#9aa0a6]">
               <Loader2 className="h-4 w-4 animate-spin" />
               Loading loyalty tiers
             </div>
@@ -501,11 +503,9 @@ export default function LoyaltyPointPage() {
               </p>
             </div>
           ) : sortedStatuses.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-gray-200 px-4 py-12 text-center">
-              <p className="text-sm font-medium text-gray-700">
-                No loyalty tiers yet
-              </p>
-              <p className="mt-1 text-xs text-gray-400">
+            <div className="rounded-xl border border-dashed border-[#dadce0] px-4 py-12 text-center">
+              <p className="text-sm text-[#3c4043]">No loyalty tiers yet</p>
+              <p className="mt-1 text-xs text-[#9aa0a6]">
                 Add one to start banding customers by the points they have
                 earned.
               </p>

@@ -31,7 +31,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
  * would resolve by stylesheet order rather than by which was written last.
  */
 const cyanInputIdle =
-  "border-gray-200 focus:border-cyan-400 focus:ring-cyan-500/20";
+  "border-[#dadce0] focus:border-cyan-400 focus:ring-cyan-500/20";
 
 export interface LoyaltyStatusDraft {
   name: string;
@@ -215,7 +215,7 @@ export default function LoyaltyStatusModal({
         )}
 
         <div>
-          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.06em] text-gray-400">
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.06em] text-[#9aa0a6]">
             Status Name
           </label>
           <input
@@ -236,7 +236,7 @@ export default function LoyaltyStatusModal({
         </div>
 
         <div>
-          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.06em] text-gray-400">
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.06em] text-[#9aa0a6]">
             Minimum Points Required
           </label>
           <input
@@ -280,7 +280,7 @@ export default function LoyaltyStatusModal({
                 color={previewColor}
                 bgColor={previewBg}
               />
-              <span className="text-xs tabular-nums text-gray-600">
+              <span className="text-xs tabular-nums text-[#5f6368]">
                 from {formatNumber(Number(minPoints) || 0, currency.locale)} pts
               </span>
             </div>

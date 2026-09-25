@@ -20,9 +20,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const inputClass =
-  "w-full border border-gray-200 rounded-lg px-3 py-6 pr-10 text-sm text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+  "w-full rounded-lg border border-[#dadce0] px-3 py-6 pr-10 text-sm text-[#3c4043] transition placeholder:text-[#9aa0a6] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500";
 const inputErrorClass =
-  "w-full border border-red-300 rounded-lg px-3 py-4 pr-10 text-sm text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition";
+  "w-full rounded-lg border border-red-300 px-3 py-6 pr-10 text-sm text-[#3c4043] transition placeholder:text-[#9aa0a6] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-red-400";
 
 /** Four segments, so the bar reads as a level rather than a percentage. */
 const STRENGTH_LEVELS = [
@@ -125,7 +125,7 @@ function PasswordField({
     // the extra px-4 pushed every field 1rem further in than the card heading
     // above it, so nothing lined up down the left edge.
     <div>
-      <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.06em] text-gray-500">
+      <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.06em] text-[#5f6368]">
         {label}
       </label>
 
@@ -142,7 +142,7 @@ function PasswordField({
           type="button"
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? `Hide ${label}` : `Show ${label}`}
-          className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer rounded text-gray-400 transition-colors hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer rounded text-[#9aa0a6] transition-colors hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         >
           {visible ? <EyeOff size={16} /> : <Eye size={16} />}
         </button>
@@ -236,14 +236,14 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       <div className="mx-auto w-full">
         {/* ── Header ── */}
-        <div className="mb-5 border-b border-gray-200 pb-4">
+        <div className="mb-5 border-b border-[#e8eaed] pb-4">
           <h1 className="truncate text-xl font-bold md:text-2xl">
             Change Password
           </h1>
-          <p className="mt-0.5 text-xs text-gray-400">
+          <p className="mt-0.5 text-xs text-[#9aa0a6]">
             Update the password you sign in with.
           </p>
         </div>
@@ -255,18 +255,20 @@ export default function ChangePasswordPage() {
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <form
             onSubmit={handleSubmit}
-            className="overflow-hidden rounded-2xl border border-gray-200 bg-white"
+            className="overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white"
           >
             {/* Card heading */}
             <div className="flex items-center gap-3  px-6 pt-6 pb-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50">
-                <Lock className="h-5 w-5 text-blue-600" />
+              {/* `border-current/20` frames the tile in the icon's own hue,
+                  as the cards elsewhere do. */}
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-current/20 bg-blue-50 text-blue-600">
+                <Lock className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-[15px] font-semibold text-gray-900">
+                <h2 className="text-[15px] font-normal text-[#3c4043]">
                   Account security
                 </h2>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-[#9aa0a6]">
                   Choose a strong password you haven&rsquo;t used before.
                 </p>
               </div>
@@ -276,7 +278,7 @@ export default function ChangePasswordPage() {
               {/* The account is needed to submit, so say so while it loads
                 instead of leaving the button inert without explanation. */}
               {profileLoading && (
-                <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2.5 text-[12px] text-gray-500">
+                <div className="flex items-center gap-2 rounded-lg bg-[#f8f9fa] px-3 py-2.5 text-[12px] text-[#5f6368]">
                   <Loader2 size={14} className="animate-spin" />
                   Loading your account…
                 </div>
@@ -326,11 +328,11 @@ export default function ChangePasswordPage() {
                         colour is not the only thing carrying the meaning. */}
                     <div>
                       <div className="mb-1.5 flex items-baseline justify-between">
-                        <span className="text-[10px] font-semibold uppercase tracking-[0.06em] text-gray-400">
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[#9aa0a6]">
                           Strength
                         </span>
                         <span
-                          className={`text-[11px] font-bold ${STRENGTH_LEVELS[level].text}`}
+                          className={`text-[11px] font-semibold ${STRENGTH_LEVELS[level].text}`}
                         >
                           {STRENGTH_LEVELS[level].label}
                         </span>
@@ -342,14 +344,14 @@ export default function ChangePasswordPage() {
                             className={`h-2 flex-1 rounded-full transition-colors duration-300 ${
                               i <= level
                                 ? STRENGTH_LEVELS[level].bar
-                                : "bg-gray-200"
+                                : "bg-[#e8eaed]"
                             }`}
                           />
                         ))}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-x-4 gap-y-1.5 rounded-xl bg-gray-50 p-3 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-x-4 gap-y-1.5 rounded-xl border border-[#e3e3e3] p-3 sm:grid-cols-2">
                       {REQUIREMENTS.map((req) => {
                         const passed = req.test(newPassword);
                         return (
@@ -359,20 +361,20 @@ export default function ChangePasswordPage() {
                           >
                             <span
                               className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full transition-colors ${
-                                passed ? "bg-green-500" : "bg-gray-200"
+                                passed ? "bg-emerald-500" : "bg-[#e8eaed]"
                               }`}
                             >
                               {passed ? (
                                 <Check className="h-2.5 w-2.5 text-white" />
                               ) : (
-                                <X className="h-2.5 w-2.5 text-gray-400" />
+                                <X className="h-2.5 w-2.5 text-[#9aa0a6]" />
                               )}
                             </span>
                             <span
                               className={
                                 passed
-                                  ? "font-medium text-gray-700"
-                                  : "text-gray-400"
+                                  ? "font-medium text-[#3c4043]"
+                                  : "text-[#9aa0a6]"
                               }
                             >
                               {req.label}
@@ -395,7 +397,7 @@ export default function ChangePasswordPage() {
                 message={
                   confirmPassword ? (
                     passwordsMatch ? (
-                      <p className="mt-1 flex items-center gap-1 text-[11px] text-green-600">
+                      <p className="mt-1 flex items-center gap-1 text-[11px] text-emerald-600">
                         <Check className="h-3 w-3" />
                         Passwords match
                       </p>
@@ -411,9 +413,9 @@ export default function ChangePasswordPage() {
             </div>
 
             {/* ── Submit ── */}
-            <div className="space-y-2 border-t border-gray-100 bg-gray-50 px-6 py-4">
+            <div className="space-y-2 border-t border-[#e8eaed] bg-[#f8f9fa] px-6 py-4">
               {blocker && (
-                <p className="text-center text-[11px] text-gray-500">
+                <p className="text-center text-[11px] text-[#5f6368]">
                   {blocker}
                 </p>
               )}
@@ -421,7 +423,7 @@ export default function ChangePasswordPage() {
               <Button
                 type="submit"
                 disabled={!canSubmit}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-6 text-[14px] text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-blue-600 py-6 text-[14px] text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? (
                   <>
@@ -439,8 +441,8 @@ export default function ChangePasswordPage() {
           </form>
 
           {/* ── Why it matters ── */}
-          <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6">
-            <h3 className="text-[13px] font-bold text-gray-900">
+          <div className="space-y-4 rounded-2xl border border-[#e3e3e3] bg-white p-6">
+            <h3 className="text-[13px] font-semibold text-[#3c4043]">
               Choosing a password
             </h3>
 
@@ -448,10 +450,10 @@ export default function ChangePasswordPage() {
               <div key={title} className="flex gap-3">
                 <Icon className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
                 <div className="min-w-0">
-                  <p className="text-[12px] font-semibold text-gray-800">
+                  <p className="text-[12px] font-medium text-[#3c4043]">
                     {title}
                   </p>
-                  <p className="mt-0.5 text-[11px] leading-relaxed text-gray-500">
+                  <p className="mt-0.5 text-[11px] leading-relaxed text-[#5f6368]">
                     {body}
                   </p>
                 </div>

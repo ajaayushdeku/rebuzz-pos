@@ -5,7 +5,7 @@ import { ChevronDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { SUBSCRIPTION_FAQS, type Faq } from "@/lib/config/plans";
-import { ComponentHeader } from "../ComponentHeader";
+import { CHART_PALETTE } from "@/components/dashboardComponents/chartCard";
 
 /**
  * One question and its answer.
@@ -32,7 +32,7 @@ function FaqRow({
     <div
       className={cn(
         "overflow-hidden rounded-xl border bg-white transition-colors",
-        isOpen ? "border-gray-200" : "border-gray-100 hover:border-gray-200",
+        isOpen ? "border-[#dadce0]" : "border-[#e8eaed] hover:border-[#dadce0]",
       )}
     >
       <button
@@ -41,7 +41,7 @@ function FaqRow({
         aria-controls={panelId}
         className="flex w-full cursor-pointer items-center justify-between gap-4 px-4 py-3.5 text-left"
       >
-        <span className="text-[13px] font-semibold text-gray-800">
+        <span className="text-[13px] font-medium text-[#3c4043]">
           {faq.question}
         </span>
 
@@ -49,7 +49,7 @@ function FaqRow({
           size={16}
           aria-hidden
           className={cn(
-            "shrink-0 text-gray-400 transition-transform duration-300 ease-out motion-reduce:transition-none",
+            "shrink-0 text-[#9aa0a6] transition-transform duration-300 ease-out motion-reduce:transition-none",
             isOpen && "rotate-180 text-blue-600",
           )}
         />
@@ -64,7 +64,7 @@ function FaqRow({
         )}
       >
         <div className="overflow-hidden">
-          <p className="px-4 pb-4 text-[13px] leading-relaxed text-gray-600">
+          <p className="px-4 pb-4 text-[13px] leading-relaxed text-[#5f6368]">
             {faq.answer}
           </p>
         </div>
@@ -86,10 +86,18 @@ export default function PlanFaq() {
   return (
     <section className="mt-8 flex flex-col gap-4">
       <div className="mx-2 mb-2">
-        <ComponentHeader
-          title="Frequently Asked Questions"
-          subHeader="Everything else worth knowing before you pick a plan"
-        />
+        <h2
+          className="text-[15px] font-normal"
+          style={{ color: CHART_PALETTE.title }}
+        >
+          Frequently Asked Questions
+        </h2>
+        <p
+          className="mt-0.5 text-xs tracking-wide"
+          style={{ color: CHART_PALETTE.subtitle }}
+        >
+          Everything else worth knowing before you pick a plan
+        </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:items-start">

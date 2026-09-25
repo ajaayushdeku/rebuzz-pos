@@ -38,10 +38,10 @@ export default function ProviderPicker({
   return (
     <section>
       <div className="mb-2.5 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-400">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#9aa0a6]">
           AI provider
         </p>
-        <p className="text-[11px] text-gray-400">
+        <p className="text-[11px] text-[#9aa0a6]">
           One answers your insights. A key is kept for each.
         </p>
       </div>
@@ -70,9 +70,7 @@ export default function ProviderPicker({
                   : undefined
               }
               className={`flex cursor-pointer items-center gap-3 rounded-2xl border p-3.5 text-left transition ${
-                isSelected
-                  ? "shadow-sm"
-                  : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm"
+                isSelected ? "" : "border-[#e3e3e3] bg-white hover:bg-[#f8f9fa]"
               }`}
             >
               <span
@@ -83,10 +81,10 @@ export default function ProviderPicker({
               </span>
 
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[13px] font-semibold text-gray-900">
+                <span className="block truncate text-[13px] font-medium text-[#3c4043]">
                   {provider.label}
                 </span>
-                <span className="block truncate text-[11px] text-gray-500">
+                <span className="block truncate text-[11px] text-[#5f6368]">
                   {meta.tagline}
                 </span>
               </span>
@@ -94,16 +92,16 @@ export default function ProviderPicker({
               {/* Three states, told apart at a glance: answering now, ready to
                   switch to, or nothing saved yet. */}
               {isActive ? (
-                <span className="flex shrink-0 items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-green-700">
+                <span className="flex shrink-0 items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
                   <Check className="h-2.5 w-2.5" />
                   In use
                 </span>
               ) : hasKey ? (
-                <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-500">
+                <span className="shrink-0 rounded-full border border-[#dadce0] bg-white px-2 py-0.5 text-[10px] font-semibold text-[#5f6368]">
                   Key saved
                 </span>
               ) : (
-                <span className="shrink-0 rounded-full border border-dashed border-gray-300 px-2 py-0.5 text-[10px] font-medium text-gray-400">
+                <span className="shrink-0 rounded-full border border-dashed border-[#dadce0] px-2 py-0.5 text-[10px] font-medium text-[#9aa0a6]">
                   No key
                 </span>
               )}
