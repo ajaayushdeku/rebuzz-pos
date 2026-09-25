@@ -5,6 +5,7 @@ import { Trophy, Edit3, Trash2 } from "lucide-react";
 import { type LoyaltyStatus, pointRange } from "./loyaltyStatusConfig";
 import TierBadge from "./TierBadge";
 import TablePagination from "@/components/ui/TablePagination";
+import { CHART_PALETTE } from "@/components/dashboardComponents/chartCard";
 
 const PAGE_SIZE = 10;
 
@@ -46,15 +47,28 @@ export default function LoyaltyStatusTable({
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[520px] text-sm">
+        {/* `table-fixed` with declared widths: auto layout sized the columns
+            from the tiers on screen, so adding or editing one moved them.
+            Status takes the slack. */}
+        <table className="w-full min-w-[520px] table-fixed text-sm">
+          <colgroup>
+            <col className="w-16" />
+            <col />
+            <col className="w-60" />
+            <col className="w-28" />
+          </colgroup>
           <thead>
-            <tr className="border-b border-gray-100 text-[11px] uppercase tracking-wider text-gray-400">
-              <th className="w-10 px-4 py-3 text-left font-semibold">Lvl</th>
-              <th className="px-4 py-3 text-left font-semibold">Status</th>
-              <th className="px-4 py-3 text-center font-semibold">
-                Point Range
-              </th>
-              <th className="px-4 py-3 text-right font-semibold">Actions</th>
+            <tr
+              className="border-b text-[11px] tracking-wider"
+              style={{
+                borderColor: CHART_PALETTE.grid,
+                color: CHART_PALETTE.axis,
+              }}
+            >
+              <th className="px-4 py-3 text-left font-normal">Lvl</th>
+              <th className="px-4 py-3 text-left font-normal">Loyalty Tier</th>
+              <th className="px-4 py-3 text-center font-normal">Point Range</th>
+              <th className="px-4 py-3 text-right font-normal">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -91,7 +105,7 @@ export default function LoyaltyStatusTable({
                     }`}
                   >
                     <td className="px-4 py-3 text-xs font-semibold tabular-nums text-gray-300">
-                      {idx + 1}
+                      #{idx + 1}
                     </td>
                     <td className="px-4 py-3">
                       <TierBadge
@@ -101,7 +115,10 @@ export default function LoyaltyStatusTable({
                       />
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className="text-[13px] font-medium tracking-wide  tabular-nums text-gray-800">
+                      <span
+                        className="text-[13px] font-medium tracking-wide  tabular-nums "
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         {pointRange(status, statuses[idx + 1])}
                       </span>
                       <span className="ml-1 text-xs text-gray-400">pts</span>

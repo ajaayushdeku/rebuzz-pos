@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Discount } from "@/app/(app)/settings/discount/page";
 import {
-  Pencil,
+  Edit3,
   Trash2,
   ChevronLeft,
   ChevronRight,
@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { CHART_PALETTE } from "@/components/dashboardComponents/chartCard";
 
 const PAGE_SIZE = 5;
 
@@ -46,13 +47,28 @@ const DiscountTable = ({
 
   return (
     <>
-      <table className="w-full text-sm">
+      {/* `table-fixed` with declared widths: each tab renders its own table,
+          and auto layout sized the columns from whatever that tab held — so
+          switching between "10%" and "Rs 1,000.00" shifted every column. */}
+      <table className="w-full table-fixed text-sm">
+        <colgroup>
+          <col className="w-14" />
+          <col />
+          <col className="w-32" />
+          <col className="w-24" />
+        </colgroup>
         <thead>
-          <tr className="text-xs text-gray-400 border-b border-gray-100">
-            <th className="text-left pb-2.5 font-medium">#</th>
-            <th className="text-left pb-2.5 font-medium">Name</th>
-            <th className="text-left pb-2.5 font-medium">Value</th>
-            <th className="text-right pb-2.5 font-medium">Actions</th>
+          <tr
+            className="border-b text-[11px] tracking-wider"
+            style={{
+              borderColor: CHART_PALETTE.grid,
+              color: CHART_PALETTE.axis,
+            }}
+          >
+            <th className="text-left pb-2.5 font-normal">S.No.</th>
+            <th className="text-left pb-2.5 font-normal">Name</th>
+            <th className="text-left pb-2.5 font-normal">Value</th>
+            <th className="text-right pb-2.5 font-normal">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -94,13 +110,17 @@ const DiscountTable = ({
                 key={d._id}
                 className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
               >
-                <td className="py-3 font-medium text-xs text-gray-400">
-                  {idx + 1}
+                <td className="py-3 font-medium text-[11px] text-gray-400">
+                  #{idx + 1}
                 </td>
-                <td className="py-3 font-medium text-xs text-gray-800">
+                <td
+                  className="truncate py-3 pr-3 text-[13px] font-medium text-gray-800"
+                  style={{ color: CHART_PALETTE.title }}
+                  title={d.name}
+                >
                   {d.name}
                 </td>
-                <td className="py-3 text-xs text-gray-600">
+                <td className="whitespace-nowrap py-3 text-xs font-semibold tabular-nums text-emerald-600">
                   {d.type === "percentage"
                     ? `${d.rate}%`
                     : ` ${formatCurrencySymbol(d.rate, currency.symbol, currency.locale)}`}
@@ -111,7 +131,7 @@ const DiscountTable = ({
                       onClick={() => onEdit(d)}
                       className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                     >
-                      <Pencil size={13} />
+                      <Edit3 size={13} />
                     </button>
                     <button
                       onClick={() => onDelete(d._id)}

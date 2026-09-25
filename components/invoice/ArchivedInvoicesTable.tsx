@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Invoice } from "@/lib/types/invoice";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrencySymbol, formatDatetime } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import toast from "react-hot-toast";
 import { parseNepalDateTime } from "../dashboardComponents/staffDash/staffDetail/staffDetailHelpers";
+import { CHART_PALETTE } from "../dashboardComponents/chartCard";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -181,26 +182,32 @@ export default function ArchivedInvoicesTable({
         <div className="overflow-x-auto scrollbar-hide">
           <table className="w-full text-sm min-w-[900px]">
             <thead>
-              <tr className="text-xs text-gray-400 border-b border-gray-100">
+              <tr
+                className="border-b text-[11px] tracking-wider"
+                style={{
+                  borderColor: CHART_PALETTE.grid,
+                  color: CHART_PALETTE.axis,
+                }}
+              >
                 {/* <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
                   S.No
                 </th> */}
                 <th
-                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("invoice")}
                 >
                   <span className="flex items-center gap-1">
                     Invoice # {SortIcon({ colKey: "invoice" })}
                   </span>
                 </th>
-                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                <th className="text-left pb-3 pt-3 px-4 font-normal">
                   Invoice Name
                 </th>
-                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                <th className="text-left pb-3 pt-3 px-4 font-normal">
                   Customer
                 </th>
                 <th
-                  className=" text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className=" text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("amount")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -208,14 +215,14 @@ export default function ArchivedInvoicesTable({
                   </span>
                 </th>
                 <th
-                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("created_at")}
                 >
                   <span className="flex items-center justify-end gap-1">
                     Archived Date {SortIcon({ colKey: "created_at" })}
                   </span>
                 </th>
-                <th className="text-right pb-3 pt-3 px-4 font-medium">
+                <th className="text-right pb-3 pt-3 px-4 font-normal">
                   Actions
                 </th>
               </tr>
@@ -241,7 +248,7 @@ export default function ArchivedInvoicesTable({
                   </td>
                 </tr>
               ) : (
-                paged.map((inv, idx) => {
+                paged.map((inv) => {
                   const invoiceArchivedDate = parseNepalDateTime(
                     inv.archivedAt || inv.created_at,
                   );
@@ -255,7 +262,10 @@ export default function ArchivedInvoicesTable({
                         {page * pageSize + idx + 1}
                       </td> */}
                       <td className="py-3 px-4">
-                        <span className="font-medium text-xs text-gray-900 block">
+                        <span
+                          className="font-medium text-xs block"
+                          style={{ color: CHART_PALETTE.title }}
+                        >
                           ORD-{inv.invoice}
                         </span>
                         {(() => {
@@ -267,13 +277,22 @@ export default function ArchivedInvoicesTable({
                           ) : null;
                         })()}
                       </td>
-                      <td className="py-3 px-4 text-xs text-gray-600">
+                      <td
+                        className="py-3 px-4 text-[13px]"
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         {inv.ticket_name || "—"}
                       </td>
-                      <td className="py-3 px-4 text-xs text-gray-600">
+                      <td
+                        className="py-3 px-4 text-[13px]"
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         {inv.customer_name ?? "—"}
                       </td>
-                      <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
+                      <td
+                        className="py-3 px-4 text-[13px] text-right font-medium"
+                        style={{ color: CHART_PALETTE.title }}
+                      >
                         {formatCurrencySymbol(
                           Number(inv.amount),
                           currency.symbol,
@@ -283,14 +302,20 @@ export default function ArchivedInvoicesTable({
                       <td className="py-3 px-4 text-gray-500 text-right text-xs">
                         {/* {formatDatetime(inv.archivedAt || inv.created_at)} */}
 
-                        <span className="font-medium text-gray-800 text-xs block">
+                        <span
+                          className=" text-xs block"
+                          style={{ color: CHART_PALETTE.title }}
+                        >
                           {invoiceArchivedDate?.toLocaleTimeString("en-US", {
                             hour: "2-digit",
                             minute: "2-digit",
                             hour12: false,
                           })}
                           {invoiceArchivedDate && (
-                            <span className="text-[10px] font-normal text-gray-400">
+                            <span
+                              className="text-[10px] font-normal "
+                              style={{ color: CHART_PALETTE.subtitle }}
+                            >
                               {"  "}[{" "}
                               {invoiceArchivedDate.toLocaleTimeString("en-US", {
                                 hour: "2-digit",
@@ -301,7 +326,10 @@ export default function ArchivedInvoicesTable({
                             </span>
                           )}
                         </span>
-                        <span className="text-[11px] text-gray-400">
+                        <span
+                          className="text-[11px]"
+                          style={{ color: CHART_PALETTE.subtitle }}
+                        >
                           {invoiceArchivedDate?.toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",

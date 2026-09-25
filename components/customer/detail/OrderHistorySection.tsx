@@ -89,7 +89,20 @@ export default function OrderHistorySection({
       ) : (
         <>
           <div className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <table className="w-full min-w-[850px] text-sm">
+            <table className="w-full table-fixed min-w-[850px] text-sm">
+              {/* `table-fixed` with declared widths: auto layout sized the columns
+                  from whatever rows were on screen, so filtering, paging or a longer
+                  name moved them. Invoice Name takes the slack. */}
+              <colgroup>
+                <col className="w-12" />
+                <col className="w-32" />
+                <col className="w-40" />
+                <col />
+                <col className="w-36" />
+                <col className="w-28" />
+                <col className="w-32" />
+                <col className="w-28" />
+              </colgroup>
               <thead>
                 <tr
                   className="border-b text-[11px] tracking-wider"

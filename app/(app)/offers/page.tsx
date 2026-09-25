@@ -105,7 +105,7 @@ function OfferBuilder() {
                 </div>
               </div> */}
 
-        <div className="grid grid-cols-1 items-start pt-4 gap-6 xl:grid-cols-[1fr_380px]">
+        <div className="grid grid-cols-1 items-start pt-4 gap-6 xl:grid-cols-[1fr_350px]">
           {/* Left: the four steps */}
           {/* min-w-0 because a `1fr` track is `minmax(auto, 1fr)`, and that
               `auto` floor is the item's min-content width. Without it any wide

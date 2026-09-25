@@ -10,7 +10,7 @@ import {
   RepeatIcon,
   Search,
   Trash2,
-  Pencil,
+  Edit3,
   ArrowUpDown,
   ChevronUp,
   ChevronDown,
@@ -237,7 +237,17 @@ export default function RecentTransactions() {
         aria-labelledby={`recent-tab-${filter}`}
         className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
       >
-        <table className="w-full text-sm min-w-[700px]">
+        <table className="w-full table-fixed text-sm min-w-[700px]">
+          {/* `table-fixed` with declared widths: auto layout sized the columns
+              from whatever rows were on screen, so filtering, paging or a longer
+              name moved them. Details takes the slack. */}
+          <colgroup>
+            <col />
+            <col className="w-40" />
+            <col className="w-36" />
+            <col className="w-32" />
+            <col className="w-24" />
+          </colgroup>
           <thead>
             <tr
               className="border-b text-[11px] tracking-wider"
@@ -246,10 +256,10 @@ export default function RecentTransactions() {
                 color: CHART_PALETTE.axis,
               }}
             >
-              <th className="text-left pb-3 pt-3 px-4 font-medium">Details</th>
-              <th className="text-left pb-3 pt-3 px-4 font-medium">Purpose</th>
+              <th className="text-left pb-3 pt-3 px-4 font-normal">Details</th>
+              <th className="text-left pb-3 pt-3 px-4 font-normal">Purpose</th>
               <th
-                className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                 onClick={() => toggleSort("date")}
               >
                 <span className="flex items-center gap-1">
@@ -257,7 +267,7 @@ export default function RecentTransactions() {
                 </span>
               </th>
               <th
-                className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                 onClick={() => toggleSort("amount")}
               >
                 <span className="flex items-center justify-end gap-1">
@@ -265,7 +275,7 @@ export default function RecentTransactions() {
                   <SortIcon colKey="amount" sort={sort} sortDir={sortDir} />
                 </span>
               </th>
-              <th className="text-right pb-3 pt-3 px-4 font-medium">Actions</th>
+              <th className="text-right pb-3 pt-3 px-4 font-normal">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -372,7 +382,7 @@ export default function RecentTransactions() {
                           className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                           title="Edit transaction"
                         >
-                          <Pencil className="h-3.5 w-3.5" />
+                          <Edit3 className="h-3.5 w-3.5" />
                         </button>
                         <button
                           onClick={() => setDeleteTarget(t)}

@@ -256,7 +256,20 @@ export default function ShiftsSection({
         ) : (
           <>
             <div className="overflow-x-auto scrollbar-hide">
-              <table className="w-full min-w-[1020px] text-sm">
+              <table className="w-full table-fixed min-w-[1020px] text-sm">
+                {/* `table-fixed` with declared widths: auto layout sized the columns
+                    from whatever rows were on screen, so filtering, paging or a longer
+                    name moved them. Shift takes the slack. */}
+                <colgroup>
+                  <col className="w-12" />
+                  <col />
+                  <col className="w-36" />
+                  <col className="w-32" />
+                  <col className="w-32" />
+                  <col className="w-32" />
+                  <col className="w-32" />
+                  <col className="w-24" />
+                </colgroup>
                 <thead>
                   <tr
                     className="border-b text-[11px] tracking-wider"

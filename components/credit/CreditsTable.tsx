@@ -56,6 +56,18 @@ type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
 const MIN_COLUMNS = 3;
 
+/** Each column's width, keyed as in `creditColumns`. */
+const COLUMN_WIDTHS: Record<string, string> = {
+  status: "w-32",
+  dueDate: "w-36",
+  invoice: "w-28",
+  unpaidBy: "w-40",
+  grandTotal: "w-32",
+  dueAmount: "w-32",
+  creationDate: "w-44",
+  actions: "w-20",
+};
+
 /** Relative "time ago" label: moments / min / hours / days ago. */
 function timeAgo(date: Date): string {
   const sec = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -100,6 +112,8 @@ export default function CreditsTable({
    * same thing. Actions is locked: it is the row menu, and taking it away
    * removes what a row can do rather than what it shows.
    */
+  // Declared widths, so the columns hold their place when the variant
+  // changes which of them exist. Customer is left out: it takes the slack.
   const creditColumns: TableColumn[] = [
     { key: "status", label: "Status" },
     ...(showDueDate ? [{ key: "dueDate", label: "Due date" }] : []),
@@ -413,12 +427,22 @@ export default function CreditsTable({
       {/* Table */}
       <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <table
-          className="w-full text-sm"
+          className="w-full table-fixed text-sm"
           // Scales with what is actually shown. A fixed floor sized for every
           // column left a horizontal scrollbar over empty space once a few
           // were hidden.
           style={{ minWidth: `${Math.max(640, colCount * 150)}px` }}
         >
+          {/* Built from the visible columns, in the same order the header
+              draws them, so hiding one drops its track with it. Customer
+              carries no width: it takes the slack. */}
+          <colgroup>
+            {creditColumns
+              .filter((column) => showColumn(column.key))
+              .map((column) => (
+                <col key={column.key} className={COLUMN_WIDTHS[column.key]} />
+              ))}
+          </colgroup>
           <thead>
             <tr
               className="border-b text-[11px] tracking-wider"
@@ -428,14 +452,14 @@ export default function CreditsTable({
               }}
             >
               {showColumn("status") && (
-                <th className="text-left pb-3 pt-3 px-4 font-medium">Status</th>
+                <th className="text-left pb-3 pt-3 px-4 font-normal">Status</th>
               )}
               {/* Second, right after status: on an ongoing list what is owed
                   and when reads as one thought, and the created date matters
                   less than the deadline. */}
               {showDueDate && showColumn("dueDate") && (
                 <th
-                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("dueDate")}
                 >
                   <span className="flex items-center gap-1">
@@ -445,23 +469,23 @@ export default function CreditsTable({
               )}
 
               {showColumn("invoice") && (
-                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                <th className="text-left pb-3 pt-3 px-4 font-normal">
                   Invoice #
                 </th>
               )}
               {showColumn("customer") && (
-                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                <th className="text-left pb-3 pt-3 px-4 font-normal">
                   Customer
                 </th>
               )}
               {showDueDate && showColumn("unpaidBy") && (
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                <th className="text-center pb-3 pt-3 px-4 font-normal">
                   Unpaid by Customer
                 </th>
               )}
               {showColumn("grandTotal") && (
                 <th
-                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("grandTotal")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -471,7 +495,7 @@ export default function CreditsTable({
               )}
               {showColumn("dueAmount") && (
                 <th
-                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("dueAmount")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -481,7 +505,7 @@ export default function CreditsTable({
               )}
               {showColumn("creationDate") && (
                 <th
-                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("creationDate")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -490,7 +514,7 @@ export default function CreditsTable({
                 </th>
               )}
               {actionsMode !== "none" && (
-                <th className="text-right pb-3 pt-3 px-4 font-medium">
+                <th className="text-right pb-3 pt-3 px-4 font-normal">
                   Actions
                 </th>
               )}

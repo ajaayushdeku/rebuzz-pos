@@ -299,7 +299,15 @@ function SummaryTable({ type }: { type: TransactionType }) {
 
   return (
     <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-      <table className="w-full text-sm min-w-[380px]">
+      <table className="w-full table-fixed text-sm min-w-[380px]">
+        {/* `table-fixed` with declared widths: auto layout sized the columns
+            from whatever rows were on screen, so filtering, paging or a longer
+            name moved them. Purpose takes the slack. */}
+        <colgroup>
+          <col />
+          <col className="w-32" />
+          <col className="w-32" />
+        </colgroup>
         <thead>
           <tr
             className="border-b text-[11px] tracking-wider"
@@ -308,11 +316,11 @@ function SummaryTable({ type }: { type: TransactionType }) {
               color: CHART_PALETTE.axis,
             }}
           >
-            <th className="text-left pb-3 pt-3 px-4 font-medium">Purpose</th>
-            <th className="text-center pb-3 pt-3 px-4 font-medium">
+            <th className="text-left pb-3 pt-3 px-4 font-normal">Purpose</th>
+            <th className="text-center pb-3 pt-3 px-4 font-normal">
               Transactions
             </th>
-            <th className="text-right pb-3 pt-3 px-4 font-medium">Total</th>
+            <th className="text-right pb-3 pt-3 px-4 font-normal">Total</th>
           </tr>
         </thead>
         <tbody>

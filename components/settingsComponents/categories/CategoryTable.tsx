@@ -4,13 +4,14 @@ import { useState } from "react";
 import type { Category } from "@/lib/types/category";
 import { normalizeColor } from "@/services/category.client";
 import {
-  Pencil,
   Trash2,
   ChevronLeft,
   ChevronRight,
   Loader2,
   Tags,
+  Edit3,
 } from "lucide-react";
+import { CHART_PALETTE } from "@/components/dashboardComponents/chartCard";
 
 const PAGE_SIZE = 5;
 
@@ -43,13 +44,28 @@ const CategoryTable = ({
 
   return (
     <>
-      <table className="w-full text-sm">
+      {/* `table-fixed` with declared widths: auto layout sized the columns
+          from whatever categories were on the page, so searching or paging
+          moved them. Name takes the slack. */}
+      <table className="w-full table-fixed text-sm">
+        <colgroup>
+          <col className="w-12" />
+          <col />
+          <col className="w-42" />
+          <col className="w-24" />
+        </colgroup>
         <thead>
-          <tr className="text-xs text-gray-400 border-b border-gray-100">
-            <th className="text-left pb-2.5">#</th>
-            <th className="text-left pb-2.5 font-medium">Name</th>
-            <th className="text-left pb-2.5 font-medium">Color</th>
-            <th className="text-right pb-2.5 font-medium">Actions</th>
+          <tr
+            className="border-b text-[11px] tracking-wider"
+            style={{
+              borderColor: CHART_PALETTE.grid,
+              color: CHART_PALETTE.axis,
+            }}
+          >
+            <th className="text-left pb-2.5 font-normal">S.No.</th>
+            <th className="text-left pb-2.5 font-normal">Name</th>
+            <th className="text-left pb-2.5 font-normal">Color</th>
+            <th className="text-right pb-2.5 font-normal">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -87,10 +103,13 @@ const CategoryTable = ({
                 key={c._id}
                 className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
               >
-                <td className="py-3 font-medium text-xs text-gray-400">
-                  {idx + 1}
+                <td className="py-3 font-medium text-[11px] text-gray-400">
+                  #{idx + 1}
                 </td>
-                <td className="py-3 font-medium text-xs text-gray-800">
+                <td
+                  className="truncate py-3 pr-3 text-[13px] font-medium"
+                  style={{ color: CHART_PALETTE.title }}
+                >
                   {c.name}
                 </td>
                 <td className="py-3">
@@ -110,7 +129,7 @@ const CategoryTable = ({
                       onClick={() => onEdit(c)}
                       className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                     >
-                      <Pencil size={13} />
+                      <Edit3 size={13} />
                     </button>
                     <button
                       onClick={() => onDelete(c._id)}

@@ -60,6 +60,24 @@ const TRANSACTION_COLUMNS: TableColumn[] = [
 ];
 
 /**
+ * Each column's width, keyed as above. Declared rather than measured: with
+ * auto layout the columns were sized from the rows the active tab happened to
+ * hold, so switching between Completed, Refunded and All moved every one of
+ * them. Invoice Name is left out on purpose — it takes the remaining space.
+ */
+const COLUMN_WIDTHS: Record<string, string> = {
+  status: "w-32",
+  billId: "w-28",
+  orderId: "w-28",
+
+  customer: "w-40",
+  payment: "w-28",
+  amount: "w-32",
+  timestamp: "w-44",
+  actions: "w-25",
+};
+
+/**
  * Which field a column sorts by. Bill ID and Order ID both sort on "id", so
  * the two cannot be mapped one-to-one onto their column keys.
  */
@@ -473,12 +491,21 @@ export default function Transactions({
         className="bg-white overflow-x-auto scrollbar-hide focus-visible:outline-none"
       >
         <table
-          className="w-full text-sm"
+          className="w-full table-fixed text-sm"
           // Scales with what is actually shown. A fixed floor sized for every
           // column left a horizontal scrollbar over empty space once a few
           // were hidden.
           style={{ minWidth: `${Math.max(640, colCount * 150)}px` }}
         >
+          {/* Built from the visible columns, in the same order the header
+              draws them, so hiding one drops its track with it. */}
+          <colgroup>
+            {TRANSACTION_COLUMNS.filter((column) => showColumn(column.key)).map(
+              (column) => (
+                <col key={column.key} className={COLUMN_WIDTHS[column.key]} />
+              ),
+            )}
+          </colgroup>
           <thead>
             <tr
               className="border-b text-[11px] tracking-wider"
@@ -491,11 +518,11 @@ export default function Transactions({
                 S.No
               </th> */}
               {showColumn("status") && (
-                <th className="text-left pb-3 pt-3 px-4 font-medium">Status</th>
+                <th className="text-left pb-3 pt-3 px-4 font-normal">Status</th>
               )}
               {showColumn("billId") && (
                 <th
-                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("id")}
                 >
                   <span className="flex items-center gap-1">
@@ -505,7 +532,7 @@ export default function Transactions({
               )}
               {showColumn("orderId") && (
                 <th
-                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("id")}
                 >
                   <span className="flex items-center gap-1">
@@ -514,13 +541,13 @@ export default function Transactions({
                 </th>
               )}
               {showColumn("invoiceName") && (
-                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                <th className="text-left pb-3 pt-3 px-4 font-normal">
                   Invoice Name
                 </th>
               )}
               {showColumn("customer") && (
                 <th
-                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("invoiceName")}
                 >
                   <span className="flex items-center gap-1">
@@ -529,13 +556,13 @@ export default function Transactions({
                 </th>
               )}
               {showColumn("payment") && (
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                <th className="text-center pb-3 pt-3 px-4 font-normal">
                   Payment
                 </th>
               )}
               {showColumn("amount") && (
                 <th
-                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("amount")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -546,7 +573,7 @@ export default function Transactions({
               {/* Takes the slot Status has vacated at the end. */}
               {showColumn("timestamp") && (
                 <th
-                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("timestamp")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -555,7 +582,7 @@ export default function Transactions({
                 </th>
               )}
               {/* ── New actions column ── */}
-              <th className="text-right pb-3 pt-3 px-4 font-medium">Actions</th>
+              <th className="text-right pb-3 pt-3 px-4 font-normal">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -646,16 +673,18 @@ export default function Transactions({
                     )}
                     {showColumn("invoiceName") && (
                       <td
-                        className="py-3 px-4 text-[13px]"
+                        className="truncate py-3 px-4 text-[13px]"
                         style={{ color: CHART_PALETTE.title }}
+                        title={transaction.invoiceName || undefined}
                       >
                         {transaction.invoiceName || "—"}
                       </td>
                     )}
                     {showColumn("customer") && (
                       <td
-                        className="py-3 px-4 text-[13px]"
+                        className="truncate py-3 px-4 text-[13px]"
                         style={{ color: CHART_PALETTE.title }}
+                        title={transaction.customer?.name || undefined}
                       >
                         {transaction.customer?.name || "—"}
                       </td>
@@ -673,7 +702,7 @@ export default function Transactions({
 
                     {showColumn("amount") && (
                       <td
-                        className="py-3 px-4 text-right text-[13px] font-medium tracking-wide tabular-nums"
+                        className="whitespace-nowrap py-3 px-4 text-right text-[13px] font-medium tracking-wide tabular-nums"
                         style={{ color: CHART_PALETTE.title }}
                       >
                         {formatCurrencySymbol(
@@ -688,7 +717,7 @@ export default function Transactions({
                     {showColumn("timestamp") && (
                       <td className="py-3 px-4 text-right">
                         <span
-                          className=" text-xs tracking-wide block"
+                          className="block text-xs tracking-wide whitespace-nowrap"
                           style={{ color: CHART_PALETTE.title }}
                         >
                           {transaction.timestamp}

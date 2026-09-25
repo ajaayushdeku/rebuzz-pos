@@ -81,6 +81,22 @@ const INVOICE_COLUMNS: TableColumn[] = [
   { key: "actions", label: "Actions", locked: true },
 ];
 
+/**
+ * Each column's width. Declared rather than measured: with auto layout the
+ * columns were sized from whatever rows were on screen, so switching a filter
+ * or paging moved every one of them. Invoice Name is left out on purpose — it
+ * takes the remaining space.
+ */
+const COLUMN_WIDTHS: Record<string, string> = {
+  status: "w-32",
+  due_date: "w-36",
+  invoice: "w-28",
+  customer: "w-40",
+  amount: "w-32",
+  created_at: "w-44",
+  actions: "w-20",
+};
+
 const COLUMNS_STORAGE_KEY = "rebuzz-invoice-table-columns";
 const MIN_COLUMNS = 3;
 
@@ -411,12 +427,22 @@ export default function InvoiceTable({
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
       <div className="bg-white overflow-x-auto scrollbar-hide">
         <table
-          className="w-full text-sm"
+          className="w-full table-fixed text-sm"
           // Scales with what is actually shown. A fixed floor sized for every
           // column left a horizontal scrollbar over empty space once a few
           // were hidden.
           style={{ minWidth: `${Math.max(640, columnCount * 150)}px` }}
         >
+          {/* Built from the visible columns, in the same order the header
+              draws them, so hiding one drops its track with it. Invoice Name
+              carries no width: it takes the slack. */}
+          <colgroup>
+            {INVOICE_COLUMNS.filter((column) => showColumn(column.key)).map(
+              (column) => (
+                <col key={column.key} className={COLUMN_WIDTHS[column.key]} />
+              ),
+            )}
+          </colgroup>
           <thead>
             <tr
               className="border-b text-[11px] tracking-wider"
@@ -429,11 +455,11 @@ export default function InvoiceTable({
                 S.No
               </th> */}
               {showColumn("status") && (
-                <th className="text-left pb-3 pt-3 px-4 font-medium">Status</th>
+                <th className="text-left pb-3 pt-3 px-4 font-normal">Status</th>
               )}
               {showColumn("due_date") && (
                 <th
-                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("due_date")}
                 >
                   <span className="flex items-center gap-1">
@@ -443,7 +469,7 @@ export default function InvoiceTable({
               )}
               {showColumn("invoice") && (
                 <th
-                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("invoice")}
                 >
                   <span className="flex items-center gap-1">
@@ -452,18 +478,18 @@ export default function InvoiceTable({
                 </th>
               )}
               {showColumn("ticket_name") && (
-                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                <th className="text-left pb-3 pt-3 px-4 font-normal">
                   Invoice Name
                 </th>
               )}
               {showColumn("customer") && (
-                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                <th className="text-left pb-3 pt-3 px-4 font-normal">
                   Customer
                 </th>
               )}
               {showColumn("amount") && (
                 <th
-                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("amount")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -473,7 +499,7 @@ export default function InvoiceTable({
               )}
               {showColumn("created_at") && (
                 <th
-                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("created_at")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -481,7 +507,7 @@ export default function InvoiceTable({
                   </span>
                 </th>
               )}
-              <th className="text-right pb-3 pt-3 px-4 font-medium">Actions</th>
+              <th className="text-right pb-3 pt-3 px-4 font-normal">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -565,16 +591,18 @@ export default function InvoiceTable({
                     )}
                     {showColumn("ticket_name") && (
                       <td
-                        className="py-3 px-4 text-[13px]"
+                        className="truncate py-3 px-4 text-[13px]"
                         style={{ color: CHART_PALETTE.title }}
+                        title={inv.ticket_name || undefined}
                       >
                         {inv.ticket_name || "—"}
                       </td>
                     )}
                     {showColumn("customer") && (
                       <td
-                        className="py-3 px-4 text-[13px]"
+                        className="truncate py-3 px-4 text-[13px]"
                         style={{ color: CHART_PALETTE.title }}
+                        title={inv.customer_name ?? undefined}
                       >
                         {inv.customer_name ?? "—"}
                       </td>

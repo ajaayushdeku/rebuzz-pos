@@ -7,7 +7,7 @@ import {
   ChevronDown,
   ChevronUp,
   ArrowUpDown,
-  Pencil,
+  Edit3,
   Trash2,
   ChevronLeft,
   ChevronRight,
@@ -108,6 +108,22 @@ const CUSTOMER_COLUMNS: TableColumn[] = [
   { key: "contact", label: "Contact" },
   { key: "actions", label: "Actions", locked: true },
 ];
+
+/**
+ * Each column's width. Declared rather than measured: with auto layout the
+ * columns were sized from whatever rows were on screen, so filtering or
+ * paging moved every one of them. Customer Name is left out on purpose — it
+ * takes the remaining space.
+ */
+const COLUMN_WIDTHS: Record<string, string> = {
+  profile: "w-25",
+  loyaltyStatus: "w-32",
+  points: "w-45",
+  purchases: "w-28",
+  dueAmount: "w-32",
+  contact: "w-32",
+  actions: "w-25",
+};
 
 const COLUMNS_STORAGE_KEY = "rebuzz-customer-table-columns";
 const MIN_COLUMNS = 3;
@@ -289,12 +305,22 @@ export default function CustomerTable({
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
       <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <table
-          className="w-full text-sm"
+          className="w-full table-fixed text-sm"
           // Scales with what is actually shown. A fixed floor sized for every
           // column left a horizontal scrollbar over empty space once a few
           // were hidden.
           style={{ minWidth: `${Math.max(640, colCount * 150)}px` }}
         >
+          {/* Built from the visible columns, in the same order the header
+              draws them, so hiding one drops its track with it. Customer Name
+              carries no width: it takes the slack. */}
+          <colgroup>
+            {CUSTOMER_COLUMNS.filter((column) => showColumn(column.key)).map(
+              (column) => (
+                <col key={column.key} className={COLUMN_WIDTHS[column.key]} />
+              ),
+            )}
+          </colgroup>
           <thead>
             <tr
               className="border-b text-[11px] tracking-wider"
@@ -310,13 +336,13 @@ export default function CustomerTable({
                   over it would be wider than the thing it names. */}
               {/* <th className="w-12 pb-3 pt-3 px-4 font-medium" /> */}
               {showColumn("profile") && (
-                <th className=" text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600">
+                <th className=" text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600">
                   Profile
                 </th>
               )}
               {showColumn("name") && (
                 <th
-                  className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("name")}
                 >
                   <span className="flex items-center gap-1">
@@ -326,12 +352,12 @@ export default function CustomerTable({
               )}
 
               {showColumn("loyaltyStatus") && (
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                <th className="text-center pb-3 pt-3 px-4 font-normal">
                   Loyalty Status
                 </th>
               )}
               {showColumn("points") && (
-                <th className="text-right pb-3 pt-3 pl-4 pr-8 font-medium ">
+                <th className="text-right pb-3 pt-3 pl-4 pr-8 font-normal ">
                   Points
                   <span className="ml-0.5 text-[9px] text-gray-400">
                     ( pts )
@@ -340,22 +366,22 @@ export default function CustomerTable({
               )}
 
               {showColumn("purchases") && (
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                <th className="text-center pb-3 pt-3 px-4 font-normal">
                   Purchases
                 </th>
               )}
 
               {showColumn("dueAmount") && (
-                <th className="text-right pb-3 pt-3 px-4 font-medium">
+                <th className="text-right pb-3 pt-3 px-4 font-normal">
                   Due Amount
                 </th>
               )}
               {showColumn("contact") && (
-                <th className="text-right pb-3 pt-3 px-4 font-medium">
+                <th className="text-right pb-3 pt-3 px-4 font-normal">
                   Contact
                 </th>
               )}
-              <th className="text-right pb-3 pt-3 px-4 font-medium">Actions</th>
+              <th className="text-right pb-3 pt-3 px-4 font-normal">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -428,8 +454,9 @@ export default function CustomerTable({
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
                         <span
-                          className="font-medium text-[13px]"
+                          className="truncate text-[13px] font-medium"
                           style={{ color: CHART_PALETTE.title }}
+                          title={customer.name}
                         >
                           {customer.name}
                         </span>
@@ -489,7 +516,7 @@ export default function CustomerTable({
                           className="p-1 px-2 text-blue-300 hover:text-cyan-500 hover:bg-cyan-50 rounded-md transition-colors cursor-pointer"
                           title="Update loyalty points"
                         >
-                          <Pencil className="h-3 w-3" />
+                          <Edit3 className="h-3 w-3" />
                         </button>
                       </div>
                     </td>
@@ -550,7 +577,7 @@ export default function CustomerTable({
                         className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         title="Edit customer"
                       >
-                        <Pencil className="h-3.5 w-3.5" />
+                        <Edit3 className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() => setDeleteConfirm(customer)}

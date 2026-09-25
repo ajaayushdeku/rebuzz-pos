@@ -6,9 +6,9 @@ import { Lock, SlidersHorizontal } from "lucide-react";
 import OfferStepCard from "./OfferStepCard";
 
 const FIELD =
-  "h-11 w-full rounded-xl border border-gray-200 bg-white text-sm tabular-nums outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20";
+  "h-11 w-full rounded-xl border border-[#dadce0] bg-white text-sm tabular-nums outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20";
 
-const LABEL = "mb-1.5 block text-[13px] font-medium text-gray-700";
+const LABEL = "mb-1.5 block text-[13px] font-medium text-[#3c4043]";
 
 /** A number field that may be left empty — an empty box reads as "no limit". */
 function LimitField({
@@ -31,7 +31,7 @@ function LimitField({
       <label className={LABEL}>{label}</label>
       <div className="relative">
         {prefix && (
-          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#9aa0a6]">
             {prefix}
           </span>
         )}
@@ -44,7 +44,7 @@ function LimitField({
           className={`${FIELD} ${prefix ? "pl-10 pr-3.5" : "px-3.5"}`}
         />
       </div>
-      {hint && <p className="mt-1.5 text-[11px] text-gray-400">{hint}</p>}
+      {hint && <p className="mt-1.5 text-[11px] text-[#9aa0a6]">{hint}</p>}
     </div>
   );
 }
@@ -112,14 +112,14 @@ export default function OfferConditions() {
           so it cannot be reached by keyboard or click either. */}
       <div
         aria-hidden
-        className="mt-6 flex cursor-not-allowed items-center justify-between gap-4 border-t border-gray-100 pt-5 opacity-50"
+        className="mt-6 flex cursor-not-allowed items-center justify-between gap-4 border-t border-[#e8eaed] pt-5 opacity-50"
       >
         <div className="min-w-0">
-          <p className="flex items-center gap-1.5 text-[13px] font-semibold text-gray-500">
+          <p className="flex items-center gap-1.5 text-[13px] font-semibold text-[#5f6368]">
             <Lock size={12} className="shrink-0" />
             Can be used with other offers
           </p>
-          <p className="mt-0.5 text-[11px] text-gray-400">
+          <p className="mt-0.5 text-[11px] text-[#9aa0a6]">
             Coming soon — offers currently apply one at a time
           </p>
         </div>
@@ -131,7 +131,7 @@ export default function OfferConditions() {
           disabled
           tabIndex={-1}
           aria-label="Can be used with other offers — coming soon"
-          className="relative h-6 w-11 shrink-0 cursor-not-allowed rounded-full bg-gray-200"
+          className="relative h-6 w-11 shrink-0 cursor-not-allowed rounded-full bg-[#dadce0]"
         >
           <span className="absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow" />
         </button>

@@ -10,7 +10,7 @@ import {
   ArrowUpDown,
   Percent,
   Package,
-  Pencil,
+  Edit3,
   Trash2,
   ChevronRight,
   ChevronLeft,
@@ -43,6 +43,21 @@ const PRODUCT_COLUMNS: TableColumn[] = [
   { key: "stock", label: "Stock" },
   { key: "actions", label: "Actions", locked: true },
 ];
+
+/**
+ * Each column's width. Declared rather than measured: with auto layout the
+ * columns were sized from whatever rows were on screen — expanding a product's
+ * variants alone re-sized them. Description is left out on purpose: it takes
+ * the remaining space.
+ */
+const COLUMN_WIDTHS: Record<string, string> = {
+  profile: "w-25",
+  name: "w-56",
+  price: "w-42",
+  tax: "w-40",
+  stock: "w-40",
+  actions: "w-25",
+};
 
 const COLUMNS_STORAGE_KEY = "rebuzz-product-table-columns";
 const MIN_COLUMNS = 3;
@@ -293,12 +308,22 @@ export default function ProductTable({
       {/* ── Table ────────────────────────────────────────── */}
       <div className="bg-white overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <table
-          className="w-full text-sm"
+          className="w-full table-fixed text-sm"
           // Scales with what is actually shown. A fixed floor sized for every
           // column left a horizontal scrollbar over empty space once a few
           // were hidden.
           style={{ minWidth: `${Math.max(640, colCount * 150)}px` }}
         >
+          {/* Built from the visible columns, in the same order the header
+              draws them, so hiding one drops its track with it. Description
+              carries no width: it takes the slack. */}
+          <colgroup>
+            {PRODUCT_COLUMNS.filter((column) => showColumn(column.key)).map(
+              (column) => (
+                <col key={column.key} className={COLUMN_WIDTHS[column.key]} />
+              ),
+            )}
+          </colgroup>
           <thead>
             <tr
               className="border-b text-[11px] tracking-wider"
@@ -330,13 +355,13 @@ export default function ProductTable({
                 </th>
               )}
               {showColumn("description") && (
-                <th className="text-left pb-3 pt-3 px-4 font-medium">
+                <th className="text-left pb-3 pt-3 px-4 font-normal">
                   Description
                 </th>
               )}
               {showColumn("price") && (
                 <th
-                  className="text-right pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                   onClick={() => toggleSort("price")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -346,14 +371,14 @@ export default function ProductTable({
                 </th>
               )}
               {showColumn("tax") && (
-                <th className="text-center pb-3 pt-3 px-4 font-medium">Tax</th>
+                <th className="text-center pb-3 pt-3 px-4 font-normal">Tax</th>
               )}
               {showColumn("stock") && (
-                <th className="text-center pb-3 pt-3 px-4 font-medium">
+                <th className="text-center pb-3 pt-3 px-4 font-normal">
                   Stock
                 </th>
               )}
-              <th className="text-right pb-3 pt-3 px-4 font-medium">Actions</th>
+              <th className="text-right pb-3 pt-3 px-4 font-normal">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -531,7 +556,7 @@ export default function ProductTable({
                           className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                           title="Edit product"
                         >
-                          <Pencil className="h-3.5 w-3.5" />
+                          <Edit3 className="h-3.5 w-3.5" />
                         </button>
                         <button
                           onClick={() => handleDelete(product)}
@@ -634,7 +659,7 @@ export default function ProductTable({
                                 className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                 title={`Edit ${product.name}`}
                               >
-                                <Pencil className="h-3.5 w-3.5" />
+                                <Edit3 className="h-3.5 w-3.5" />
                               </button>
                             </div>
                           </td>

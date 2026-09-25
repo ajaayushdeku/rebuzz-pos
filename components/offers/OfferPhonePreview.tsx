@@ -104,11 +104,11 @@ function PhoneFrame({
 }) {
   return (
     <div className="mx-auto w-full max-w-[320px] rounded-[2rem] border-[6px] border-gray-900 bg-white shadow-xl">
-      <div className="relative flex items-center justify-between rounded-t-[1.75rem] px-4 pb-1 pt-2.5 text-[11px] font-semibold text-gray-900">
+      <div className="relative flex items-center justify-between rounded-t-[1.75rem] px-4 pb-1 pt-2.5 text-[11px] font-semibold text-[#3c4043]">
         <span>9:41</span>
         <span className="absolute left-1/2 top-1.5 h-4 w-16 -translate-x-1/2 rounded-full bg-gray-900" />
         {/* Signal, wi-fi and battery, as a phone actually draws them. */}
-        <span className="flex items-center gap-1 text-gray-800">
+        <span className="flex items-center gap-1 text-[#3c4043]">
           <SignalHigh size={13} strokeWidth={2.5} />
           <Wifi size={13} strokeWidth={2.5} />
           <BatteryMedium size={15} strokeWidth={2} />
@@ -116,7 +116,7 @@ function PhoneFrame({
       </div>
 
       <div
-        className={`min-h-[460px] rounded-b-[1.85rem] bg-gray-50 px-3 pb-5 pt-2 ${
+        className={`min-h-[460px] rounded-b-[1.85rem] bg-[#f8f9fa] px-3 pb-5 pt-2 ${
           center ? "flex flex-col justify-center" : ""
         }`}
       >
@@ -130,16 +130,16 @@ function PhoneFrame({
 
 function MerchantRow({ name }: { name: string }) {
   return (
-    <div className="flex items-center gap-2.5 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
+    <div className="flex items-center gap-2.5 rounded-2xl border border-[#e8eaed] bg-white p-3 shadow-sm">
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600">
         <Store size={17} className="text-white" />
       </div>
       <div className="min-w-0">
-        <p className="flex items-center gap-1 truncate text-[13px] font-bold text-gray-900">
+        <p className="flex items-center gap-1 truncate text-[13px] font-bold text-[#3c4043]">
           {name}
           <BadgeCheck size={13} className="shrink-0 text-blue-500" />
         </p>
-        <p className="text-[10px] text-gray-400">Verified Merchant</p>
+        <p className="text-[10px] text-[#9aa0a6]">Verified Merchant</p>
       </div>
     </div>
   );
@@ -255,10 +255,10 @@ export default function OfferPhonePreview() {
               type="button"
               onClick={() => setChannel(id)}
               aria-pressed={active}
-              className={`flex items-center gap-2 rounded-lg px-3.25 py-2 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+              className={`flex items-center gap-1 rounded-lg px-5 py-1.5 text-[9px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
                 active
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "bg-white text-[#3c4043] shadow-sm"
+                  : "text-[#5f6368] hover:text-gray-700"
               }`}
             >
               <Icon size={14} className={tint} />
@@ -294,7 +294,7 @@ export default function OfferPhonePreview() {
             </div>
 
             {saving > 0 && (
-              <div className="rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
+              <div className="rounded-2xl border border-[#e8eaed] bg-white p-3 shadow-sm">
                 <div className="flex items-center justify-between gap-2">
                   <p className="flex items-center gap-1.5 text-[12px] font-bold text-blue-600">
                     <Receipt size={13} />
@@ -314,12 +314,12 @@ export default function OfferPhonePreview() {
 
                 <dl className="mt-2.5 space-y-1.5 text-[12px]">
                   <div className="flex justify-between">
-                    <dt className="text-gray-500">Original total:</dt>
-                    <dd className="tabular-nums text-gray-400 line-through">
+                    <dt className="text-[#5f6368]">Original total:</dt>
+                    <dd className="tabular-nums text-[#9aa0a6] line-through">
                       {money(SAMPLE_ORDER)}
                     </dd>
                   </div>
-                  <div className="flex justify-between border-b border-dashed border-gray-200 pb-1.5">
+                  <div className="flex justify-between border-b border-dashed border-[#dadce0] pb-1.5">
                     <dt className="font-semibold text-blue-600">
                       Discount applied:
                     </dt>
@@ -328,7 +328,7 @@ export default function OfferPhonePreview() {
                     </dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="font-bold text-gray-800">Customer pays:</dt>
+                    <dt className="font-bold text-[#3c4043]">Customer pays:</dt>
                     <dd className="font-bold tabular-nums text-blue-700">
                       {money(SAMPLE_ORDER - saving)}
                     </dd>
@@ -337,8 +337,8 @@ export default function OfferPhonePreview() {
               </div>
             )}
 
-            <div className="rounded-2xl border border-gray-100 bg-white px-3 py-2.5 shadow-sm">
-              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-gray-500">
+            <div className="rounded-2xl border border-[#e8eaed] bg-white px-3 py-2.5 shadow-sm">
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#5f6368]">
                 Terms &amp; details
               </p>
               {terms.length > 0 && (
@@ -346,13 +346,13 @@ export default function OfferPhonePreview() {
                   {terms.map(({ icon, text }) => (
                     <li
                       key={text}
-                      className="flex items-start gap-2 text-[11px] leading-snug text-gray-600"
+                      className="flex items-start gap-2 text-[11px] leading-snug text-[#5f6368]"
                     >
                       {/* createElement rather than a capitalised binding,
                           which reads as defining a component in render. */}
                       {createElement(icon, {
                         size: 13,
-                        className: "mt-px shrink-0 text-gray-400",
+                        className: "mt-px shrink-0 text-[#9aa0a6]",
                       })}
                       {text}
                     </li>
@@ -362,8 +362,10 @@ export default function OfferPhonePreview() {
 
               {/* A code nobody can read off the card is a code nobody uses. */}
               {form.hasKey && (
-                <div className="mt-3 flex items-center justify-between gap-2 border-t border-gray-100 pt-2.5">
-                  <span className="text-[11px] text-gray-500">Promo code:</span>
+                <div className="mt-3 flex items-center justify-between gap-2 border-t border-[#e8eaed] pt-2.5">
+                  <span className="text-[11px] text-[#5f6368]">
+                    Promo code:
+                  </span>
                   <span className="inline-flex items-center gap-1.5 rounded-md bg-gray-900 px-2.5 py-1 font-mono text-[11px] font-bold tracking-wider text-white">
                     <Tag size={11} />
                     {form.hasKey}
@@ -406,7 +408,7 @@ export default function OfferPhonePreview() {
 
         {channel === "sms" && (
           <div className="space-y-3">
-            <p className="mx-auto w-fit rounded-full bg-gray-200/80 px-3 py-1 text-[11px] font-semibold text-gray-500">
+            <p className="mx-auto w-fit rounded-full bg-[#e8eaed] px-3 py-1 text-[11px] font-medium text-[#5f6368]">
               Today 11:30 AM
             </p>
 
@@ -418,19 +420,19 @@ export default function OfferPhonePreview() {
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-purple-600 text-[12px] font-bold text-white">
                   V
                 </span>
-                <p className="truncate text-[13px] font-bold text-gray-900">
+                <p className="truncate text-[13px] font-bold text-[#3c4043]">
                   {merchantName}
                 </p>
               </div>
 
-              <div className="my-2.5 border-t border-gray-100" />
+              <div className="my-2.5 border-t border-[#e8eaed]" />
 
               <p className="text-[12px] text-gray-700">🎉 Special Offer!</p>
               <p className="mt-1 text-[13px] font-bold text-emerald-600">
                 {headline}.
               </p>
               {audienceLine && (
-                <p className="mt-0.5 text-[11px] text-gray-500">
+                <p className="mt-0.5 text-[11px] text-[#5f6368]">
                   {audienceLine}.
                 </p>
               )}
@@ -440,7 +442,7 @@ export default function OfferPhonePreview() {
                 </p>
               )}
               {form.hasKey && (
-                <p className="mt-1 text-[11px] text-gray-500">
+                <p className="mt-1 text-[11px] text-[#5f6368]">
                   Use code{" "}
                   <span className="font-bold tracking-wider text-gray-700">
                     {form.hasKey}
@@ -455,7 +457,7 @@ export default function OfferPhonePreview() {
                 </p>
               )}
 
-              <p className="mt-2 text-right text-[10px] text-gray-400">
+              <p className="mt-2 text-right text-[10px] text-[#9aa0a6]">
                 Delivered
               </p>
             </div>
@@ -464,17 +466,17 @@ export default function OfferPhonePreview() {
 
         {channel === "receipt" && (
           <div className="rounded-2xl bg-white px-5 py-5 font-mono shadow-sm">
-            <p className="text-center text-[13px] font-bold uppercase tracking-[0.15em] text-gray-900">
+            <p className="text-center text-[13px] font-bold uppercase tracking-[0.15em] text-[#3c4043]">
               {merchantName}
             </p>
             <p className="mt-1 text-center text-[11px] text-amber-600">
               {businessAddress}
             </p>
-            <p className="mt-0.5 text-center text-[11px] tracking-wide text-gray-500">
+            <p className="mt-0.5 text-center text-[11px] tracking-wide text-[#5f6368]">
               CUSTOMER RECEIPT
             </p>
 
-            <div className="my-3 border-t border-dashed border-gray-300" />
+            <div className="my-3 border-t border-dashed border-[#dadce0]" />
 
             <div className="flex justify-between text-[12px] text-gray-700">
               <span>1x Special Order</span>
@@ -491,10 +493,10 @@ export default function OfferPhonePreview() {
               </div>
             )}
 
-            <div className="my-3 border-t border-dashed border-gray-300" />
+            <div className="my-3 border-t border-dashed border-[#dadce0]" />
 
             <div className="flex justify-between">
-              <span className="text-[13px] font-bold text-gray-900">
+              <span className="text-[13px] font-bold text-[#3c4043]">
                 TOTAL PAID
               </span>
               <span className="text-[13px] font-bold tabular-nums text-emerald-600">
@@ -507,7 +509,7 @@ export default function OfferPhonePreview() {
                 table. White quiet zone around it because a scanner needs the
                 margin as much as the pattern. */}
             {offerUrl && (
-              <div className="mt-4 flex flex-col items-center border-t border-dashed border-gray-300 pt-4">
+              <div className="mt-4 flex flex-col items-center border-t border-dashed border-[#dadce0] pt-4">
                 <div className="rounded bg-white p-2">
                   <QRCode
                     value={offerUrl}
@@ -517,7 +519,7 @@ export default function OfferPhonePreview() {
                     viewBox="0 0 256 256"
                   />
                 </div>
-                <p className="mt-2 text-center text-[9px] uppercase tracking-wider text-gray-500">
+                <p className="mt-2 text-center text-[9px] uppercase tracking-wider text-[#5f6368]">
                   Scan for this offer
                 </p>
               </div>

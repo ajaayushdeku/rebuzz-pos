@@ -29,6 +29,7 @@ import ColumnPicker, {
   storeColumns,
   type TableColumn,
 } from "@/components/ui/ColumnPicker";
+import { CHART_PALETTE } from "@/components/dashboardComponents/chartCard";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 interface StaffFormData {
@@ -131,6 +132,22 @@ const STAFF_COLUMNS: TableColumn[] = [
   { key: "autoPrint", label: "Auto print" },
   { key: "actions", label: "Actions", locked: true },
 ];
+
+/**
+ * Each column's width. Declared rather than measured: with auto layout the
+ * columns were sized from whatever rows were on screen, so searching, paging
+ * or a longer email moved every one of them. Employee Name is left out on
+ * purpose — it takes the remaining space.
+ */
+const COLUMN_WIDTHS: Record<string, string> = {
+  serial: "w-14",
+  email: "w-64",
+  phone: "w-36",
+  role: "w-28",
+  status: "w-28",
+  autoPrint: "w-28",
+  actions: "w-24",
+};
 
 const COLUMNS_STORAGE_KEY = "rebuzz-staff-table-columns";
 const MIN_COLUMNS = 3;
@@ -596,22 +613,37 @@ export default function StaffManagementPage() {
         {/* Table always renders; loading + empty states live inside the tbody. */}
         <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <table
-            className="w-full text-sm"
+            className="w-full table-fixed text-sm"
             // Scales with what is actually shown. A fixed floor sized for
             // every column left a horizontal scrollbar over empty space
             // once a few were hidden.
             style={{ minWidth: `${Math.max(640, colCount * 150)}px` }}
           >
+            {/* Built from the visible columns, in the same order the header
+                draws them, so hiding one drops its track with it. */}
+            <colgroup>
+              {STAFF_COLUMNS.filter((column) => showColumn(column.key)).map(
+                (column) => (
+                  <col key={column.key} className={COLUMN_WIDTHS[column.key]} />
+                ),
+              )}
+            </colgroup>
             <thead>
-              <tr className="text-xs text-gray-400 border-b border-gray-100">
+              <tr
+                className="border-b text-[11px] tracking-wider"
+                style={{
+                  borderColor: CHART_PALETTE.grid,
+                  color: CHART_PALETTE.axis,
+                }}
+              >
                 {showColumn("serial") && (
-                  <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
-                    S.No
+                  <th className="text-left pb-3 pt-3 px-4 font-normal">
+                    S.No.
                   </th>
                 )}
                 {showColumn("name") && (
                   <th
-                    className="text-left pb-3 pt-3 px-4 font-medium cursor-pointer select-none hover:text-gray-600"
+                    className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
                     onClick={() => toggleSort("name")}
                   >
                     <span className="flex items-center gap-1">
@@ -620,31 +652,31 @@ export default function StaffManagementPage() {
                   </th>
                 )}
                 {showColumn("email") && (
-                  <th className="text-left pb-3 pt-3 px-4 font-medium">
+                  <th className="text-left pb-3 pt-3 px-4 font-normal">
                     Email
                   </th>
                 )}
                 {showColumn("phone") && (
-                  <th className="text-left pb-3 pt-3 px-4 font-medium">
+                  <th className="text-left pb-3 pt-3 px-4 font-normal">
                     Phone
                   </th>
                 )}
                 {showColumn("role") && (
-                  <th className="text-center pb-3 pt-3 px-4 font-medium">
+                  <th className="text-center pb-3 pt-3 px-4 font-normal">
                     Role
                   </th>
                 )}
                 {showColumn("status") && (
-                  <th className="text-center pb-3 pt-3 px-4 font-medium">
+                  <th className="text-center pb-3 pt-3 px-4 font-normal">
                     Status
                   </th>
                 )}
                 {showColumn("autoPrint") && (
-                  <th className="text-center pb-3 pt-3 px-4 font-medium">
+                  <th className="text-center pb-3 pt-3 px-4 font-normal">
                     Auto print
                   </th>
                 )}
-                <th className="text-right pb-3 pt-3 px-4 font-medium">
+                <th className="text-right pb-3 pt-3 px-4 font-normal">
                   Actions
                 </th>
               </tr>
@@ -688,29 +720,38 @@ export default function StaffManagementPage() {
                     className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
                   >
                     {showColumn("serial") && (
-                      <td className="py-3 px-4 text-gray-400 text-xs">
+                      <td className="py-3 px-4 text-gray-400 text-[11px]">
                         {page * pageSize + idx + 1}
                       </td>
                     )}
                     {showColumn("name") && (
                       <td className="py-3 px-4">
-                        <span className="font-medium text-gray-900 text-xs">
+                        <span
+                          className="font-medium  text-[13px]"
+                          style={{ color: CHART_PALETTE.title }}
+                        >
                           {staffMember.name || "—"}
                         </span>
                       </td>
                     )}
                     {showColumn("email") && (
                       <td className="py-3 px-4">
-                        <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                          <Mail className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                        <div
+                          className="flex items-center gap-1.5 text-xs"
+                          style={{ color: CHART_PALETTE.title }}
+                        >
+                          <Mail className="h-3.5 w-3.5 shrink-0 text-gray-500" />
                           {staffMember.email || "—"}
                         </div>
                       </td>
                     )}
                     {showColumn("phone") && (
                       <td className="py-3 px-4">
-                        <div className="flex items-center gap-1.5 text-xs text-gray-600 tracking-wide">
-                          <Phone className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                        <div
+                          className="flex items-center gap-1.5 text-xs tracking-wide"
+                          style={{ color: CHART_PALETTE.title }}
+                        >
+                          <Phone className="h-3.5 w-3.5 text-gray-500 shrink-0" />
                           {staffMember.phone || "—"}
                         </div>
                       </td>
