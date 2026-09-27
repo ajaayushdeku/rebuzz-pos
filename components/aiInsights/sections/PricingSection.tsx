@@ -170,10 +170,10 @@ function SuggestedRow({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <span className="text-[11px] font-medium text-gray-500">{label}</span>
+      <span className="text-[11px] font-medium text-[#5f6368]">{label}</span>
       <span className="flex items-baseline gap-2">
         {was && (
-          <span className="text-[11px] tabular-nums text-gray-400 line-through">
+          <span className="text-[11px] tabular-nums text-[#9aa0a6] line-through">
             {was}
           </span>
         )}
@@ -234,7 +234,7 @@ function PricingCard({
         </CardAction>
       }
     >
-      <p className="text-[13px] leading-relaxed text-gray-600">
+      <p className="text-[13px] leading-relaxed text-[#5f6368]">
         {item.verdict}
       </p>
 
@@ -271,7 +271,7 @@ function PricingCard({
                   </SuggestedRow>
                 )}
                 {item.breakEvenUnitsPct !== null && (
-                  <p className="flex items-start gap-1.5 text-[11px] leading-relaxed text-gray-500">
+                  <p className="flex items-start gap-1.5 text-[11px] leading-relaxed text-[#5f6368]">
                     <Scale size={12} className="mt-0.5 shrink-0" aria-hidden />
                     {breakEvenText(item.breakEvenUnitsPct)}.
                   </p>
@@ -304,6 +304,10 @@ export default function PricingSection({
         iconClassName="bg-emerald-50 text-emerald-600"
         title="Pricing Opportunities"
         subtitle={`Price changes, discounts and margins from your last ${PRICING_WEEKS} weeks of sales`}
+        info={{
+          heading: "How to read these",
+          body: `Each card compares what an item earns now against what it earned over the last ${PRICING_WEEKS} weeks. The suggested price is an estimate from your own sales, not a promise — nothing changes until you set it yourself.`,
+        }}
         actions={
           <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
             <SectionRefreshButton

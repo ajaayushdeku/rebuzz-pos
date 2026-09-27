@@ -14,6 +14,7 @@ import CategoryTable from "@/components/settingsComponents/categories/CategoryTa
 import EditCategoryModal from "@/components/settingsComponents/categories/EditCategoryModal";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import HeaderActionButton from "@/components/ui/HeaderActionButton";
+import PageHeader from "@/components/ui/PageHeader";
 
 type CategoryForm = {
   name: string;
@@ -102,26 +103,25 @@ export default function CategorySettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       <div className="w-full mx-auto space-y-6">
         {/* ── Header ─────────────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2 pb-4 border-b border-gray-200">
-          <div>
-            <h1 className="font-bold text-xl md:text-2xl truncate">
-              Category Settings
-            </h1>
-            <p className="text-xs text-gray-400 mt-0.5">
-              {categories.length} categories configured
-            </p>
-          </div>
-          <HeaderActionButton
-            variant="dashed"
-            icon={Tag}
-            hideLabelOnMobile
-            label="New Category"
-            onClick={openCreate}
-          />
-        </div>
+        {/* The column's space-y-6 already gaps the header from the search
+            below it, so the rule carries no margin of its own. */}
+        <PageHeader
+          title="Category Settings"
+          subtitle={<>{categories.length} categories configured</>}
+          spaceBelow={false}
+          actions={
+            <HeaderActionButton
+              variant="dashed"
+              icon={Tag}
+              hideLabelOnMobile
+              label="New Category"
+              onClick={openCreate}
+            />
+          }
+        />
 
         {/* ── Search ──────────────────────────────────────── */}
         <div className="relative mt-6 mb-8">

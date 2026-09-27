@@ -30,6 +30,7 @@ import ColumnPicker, {
   type TableColumn,
 } from "@/components/ui/ColumnPicker";
 import { CHART_PALETTE } from "@/components/dashboardComponents/chartCard";
+import PageHeader from "@/components/ui/PageHeader";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 interface StaffFormData {
@@ -510,27 +511,25 @@ export default function StaffManagementPage() {
     );
 
   return (
-    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       <div className="w-full mx-auto">
         {/* ── Header ───────────────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2 pb-4 border-b border-gray-200">
-          <div>
-            <h1 className="font-bold text-xl md:text-2xl truncate">
-              Manage Employees
-            </h1>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Manage all employees and staff members
-            </p>
-          </div>
-
-          <HeaderActionButton
-            variant="dashed"
-            icon={Plus}
-            hideLabelOnMobile
-            label="Add New Employee"
-            onClick={openAdd}
-          />
-        </div>
+        {/* The search row below brings its own mt-6, so the rule carries
+            no margin of its own. */}
+        <PageHeader
+          title="Manage Employees"
+          subtitle="Manage all employees and staff members"
+          spaceBelow={false}
+          actions={
+            <HeaderActionButton
+              variant="dashed"
+              icon={Plus}
+              hideLabelOnMobile
+              label="Add New Employee"
+              onClick={openAdd}
+            />
+          }
+        />
 
         {/* ── Search + Filter ── */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6 mt-6">

@@ -17,6 +17,7 @@ import {
   StaffStatWrapper,
   LatestShiftsWrapper,
 } from "@/components/componentWrappers/StaffWrapper";
+import PageHeader from "@/components/ui/PageHeader";
 
 const Page = async ({
   searchParams,
@@ -37,39 +38,28 @@ const Page = async ({
 
   return (
     <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
-      {/* ── Header ── */}
-      <div className="flex w-full flex-col justify-between gap-4 pb-5 sm:flex-row sm:items-end">
-        <div className="min-w-0">
-          <h1 className="truncate text-[22px] font-semibold tracking-[1px] text-[#3c4043] md:text-[26px]">
-            Employee Performance
-          </h1>
+      <PageHeader
+        className="mb-4"
+        title="Employee Performance"
+        subtitle="Insights into employee productivity and shift efficiency."
+        actions={
+          <div className="flex flex-row sm:items-center justify-between gap-3 ">
+            <div className="self-end">
+              <EmployeeDateFilter />
+            </div>
 
-          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-[#5f6368]">
-            Insights into employee productivity and shift efficiency.
-          </p>
-        </div>
-
-        {/* ── Date range filter ── */}
-        <div className="flex flex-row sm:items-center justify-between gap-3 ">
-          <div className="self-end">
-            <EmployeeDateFilter />
+            <button className="flex flex-row items-center rounded-md text-sm px-2.5 py-2 md:py-1.5 gap-2 bg-transparent border-dashed border-[1px] border-blue-400 text-blue-500 font-semibold hover:bg-blue-100 hover:text-blue-500 hover:border-blue-500  cursor-pointer">
+              <Link
+                href="/settings/employees"
+                className="flex flex-row items-center gap-2"
+              >
+                <UserPlus className="h-4 w-4" />
+                <span className="hidden lg:block">Manage Employees</span>
+              </Link>
+            </button>
           </div>
-
-          <button className="flex flex-row items-center rounded-md text-sm px-2.5 py-2 md:py-1.5 gap-2 bg-transparent border-dashed border-[1px] border-blue-400 text-blue-500 font-semibold hover:bg-blue-100 hover:text-blue-500 hover:border-blue-500  cursor-pointer">
-            <Link
-              href="/settings/employees"
-              className="flex flex-row items-center gap-2"
-            >
-              <UserPlus className="h-4 w-4" />
-              <span className="hidden lg:block">Manage Employees</span>
-            </Link>
-          </button>
-        </div>
-      </div>
-
-      <div
-        aria-hidden
-        className="mb-4 h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent"
+        }
+        spaceBelow={false}
       />
 
       <div className="flex flex-col gap-6">

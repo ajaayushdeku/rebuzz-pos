@@ -29,6 +29,7 @@ import {
 } from "@/components/componentWrappers/TaxAnalyticsWrappers";
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
 import ChartSkeleton from "@/components/ui/chartskeleton";
+import PageHeader from "@/components/ui/PageHeader";
 
 /**
  * One panel, isolated.
@@ -65,27 +66,16 @@ export default function TaxAnalyticsPage() {
 
   return (
     <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
-      {/* ── Header ── */}
-      <div className="flex w-full flex-col justify-between gap-4 pb-5 sm:flex-row sm:items-end">
-        <div className="min-w-0">
-          <h1 className="truncate text-[22px] font-semibold tracking-[1px] text-[#3c4043] md:text-[26px]">
-            Tax Analytics
-          </h1>
-
-          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-[#5f6368]">
-            Overview of tax collected, refunded, and categorized
-          </p>
-        </div>
-        <DateRangeFilter
-          value={dateRange}
-          onChange={setDateRange}
-          storageKey="rebuzz-tax-analytics-date-filter"
-        />
-      </div>
-
-      <div
-        aria-hidden
-        className="mb-6 h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent"
+      <PageHeader
+        title="Tax Analytics"
+        subtitle="Overview of tax collected, refunded, and categorized"
+        actions={
+          <DateRangeFilter
+            value={dateRange}
+            onChange={setDateRange}
+            storageKey="rebuzz-tax-analytics-date-filter"
+          />
+        }
       />
 
       <div className="space-y-6">

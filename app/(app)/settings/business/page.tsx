@@ -22,6 +22,7 @@ import { AddressSearch } from "@/components/onboardingComponents/AddressSearch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import businessLogo from "@/public/rebuzz.png";
+import PageHeader from "@/components/ui/PageHeader";
 
 const inputClass =
   "w-full rounded-lg border border-[#dadce0] px-3 py-2.5 text-sm text-[#3c4043] transition placeholder:text-[#9aa0a6] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500";
@@ -296,28 +297,25 @@ export default function BusinessSettingsPage() {
     <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       <div className="mx-auto w-full">
         {/* ── Header ── */}
-        <div className="mb-5 flex flex-col gap-4 border-b border-[#e8eaed] pb-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
-            <h1 className="truncate text-xl font-bold md:text-2xl">
-              Business Settings
-            </h1>
-            <p className="mt-0.5 text-xs text-[#9aa0a6]">
-              {editing
-                ? "Changes are saved only when you press Save."
-                : "Your business profile as it appears on invoices and receipts."}
-            </p>
-          </div>
-
-          {!editing && !isLoading && (
-            <Button
-              onClick={startEdit}
-              className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm text-white hover:bg-blue-700"
-            >
-              <Pencil className="h-4 w-4" />
-              Edit business
-            </Button>
-          )}
-        </div>
+        <PageHeader
+          title="Business Settings"
+          subtitle={
+            editing
+              ? "Changes are saved only when you press Save."
+              : "Your business profile as it appears on invoices and receipts."
+          }
+          actions={
+            !editing && !isLoading ? (
+              <Button
+                onClick={startEdit}
+                className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm text-white hover:bg-blue-700"
+              >
+                <Pencil className="h-4 w-4" />
+                Edit business
+              </Button>
+            ) : undefined
+          }
+        />
 
         {isLoading ? (
           <ProfileSkeleton />

@@ -35,6 +35,7 @@ import {
   useLoyaltyTiers,
   useLoyaltyTierMutations,
 } from "@/hooks/useLoyaltyTiers";
+import PageHeader from "@/components/ui/PageHeader";
 
 const inputClass =
   "w-full rounded-lg border border-[#dadce0] px-3 py-2.5 text-sm text-[#3c4043] transition placeholder:text-[#9aa0a6] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500";
@@ -274,31 +275,26 @@ export default function LoyaltyPointPage() {
     <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       <div className="w-full mx-auto ">
         {/* ── Header ─────────────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-[#e8eaed]">
-          <div>
-            <h1 className="font-bold text-xl md:text-2xl truncate">
-              Loyalty Points
-            </h1>
-            <p className="mt-0.5 text-xs text-[#9aa0a6]">
-              Configure how customers earn and redeem loyalty points on
-              invoices.
-            </p>
-          </div>
-          <Button
-            onClick={handleSave}
-            disabled={saving || isLoading || !hasChanges}
-            className="flex cursor-pointer items-center gap-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-          >
-            {saving ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              "Save changes"
-            )}
-          </Button>
-        </div>
+        <PageHeader
+          title="Loyalty Points"
+          subtitle="Configure how customers earn and redeem loyalty points on invoices."
+          actions={
+            <Button
+              onClick={handleSave}
+              disabled={saving || isLoading || !hasChanges}
+              className="flex cursor-pointer items-center gap-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save changes"
+              )}
+            </Button>
+          }
+        />
 
         {isLoading ? (
           <div className="flex items-center justify-center py-24">

@@ -6,6 +6,7 @@ import { User, Mail, Phone, Loader2, Shield } from "lucide-react";
 import { fetchUserData } from "@/services/apiProfile";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import PageHeader from "@/components/ui/PageHeader";
 
 export default function ProfileSettingsPage() {
   const router = useRouter();
@@ -26,24 +27,20 @@ export default function ProfileSettingsPage() {
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-8 md:px-10">
       <div className="max-w-lg mx-auto">
-        <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">
-              Profile Settings
-            </h1>
-            <p className="text-xs text-gray-400 mt-0.5">
-              View your account information
-            </p>
-          </div>
-          <Button
-            onClick={() => router.push("/settings/change-password")}
-            variant="outline"
-            className="rounded-lg flex items-center gap-2 border-gray-300 text-gray-700"
-          >
-            <Shield className="h-4 w-4" />
-            Change Password
-          </Button>
-        </div>
+        <PageHeader
+          title="Profile Settings"
+          subtitle="View your account information"
+          actions={
+            <Button
+              onClick={() => router.push("/settings/change-password")}
+              variant="outline"
+              className="rounded-lg flex items-center gap-2 border-gray-300 text-gray-700"
+            >
+              <Shield className="h-4 w-4" />
+              Change Password
+            </Button>
+          }
+        />
 
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="px-6 pt-6 pb-4 flex items-center gap-4">

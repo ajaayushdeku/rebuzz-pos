@@ -71,7 +71,7 @@ function menuMetrics(
     metrics.push({
       label: "Separately",
       value: money(item.separatePrice),
-      valueClassName: "text-gray-400 line-through",
+      valueClassName: "text-[#9aa0a6] line-through",
       note: `saves ${money(item.separatePrice - item.suggestedPrice)}`,
     });
   } else {
@@ -125,19 +125,23 @@ export default function MenuSuggestionsSection({
         iconClassName="bg-violet-50 text-violet-600"
         title="AI Menu Suggestions"
         subtitle={`Ideas built from your best sellers of the last ${SECTION_WINDOW_DAYS} days`}
+        info={{
+          heading: "Where these come from",
+          body: `The AI is given your best-selling items over the last ${SECTION_WINDOW_DAYS} days and asked what else would sell beside them. Nothing here is on your menu yet — each card is a proposal, with the items it was built from listed on it.`,
+        }}
         actions={
           <div className="flex flex-row w-full md:w-fit gap-2 justify-between">
             <div className="relative">
               <Search
                 size={14}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9aa0a6]"
               />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search menu ideas..."
                 aria-label="Search menu ideas"
-                className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-[13px] outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100 sm:w-52"
+                className="h-9 w-full rounded-lg border border-[#dadce0] bg-white pl-9 pr-3 text-[13px] outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100 sm:w-52"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -197,10 +201,10 @@ export default function MenuSuggestionsSection({
                           ? `Remove ${item.title} from shortlist`
                           : `Shortlist ${item.title}`
                       }
-                      className={`rounded-md p-1 transition-colors hover:bg-gray-100 ${
+                      className={`rounded-md p-1 transition-colors hover:bg-[#f1f3f4] ${
                         starred
                           ? "text-amber-400"
-                          : "text-gray-300 hover:text-gray-500"
+                          : "text-[#9aa0a6] hover:text-[#5f6368]"
                       }`}
                     >
                       <Star
@@ -212,12 +216,12 @@ export default function MenuSuggestionsSection({
                   metrics={menuMetrics(item, money)}
                   // A new item is added on the products page.
                   footer={
-                    <CardAction href="/records/products/add" primary={false}>
+                    <CardAction href="/records/products/add" primary={true}>
                       Add to menu
                     </CardAction>
                   }
                 >
-                  <p className="text-[13px] leading-relaxed text-gray-600">
+                  <p className="text-[13px] leading-relaxed text-[#5f6368]">
                     {item.description}
                   </p>
 
@@ -229,7 +233,7 @@ export default function MenuSuggestionsSection({
                         content: (
                           <>
                             {b.name}
-                            <span className="ml-1.5 text-gray-400">
+                            <span className="ml-1.5 text-[#9aa0a6]">
                               {money(b.price)}
                             </span>
                           </>

@@ -24,6 +24,7 @@ import type { RetentionInsight } from "@/lib/ai-insights/sections/retention";
 import type { StaffingInsight } from "@/lib/ai-insights/sections/staffing";
 import type { SalesRecommendation } from "@/lib/ai-insights/sections/salesRecommendations";
 import type { SlowItemInsight } from "@/lib/ai-insights/sections/slowItems";
+import PageHeader from "@/components/ui/PageHeader";
 
 /**
  * AI Insights. Every section is generated from the business's own sales,
@@ -168,14 +169,14 @@ export default function AIInsightPage() {
   const savedAnswers = answered.filter((data) => data!.cached).length;
 
   return (
-    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       <div className="mx-auto flex w-full  flex-col ">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap- pb-4 border-b border-gray-200">
-          <div>
-            <h1 className="font-bold text-xl md:text-2xl truncate">
-              AI Insights
-            </h1>
-            <p className="text-xs text-gray-400 mt-0.5 flex flex-row items-center gap-1">
+        <PageHeader
+          title="AI Insights"
+          subtitle={
+            /* inline-flex so the mark sits on the sentence's line rather than
+               on the text baseline. */
+            <span className="inline-flex items-center gap-1">
               Smart suggestions to grow revenue, fix slow items, and optimise
               every hour.
               <Sparkles
@@ -183,18 +184,19 @@ export default function AIInsightPage() {
                 className="shrink-0 text-violet-500"
                 aria-hidden
               />
-            </p>
-          </div>
+            </span>
+          }
+          actions={
+            /* Every section below spends from the same hourly allowance, and
+               "Generate insights" sits directly under this — so the number
+               belongs here rather than only on the settings screen.
 
-          {/* Every section below spends from the same hourly allowance, and
-              "Generate insights" sits directly under this — so the number
-              belongs here rather than only on the settings screen. */}
-          {/* `self-end`: stacked under the title the row stretches its items,
-              which made the pill full width and left the reveal nowhere to
-              open into. Hugging the right edge keeps it a pill and keeps the
-              expansion pointing into free space at every width. */}
-          <AiQuotaMeter variant="inline" className="mt-3 self-end sm:mt-0" />
-        </div>
+               `ml-auto`: stacked under the title the actions row spans the
+               width, and without this the pill would sit against the left
+               edge instead of hugging the right. */
+            <AiQuotaMeter variant="inline" className="ml-auto" />
+          }
+        />
 
         <div className="flex flex-col gap-10">
           <AiInsightsHero

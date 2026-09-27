@@ -28,6 +28,7 @@ import {
   MenuEngineeringMatrixWrapper,
   RevenueFlowSankeyWrapper,
 } from "@/components/componentWrappers/ProfitCostWrapper";
+import PageHeader from "@/components/ui/PageHeader";
 
 export default async function Page({
   searchParams,
@@ -50,26 +51,10 @@ export default async function Page({
 
   return (
     <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
-      {/* ── Header ── */}
-      <div className="flex w-full flex-col justify-between gap-4 pb-5 sm:flex-row sm:items-end">
-        <div className="min-w-0">
-          <h1 className="truncate text-[22px] font-semibold tracking-[1px] text-[#3c4043] md:text-[26px]">
-            Profit & Cost
-          </h1>
-
-          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-[#5f6368]">
-            Financial health and margin analysis.
-          </p>
-        </div>
-
-        <div className="self-end">
-          <ProfitCostHeader />
-        </div>
-      </div>
-
-      <div
-        aria-hidden
-        className="mb-6 h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent"
+      <PageHeader
+        title="Profit & Cost"
+        subtitle="Financial health and margin analysis."
+        actions={<ProfitCostHeader />}
       />
 
       <div className="flex flex-col gap-6 ">

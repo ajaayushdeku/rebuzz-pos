@@ -52,6 +52,10 @@ export default function SalesRecommendationsSection({
         // The window is part of the subtitle so nobody reads these as
         // following a date filter this page does not have.
         subtitle={`Based on the last ${SALES_WINDOW_DAYS} days, compared with the ${SALES_WINDOW_DAYS} before`}
+        info={{
+          heading: "What is being compared",
+          body: `Your last ${SALES_WINDOW_DAYS} days against the ${SALES_WINDOW_DAYS} before them, so every claim of a rise or fall is against your own recent trading rather than an outside benchmark.`,
+        }}
         actions={
           <div className="flex flex-row w-full md:w-fit items-end justify-end gap-2 absolute md:relative top-2">
             <SectionMoreButton
@@ -86,7 +90,7 @@ export default function SalesRecommendationsSection({
               // app shell away to show empty space underneath.
               <li
                 key={item.id}
-                className="relative flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 "
+                className="relative flex items-center gap-3 rounded-xl border border-[#e3e3e3] bg-white px-4 py-3"
               >
                 <Icon
                   size={16}
@@ -95,7 +99,7 @@ export default function SalesRecommendationsSection({
                 />
                 {/* The icon's meaning, for anyone who cannot see its colour. */}
                 <span className="sr-only">{kind.label}:</span>
-                <p className="flex-1 text-[13px] text-gray-700">{item.text}</p>
+                <p className="flex-1 text-[13px] text-[#3c4043]">{item.text}</p>
                 <DismissButton
                   label="this recommendation"
                   onClick={() => onDismiss(item.id)}

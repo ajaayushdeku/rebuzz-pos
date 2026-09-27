@@ -12,6 +12,7 @@ import DiscountTable from "@/components/settingsComponents/discounts/DiscountTab
 import EditDiscountModal from "@/components/settingsComponents/discounts/EditDiscountModal";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { CreateDiscountDialog } from "@/components/invoice/CreateDiscount";
+import PageHeader from "@/components/ui/PageHeader";
 
 export interface Discount {
   _id: string;
@@ -151,20 +152,17 @@ export default function DiscountSettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       <div className="w-full mx-auto space-y-6">
         {/* ── Header ─────────────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2 pb-4 border-b border-gray-200">
-          <div>
-            <h1 className="font-bold text-xl md:text-2xl truncate">
-              Discount Settings
-            </h1>
-            <p className="text-xs text-gray-400 mt-0.5">
-              {discounts.length} discounts configured
-            </p>
-          </div>
-          <CreateDiscountDialog />
-        </div>
+        {/* The column's space-y-6 already gaps the header from the tabs
+            below it, so the rule carries no margin of its own. */}
+        <PageHeader
+          title="Discount Settings"
+          subtitle={<>{discounts.length} discounts configured</>}
+          spaceBelow={false}
+          actions={<CreateDiscountDialog />}
+        />
 
         {/* ── Tabs — the rule runs edge to edge and the pill sits on top ── */}
         <div className="relative flex justify-center mt-6">

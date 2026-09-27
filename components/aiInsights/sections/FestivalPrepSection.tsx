@@ -94,6 +94,10 @@ export default function FestivalPrepSection({
         iconClassName="bg-amber-50 text-amber-600"
         title="Upcoming Festival Prep"
         subtitle={`Festivals and public holidays in the next ${FESTIVAL_LOOKAHEAD_DAYS} days, from Nepal's holiday calendar`}
+        info={{
+          heading: "Where the dates come from",
+          body: `The dates are Nepal's public holiday calendar for the next ${FESTIVAL_LOOKAHEAD_DAYS} days — not your own sales. What to prepare for each one is the AI reading those dates against what you sold around them before.`,
+        }}
         actions={
           <div className="flex flex-row w-full md:w-fit items-end justify-end gap-2 absolute md:relative top-2">
             {/* Everything is already loaded, so this only reveals cards —
@@ -162,7 +166,7 @@ export default function FestivalPrepSection({
                   </CardAction>
                 }
               >
-                <p className="text-[13px] leading-relaxed text-gray-600">
+                <p className="text-[13px] leading-relaxed text-[#5f6368]">
                   {item.description}
                 </p>
 

@@ -11,6 +11,7 @@ import OfferWhenItRuns from "@/components/offers/OfferWhenItRuns";
 import OfferPromoCode from "@/components/offers/OfferPromoCode";
 import OfferPhonePreview from "@/components/offers/OfferPhonePreview";
 import OfferFooterActions from "@/components/offers/OfferFooterActions";
+import PageHeader from "@/components/ui/PageHeader";
 
 /**
  * Build an offer, with the customer's view of it beside the form.
@@ -38,46 +39,47 @@ function OfferBuilder() {
   const [view, setView] = useState<"build" | "preview">("build");
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8  md:px-10">
       <div className="mx-auto w-full">
-        {/* Header */}
-        <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
-          <div>
-            <h1 className="font-bold text-xl md:text-2xl truncate">
-              Create an offer
-            </h1>
-            <p className="text-xs text-gray-400 mt-0.5">
+        {/* The grid below brings its own pt-4, so the rule carries no
+            margin of its own. */}
+        <PageHeader
+          title="Create an offer"
+          subtitle={
+            <>
               Fill this in once. We&apos;ll show you exactly how it looks to
               your customers.
-            </p>
-          </div>
-
-          {/* Only below xl, where the two columns stack. Wide enough and both
-              are on screen at once, so a switch would be a control with
-              nothing to switch. */}
-          <div className="flex  items-center gap-1 rounded-xl bg-[#e4f2fe]  p-1 xl:hidden">
-            {VIEWS.map(({ id, label, icon: Icon }) => {
-              const active = view === id;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setView(id)}
-                  aria-pressed={active}
-                  className={cn(
-                    "flex items-center gap-2 rounded-lg px-5 py-2 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe]",
-                    active
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-500 hover:text-gray-700",
-                  )}
-                >
-                  <Icon size={15} />
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+            </>
+          }
+          spaceBelow={false}
+          actions={
+            /* Only below xl, where the two columns stack. Wide enough and both
+               are on screen at once, so a switch would be a control with
+               nothing to switch. */
+            <div className="flex  items-center gap-1 rounded-xl bg-[#e4f2fe]  p-1 xl:hidden">
+              {VIEWS.map(({ id, label, icon: Icon }) => {
+                const active = view === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setView(id)}
+                    aria-pressed={active}
+                    className={cn(
+                      "flex items-center gap-2 rounded-lg px-5 py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe]",
+                      active
+                        ? "bg-white text-gray-900 shadow-sm"
+                        : "text-gray-500 hover:text-gray-700",
+                    )}
+                  >
+                    <Icon size={15} />
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          }
+        />
 
         {/*
         <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
@@ -114,7 +116,7 @@ function OfferBuilder() {
               sideways. */}
           <div
             className={cn(
-              "min-w-0 space-y-5 xl:block",
+              "min-w-0 space-y-5 mt-2 xl:block",
               view === "build" || "hidden",
             )}
           >
@@ -132,7 +134,7 @@ function OfferBuilder() {
           {/* Right: the customer's view */}
           <div
             className={cn(
-              "min-w-0 xl:sticky xl:top-4 xl:block",
+              "min-w-0 xl:sticky mt-2 xl:top-4 xl:block",
               view === "preview" || "hidden",
             )}
           >

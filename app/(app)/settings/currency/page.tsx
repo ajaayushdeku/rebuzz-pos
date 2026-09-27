@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import CountryFlag from "@/components/ui/CountryFlag";
 import { CURRENCY_OPTIONS, type CurrencyOption } from "@/lib/config/currencies";
+import PageHeader from "@/components/ui/PageHeader";
 
 /**
  * Shown above the full list, in this order.
@@ -108,23 +109,12 @@ export default function CurrencyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       <div className="w-full mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-gray-200">
-          <div className="flex flex-row items-center gap-3">
-            {/* <div className="w-9 h-9 bg-blue-100 rounded-lg flex flex-row items-center justify-center">
-              <Coins size={16} className="text-blue-600" />
-            </div> */}
-            <div>
-              <h1 className="font-bold text-xl md:text-2xl truncate">
-                Change Currency
-              </h1>
-              <p className="text-xs text-gray-400 mt-0.5">
-                Select your preferred currency
-              </p>
-            </div>
-          </div>
-        </div>
+        <PageHeader
+          title="Change Currency"
+          subtitle="Select your preferred currency"
+        />
 
         {/* Search */}
         <div className="relative mb-4">

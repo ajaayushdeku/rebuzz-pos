@@ -101,11 +101,15 @@ export default function HourPlaybookSection({
         iconClassName="bg-slate-900 text-white"
         title="Hour-by-Hour Playbook"
         subtitle={`Your busiest and quietest hours over the last ${HOUR_WINDOW_DAYS / 7} weeks, and what to do in each`}
+        info={{
+          heading: "How the hours are ranked",
+          body: `Every bill from the last ${HOUR_WINDOW_DAYS / 7} weeks is grouped by the hour it was rung up, then averaged, so one exceptional day does not move an hour on its own.`,
+        }}
         actions={
           <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
             <SectionRefreshButton
               state={state}
-              textClassName="text-gray-700 hover:bg-gray-100 border-gray-300 hover:border-gray-400"
+              textClassName="text-[#5f6368]"
             />
           </div>
         }
@@ -163,7 +167,7 @@ export default function HourPlaybookSection({
                   },
                 ]}
               >
-                <p className="text-[13px] leading-relaxed text-gray-600">
+                <p className="text-[13px] leading-relaxed text-[#5f6368]">
                   {item.description}
                 </p>
                 <div className="mt-auto">

@@ -170,7 +170,7 @@ function StaffingCard({
         </CardAction>
       }
     >
-      <p className="text-[13px] leading-relaxed text-gray-600">
+      <p className="text-[13px] leading-relaxed text-[#5f6368]">
         {item.description}
       </p>
       <div className="mt-auto">
@@ -199,6 +199,10 @@ export default function StaffingSection({
         // Said up front: the POS only records who rang up each bill, so this
         // is about the till, not the whole floor or the kitchen.
         subtitle={`Who takes orders at the till, hour by hour, over the last ${STAFFING_WINDOW_DAYS / 7} weeks`}
+        info={{
+          heading: "What this can and cannot see",
+          body: `The POS records who rang up each bill, so this covers the till over the last ${STAFFING_WINDOW_DAYS / 7} weeks — not the kitchen, the floor or anyone working a shift without taking orders.`,
+        }}
         actions={
           <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
             <SectionRefreshButton

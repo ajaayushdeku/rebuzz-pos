@@ -60,6 +60,10 @@ export default function CustomerRetentionSection({
         iconClassName="bg-pink-50 text-pink-600"
         title="Customer Retention Radar"
         subtitle="Regulars who are overdue for a visit, judged against their own habit"
+        info={{
+          heading: "What counts as overdue",
+          body: "Each customer is judged against their own rhythm: someone who came weekly and has not been seen in a month is overdue, while a once-a-season visitor is not. Only customers with enough history to have a habit appear here.",
+        }}
         actions={
           <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
             <SectionRefreshButton
@@ -143,7 +147,7 @@ export default function CustomerRetentionSection({
                     {item.usualOrder.length > 0 && (
                       <div>
                         <BodyLabel>Usually orders</BodyLabel>
-                        <p className="text-[13px] font-semibold text-gray-900">
+                        <p className="text-[13px] font-semibold text-[#3c4043]">
                           {item.usualOrder.join(" + ")}
                         </p>
                       </div>
@@ -151,7 +155,7 @@ export default function CustomerRetentionSection({
                     {item.loyaltyPoints > 0 && (
                       <div>
                         <BodyLabel>Loyalty points</BodyLabel>
-                        <p className="text-[13px] font-semibold tabular-nums text-gray-900">
+                        <p className="text-[13px] font-semibold tabular-nums text-[#3c4043]">
                           {item.loyaltyPoints.toLocaleString("en-US")}
                         </p>
                       </div>
@@ -164,7 +168,7 @@ export default function CustomerRetentionSection({
                     details={
                       <div>
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-[11px] font-medium text-gray-500">
+                          <span className="text-[11px] font-medium text-[#5f6368]">
                             Message to send
                           </span>
                           <button
@@ -176,7 +180,7 @@ export default function CustomerRetentionSection({
                             Copy
                           </button>
                         </div>
-                        <p className="mt-1.5 rounded-md border border-gray-100 bg-white px-3 py-2 text-[12px] italic leading-relaxed text-gray-600">
+                        <p className="mt-1.5 rounded-md border border-[#e8eaed] bg-white px-3 py-2 text-[12px] italic leading-relaxed text-[#5f6368]">
                           “{item.message}”
                         </p>
                       </div>

@@ -57,6 +57,10 @@ export default function SlowItemsSection({
         iconClassName="bg-red-50 text-red-500"
         title="Slow Item Insights"
         subtitle={`Items selling slowly over the last ${SECTION_WINDOW_DAYS} days, and how to fix them`}
+        info={{
+          heading: "What counts as slow",
+          body: `An item is flagged when its sales over the last ${SECTION_WINDOW_DAYS} days fall well behind the rest of your menu. A new item with little history can appear here simply because it has not had time to sell.`,
+        }}
         actions={
           <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
             <SectionRefreshButton
@@ -104,7 +108,7 @@ export default function SlowItemsSection({
                   </CardAction>
                 }
               >
-                <p className="text-[13px] leading-relaxed text-gray-600">
+                <p className="text-[13px] leading-relaxed text-[#5f6368]">
                   {item.description}
                 </p>
                 <div className="mt-auto">

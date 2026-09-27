@@ -11,6 +11,7 @@ import SampleDataBadge from "@/components/ui/sampledatabadge";
 // import { mockTransactions } from "@/lib/mockData/mock-transactions";
 import type { Transaction } from "@/components/dashboardComponents/orderHistory/transaction-columns";
 import type { OrderHistoryStats as StatsData } from "@/components/dashboardComponents/orderHistory/OrderHistoryStats";
+import PageHeader from "@/components/ui/PageHeader";
 
 function getDefaultDateRange(): DateRangeValue {
   const today = new Date();
@@ -104,29 +105,17 @@ export default function OrderHistoryPage() {
   return (
     <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       {/* ── Header ── */}
-      <div className="flex w-full flex-col justify-between gap-4 pb-5 sm:flex-row sm:items-end">
-        {isEmpty && !loading && <SampleDataBadge />}
-
-        <div className="min-w-0">
-          <h1 className="truncate text-[22px] font-semibold tracking-[1px] text-[#3c4043] md:text-[26px]">
-            Order History
-          </h1>
-
-          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-[#5f6368]">
-            Browse and search all transactions
-          </p>
-        </div>
-
-        <DateRangeFilter
-          value={dateRange}
-          onChange={setDateRange}
-          storageKey="rebuzz-order-history-date-filter"
-        />
-      </div>
-
-      <div
-        aria-hidden
-        className="mb-6 h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent"
+      <PageHeader
+        title="Order History"
+        subtitle="Browse and search all transactions"
+        leading={isEmpty && !loading ? <SampleDataBadge /> : undefined}
+        actions={
+          <DateRangeFilter
+            value={dateRange}
+            onChange={setDateRange}
+            storageKey="rebuzz-order-history-date-filter"
+          />
+        }
       />
 
       {/* ── Stats ── */}

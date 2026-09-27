@@ -18,6 +18,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import PageHeader from "@/components/ui/PageHeader";
 
 const inputClass =
   "w-full rounded-lg border border-[#dadce0] px-3 py-6 pr-10 text-sm text-[#3c4043] transition placeholder:text-[#9aa0a6] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500";
@@ -239,14 +240,10 @@ export default function ChangePasswordPage() {
     <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       <div className="mx-auto w-full">
         {/* ── Header ── */}
-        <div className="mb-5 border-b border-[#e8eaed] pb-4">
-          <h1 className="truncate text-xl font-bold md:text-2xl">
-            Change Password
-          </h1>
-          <p className="mt-0.5 text-xs text-[#9aa0a6]">
-            Update the password you sign in with.
-          </p>
-        </div>
+        <PageHeader
+          title="Change Password"
+          subtitle="Update the password you sign in with."
+        />
 
         {/* Form leading, guidance beside it — the same shape as Settings →
             API Keys, so the two security screens read as one place. A single

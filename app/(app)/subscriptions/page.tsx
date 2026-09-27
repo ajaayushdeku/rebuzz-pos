@@ -7,6 +7,7 @@ import { PLANS, type Plan, type PlanId } from "@/lib/config/plans";
 import PlanTabs from "@/components/subscriptions/PlanTabs";
 import PlanCard from "@/components/subscriptions/PlanCard";
 import PlanFaq from "@/components/subscriptions/PlanFaq";
+import PageHeader from "@/components/ui/PageHeader";
 
 /**
  * The plan the business is on today.
@@ -32,16 +33,10 @@ export default function SubscriptionPage() {
   return (
     <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       <div className="w-full mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-[#e8eaed]">
-          <div>
-            <h1 className="font-bold text-xl md:text-2xl truncate">
-              Subscription
-            </h1>
-            <p className="mt-0.5 text-xs text-[#9aa0a6]">
-              Choose the plan that fits your business needs and budget
-            </p>
-          </div>
-        </div>
+        <PageHeader
+          title="Subscription"
+          subtitle="Choose the plan that fits your business needs and budget"
+        />
 
         <div className="w-full flex items-center justify-center mb-6">
           {" "}

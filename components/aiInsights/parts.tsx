@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import AiInsightsErrorState from "@/components/aiInsights/AiInsightsErrorState";
+import { CardInfo } from "@/components/dashboardComponents/chartCard";
 import {
   Tooltip,
   TooltipContent,
@@ -75,7 +76,7 @@ export function SampleDataBadge() {
             RangeBadge: a native `title` never shows for anyone tabbing. */}
         <span
           tabIndex={0}
-          className="inline-flex shrink-0 cursor-help items-center gap-1 rounded-full border border-dashed border-gray-300 bg-gray-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500 outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+          className="inline-flex shrink-0 cursor-help items-center gap-1 rounded-full border border-dashed border-[#dadce0] bg-[#f8f9fa] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#5f6368] outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
         >
           <FlaskConical size={10} aria-hidden />
           Sample data
@@ -92,11 +93,18 @@ export function SampleDataBadge() {
   );
 }
 
+/**
+ * A section's header, built to ChartCard's: the same tile, the same title and
+ * subtitle, the same ⓘ beside the title, the same row of controls on the
+ * right. Sections and dashboard cards are read as the same kind of object, so
+ * they are headed the same way.
+ */
 export function SectionHeader({
   icon: Icon,
   iconClassName,
   title,
   subtitle,
+  info,
   actions,
   sample = false,
 }: {
@@ -104,28 +112,40 @@ export function SectionHeader({
   /** Tile background and icon colour, e.g. "bg-red-50 text-red-600". */
   iconClassName: string;
   title: string;
-  subtitle: string;
+  subtitle: ReactNode;
+  /** What the ⓘ beside the title explains: how to read the section. */
+  info?: { heading: string; body: ReactNode };
   actions?: ReactNode;
   /** The section still shows sample content; see SampleDataBadge. */
   sample?: boolean;
 }) {
   return (
-    <div className="mb-4 flex relative gap-3 flex-col md:flex-row items-start md:items-center justify-between">
-      <div className="flex items-center  gap-3">
+    // `relative`: a few sections pin their controls to the top-right on
+    // mobile, and those measure from here.
+    <div className="relative mb-5 flex flex-wrap items-center justify-between gap-3">
+      <div className="flex min-w-0 items-center gap-3">
+        {/* A pale frame on a paler fill, as on every dashboard card, so the
+            icon's own colour carries the tile. */}
         <div
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${iconClassName}`}
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-current/20 ${iconClassName}`}
         >
-          <Icon size={17} />
+          <Icon size={16} />
         </div>
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+        <div className="min-w-0">
+          <h2 className="flex flex-wrap items-center gap-1.5 text-[15px] font-normal text-[#3c4043]">
+            <span className="truncate">{title}</span>
+            {info && (
+              <CardInfo heading={info.heading} body={info.body} label={title} />
+            )}
             {sample && <SampleDataBadge />}
-          </div>
-          <p className="text-xs text-gray-500">{subtitle}</p>
+          </h2>
+          <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6]">
+            {subtitle}
+          </p>
         </div>
       </div>
-      {actions && <div className="flex w-full md:w-fit  gap-2">{actions}</div>}
+
+      {actions && <div className="flex items-center gap-2">{actions}</div>}
     </div>
   );
 }
@@ -151,7 +171,7 @@ export function GenerateMoreButton({
       onClick={onClick}
       disabled={busy}
       aria-busy={busy}
-      className={`inline-flex items-center gap-2 rounded-lg border bg-white px-3 py-2 text-[11px] tracking-wide font-semibold   cursor-pointer transition-colors disabled:cursor-wait disabled:opacity-70 ${textClassName}`}
+      className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border border-[#dadce0] bg-white px-3 py-2 text-[11px] font-semibold tracking-wide transition-colors hover:bg-[#f8f9fa] disabled:cursor-wait disabled:opacity-70 ${textClassName}`}
     >
       <Icon size={14} className={busy ? "animate-spin" : undefined} />
       <span className="hidden md:block"> {label}</span>
@@ -174,7 +194,7 @@ export function DismissButton({
       type="button"
       onClick={onClick}
       aria-label={`Dismiss ${label}`}
-      className={`rounded-md p-1 text-gray-300 transition-colors hover:bg-gray-100 hover:text-gray-500 ${className}`}
+      className={`rounded-md p-1 text-[#9aa0a6] transition-colors hover:bg-[#f1f3f4] hover:text-[#5f6368] ${className}`}
     >
       <X size={14} />
     </button>
@@ -193,7 +213,7 @@ export function CardGrid({ children }: { children: ReactNode }) {
 /** Shown when every card in a section has been dismissed. */
 export function EmptySection({ message }: { message: string }) {
   return (
-    <p className="rounded-xl border border-dashed border-gray-200 bg-white px-4 py-8 text-center text-[13px] text-gray-400">
+    <p className="rounded-xl border border-dashed border-[#dadce0] bg-white px-4 py-8 text-center text-[13px] text-[#9aa0a6]">
       {message}
     </p>
   );
@@ -323,7 +343,7 @@ export function AiSectionBody<T>({
         {[0, 1, 2].map((i) => (
           <li
             key={i}
-            className="h-12 animate-pulse rounded-xl border border-gray-100 bg-gray-100/70"
+            className="h-12 animate-pulse rounded-xl border border-[#e8eaed] bg-[#f1f3f4]"
           />
         ))}
       </ul>
@@ -335,7 +355,7 @@ export function AiSectionBody<T>({
         {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className="h-64 animate-pulse rounded-xl border border-gray-100 bg-gray-100/70"
+            className="h-64 animate-pulse rounded-xl border border-[#e8eaed] bg-[#f1f3f4]"
           />
         ))}
       </div>
@@ -379,7 +399,7 @@ export function AiSectionBody<T>({
             </span>
           </p>
         ) : (
-          <p className="mt-2.5 text-right text-[11px] text-gray-400">
+          <p className="mt-2.5 text-right text-[11px] text-[#9aa0a6]">
             Written by {providerLabel ?? "AI"} from your own sales and menu
             {/* The model as well as the provider: on OpenRouter's free router
                 the model changes between answers, and "which one wrote this"
@@ -492,7 +512,7 @@ export function LeadTile({
 /** The quieter part of a card's label: " · since Aug 7". */
 export function LabelNote({ children }: { children: ReactNode }) {
   return (
-    <span className="font-medium normal-case tracking-normal text-gray-400">
+    <span className="font-medium normal-case tracking-normal text-[#9aa0a6]">
       · {children}
     </span>
   );
@@ -513,7 +533,7 @@ export function Delta({
   const up = pct > 0;
   const Arrow = up ? ArrowUpRight : ArrowDownRight;
   const tone = neutral
-    ? "bg-gray-100 text-gray-600"
+    ? "bg-[#f1f3f4] text-[#5f6368]"
     : up
       ? "bg-emerald-50 text-emerald-700"
       : "bg-red-50 text-red-600";
@@ -547,20 +567,20 @@ export function MetricStrip({ metrics }: { metrics: Metric[] }) {
   const cols = metrics.length >= 3 ? "grid-cols-3" : "grid-cols-2";
   return (
     <dl
-      className={`grid ${cols} divide-x divide-gray-100 border-y border-gray-100 bg-gray-50/60`}
+      className={`grid ${cols} divide-x divide-[#e8eaed] border-y border-[#e8eaed] bg-[#f8f9fa]`}
     >
       {metrics.slice(0, 3).map((m) => (
         <div key={m.label} className="min-w-0 px-4 py-3">
-          <dt className="truncate text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+          <dt className="truncate text-[10px] font-semibold uppercase tracking-wider text-[#9aa0a6]">
             {m.label}
           </dt>
           <dd
-            className={`mt-1 text-[15px] font-semibold leading-tight tabular-nums ${m.valueClassName ?? "text-gray-900"}`}
+            className={`mt-1 text-[15px] font-semibold leading-tight tabular-nums ${m.valueClassName ?? "text-[#3c4043]"}`}
           >
             {m.value}
           </dd>
           {(m.note || m.delta) && (
-            <dd className="mt-1 flex flex-wrap items-center gap-1 text-[11px] text-gray-400">
+            <dd className="mt-1 flex flex-wrap items-center gap-1 text-[11px] text-[#9aa0a6]">
               {m.note && <span className="tabular-nums">{m.note}</span>}
               {m.delta && <Delta {...m.delta} />}
             </dd>
@@ -594,7 +614,7 @@ export function Recommendation({
           <Sparkles size={11} aria-hidden />
           {title}
         </p>
-        <div className="mt-1.5 text-[13px] leading-relaxed text-gray-700">
+        <div className="mt-1.5 text-[13px] leading-relaxed text-[#3c4043]">
           {children}
         </div>
       </div>
@@ -610,7 +630,7 @@ export function Recommendation({
 /** A small uppercase label over a group of tags inside a card body. */
 export function BodyLabel({ children }: { children: ReactNode }) {
   return (
-    <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+    <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[#9aa0a6]">
       {children}
     </p>
   );
@@ -627,7 +647,7 @@ export function TagList({
       {tags.map((t) => (
         <li
           key={t.key}
-          className="rounded-md border border-gray-200 bg-white px-2 py-1 text-[11px] text-gray-700"
+          className="rounded-md border border-[#dadce0] bg-white px-2 py-1 text-[11px] text-[#3c4043]"
         >
           {t.content}
         </li>
@@ -655,8 +675,8 @@ export function CardAction({
   children: ReactNode;
 }) {
   const className = primary
-    ? "flex w-full items-center justify-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-gray-800"
-    : "flex w-full items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2.5 text-[13px] font-semibold text-gray-700 transition-colors hover:bg-gray-50";
+    ? "flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#3c4043] px-3 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-[#2b2e31]"
+    : "flex w-full items-center justify-center gap-1.5 rounded-lg border border-[#dadce0] px-3 py-2.5 text-[13px] font-semibold text-[#3c4043] transition-colors hover:bg-[#f8f9fa]";
   const content = (
     <>
       {children}
@@ -715,9 +735,9 @@ export function InsightCard({
 }) {
   const a = ACCENTS[accent];
   return (
-    <article className="relative flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-shadow hover:shadow-md">
+    <article className="relative flex h-full flex-col overflow-hidden rounded-xl border border-[#e3e3e3] bg-white transition-colors hover:border-[#dadce0]">
       {/* The kind of card, as a colour, before anything is read. */}
-      <div className={`h-0.75 ${a.bar}`} aria-hidden />
+      {/* <div className={`h-0.75 ${a.bar}`} aria-hidden /> */}
 
       <header className={`flex items-start gap-3 px-5 pb-3.5 pt-4  ${a.bg}`}>
         {lead}
@@ -727,7 +747,7 @@ export function InsightCard({
           >
             {label}
           </p>
-          <h3 className="mt-0.5 text-[15px] font-semibold leading-snug text-gray-900">
+          <h3 className="mt-0.5 text-[15px] font-medium leading-snug text-[#3c4043]">
             {title}
           </h3>
         </div>

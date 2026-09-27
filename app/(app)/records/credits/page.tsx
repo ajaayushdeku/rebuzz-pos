@@ -14,6 +14,7 @@ import {
   fetchCreditsByStatus,
 } from "@/services/apiCredit.client";
 import { CHART_PALETTE } from "@/components/dashboardComponents/chartCard";
+import PageHeader from "@/components/ui/PageHeader";
 
 type TabKey = "credited" | "completed" | "archived";
 
@@ -60,26 +61,10 @@ export default function Page() {
   // Extracted because the header renders above whichever body state is
   // showing; keeping it in one place stops the three from drifting.
   const header = (
-    <div>
-      <div className="flex flex-col justify-between gap-4 pb-5 sm:flex-row sm:items-end">
-        <div className="min-w-0">
-          <h1 className="truncate text-[22px] font-semibold tracking-[1px] text-[#3c4043] md:text-[26px]">
-            Credits
-          </h1>
-          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-[#5f6368]">
-            Invoices moved to credit and their outstanding dues
-          </p>
-        </div>
-      </div>
-
-      {/* The rule, drawn rather than bordered: it holds the hairline
-          under the title and fades out across the page, so it separates
-          the header without ruling a hard line across the whole screen. */}
-      <div
-        aria-hidden
-        className="mb-6 h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent"
-      />
-    </div>
+    <PageHeader
+      title="Credits"
+      subtitle="Invoices moved to credit and their outstanding dues"
+    />
   );
 
   const statItems = [

@@ -19,6 +19,7 @@ import {
   CustomerTrendChartSkeleton,
   CustomerTableSkeleton,
 } from "@/components/dashboardComponents/customersDash/CustomerSkeletons";
+import PageHeader from "@/components/ui/PageHeader";
 
 function getPresetRange(range: string): { startDate: string; endDate: string } {
   const today = new Date();
@@ -90,29 +91,17 @@ export default async function Page({
 
   return (
     <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
-      {/* ── Header ── */}
-      <div className="flex w-full flex-col justify-between gap-4 pb-5 sm:flex-row sm:items-end">
-        <div className="min-w-0">
-          <h1 className="truncate text-[22px] font-semibold tracking-[1px] text-[#3c4043] md:text-[26px]">
-            Customer Analytics
-          </h1>
-
-          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-[#5f6368]">
-            Insights into customer behavior and retention.
-          </p>
-        </div>
-
-        <div className="flex flex-row sm:items-center justify-between gap-3 ">
-          <div className="self-end">
-            <CustomerHeader />
+      <PageHeader
+        title="Customer Analytics"
+        subtitle="Insights into customer behavior and retention."
+        actions={
+          <div className="flex flex-row sm:items-center justify-between gap-3 ">
+            <div className="self-end">
+              <CustomerHeader />
+            </div>
+            <CreateCustomerButton />
           </div>
-          <CreateCustomerButton />
-        </div>
-      </div>
-
-      <div
-        aria-hidden
-        className="mb-6 h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent"
+        }
       />
 
       <div className="flex flex-col gap-6">

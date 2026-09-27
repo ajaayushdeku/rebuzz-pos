@@ -9,6 +9,7 @@ import { useProductsList } from "@/hooks/useProductsList";
 import { useSubscriptionType } from "@/hooks/useSubscriptionType";
 import { FREE_PRODUCT_LIMIT, parseSubscription } from "@/lib/config/plans";
 import HeaderActionButton from "@/components/ui/HeaderActionButton";
+import PageHeader from "@/components/ui/PageHeader";
 
 export default function Page() {
   const [formModalOpen, setFormModalOpen] = useState(false);
@@ -28,28 +29,18 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       <div className="w-full mx-auto">
-        <div className="flex flex-col justify-between gap-4 pb-5 sm:flex-row sm:items-end">
-          <div className="min-w-0">
-            <h1 className="truncate text-[22px] font-semibold tracking-[1px] text-[#3c4043] md:text-[26px]">
-              Products
-            </h1>
-            <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-[#5f6368]">
-              Manage your product inventory
-            </p>
-          </div>
-
-          <HeaderActionButton
-            variant="dashed"
-            icon={PackagePlus}
-            hideLabelOnMobile
-            label="Add new product"
-            onClick={() => setFormModalOpen(true)}
-          />
-        </div>
-
-        <div
-          aria-hidden
-          className="mb-6 h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent"
+        <PageHeader
+          title="Products"
+          subtitle="Manage your product inventory"
+          actions={
+            <HeaderActionButton
+              variant="dashed"
+              icon={PackagePlus}
+              hideLabelOnMobile
+              label="Add new product"
+              onClick={() => setFormModalOpen(true)}
+            />
+          }
         />
 
         {isFree && !isLoading && (atLimit || nearLimit) && (

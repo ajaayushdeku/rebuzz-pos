@@ -25,6 +25,7 @@ import {
 } from "@/components/componentWrappers/SalesRevenueWrapper";
 import HeaderActionButton from "@/components/ui/HeaderActionButton";
 import { Plus } from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
 
 export default async function Page({
   searchParams,
@@ -46,35 +47,25 @@ export default async function Page({
 
   return (
     <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
-      {/* ── Header ── */}
-      <div className="flex w-full flex-col justify-between gap-4 pb-5 sm:flex-row sm:items-end">
-        <div className="min-w-0">
-          <h1 className="truncate text-[22px] font-semibold tracking-[1px] text-[#3c4043] md:text-[26px]">
-            Sales & Revenue
-          </h1>
+      <PageHeader
+        title="Sales & Revenue"
+        subtitle={
+          <>Detailed breakdown of your store&lsquo;s financial performance</>
+        }
+        actions={
+          <>
+            {/* Global date range filter — single source of truth */}
+            <SalesRevenueHeader />
 
-          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-[#5f6368]">
-            Detailed breakdown of your store&lsquo;s financial performance
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Global date range filter — single source of truth */}
-          <SalesRevenueHeader />
-
-          <HeaderActionButton
-            variant="dashed"
-            icon={Plus}
-            hideLabelOnMobile
-            label="Create Order"
-            href="/invoices/add"
-          />
-        </div>
-      </div>
-
-      <div
-        aria-hidden
-        className="mb-6 h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent"
+            <HeaderActionButton
+              variant="dashed"
+              icon={Plus}
+              hideLabelOnMobile
+              label="Create Order"
+              href="/invoices/add"
+            />
+          </>
+        }
       />
 
       {/* ── Content ── */}

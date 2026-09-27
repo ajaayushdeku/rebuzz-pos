@@ -50,10 +50,10 @@ const TONES: Record<
     button: "bg-amber-600 hover:bg-amber-700",
   },
   gray: {
-    panel: "border-gray-200 bg-gray-50/70",
-    iconWrap: "bg-gray-100",
-    icon: "text-gray-500",
-    button: "bg-gray-800 hover:bg-gray-900",
+    panel: "border-[#e3e3e3] bg-[#f8f9fa]",
+    iconWrap: "bg-[#f1f3f4]",
+    icon: "text-[#5f6368]",
+    button: "bg-[#3c4043] hover:bg-[#2b2e31]",
   },
 };
 
@@ -228,13 +228,13 @@ export default function AiInsightsErrorState({
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-gray-900">{title}</p>
+          <p className="text-sm font-semibold text-[#3c4043]">{title}</p>
           {error?.message && (
-            <p className="mt-1 text-[13px] leading-relaxed text-gray-600">
+            <p className="mt-1 text-[13px] leading-relaxed text-[#5f6368]">
               {error.message}
             </p>
           )}
-          <p className="mt-2 text-xs leading-relaxed text-gray-500">{hint}</p>
+          <p className="mt-2 text-xs leading-relaxed text-[#5f6368]">{hint}</p>
 
           <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
             {action ? (
@@ -252,7 +252,7 @@ export default function AiInsightsErrorState({
             )}
 
             {/* The code for support, not for reading: small and out of the way. */}
-            <span className="ml-auto font-mono text-[10px] text-gray-500 tracking-wide">
+            <span className="ml-auto font-mono text-[10px] text-[#5f6368] tracking-wide">
               {code}
             </span>
           </div>

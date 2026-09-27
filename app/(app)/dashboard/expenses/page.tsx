@@ -18,6 +18,7 @@ import ExpenseMonthYearFilter from "@/components/expenses/ExpenseMonthYearFilter
 import BudgetForm from "@/components/expenses/BudgetForm";
 import ExpenseIncomeForm from "@/components/expenses/ExpenseIncomeForm";
 import { useCashFlowTrend } from "@/hooks/useCashFlowTrend";
+import PageHeader from "@/components/ui/PageHeader";
 
 /**
  * Panels are imported lazily, which is what gives `<Suspense>` something to
@@ -76,27 +77,16 @@ function ExpenseAnalyticsPage() {
 
   return (
     <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
-      {/* ── Header ── */}
-
-      <div className="w-full flex flex-col justify-between gap-4 pb-5 sm:flex-row sm:items-end">
-        <div className="min-w-0">
-          <h1 className="truncate text-[22px] font-semibold tracking-[1px] text-[#3c4043] md:text-[26px]">
-            Expense Analytics
-          </h1>
-          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-[#5f6368]">
-            Visual breakdown of your spending, budgets and cash flow
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <ExpenseMonthYearFilter />
-          <BudgetForm />
-          <ExpenseIncomeForm />
-        </div>
-      </div>
-
-      <div
-        aria-hidden
-        className="mb-6 h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent"
+      <PageHeader
+        title="Expense Analytics"
+        subtitle="Visual breakdown of your spending, budgets and cash flow"
+        actions={
+          <>
+            <ExpenseMonthYearFilter />
+            <BudgetForm />
+            <ExpenseIncomeForm />
+          </>
+        }
       />
 
       <div className="space-y-6">

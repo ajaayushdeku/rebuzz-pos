@@ -27,6 +27,7 @@ import {
   PredictiveRestockingSkeleton,
 } from "@/components/dashboardComponents/inventoryDash/InventorySkeletons";
 import HeaderActionButton from "@/components/ui/HeaderActionButton";
+import PageHeader from "@/components/ui/PageHeader";
 
 /** Default revenue/profit window: last 30 days. */
 function getDefaultDateRange(): DateRangeValue {
@@ -49,38 +50,26 @@ export default function InventoryPage() {
 
   return (
     <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
-      {/* ── Header ── */}
+      <PageHeader
+        title="Inventory Management"
+        subtitle="Monitor stock levels and manage supply intake."
+        actions={
+          <>
+            <DateRangeFilter
+              value={dateRange}
+              onChange={setDateRange}
+              storageKey="rebuzz-inventory-date-filter"
+            />
 
-      <div className="w-full flex flex-col justify-between gap-4 pb-5 sm:flex-row sm:items-end">
-        <div className="min-w-0">
-          <h1 className="truncate text-[22px] font-semibold tracking-[1px] text-[#3c4043] md:text-[26px]">
-            Inventory Management
-          </h1>
-          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-[#5f6368]">
-            Monitor stock levels and manage supply intake.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <DateRangeFilter
-            value={dateRange}
-            onChange={setDateRange}
-            storageKey="rebuzz-inventory-date-filter"
-          />
-
-          <HeaderActionButton
-            variant="dashed"
-            icon={Box}
-            label="Add Stock"
-            hideLabelOnMobile
-            onClick={() => setModalOpen(true)}
-          />
-        </div>
-      </div>
-
-      <div
-        aria-hidden
-        className="mb-6 h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent"
+            <HeaderActionButton
+              variant="dashed"
+              icon={Box}
+              label="Add Stock"
+              hideLabelOnMobile
+              onClick={() => setModalOpen(true)}
+            />
+          </>
+        }
       />
 
       <div className="space-y-6">

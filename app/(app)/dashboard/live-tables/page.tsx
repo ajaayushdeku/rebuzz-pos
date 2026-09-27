@@ -16,6 +16,7 @@ import {
   GridViewSkeleton,
   LiveTablesSkeleton,
 } from "@/components/dashboardComponents/liveTables/LiveTablesSkeletons";
+import PageHeader from "@/components/ui/PageHeader";
 
 const FloorPlanView = dynamic(
   () => import("@/components/dashboardComponents/liveTables/FloorPlanVIew"),
@@ -67,33 +68,25 @@ export default function LiveTablesPage() {
   return (
     <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       <div className="w-full mx-auto flex flex-col ">
-        {/* ── Page header ── */}
-        <div className="flex flex-col justify-between gap-4 pb-5 sm:flex-row sm:items-end">
-          <div className="min-w-0">
-            <h1 className="truncate text-[22px] font-semibold tracking-[1px] text-[#3c4043] md:text-[26px]">
-              Live Tables
-            </h1>
-            <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-[#5f6368]">
-              Manage your restaurant floor plan and monitor seating in
-              real-time.
-            </p>
-          </div>
-
-          <HeaderActionButton
-            variant="dashed"
-            icon={Armchair}
-            hideLabelOnMobile
-            label="Add Table"
-            onClick={() => {
-              setEditingTable(null);
-              setAddModalOpen(true);
-            }}
-          />
-        </div>
-
-        <div
-          aria-hidden
-          className="mb-4 h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent"
+        {/* mb-4 rather than the module's mb-6: the view toggle below sits
+            closer to the rule here. */}
+        <PageHeader
+          className="mb-4"
+          title="Live Tables"
+          subtitle="Manage your restaurant floor plan and monitor seating in real-time."
+          actions={
+            <HeaderActionButton
+              variant="dashed"
+              icon={Armchair}
+              hideLabelOnMobile
+              label="Add Table"
+              onClick={() => {
+                setEditingTable(null);
+                setAddModalOpen(true);
+              }}
+            />
+          }
+          spaceBelow={false}
         />
 
         {/* ── Main panel ── */}

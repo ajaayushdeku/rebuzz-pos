@@ -19,6 +19,7 @@ import GroupTaxTable from "@/components/settingsComponents/taxes/GroupTaxTable";
 import EditNormalTaxModal from "@/components/settingsComponents/taxes/EditNormalTaxModal";
 import EditGroupTaxModal from "@/components/settingsComponents/taxes/EditGroupTaxModal";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
+import PageHeader from "@/components/ui/PageHeader";
 
 type TabKey = "standard" | "group";
 
@@ -305,33 +306,31 @@ export default function TaxSettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       <div className="w-full mx-auto space-y-6">
         {/* ── Header ─────────────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2 pb-4 border-b border-gray-200">
-          <div>
-            <h1 className="font-bold text-xl md:text-2xl truncate">
-              Tax Settings
-            </h1>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Manage tax rates and modes
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 font-medium">
-                Exclusive Tax
-              </span>
-              <Toggle
-                checked={isExclusive}
-                loading={updatingSettings}
-                onClick={handleModeToggle}
-              />
+        {/* The column's space-y-6 already gaps the header from the tabs
+            below it, so the rule carries no margin of its own. */}
+        <PageHeader
+          title="Tax Settings"
+          subtitle="Manage tax rates and modes"
+          spaceBelow={false}
+          actions={
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600 font-medium">
+                  Exclusive Tax
+                </span>
+                <Toggle
+                  checked={isExclusive}
+                  loading={updatingSettings}
+                  onClick={handleModeToggle}
+                />
+              </div>
+              <CreateTaxDialog />
             </div>
-            <CreateTaxDialog />
-          </div>
-        </div>
+          }
+        />
 
         {/* ── Tabs — the rule runs edge to edge and the pill sits on top ── */}
         <div className="relative flex justify-center mt-6">

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LifeBuoy } from "lucide-react";
+import PageHeader from "@/components/ui/PageHeader";
 
 export const metadata: Metadata = { title: "Help" };
 
@@ -14,28 +15,9 @@ export default function HelpPage() {
   return (
     <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
       <div className="mx-auto w-full">
-        {/* ── Header ──
-            The shape every other page uses — title over its sentence, page
-            rule beneath — with the type doing the work instead of a frame:
-            the title a shade lighter and tightened, the sentence given a
-            readable size and measure rather than being fine print. */}
-        <div className="flex flex-col gap-4 pb-5 sm:flex-row sm:items-end sm:justify-between">
-          <div className="min-w-0">
-            <h1 className="truncate text-[22px] font-semibold tracking-tight text-[#3c4043] md:text-[26px]">
-              Help &amp; Support
-            </h1>
-            <p className="mt-1 max-w-xl text-[13px] leading-relaxed text-[#5f6368]">
-              Guides, answers and a way to reach us.
-            </p>
-          </div>
-        </div>
-
-        {/* The rule, drawn rather than bordered: it holds the hairline under
-            the title and fades out across the page, so it separates the header
-            without ruling a hard line across the whole screen. */}
-        <div
-          aria-hidden
-          className="mb-6 h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent"
+        <PageHeader
+          title="Help & Support"
+          subtitle="Guides, answers and a way to reach us."
         />
 
         {/* With a plain header above, the empty state is what tells the reader

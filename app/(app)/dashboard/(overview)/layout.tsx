@@ -7,6 +7,7 @@ import { CalendarDateFilter } from "@/components/dashboardComponents/staffDash/C
 import { useQuery } from "@tanstack/react-query";
 import { fetchUserData } from "@/services/apiProfile";
 import HeaderActionButton from "@/components/ui/HeaderActionButton";
+import PageHeader from "@/components/ui/PageHeader";
 
 const tabs = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -32,33 +33,27 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
-      {/* ── Header ── */}
-      <div className="flex w-full flex-col justify-between gap-4 pb-5 sm:flex-row sm:items-end">
-        <div className="min-w-0">
-          <h1 className="truncate text-[22px] font-semibold tracking-[1px] text-[#3c4043] md:text-[26px]">
-            Dashboard Overview
-          </h1>
-          {!isLoading && (
-            <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-[#5f6368]">
+      {/* The tab row below supplies its own top padding, so the rule carries
+          no margin of its own. */}
+      <PageHeader
+        title="Dashboard Overview"
+        subtitle={
+          isLoading ? undefined : (
+            <>
               Welcome back, {profile?.name}. Here&lsquo;s what&lsquo;s happening
               with Rebuzz POS
-            </p>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2">
+            </>
+          )
+        }
+        actions={
           <HeaderActionButton
             variant="dashed"
             icon={Plus}
             label="Create Order"
             href="/invoices/add"
           />
-        </div>
-      </div>
-
-      <div
-        aria-hidden
-        className="h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent"
+        }
+        spaceBelow={false}
       />
 
       {/* ── Tabs + Calendar — single row on all screen sizes ── */}
