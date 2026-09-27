@@ -39,17 +39,21 @@ const WinningStatBox = ({
 
         <div className="w-full flex flex-row  justify-between items-center">
           <div className="min-w-0">
-            <p className="text-[20px] md:text-2xl font-bold tracking-tight text-white leading-tight">
+            <p className="text-[20px] md:text-2xl font-bold tracking-wide text-white leading-tight">
               {value}
             </p>
             {valueNote && (
               // Same idiom as the chart axes: 24-hour figure, 12-hour in
               // brackets underneath.
-              <p className="mt-0.5 text-[11px] font-medium text-white/70 tabular-nums">
+              <p className="mt-0.5 text-[11px] font-medium tracking-wide text-white/70 tabular-nums">
                 [ {valueNote} ]
               </p>
             )}
-            {footer && <p className="text-xs text-white/60 mt-1.5">{footer}</p>}
+            {footer && (
+              <p className="text-xs text-white/60 tracking-wide mt-1.5">
+                {footer}
+              </p>
+            )}
           </div>
 
           <div className="w-10 h-10 flex items-center justify-center ">

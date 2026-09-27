@@ -58,7 +58,7 @@ export default function PageHeader({
         {leading}
 
         <div className="min-w-0">
-          <h1 className="truncate text-[22px] font-semibold tracking-wide text-[#3c4043] md:text-[26px]">
+          <h1 className="truncate text-[22px]  font-semibold tracking-wide text-[#3c4043] md:text-[26px]">
             {title}
           </h1>
 

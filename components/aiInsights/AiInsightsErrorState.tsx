@@ -57,7 +57,7 @@ const TONES: Record<
   },
 };
 
-interface Presentation {
+export interface Presentation {
   icon: LucideIcon;
   tone: Tone;
   title: string;
@@ -87,7 +87,12 @@ const SETTINGS = "/settings/api-keys";
  * finishes, red when something they own is wrong, amber when it is temporary
  * and waiting or retrying will do, grey when the cause is outside both.
  */
-function present(code: string): Presentation {
+/**
+ * Exported so the Help page can list the same explanations rather than
+ * writing its own: two copies of this wording would drift apart, and the
+ * second copy is the one nobody updates.
+ */
+export function present(code: string): Presentation {
   switch (code) {
     case "NOT_CONFIGURED":
       return {

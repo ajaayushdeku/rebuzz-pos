@@ -34,6 +34,7 @@ import {
   BriefcaseBusiness,
   ContactRound,
   Sparkles,
+  LifeBuoy,
 } from "lucide-react";
 
 export type NavigationItem =
@@ -245,5 +246,12 @@ export const navigationConfig: NavigationItem[] = [
     label: "Subscriptions",
     icon: Gem,
     href: "/subscriptions",
+  },
+
+  {
+    type: "single",
+    label: "Help & Support",
+    icon: LifeBuoy,
+    href: "/help",
   },
 ];
