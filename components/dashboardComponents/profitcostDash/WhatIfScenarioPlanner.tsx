@@ -214,9 +214,9 @@ export default function WhatIfScenarioPlanner({
           No sales in this period, so there is nothing to model yet.
         </p>
       ) : (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
           {/* Outcome */}
-          <div>
+          <div className="min-w-0 lg:w-[460px] lg:shrink-0 xl:w-[520px]">
             <div className="rounded-xl bg-slate-900 p-5 text-white">
               <p className="text-[11px] text-slate-400">Projected net profit</p>
               <div className="mt-1 flex flex-wrap items-baseline gap-2">
@@ -324,7 +324,7 @@ export default function WhatIfScenarioPlanner({
           </div>
 
           {/* Levers */}
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid min-w-0 flex-1 gap-5 sm:grid-cols-2 lg:content-start">
             {SLIDERS.map((slider) => {
               const value = adjustments[slider.key];
               const isLocked = Boolean(slider.locked);

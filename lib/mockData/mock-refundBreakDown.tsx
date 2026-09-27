@@ -1,3 +1,14 @@
+/**
+ * Refund reasons, darkest first.
+ *
+ * One rose ramp rather than a rainbow: every slice here is money lost, so
+ * they are the same kind of thing at different sizes, and the shade tracks
+ * the size. Red through green read as a scale from bad to good, which is the
+ * wrong story for a card where every slice is bad.
+ *
+ * "Other" is the exception, in neutral grey: it is not a reason, it is the
+ * absence of one.
+ */
 export interface RefundReason {
   id: string;
   reason: string;
@@ -12,35 +23,35 @@ export const refundBreakdownMock: RefundReason[] = [
     reason: "Wrong Order",
     refunds: 12,
     amount: 540,
-    color: "#ff6b6b",
+    color: "#e11d48",
   },
   {
     id: "quality",
     reason: "Quality Issue",
     refunds: 8,
     amount: 360,
-    color: "#ff922b",
+    color: "#f43f5e",
   },
   {
     id: "out-of-stock",
     reason: "Out of Stock",
     refunds: 5,
     amount: 250,
-    color: "#fcc419",
+    color: "#fb7185",
   },
   {
     id: "changed-mind",
     reason: "Changed Mind",
     refunds: 3,
     amount: 150,
-    color: "#94d82d",
+    color: "#fda4af",
   },
   {
     id: "other",
     reason: "Other",
     refunds: 4,
     amount: 150,
-    color: "#94a3b8",
+    color: "#cbd5e1",
   },
 ];
 

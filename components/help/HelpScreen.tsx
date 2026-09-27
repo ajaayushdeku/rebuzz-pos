@@ -7,14 +7,16 @@ import {
   ArrowUpRight,
   Mail,
   Phone,
-  PlaySquare,
+  ChevronsLeft,
+  ChevronsRight,
   Search,
   X,
   type LucideIcon,
 } from "lucide-react";
 
 import { present } from "@/components/aiInsights/AiInsightsErrorState";
-import { WhatsAppIcon } from "@/components/customer/CustomerTable";
+import { WhatsAppIcon } from "@/components/ui/WhatsAppIcon";
+import { YouTubeIcon } from "@/components/ui/YouTubeIcon";
 import { navigationConfig } from "@/lib/config/navigation";
 import AskPanel from "@/components/help/AskPanel";
 import {
@@ -55,6 +57,19 @@ const SECTIONS = [
 
 type SectionId = (typeof SECTIONS)[number]["id"];
 
+/**
+ * Every section in the order the page lays them out, for the number each one
+ * shows above its kicker.
+ *
+ * The form is included even though the rail leaves it out: it is the last
+ * thing on the page, and a reader counting sections counts it.
+ *
+ * The number is a section's place in the document, not its place in what is
+ * on screen — so a search that hides the middle three leaves 02 and 06
+ * reading as 02 and 06, which is where they actually are.
+ */
+const SECTION_ORDER: readonly string[] = [...SECTIONS.map((s) => s.id), "ask"];
+
 /** Everything a row can be matched on, lowercased once. */
 function haystack(...parts: (string | undefined)[]) {
   return parts.filter(Boolean).join(" ").toLowerCase();
@@ -86,6 +101,7 @@ export default function HelpScreen() {
   const [query, setQuery] = useState("");
   const [openGuide, setOpenGuide] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<string | null>(null);
+  const [railOpen, setRailOpen] = useState(true);
   const q = query.trim().toLowerCase();
 
   const guides = useMemo(
@@ -199,29 +215,79 @@ export default function HelpScreen() {
               should be read in anyway. */}
           <nav
             aria-label="Help sections"
-            className="sticky top-6 hidden w-52 shrink-0 lg:block"
+            className={`sticky top-6 hidden shrink-0 transition-[width] duration-200 lg:block ${
+              railOpen ? "w-52" : "w-12"
+            }`}
           >
-            <p className="mb-3 pl-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9aa0a6]">
-              On this page
-            </p>
+            <div
+              className={`mb-3 flex items-center gap-2 ${
+                railOpen ? "pl-3 pr-1" : "justify-center"
+              }`}
+            >
+              {railOpen && (
+                <p className="flex-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9aa0a6]">
+                  On this page
+                </p>
+              )}
+              {/* Collapsed, the rail keeps the numbers: they are the part
+                  that says where you are, and they are the part that still
+                  fits. */}
+              <button
+                type="button"
+                onClick={() => setRailOpen((o) => !o)}
+                aria-expanded={railOpen}
+                aria-label={
+                  railOpen ? "Collapse section list" : "Expand section list"
+                }
+                title={railOpen ? "Collapse" : "Expand"}
+                className="cursor-pointer rounded-md p-1 text-[#9aa0a6] transition-colors hover:bg-[#f1f3f4] hover:text-[#5f6368]"
+              >
+                {railOpen ? (
+                  <ChevronsLeft size={14} aria-hidden />
+                ) : (
+                  <ChevronsRight size={14} aria-hidden />
+                )}
+              </button>
+            </div>
+
             <ul className="flex flex-col">
               {SECTIONS.map((s) => {
                 const isActive = active === s.id;
+                const number = String(SECTION_ORDER.indexOf(s.id) + 1).padStart(
+                  2,
+                  "0",
+                );
                 return (
                   <li key={s.id}>
                     <a
                       href={`#${s.id}`}
                       aria-current={isActive ? "true" : undefined}
-                      className={`flex items-center justify-between gap-2 border-l-2 py-2 pl-3 pr-2 text-[13px] transition-colors ${
+                      title={railOpen ? undefined : s.label}
+                      className={`flex items-center gap-2 border-l-2 py-2 text-[13px] transition-colors ${
+                        railOpen ? "pl-3 pr-2" : "justify-center pl-0 pr-0"
+                      } ${
                         isActive
                           ? "border-[#1a73e8] font-medium text-[#1a73e8]"
                           : "border-[#e8eaed] text-[#5f6368] hover:border-[#dadce0] hover:text-[#3c4043]"
                       }`}
                     >
-                      <span className="truncate">{s.label}</span>
-                      <span className="shrink-0 text-[11px] tabular-nums text-[#9aa0a6]">
-                        {counts[s.id]}
+                      <span
+                        className={`shrink-0 tabular-nums text-[11px] ${
+                          isActive ? "text-[#1a73e8]" : "text-[#9aa0a6]"
+                        }`}
+                      >
+                        {number}
                       </span>
+                      {railOpen && (
+                        <>
+                          <span className="min-w-0 flex-1 truncate">
+                            {s.label}
+                          </span>
+                          <span className="shrink-0 text-[11px] tabular-nums text-[#9aa0a6]">
+                            {counts[s.id]}
+                          </span>
+                        </>
+                      )}
                     </a>
                   </li>
                 );
@@ -434,7 +500,12 @@ function SearchBand({
             onChange={(e) => onChange(e.target.value)}
             placeholder="tax, refund, staff, insights…"
             aria-label="Search help"
-            className="h-12 w-full rounded-full border border-[#dadce0] bg-white pl-11 pr-11 text-[14px] text-[#3c4043] outline-none transition placeholder:text-[#9aa0a6] focus:border-transparent focus:ring-2 focus:ring-blue-500"
+            // `type="search"` is right for what this is, but WebKit draws its
+            // own clear cross inside it once there is a value — which put two
+            // crosses in the field. Ours stays: it is on the page's own
+            // palette and it is always visible, where the native one appears
+            // only on hover.
+            className="h-12 w-full appearance-none rounded-full border border-[#dadce0] bg-white pl-11 pr-11 text-[14px] text-[#3c4043] outline-none transition placeholder:text-[#9aa0a6] focus:border-transparent focus:ring-2 focus:ring-blue-500 [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none"
           />
           {value && (
             <button
@@ -467,6 +538,19 @@ function SearchBand({
             {matches} {matches === 1 ? "result" : "results"}
           </p>
         )}
+
+        {/* The other way through all of this: watch it instead of reading
+            it. Under the search rather than beside it, because searching is
+            what most people came to do — but on its own line, since it
+            leaves the app. */}
+        <div className="mt-5 flex items-center justify-center gap-2 border-t border-[#e3ecfd] pt-5">
+          <span className="text-[12px] text-[#5f6368]">Prefer to watch?</span>
+          <WatchButton
+            video={HELP_CONTACT.youtube}
+            name="Rebuzz POS tutorials"
+            label="Video tutorials"
+          />
+        </div>
       </div>
     </section>
   );
@@ -491,7 +575,11 @@ function Section({
     // `scroll-mt`: the navbar is fixed, and an anchor without this lands the
     // heading underneath it.
     <section id={id} className="scroll-mt-24">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#1a73e8]">
+      <p className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#1a73e8]">
+        <span className="tabular-nums ">
+          {String(SECTION_ORDER.indexOf(id) + 1).padStart(2, "0")}
+        </span>
+        <span aria-hidden className="h-px w-2 bg-[#1a73e8]" />
         {kicker}
       </p>
       <h2 className="mt-1.5 text-[20px] font-medium tracking-tight text-[#3c4043] md:text-[22px]">
@@ -582,13 +670,20 @@ function GuideRow({
             </p>
           )}
 
-          <Link
-            href={guide.href}
-            className="mt-4 inline-flex items-center gap-1 text-[12px] font-medium text-[#1a73e8] hover:underline"
-          >
-            {guide.hrefLabel}
-            <ArrowUpRight size={12} aria-hidden />
-          </Link>
+          {/* The two ways on from a guide: the screen it describes, and the
+              walkthrough of it. Side by side, because they answer the same
+              question at different speeds. */}
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <Link
+              href={guide.href}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1.5 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
+            >
+              {guide.hrefLabel}
+              <ArrowUpRight size={12} aria-hidden />
+            </Link>
+
+            <WatchButton video={guide.video} name={guide.title} />
+          </div>
         </div>
       )}
     </li>
@@ -711,11 +806,78 @@ function FaqRow({
         </button>
       </dt>
       {open && (
-        <dd className="border-b border-[#e8eaed] pb-4 pr-8 text-[13px] leading-relaxed text-[#5f6368]">
-          {faq.a}
+        <dd className="border-b border-[#e8eaed] pb-4 pr-8">
+          <p className="text-[13px] mt-2 leading-relaxed text-[#5f6368]">
+            {faq.a}
+          </p>
+          {/* Under the answer, not beside the question: it is the same
+              answer at a different speed, and only worth offering once the
+              reader has opened the one they were looking for. */}
+          <div className="mt-3">
+            <WatchButton video={faq.video} name={faq.q} />
+          </div>
         </dd>
       )}
     </>
+  );
+}
+
+/**
+ * "Watch the tutorial", whether or not there is one yet.
+ *
+ * With a video it is a link out to YouTube, in YouTube's own red so it is
+ * recognised before it is read. Without one it stays in place, muted and
+ * saying why — a button that appears one release and vanishes the next is
+ * harder to learn than one that waits.
+ */
+function WatchButton({
+  video,
+  name,
+  label = "Watch tutorial",
+}: {
+  video?: string;
+  /** What the tutorial is of, for the screen-reader label. */
+  name: string;
+  /** The words on the button, where "Watch tutorial" is not what it does. */
+  label?: string;
+}) {
+  if (!video) {
+    return (
+      // The mark keeps its red, faded: enough to be recognised as a video,
+      // not enough to look pressable.
+      // <span
+      //   role="button"
+      //   aria-disabled="true"
+      //   title="Tutorial coming soon"
+      //   className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-full border border-[#f3d4d2] bg-[#fdf6f5] px-3 py-1.5 text-[12px] font-medium text-[#9aa0a6]"
+      // >
+      <span
+        role="button"
+        aria-disabled="true"
+        title="Tutorial coming soon"
+        className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-[12px] font-medium text-[#9aa0a6]"
+      >
+        <YouTubeIcon size={14} className="text-[#ff0000]/40" />
+        {label}
+        <span className="ml-0.5 rounded-full bg-white px-1.5 py-px text-[10px] font-semibold tracking-wide text-[#9aa0a6]">
+          Soon
+        </span>
+      </span>
+    );
+  }
+
+  return (
+    <a
+      href={video}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`${label}: ${name}`}
+      className="inline-flex items-center gap-1.5 rounded-full bg-[#ff0000] px-3 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-[#cc0000]"
+    >
+      <YouTubeIcon size={14} />
+      {label}
+      <ArrowUpRight size={12} aria-hidden />
+    </a>
   );
 }
 
@@ -809,19 +971,25 @@ function ContactStrip() {
         </a>
       )),
     },
-    youtube && {
-      icon: PlaySquare,
-      label: "Tutorials",
+    {
+      icon: YouTubeIcon,
+      label: "YouTube",
       lines: [
-        <a
-          key="y"
-          href={youtube}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={channelLink}
-        >
-          Watch on YouTube
-        </a>,
+        youtube ? (
+          <a
+            key="y"
+            href={youtube}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={channelLink}
+          >
+            Watch the tutorials
+          </a>
+        ) : (
+          <span key="y" className="text-[13px] text-white/40">
+            Tutorials coming soon
+          </span>
+        ),
       ],
     },
   ].filter(Boolean) as Channel[];

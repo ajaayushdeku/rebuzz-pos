@@ -88,83 +88,93 @@ export default function RefundBreakdown() {
           as well as the chart. */}
       <LockDimFeactureOverlay component_name="Refund Breakdown" />
 
-      {/* Donut chart */}
-      <div className="relative flex shrink-0 items-center justify-center">
-        <ResponsiveContainer width={200} height={200}>
-          <PieChart>
-            <Pie
-              data={data}
-              dataKey="amount"
-              innerRadius={58}
-              outerRadius={84}
-              paddingAngle={2}
-              startAngle={90}
-              endAngle={-270}
-              stroke="white"
-              strokeWidth={3}
-            >
-              {data.map((item) => (
-                <Cell key={item.id} fill={item.color} />
-              ))}
-            </Pie>
-            <Tooltip
-              content={<CustomTooltip total={total} currency={currency} />}
-            />
-          </PieChart>
-        </ResponsiveContainer>
-
-        {/* Center label */}
-        <div
-          className="pointer-events-none absolute flex flex-col items-center justify-center"
-          style={{ zIndex: 1 }}
-        >
-          <span className="text-[11px]" style={{ color: CHART_PALETTE.axis }}>
-            Total Lost
-          </span>
-          <span className="text-2xl font-semibold tracking-tight text-red-500">
-            {formatCurrencySymbol(total, currency.symbol, currency.locale)}
-          </span>
-        </div>
-      </div>
-
-      {/* Legend list: one row per reason, hairline-separated */}
-      <div className="mt-6 w-full">
-        {data.map((item) => (
-          <div
-            key={item.id}
-            className="flex items-center justify-between border-b py-2.5 last:border-0"
-            style={{ borderColor: CHART_PALETTE.grid }}
-          >
-            <div className="flex items-center gap-2.5">
-              <span
-                className="h-2.5 w-2.5 shrink-0 rounded-full"
-                style={{ backgroundColor: item.color }}
+      <div className="flex h-full flex-col gap-6 sm:flex-row sm:items-stretch sm:gap-8">
+        {/* Donut chart. `min-h` because a flex child with a percentage-height
+            chart inside collapses to nothing without one. */}
+        <div className="relative flex min-h-[220px] flex-1 items-center justify-center sm:max-w-[260px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={data}
+                dataKey="amount"
+                innerRadius={58}
+                outerRadius={84}
+                paddingAngle={2}
+                startAngle={90}
+                endAngle={-270}
+                stroke="white"
+                strokeWidth={3}
+              >
+                {data.map((item) => (
+                  <Cell key={item.id} fill={item.color} />
+                ))}
+              </Pie>
+              <Tooltip
+                content={<CustomTooltip total={total} currency={currency} />}
               />
-              <span
-                className="text-[13px]"
-                style={{ color: CHART_PALETTE.title }}
-              >
-                {item.reason}
-              </span>
-              <span
-                className="text-xs tabular-nums"
-                style={{ color: CHART_PALETTE.subtitle }}
-              >
-                ({item.refunds})
-              </span>
-            </div>
+            </PieChart>
+          </ResponsiveContainer>
+
+          {/* Center label */}
+          <div
+            className="pointer-events-none absolute flex flex-col items-center justify-center"
+            style={{ zIndex: 1 }}
+          >
+            <span className="text-[11px]" style={{ color: CHART_PALETTE.axis }}>
+              Total Lost
+            </span>
+            {/* The card's own rose, so the total reads as the sum of the
+                slices around it rather than as a separate warning. */}
             <span
-              className="text-[13px] font-medium tabular-nums"
-              style={{ color: CHART_PALETTE.title }}
+              className="text-lg font-semibold tracking-tight"
+              style={{ color: "#e11d48" }}
             >
-              {formatCurrencySymbol(
-                item.amount,
-                currency.symbol,
-                currency.locale,
-              )}
+              {formatCurrencySymbol(total, currency.symbol, currency.locale)}
             </span>
           </div>
-        ))}
+        </div>
+
+        {/* Legend list: one row per reason, hairline-separated. It takes the
+            remaining width and starts at the top, so rows read down the card
+            beside the chart rather than centring against it. */}
+        <div className="min-w-0 flex-1 self-start">
+          {data.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center justify-between border-b py-2.5 last:border-0"
+              style={{ borderColor: CHART_PALETTE.grid }}
+            >
+              <div className="flex items-center gap-2.5">
+                <span
+                  className="h-2.5 w-2.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: item.color }}
+                />
+                <span
+                  className="text-[13px]"
+                  style={{ color: CHART_PALETTE.title }}
+                >
+                  {item.reason}
+                </span>
+                <span
+                  className="text-xs tabular-nums"
+                  style={{ color: CHART_PALETTE.subtitle }}
+                >
+                  ({item.refunds})
+                </span>
+              </div>
+              <span
+                className="text-[13px] font-medium tabular-nums"
+                style={{ color: CHART_PALETTE.title }}
+              >
+                {formatCurrencySymbol(
+                  item.amount,
+                  currency.symbol,
+                  currency.locale,
+                )}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </ChartCard>
   );

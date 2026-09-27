@@ -175,22 +175,22 @@ export default async function Page({
           </Suspense>
         </ChartErrorBoundary>
 
-        <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6">
-          <ChartErrorBoundary>
-            <Suspense fallback={<ChartSkeleton />}>
-              <WhatIfScenarioPlannerWrapper
-                startDate={effectiveStartDate}
-                endDate={effectiveEndDate}
-              />
-            </Suspense>
-          </ChartErrorBoundary>
+        {/* <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6"> */}
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <WhatIfScenarioPlannerWrapper
+              startDate={effectiveStartDate}
+              endDate={effectiveEndDate}
+            />
+          </Suspense>
+        </ChartErrorBoundary>
 
-          <ChartErrorBoundary>
-            <Suspense fallback={<ChartSkeleton />}>
-              <RefundBreakdownWrapper />
-            </Suspense>
-          </ChartErrorBoundary>
-        </div>
+        <ChartErrorBoundary>
+          <Suspense fallback={<ChartSkeleton />}>
+            <RefundBreakdownWrapper />
+          </Suspense>
+        </ChartErrorBoundary>
+        {/* </div> */}
 
         {/* ── Expenses Section ── */}
         {/* <div className="border-b border-gray-200 pb-4">

@@ -2,14 +2,23 @@ import type { LucideIcon } from "lucide-react";
 import {
   BadgePercent,
   Boxes,
+  CalendarClock,
   Coins,
+  Copy,
+  Eye,
+  FileDown,
   Gift,
+  Layers,
+  PiggyBank,
   Percent,
   ReceiptText,
   RotateCcw,
+  Send,
   Sparkles,
+  TrendingDown,
   Tag,
   Users,
+  Wallet,
 } from "lucide-react";
 
 /**
@@ -41,6 +50,15 @@ export interface HelpGuide {
   steps: string[];
   /** The part people get wrong, or wish they had known first. */
   note?: string;
+  /**
+   * A walkthrough on YouTube, when one has been recorded.
+   *
+   * Absent, the guide still offers the button — greyed, and saying so —
+   * rather than hiding it: the tutorials are coming, and a button that
+   * appears one release and not the next is harder to learn than one that
+   * waits in place.
+   */
+  video?: string;
   keywords: string[];
 }
 
@@ -80,6 +98,137 @@ export const HELP_GUIDES: HelpGuide[] = [
     keywords: ["bill", "sale", "sell", "receipt", "checkout", "order"],
   },
   {
+    id: "invoice-details",
+    title: "Open an invoice and read it",
+    summary: "See everything recorded against one bill.",
+    icon: Eye,
+    href: "/records/invoices",
+    hrefLabel: "Invoices",
+    steps: [
+      "Open Invoices and find the bill in the list.",
+      "Use the row's menu and choose View.",
+      "The page shows the items, the totals, what has been paid and what is still due.",
+    ],
+    note: "Edit sits beside View in the same menu, for correcting a bill rather than refunding it.",
+    keywords: ["view", "detail", "open", "bill", "read", "check"],
+  },
+  {
+    id: "record-payment",
+    title: "Record a payment on an invoice",
+    summary: "Mark a bill as settled when the money arrives.",
+    icon: Wallet,
+    href: "/records/invoices",
+    hrefLabel: "Invoices",
+    steps: [
+      "Open Invoices and use the row's menu on the bill.",
+      "Choose Record payment.",
+      "Check the amount due against what you were handed \u2014 the breakdown shows the subtotal, tax, any discount and loyalty points used.",
+      "Pick how it was paid: Cash or QR.",
+    ],
+    note: "This settles the invoice in full. For someone paying in instalments, move the bill to credit first and take payments against it.",
+    keywords: ["paid", "settle", "cash", "qr", "collect", "money"],
+  },
+  {
+    id: "move-to-credit",
+    title: "Move an invoice to credit",
+    summary: "Track a bill a regular will settle later.",
+    icon: BadgePercent,
+    href: "/records/credits",
+    hrefLabel: "Credits",
+    steps: [
+      "Open Invoices and use the row's menu on the unpaid bill.",
+      "Choose Move to credit and confirm.",
+      "The bill now appears on the Credits page with its outstanding due.",
+    ],
+    note: "It leaves the invoice list when it moves. Credits is where you see who owes what, and where instalments are taken.",
+    keywords: ["udhaaro", "due", "owed", "later", "regular", "credit"],
+  },
+  {
+    id: "partial-payment",
+    title: "Take a partial payment",
+    summary: "Accept part of what is owed and keep the rest on the books.",
+    icon: Coins,
+    href: "/records/credits",
+    hrefLabel: "Credits",
+    steps: [
+      "Open Credits and choose the credit being paid down.",
+      "Record a payment and enter the amount handed over, rather than the full due.",
+      "The modal shows what stays due after this payment before you confirm.",
+      "Pick how it was paid: Cash or QR.",
+    ],
+    note: "Each instalment is kept, so the credit carries its own payment history. The credit closes itself once a payment clears the remaining balance.",
+    keywords: [
+      "instalment",
+      "installment",
+      "part",
+      "deposit",
+      "advance",
+      "balance",
+    ],
+  },
+  {
+    id: "due-date",
+    title: "Set a due date and reminders",
+    summary: "Say when a bill is expected, and be reminded before it is late.",
+    icon: CalendarClock,
+    href: "/records/invoices",
+    hrefLabel: "Invoices",
+    steps: [
+      "Open Invoices and use the row's menu on the bill.",
+      "Choose Set due date \u2014 or Edit due date, if it already has one.",
+      "Pick the date the money is expected.",
+      "Add the reminders you want, each set a number of days from that date.",
+    ],
+    note: "The Invoices list can be filtered by due date, so overdue bills can be pulled up on their own.",
+    keywords: ["deadline", "overdue", "reminder", "chase", "terms", "date"],
+  },
+  {
+    id: "email-invoice",
+    title: "Email an invoice to a customer",
+    summary: "Send the bill to the address on their record.",
+    icon: Send,
+    href: "/records/invoices",
+    hrefLabel: "Invoices",
+    steps: [
+      "Open Invoices and use the row's menu on the bill.",
+      "Choose Resend invoice.",
+      "Choose which document to send: Proforma, Invoice or Tax Invoice.",
+      "Check the address it is going to, and send.",
+    ],
+    note: "A Proforma is a quote sent before the sale is final; a Tax Invoice is the one a customer claims against.",
+    keywords: ["send", "mail", "resend", "share", "customer", "proforma"],
+  },
+  {
+    id: "export-invoice",
+    title: "Download or print a bill",
+    summary: "Get a PDF, or put it on paper.",
+    icon: FileDown,
+    href: "/records/invoices",
+    hrefLabel: "Invoices",
+    steps: [
+      "Open Invoices and use the row's menu on the bill.",
+      "Choose Export as PDF to download it, or Print to send it to a printer.",
+      "Choose the document: Proforma, Invoice or Tax Invoice.",
+    ],
+    note: "The three differ in what they claim, not in how they look \u2014 send a Tax Invoice only when the sale is final and taxed.",
+    keywords: ["pdf", "download", "print", "paper", "copy", "save"],
+  },
+  {
+    id: "duplicate-invoice",
+    title: "Duplicate an invoice",
+    summary: "Start a new bill from one you have already raised.",
+    icon: Copy,
+    href: "/records/invoices",
+    hrefLabel: "Invoices",
+    steps: [
+      "Open Invoices and use the row's menu on the bill to copy.",
+      "Choose Duplicate.",
+      "A new bill opens with the same items and customer, ready to edit.",
+    ],
+    note: "Useful for a customer who orders the same thing each week \u2014 the original is untouched.",
+    keywords: ["copy", "repeat", "again", "same", "template", "recurring"],
+  },
+  {
     id: "refund",
     title: "Refund an order",
     summary: "Return money on a completed sale, and see where it lands.",
@@ -109,6 +258,71 @@ export const HELP_GUIDES: HelpGuide[] = [
     ],
     note: "Your plan caps how many products you can hold. The ceiling is shown on the Products page before you reach it.",
     keywords: ["item", "menu", "inventory", "stock", "restock", "cost price"],
+  },
+  {
+    id: "expense-income",
+    title: "Record an expense or income",
+    summary: "Put money going out, or coming in, on the books.",
+    icon: TrendingDown,
+    href: "/records/expenses",
+    hrefLabel: "Expense & Income",
+    steps: [
+      "Open Expense & Income and choose Add Expense \u2014 or switch the form to Income for money in.",
+      "Pick the purpose it belongs to. Manage purposes lets you add one you don't have yet.",
+      "Enter the amount and the date it happened.",
+      "For something that repeats \u2014 rent, a subscription \u2014 mark it recurring and give it an end date.",
+    ],
+    note: "Purpose is what the dashboards group spending by, so an entry filed under the wrong one is hard to find later.",
+    keywords: [
+      "spend",
+      "bill",
+      "rent",
+      "salary",
+      "cost",
+      "recurring",
+      "income",
+    ],
+  },
+  {
+    id: "budget",
+    title: "Set a budget for a category",
+    summary:
+      "Give a purpose a monthly ceiling and watch it against actual spend.",
+    icon: PiggyBank,
+    href: "/records/expenses",
+    hrefLabel: "Expense & Income",
+    steps: [
+      "Open Expense & Income and choose Set Budget.",
+      "Pick the expense category to cap.",
+      "Enter the threshold you want to stay under.",
+    ],
+    note: "Budgets show up on the Expense Analytics dashboard as budget against actual, so you can see which ones are running hot before the month ends.",
+    keywords: ["budget", "limit", "threshold", "cap", "target", "overspend"],
+  },
+  {
+    id: "bulk-stock",
+    title: "Update stock for several products at once",
+    summary: "Count the shelf, then enter the whole count in one pass.",
+    icon: Layers,
+    href: "/dashboard/inventory",
+    hrefLabel: "Inventory",
+    steps: [
+      "Open Inventory and choose Add Stock.",
+      "Search for a product, or scroll the list \u2014 everything you change stays changed as you move between them.",
+      "Set In stock for each one, and Low stock if you want its alert threshold to change too.",
+      "Products with variants list each variant separately, so a size or flavour can be counted on its own.",
+      "Press Save changes once at the end.",
+    ],
+    note: "One save covers every product you touched, so a stock take is one trip through the list rather than one trip per item.",
+    keywords: [
+      "stocktake",
+      "stock take",
+      "count",
+      "restock",
+      "bulk",
+      "inventory",
+      "variants",
+    ],
   },
   {
     id: "employees",
@@ -388,130 +602,132 @@ export const HELP_PAGES: Record<string, HelpPageEntry> = {
   "/dashboard": {
     what: "The day at a glance, and the first place to look each morning.",
     shows:
-      "Revenue, sales, products sold and net profit for the range you pick, with revenue over the week, sales by category, your busiest hours, top items, payment methods and the latest transactions. Growth Tracker and Heatmap sit beside it as tabs.",
+      "Four figures for the range you pick — revenue, sales, products sold and net profit — then revenue across the week, sales by category, takings by hour, your top items, how people paid, and the latest transactions. Low stock and AI-written notes sit at the foot. Growth Tracker and Heatmap are tabs beside it: one for targets and year-on-year, one for the busiest squares of the week.",
   },
   "/dashboard/sales-revenue": {
     what: "Where the money comes from, product by product.",
     shows:
-      "Revenue against profit per product, the sales trend, a forecast and target tracker, your peak hours and days, best and slowest products, and the effect of campaigns and price changes.",
+      "Revenue against profit for each product, the sales trend with a forecast, how you are tracking against target, your peak hours and peak days, best and slowest sellers, and what campaigns and price changes did to sales. The date range at the top drives every card.",
   },
   "/dashboard/profit-cost": {
     what: "What you keep after costs — the health check behind the takings.",
     shows:
-      "Gross revenue, net profit, refunds and average margin, then cost of goods against profit, prime cost, break-even, unit economics, profit by day and hour, and a what-if planner for testing a change before making it.",
+      "Gross revenue, net profit, refunds and average margin across the top. Below: profit over time, revenue split against cost of goods, prime cost, break-even, per-unit economics, profit by day and hour, and a menu matrix showing which items earn their place. The what-if planner lets you test a price or cost change before making it.",
   },
   "/dashboard/tax-analytics": {
     what: "Everything the tax office will eventually ask about.",
     shows:
-      "Taxable against non-taxable sales, tax by category, tax on refunded bills, VAT trends and return summary, TDS, advance instalments, a filing calendar and a reconciliation of what you actually owe.",
+      "Taxable against non-taxable sales, tax by category, tax charged on bills you later refunded, VAT trend and return summary, TDS on rent and receivable, income tax provision, advance instalments, a filing calendar, and a reconciliation of what you actually owe.",
   },
   "/dashboard/expenses": {
     what: "Spending as a picture, rather than as a list of entries.",
     shows:
-      "Cash flow over recent months, spending by category, the monthly trend, and how each budget is tracking against what has actually been spent.",
+      "Cash flow over recent months, where the money went by category, the monthly trend, and each budget against what has actually been spent — so a category running hot shows before the month ends.",
   },
   "/dashboard/inventory": {
     what: "What is on your shelves and what it is worth.",
     shows:
-      "Stock value at selling and at cost price, potential margin, product and variant counts, and stock levels with the items running low.",
+      "Stock valued at both selling and cost price, the margin sitting in it, product and variant counts, what is moving fast or not at all, and what is running low. Add Stock opens the whole list for a stock take in one pass.",
   },
   "/dashboard/live-tables": {
     what: "Your floor, as it stands right now.",
     shows:
-      "Every table as a grid or as a floor plan, which are occupied, and how full the room is.",
+      "Every table as a grid or as a floor plan you arrange yourself, which are occupied and which are free, and how full the room is.",
   },
   "/dashboard/employee": {
     what: "How your team is performing at the till.",
     shows:
-      "Sales and shifts per employee over the range you pick. Opening anyone gives their bills, invoices and shift history.",
+      "Sales, bills and shifts per employee for the range you pick. Opening anyone gives their own page: the bills they rang up, invoices raised, hours worked and shift history.",
   },
   "/dashboard/customers": {
     what: "Who buys from you, and whether they come back.",
     shows:
-      "Customer counts and behaviour over the chosen range, with retention and spending patterns.",
+      "How many customers you have and how many are new, what a typical one spends, who is at risk of not returning, and how spending is spread across them.",
   },
   "/records/invoices": {
     what: "Every bill you have raised, and what is still owed.",
     shows:
-      "The invoice list with totals across the top, filtered by state. This is also where a new invoice starts.",
+      "The invoice list with totals across the top, filtered by state and by due date. Each row's menu carries the whole working life of a bill: view, edit, set a due date, record payment, resend, export as PDF, print, duplicate, or move it to credit.",
   },
   "/records/expenses": {
     what: "Recording what the business spends, and on what.",
     shows:
-      "Expenses and income as entries, summarised by purpose, with budgets and the most recent transactions.",
+      "Expenses and income as dated entries under a purpose, with budgets per category, a summary by purpose and the most recent transactions. Recurring entries — rent, subscriptions — are set once with an end date.",
   },
   "/records/credits": {
     what: "Invoices you have moved to credit, and the dues against them.",
-    shows: "Each credit, what is outstanding on it, and the totals.",
+    shows:
+      "Each credit with what is outstanding on it, its payment history, and the totals across all of them. Instalments are taken here: enter what was handed over and the rest stays due.",
   },
   "/records/order-history": {
     what: "The till's record: every completed sale.",
     shows:
-      "Orders, revenue, average order value and refunds for the chosen dates, with each transaction openable in full. Refunds are issued from here.",
+      "Orders, revenue, average order value and refunds for the dates you pick, with every transaction openable in full — items, payment method, who served it. Refunds are issued from here, and refunded orders stay in the record.",
   },
   "/records/customers": {
     what: "Your customer book.",
     shows:
-      "Every customer with their contact details and standing. Opening one gives their order history, loyalty and dues.",
+      "Every customer with contact details, loyalty tier and what they owe. Opening one gives their order history, loyalty points, dues and a WhatsApp button to reach them.",
   },
   "/records/products": {
     what: "The menu itself — what you sell and what it costs you.",
     shows:
-      "Every product with price, cost, category and stock, and how many of your plan's product allowance is used.",
+      "Every product with selling price, cost price, category, stock and variants, plus how much of your plan's product allowance is used. Cost price is what makes margin and profit calculable, so an item without one is missing from those figures.",
   },
   "/offers": {
     what: "Building a promotion, and seeing it before it runs.",
     shows:
-      "A four-step builder for the offer, its dates and its terms, with a preview of how it reaches a customer.",
+      "A four-step builder — what the offer is, what it applies to, the dates it runs and the terms — with a live preview of how it reaches a customer.",
   },
   "/ai-insights": {
     what: "Your own sales, read back to you as advice.",
     shows:
-      "Eight sections — menu ideas, slow items, pricing, hour-by-hour, festivals, sales, retention and staffing — each generated from your data, with the hourly allowance shown in the header. Needs your own AI key.",
+      "Eight sections — menu ideas, slow items, pricing, hour-by-hour, festivals, sales, retention and staffing — each generated from your own data, with the hourly allowance shown in the header. Needs your own AI key; until then each section shows examples marked “Sample data”.",
   },
   "/settings/business": {
     what: "Your business as customers see it.",
     shows:
-      "Name, address, phone, logo and PAN or VAT number — the details printed on invoices and receipts.",
+      "Name, address, precise location, phone, logo and PAN or VAT number — the details printed on every invoice and receipt.",
   },
   "/settings/change-password": {
     what: "Changing the password you sign in with.",
-    shows: "The password form, and what makes a strong one.",
+    shows:
+      "The current and new password, with a strength check and what makes one strong.",
   },
   "/settings/employees": {
     what: "Who can sign in, and how much they can see.",
     shows:
-      "Every employee with their role and status. New accounts start here.",
+      "Every employee with their role and status. Adding one creates the account and emails them their password — no password is set here. Role decides reach: the owner sees everything, staff and basic accounts less.",
   },
   "/settings/currency": {
     what: "The currency every figure in the app is shown in.",
     shows:
-      "A searchable list of currencies by name, code or country. It changes the symbol, not the value.",
+      "A searchable list by currency, code or country, with the common ones first. It changes the symbol on every figure, past ones included, and converts nothing.",
   },
   "/settings/tax": {
     what: "The tax rates applied to invoices.",
     shows:
-      "Your standard and group rates, and the switch that turns tax on for new invoices.",
+      "Standard rates and group rates — several combined under one name — each with its own enabled and applied state, plus the switch that starts adding tax to new invoices.",
   },
   "/settings/discount": {
     what: "Discounts you can reuse at the till.",
     shows:
-      "Each discount, whether it takes a percentage or a fixed amount, and whether it is enabled.",
+      "Each discount, whether it takes a percentage or a fixed amount off, and whether it is enabled. A discount that exists but is not enabled will not appear on an invoice.",
   },
   "/settings/category": {
     what: "The groups your products are sorted into.",
     shows:
-      "Every category and how many products it holds. Categories are how the dashboards break sales down.",
+      "Every category and how many products sit in it. Categories are how the dashboards break sales down, so an uncategorised product is harder to read about later.",
   },
   "/settings/loyalty-points": {
     what: "What customers earn, and what it is worth.",
     shows:
-      "The earning and redemption rules, and the tiers customers move through.",
+      "How points are earned on a sale, what they are worth when redeemed, and the tiers customers move through as they spend.",
   },
   "/settings/api-keys": {
     what: "Connecting your own AI provider.",
     shows:
-      "Your provider and model, the key itself, and how much of this hour's allowance is spent.",
+      "Your provider and model, the key itself, and how much of this hour's allowance is spent. Google Gemini and OpenRouter both offer a free tier; the cost of the key is yours, not ours.",
   },
   "/bizexpense": {
     what: "Reading expenses straight off a photographed receipt.",
@@ -519,12 +735,13 @@ export const HELP_PAGES: Record<string, HelpPageEntry> = {
   },
   "/subscriptions": {
     what: "Your plan, and what the others include.",
-    shows: "Each plan side by side, with the one you are on marked.",
+    shows:
+      "Each plan side by side with what it allows, the one you are on marked, and what changes if you move.",
   },
   "/help": {
     what: "This page.",
     shows:
-      "Guides, the ideas worth knowing, the dashboard's vocabulary, and what each error code means.",
+      "Guides for each job, what every screen in the menu does, the ideas worth knowing, the dashboard's vocabulary, what each error code means, and a form to write to us.",
   },
 };
 
@@ -533,6 +750,11 @@ export const HELP_PAGES: Record<string, HelpPageEntry> = {
 export interface HelpFaq {
   q: string;
   a: string;
+  /**
+   * A walkthrough of this answer on YouTube, once one is recorded. Absent,
+   * the button still shows — greyed, and saying so.
+   */
+  video?: string;
 }
 
 export interface HelpFaqGroup {
