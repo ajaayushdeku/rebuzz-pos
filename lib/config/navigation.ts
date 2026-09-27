@@ -236,13 +236,6 @@ export const navigationConfig: NavigationItem[] = [
 
   {
     type: "single",
-    label: "Receipt AI",
-    icon: ScanEye,
-    href: "/bizexpense",
-  },
-
-  {
-    type: "single",
     label: "Subscriptions",
     icon: Gem,
     href: "/subscriptions",
@@ -253,5 +246,12 @@ export const navigationConfig: NavigationItem[] = [
     label: "Help & Support",
     icon: LifeBuoy,
     href: "/help",
+  },
+
+  {
+    type: "single",
+    label: "Receipt AI",
+    icon: ScanEye,
+    href: "/bizexpense",
   },
 ];

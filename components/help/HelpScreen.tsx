@@ -1,28 +1,32 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
   ArrowUpRight,
   Mail,
-  MessageCircle,
   Phone,
+  PlaySquare,
   Search,
   X,
   type LucideIcon,
 } from "lucide-react";
 
 import { present } from "@/components/aiInsights/AiInsightsErrorState";
+import { WhatsAppIcon } from "@/components/customer/CustomerTable";
 import { navigationConfig } from "@/lib/config/navigation";
+import AskPanel from "@/components/help/AskPanel";
 import {
   HELP_CONCEPTS,
   HELP_CONTACT,
   HELP_ERROR_CODES,
+  HELP_FAQS,
   HELP_GUIDES,
   HELP_METRICS,
   HELP_PAGES,
   type HelpConcept,
+  type HelpFaq,
   type HelpGuide,
 } from "@/lib/help/content";
 
@@ -43,6 +47,7 @@ import {
 const SECTIONS = [
   { id: "guides", label: "Step by step" },
   { id: "pages", label: "The menu, page by page" },
+  { id: "faqs", label: "Frequently asked" },
   { id: "concepts", label: "Good to know" },
   { id: "numbers", label: "What the numbers mean" },
   { id: "errors", label: "When something breaks" },
@@ -80,6 +85,7 @@ const MENU_ROWS = navigationConfig.flatMap<MenuRow>((item) =>
 export default function HelpScreen() {
   const [query, setQuery] = useState("");
   const [openGuide, setOpenGuide] = useState<string | null>(null);
+  const [openFaq, setOpenFaq] = useState<string | null>(null);
   const q = query.trim().toLowerCase();
 
   const guides = useMemo(
@@ -127,6 +133,16 @@ export default function HelpScreen() {
     [q],
   );
 
+  const faqs = useMemo(() => {
+    if (!q) return HELP_FAQS;
+    return HELP_FAQS.map((g) => ({
+      ...g,
+      items: g.items.filter((f) => haystack(g.group, f.q, f.a).includes(q)),
+    })).filter((g) => g.items.length > 0);
+  }, [q]);
+
+  const faqCount = faqs.reduce((n, g) => n + g.items.length, 0);
+
   const metrics = useMemo(
     () =>
       !q
@@ -147,6 +163,7 @@ export default function HelpScreen() {
   const counts: Record<SectionId, number> = {
     guides: guides.length,
     pages: pages.length,
+    faqs: faqCount,
     concepts: concepts.length,
     numbers: metrics.length,
     errors: errors.length,
@@ -154,6 +171,7 @@ export default function HelpScreen() {
   const total =
     guides.length +
     pages.length +
+    faqCount +
     concepts.length +
     metrics.length +
     errors.length;
@@ -245,6 +263,37 @@ export default function HelpScreen() {
               </Section>
             )}
 
+            {faqCount > 0 && (
+              <Section
+                id="faqs"
+                kicker="Ask it"
+                title="Frequently asked"
+                lede="The questions support answers most often, about the whole POS rather than only this dashboard."
+              >
+                <div className="flex flex-col gap-8">
+                  {faqs.map((g) => (
+                    <div key={g.group}>
+                      <p className="pb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9aa0a6]">
+                        {g.group}
+                      </p>
+                      <dl className="border-t border-[#e8eaed]">
+                        {g.items.map((f) => (
+                          <FaqRow
+                            key={f.q}
+                            faq={f}
+                            open={openFaq === f.q}
+                            onToggle={() =>
+                              setOpenFaq(openFaq === f.q ? null : f.q)
+                            }
+                          />
+                        ))}
+                      </dl>
+                    </div>
+                  ))}
+                </div>
+              </Section>
+            )}
+
             {concepts.length > 0 && (
               <Section
                 id="concepts"
@@ -329,7 +378,17 @@ export default function HelpScreen() {
               </Section>
             )}
 
-            <ContactPanel />
+            {/* Always here, search or no search: when nothing was found,
+                asking is the next thing to do. */}
+            <Section
+              id="ask"
+              kicker="Still stuck"
+              title="Write to us"
+              lede="A question comes back by email. Feedback needs no reply and asks for nothing about you."
+            >
+              <AskPanel />
+              <ContactStrip />
+            </Section>
           </div>
         </div>
       )}
@@ -605,6 +664,61 @@ function MenuDirectory({ rows }: { rows: MenuRow[] }) {
   );
 }
 
+/**
+ * One question, and its answer when asked for.
+ *
+ * Built on <dl> rather than a list of buttons: a question and its answer are
+ * a term and its definition, and screen readers announce them as a pair.
+ */
+function FaqRow({
+  faq,
+  open,
+  onToggle,
+}: {
+  faq: HelpFaq;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <>
+      <dt className="border-b border-[#e8eaed]">
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={open}
+          className="group flex w-full cursor-pointer items-center gap-4 py-3.5 text-left"
+        >
+          <span
+            className={`min-w-0 flex-1 text-[13px] transition-colors ${
+              open ? "font-medium text-[#1a73e8]" : "text-[#3c4043]"
+            }`}
+          >
+            {faq.q}
+          </span>
+          {/* The same plus-to-minus the guides use, so both read as "there is
+              more here" rather than as two different controls. */}
+          <span
+            aria-hidden
+            className="relative h-3.5 w-3.5 shrink-0 text-[#9aa0a6] group-hover:text-[#5f6368]"
+          >
+            <span className="absolute left-0 top-1/2 h-px w-3.5 -translate-y-1/2 bg-current" />
+            <span
+              className={`absolute left-1/2 top-0 h-3.5 w-px -translate-x-1/2 bg-current transition-transform duration-200 ${
+                open ? "scale-y-0" : "scale-y-100"
+              }`}
+            />
+          </span>
+        </button>
+      </dt>
+      {open && (
+        <dd className="border-b border-[#e8eaed] pb-4 pr-8 text-[13px] leading-relaxed text-[#5f6368]">
+          {faq.a}
+        </dd>
+      )}
+    </>
+  );
+}
+
 function ConceptBlock({ concept }: { concept: HelpConcept }) {
   return (
     <div className="flex flex-col gap-1.5 sm:flex-row sm:gap-8">
@@ -650,102 +764,170 @@ function NoMatches({ query, onClear }: { query: string; onClear: () => void }) {
 
 // ── The end of the page ───────────────────────────────────────────────────
 
-function ContactPanel() {
-  const { whatsapp, phone, email } = HELP_CONTACT;
-  const hasAny = Boolean(whatsapp || phone || email);
+/** Lucide's icons and the WhatsApp mark are both just this. */
+interface Channel {
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  label: string;
+  lines: ReactNode[];
+}
+
+function ContactStrip() {
+  const { email, whatsapp, phones, youtube } = HELP_CONTACT;
+
+  const channels: Channel[] = [
+    email && {
+      icon: Mail,
+      label: "Email",
+      lines: [
+        <a key="e" href={`mailto:${email}`} className={channelLink}>
+          {email}
+        </a>,
+      ],
+    },
+    whatsapp && {
+      icon: WhatsAppIcon,
+      label: "WhatsApp",
+      lines: [
+        <a
+          key="w"
+          href={`https://wa.me/${whatsapp}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={channelLink}
+        >
+          Start a chat
+        </a>,
+      ],
+    },
+    phones.length > 0 && {
+      icon: Phone,
+      label: phones.length > 1 ? "Call us" : "Call",
+      // Each number is its own line: on a phone these are the tap targets.
+      lines: phones.map((p) => (
+        <a key={p} href={`tel:${p.replace(/\s/g, "")}`} className={channelLink}>
+          {p}
+        </a>
+      )),
+    },
+    youtube && {
+      icon: PlaySquare,
+      label: "Tutorials",
+      lines: [
+        <a
+          key="y"
+          href={youtube}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={channelLink}
+        >
+          Watch on YouTube
+        </a>,
+      ],
+    },
+  ].filter(Boolean) as Channel[];
 
   return (
-    // Dark, and the only dark thing here: it closes the document, and it is
-    // what someone scrolling past everything else is looking for.
-    <section className="rounded-3xl bg-[#202124] px-6 py-8 text-white md:px-10 md:py-10">
-      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-        <div className="min-w-0">
-          <h2 className="text-[19px] font-medium md:text-[20px]">
-            Still stuck?
-          </h2>
-          <p className="mt-1.5 max-w-md text-[13px] leading-relaxed text-white/60">
-            Tell us the screen you were on and, if an error appeared, the code
-            in its corner — it points straight at what failed.
-          </p>
-        </div>
+    // Dark, and the only dark thing here: it closes the page, and it belongs
+    // to the form above it rather than repeating its heading — writing and
+    // calling are two ways of doing the one thing this section is for.
+    <div className="mt-8 rounded-2xl bg-[#202124] px-6 py-6 text-white">
+      <p className="text-[13px] font-medium">Or reach us directly</p>
+      <p className="mt-1 max-w-md text-[12px] leading-relaxed text-white/60">
+        Mention the screen you were on and, if an error appeared, the code in
+        its corner — it points straight at what failed.
+      </p>
 
-        {hasAny ? (
-          <div className="flex flex-wrap gap-2">
-            {whatsapp && (
-              <a
-                href={`https://wa.me/${whatsapp}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-[#1da851]"
-              >
-                <MessageCircle size={14} aria-hidden />
-                WhatsApp
-              </a>
-            )}
-            {phone && (
-              <a
-                href={`tel:${phone}`}
-                className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-white/10"
-              >
-                <Phone size={14} aria-hidden />
-                {phone}
-              </a>
-            )}
-            {email && (
-              <a
-                href={`mailto:${email}`}
-                className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-white/10"
-              >
-                <Mail size={14} aria-hidden />
-                {email}
-              </a>
-            )}
-          </div>
-        ) : (
-          <p className="text-[13px] text-white/50">
-            Support contact details haven&rsquo;t been added yet.
-          </p>
-        )}
-      </div>
-    </section>
+      {channels.length > 0 ? (
+        <dl className="mt-5 grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
+          {channels.map((c) => {
+            const Icon = c.icon;
+            return (
+              <div key={c.label} className="min-w-0">
+                <dt className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.08em] text-white/50">
+                  <Icon size={13} className="shrink-0" />
+                  {c.label}
+                </dt>
+                <dd className="mt-1.5 flex flex-col gap-0.5">{c.lines}</dd>
+              </div>
+            );
+          })}
+        </dl>
+      ) : (
+        <p className="mt-4 text-[12px] text-white/50">
+          Support contact details haven&rsquo;t been added yet.
+        </p>
+      )}
+    </div>
   );
 }
+
+const channelLink =
+  "w-fit text-[13px] text-white/90 underline-offset-4 transition-colors hover:text-white hover:underline";
 
 // ── Which section the reader is in ────────────────────────────────────────
 
 /**
- * Highlights the rail entry for whatever is on screen.
+ * Highlights the rail entry for the section being read.
  *
- * The watched line is near the top of the viewport rather than its middle: a
- * section becomes "the one being read" as its heading arrives there, which is
- * where a reader's eye actually is.
+ * Measured against a reading line rather than by intersection. A band near
+ * the top of the viewport is ambiguous: jump to a section and its heading
+ * sits just below the line while the previous section's last row sits just
+ * above it, so both are inside the band and the earlier one wins — which is
+ * the off-by-one the rail used to show. Asking instead for "the last section
+ * whose top has passed the line" has exactly one answer at any scroll
+ * position.
+ *
+ * The listener goes on the shell's scroller, not the window: `main` is what
+ * actually scrolls, so a window listener would never fire.
  */
 function useActiveSection(): SectionId | null {
   const [active, setActive] = useState<SectionId | null>(null);
-  const onScreen = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) onScreen.current.add(entry.target.id);
-          else onScreen.current.delete(entry.target.id);
-        }
-        // Resolved in document order, so scrolling up lands on the higher
-        // section rather than on whichever entry happened to fire last.
-        const first = SECTIONS.find((s) => onScreen.current.has(s.id));
-        if (first) setActive(first.id);
-      },
-      { rootMargin: "-80px 0px -75% 0px" },
-    );
+    const scroller = document.querySelector("[data-app-scroll]");
+    const target: HTMLElement | Window =
+      (scroller as HTMLElement | null) ?? window;
 
-    for (const s of SECTIONS) {
-      const el = document.getElementById(s.id);
-      if (el) observer.observe(el);
-    }
-    return () => observer.disconnect();
-    // Sections come and go with the search, so the observer is rebound on
-    // every render rather than only on mount.
+    let frame = 0;
+    const measure = () => {
+      frame = 0;
+      const top =
+        scroller instanceof HTMLElement
+          ? scroller.getBoundingClientRect().top
+          : 0;
+      // A little below the top edge: the heading a reader is looking at sits
+      // here once they have scrolled to it.
+      const line = top + 120;
+
+      let current: SectionId | null = null;
+      for (const s of SECTIONS) {
+        const el = document.getElementById(s.id);
+        if (!el) continue;
+        if (el.getBoundingClientRect().top <= line) current = s.id;
+      }
+
+      // Above the first heading, the first section is the one being read.
+      setActive(
+        current ??
+          SECTIONS.find((s) => document.getElementById(s.id))?.id ??
+          null,
+      );
+    };
+
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(measure);
+    };
+
+    measure();
+    target.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      target.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+    // Sections come and go with the search, so this re-measures on every
+    // render rather than only on mount.
   });
 
   return active;

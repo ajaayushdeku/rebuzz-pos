@@ -22,6 +22,11 @@ interface FilterSelectProps {
   placeholder?: string;
   /** Applied to the wrapper, so callers control width. */
   className?: string;
+  /**
+   * Names the control for screen readers. Needed where the field's caption
+   * is not a `<label>` — a `<label htmlFor>` cannot point at a button.
+   */
+  ariaLabel?: string;
 }
 
 /**
@@ -38,6 +43,7 @@ export function FilterSelect({
   onChange,
   placeholder = "Select",
   className,
+  ariaLabel,
 }: FilterSelectProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -70,6 +76,7 @@ export function FilterSelect({
     >
       <button
         type="button"
+        aria-label={ariaLabel}
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}

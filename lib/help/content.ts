@@ -352,15 +352,20 @@ export const HELP_ERROR_CODES: string[] = [
 // ── Reaching a person ─────────────────────────────────────────────────────
 
 /**
- * Support's own details. Fill these in — a channel with no value is left off
- * the page rather than shown as a dead link, so an empty file degrades to
- * "no contact details yet" instead of to a broken button.
+ * How to reach support.
+ *
+ * A channel with no value is left off the page rather than shown as a dead
+ * link, so an unfilled field degrades to one fewer way of getting in touch
+ * instead of to a button that goes nowhere.
  */
 export const HELP_CONTACT = {
-  /** Digits with the country code, as WhatsApp expects: "9779800000000". */
-  whatsapp: "",
-  phone: "",
-  email: "",
+  email: "support@rebuzzpos.com",
+  /** Digits with the country code, as WhatsApp's link format expects. */
+  whatsapp: "9779826189697",
+  /** As many as support answers on; printed in order. */
+  phones: ["+977 9826189697", "+977 9802853077"],
+  /** The channel's URL. Left blank until there is one to link to. */
+  youtube: "",
 } as const;
 
 // ── The menu, page by page ────────────────────────────────────────────────
@@ -522,3 +527,101 @@ export const HELP_PAGES: Record<string, HelpPageEntry> = {
       "Guides, the ideas worth knowing, the dashboard's vocabulary, and what each error code means.",
   },
 };
+
+// ── Frequently asked ──────────────────────────────────────────────────────
+
+export interface HelpFaq {
+  q: string;
+  a: string;
+}
+
+export interface HelpFaqGroup {
+  /** The heading the questions sit under. */
+  group: string;
+  items: HelpFaq[];
+}
+
+/**
+ * The questions support answers most often, in their own words.
+ *
+ * These cover the POS app as a whole, not only this dashboard — printing and
+ * stock tracking happen at the till, and the person reading this owns both.
+ */
+export const HELP_FAQS: HelpFaqGroup[] = [
+  {
+    group: "Account & login",
+    items: [
+      {
+        q: "How do I reset my password?",
+        a: "On the login screen, tap “Forgot your Password?” and enter your registered email. RebuzzPOS emails you a reset token. On the Reset Password screen, enter that token along with your new password (and confirm it) to update your password. Check your spam folder if the token doesn’t arrive within a few minutes.",
+      },
+      {
+        q: "Can I use RebuzzPOS on multiple devices?",
+        a: "Yes. You can sign in to your RebuzzPOS account on more than one device — for example a counter tablet and the owner’s phone. Just log in with the same email or phone number and password on each device.",
+      },
+    ],
+  },
+  {
+    group: "Billing & sales",
+    items: [
+      {
+        q: "How do I print bills?",
+        a: "Open a completed bill and tap Print. RebuzzPOS prints to a Sunmi built-in printer if your device has one, and to a network printer at the IP you have configured. Set this up under Settings → Hardware & Printing → Printer (Set Bill IP), and make sure the printer and your device are on the same Wi-Fi network.",
+      },
+      {
+        q: "What is a Proforma Invoice?",
+        a: "A Proforma Invoice is a preliminary bill you can share before finalising a sale — it lists items, quantities and prices but is not the final tax document. When you export or print from checkout or a saved ticket, you can choose Proforma Invoice, Invoice, or Tax Invoice.",
+      },
+    ],
+  },
+  {
+    group: "Products & inventory",
+    items: [
+      {
+        q: "How does stock tracking work?",
+        a: "Turn on the “Track Stock” switch for a product and enter its In Stock and Low Stock values. RebuzzPOS then reduces the stock count automatically with each sale, so the current quantity always stays up to date.",
+      },
+      {
+        q: "What is a low stock alert?",
+        a: "It is a “Low Stock” badge shown on a product in the POS menu when its remaining quantity drops to or below the Low Stock value you set for it. Set the threshold per product using the Low Stock field, with Track Stock enabled.",
+      },
+    ],
+  },
+  {
+    group: "Staff & roles",
+    items: [
+      {
+        q: "What is the difference between Basic and Staff roles?",
+        a: "When you add an employee you assign them a Basic or Staff role — the account owner is the admin. Both Basic and Staff can run daily sales, but Analytics is available only to the admin. Staff members also do not see the Creditors and Bills sections, whereas Basic members do. The admin has full access, including settings and staff management.",
+      },
+      {
+        q: "How does staff login work?",
+        a: "An admin adds a staff member by entering their name, email, phone and role — no password is set in the app. The system creates the account and sends the login password to the staff member’s registered email. They then sign in on the normal login screen using their email or phone number and that password.",
+      },
+    ],
+  },
+  {
+    group: "Printer & hardware",
+    items: [
+      {
+        q: "The printer isn’t printing. What should I check?",
+        a: "First, make sure the printer is powered on and on the same Wi-Fi network as your device. Then check the printer IP under Settings → Hardware & Printing → Printer (Set Bill IP) — re-enter it if needed and try printing again. On Sunmi devices the built-in printer is used automatically.",
+      },
+      {
+        q: "How do I find the printer’s IP address?",
+        a: "On most thermal printers, hold the feed button while powering on — it prints a configuration page showing the IP address. You can also check your router’s connected-devices list. Enter this IP in RebuzzPOS under Settings → Hardware & Printing → Printer (Set Bill IP).",
+      },
+    ],
+  },
+];
+
+/**
+ * What a support question can be about.
+ *
+ * The same headings the FAQs are grouped under, so the list a merchant picks
+ * from is the list they have just been reading.
+ */
+export const SUPPORT_SUBJECTS: string[] = [
+  ...HELP_FAQS.map((g) => g.group),
+  "Something else",
+];

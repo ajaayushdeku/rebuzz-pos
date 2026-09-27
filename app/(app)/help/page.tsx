@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Help" };
  */
 export default function HelpPage() {
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+    <div className="min-h-full bg-surface-page px-6 py-8 md:px-10">
       <div className="mx-auto w-full">
         <PageHeader
           title="Help & Support"
