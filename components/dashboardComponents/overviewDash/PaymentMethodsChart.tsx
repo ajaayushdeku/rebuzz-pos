@@ -12,7 +12,6 @@ import { PaymentMethodRevenue } from "@/services/paymentMethods.client";
 import { usePaymentMethods } from "@/hooks/usePaymentMethods";
 import { ChevronDown, CreditCard } from "lucide-react";
 import {
-  CHART_PALETTE,
   ChartCard,
   ChartTooltipBox,
 } from "@/components/dashboardComponents/chartCard";
@@ -152,11 +151,16 @@ const PaymentMethodsChart = ({
     >
       {data.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4]">
-            <CreditCard size={24} className="text-gray-500" />
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+            <CreditCard
+              size={24}
+              className="text-gray-500 dark:text-[#9aa6bd]"
+            />
           </div>
-          <p className="text-sm text-[#3c4043]">No payment method data found</p>
-          <p className="mt-1 text-xs text-[#9aa0a6]">
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
+            No payment method data found
+          </p>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             No sales recorded for the selected date range
           </p>
         </div>
@@ -215,10 +219,7 @@ const PaymentMethodsChart = ({
                         backgroundColor: entry.color,
                       }}
                     />
-                    <span
-                      className="truncate text-xs"
-                      style={{ color: CHART_PALETTE.title }}
-                    >
+                    <span className="truncate text-xs text-[#3c4043] dark:text-[#c3ccdc]">
                       {entry.paymentMethod === "Qr payment"
                         ? "QR Payment"
                         : entry.paymentMethod}
@@ -226,7 +227,7 @@ const PaymentMethodsChart = ({
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <div className="h-1.5 w-30 overflow-hidden rounded-full bg-[#f1f3f4]">
+                    <div className="h-1.5 w-30 overflow-hidden rounded-full bg-[#f1f3f4] dark:bg-white/10">
                       <div
                         className="h-full rounded-full"
                         style={{
@@ -243,7 +244,7 @@ const PaymentMethodsChart = ({
                         digits so the amounts beside it stay in one column.
                         A share that rounds to 0.0% but is not zero is shown as
                         "<0.1%" rather than as nothing. */}
-                    <span className="w-11 shrink-0 text-right text-[11px] tabular-nums text-[#5f6368]">
+                    <span className="w-11 shrink-0 text-right text-[11px] tabular-nums text-[#5f6368] dark:text-[#9aa6bd]">
                       {entry.percentage > 0 && entry.percentage < 0.1
                         ? "<0.1"
                         : entry.percentage.toFixed(1)}
@@ -263,8 +264,8 @@ const PaymentMethodsChart = ({
             </div>
 
             {showScrollHint && (
-              <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex justify-center bg-gradient-to-t from-white via-white/90 to-transparent pt-6 pb-1">
-                <ChevronDown className="h-4 w-4 animate-bounce text-[#9aa0a6]" />
+              <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex justify-center bg-gradient-to-t from-white via-white/90 to-transparent pt-6 pb-1 dark:from-[#161d2e] dark:via-[#161d2e]/90">
+                <ChevronDown className="h-4 w-4 animate-bounce text-[#9aa0a6] dark:text-[#7b869b]" />
               </div>
             )}
           </div>

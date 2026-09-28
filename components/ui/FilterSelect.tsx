@@ -80,12 +80,12 @@ export function FilterSelect({
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between gap-2 pl-3 pr-2.5 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition capitalize"
+        className="w-full flex items-center justify-between gap-2 pl-3 pr-2.5 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition capitalize dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc]"
       >
         <span>{selected?.label ?? placeholder}</span>
         <ChevronDown
           size={14}
-          className={`text-gray-400 transition-transform duration-200 ${
+          className={`text-gray-400 transition-transform duration-200 dark:text-[#7b869b] ${
             open ? "rotate-180" : ""
           }`}
         />
@@ -93,7 +93,7 @@ export function FilterSelect({
 
       <div
         role="listbox"
-        className={`absolute z-30 mt-1.5 w-full origin-top rounded-md border border-gray-200 bg-white shadow-lg p-1 transition-all duration-200 ${
+        className={`absolute z-30 mt-1.5 w-full origin-top rounded-md border border-gray-200 bg-white shadow-lg p-1 transition-all duration-200 dark:border-white/15 dark:bg-[#1b2436] ${
           open
             ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
             : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
@@ -112,10 +112,10 @@ export function FilterSelect({
             }}
             className={`w-full text-left px-3 py-1.5 text-[13px] rounded-md transition-colors capitalize ${
               opt.disabled
-                ? "cursor-not-allowed text-gray-400"
+                ? "cursor-not-allowed text-gray-400 dark:text-[#6b7588]"
                 : value === opt.value
-                  ? "cursor-pointer bg-blue-50 text-blue-700 font-medium"
-                  : "cursor-pointer text-gray-600 hover:bg-gray-100"
+                  ? "cursor-pointer bg-blue-50 text-blue-700 font-medium dark:bg-blue-400/15 dark:text-[#a8c4ee]"
+                  : "cursor-pointer text-gray-600 hover:bg-gray-100 dark:text-[#c3ccdc] dark:hover:bg-white/10"
             }`}
           >
             {opt.label}

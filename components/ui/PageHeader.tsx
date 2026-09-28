@@ -9,6 +9,8 @@ import type { ReactNode } from "react";
  * appearance. The colours are the `CHART_PALETTE` greys — `#3c4043` for the
  * title, `#5f6368` for the sentence, `#dadce0` fading through `#e8eaed` for
  * the rule — written as literals because Tailwind needs them at build time.
+ * Dark mode takes the light end of the same scale, and fades the rule from
+ * white rather than to it.
  *
  * The rule is drawn rather than bordered: it holds the hairline under the
  * title and fades out across the page, so it separates the header without
@@ -58,12 +60,12 @@ export default function PageHeader({
         {leading}
 
         <div className="min-w-0">
-          <h1 className="truncate text-[22px]  font-semibold tracking-wide text-[#3c4043] md:text-[26px]">
+          <h1 className="truncate text-[22px]  font-semibold tracking-wide text-[#3c4043] md:text-[26px] dark:text-[#e8ecf4]">
             {title}
           </h1>
 
           {subtitle && (
-            <p className="mt-1 ml-0.5 max-w-xl text-[12px] leading-relaxed text-[#5f6368]">
+            <p className="mt-1 ml-0.5 max-w-xl text-[12px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
               {subtitle}
             </p>
           )}
@@ -75,7 +77,7 @@ export default function PageHeader({
       {rule && (
         <div
           aria-hidden
-          className={`h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent ${
+          className={`h-px w-full bg-gradient-to-r from-[#dadce0] via-[#e8eaed] to-transparent dark:from-white/20 dark:via-white/10 ${
             spaceBelow ? "mb-6" : ""
           }`}
         />

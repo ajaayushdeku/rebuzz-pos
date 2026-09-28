@@ -22,41 +22,56 @@ const INSIGHT_STYLES = {
   success: {
     dot: "bg-green-500",
     label: "On track",
-    labelColor: "text-green-700",
-    ring: "border-green-100 hover:border-green-200",
-    icon: <CheckCircle2 size={15} className="text-green-500 shrink-0" />,
+    labelColor: "text-green-700 dark:text-emerald-300",
+    ring: "border-green-100 hover:border-green-200 dark:border-emerald-400/20 dark:hover:border-emerald-400/35",
+    icon: (
+      <CheckCircle2
+        size={15}
+        className="text-green-500 shrink-0 dark:text-emerald-400"
+      />
+    ),
   },
   warning: {
     dot: "bg-amber-500",
     label: "Needs attention",
-    labelColor: "text-amber-700",
-    ring: "border-amber-100 hover:border-amber-200",
-    icon: <AlertTriangle size={15} className="text-amber-500 shrink-0" />,
+    labelColor: "text-amber-700 dark:text-amber-300",
+    ring: "border-amber-100 hover:border-amber-200 dark:border-amber-400/20 dark:hover:border-amber-400/35",
+    icon: (
+      <AlertTriangle
+        size={15}
+        className="text-amber-500 shrink-0 dark:text-amber-400"
+      />
+    ),
   },
   info: {
     dot: "bg-blue-500",
     label: "For your info",
-    labelColor: "text-blue-700",
-    ring: "border-blue-100 hover:border-blue-200",
-    icon: <Info size={15} className="text-blue-500 shrink-0" />,
+    labelColor: "text-blue-700 dark:text-[#a8c4ee]",
+    ring: "border-blue-100 hover:border-blue-200 dark:border-blue-400/20 dark:hover:border-blue-400/35",
+    icon: (
+      <Info size={15} className="text-blue-500 shrink-0 dark:text-blue-400" />
+    ),
   },
 } as const;
 
 const ALERT_CARD_STYLES = {
   danger: {
-    shell: "bg-red-50/70 border-red-100",
-    title: "text-red-700",
-    sub: "text-red-600/80",
+    shell:
+      "bg-red-50/70 border-red-100 dark:bg-red-400/10 dark:border-red-400/20",
+    title: "text-red-700 dark:text-red-300",
+    sub: "text-red-600/80 dark:text-red-200/70",
   },
   warning: {
-    shell: "bg-amber-50/70 border-amber-100",
-    title: "text-amber-700",
-    sub: "text-amber-700/80",
+    shell:
+      "bg-amber-50/70 border-amber-100 dark:bg-amber-400/10 dark:border-amber-400/20",
+    title: "text-amber-700 dark:text-amber-300",
+    sub: "text-amber-700/80 dark:text-amber-200/70",
   },
   info: {
-    shell: "bg-blue-50/70 border-blue-100",
-    title: "text-blue-700",
-    sub: "text-blue-600/80",
+    shell:
+      "bg-blue-50/70 border-blue-100 dark:bg-blue-400/10 dark:border-blue-400/20",
+    title: "text-blue-700 dark:text-[#a8c4ee]",
+    sub: "text-blue-600/80 dark:text-[#a8c4ee]/70",
   },
 } as const;
 
@@ -67,9 +82,10 @@ const ALERT_ICONS = {
 };
 
 const ALERT_ICON_BG = {
-  danger: "bg-red-100 text-red-600",
-  warning: "bg-amber-100 text-amber-600",
-  info: "bg-blue-100 text-blue-600",
+  danger: "bg-red-100 text-red-600 dark:bg-red-400/15 dark:text-red-300",
+  warning:
+    "bg-amber-100 text-amber-600 dark:bg-amber-400/15 dark:text-amber-300",
+  info: "bg-blue-100 text-blue-600 dark:bg-blue-400/15 dark:text-[#a8c4ee]",
 };
 /** Section heading used to separate the feed from the alert cards. */
 function SectionLabel({
@@ -83,11 +99,11 @@ function SectionLabel({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-gray-400">{icon}</span>
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-[#5f6368]">
+      <span className="text-gray-400 dark:text-[#7b869b]">{icon}</span>
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-[#5f6368] dark:text-[#9aa6bd]">
         {children}
       </p>
-      <span className="rounded-full bg-[#f1f3f4] px-2 py-0.5 text-[10px] font-semibold tabular-nums text-[#5f6368]">
+      <span className="rounded-full bg-[#f1f3f4] px-2 py-0.5 text-[10px] font-semibold tabular-nums text-[#5f6368] dark:bg-white/10 dark:text-[#c3ccdc]">
         {count}
       </span>
     </div>
@@ -124,13 +140,13 @@ export default function BusinessInsightsAlerts() {
         status === "success" && hasContent ? (
           <>
             {wins > 0 && (
-              <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-green-200 bg-green-50 px-2.5 py-0.5 text-[11px] font-semibold text-green-700">
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-green-200 bg-green-50 px-2.5 py-0.5 text-[11px] font-semibold text-green-700 dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-300">
                 <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
                 {wins} going well
               </span>
             )}
             {concerns > 0 && (
-              <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold text-amber-700">
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold text-amber-700 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-300">
                 <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                 {concerns} to check
               </span>
@@ -150,7 +166,7 @@ export default function BusinessInsightsAlerts() {
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="h-14 rounded-xl bg-gray-100 animate-pulse"
+                className="h-14 rounded-xl bg-gray-100 animate-pulse dark:bg-white/10"
               />
             ))}
           </div>
@@ -158,7 +174,7 @@ export default function BusinessInsightsAlerts() {
             {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={i}
-                className="h-20 rounded-xl bg-gray-100 animate-pulse"
+                className="h-20 rounded-xl bg-gray-100 animate-pulse dark:bg-white/10"
               />
             ))}
           </div>
@@ -172,11 +188,11 @@ export default function BusinessInsightsAlerts() {
       {/* Success */}
       {status === "success" &&
         (!hasContent ? (
-          <div className="rounded-xl border border-[#e3e3e3] py-12 text-center">
-            <p className="text-sm text-[#3c4043]">
+          <div className="rounded-xl border border-[#e3e3e3] py-12 text-center dark:border-white/10">
+            <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
               No insights for this period yet
             </p>
-            <p className="mt-1 text-xs text-[#9aa0a6]">
+            <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
               They appear once the AI has a full day to read
             </p>
           </div>
@@ -197,7 +213,7 @@ export default function BusinessInsightsAlerts() {
                     return (
                       <div
                         key={i}
-                        className={`flex items-start gap-3 rounded-xl border bg-white px-3.5 py-3 transition-colors ${s.ring}`}
+                        className={`flex items-start gap-3 rounded-xl border bg-white px-3.5 py-3 transition-colors dark:bg-white/5 ${s.ring}`}
                       >
                         <span className="mt-0.5">{s.icon}</span>
                         <div className="min-w-0">
@@ -206,7 +222,7 @@ export default function BusinessInsightsAlerts() {
                           >
                             {s.label}
                           </p>
-                          <p className="mt-0.5 text-xs leading-relaxed tracking-wide text-[#5f6368]">
+                          <p className="mt-0.5 text-xs leading-relaxed tracking-wide text-[#5f6368] dark:text-[#c3ccdc]">
                             {insight.text}
                           </p>
                         </div>

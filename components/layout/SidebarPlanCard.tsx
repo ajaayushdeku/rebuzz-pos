@@ -57,19 +57,19 @@ export default function SidebarPlanCard() {
       return (
         <div
           aria-hidden
-          className="mb-2 mx-auto h-8 w-8 animate-pulse rounded-md bg-gray-100"
+          className="mb-2 mx-auto h-8 w-8 animate-pulse rounded-md bg-gray-100 dark:bg-white/10"
         />
       );
     }
 
     return (
       <div className="px-2 pb-2" aria-hidden>
-        <div className="rounded-lg border border-gray-200 bg-white p-2.5">
+        <div className="rounded-lg border border-gray-200 bg-white p-2.5 dark:border-white/10 dark:bg-white/5">
           <div className="flex animate-pulse items-center gap-2.5">
-            <span className="h-8 w-8 shrink-0 rounded-md bg-gray-100" />
+            <span className="h-8 w-8 shrink-0 rounded-md bg-gray-100 dark:bg-white/10" />
             <span className="min-w-0 flex-1 space-y-1.5">
-              <span className="block h-2 w-16 rounded bg-gray-100" />
-              <span className="block h-3 w-20 rounded bg-gray-200" />
+              <span className="block h-2 w-16 rounded bg-gray-100 dark:bg-white/10" />
+              <span className="block h-3 w-20 rounded bg-gray-200 dark:bg-white/15" />
             </span>
           </div>
         </div>
@@ -99,7 +99,7 @@ export default function SidebarPlanCard() {
       href="/subscriptions"
       onClick={closeMobile}
       title={`Current plan: ${name}. ${action}`}
-      className="group flex items-center gap-3 whitespace-nowrap border-t border-gray-200 bg-white px-3 py-2.5 transition-colors hover:bg-blue-50/60"
+      className="group flex items-center gap-3 whitespace-nowrap border-t border-gray-200 bg-white px-3 py-2.5 transition-colors hover:bg-blue-50/60 dark:border-white/10 dark:bg-transparent dark:hover:bg-white/10"
     >
       <span
         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${tone.tile}`}
@@ -108,18 +108,18 @@ export default function SidebarPlanCard() {
       </span>
 
       <span className="min-w-0 flex-1">
-        <span className="block text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+        <span className="block text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-[#7b869b]">
           Current plan
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="truncate text-[13px] font-semibold text-gray-900">
+          <span className="truncate text-[13px] font-semibold text-gray-900 dark:text-[#e8ecf4]">
             {name}
           </span>
 
           {hasPrinter && (
             <span
               title="Includes the printer bundle"
-              className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-gray-100 text-gray-500"
+              className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-[#9aa6bd]"
             >
               <Printer size={10} />
             </span>

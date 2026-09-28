@@ -20,15 +20,16 @@ import AiInsightsErrorState from "@/components/aiInsights/AiInsightsErrorState";
  * highlight wash so the movement is scannable without shouting.
  */
 const TEXT_COLORS = {
-  default: "text-gray-700",
-  green: "text-green-700 font-semibold",
-  red: "text-red-600 font-semibold",
+  default: "text-gray-700 dark:text-[#c3ccdc]",
+  green: "text-green-700 font-semibold dark:text-emerald-300",
+  red: "text-red-600 font-semibold dark:text-red-300",
 };
 
 const SEGMENT_MARKERS = {
   default: "",
-  green: "bg-green-100/70 rounded-[3px] box-decoration-clone",
-  red: "bg-red-100/70 rounded-[3px] box-decoration-clone",
+  green:
+    "bg-green-100/70 rounded-[3px] box-decoration-clone dark:bg-emerald-400/15",
+  red: "bg-red-100/70 rounded-[3px] box-decoration-clone dark:bg-red-400/15",
 };
 
 type AiSegments = {
@@ -106,10 +107,12 @@ function MetaChip({
   tone?: ChipTone;
 }) {
   const tones: Record<ChipTone, string> = {
-    violet: "bg-violet-50 border-violet-100 text-violet-700",
-    gray: "bg-gray-50 border-gray-200 text-gray-600",
-    green: "bg-green-50 border-green-200 text-green-700",
-    red: "bg-red-50 border-red-200 text-red-600",
+    violet:
+      "bg-violet-50 border-violet-100 text-violet-700 dark:bg-violet-400/10 dark:border-violet-400/20 dark:text-violet-300",
+    gray: "bg-gray-50 border-gray-200 text-gray-600 dark:bg-white/5 dark:border-white/15 dark:text-[#c3ccdc]",
+    green:
+      "bg-green-50 border-green-200 text-green-700 dark:bg-emerald-400/10 dark:border-emerald-400/25 dark:text-emerald-300",
+    red: "bg-red-50 border-red-200 text-red-600 dark:bg-red-400/10 dark:border-red-400/25 dark:text-red-300",
   };
   return (
     <span
@@ -149,7 +152,7 @@ export default function AIBusinessStory() {
     : [];
 
   return (
-    <div className="relative w-full overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white">
+    <div className="relative w-full overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white dark:border-white/10 dark:bg-[#161d2e]">
       {/* Header */}
       <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-4">
         <div className="flex items-start gap-3 min-w-0">
@@ -157,10 +160,10 @@ export default function AIBusinessStory() {
             <Sparkles size={16} className="text-white" />
           </div>
           <div className="min-w-0">
-            <h3 className="text-[15px] font-normal text-[#3c4043]">
+            <h3 className="text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
               {story?.title ?? "AI Business Story"}
             </h3>
-            <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6]">
+            <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
               {story?.subtitle ?? "Synthesizing sales, inventory & customers"}
             </p>
           </div>
@@ -171,7 +174,7 @@ export default function AIBusinessStory() {
             onClick={regenerate}
             title="Generate again"
             aria-label="Generate again"
-            className="cursor-pointer rounded-lg p-1.5 text-[#9aa0a6] transition-colors hover:bg-violet-50 hover:text-violet-600"
+            className="cursor-pointer rounded-lg p-1.5 text-[#9aa0a6] transition-colors hover:bg-violet-50 hover:text-violet-600 dark:text-[#9aa6bd] dark:hover:bg-violet-400/15 dark:hover:text-violet-300"
           >
             <RefreshCw
               size={14}
@@ -182,7 +185,7 @@ export default function AIBusinessStory() {
             onClick={() => setCollapsed((p) => !p)}
             aria-expanded={!collapsed}
             aria-label={collapsed ? "Expand story" : "Collapse story"}
-            className="cursor-pointer rounded-lg p-1.5 text-[#9aa0a6] transition-colors hover:bg-[#f1f3f4] hover:text-[#3c4043]"
+            className="cursor-pointer rounded-lg p-1.5 text-[#9aa0a6] transition-colors hover:bg-[#f1f3f4] hover:text-[#3c4043] dark:text-[#9aa6bd] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"
           >
             {collapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
           </button>
@@ -214,11 +217,11 @@ export default function AIBusinessStory() {
               {Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
-                  className="h-3.5 bg-gray-100 rounded animate-pulse"
+                  className="h-3.5 bg-gray-100 rounded animate-pulse dark:bg-white/10"
                   style={{ width: `${100 - i * 12}%` }}
                 />
               ))}
-              <p className="flex items-center gap-1.5 pt-1 text-xs text-[#9aa0a6]">
+              <p className="flex items-center gap-1.5 pt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                 <Hourglass size={12} className="animate-pulse" />
                 Reading today&apos;s numbers ¦
               </p>
@@ -235,15 +238,18 @@ export default function AIBusinessStory() {
 
               {/* Priority block â€” omitted when the model found nothing pressing */}
               {story.priority && (
-                <div className="mt-5 flex gap-3 rounded-xl border border-amber-200 bg-amber-50/70 p-4">
-                  <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
-                    <Flag size={14} className="text-amber-600" />
+                <div className="mt-5 flex gap-3 rounded-xl border border-amber-200 bg-amber-50/70 p-4 dark:border-amber-400/25 dark:bg-amber-400/10">
+                  <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0 dark:bg-amber-400/15">
+                    <Flag
+                      size={14}
+                      className="text-amber-600 dark:text-amber-300"
+                    />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">
                       {story.priority.label}
                     </p>
-                    <p className="mt-1 text-[13px] tracking-wide text-gray-700 leading-relaxed">
+                    <p className="mt-1 text-[13px] tracking-wide text-gray-700 leading-relaxed dark:text-[#c3ccdc]">
                       {story.priority.text}
                     </p>
                   </div>
@@ -254,12 +260,12 @@ export default function AIBusinessStory() {
 
           {status === "success" && !story && (
             <div className="py-6 text-center">
-              <p className="text-sm text-[#3c4043]">
+              <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
                 The AI returned no story this time.
               </p>
               <button
                 onClick={regenerate}
-                className="mt-3 inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
+                className="mt-3 inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:bg-white/10 dark:hover:text-white"
               >
                 <RefreshCw size={12} /> Generate again
               </button>
@@ -269,8 +275,8 @@ export default function AIBusinessStory() {
       )}
 
       {/* Footer */}
-      <div className="flex items-center justify-between gap-2 border-t border-[#e8eaed] bg-[#f8f9fa] px-6 py-3">
-        <span className="inline-flex items-center gap-1.5 text-[11px] text-[#9aa0a6]">
+      <div className="flex items-center justify-between gap-2 border-t border-[#e8eaed] bg-[#f8f9fa] px-6 py-3 dark:border-white/10 dark:bg-white/5">
+        <span className="inline-flex items-center gap-1.5 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
           <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
           {model ? `Generated with ${model}` : "Generated by Gemini"}
         </span>
@@ -279,7 +285,7 @@ export default function AIBusinessStory() {
             then pay for a fresh Gemini call instead of reusing this story. */}
         <Link
           href="/ai-insights"
-          className="inline-flex items-center gap-1  ml-2 text-xs font-semibold text-violet-600 hover:text-violet-700 transition-colors"
+          className="inline-flex items-center gap-1  ml-2 text-xs font-semibold text-violet-600 hover:text-violet-700 transition-colors dark:text-violet-300 dark:hover:text-violet-200"
         >
           See full business details
           <ArrowUpRight size={13} />

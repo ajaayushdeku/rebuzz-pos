@@ -54,6 +54,9 @@
 }
 
 :root {
+  /* What the browser paints its own controls with: select menus, date
+     pickers and scrollbars. Without it they stay light on a dark page. */
+  color-scheme: light;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
@@ -92,6 +95,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: oklch(0.129 0.042 264.695);
   --foreground: oklch(0.984 0.003 247.858);
   --card: oklch(0.208 0.042 265.755);

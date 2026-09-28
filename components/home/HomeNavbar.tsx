@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import NavbarWelcome from "@/components/NavbarWelcome";
 import HomeUserMenu from "@/components/HomeUserMenu";
 import ServerEnvBadge from "@/components/ServerEnvBadge";
-import ThemeToggle from "./ThemeToggle";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 /**
  * The hairline between groups in the navbar.

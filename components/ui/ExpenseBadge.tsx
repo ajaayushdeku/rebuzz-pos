@@ -31,8 +31,10 @@ import {
  */
 const VARIANT = {
   badge:
-    "ml-auto gap-1 bg-rose-50/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-rose-800",
-  pill: "gap-1 border border-rose-200 bg-white px-2 py-0.5 text-[11px] text-rose-800 hover:bg-rose-50/60",
+    "ml-auto gap-1 bg-rose-50/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-rose-800 dark:bg-rose-400/10 dark:text-rose-200",
+  pill:
+    "gap-1 border border-rose-200 bg-white px-2 py-0.5 text-[11px] text-rose-800 hover:bg-rose-50/60 " +
+    "dark:border-rose-400/25 dark:bg-rose-400/10 dark:text-rose-200 dark:hover:bg-rose-400/15",
 } as const;
 
 export default function ExpenseBadge({

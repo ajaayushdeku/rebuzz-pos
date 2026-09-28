@@ -7,6 +7,7 @@ import MobileButton from "./MobileButton";
 import { useBusiness } from "@/hooks/useBusiness";
 import { useCurrency } from "@/providers/CurrencyContext";
 import ServerEnvBadge from "@/components/ServerEnvBadge";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 import Image from "next/image";
 // import { Button } from "../ui/button";
 // import { Badge, Bell } from "lucide-react";
@@ -16,7 +17,7 @@ export default function Navbar() {
   const { currency } = useCurrency();
 
   return (
-    <nav className="w-full border-b bg-white z-200">
+    <nav className="w-full border-b bg-white z-200 dark:border-white/10 dark:bg-[#0f1420]">
       <div className="flex items-center justify-between pl-3 pr-4 py-3">
         <div className="flex items-center ">
           <MobileButton />
@@ -32,7 +33,7 @@ export default function Navbar() {
               className="rounded-lg"
             />
             <span className="text-lg font-bold tracking-tight">
-              <span style={{ color: "#244074" }}>Re</span>
+              <span className="text-[#244074] dark:text-[#7ba2e3]">Re</span>
               <span style={{ color: "#E26924" }}>Buzz</span>
             </span>
           </Link>
@@ -42,20 +43,33 @@ export default function Navbar() {
         <div className="flex items-center gap-2">
           <ServerEnvBadge className="ml-1" />
 
-          <div className="h-5 border-1  border-gray-200 mx-2" />
+          <ThemeToggle />
+
+          <span
+            aria-hidden
+            className="mx-1 h-5 w-px shrink-0 bg-gray-200 dark:bg-white/15"
+          />
 
           <Link
             href="/settings/currency"
             title={`Currency: ${currency.code} — click to change`}
             aria-label={`Change currency — currently ${currency.code}`}
-            className="flex h-8.5 min-w-9 cursor-pointer items-center justify-center bg-gray-50/70 rounded-md border border-none  text-[13px] font-semibold text-gray-700 transition-colors  hover:text-blue-600"
+            className="flex h-8.5 min-w-9 cursor-pointer items-center justify-center rounded-md border border-none bg-gray-50/70 text-[13px] font-semibold text-gray-700 transition-colors hover:text-blue-600 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:text-[#a8c4ee]"
           >
             {currency.symbol}
           </Link>
 
-          <div className="h-5 border-1  border-gray-200 mx-2" />
+          <span
+            aria-hidden
+            className="mx-1 h-5 w-px shrink-0 bg-gray-200 dark:bg-white/15"
+          />
 
           <HelpButton />
+
+          <span
+            aria-hidden
+            className="mx-1 h-5 w-px shrink-0 bg-gray-200 dark:bg-white/15"
+          />
 
           <User
             initialBusinessName={businessData?.businessName || "My Business"}

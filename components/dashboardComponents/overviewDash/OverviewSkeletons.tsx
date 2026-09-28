@@ -13,8 +13,10 @@ function HeaderSkeleton({
 }) {
   return (
     <div className="space-y-2">
-      <div className={`h-4 ${titleWidth} bg-gray-200 rounded`} />
-      <div className={`h-3 ${subWidth} bg-gray-100 rounded`} />
+      <div
+        className={`h-4 ${titleWidth} bg-gray-200 rounded dark:bg-white/15`}
+      />
+      <div className={`h-3 ${subWidth} bg-gray-100 rounded dark:bg-white/10`} />
     </div>
   );
 }
@@ -26,7 +28,7 @@ function BarsSkeleton({ heights }: { heights: number[] }) {
       {heights.map((h, i) => (
         <div
           key={i}
-          className="flex-1 bg-gray-100 rounded-t"
+          className="flex-1 bg-gray-100 rounded-t dark:bg-white/10"
           style={{ height: `${h}%` }}
         />
       ))}
@@ -40,7 +42,7 @@ const HOUR_BARS = [30, 45, 62, 80, 95, 72, 58, 84, 66, 48, 38, 55];
 /** Matches <WeeklyRevenueChart /> — "Daily Sales Trend" card with a bar chart. */
 export function WeeklyRevenueChartSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6 animate-pulse">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6 animate-pulse dark:bg-[#161d2e] dark:border-white/10">
       <HeaderSkeleton titleWidth="w-40" subWidth="w-56" />
       <div className="h-56 md:h-72">
         <BarsSkeleton heights={WEEK_BARS} />
@@ -55,18 +57,18 @@ export function WeeklyRevenueChartSkeleton() {
  */
 export function HourlySalesTrendSkeleton() {
   return (
-    <div className="bg-surface-card rounded-2xl border border-surface-border shadow-sm p-5 w-full animate-pulse">
+    <div className="bg-surface-card rounded-2xl border border-surface-border shadow-sm p-5 w-full animate-pulse dark:bg-[#161d2e] dark:border-white/10">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4 md:mb-6">
         <HeaderSkeleton titleWidth="w-44" subWidth="w-72" />
 
         {/* Hour range filter */}
         <div className="flex flex-wrap items-center gap-2">
-          <div className="h-7 w-44 bg-gray-100 rounded-lg" />
-          <div className="w-px h-6 bg-gray-200 mx-1" />
-          <div className="h-3 w-8 bg-gray-100 rounded" />
-          <div className="h-7 w-14 bg-gray-100 rounded-lg" />
-          <div className="h-3 w-6 bg-gray-100 rounded" />
-          <div className="h-7 w-14 bg-gray-100 rounded-lg" />
+          <div className="h-7 w-44 bg-gray-100 rounded-lg dark:bg-white/10" />
+          <div className="w-px h-6 bg-gray-200 mx-1 dark:bg-white/15" />
+          <div className="h-3 w-8 bg-gray-100 rounded dark:bg-white/10" />
+          <div className="h-7 w-14 bg-gray-100 rounded-lg dark:bg-white/10" />
+          <div className="h-3 w-6 bg-gray-100 rounded dark:bg-white/10" />
+          <div className="h-7 w-14 bg-gray-100 rounded-lg dark:bg-white/10" />
         </div>
       </div>
 
@@ -83,28 +85,28 @@ export function HourlySalesTrendSkeleton() {
  */
 export function TopItemsSkeleton({ rows = 3 }: { rows?: number }) {
   return (
-    <div className="flex-1 bg-surface-card rounded-2xl border border-surface-border shadow-sm p-5 animate-pulse">
+    <div className="flex-1 bg-surface-card rounded-2xl border border-surface-border shadow-sm p-5 animate-pulse dark:bg-[#161d2e] dark:border-white/10">
       <div className="flex items-center justify-between mb-3">
         <HeaderSkeleton titleWidth="w-36" subWidth="w-52" />
-        <div className="w-8 h-8 rounded-lg bg-gray-200 shrink-0" />
+        <div className="w-8 h-8 rounded-lg bg-gray-200 shrink-0 dark:bg-white/15" />
       </div>
 
-      <div className="h-px bg-gray-100 mb-1" />
+      <div className="h-px bg-gray-100 mb-1 dark:bg-white/10" />
 
       <div className="mt-1">
         {Array.from({ length: rows }).map((_, i) => (
           <div
             key={i}
-            className="flex items-center justify-between gap-3 py-3 border-b border-gray-100 last:border-0"
+            className="flex items-center justify-between gap-3 py-3 border-b border-gray-100 last:border-0 dark:border-white/10"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-8 h-8 rounded-full bg-gray-200 shrink-0" />
+              <div className="w-8 h-8 rounded-full bg-gray-200 shrink-0 dark:bg-white/15" />
               <div className="space-y-1.5">
-                <div className="h-3 w-32 bg-gray-200 rounded" />
-                <div className="h-3 w-16 bg-gray-100 rounded" />
+                <div className="h-3 w-32 bg-gray-200 rounded dark:bg-white/15" />
+                <div className="h-3 w-16 bg-gray-100 rounded dark:bg-white/10" />
               </div>
             </div>
-            <div className="h-3 w-16 bg-gray-200 rounded shrink-0" />
+            <div className="h-3 w-16 bg-gray-200 rounded shrink-0 dark:bg-white/15" />
           </div>
         ))}
       </div>
@@ -118,16 +120,16 @@ export function TopItemsSkeleton({ rows = 3 }: { rows?: number }) {
  */
 export function RecentTransactionsSkeleton({ rows = 3 }: { rows?: number }) {
   return (
-    <div className="flex-1 bg-surface-card rounded-2xl border border-surface-border shadow-sm p-5 animate-pulse">
+    <div className="flex-1 bg-surface-card rounded-2xl border border-surface-border shadow-sm p-5 animate-pulse dark:bg-[#161d2e] dark:border-white/10">
       <div className="flex items-center justify-between mb-3">
         <HeaderSkeleton titleWidth="w-44" subWidth="w-60" />
-        <div className="h-8 w-24 bg-gray-100 rounded-xl shrink-0" />
+        <div className="h-8 w-24 bg-gray-100 rounded-xl shrink-0 dark:bg-white/10" />
       </div>
 
-      <div className="bg-white overflow-x-auto">
+      <div className="bg-white overflow-x-auto dark:bg-[#161d2e]">
         <table className="w-full text-sm min-w-[500px]">
           <thead>
-            <tr className="border-b border-gray-100">
+            <tr className="border-b border-gray-100 dark:border-white/10">
               {["w-14", "w-20", "w-16", "w-14"].map((w, i) => (
                 <th key={i} className="pb-3 pt-3 px-4">
                   <div
@@ -141,18 +143,21 @@ export function RecentTransactionsSkeleton({ rows = 3 }: { rows?: number }) {
           </thead>
           <tbody>
             {Array.from({ length: rows }).map((_, i) => (
-              <tr key={i} className="border-b border-gray-50 last:border-0">
+              <tr
+                key={i}
+                className="border-b border-gray-50 last:border-0 dark:border-white/5"
+              >
                 <td className="py-3 px-4">
-                  <div className="h-3 w-20 bg-gray-200 rounded" />
+                  <div className="h-3 w-20 bg-gray-200 rounded dark:bg-white/15" />
                 </td>
                 <td className="py-3 px-4">
-                  <div className="h-3 w-28 bg-gray-100 rounded" />
+                  <div className="h-3 w-28 bg-gray-100 rounded dark:bg-white/10" />
                 </td>
                 <td className="py-3 px-4">
-                  <div className="h-3 w-16 bg-gray-200 rounded ml-auto" />
+                  <div className="h-3 w-16 bg-gray-200 rounded ml-auto dark:bg-white/15" />
                 </td>
                 <td className="py-3 px-4">
-                  <div className="h-5 w-20 bg-gray-100 rounded-full mx-auto" />
+                  <div className="h-5 w-20 bg-gray-100 rounded-full mx-auto dark:bg-white/10" />
                 </td>
               </tr>
             ))}

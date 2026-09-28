@@ -61,7 +61,7 @@ export default function RecentTransactions({
       controls={
         <Link
           href={viewAllHref}
-          className="group flex items-center gap-1 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
+          className="group flex items-center gap-1 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:bg-white/10 dark:hover:text-white"
         >
           View all
           <ChevronRight
@@ -74,10 +74,10 @@ export default function RecentTransactions({
     >
       {/* Horizontally scrollable table wrapper for mobile */}
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
-      <div className="bg-white  overflow-x-auto">
+      <div className="bg-white overflow-x-auto dark:bg-transparent">
         <table className="w-full text-sm min-w-[500px]">
           <thead>
-            <tr className="border-b border-[#e8eaed] text-[11px] text-[#5f6368]">
+            <tr className="border-b border-[#e8eaed] text-[11px] text-[#5f6368] dark:border-white/10 dark:text-[#9aa6bd]">
               <th className="px-4 pb-2.5 pt-1 text-left font-normal">Order</th>
               <th className="px-4 pb-2.5 pt-1 text-left font-normal">
                 Customer
@@ -99,16 +99,19 @@ export default function RecentTransactions({
               <tr>
                 <td
                   colSpan={4}
-                  className="text-center py-2 text-sm text-gray-400"
+                  className="text-center py-2 text-sm text-gray-400 dark:text-[#7b869b]"
                 >
                   <div className="flex flex-col items-center justify-center py-12">
-                    <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4]">
-                      <Receipt size={24} className="text-gray-500" />
+                    <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+                      <Receipt
+                        size={24}
+                        className="text-gray-500 dark:text-[#9aa6bd]"
+                      />
                     </div>
-                    <p className="text-sm text-[#3c4043]">
+                    <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
                       No recent transactions found
                     </p>
-                    <p className="mt-1 text-xs text-[#9aa0a6]">
+                    <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                       Recent transactions will appear here
                     </p>
                   </div>
@@ -121,19 +124,19 @@ export default function RecentTransactions({
                 return (
                   <tr
                     key={tx.id}
-                    className="border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa]"
+                    className="border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa] dark:border-white/10 dark:hover:bg-white/5"
                   >
                     <td className="py-3 px-4">
-                      <p className="text-xs font-semibold text-[#3c4043]">
+                      <p className="text-xs font-semibold text-[#3c4043] dark:text-[#e8ecf4]">
                         {tx.id}
                       </p>
                       {txDate && (
-                        <p className="text-[11px] text-[#9aa0a6]">
+                        <p className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                           {timeAgo(txDate)}
                         </p>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-xs text-[#5f6368]">
+                    <td className="px-4 py-3 text-xs text-[#5f6368] dark:text-[#c3ccdc]">
                       {tx.invoiceName}
                     </td>
                     <td className="py-3 px-4 text-center">
@@ -144,7 +147,7 @@ export default function RecentTransactions({
                           tx.paymentMethod.slice(1)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right text-xs font-semibold tabular-nums text-[#3c4043]">
+                    <td className="px-4 py-3 text-right text-xs font-semibold tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                       {/* {formatCurrency(Number(tx.amount), currency)} */}
                       {formatCurrencySymbol(
                         Number(tx.amount),

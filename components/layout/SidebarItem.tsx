@@ -28,7 +28,7 @@ export default function SidebarItem({
     // full length inside 48px, and a wrapped label would push every item below
     // it down until the animation caught up.
     "flex items-center gap-3 whitespace-nowrap px-3 py-2 rounded-md text-foreground text-sm font-medium transition-colors",
-    "hover:bg-blue-50 hover:text-blue-600",
+    "hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-white/10 dark:hover:text-[#a8c4ee]",
     isActive && "bg-accent text-accent-foreground",
   );
 

@@ -30,8 +30,10 @@ export default function SidebarSection({
   const baseClass = cn(
     // See SidebarItem: the label must not wrap while the rail is animating.
     "flex items-center gap-3 w-full whitespace-nowrap px-3 py-2 rounded-md text-sm font-medium text-foreground transition-colors duration-200",
-    "hover:bg-blue-50 hover:text-blue-600",
-    isAnyActive && !isOpen && "bg-blue-50 text-blue-600",
+    "hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-white/10 dark:hover:text-[#a8c4ee]",
+    isAnyActive &&
+      !isOpen &&
+      "bg-blue-50 text-blue-600 dark:bg-white/10 dark:text-[#a8c4ee]",
   );
   if (isCollapsed) {
     return (
@@ -78,8 +80,8 @@ export default function SidebarSection({
                 className={cn(
                   "flex items-center gap-2 whitespace-nowrap px-3 py-2 rounded-md text-sm transition-colors",
                   isActive
-                    ? "bg-blue-50 text-blue-600 font-medium"
-                    : "text-muted-foreground hover:bg-accent hover:text-blue-600",
+                    ? "bg-blue-50 text-blue-600 font-medium dark:bg-white/10 dark:text-[#a8c4ee]"
+                    : "text-muted-foreground hover:bg-accent hover:text-blue-600 dark:hover:text-[#a8c4ee]",
                 )}
               >
                 <SubIcon className="w-3.5 h-3.5 shrink-0" />

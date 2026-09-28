@@ -62,7 +62,7 @@ const CustomTooltip = ({
 };
 
 /** The one violet the area, its dots and the hover box share. */
-const AREA_COLOR = "#7c3aed";
+const AREA_COLOR = "#8b5cf6";
 
 const clampHour = (value: number): number =>
   Math.max(0, Math.min(23, Math.floor(Number.isNaN(value) ? 0 : value)));
@@ -197,7 +197,7 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
   return (
     <ChartCard
       icon={Clock}
-      // Violet, matching the area: Tailwind's violet-600 / violet-200 / 50.
+      // Violet, matching the area: Tailwind's violet-500 / violet-200 / 50.
       iconColor={AREA_COLOR}
       iconBorder="#ddd6fe"
       iconBg="#f5f3ff"
@@ -219,11 +219,11 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
             />
 
             {/* Vertical divider */}
-            <div className="mx-1 h-6 w-px bg-[#dadce0]" />
+            <div className="mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" />
 
             {/* Custom From / To hour inputs */}
             <div className="flex items-center gap-1.5">
-              <label className="whitespace-nowrap text-xs text-[#9aa0a6]">
+              <label className="whitespace-nowrap text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                 From
               </label>
               <input
@@ -232,9 +232,9 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                 max={23}
                 value={fromHour}
                 onChange={(e) => handleFromChange(Number(e.target.value))}
-                className="w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-2.5 text-xs text-[#3c4043] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-2.5 text-xs text-[#3c4043] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]"
               />
-              <label className="whitespace-nowrap text-xs text-[#9aa0a6]">
+              <label className="whitespace-nowrap text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                 To
               </label>
               <input
@@ -243,12 +243,16 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                 max={23}
                 value={toHour}
                 onChange={(e) => handleToChange(Number(e.target.value))}
-                className="w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-2.5 text-xs text-[#3c4043] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-2.5 text-xs text-[#3c4043] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]"
               />
             </div>
           </div>
 
-          {rangeError && <p className="text-xs text-red-500">{rangeError}</p>}
+          {rangeError && (
+            <p className="text-xs text-red-500 dark:text-red-400">
+              {rangeError}
+            </p>
+          )}
         </div>
       }
     >
@@ -258,7 +262,7 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
         {canScrollLeft && (
           <button
             onClick={() => scroll("left")}
-            className="absolute left-0 top-1/2 z-10 -translate-y-1/2 cursor-pointer rounded-full border border-[#dadce0] bg-white/95 p-2 text-[#5f6368] transition-colors hover:bg-[#f8f9fa] hover:text-[#3c4043]"
+            className="absolute left-0 top-1/2 z-10 -translate-y-1/2 cursor-pointer rounded-full border border-[#dadce0] bg-white/95 p-2 text-[#5f6368] transition-colors hover:bg-[#f8f9fa] hover:text-[#3c4043] dark:border-white/15 dark:bg-[#1b2436]/95 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:text-white"
             aria-label="Scroll left"
           >
             <svg
@@ -281,7 +285,7 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
         {canScrollRight && (
           <button
             onClick={() => scroll("right")}
-            className="absolute right-0 top-1/2 z-10 -translate-y-1/2 cursor-pointer rounded-full border border-[#dadce0] bg-white/95 p-2 text-[#5f6368] transition-colors hover:bg-[#f8f9fa] hover:text-[#3c4043]"
+            className="absolute right-0 top-1/2 z-10 -translate-y-1/2 cursor-pointer rounded-full border border-[#dadce0] bg-white/95 p-2 text-[#5f6368] transition-colors hover:bg-[#f8f9fa] hover:text-[#3c4043] dark:border-white/15 dark:bg-[#1b2436]/95 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:text-white"
             aria-label="Scroll right"
           >
             <svg
@@ -306,7 +310,13 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
           className="overflow-x-auto pb-2 scrollbar-hide"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          <div style={{ minWidth: Math.max(filteredData.length * 95, 600) }}>
+          {/* Each dot is ringed in white so it reads as a cut-out of the
+              card; on the dark card that ring has to be the card's colour or
+              every point wears a bright halo. */}
+          <div
+            className="dark:[&_.recharts-dot]:stroke-[#161d2e]"
+            style={{ minWidth: Math.max(filteredData.length * 95, 600) }}
+          >
             <ResponsiveContainer width="100%" height={280}>
               <AreaChart
                 data={filteredData}
@@ -362,11 +372,14 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                         x={x}
                         y={yNum + 8}
                         textAnchor="middle"
-                        fill={CHART_PALETTE.axis}
+                        className="fill-[#5f6368] dark:fill-[#9aa6bd]"
                         fontSize={11}
                       >
                         {payload.value}
-                        <tspan fontSize={9} fill={CHART_PALETTE.subtitle}>
+                        <tspan
+                          fontSize={9}
+                          className="fill-[#9aa0a6] dark:fill-[#7b869b]"
+                        >
                           {" "}
                           [{ampm}]
                         </tspan>

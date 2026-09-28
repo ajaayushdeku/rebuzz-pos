@@ -52,8 +52,10 @@ const COPY = {
  */
 const VARIANT = {
   badge:
-    "ml-auto gap-1 bg-gray-50/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-800",
-  pill: "gap-1 border border-[#dadce0] bg-white px-2 py-0.5 text-[11px] text-[#3c4043] hover:bg-[#f8f9fa]",
+    "ml-auto gap-1 bg-gray-50/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-800 dark:bg-[#E8ECF4] dark:text-[#c3ccdc]",
+  pill:
+    "gap-1 border border-[#dadce0] bg-white px-2 py-0.5 text-[11px] text-[#3c4043] hover:bg-[#f8f9fa] " +
+    "dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:bg-white/10",
 } as const;
 
 export default function RangeBadge({

@@ -51,12 +51,12 @@ export default function Sidebar() {
       )}
     >
       <div
-        className={`my-2 flex items-center justify-between gap-1 px-1 py-2 border-b border-gray-100 transition-[width] duration-300 ease-in-out ${isCollapsed ? "justify-center " : "justify-between"}`}
+        className={`my-2 flex items-center justify-between gap-1 px-1 py-2 border-b border-gray-100 transition-[width] dark:border-white/10 duration-300 ease-in-out ${isCollapsed ? "justify-center " : "justify-between"}`}
       >
         {!isCollapsed && (
           <Link href="/invoices/add" className="min-w-0  ml-2">
             <Button
-              className="w-full text-left animate-in fade-in-0 bg-white font-bold text-blue-500 duration-300 hover:bg-blue-100"
+              className="w-full text-left animate-in fade-in-0 bg-white font-bold text-blue-500 duration-300 hover:bg-blue-100 dark:bg-transparent dark:text-[#7ba2e3] dark:hover:bg-white/10"
               size="sm"
             >
               <Plus className="w-2 h-2 mr-1 font-bold" />
@@ -68,7 +68,7 @@ export default function Sidebar() {
         <Button
           variant="ghost"
           size="icon"
-          className={`h-8 w-8 shrink-0 ${isCollapsed ? "ml-1" : "mr-2"} cursor-pointer text-blue-500 hover:text-blue-600`}
+          className={`h-8 w-8 shrink-0 ${isCollapsed ? "ml-1" : "mr-2"} cursor-pointer text-blue-500 hover:text-blue-600 dark:text-[#7ba2e3] dark:hover:text-[#a8c4ee]`}
           onClick={toggle}
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >

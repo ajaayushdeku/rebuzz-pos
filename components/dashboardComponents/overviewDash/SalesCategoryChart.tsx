@@ -11,7 +11,6 @@ import type {
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
 import {
-  CHART_PALETTE,
   ChartCard,
   ChartTooltipBox,
 } from "@/components/dashboardComponents/chartCard";
@@ -35,6 +34,14 @@ interface SalesCategoryChartProps {
   endDate?: string;
 }
 
+/**
+ * The slice colours. One palette for both themes: every hue here is a mid-tone
+ * that holds its own on white and on the dark card, so a category is the same
+ * colour whichever theme the reader is in.
+ *
+ * Ten, because that is where a reader stops telling slices apart; an eleventh
+ * category restarts at the first.
+ */
 const COLOR_PALETTE = [
   "#8b5cf6",
   "#60a5fa",
@@ -48,11 +55,11 @@ const COLOR_PALETTE = [
   "#f59e0b",
 ];
 
-const formatCurrency = (value: number): string => {
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
-  return value.toFixed(0);
-};
+// const formatCurrency = (value: number): string => {
+//   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+//   if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
+//   return value.toFixed(0);
+// };
 
 const CustomTooltip = ({
   active,
@@ -100,9 +107,8 @@ const SalesCategoryChart = ({
   startDate,
   endDate,
 }: SalesCategoryChartProps) => {
-  const { currency } = useCurrency();
-  // Suspense query — loading is handled by the page's <Suspense> fallback and
-  // errors by the page's <ChartErrorBoundary>. `data` is always defined here.
+  // const { currency } = useCurrency();
+
   const { data } = useSalesByCategory(startDate, endDate);
 
   // Sort by totalRevenue descending, rename "No Category" → "Uncategorized"
@@ -165,11 +171,13 @@ const SalesCategoryChart = ({
     >
       {data.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4]">
-            <ChartPie size={24} className="text-gray-500" />
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+            <ChartPie size={24} className="text-gray-500 dark:text-[#9aa6bd]" />
           </div>
-          <p className="text-sm text-[#3c4043]">No category data found</p>
-          <p className="mt-1 text-xs text-[#9aa0a6]">
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
+            No category data found
+          </p>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             No sales recorded for the selected date range
           </p>
         </div>
@@ -224,16 +232,13 @@ const SalesCategoryChart = ({
                         backgroundColor: entry.color,
                       }}
                     />
-                    <span
-                      className="truncate text-xs"
-                      style={{ color: CHART_PALETTE.title }}
-                    >
+                    <span className="truncate text-xs text-[#3c4043] dark:text-[#c3ccdc]">
                       {entry.name}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <div className="h-1.5 w-30 overflow-hidden rounded-full bg-[#f1f3f4]">
+                    <div className="h-1.5 w-30 overflow-hidden rounded-full bg-[#f1f3f4] dark:bg-white/10">
                       <div
                         className="h-full rounded-full"
                         style={{
@@ -244,13 +249,7 @@ const SalesCategoryChart = ({
                       />
                     </div>
 
-                    {/* The figure the bar is drawing. A bar shows which rows
-                        lead; only the number says by how much, and reading it
-                        off a 7rem track is guesswork. Fixed width and tabular
-                        digits so the amounts beside it stay in one column.
-                        A share that rounds to 0.0% but is not zero is shown as
-                        "<0.1%" rather than as nothing. */}
-                    <span className="w-11 shrink-0 text-right text-[11px] tabular-nums text-[#5f6368]">
+                    <span className="w-11 shrink-0 text-right text-[11px] tabular-nums text-[#5f6368] dark:text-[#9aa6bd]">
                       {entry.percentage > 0 && entry.percentage < 0.1
                         ? "<0.1"
                         : entry.percentage.toFixed(1)}
@@ -271,9 +270,9 @@ const SalesCategoryChart = ({
 
             <div className="pointer-events-none absolute bottom-[-15px] left-0 right-0 flex justify-center pt-8 pb-1">
               {showScrollHint ? (
-                <ChevronDown className="h-4 w-4 animate-bounce text-[#9aa0a6]" />
+                <ChevronDown className="h-4 w-4 animate-bounce text-[#9aa0a6] dark:text-[#7b869b]" />
               ) : (
-                <ChevronUp className="h-4 w-4 animate-bounce text-[#9aa0a6]" />
+                <ChevronUp className="h-4 w-4 animate-bounce text-[#9aa0a6] dark:text-[#7b869b]" />
               )}
             </div>
           </div>

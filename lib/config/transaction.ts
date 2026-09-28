@@ -29,20 +29,20 @@ export const paymentMethods: Record<
   { cell: string; badge: string }
 > = {
   Card: {
-    cell: "text-green-800",
-    badge: "bg-green-200",
+    cell: "text-green-800 dark:text-emerald-300",
+    badge: "bg-green-200 dark:bg-emerald-400/15",
   },
   Cash: {
-    cell: "text-gray-800",
-    badge: "bg-gray-200",
+    cell: "text-gray-800 dark:text-[#c3ccdc]",
+    badge: "bg-gray-200 dark:bg-white/10",
   },
   Loyalty: {
-    cell: "text-purple-800",
-    badge: "bg-purple-200",
+    cell: "text-purple-800 dark:text-purple-300",
+    badge: "bg-purple-200 dark:bg-purple-400/15",
   },
   QR: {
-    cell: "text-blue-800",
-    badge: "bg-blue-200",
+    cell: "text-blue-800 dark:text-[#a8c4ee]",
+    badge: "bg-blue-200 dark:bg-blue-400/15",
   },
 };
 

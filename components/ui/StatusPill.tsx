@@ -12,25 +12,32 @@
  * would not.
  */
 export type StatusTone =
-  | "positive"
-  | "negative"
-  | "neutral"
-  | "warning"
-  | "notice";
+  "positive" | "negative" | "neutral" | "warning" | "notice";
 
 const TONES: Record<StatusTone, { className: string; rgb: string }> = {
   positive: {
-    className: "text-green-700 border-green-200",
+    className:
+      "text-green-700 border-green-200 dark:text-green-300 dark:border-green-300/30",
     rgb: "134, 239, 172",
   },
-  negative: { className: "text-red-700 border-red-200", rgb: "252, 165, 165" },
-  neutral: { className: "text-gray-600 border-gray-300", rgb: "156, 163, 175" },
+  negative: {
+    className:
+      "text-red-700 border-red-200 dark:text-red-300 dark:border-red-300/30",
+    rgb: "252, 165, 165",
+  },
+  neutral: {
+    className:
+      "text-gray-600 border-gray-300 dark:text-[#c3ccdc] dark:border-white/25",
+    rgb: "156, 163, 175",
+  },
   warning: {
-    className: "text-orange-700 border-orange-200",
+    className:
+      "text-orange-700 border-orange-200 dark:text-orange-300 dark:border-orange-300/30",
     rgb: "251, 146, 60",
   },
   notice: {
-    className: "text-violet-700 border-violet-300",
+    className:
+      "text-violet-700 border-violet-300 dark:text-violet-300 dark:border-violet-300/30",
     rgb: "167, 139, 250",
   },
 };

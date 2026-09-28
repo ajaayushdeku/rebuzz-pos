@@ -384,17 +384,19 @@ export function CalendarDateFilter({
           <Button
             variant="outline"
             className={cn(
-              "w-[210px] justify-start text-left text-[13px] font-normal h-9",
-              !currentStartDate && !currentPreset && "text-muted-foreground",
+              "w-[210px] justify-start text-left text-[13px] font-normal h-9 dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]",
+              !currentStartDate &&
+                !currentPreset &&
+                "text-muted-foreground dark:text-[#7b869b]",
             )}
           >
-            <CalendarIcon className="mr-2 h-4 w-4" />
+            <CalendarIcon className="mr-2 h-4 w-4 dark:text-[#9aa6bd]" />
             {displayText}
           </Button>
         </DialogTrigger>
         <DialogContent
           showCloseButton={false}
-          className="w-[calc(300vw-2rem)] sm:w-[720px] sm:max-w-[720px] p-0 gap-0 rounded-2xl shadow-xl bg-white"
+          className="w-[calc(300vw-2rem)] sm:w-[720px] sm:max-w-[720px] p-0 gap-0 rounded-2xl shadow-xl bg-white dark:bg-[#161d2e]"
         >
           {/* Two columns from sm up: calendar on the left, controls on the
               right. Stacked, this ran ~600px tall and filled a laptop viewport;
@@ -426,13 +428,13 @@ export function CalendarDateFilter({
               )}
             </div>
 
-            <div className="flex flex-col gap-3 sm:border-l sm:border-gray-100 sm:pl-5">
+            <div className="flex flex-col gap-3 sm:border-l sm:border-gray-100 sm:pl-5 dark:sm:border-white/10">
               {/* Mode toggle — the app's pill tab treatment, matching the
                   Recent Transactions / settings tab bars. */}
               <div
                 role="tablist"
                 aria-label="Date selection mode"
-                className="flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+                className="flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1 dark:bg-white/10"
               >
                 <button
                   type="button"
@@ -447,10 +449,10 @@ export function CalendarDateFilter({
                     }
                   }}
                   className={cn(
-                    "flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe]",
+                    "flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] dark:focus-visible:ring-offset-[#161d2e]",
                     mode === "single"
-                      ? "bg-white font-bold text-blue-950 shadow-sm"
-                      : "font-semibold text-blue-800 hover:text-blue-950",
+                      ? "bg-white font-bold text-blue-950 shadow-sm dark:bg-[#161d2e] dark:text-[#e8ecf4]"
+                      : "font-semibold text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee] dark:hover:text-white",
                   )}
                 >
                   <CalendarDays size={14} className="shrink-0" />
@@ -462,10 +464,10 @@ export function CalendarDateFilter({
                   aria-selected={mode === "range"}
                   onClick={() => setMode("range")}
                   className={cn(
-                    "flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe]",
+                    "flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] dark:focus-visible:ring-offset-[#161d2e]",
                     mode === "range"
-                      ? "bg-white font-bold text-blue-950 shadow-sm"
-                      : "font-semibold text-blue-800 hover:text-blue-950",
+                      ? "bg-white font-bold text-blue-950 shadow-sm dark:bg-[#161d2e] dark:text-[#e8ecf4]"
+                      : "font-semibold text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee] dark:hover:text-white",
                   )}
                 >
                   <CalendarRange size={14} className="shrink-0" />
@@ -495,19 +497,19 @@ export function CalendarDateFilter({
                     value={startInput}
                     onChange={(e) => handleStartInputChange(e.target.value)}
                     onBlur={handleStartBlur}
-                    className="w-full h-9 px-3 text-xs tracking-[0.06em]  border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full h-9 px-3 text-xs tracking-[0.06em]  border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60 hover:[&::-webkit-calendar-picker-indicator]:opacity-100 dark:[&::-webkit-calendar-picker-indicator]:invert"
                   />
                 </div>
                 {mode === "range" && (
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">
+                    <label className="block text-xs text-gray-500 mb-1 dark:text-[#9aa6bd]">
                       End Date
                     </label>
                     <input
                       type="date"
                       value={endInput}
                       onChange={(e) => handleEndInputChange(e.target.value)}
-                      className="w-full h-9 px-3 text-xs tracking-[0.06em]  border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full h-9 px-3 text-xs tracking-[0.06em]  border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60 hover:[&::-webkit-calendar-picker-indicator]:opacity-100 dark:[&::-webkit-calendar-picker-indicator]:invert"
                     />
                   </div>
                 )}
@@ -516,11 +518,11 @@ export function CalendarDateFilter({
           </div>
 
           {/* Apply / Cancel buttons — same pair the confirm dialogs use. */}
-          <div className="flex items-center gap-2.5 px-5 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
+          <div className="flex items-center gap-2.5 px-5 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl dark:bg-white/5 dark:border-white/10">
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-[13px] font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
+              className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-[13px] font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 dark:bg-[#161d2e] dark:border-white/15 dark:text-[#c3ccdc] dark:hover:bg-white/10 dark:hover:border-white/25"
             >
               Cancel
             </button>

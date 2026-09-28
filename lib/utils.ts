@@ -36,19 +36,20 @@ export function getPercentColor(percent: number) {
   if (percent === 0) {
     return {
       text: "text-gray-400",
-      badge: "bg-gray-100 text-gray-600",
+      badge: "bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-[#c3ccdc]",
       ArrowIcon: ArrowUpRight,
     };
   }
   return percent > 0
     ? {
         text: "text-green-400",
-        badge: "bg-green-100 text-green-800",
+        badge:
+          "bg-green-100 text-green-800 dark:bg-emerald-400/15 dark:text-emerald-300",
         ArrowIcon: ArrowUpRight,
       }
     : {
         text: "text-red-400",
-        badge: "bg-red-100 text-red-800",
+        badge: "bg-red-100 text-red-800 dark:bg-red-400/15 dark:text-red-300",
         ArrowIcon: ArrowDownRight,
       };
 }

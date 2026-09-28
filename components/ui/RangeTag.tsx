@@ -23,7 +23,7 @@ export default function RangeTag({ className }: { className?: string }) {
         <span
           tabIndex={0}
           className={cn(
-            "shrink-0 cursor-help rounded-md px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-gray-800 outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+            "shrink-0 cursor-help rounded-md px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-gray-800 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-[#c3ccdc]",
             className,
           )}
         >

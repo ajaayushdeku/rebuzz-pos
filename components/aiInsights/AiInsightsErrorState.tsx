@@ -32,27 +32,30 @@ const TONES: Record<
   { panel: string; iconWrap: string; icon: string; button: string }
 > = {
   violet: {
-    panel: "border-violet-100 bg-violet-50/50",
-    iconWrap: "bg-violet-100",
-    icon: "text-violet-600",
+    panel:
+      "border-violet-100 bg-violet-50/50 dark:border-violet-400/20 dark:bg-violet-400/10",
+    iconWrap: "bg-violet-100 dark:bg-violet-400/15",
+    icon: "text-violet-600 dark:text-violet-300",
     button: "bg-violet-600 hover:bg-violet-700",
   },
   red: {
-    panel: "border-red-100 bg-red-50/50",
-    iconWrap: "bg-red-100",
-    icon: "text-red-600",
+    panel:
+      "border-red-100 bg-red-50/50 dark:border-red-400/20 dark:bg-red-400/10",
+    iconWrap: "bg-red-100 dark:bg-red-400/15",
+    icon: "text-red-600 dark:text-red-300",
     button: "bg-red-600 hover:bg-red-700",
   },
   amber: {
-    panel: "border-amber-100 bg-amber-50/50",
-    iconWrap: "bg-amber-100",
-    icon: "text-amber-600",
+    panel:
+      "border-amber-100 bg-amber-50/50 dark:border-amber-400/20 dark:bg-amber-400/10",
+    iconWrap: "bg-amber-100 dark:bg-amber-400/15",
+    icon: "text-amber-600 dark:text-amber-300",
     button: "bg-amber-600 hover:bg-amber-700",
   },
   gray: {
-    panel: "border-[#e3e3e3] bg-[#f8f9fa]",
-    iconWrap: "bg-[#f1f3f4]",
-    icon: "text-[#5f6368]",
+    panel: "border-[#e3e3e3] bg-[#f8f9fa] dark:border-white/10 dark:bg-white/5",
+    iconWrap: "bg-[#f1f3f4] dark:bg-white/10",
+    icon: "text-[#5f6368] dark:text-[#c3ccdc]",
     button: "bg-[#3c4043] hover:bg-[#2b2e31]",
   },
 };
@@ -233,13 +236,17 @@ export default function AiInsightsErrorState({
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-[#3c4043]">{title}</p>
+          <p className="text-sm font-semibold text-[#3c4043] dark:text-[#e8ecf4]">
+            {title}
+          </p>
           {error?.message && (
-            <p className="mt-1 text-[13px] leading-relaxed text-[#5f6368]">
+            <p className="mt-1 text-[13px] leading-relaxed text-[#5f6368] dark:text-[#c3ccdc]">
               {error.message}
             </p>
           )}
-          <p className="mt-2 text-xs leading-relaxed text-[#5f6368]">{hint}</p>
+          <p className="mt-2 text-xs leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
+            {hint}
+          </p>
 
           <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
             {action ? (
@@ -257,7 +264,7 @@ export default function AiInsightsErrorState({
             )}
 
             {/* The code for support, not for reading: small and out of the way. */}
-            <span className="ml-auto font-mono text-[10px] text-[#5f6368] tracking-wide">
+            <span className="ml-auto font-mono text-[10px] text-[#5f6368] tracking-wide dark:text-[#7b869b]">
               {code}
             </span>
           </div>

@@ -11,61 +11,45 @@ import {
 import RangeBadge from "../ui/RangeBadge";
 import ExpenseBadge from "../ui/ExpenseBadge";
 
-/**
- * The refreshed dashboard card, shared by the cards that have moved to it
- * (Revenue vs Profit, Sales Trends) so the next one only has to supply its
- * chart.
- *
- * A flat white card with a hairline border and no shadow; an outlined icon on
- * a pale fill; a plain title with reading notes behind an info icon and a
- * lighter subtitle; controls as small outlined pills on the right; square
- * bars on light horizontal gridlines with round-number steps; the legend
- * under the chart on the right.
- */
 export const CHART_PALETTE = {
   border: "#e3e3e3",
   control: "#dadce0",
   grid: "#e8eaed",
   title: "#3c4043",
-  /** Lighter than the title, so the subtitle reads as secondary. */
+
   subtitle: "#9aa0a6",
   axis: "#5f6368",
   hover: "#f1f3f4",
   blue: "#1a73e8",
   darkBlue: "#4D78CE",
   teal: "#12a4af",
-  /** A third series, when there is one: the reference design's magenta. */
+
   magenta: "#c5197d",
-  /** Good / warning / bad, for figures that carry a verdict. */
+
   good: "#1e8e3e",
   warn: "#e37400",
   bad: "#d93025",
 } as const;
 
-/**
- * The icon tile's default frame and fill: Tailwind's blue-100 and blue-50 at
- * 60%, the shades the cards used before these could be set per card.
- */
 const ICON_TILE = {
   border: "#dbeafe",
   bg: "rgb(239 246 255 / 0.6)",
 } as const;
 
-/**
- * Bar corners: soft at the top, square where the bar meets the axis, the same
- * on every bar chart. Recharts' order is top-left, top-right, bottom-right,
- * bottom-left.
- */
+const CHART_DARK = [
+  "dark:[&_.recharts-cartesian-grid_line]:stroke-[#2d3443]",
+  "dark:[&_.recharts-cartesian-axis-tick_text]:fill-[#9aa6bd]",
+  "dark:[&_.recharts-cartesian-axis-line]:stroke-[#2d3443]",
+  "dark:[&_.recharts-cartesian-axis-tick-line]:stroke-[#2d3443]",
+  "dark:[&_.recharts-label]:fill-[#9aa6bd]!",
+  "dark:[&_.recharts-tooltip-cursor]:fill-[#222838]",
+  "dark:[&_.recharts-reference-line_line]:stroke-[#3d4657]",
+].join(" ");
+
 export const BAR_RADIUS: [number, number, number, number] = [4, 4, 0, 0];
 
-/** Axis tick text, shared so every card's numbers read the same. */
 export const AXIS_TICK = { fill: CHART_PALETTE.axis, fontSize: 12 } as const;
 
-/**
- * Round-number axis steps: 0, 150k, 300k, 450k rather than 149k, 299k, 449k.
- * A step of 1, 2, 2.5 or 5 times a power of ten, about four steps tall, always
- * including zero so a loss reads below the line.
- */
 export function niceTicks(min: number, max: number, steps = 4): number[] {
   const lo = Math.min(0, min);
   const hi = Math.max(0, max, lo + 1);
@@ -73,10 +57,6 @@ export function niceTicks(min: number, max: number, steps = 4): number[] {
   const magnitude = 10 ** Math.floor(Math.log10(raw));
   const norm = raw / magnitude;
 
-  // The smallest round step that is big enough — then, if rounding both ends
-  // outward takes more steps than the target, the next round size up. A range
-  // from −237k to 481k in 200k steps runs −400k…600k and leaves a whole empty
-  // step at the bottom; in 250k steps it is −250k…500k.
   const sizes = [1, 2, 2.5, 5, 10, 20];
   let i = sizes.findIndex((s) => norm <= s);
   let step = sizes[i] * magnitude;
@@ -94,7 +74,6 @@ export function niceTicks(min: number, max: number, steps = 4): number[] {
   return ticks;
 }
 
-/** The "Amount" style axis title, placed the way Recharts' YAxis expects. */
 export const yAxisTitle = (value: string) => ({
   value,
   angle: -90,
@@ -107,13 +86,6 @@ export const yAxisTitle = (value: string) => ({
   },
 });
 
-/**
- * The ⓘ that sits beside a card title and explains how to read the card.
- *
- * ChartCard draws this from its `info` prop. Exported for the cards that
- * build their own header — a card with several states usually writes the
- * header out rather than mounting ChartCard four times.
- */
 export function CardInfo({
   heading,
   body,
@@ -121,7 +93,7 @@ export function CardInfo({
 }: {
   heading: string;
   body: ReactNode;
-  /** Names the card for screen readers: "How to read Top Items Sold". */
+
   label: string;
 }) {
   return (
@@ -130,7 +102,7 @@ export function CardInfo({
         <button
           type="button"
           aria-label={`How to read ${label}`}
-          className="flex cursor-help items-center rounded-full font-normal text-gray-400 outline-none transition-colors hover:text-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="flex cursor-help items-center rounded-full font-normal text-gray-400 outline-none transition-colors hover:text-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-[#7b869b] dark:hover:text-[#c3ccdc]"
         >
           <Info size={13} />
         </button>
@@ -143,10 +115,6 @@ export function CardInfo({
   );
 }
 
-/**
- * The card: border, padding, and the header row. Any content goes inside —
- * a chart, a table, a list — so every dashboard card can share the frame.
- */
 export function ChartCard({
   icon: Icon,
   iconColor = CHART_PALETTE.blue,
@@ -162,24 +130,17 @@ export function ChartCard({
   expenseBadge = false,
 }: {
   icon: LucideIcon;
-  /**
-   * The icon tile's colours, any CSS colour. Left out, the tile is the
-   * default blue: blue icon, pale blue frame, paler blue fill.
-   */
+
   iconColor?: string;
   iconBorder?: string;
   iconBg?: string;
   title: string;
-  /** What the ⓘ beside the title explains: how to read the card. */
+
   info?: { heading: string; body: ReactNode };
   subtitle: ReactNode;
-  /** Pills on the right of the header: range, pager, view switch, badges. */
+
   controls?: ReactNode;
-  /**
-   * Extra classes on the card, e.g. `h-full` for cards sharing a grid row, or
-   * `overflow-hidden` when something (a lock overlay) must be clipped to the
-   * rounded corners. The card is always `relative`, so an overlay can fill it.
-   */
+
   className?: string;
   children: ReactNode;
   rangeBadge?: boolean;
@@ -187,24 +148,18 @@ export function ChartCard({
 }) {
   return (
     <div
-      className={`relative w-full rounded-2xl border bg-white px-6 pb-5 pt-5 ${className}`}
-      style={{ borderColor: CHART_PALETTE.border }}
+      className={`relative w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5 dark:border-white/10 dark:bg-[#161d2e] ${CHART_DARK} ${className}`}
     >
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          {/* A pale frame on a paler fill, kept light so the icon's own
-              colour carries it. Blue unless the card says otherwise. */}
           <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
             style={{ borderColor: iconBorder, backgroundColor: iconBg }}
           >
             <Icon size={16} style={{ color: iconColor }} />
           </div>
           <div className="min-w-0">
-            <h3
-              className="flex items-center gap-1.5 text-[15px] font-normal"
-              style={{ color: CHART_PALETTE.title }}
-            >
+            <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
               <span className="truncate">{title}</span>
               {info && (
                 <HintTooltip>
@@ -212,7 +167,7 @@ export function ChartCard({
                     <button
                       type="button"
                       aria-label={`How to read ${title}`}
-                      className="flex cursor-help items-center rounded-full font-normal text-gray-400 outline-none transition-colors hover:text-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500"
+                      className="flex cursor-help items-center rounded-full font-normal text-gray-400 outline-none transition-colors hover:text-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-[#7b869b] dark:hover:text-[#c3ccdc]"
                     >
                       <Info size={13} />
                     </button>
@@ -230,10 +185,7 @@ export function ChartCard({
                 </HintTooltip>
               )}
             </h3>
-            <p
-              className="mt-0.5 text-xs tracking-wide"
-              style={{ color: CHART_PALETTE.subtitle }}
-            >
+            <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
               {subtitle}
             </p>
           </div>
@@ -259,12 +211,6 @@ export function ChartCard({
   );
 }
 
-/** Under the chart, on the right. Dot or square per series. */
-/**
- * A legend swatch. `dot` and `square` for bars and points; `line` for a
- * solid line series and `dashed` for a reference line, drawn as a short
- * stroke so they read as lines rather than as more bars.
- */
 export type LegendShape = "dot" | "square" | "line" | "dashed";
 
 function LegendSwatch({ color, shape }: { color: string; shape: LegendShape }) {
@@ -302,7 +248,7 @@ export function ChartLegend({
       {items.map(({ label, color, shape }) => (
         <span key={label} className="flex items-center gap-1.5">
           <LegendSwatch color={color} shape={shape} />
-          <span className="text-[13px]" style={{ color: CHART_PALETTE.title }}>
+          <span className="text-[13px] text-[#3c4043] dark:text-[#c3ccdc]">
             {label}
           </span>
         </span>
@@ -311,10 +257,6 @@ export function ChartLegend({
   );
 }
 
-/**
- * "‹ 1–6 of 14 ›": a small outlined pager for the header's controls, for a
- * chart that shows its items a page at a time.
- */
 export function ChartPager({
   first,
   last,
@@ -328,30 +270,23 @@ export function ChartPager({
   total: number;
   onPrev: () => void;
   onNext: () => void;
-  /** What is being paged, for the buttons' labels: "products", "categories". */
+
   itemLabel: string;
 }) {
   const button =
-    "flex h-5 w-5 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-[#f1f3f4] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent";
+    "flex h-5 w-5 cursor-pointer items-center justify-center rounded-full text-[#5f6368] transition-colors hover:bg-[#f1f3f4] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent dark:text-[#a9b4c7] dark:hover:bg-white/10";
   return (
-    <div
-      className="flex items-center gap-0.5 rounded-full border bg-white px-0.5 py-px"
-      style={{ borderColor: CHART_PALETTE.control }}
-    >
+    <div className="flex items-center gap-0.5 rounded-full border border-[#dadce0] bg-white px-0.5 py-px dark:border-white/15 dark:bg-white/5">
       <button
         type="button"
         onClick={onPrev}
         disabled={first <= 1}
         aria-label={`Previous ${itemLabel}`}
         className={button}
-        style={{ color: CHART_PALETTE.axis }}
       >
         <ChevronLeft size={13} />
       </button>
-      <span
-        className="px-0.5 text-[11px] tabular-nums"
-        style={{ color: CHART_PALETTE.title }}
-      >
+      <span className="px-0.5 text-[11px] tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
         {first}–{last} of {total}
       </span>
       <button
@@ -360,7 +295,6 @@ export function ChartPager({
         disabled={last >= total}
         aria-label={`Next ${itemLabel}`}
         className={button}
-        style={{ color: CHART_PALETTE.axis }}
       >
         <ChevronRight size={13} />
       </button>
@@ -368,10 +302,6 @@ export function ChartPager({
   );
 }
 
-/**
- * The box a hovered bar shows: its label, then one row per series, and an
- * optional footer under a hairline for figures derived from them.
- */
 export function ChartTooltipBox({
   label,
   rows,
@@ -382,11 +312,8 @@ export function ChartTooltipBox({
   footer?: ReactNode;
 }) {
   return (
-    <div
-      className="min-w-40 rounded-lg border bg-white px-3 py-2.5 shadow-sm"
-      style={{ borderColor: CHART_PALETTE.control }}
-    >
-      <p className="mb-1.5 text-xs" style={{ color: CHART_PALETTE.axis }}>
+    <div className="min-w-40 rounded-lg border border-[#dadce0] bg-white px-3 py-2.5 shadow-sm dark:border-white/15 dark:bg-[#1b2436]">
+      <p className="mb-1.5 text-xs text-[#5f6368] dark:text-[#a9b4c7]">
         {label}
       </p>
       {rows.map((row) => (
@@ -399,23 +326,17 @@ export function ChartTooltipBox({
               className="h-2 w-2 shrink-0 rounded-full"
               style={{ backgroundColor: row.color }}
             />
-            <span className="text-xs" style={{ color: CHART_PALETTE.title }}>
+            <span className="text-xs text-[#3c4043] dark:text-[#c3ccdc]">
               {row.name}
             </span>
           </span>
-          <span
-            className="text-xs font-medium"
-            style={{ color: CHART_PALETTE.title }}
-          >
+          <span className="text-xs font-medium text-[#3c4043] dark:text-[#e8ecf4]">
             {row.value}
           </span>
         </div>
       ))}
       {footer && (
-        <div
-          className="mt-2 space-y-0.5 border-t pt-2"
-          style={{ borderColor: CHART_PALETTE.grid }}
-        >
+        <div className="mt-2 space-y-0.5 border-t border-[#e8eaed] pt-2 dark:border-white/10">
           {footer}
         </div>
       )}
@@ -423,35 +344,23 @@ export function ChartTooltipBox({
   );
 }
 
-/**
- * The two looks of the tab switch, both with the selected tab raised in white:
- * - `gray`: the dashboard's grey track (Sales Trends).
- * - `blue`: the Records → Invoices page's tabs — a pale blue rounded track,
- *   bold dark-blue selected tab (Target Tracker).
- */
 const SWITCH_STYLE = {
   gray: {
-    track: "rounded-lg bg-gray-100",
+    track: "rounded-lg bg-gray-100 dark:bg-white/10",
     tab: "rounded-md font-medium",
-    selected: "bg-white text-gray-900 shadow-sm",
-    idle: "text-gray-400 hover:text-gray-600",
+    selected:
+      "bg-white text-gray-900 shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none",
+    idle: "text-gray-400 hover:text-gray-600 dark:text-[#7b869b] dark:hover:text-[#c3ccdc]",
   },
   blue: {
-    track: "rounded-xl bg-[#e4f2fe]",
+    track: "rounded-xl bg-[#e4f2fe] dark:bg-white/10",
     tab: "rounded-lg",
-    selected: "bg-white font-bold text-blue-950 shadow-sm",
-    idle: "font-semibold text-blue-800 hover:text-blue-950",
+    selected:
+      "bg-white font-bold text-blue-950 shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none",
+    idle: "font-semibold text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee] dark:hover:text-white",
   },
 } as const;
 
-/**
- * A tab switch, one option selected: a view or period switch (Daily / Weekly /
- * Monthly).
- *
- * `compact` sits beside the header's pills (Sales Trends). `full` spans the
- * card's width with larger tabs, for a card whose whole body follows the
- * switch (Target Tracker).
- */
 export function PillSwitch<T extends string>({
   options,
   value,
@@ -463,7 +372,7 @@ export function PillSwitch<T extends string>({
   options: { label: string; value: T }[];
   value: T;
   onChange: (value: T) => void;
-  /** Names the group for screen readers. */
+
   label: string;
   variant?: keyof typeof SWITCH_STYLE;
   size?: "compact" | "full";

@@ -68,6 +68,10 @@ const WeeklyRevenueChart = ({ data, peakDay }: WeeklyRevenueChartProps) => {
     return (
       <Rectangle
         {...props}
+        // The class is what lets the dark side restate these two colours: on
+        // white the peak bar is the *darker* blue, which on a dark card would
+        // make the busiest day the quietest-looking one.
+        className={isPeak ? "rz-bar-peak" : "rz-bar"}
         fill={isPeak ? BAR_COLOR_PEAK : BAR_COLOR_DEFAULT}
         radius={BAR_RADIUS}
       />
@@ -92,7 +96,10 @@ const WeeklyRevenueChart = ({ data, peakDay }: WeeklyRevenueChartProps) => {
       }}
       subtitle="Revenue performance – current week"
     >
-      <div className="h-56 md:h-72">
+      {/* Dark swaps the pair round rather than dimming both: the peak keeps the
+          light blue it had, and the other days drop to a muted navy-blue, so
+          emphasis still belongs to the tallest bar. */}
+      <div className="h-56 md:h-72 dark:[&_.rz-bar]:fill-[#3a5d91] dark:[&_.rz-bar-peak]:fill-[#8ab4f8]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={data}

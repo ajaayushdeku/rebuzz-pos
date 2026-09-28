@@ -18,7 +18,8 @@ const VARIANT: Record<HeaderActionVariant, string> = {
   solid:
     "bg-blue-600 text-white shadow-sm hover:bg-blue-700 active:bg-blue-800",
   dashed:
-    "border-dashed border-blue-300 bg-white text-blue-600 hover:border-blue-400 hover:bg-blue-50 active:bg-blue-100",
+    "border-dashed border-blue-300 bg-white text-blue-600 hover:border-blue-400 hover:bg-blue-50 active:bg-blue-100 " +
+    "dark:border-[#7ba2e3]/40 dark:bg-white/5 dark:text-[#7ba2e3] dark:hover:border-[#7ba2e3]/60 dark:hover:bg-white/10 dark:active:bg-white/15",
 };
 
 /**

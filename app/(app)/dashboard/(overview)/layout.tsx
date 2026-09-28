@@ -32,7 +32,7 @@ export default function DashboardLayout({
   });
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
       {/* The tab row below supplies its own top padding, so the rule carries
           no margin of its own. */}
       <PageHeader
@@ -63,7 +63,7 @@ export default function DashboardLayout({
             label on md+. Matches the pill tabs on the discount settings page. */}
         <nav
           aria-label="Dashboard sections"
-          className="inline-flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+          className="inline-flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1 dark:bg-white/10"
         >
           {tabs.map(({ label, href, icon: Icon }) => {
             const active = pathname === href;
@@ -73,10 +73,10 @@ export default function DashboardLayout({
                 href={href}
                 title={label}
                 aria-current={active ? "page" : undefined}
-                className={`flex items-center gap-1.5 rounded-full px-3 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] md:px-4 ${
+                className={`flex items-center gap-1.5 rounded-full px-3 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] md:px-4 dark:focus-visible:ring-offset-[#242a38] ${
                   active
-                    ? "bg-white font-bold text-blue-950 shadow-sm"
-                    : "font-semibold text-blue-800 hover:text-blue-950"
+                    ? "bg-white font-bold text-blue-950 shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none"
+                    : "font-semibold text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee] dark:hover:text-white"
                 }`}
               >
                 <Icon className="h-4 w-4 shrink-0" />

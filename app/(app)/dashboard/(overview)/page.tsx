@@ -50,7 +50,7 @@ const Page = async ({
 
   return (
     <>
-      <div className="w-full ">
+      <div className="w-full dark:bg-[#0f1420] ">
         {/* ACTUAL CONTENTS */}
         <div className="flex flex-col gap-6">
           {/* Time Range Filter + Stats */}
