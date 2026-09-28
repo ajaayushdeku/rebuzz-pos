@@ -26,23 +26,23 @@ export default function HomeFaq({ faqs }: { faqs: HelpFaq[] }) {
         return (
           <div
             key={faq.q}
-            className={`h-fit rounded-2xl border bg-white px-5 transition-colors ${
+            className={`h-fit rounded-2xl border bg-white px-5 transition-colors dark:bg-[#161d2e] ${
               open
                 ? "border-[#b9c5da]"
-                : "border-gray-200/80 hover:border-[#b9c5da]"
+                : "border-gray-200/80 hover:border-[#b9c5da] dark:border-white/10 dark:hover:border-white/25"
             }`}
           >
             <button
               type="button"
               onClick={() => setOpenQuestion(open ? null : faq.q)}
               aria-expanded={open}
-              className="flex w-full cursor-pointer items-center justify-between gap-4 py-4 text-left text-[15px] font-medium text-[#1b2537]"
+              className="flex w-full cursor-pointer items-center justify-between gap-4 py-4 text-left text-[15px] font-medium text-[#1b2537] dark:text-[#e8ecf4]"
             >
               {faq.q}
               {/* The plus that becomes a minus, as on the Help page. */}
               <span
                 aria-hidden
-                className="relative h-4 w-4 shrink-0 text-[#244074]"
+                className="relative h-4 w-4 shrink-0 text-[#244074] dark:text-[#7ba2e3]"
               >
                 <span className="absolute left-0 top-1/2 h-px w-4 -translate-y-1/2 bg-current" />
                 <span
@@ -65,7 +65,7 @@ export default function HomeFaq({ faqs }: { faqs: HelpFaq[] }) {
               }`}
             >
               <div className="overflow-hidden">
-                <p className="pb-5 pr-8 text-sm leading-relaxed text-gray-500">
+                <p className="pb-5 pr-8 text-sm leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
                   {faq.a}
                 </p>
               </div>

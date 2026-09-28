@@ -17,17 +17,17 @@ export default function FeatureGrid({ token }: { token?: string }) {
           <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#E26924]">
             What you get
           </p>
-          <h2 className="text-3xl font-bold tracking-tight text-[#1b2537] md:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-[#1b2537] md:text-4xl dark:text-[#e8ecf4]">
             Everything you need to grow
           </h2>
-          <p className="mt-4 text-base leading-relaxed text-gray-500">
+          <p className="mt-4 text-base leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
             A complete toolkit for managing sales, staff, customers and
             inventory — without stitching four tools together.
           </p>
 
           <Link
             href={token ? "/dashboard" : "/signup"}
-            className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-[#244074] transition-colors hover:text-[#E26924]"
+            className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-[#244074] transition-colors hover:text-[#E26924] dark:text-[#7ba2e3]"
           >
             {token ? "Open your dashboard" : "See it on your own numbers"}
             <ArrowRight size={15} aria-hidden />
@@ -44,7 +44,7 @@ export default function FeatureGrid({ token }: { token?: string }) {
               className={`group relative overflow-hidden rounded-2xl border p-6 transition-all duration-200 hover:-translate-y-0.5 ${
                 wide
                   ? "border-[#244074] bg-[#244074] text-white"
-                  : "border-gray-200/80 bg-white hover:border-[#b9c5da] hover:shadow-lg hover:shadow-[#244074]/10"
+                  : "border-gray-200/80 bg-white hover:border-[#b9c5da] hover:shadow-lg hover:shadow-[#244074]/10 dark:border-white/10 dark:bg-[#161d2e] dark:hover:border-white/25"
               }`}
             >
               {wide && (
@@ -64,7 +64,7 @@ export default function FeatureGrid({ token }: { token?: string }) {
               </div>
               <h3
                 className={`relative text-base font-semibold ${
-                  wide ? "text-white" : "text-gray-900"
+                  wide ? "text-white" : "text-gray-900 dark:text-white"
                 }`}
               >
                 {title}

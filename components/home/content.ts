@@ -124,3 +124,11 @@ export type HomeFeature = {
   description: string;
   wide?: boolean;
 };
+
+/** The same paper, drawn in light lines for the dark theme. */
+export const DARK_GRID_STYLE: React.CSSProperties = {
+  ...GRID_STYLE,
+  backgroundImage:
+    "linear-gradient(to right, rgb(255 255 255 / 0.05) 1px, transparent 1px)," +
+    "linear-gradient(to bottom, rgb(255 255 255 / 0.05) 1px, transparent 1px)",
+};

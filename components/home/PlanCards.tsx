@@ -78,17 +78,17 @@ export default function PlanCards({ plans }: { plans: Plan[] }) {
                 className={`relative flex w-full shrink-0 flex-col rounded-2xl border p-7 lg:w-auto ${
                   featured
                     ? "border-[#244074] bg-[#244074] text-white shadow-xl shadow-[#244074]/20"
-                    : "border-gray-200/80 bg-white"
+                    : "border-gray-200/80 bg-white dark:border-white/10 dark:bg-[#161d2e]"
                 }`}
               >
                 {plan.badge && (
-                  <span className="absolute -top-3 right-7 rounded-full bg-[#E26924] px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
+                  <span className="absolute top-3 md:-top-3 right-3 md:right-7  rounded-full bg-[#E26924] px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
                     {plan.badge}
                   </span>
                 )}
 
                 <h3
-                  className={`text-lg font-semibold ${featured ? "text-white" : "text-[#1b2537]"}`}
+                  className={`text-lg font-semibold ${featured ? "text-white" : "text-[#1b2537] dark:text-[#e8ecf4]"}`}
                 >
                   {plan.name}
                 </h3>
@@ -100,7 +100,7 @@ export default function PlanCards({ plans }: { plans: Plan[] }) {
 
                 <div className="mt-6 flex flex-wrap items-baseline gap-x-2">
                   <span
-                    className={`text-3xl font-bold tracking-tight ${featured ? "text-white" : "text-[#1b2537]"}`}
+                    className={`text-3xl font-bold tracking-tight ${featured ? "text-white" : "text-[#1b2537] dark:text-[#e8ecf4]"}`}
                   >
                     {plan.price}
                   </span>
@@ -126,7 +126,9 @@ export default function PlanCards({ plans }: { plans: Plan[] }) {
 
                 <ul
                   className={`mt-6 flex flex-col gap-3 border-t pt-6 ${
-                    featured ? "border-white/10" : "border-gray-200/80"
+                    featured
+                      ? "border-white/10"
+                      : "border-gray-200/80 dark:border-white/10"
                   }`}
                 >
                   {plan.features.slice(0, SHOWN).map((f) => (
@@ -183,7 +185,7 @@ export default function PlanCards({ plans }: { plans: Plan[] }) {
                     className={`mt-auto rounded-lg  px-3 py-2.5 text-xs leading-relaxed ${
                       featured
                         ? "bg-white/5 text-white/60"
-                        : "bg-gray-50 text-gray-500"
+                        : "bg-gray-50 text-gray-500 dark:bg-white/5 dark:text-[#9aa6bd]"
                     } ${plan.features.length ? "mt-6" : ""}`}
                   >
                     Thermal printer {plan.printerAddon.price},{" "}
@@ -218,7 +220,7 @@ export default function PlanCards({ plans }: { plans: Plan[] }) {
           because the page scrolls inside its own container, and a sticky
           child would ride that container's edge instead of the screen's. */}
       {inView && (
-        <div className="fixed right-3 top-1/2 z-40 flex -translate-y-1/2 items-center gap-1 rounded-full border border-gray-200/80 bg-white/95 p-1 shadow-lg backdrop-blur lg:hidden">
+        <div className="fixed right-3 top-1/2 z-40 flex -translate-y-1/2 items-center gap-1 rounded-full border border-gray-200/80 bg-white/95 p-1 shadow-lg backdrop-blur lg:hidden dark:border-white/10">
           <PagerArrow
             direction="prev"
             disabled={index === 0}
@@ -253,7 +255,7 @@ function PagerArrow({
       onClick={onClick}
       disabled={disabled}
       aria-label={direction === "prev" ? "Previous plan" : "Next plan"}
-      className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-[#244074] transition-colors hover:bg-[#eef1f7] disabled:cursor-not-allowed disabled:text-gray-300 disabled:hover:bg-transparent"
+      className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-[#244074] transition-colors hover:bg-[#7ba2e3] hover:text-white disabled:cursor-not-allowed disabled:text-gray-300 disabled:hover:bg-transparent "
     >
       <Icon size={18} aria-hidden />
     </button>

@@ -23,10 +23,10 @@ function FooterColumn({
 }) {
   return (
     <div>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400 dark:text-[#7b869b]">
         {heading}
       </p>
-      <ul className="mt-4 space-y-3 text-sm text-gray-500">
+      <ul className="mt-4 space-y-3 text-sm text-gray-500 dark:text-[#9aa6bd]">
         {links.map(({ label, href, external }) => (
           <li key={label}>
             {external ? (
@@ -41,7 +41,7 @@ function FooterColumn({
             ) : (
               <SectionOrPageLink
                 href={href}
-                className="transition-colors hover:text-[#244074]"
+                className="transition-colors hover:text-[#244074] dark:hover:text-[#f0b184]"
               >
                 {label}
               </SectionOrPageLink>
@@ -113,7 +113,7 @@ function SocialLinks() {
 
   return (
     <div className="mt-7">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400 dark:text-[#7b869b]">
         Follow us
       </p>
       <ul className="mt-3 flex items-center gap-2">
@@ -124,7 +124,7 @@ function SocialLinks() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={label}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200/80 bg-white text-gray-500 transition-colors hover:border-[#b9c5da] hover:text-[#244074]"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200/80 bg-white text-gray-500 transition-colors hover:border-[#b9c5da] hover:text-[#244074] dark:bg-[#0f1420] dark:text-[#9aa6bd] dark:border-white/10 dark:hover:border-white/25 dark:hover:text-[#f0b184]"
             >
               <Icon className="h-4 w-4" size={16} />
             </a>
@@ -137,7 +137,7 @@ function SocialLinks() {
 
 export default function HomeFooter({ token }: { token?: string }) {
   return (
-    <footer className="border-t border-gray-200/80 bg-gray-50/70 px-6 pt-16 pb-8 md:px-16">
+    <footer className="border-t border-gray-200/80 bg-gray-50/70 px-6 pt-16 pb-8 md:px-16 dark:bg-white/5 dark:border-white/10">
       <div className="mx-auto max-w-6xl">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-12">
           {/* The brand, and where it comes from. */}
@@ -153,18 +153,18 @@ export default function HomeFooter({ token }: { token?: string }) {
               <span className="text-lg font-bold tracking-tight">
                 <span style={{ color: "#244074" }}>Re</span>
                 <span style={{ color: "#E26924" }}>Buzz</span>
-                <span className="ml-1.5 align-end text-[11px] font-semibold uppercase tracking-[2px] text-gray-400">
+                <span className="ml-1.5 align-end text-[11px] font-semibold uppercase tracking-[2px] text-gray-400 dark:text-[#7b869b]">
                   POS
                 </span>
               </span>
             </div>
 
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-gray-500">
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
               Invoicing, inventory, staff and payments for small businesses — in
               one dashboard.
             </p>
 
-            <p className="mt-5 flex items-start gap-2 text-sm text-gray-500">
+            <p className="mt-5 flex items-start gap-2 text-sm text-gray-500 dark:text-[#9aa6bd]">
               <MapPin
                 size={15}
                 aria-hidden
@@ -179,9 +179,10 @@ export default function HomeFooter({ token }: { token?: string }) {
           </div>
 
           <div className="md:col-span-7 lg:col-span-8">
-            {/* Two columns signed out, three signed in: Product only lists
-                screens behind the login, so to a visitor it would be a
-                column of doors that ask for a password. */}
+            {/* Two columns signed out, three signed in. The third is the way
+                back into the app, which is the only thing a signed-in
+                visitor is on this page needing — and is nothing at all to
+                someone who cannot open any of it. */}
             <div
               className={`grid gap-8 ${
                 token
@@ -191,11 +192,12 @@ export default function HomeFooter({ token }: { token?: string }) {
             >
               {token && (
                 <FooterColumn
-                  heading="Product"
+                  heading="Your account"
                   links={[
-                    { label: "Features", href: "#features" },
-                    { label: "Pricing", href: "/subscriptions" },
                     { label: "Dashboard", href: "/dashboard" },
+                    { label: "Your plan", href: "/subscriptions" },
+                    { label: "Settings", href: "/settings/business" },
+                    { label: "Help & support", href: "/help" },
                   ]}
                 />
               )}
@@ -205,25 +207,20 @@ export default function HomeFooter({ token }: { token?: string }) {
                 links={[
                   { label: "About us", href: "#about" },
                   { label: "Website", href: COMPANY.website, external: true },
-                  // Help lives inside the app, so it is no use to anyone
-                  // who cannot sign in yet.
-                  ...(token
-                    ? [{ label: "Help & support", href: "/help" }]
-                    : []),
                 ]}
               />
 
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400 dark:text-[#7b869b]">
                   Help & contact
                 </p>
-                <ul className="mt-4 space-y-3 text-sm text-gray-500">
+                <ul className="mt-4 space-y-3 text-sm text-gray-500 dark:text-[#9aa6bd]">
                   <li>
                     <a
                       href={`https://wa.me/${COMPANY.whatsapp}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 transition-colors hover:text-[#244074]"
+                      className="inline-flex items-center gap-2 transition-colors hover:text-[#244074] dark:hover:text-[#f0b184]"
                     >
                       <WhatsAppIcon className="h-4 w-4 shrink-0  text-[#E26924]" />
                       WhatsApp chat
@@ -232,7 +229,7 @@ export default function HomeFooter({ token }: { token?: string }) {
                   <li>
                     <a
                       href={`tel:${COMPANY.phone.replace(/[^\d+]/g, "")}`}
-                      className="inline-flex items-center gap-2 transition-colors hover:text-[#244074]"
+                      className="inline-flex items-center gap-2 transition-colors hover:text-[#244074] dark:hover:text-[#f0b184]"
                     >
                       <Phone
                         size={15}
@@ -245,7 +242,7 @@ export default function HomeFooter({ token }: { token?: string }) {
                   <li>
                     <a
                       href={`mailto:${COMPANY.email}`}
-                      className="inline-flex items-center gap-2 transition-colors hover:text-[#244074]"
+                      className="inline-flex items-center gap-2 transition-colors hover:text-[#244074] dark:hover:text-[#f0b184]"
                     >
                       <Mail
                         size={15}
@@ -260,7 +257,7 @@ export default function HomeFooter({ token }: { token?: string }) {
                       href={COMPANY.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 transition-colors hover:text-[#244074]"
+                      className="inline-flex items-center gap-2 transition-colors hover:text-[#244074] dark:hover:text-[#f0b184]"
                     >
                       <Globe
                         size={15}
@@ -276,8 +273,8 @@ export default function HomeFooter({ token }: { token?: string }) {
           </div>
         </div>
 
-        <div className="mt-14 border-t border-gray-200/80 pt-6">
-          <p className="text-center text-xs text-gray-400">
+        <div className="mt-14 border-t border-gray-200/80 pt-6 dark:border-white/10">
+          <p className="text-center text-xs text-gray-400 dark:text-[#7b869b]">
             © {new Date().getFullYear()} Rebuzz POS. A product of {COMPANY.name}{" "}
             All rights reserved.
           </p>

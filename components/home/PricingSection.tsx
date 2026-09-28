@@ -18,10 +18,10 @@ export default function PricingSection() {
           <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#E26924]">
             Pricing
           </p>
-          <h2 className="text-3xl font-bold tracking-tight text-[#1b2537] md:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-[#1b2537] md:text-4xl dark:text-[#e8ecf4]">
             Start free, pay when it pays you back
           </h2>
-          <p className="mt-4 text-base leading-relaxed text-gray-500">
+          <p className="mt-4 text-base leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
             Every plan has the whole app in it. What you buy is room to grow —
             more products, and someone to call when you need them.
           </p>
@@ -29,7 +29,7 @@ export default function PricingSection() {
 
         <PlanCards plans={PLANS} />
 
-        <p className="mt-8 text-center text-sm text-gray-500">
+        <p className="mt-8 text-center text-sm text-gray-500 dark:text-[#9aa6bd]">
           Prices in NPR. The free plan does not expire and needs no card — you
           can pick a paid plan later, from inside the app.
         </p>

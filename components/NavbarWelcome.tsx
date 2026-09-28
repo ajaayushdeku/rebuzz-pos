@@ -11,12 +11,14 @@ export default function NavbarWelcome() {
 
   if (isLoading) {
     return (
-      <span className="text-sm font-medium text-gray-700">Welcome...</span>
+      <span className="text-sm font-medium text-gray-700 dark:text-[#7ba2e3]">
+        Welcome...
+      </span>
     );
   }
 
   return (
-    <span className="text-sm font-medium text-gray-700">
+    <span className="text-sm font-medium text-gray-700 dark:text-[#7ba2e3]">
       Welcome, {profile?.name} !
     </span>
   );

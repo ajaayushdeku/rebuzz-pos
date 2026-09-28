@@ -178,7 +178,8 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
   };
 
   return (
-    <div className="rounded-xl border-[3px] border-blue-100 bg-blue-100/30 ">
+    // <div className="rounded-xl border-[3px] border-blue-100 bg-blue-100/30  ">
+    <div className="rounded-xl">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           {/* `h-auto` because the shared Button sets a fixed height that the
@@ -208,7 +209,7 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
                 full name is in the dropdown, and in the title for a hover. */}
             <span
               title={initialBusinessName}
-              className="hidden cursor-pointer text-[13px] font-medium tracking-wide text-gray-700 hover:underline sm:inline"
+              className="hidden md:block cursor-pointer text-[13px] font-medium tracking-wide text-gray-700 hover:underline sm:inline dark:text-[#7ba2e3]"
             >
               {shortName(initialBusinessName)}
             </span>
@@ -241,7 +242,7 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
                   phone. `min-w-0` on the name lets it truncate so the badge
                   keeps its width. */}
               <div className="flex items-center gap-1.5">
-                <p className="min-w-0 truncate text-sm font-semibold text-gray-800">
+                <p className="min-w-0 truncate text-sm font-semibold text-gray-800 dark:text-[#7ba2e3]">
                   {initialBusinessName}
                 </p>
                 <Badge
@@ -312,7 +313,7 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
 
           {/* Add another account */}
           <DropdownMenuItem
-            className="text-blue-600 cursor-pointer"
+            className="text-blue-600 dark:text-[#7ba2e3] cursor-pointer"
             onSelect={(e) => {
               e.preventDefault();
               handleAddAccount();
@@ -324,7 +325,10 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
 
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem className="text-gray-600 cursor-pointer" asChild>
+          <DropdownMenuItem
+            className="text-gray-600 dark:text-gray-400 cursor-pointer"
+            asChild
+          >
             <Link href="/settings/business" className="flex gap-2">
               <User2 className="mr-2 h-4 w-4" />
               Profile
@@ -332,7 +336,7 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
           </DropdownMenuItem>
 
           <DropdownMenuItem
-            className="text-gray-600 cursor-pointer"
+            className="text-gray-600 dark:text-gray-400 cursor-pointer"
             onClick={() => router.push("/settings/change-password")}
           >
             <Settings className="mr-2 h-4 w-4" />
@@ -344,7 +348,7 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
               e.preventDefault();
               if (!loggingOut) handleLogout();
             }}
-            className="text-red-600 cursor-pointer"
+            className="text-red-500 cursor-pointer"
           >
             {loggingOut ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

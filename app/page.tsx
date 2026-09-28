@@ -26,7 +26,7 @@ const Page = async () => {
     // bar while doing it: with nothing drawn there is nothing to appear on
     // one page and vanish on the next. Wheel, touch, keyboard and drag all
     // still scroll it.
-    <div className="scrollbar-hide h-dvh overflow-y-auto bg-white">
+    <div className="scrollbar-hide h-dvh overflow-y-auto bg-white dark:bg-[#0f1420]">
       <HomeNavbar token={token} />
       <HomeHero token={token} />
       <CapabilityBand />

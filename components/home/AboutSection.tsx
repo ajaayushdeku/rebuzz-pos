@@ -5,34 +5,36 @@ export default function AboutSection() {
   return (
     <section
       id="about"
-      className="scroll-mt-20 bg-[#f7f8fb] px-6 py-20 md:px-16"
+      className="scroll-mt-20 bg-[#f7f8fb] px-6 py-20 md:px-16 dark:bg-[#131a29]"
     >
       <div className="mx-auto max-w-6xl">
         <div className="mb-12 max-w-2xl">
-          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#244074]">
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#244074] dark:text-[#7ba2e3]">
             About us
           </p>
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-[#e8ecf4]">
             Built in Nepal, for businesses here
           </h2>
         </div>
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <div className="rounded-2xl border border-gray-200/80 bg-white p-8 shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-900">Who we are</h3>
-            <p className="mt-3 text-sm leading-relaxed text-gray-500">
+          <div className="rounded-2xl border border-gray-200/80 bg-white p-8 shadow-sm dark:bg-[#0f1420] dark:border-white/10">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-[#e8ecf4]">
+              Who we are
+            </h3>
+            <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
               Rebuzz POS is a Nepal-focused Point of Sale system built for
               cafes, salons, restaurants and service businesses — the shops that
               need invoicing, stock and payments in one place without a back
               office to run them.
             </p>
-            <p className="mt-3 text-sm leading-relaxed text-gray-500">
+            <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
               It is made by {COMPANY.name}, in {COMPANY.address}.
             </p>
           </div>
 
-          <div className="rounded-2xl border border-gray-200/80 bg-white p-8 shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-900">
+          <div className="rounded-2xl border border-gray-200/80 bg-white p-8 shadow-sm dark:bg-[#0f1420] dark:border-white/10">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-[#e8ecf4]">
               Why Rebuzz POS
             </h3>
             <ul className="mt-4 space-y-3">
@@ -41,9 +43,9 @@ export default function AboutSection() {
                   <CheckCircle2
                     size={17}
                     aria-hidden
-                    className="mt-0.5 shrink-0 text-[#244074]"
+                    className="mt-0.5 shrink-0 text-[#244074] dark:text-[#7ba2e3]"
                   />
-                  <span className="text-sm leading-relaxed text-gray-500">
+                  <span className="text-sm leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
                     {line}
                   </span>
                 </li>
@@ -90,7 +92,7 @@ export default function AboutSection() {
                         ? "noopener noreferrer"
                         : undefined
                     }
-                    className="transition-colors hover:text-[#E26924]"
+                    className="transition-colors hover:text-[#F0B184]"
                   >
                     {value}
                   </a>

@@ -45,7 +45,22 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const currencyCode = cookieStore.get("currency")?.value;
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/*
+         * The theme, before the first paint.
+         *
+         * It runs blocking in <head> on purpose: anything that decides this
+         * after React hydrates shows a white page first and then corrects
+         * itself. `suppressHydrationWarning` above is because this script
+         * changes the class the server rendered, which is the point.
+         */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=localStorage.getItem("rebuzz-theme");var d=s?s==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;if(d)document.documentElement.classList.add("dark")}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans`}>
         {/* <body> */}
         <QueryProvider>
