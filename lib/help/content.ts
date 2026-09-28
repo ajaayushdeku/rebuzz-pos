@@ -840,10 +840,59 @@ export const HELP_FAQS: HelpFaqGroup[] = [
 /**
  * What a support question can be about.
  *
- * The same headings the FAQs are grouped under, so the list a merchant picks
- * from is the list they have just been reading.
+ * These strings are a contract, not copy: the API checks `subject` against
+ * this exact list and rejects anything else, so they are spelled as it
+ * spells them rather than to match the FAQ headings beside them.
  */
 export const SUPPORT_SUBJECTS: string[] = [
-  ...HELP_FAQS.map((g) => g.group),
-  "Something else",
+  "Account & Login",
+  "Billing & Sales",
+  "Products & Inventory",
+  "Staff & Roles",
+  "Printer & Hardware",
+  "Other",
+];
+
+/**
+ * The three questions a visitor asks that the in-app FAQs do not answer.
+ *
+ * They live here rather than in `HELP_FAQS` because they are about buying
+ * the product, not using it: nobody signed in needs to be told what the app
+ * is for. The prices are the ones in `lib/config/plans.ts` — if those
+ * change, these sentences have to change with them.
+ */
+const HOME_ONLY_FAQS: HelpFaq[] = [
+  {
+    q: "How much does Rebuzz POS cost?",
+    a: "There is a free plan that does not expire: the whole app, capped at 20 products. Past that it is Rs 19,999 a year — down from Rs 24,000 — or Rs 80,000 once for lifetime access. Both lift the product limit and add priority support, and a thermal printer can be added to either.",
+  },
+  {
+    q: "What features does Rebuzz POS offer?",
+    a: "Billing with proforma, invoice and tax invoice from the same sale; inventory with stock tracking and low-stock alerts; cash, QR and loyalty payments; a customer book with loyalty points; staff accounts with roles and shifts; expenses and budgets; VAT and PAN handling built for Nepal; offers; and dashboards for sales, profit, tax and staff.",
+  },
+  {
+    q: "What are the benefits of using Rebuzz POS?",
+    a: "One place instead of four: the till, the stock, the books and the reports all read from the same sales. The numbers arrive worked out — margin per item, break-even, your busiest hours, who is buying again — rather than as a spreadsheet to build. It is made for how businesses here trade, in NPR, with Nepal's tax rules and holiday calendar, and runs on whatever device you already have.",
+  },
+];
+
+/**
+ * Questions already answered for the Help page that a visitor also asks.
+ *
+ * Listed by question so the answer stays in one place: change it there and
+ * the home page changes with it.
+ */
+export const HOME_FAQ_QUESTIONS: string[] = [
+  "Can I use RebuzzPOS on multiple devices?",
+  "How does stock tracking work?",
+];
+
+/** What the home page shows: the buying questions, then the using ones. */
+export const HOME_FAQS: HelpFaq[] = [
+  ...HOME_ONLY_FAQS,
+  ...HOME_FAQ_QUESTIONS.flatMap((question) =>
+    HELP_FAQS.flatMap((group) => group.items).filter(
+      (item) => item.q === question,
+    ),
+  ),
 ];

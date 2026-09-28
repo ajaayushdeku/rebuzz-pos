@@ -25,11 +25,12 @@ export async function POST(request: NextRequest) {
 
     // Checked here so an unusable message is refused without a round trip
     // upstream; everything else is optional as far as this route cares.
-    if (!email || !message) {
+    if (!email || !message || !subject || !rating) {
       return NextResponse.json(
         {
           status: "fail",
-          message: "An email address and a message are both needed.",
+          message:
+            "An email address, a subject, a rating and a message are all needed.",
         },
         { status: 400 },
       );

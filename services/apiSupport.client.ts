@@ -17,18 +17,24 @@ export interface SupportQuestionPayload {
   email: string;
   /** A phone or WhatsApp number, when they would rather be called. */
   contact?: string;
-  subject?: string;
+  /**
+   * What it is about. The API checks this against a fixed list and rejects
+   * anything else, so it comes from `SUPPORT_SUBJECTS` rather than free text.
+   */
+  subject: string;
   /** The question itself. */
   message: string;
-  /** How they rate the app, if the form asked. 1–5. */
-  rating?: number;
+  /** How they rate support. 1–5, and the API requires it. */
+  rating: number;
 }
 
 export interface FeedbackPayload {
-  /** 1–5. The one field that is required. */
+  /** 1–5. */
   rating: number;
-  likeMost?: string;
-  improvement?: string;
+  /** Required upstream, and rejected when blank. */
+  likeMost: string;
+  /** Required upstream, and rejected when blank. */
+  improvement: string;
   featureRequest?: string;
 }
 

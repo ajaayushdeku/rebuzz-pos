@@ -77,7 +77,11 @@ function QuestionForm() {
   const [rating, setRating] = useState(0);
   const [sending, setSending] = useState(false);
 
-  const ready = email.trim() !== "" && message.trim() !== "";
+  const ready =
+    email.trim() !== "" &&
+    subject !== "" &&
+    message.trim() !== "" &&
+    rating > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,11 +93,9 @@ function QuestionForm() {
         name: name.trim(),
         email: email.trim(),
         contact: contact.trim(),
-        subject: subject || undefined,
+        subject,
         message: message.trim(),
-        // Only sent when a star was actually pressed: zero would read as the
-        // worst possible score rather than as no answer.
-        rating: rating || undefined,
+        rating,
       });
       toast.success("Sent. We'll reply to the address you gave.");
       setName("");
@@ -126,7 +128,7 @@ function QuestionForm() {
           />
         </Field>
 
-        <Field label="What is it about?">
+        <Field label="What is it about?" required>
           {/* `[&>button]:h-11` so the trigger lines up with the inputs
               beside it: FilterSelect sizes itself from its own padding. */}
           <FilterSelect
@@ -176,9 +178,9 @@ function QuestionForm() {
 
       <Stars
         label="How has support been so far?"
-        hint="optional"
         value={rating}
         onChange={setRating}
+        required
       />
 
       <Submit busy={sending} disabled={!ready}>

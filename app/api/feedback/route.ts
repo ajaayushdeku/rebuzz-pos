@@ -21,9 +21,13 @@ export async function POST(request: NextRequest) {
 
     const { rating, likeMost, improvement, featureRequest } = body ?? {};
 
-    if (rating === undefined || rating === null || rating === "") {
+    if (!rating || !likeMost?.trim() || !improvement?.trim()) {
       return NextResponse.json(
-        { status: "fail", message: "A rating is needed." },
+        {
+          status: "fail",
+          message:
+            "A rating, what works well and what could be better are all needed.",
+        },
         { status: 400 },
       );
     }
