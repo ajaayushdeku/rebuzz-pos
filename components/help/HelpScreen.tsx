@@ -58,15 +58,9 @@ const SECTIONS = [
 type SectionId = (typeof SECTIONS)[number]["id"];
 
 /**
- * Every section in the order the page lays them out, for the number each one
- * shows above its kicker.
- *
- * The form is included even though the rail leaves it out: it is the last
- * thing on the page, and a reader counting sections counts it.
- *
- * The number is a section's place in the document, not its place in what is
- * on screen — so a search that hides the middle three leaves 02 and 06
- * reading as 02 and 06, which is where they actually are.
+ * The page's running order, for the number above each kicker. Includes the
+ * form, which the rail leaves out. A number is a section's place in the
+ * document, not in what survived the search — so 02 stays 02.
  */
 const SECTION_ORDER: readonly string[] = [...SECTIONS.map((s) => s.id), "ask"];
 
@@ -84,12 +78,9 @@ interface MenuRow {
 }
 
 /**
- * The sidebar, flattened into rows, in the order the menu itself lists them.
- *
- * Read from `navigationConfig` rather than written out again, so a page added
- * to the menu appears here on its own. One without an entry in `HELP_PAGES`
- * is still listed — a described page and an undescribed one are both better
- * than a missing one — and only its description is left blank.
+ * The sidebar flattened into rows, read from `navigationConfig` rather than
+ * written out again: a page added to the menu appears here on its own, with
+ * or without an entry in `HELP_PAGES`.
  */
 const MENU_ROWS = navigationConfig.flatMap<MenuRow>((item) =>
   item.type === "section"
@@ -210,9 +201,7 @@ export default function HelpScreen() {
         <NoMatches query={query} onClear={() => setQuery("")} />
       ) : (
         <div className="flex items-start gap-10">
-          {/* The rail is the page's spine on a wide screen. Below lg the
-              sections simply follow one another, which is the order they
-              should be read in anyway. */}
+          {/* Below lg the sections just follow one another. */}
           <nav
             aria-label="Help sections"
             className={`sticky top-6 hidden shrink-0 transition-[width] duration-200 lg:block ${
@@ -229,9 +218,7 @@ export default function HelpScreen() {
                   On this page
                 </p>
               )}
-              {/* Collapsed, the rail keeps the numbers: they are the part
-                  that says where you are, and they are the part that still
-                  fits. */}
+              {/* Collapsed, the numbers stay: they say where you are. */}
               <button
                 type="button"
                 onClick={() => setRailOpen((o) => !o)}
@@ -444,8 +431,7 @@ export default function HelpScreen() {
               </Section>
             )}
 
-            {/* Always here, search or no search: when nothing was found,
-                asking is the next thing to do. */}
+            {/* Never filtered: with nothing found, asking is what's left. */}
             <Section
               id="ask"
               kicker="Still stuck"
@@ -477,8 +463,7 @@ function SearchBand({
   onJump: (id: SectionId) => void;
 }) {
   return (
-    // The one tinted surface in the app: it marks help as somewhere else, and
-    // gives the search the prominence it needs to be used at all.
+    // The one tinted surface in the app: help is somewhere else.
     <section className="overflow-hidden rounded-3xl border border-[#e3ecfd] bg-gradient-to-br from-[#f4f8ff] via-white to-[#faf6ff] px-6 py-9 md:px-10 md:py-11">
       <div className="mx-auto max-w-2xl text-center">
         <h2 className="text-[19px] font-medium text-[#3c4043] md:text-[22px]">
@@ -500,11 +485,8 @@ function SearchBand({
             onChange={(e) => onChange(e.target.value)}
             placeholder="tax, refund, staff, insights…"
             aria-label="Search help"
-            // `type="search"` is right for what this is, but WebKit draws its
-            // own clear cross inside it once there is a value — which put two
-            // crosses in the field. Ours stays: it is on the page's own
-            // palette and it is always visible, where the native one appears
-            // only on hover.
+            // WebKit draws its own clear cross on `type="search"`, which
+            // put two in the field. Ours is always visible; that one is not.
             className="h-12 w-full appearance-none rounded-full border border-[#dadce0] bg-white pl-11 pr-11 text-[14px] text-[#3c4043] outline-none transition placeholder:text-[#9aa0a6] focus:border-transparent focus:ring-2 focus:ring-blue-500 [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none"
           />
           {value && (
@@ -539,10 +521,7 @@ function SearchBand({
           </p>
         )}
 
-        {/* The other way through all of this: watch it instead of reading
-            it. Under the search rather than beside it, because searching is
-            what most people came to do — but on its own line, since it
-            leaves the app. */}
+        {/* Its own line: it leaves the app. */}
         <div className="mt-5 flex items-center justify-center gap-2 border-t border-[#e3ecfd] pt-5">
           <span className="text-[12px] text-[#5f6368]">Prefer to watch?</span>
           <WatchButton
@@ -572,8 +551,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    // `scroll-mt`: the navbar is fixed, and an anchor without this lands the
-    // heading underneath it.
+    // `scroll-mt`: the navbar is fixed, and would cover the heading.
     <section id={id} className="scroll-mt-24">
       <p className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#1a73e8]">
         <span className="tabular-nums ">
@@ -590,6 +568,30 @@ function Section({
       </p>
       <div className="mt-5">{children}</div>
     </section>
+  );
+}
+
+/**
+ * Opens and closes on its own height.
+ *
+ * A grid track animated from `0fr` to `1fr`: `height: auto` is not something
+ * CSS can transition, and a max-height guess either clips a long guide or
+ * makes a short one drift open at the wrong speed.
+ *
+ * The content stays mounted so it has a height to grow into, and `inert`
+ * takes it out of tab order and the accessibility tree while it is closed —
+ * otherwise Tab would land on links inside a row that looks shut.
+ */
+function Collapse({ open, children }: { open: boolean; children: ReactNode }) {
+  return (
+    <div
+      inert={!open}
+      className={`grid transition-[grid-template-rows,opacity] duration-200 ease-out motion-reduce:transition-none ${
+        open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+      }`}
+    >
+      <div className="overflow-hidden">{children}</div>
+    </div>
   );
 }
 
@@ -632,8 +634,7 @@ function GuideRow({
             {guide.summary}
           </span>
         </span>
-        {/* A plus that becomes a minus: quieter than a chevron, and it says
-            "there is more here" rather than "this goes somewhere". */}
+        {/* A plus that becomes a minus: "more here", not "goes somewhere". */}
         <span
           aria-hidden
           className="relative h-4 w-4 shrink-0 text-[#9aa0a6] group-hover:text-[#5f6368]"
@@ -647,9 +648,8 @@ function GuideRow({
         </span>
       </button>
 
-      {open && (
-        // The accent rail shows how far the open guide reaches, in place of
-        // the box the rest of the app would have drawn around it.
+      <Collapse open={open}>
+        {/* An accent rail marks the open guide, in place of a box. */}
         <div className="mb-5 ml-8 border-l-2 border-[#e3ecfd] pl-5">
           <ol className="flex flex-col gap-3">
             {guide.steps.map((step, i) => (
@@ -670,9 +670,6 @@ function GuideRow({
             </p>
           )}
 
-          {/* The two ways on from a guide: the screen it describes, and the
-              walkthrough of it. Side by side, because they answer the same
-              question at different speeds. */}
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <Link
               href={guide.href}
@@ -685,18 +682,12 @@ function GuideRow({
             <WatchButton video={guide.video} name={guide.title} />
           </div>
         </div>
-      )}
+      </Collapse>
     </li>
   );
 }
 
-/**
- * The sidebar, described.
- *
- * Rows keep the menu's own order, and a sidebar section's name is printed
- * once above the rows that belong to it — so the list can be read against
- * the menu beside it rather than being a second, differently-sorted index.
- */
+/** The sidebar, described, in the menu's own order. */
 function MenuDirectory({ rows }: { rows: MenuRow[] }) {
   return (
     <div className="flex flex-col">
@@ -759,12 +750,7 @@ function MenuDirectory({ rows }: { rows: MenuRow[] }) {
   );
 }
 
-/**
- * One question, and its answer when asked for.
- *
- * Built on <dl> rather than a list of buttons: a question and its answer are
- * a term and its definition, and screen readers announce them as a pair.
- */
+/** A <dl>, so a question and its answer are announced as a pair. */
 function FaqRow({
   faq,
   open,
@@ -790,8 +776,7 @@ function FaqRow({
           >
             {faq.q}
           </span>
-          {/* The same plus-to-minus the guides use, so both read as "there is
-              more here" rather than as two different controls. */}
+          {/* The guides' plus-to-minus, so both read as one control. */}
           <span
             aria-hidden
             className="relative h-3.5 w-3.5 shrink-0 text-[#9aa0a6] group-hover:text-[#5f6368]"
@@ -805,30 +790,30 @@ function FaqRow({
           </span>
         </button>
       </dt>
-      {open && (
-        <dd className="border-b border-[#e8eaed] pb-4 pr-8">
-          <p className="text-[13px] mt-2 leading-relaxed text-[#5f6368]">
-            {faq.a}
-          </p>
-          {/* Under the answer, not beside the question: it is the same
-              answer at a different speed, and only worth offering once the
-              reader has opened the one they were looking for. */}
-          <div className="mt-3">
-            <WatchButton video={faq.video} name={faq.q} />
+      {/* The <dd> stays in the list either way, so the pair is always a term
+          and its definition; only its border follows the open state, since a
+          rule under a row of no height would read as a double line. */}
+      <dd className={open ? "border-b border-[#e8eaed]" : undefined}>
+        <Collapse open={open}>
+          <div className="pb-4 pr-8">
+            <p className="mt-2 text-[13px] leading-relaxed text-[#5f6368]">
+              {faq.a}
+            </p>
+            <div className="mt-3">
+              <WatchButton video={faq.video} name={faq.q} />
+            </div>
           </div>
-        </dd>
-      )}
+        </Collapse>
+      </dd>
     </>
   );
 }
 
 /**
- * "Watch the tutorial", whether or not there is one yet.
+ * "Watch tutorial", whether or not there is one yet.
  *
- * With a video it is a link out to YouTube, in YouTube's own red so it is
- * recognised before it is read. Without one it stays in place, muted and
- * saying why — a button that appears one release and vanishes the next is
- * harder to learn than one that waits.
+ * Without a video it stays in place, muted and saying why: a button that
+ * comes and goes between releases is harder to learn than one that waits.
  */
 function WatchButton({
   video,
@@ -843,14 +828,6 @@ function WatchButton({
 }) {
   if (!video) {
     return (
-      // The mark keeps its red, faded: enough to be recognised as a video,
-      // not enough to look pressable.
-      // <span
-      //   role="button"
-      //   aria-disabled="true"
-      //   title="Tutorial coming soon"
-      //   className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-full border border-[#f3d4d2] bg-[#fdf6f5] px-3 py-1.5 text-[12px] font-medium text-[#9aa0a6]"
-      // >
       <span
         role="button"
         aria-disabled="true"
@@ -892,8 +869,7 @@ function ConceptBlock({ concept }: { concept: HelpConcept }) {
           {concept.body}
         </p>
         {concept.watchOut && (
-          // Amber, and only here: this is the sentence that prevents a costly
-          // mistake, and it should not read like more explanation.
+          // Amber, and only here: the sentence that prevents a mistake.
           <p className="mt-2.5 border-l-2 border-amber-300 pl-3 text-[12px] leading-relaxed text-amber-800">
             {concept.watchOut}
           </p>
@@ -995,9 +971,7 @@ function ContactStrip() {
   ].filter(Boolean) as Channel[];
 
   return (
-    // Dark, and the only dark thing here: it closes the page, and it belongs
-    // to the form above it rather than repeating its heading — writing and
-    // calling are two ways of doing the one thing this section is for.
+    // The page's one dark block, closing the form above it.
     <div className="mt-8 rounded-2xl bg-[#202124] px-6 py-6 text-white">
       <p className="text-[13px] font-medium">Or reach us directly</p>
       <p className="mt-1 max-w-md text-[12px] leading-relaxed text-white/60">
@@ -1037,16 +1011,13 @@ const channelLink =
 /**
  * Highlights the rail entry for the section being read.
  *
- * Measured against a reading line rather than by intersection. A band near
- * the top of the viewport is ambiguous: jump to a section and its heading
- * sits just below the line while the previous section's last row sits just
- * above it, so both are inside the band and the earlier one wins — which is
- * the off-by-one the rail used to show. Asking instead for "the last section
- * whose top has passed the line" has exactly one answer at any scroll
- * position.
+ * A reading line, not an IntersectionObserver band: a band catches both the
+ * section jumped to and the one above it, and the earlier one wins — the
+ * off-by-one the rail used to show. "The last section whose top has passed
+ * the line" has one answer at any scroll position.
  *
- * The listener goes on the shell's scroller, not the window: `main` is what
- * actually scrolls, so a window listener would never fire.
+ * The listener goes on the shell's scroller; `main` is what scrolls, so a
+ * window listener would never fire.
  */
 function useActiveSection(): SectionId | null {
   const [active, setActive] = useState<SectionId | null>(null);
@@ -1063,8 +1034,7 @@ function useActiveSection(): SectionId | null {
         scroller instanceof HTMLElement
           ? scroller.getBoundingClientRect().top
           : 0;
-      // A little below the top edge: the heading a reader is looking at sits
-      // here once they have scrolled to it.
+      // Where a heading sits once it has been scrolled to.
       const line = top + 120;
 
       let current: SectionId | null = null;

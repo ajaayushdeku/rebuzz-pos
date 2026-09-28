@@ -19,6 +19,7 @@ import {
   LabelNote,
   LeadTile,
   Recommendation,
+  TipList,
   SectionHeader,
   SectionRefreshButton,
   TagList,
@@ -182,10 +183,16 @@ export default function FestivalPrepSection({
                   </div>
                 )}
 
-                {item.offerIdea && (
+                {item.offerIdeas.length > 0 && (
                   <div className="mt-auto">
-                    <Recommendation title="Offer idea">
-                      {item.offerIdea}
+                    <Recommendation
+                      title={
+                        item.offerIdeas.length > 1
+                          ? "Offer ideas"
+                          : "Offer idea"
+                      }
+                    >
+                      <TipList tips={item.offerIdeas} />
                     </Recommendation>
                   </div>
                 )}

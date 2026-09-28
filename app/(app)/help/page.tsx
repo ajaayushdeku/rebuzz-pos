@@ -5,15 +5,6 @@ import AskShortcut from "@/components/help/AskShortcut";
 
 export const metadata: Metadata = { title: "Help" };
 
-/**
- * Help & Support.
- *
- * Written for the owner or manager — the person who sets the business up and
- * reads the dashboards — rather than for a cashier at the till.
- *
- * The page itself stays a server component so it keeps its metadata; the
- * searching and the opening of guides is state, and lives in HelpScreen.
- */
 export default function HelpPage() {
   return (
     <div className="min-h-full bg-surface-page px-6 py-8 md:px-10">

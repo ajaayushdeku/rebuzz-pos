@@ -26,6 +26,7 @@ import {
   LabelNote,
   LeadTile,
   Recommendation,
+  TipList,
   SectionHeader,
   SectionRefreshButton,
   useMoney,
@@ -279,8 +280,9 @@ function PricingCard({
               </>
             ) : undefined
           }
+          title={item.advice.length > 1 ? "Ways to fix it" : "Recommendation"}
         >
-          {item.advice}
+          <TipList tips={item.advice} />
         </Recommendation>
       </div>
     </InsightCard>

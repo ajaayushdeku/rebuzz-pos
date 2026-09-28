@@ -627,6 +627,32 @@ export function Recommendation({
   );
 }
 
+/**
+ * Several pieces of advice inside one Recommendation, best first.
+ *
+ * Numbered rather than bulleted: these are alternatives ranked by what to
+ * try first, and a bullet would read as "do all of these". A single tip is
+ * rendered as a plain sentence, so a card with one answer looks no different
+ * from how it did when one was all a card could hold.
+ */
+export function TipList({ tips }: { tips: string[] }) {
+  if (tips.length === 0) return null;
+  if (tips.length === 1) return <>{tips[0]}</>;
+
+  return (
+    <ol className="flex flex-col gap-2">
+      {tips.map((tip, i) => (
+        <li key={i} className="flex gap-2.5">
+          <span className="mt-px text-[11px] font-semibold tabular-nums text-blue-700">
+            {i + 1}
+          </span>
+          <span>{tip}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 /** A small uppercase label over a group of tags inside a card body. */
 export function BodyLabel({ children }: { children: ReactNode }) {
   return (

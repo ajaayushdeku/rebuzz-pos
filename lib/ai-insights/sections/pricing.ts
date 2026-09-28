@@ -44,7 +44,10 @@ import {
 } from "./shared";
 
 /** Part of the cache key: bump when the prompt or the facts change. */
-export const PRICING_VERSION = "v2";
+/** In step with the prompt: more than three is a list, not advice. */
+const MAX_ADVICE = 3;
+
+export const PRICING_VERSION = "v3";
 
 /** Thirteen weeks: about three months of weekly timeline. */
 export const PRICING_WEEKS = 13;
@@ -632,7 +635,7 @@ For each item, write:
 - ref: the item's ref exactly as given.
 - icon: one emoji for the item.
 - verdict: what the facts show, in one sentence under 150 characters, quoting only figures from the facts.
-- advice: what to do, in one or two sentences under 220 characters.
+- advice: two or three ways to fix it, best first. Each one short sentence under 150 characters, and each a different route — moving the price, cutting the cost, pairing it with something that sells, or dropping it are different routes; three ways of saying "raise the price" are one. The first line should match the price or discount you suggest below.
 - suggestedPrice: a whole-number menu price to try, or 0 to keep the price as it is.
 - suggestedDiscount: a whole-number discount per unit to use instead of the current one, 0 to stop discounting, or -1 when the item has no discount to review.
 
@@ -655,7 +658,12 @@ export const PRICING_SCHEMA = {
           ref: { type: "string" },
           icon: { type: "string" },
           verdict: { type: "string" },
-          advice: { type: "string" },
+          advice: {
+            type: "array",
+            items: { type: "string" },
+            minItems: 1,
+            maxItems: 3,
+          },
           suggestedPrice: { type: "number" },
           suggestedDiscount: { type: "number" },
         },
@@ -679,7 +687,8 @@ export interface PricingInsight {
   id: string;
   icon: string;
   verdict: string;
-  advice: string;
+  /** Two or three routes to try, best first. Never empty. */
+  advice: string[];
   /** The model's price, kept only when it covers cost and differs from now. */
   suggestedPrice: number | null;
   /** The model's discount, kept only when the discounted price covers cost. */
@@ -735,8 +744,13 @@ export function parsePricing(
     const e = notes.get(c.ref);
     if (!e) return [];
     const verdict = textOr(e.verdict, 220);
-    const advice = textOr(e.advice, 320);
-    if (!verdict || !advice) return [];
+    // A string as well as a list: an answer in the old shape, or one cached
+    // from before the version bump, still gives a usable card.
+    const advice = (Array.isArray(e.advice) ? e.advice : [e.advice])
+      .map((line) => textOr(line, 320))
+      .filter((line): line is string => Boolean(line))
+      .slice(0, MAX_ADVICE);
+    if (!verdict || advice.length === 0) return [];
 
     const rawPrice = num(e.suggestedPrice);
     const price = Math.round(rawPrice);

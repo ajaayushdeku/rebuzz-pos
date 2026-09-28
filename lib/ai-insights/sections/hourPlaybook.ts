@@ -32,7 +32,10 @@ import {
 } from "./shared";
 
 /** Part of the cache key: bump when the prompt or the facts change. */
-export const HOUR_PLAYBOOK_VERSION = "v1";
+/** In step with the prompt: more than three is a list, not a play. */
+const MAX_MOVES = 3;
+
+export const HOUR_PLAYBOOK_VERSION = "v2";
 
 /** Four whole weeks, so every weekday counts the same number of times. */
 export const HOUR_WINDOW_DAYS = 28;
@@ -328,7 +331,7 @@ For each picked hour, write:
 - ref: the hour's ref exactly as given, e.g. h15.
 - title: a short name for what is going on in that hour, under 30 characters, e.g. "Quietest hour" or "Busy but small orders".
 - description: what the numbers show, in one sentence under 140 characters, quoting only figures from the facts.
-- tip: what to do in that hour, in one or two sentences under 220 characters.
+- tips: two or three moves for that hour, best first. Each one short sentence under 150 characters, and each a different kind of move — who is on, what is prepped, what is offered, what is promoted. An hour is long enough for more than one.
 
 Rules:
 - Busiest hour: help serve it faster and raise spend per order without slowing service; do not suggest discounts that pull in more people.
@@ -350,9 +353,14 @@ export const HOUR_PLAYBOOK_SCHEMA = {
           ref: { type: "string" },
           title: { type: "string" },
           description: { type: "string" },
-          tip: { type: "string" },
+          tips: {
+            type: "array",
+            items: { type: "string" },
+            minItems: 1,
+            maxItems: 3,
+          },
         },
-        required: ["ref", "title", "description", "tip"],
+        required: ["ref", "title", "description", "tips"],
       },
     },
   },
@@ -373,7 +381,8 @@ export interface HourInsight {
   ordersPerDay: number;
   avgOrder: number | null;
   description: string;
-  tip: string;
+  /** Two or three moves for the hour, best first. Never empty. */
+  tips: string[];
 }
 
 /**
@@ -391,7 +400,7 @@ export function parseHourPlaybook(
 
   const plays = new Map<
     string,
-    { title: string; description: string; tip: string }
+    { title: string; description: string; tips: string[] }
   >();
   for (const entry of list) {
     const e = (entry ?? {}) as Record<string, unknown>;
@@ -399,9 +408,14 @@ export function parseHourPlaybook(
     if (!ref || plays.has(ref)) continue;
     const title = textOr(e.title, 40);
     const description = textOr(e.description, 220);
-    const tip = textOr(e.tip, 320);
-    if (!title || !description || !tip) continue;
-    plays.set(ref, { title, description, tip });
+    // A string as well as a list: an answer in the old shape, or one cached
+    // from before the version bump, still gives a usable card.
+    const tips = (Array.isArray(e.tips) ? e.tips : [e.tip])
+      .map((t) => textOr(t, 320))
+      .filter((t): t is string => Boolean(t))
+      .slice(0, MAX_MOVES);
+    if (!title || !description || tips.length === 0) continue;
+    plays.set(ref, { title, description, tips });
   }
 
   return facts.slots.flatMap((slot) => {

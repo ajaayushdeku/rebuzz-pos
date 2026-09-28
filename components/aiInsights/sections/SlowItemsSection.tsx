@@ -16,6 +16,7 @@ import {
   InsightCard,
   LeadTile,
   Recommendation,
+  TipList,
   SectionHeader,
   SectionRefreshButton,
   type AccentName,
@@ -112,7 +113,13 @@ export default function SlowItemsSection({
                   {item.description}
                 </p>
                 <div className="mt-auto">
-                  <Recommendation>{item.tip}</Recommendation>
+                  <Recommendation
+                    title={
+                      item.tips.length > 1 ? "Things to try" : "Recommendation"
+                    }
+                  >
+                    <TipList tips={item.tips} />
+                  </Recommendation>
                 </div>
               </InsightCard>
             );

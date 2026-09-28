@@ -28,7 +28,7 @@ import {
 } from "./shared";
 
 /** Part of the cache key: bump when the prompt or the facts change. */
-export const SLOW_ITEMS_VERSION = "v2";
+export const SLOW_ITEMS_VERSION = "v3";
 
 // ── Facts ─────────────────────────────────────────────────────────────────
 
@@ -289,7 +289,7 @@ For each item:
 - ref: the item's ref exactly as given, e.g. p3caea5. Only refs from the list.
 - icon: one emoji that fits the item.
 - description: one sentence on what is going wrong, under 140 characters.
-- tip: one or two sentences on what to do, under 200 characters.
+- tips: two or three different things to try, best first. Each one short sentence under 140 characters, and each a genuinely different approach \u2014 not the same fix worded twice.
 - move: "rework" (change the recipe or format), "bundle" (pair it with a best seller), "reprice", "promote" (show it more, or offer it at a better time), or "remove" (take it off the menu).
 - action: a short button label for the move, under 30 characters, e.g. "Bundle with Tea" or "Take off the menu".
 
@@ -312,14 +312,19 @@ export const SLOW_ITEMS_SCHEMA = {
           ref: { type: "string" },
           icon: { type: "string" },
           description: { type: "string" },
-          tip: { type: "string" },
+          tips: {
+            type: "array",
+            items: { type: "string" },
+            minItems: 1,
+            maxItems: 3,
+          },
           move: {
             type: "string",
             enum: ["rework", "bundle", "reprice", "promote", "remove"],
           },
           action: { type: "string" },
         },
-        required: ["ref", "icon", "description", "tip", "move", "action"],
+        required: ["ref", "icon", "description", "tips", "move", "action"],
       },
     },
   },
@@ -350,7 +355,8 @@ export interface SlowItemInsight {
   /** "94 → 6.1/week", "8/week", "12 sold the month before" — from the app. */
   context: string;
   description: string;
-  tip: string;
+  /** Two or three fixes to try, best first. Never empty. */
+  tips: string[];
   action: string;
   move: SlowItemMove;
 }
@@ -402,6 +408,9 @@ function signalFor(c: SlowCandidate): { signal: string; context: string } {
  * for the same ref, so a card can only ever describe an item the app flagged,
  * under its real name and with its real figures.
  */
+/** Kept in step with the prompt: more than three is a list, not advice. */
+const MAX_TIPS = 3;
+
 export function parseSlowItems(
   value: unknown,
   candidates: SlowCandidate[],
@@ -421,12 +430,19 @@ export function parseSlowItems(
     if (!candidate || seen.has(ref)) continue;
 
     const description = textOr(e.description, 220);
-    const tip = textOr(e.tip, 300);
+    // `tip` as well as `tips`: a model that answers in the old shape, or a
+    // cached answer from before the version bump, still gives a usable card
+    // rather than being dropped for a field that moved.
+    const raw = Array.isArray(e.tips) ? e.tips : [e.tip];
+    const tips = raw
+      .map((t) => textOr(t, 300))
+      .filter((t): t is string => Boolean(t))
+      .slice(0, MAX_TIPS);
     const action = textOr(e.action, 40);
     const move = MOVES.includes(e.move as SlowItemMove)
       ? (e.move as SlowItemMove)
       : null;
-    if (!description || !tip || !action || !move) continue;
+    if (!description || tips.length === 0 || !action || !move) continue;
 
     seen.add(ref);
     out.push({
@@ -437,7 +453,7 @@ export function parseSlowItems(
       kind: candidate.kind,
       ...signalFor(candidate),
       description,
-      tip,
+      tips,
       action,
       move,
     });

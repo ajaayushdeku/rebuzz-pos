@@ -14,6 +14,7 @@ import {
   CardGrid,
   InsightCard,
   Recommendation,
+  TipList,
   SectionHeader,
   SectionRefreshButton,
   useMoney,
@@ -172,7 +173,7 @@ export default function HourPlaybookSection({
                 </p>
                 <div className="mt-auto">
                   <Recommendation title="Play for this hour">
-                    {item.tip}
+                    <TipList tips={item.tips} />
                   </Recommendation>
                 </div>
               </InsightCard>

@@ -123,8 +123,7 @@ export default function RefundBreakdown() {
             <span className="text-[11px]" style={{ color: CHART_PALETTE.axis }}>
               Total Lost
             </span>
-            {/* The card's own rose, so the total reads as the sum of the
-                slices around it rather than as a separate warning. */}
+
             <span
               className="text-lg font-semibold tracking-tight"
               style={{ color: "#e11d48" }}
@@ -134,9 +133,6 @@ export default function RefundBreakdown() {
           </div>
         </div>
 
-        {/* Legend list: one row per reason, hairline-separated. It takes the
-            remaining width and starts at the top, so rows read down the card
-            beside the chart rather than centring against it. */}
         <div className="min-w-0 flex-1 self-start">
           {data.map((item) => (
             <div

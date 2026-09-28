@@ -36,7 +36,7 @@ import {
 } from "./shared";
 
 /** Part of the cache key: bump when the prompt or the facts change. */
-export const FESTIVAL_PREP_VERSION = "v1";
+export const FESTIVAL_PREP_VERSION = "v2";
 
 /** How far ahead the section looks. */
 export const FESTIVAL_LOOKAHEAD_DAYS = 60;
@@ -388,7 +388,7 @@ For each upcoming event worth preparing for, write:
 - eventId: the event's id exactly as given.
 - description: what this business should expect and how to prepare, in one or two sentences, under 240 characters.
 - stockUp: up to 4 best sellers to have more of, each written exactly as in the facts. An empty list when none fit.
-- offerIdea: one short offer idea for the event, under 90 characters.
+- offerIdeas: two or three short offer ideas for the event, best first, each under 90 characters. Make them different from one another — a combo, a discount and a giveaway are three ideas; three combos are one. An empty list when nothing fits.
 
 Rules:
 - Base expectations on this business's own facts: how it sold on past holidays and on Saturdays. When those show sales falling, suggest preparing less instead of assuming a rush. When no sales were recorded, the business was probably closed: treat it as a question of whether to open, and what opening would take, not as a collapse in demand.
@@ -410,9 +410,13 @@ export const FESTIVAL_PREP_SCHEMA = {
           eventId: { type: "string" },
           description: { type: "string" },
           stockUp: { type: "array", items: { type: "string" } },
-          offerIdea: { type: "string" },
+          offerIdeas: {
+            type: "array",
+            items: { type: "string" },
+            maxItems: 3,
+          },
         },
-        required: ["eventId", "description", "stockUp", "offerIdea"],
+        required: ["eventId", "description", "stockUp", "offerIdeas"],
       },
     },
   },
@@ -436,8 +440,12 @@ export interface FestivalPrep {
   description: string;
   /** Real menu items, checked against the menu. */
   stockUp: string[];
-  offerIdea: string | null;
+  /** Up to three ideas, best first. Empty when the model had none. */
+  offerIdeas: string[];
 }
+
+/** In step with the prompt: more than three is a list, not advice. */
+const MAX_OFFER_IDEAS = 3;
 
 const MAX_STOCK_UP = 4;
 
@@ -459,7 +467,7 @@ export function parseFestivalPrep(
   const match = productMatcher(menu.filter((p) => p.isAvailable));
   const notes = new Map<
     string,
-    { description: string; stockUp: string[]; offerIdea: string | null }
+    { description: string; stockUp: string[]; offerIdeas: string[] }
   >();
 
   for (const entry of list) {
@@ -480,7 +488,12 @@ export function parseFestivalPrep(
     notes.set(id, {
       description,
       stockUp,
-      offerIdea: textOr(e.offerIdea, 120),
+      // `offerIdea` as well: an answer in the old shape, or one cached
+      // from before the version bump, still shows its idea.
+      offerIdeas: (Array.isArray(e.offerIdeas) ? e.offerIdeas : [e.offerIdea])
+        .map((idea) => textOr(idea, 120))
+        .filter((idea): idea is string => Boolean(idea))
+        .slice(0, MAX_OFFER_IDEAS),
     });
   }
 
