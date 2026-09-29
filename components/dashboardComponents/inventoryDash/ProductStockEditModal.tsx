@@ -73,14 +73,14 @@ const StockControls = ({
 }) => (
   <div className="flex shrink-0 items-end gap-3">
     <div>
-      <label className="mb-1 block text-[10px] font-medium uppercase tracking-[0.06em] text-blue-700">
+      <label className="mb-1 block text-[10px] font-medium uppercase tracking-[0.06em] text-blue-700 dark:text-[#a8c4ee]">
         In stock
       </label>
       <div className="flex items-center">
         <button
           type="button"
           onClick={() => onChange("inStock", inStock - 1)}
-          className="flex h-8 w-8 items-center justify-center rounded-l-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
+          className="flex h-8 w-8 items-center justify-center rounded-l-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700 dark:border-white/15 dark:text-[#9aa6bd]"
           aria-label="Decrease stock"
         >
           <Minus className="h-3 w-3" />
@@ -90,12 +90,12 @@ const StockControls = ({
           min={0}
           value={inStock}
           onChange={(e) => onChange("inStock", Number(e.target.value))}
-          className="h-8 w-20 border-y border-slate-200 px-2 text-center text-[13px] tabular-nums text-slate-800 focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="h-8 w-20 border-y border-slate-200 px-2 text-center text-[13px] tabular-nums text-slate-800 focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/15 dark:text-[#e8ecf4]"
         />
         <button
           type="button"
           onClick={() => onChange("inStock", inStock + 1)}
-          className="flex h-8 w-8 items-center justify-center rounded-r-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
+          className="flex h-8 w-8 items-center justify-center rounded-r-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700 dark:border-white/15 dark:text-[#9aa6bd]"
           aria-label="Increase stock"
         >
           <Plus className="h-3 w-3" />
@@ -104,7 +104,7 @@ const StockControls = ({
     </div>
 
     <div>
-      <label className="mb-1 block text-[10px] font-medium uppercase tracking-[0.06em] text-blue-700">
+      <label className="mb-1 block text-[10px] font-medium uppercase tracking-[0.06em] text-blue-700 dark:text-[#a8c4ee]">
         Low at
       </label>
       <input
@@ -112,7 +112,7 @@ const StockControls = ({
         min={0}
         value={lowStock}
         onChange={(e) => onChange("lowStock", Number(e.target.value))}
-        className="h-8 w-16 rounded-lg border border-slate-200 px-2 text-center text-[13px] tabular-nums text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="h-8 w-16 rounded-lg border border-slate-200 px-2 text-center text-[13px] tabular-nums text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-white/15 dark:text-[#e8ecf4]"
       />
     </div>
   </div>
@@ -418,26 +418,26 @@ export default function ProductStockEditModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 "
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4  dark:bg-black/60"
       onClick={() => !bulkSaving && handleClose()}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="stock-edit-title"
-        className="relative flex h-[88vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl animate-in fade-in-0 zoom-in-95 duration-200"
+        className="relative flex h-[88vh] w-full max-w-3xl flex-col dark:bg-[#161d2e] overflow-hidden rounded-2xl bg-white shadow-2xl animate-in fade-in-0 zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Header ── */}
-        <header className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
+        <header className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-100 px-6 py-5 dark:border-white/10">
           <div className="min-w-0">
             <h2
               id="stock-edit-title"
-              className="text-lg font-bold text-slate-800"
+              className="text-lg font-bold text-slate-800 dark:text-[#e8ecf4]"
             >
               Edit stock
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5 dark:text-[#9aa6bd]">
               Adjust stock levels across products and variants, then save them
               together.
             </p>
@@ -447,28 +447,28 @@ export default function ProductStockEditModal({
             onClick={handleClose}
             disabled={bulkSaving}
             aria-label="Close"
-            className="-mr-1 -mt-1 shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 disabled:opacity-40"
+            className="-mr-1 -mt-1 shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 disabled:opacity-40 dark:text-[#7b869b]"
           >
             <X className="h-4 w-4" />
           </button>
         </header>
 
         {/* ── Search ── */}
-        <div className="shrink-0 border-b border-slate-100 px-6 py-3">
+        <div className="shrink-0 border-b border-slate-100 px-6 py-3 dark:border-white/10">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-[#7b869b]" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search products..."
-              className="h-9 w-full rounded-lg border border-slate-200 pl-10 pr-9 text-[13px] text-slate-800 placeholder:text-slate-300 transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="h-9 w-full rounded-lg border border-slate-200 pl-10 pr-9 text-[13px] text-slate-800 placeholder:text-slate-300 transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/15 dark:text-[#e8ecf4]"
             />
             {search && (
               <button
                 type="button"
                 onClick={() => setSearch("")}
                 aria-label="Clear search"
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:text-[#7b869b]"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -487,13 +487,13 @@ export default function ProductStockEditModal({
           >
             {filteredItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-50">
-                  <PackageSearch className="h-5 w-5 text-slate-300" />
+                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-50 dark:bg-white/5">
+                  <PackageSearch className="h-5 w-5 text-slate-300 dark:text-[#6b7588]" />
                 </div>
-                <p className="text-[13px] font-medium text-slate-600">
+                <p className="text-[13px] font-medium text-slate-600 dark:text-[#a9b4c7]">
                   No products found
                 </p>
-                <p className="mt-0.5 text-[11px] text-slate-400">
+                <p className="mt-0.5 text-[11px] text-slate-400 dark:text-[#7b869b]">
                   Try a different search term.
                 </p>
               </div>
@@ -529,27 +529,27 @@ export default function ProductStockEditModal({
                       key={item.id}
                       className={`rounded-xl border transition ${
                         sectionChanged
-                          ? "border-blue-300 bg-blue-50/40"
-                          : "border-slate-200"
+                          ? "border-blue-300 bg-blue-50/40 dark:bg-blue-400/10 dark:border-blue-400/40"
+                          : "border-slate-200 dark:border-white/15"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-4 px-4 py-3">
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="truncate text-[13px] font-semibold text-slate-800">
+                            <p className="truncate text-[13px] font-semibold text-slate-800 dark:text-[#e8ecf4]">
                               {item.name}
                             </p>
                             {hasVariants && (
-                              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+                              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:bg-blue-400/10 dark:text-[#a8c4ee]">
                                 <Layers className="h-2.5 w-2.5" />
                                 {variants.length}
                               </span>
                             )}
                           </div>
-                          <p className="mt-0.5 text-[11px] capitalize text-slate-400">
+                          <p className="mt-0.5 text-[11px] capitalize text-slate-400 dark:text-[#7b869b]">
                             {item.unit}
                             {!item.usesStocks && (
-                              <span className="ml-1.5 normal-case text-amber-600">
+                              <span className="ml-1.5 normal-case text-amber-600 dark:text-amber-400">
                                 · not tracked, saving turns tracking on
                               </span>
                             )}
@@ -569,7 +569,7 @@ export default function ProductStockEditModal({
                       </div>
 
                       {hasVariants && (
-                        <div className="divide-y divide-slate-100 border-t border-slate-100">
+                        <div className="divide-y divide-slate-100 dark:divide-white/10 border-t border-slate-100 dark:border-white/10">
                           {variants.map((variant) => {
                             const vEdit = variantEdits[variant.id];
                             if (!vEdit) return null;
@@ -581,8 +581,10 @@ export default function ProductStockEditModal({
                             return (
                               <div
                                 key={variant.id}
-                                className={`flex items-center justify-between gap-4 px-4 py-2.5 ${
-                                  vChanged ? "bg-blue-50/40" : ""
+                                className={`flex items-center justify-between gap-4 px-4 py-2.5  ${
+                                  vChanged
+                                    ? "bg-blue-50/40 dark:bg-blue-400/10  "
+                                    : ""
                                 }`}
                               >
                                 <div className="flex min-w-0 items-center gap-2">
@@ -590,7 +592,7 @@ export default function ProductStockEditModal({
                                     className="h-3.5 w-1 shrink-0 rounded-full bg-blue-500"
                                     aria-hidden="true"
                                   />
-                                  <span className="truncate text-[13px] capitalize text-slate-700">
+                                  <span className="truncate text-[13px] capitalize text-slate-700 dark:text-[#c3ccdc]">
                                     {variant.optionValues.join(" · ")}
                                   </span>
                                 </div>
@@ -624,19 +626,19 @@ export default function ProductStockEditModal({
             }`}
             aria-hidden={changedEntries.length === 0}
           >
-            <div className=" border-t border-slate-200 bg-white ">
+            <div className=" border-t border-slate-200 bg-white dark:bg-[#161d2e]  dark:border-white/15">
               <button
                 type="button"
                 onClick={() => setIsChangedExpanded((v) => !v)}
                 aria-expanded={isChangedExpanded}
                 aria-controls="changed-items-list"
-                className="relative flex h-10 w-full items-center px-4 bg-slate-50 transition-colors hover:bg-slate-100"
+                className="relative flex h-10 w-full items-center px-4 bg-slate-50 transition-colors hover:bg-slate-100 dark:bg-white/5"
               >
                 <span className="inline-flex items-center gap-2">
                   <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1.5 text-[10px] font-bold tabular-nums text-white">
                     {changedEntries.length}
                   </span>
-                  <span className="text-[10px] font-semibold text-slate-700">
+                  <span className="text-[10px] font-semibold text-slate-700 dark:text-[#c3ccdc]">
                     {changedEntries.length === 1 ? "Change" : "Changes"}
                     {changedCount > 0 && (
                       <span className="font-normal text-[10px]text-slate-400">
@@ -654,14 +656,14 @@ export default function ProductStockEditModal({
                   }`}
                 />
 
-                <span className="ml-auto text-[11px] font-medium text-slate-400">
+                <span className="ml-auto text-[11px] font-medium text-slate-400 dark:text-[#7b869b]">
                   {isChangedExpanded ? "Hide" : "Review"}
                 </span>
               </button>
 
               <div
                 id="changed-items-list"
-                className="max-h-52 divide-y divide-slate-100 overflow-y-auto border-t border-slate-100"
+                className="max-h-52 divide-y divide-slate-100 overflow-y-auto border-t border-slate-100 dark:border-white/10"
               >
                 {changedEntries.map((entry) => (
                   <div
@@ -669,34 +671,40 @@ export default function ProductStockEditModal({
                     className="flex items-center justify-between gap-3 px-4 py-2.5"
                   >
                     <div className="min-w-0">
-                      <p className="truncate text-[13px] font-medium text-slate-800">
+                      <p className="truncate text-[13px] font-medium text-slate-800 dark:text-[#e8ecf4]">
                         {entry.name}
                         {entry.variantLabel && (
-                          <span className="font-normal capitalize text-slate-400">
+                          <span className="font-normal capitalize text-slate-400 dark:text-[#7b869b]">
                             {" · "}
                             {entry.variantLabel}
                           </span>
                         )}
                       </p>
-                      <p className="mt-0.5 text-[11px] tabular-nums text-slate-400">
+                      <p className="mt-0.5 text-[11px] tabular-nums text-slate-400 dark:text-[#7b869b]">
                         {entry.oldInStock !== entry.newInStock && (
                           <>
                             stock {entry.oldInStock}
-                            <span className="mx-1 text-slate-300">→</span>
-                            <span className="font-semibold text-blue-600">
+                            <span className="mx-1 text-slate-300 dark:text-[#6b7588]">
+                              →
+                            </span>
+                            <span className="font-semibold text-blue-600 dark:text-[#7ba2e3]">
                               {entry.newInStock}
                             </span>
                           </>
                         )}
                         {entry.oldInStock !== entry.newInStock &&
                           entry.oldLowStock !== entry.newLowStock && (
-                            <span className="mx-1.5 text-slate-200">|</span>
+                            <span className="mx-1.5 text-slate-200 dark:text-[#6b7588]">
+                              |
+                            </span>
                           )}
                         {entry.oldLowStock !== entry.newLowStock && (
                           <>
                             low {entry.oldLowStock}
-                            <span className="mx-1 text-slate-300">→</span>
-                            <span className="font-semibold text-blue-600">
+                            <span className="mx-1 text-slate-300 dark:text-[#6b7588]">
+                              →
+                            </span>
+                            <span className="font-semibold text-blue-600 dark:text-[#7ba2e3]">
                               {entry.newLowStock}
                             </span>
                           </>
@@ -707,7 +715,7 @@ export default function ProductStockEditModal({
                     <button
                       type="button"
                       onClick={() => revertEntry(entry)}
-                      className="shrink-0 rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                      className="shrink-0 rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-[#7b869b]"
                       title="Revert this change"
                     >
                       <Undo2 className="h-3.5 w-3.5" />
@@ -720,8 +728,8 @@ export default function ProductStockEditModal({
         </div>
 
         {/* ── Footer ── */}
-        <footer className="flex shrink-0 items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/60 px-6 py-4">
-          <span className="text-[12px] text-slate-400">
+        <footer className="flex shrink-0 items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/60 px-6 py-4 dark:border-white/10 dark:bg-white/5">
+          <span className="text-[12px] text-slate-400 dark:text-[#7b869b]">
             {changedEntries.length === 0
               ? "No changes yet"
               : `${changedEntries.length} change${changedEntries.length > 1 ? "s" : ""} ready to save`}
@@ -732,7 +740,7 @@ export default function ProductStockEditModal({
               type="button"
               onClick={handleClose}
               disabled={bulkSaving}
-              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50"
+              className="rounded-lg border border-slate-200 bg-white dark:bg-white/5 px-4 py-2 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50 dark:border-white/15 dark:text-[#c3ccdc]"
             >
               Cancel
             </button>

@@ -5,7 +5,7 @@ import { mockTaxReconciliationData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { CHART_PALETTE, ChartCard } from "../chartCard";
+import { ChartCard } from "../chartCard";
 
 export default function TaxReconciliation() {
   const { currency } = useCurrency();
@@ -45,29 +45,17 @@ export default function TaxReconciliation() {
             <div key={label} className="flex items-center gap-2">
               {/* Operator */}
               {operator && (
-                <span
-                  className="select-none text-base font-light"
-                  style={{ color: CHART_PALETTE.subtitle }}
-                >
+                <span className="select-none text-base font-light text-[#9aa0a6] dark:text-[#9aa6bd]">
                   {operator}
                 </span>
               )}
 
               {/* Metric box */}
-              <div
-                className="flex min-w-[140px] flex-col items-center gap-0.5 rounded-xl border px-6 py-3"
-                style={{ borderColor: CHART_PALETTE.border }}
-              >
-                <p
-                  className="text-[11px]"
-                  style={{ color: CHART_PALETTE.subtitle }}
-                >
+              <div className="flex min-w-[140px] flex-col items-center gap-0.5 rounded-xl border px-6 py-3 border-[#e3e3e3] dark:border-white/10">
+                <p className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                   {label}
                 </p>
-                <p
-                  className="text-lg font-semibold tracking-tight tabular-nums"
-                  style={{ color: CHART_PALETTE.title }}
-                >
+                <p className="text-lg font-semibold tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                   {value}
                 </p>
               </div>
@@ -75,10 +63,7 @@ export default function TaxReconciliation() {
           ))}
 
           {/* Equals sign */}
-          <span
-            className="select-none px-1 text-base font-light"
-            style={{ color: CHART_PALETTE.subtitle }}
-          >
+          <span className="select-none px-1 text-base font-light text-[#9aa0a6] dark:text-[#9aa6bd]">
             =
           </span>
 
@@ -96,29 +81,33 @@ export default function TaxReconciliation() {
       <div
         className={`mt-5 flex items-start gap-3 rounded-xl border px-4 py-3 ${
           d.isReconciled
-            ? "border-green-200 bg-green-50"
-            : "border-red-200 bg-red-50"
+            ? "border-green-200 bg-green-50 dark:bg-emerald-400/10 dark:border-emerald-400/25"
+            : "border-red-200 bg-red-50 dark:bg-red-400/10 dark:border-red-400/25"
         }`}
       >
         <CheckCircle2
           size={18}
           className={
             d.isReconciled
-              ? "mt-0.5 shrink-0 text-green-600"
-              : "mt-0.5 shrink-0 text-red-500"
+              ? "mt-0.5 shrink-0 text-green-600 dark:text-emerald-400"
+              : "mt-0.5 shrink-0 text-red-500 dark:text-red-400"
           }
         />
         <div>
           <p
             className={`text-[13px] font-medium ${
-              d.isReconciled ? "text-green-700" : "text-red-700"
+              d.isReconciled
+                ? "text-green-700 dark:text-emerald-300"
+                : "text-red-700 dark:text-red-300"
             }`}
           >
             {d.isReconciled ? "Accounts Reconciled" : "Reconciliation Mismatch"}
           </p>
           <p
             className={`mt-0.5 text-[11px] ${
-              d.isReconciled ? "text-green-600" : "text-red-600"
+              d.isReconciled
+                ? "text-green-600 dark:text-emerald-400"
+                : "text-red-600 dark:text-red-400"
             }`}
           >
             {d.reconciliationMessage}

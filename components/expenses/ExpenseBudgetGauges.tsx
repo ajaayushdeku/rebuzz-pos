@@ -54,8 +54,7 @@ function RadialGauge({
   return (
     <div className="flex flex-col items-center gap-2">
       <p
-        className="max-w-full truncate text-[13px]"
-        style={{ color: CHART_PALETTE.title }}
+        className="max-w-full truncate text-[13px] text-[#3c4043] dark:text-[#e8ecf4]"
         title={label}
       >
         {label}
@@ -69,7 +68,7 @@ function RadialGauge({
             cy="48"
             r={r}
             fill="none"
-            stroke={CHART_PALETTE.grid}
+            className="stroke-[#e8eaed] dark:stroke-[#2d3443]"
             strokeWidth="8"
           />
           {/* Fill */}
@@ -87,10 +86,11 @@ function RadialGauge({
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
           <span
-            className="text-lg font-semibold tracking-tight tabular-nums"
-            style={{
-              color: pct > 100 ? CHART_PALETTE.bad : CHART_PALETTE.title,
-            }}
+            className={`text-lg font-semibold tracking-tight tabular-nums ${
+              pct > 100
+                ? "text-[#d93025] dark:text-[#f87171]"
+                : "text-[#3c4043] dark:text-[#e8ecf4]"
+            }`}
           >
             {pct}%
           </span>
@@ -98,13 +98,10 @@ function RadialGauge({
       </div>
 
       <div className="text-center">
-        <p className="text-[11px]" style={{ color: CHART_PALETTE.subtitle }}>
+        <p className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
           Actual / Budget
         </p>
-        <p
-          className="mt-0.5 text-xs tabular-nums"
-          style={{ color: CHART_PALETTE.axis }}
-        >
+        <p className="mt-0.5 text-xs tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
           {fmtK(actual)} / {fmtK(budget)}
         </p>
       </div>
@@ -126,15 +123,9 @@ function StatTile({
   iconClass: string;
 }) {
   return (
-    <div
-      className="rounded-2xl border bg-white px-5 py-4"
-      style={{ borderColor: CHART_PALETTE.border }}
-    >
+    <div className="rounded-2xl border bg-white dark:bg-[#161d2e] px-5 py-4 border-[#e3e3e3] dark:border-white/10">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <p
-          className="truncate text-[13px]"
-          style={{ color: CHART_PALETTE.axis }}
-        >
+        <p className="truncate text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">
           {label}
         </p>
         <span
@@ -143,10 +134,7 @@ function StatTile({
           <Icon size={16} />
         </span>
       </div>
-      <p
-        className="truncate text-xl font-semibold tracking-tight tabular-nums"
-        style={{ color: CHART_PALETTE.title }}
-      >
+      <p className="truncate text-xl font-semibold tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
         {display}
       </p>
     </div>
@@ -228,34 +216,37 @@ export default function ExpenseBudgetGauges() {
       label: "Total expenses",
       display: fmt(totalExpenses),
       icon: DollarSign,
-      iconClass: "bg-red-50 text-red-600",
+      iconClass: "bg-red-50 text-red-600 dark:bg-red-400/10 dark:text-red-400",
     },
     {
       label: "Budgeted",
       display: fmt(budgeted),
       icon: Clock,
-      iconClass: "bg-gray-50 text-gray-600",
+      iconClass: "bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-[#a9b4c7]",
     },
     {
       label: underBudget ? "Under budget" : "Over budget",
       display: fmt(Math.abs(variance)),
       icon: underBudget ? TrendingDown : TrendingUp,
       iconClass: underBudget
-        ? "bg-green-50 text-green-600"
-        : "bg-red-50 text-red-600",
+        ? "bg-green-50 text-green-600 dark:bg-emerald-400/10 dark:text-emerald-400"
+        : "bg-red-50 text-red-600 dark:bg-red-400/10 dark:text-red-400",
     },
     {
       label: "% of revenue",
       display: pctOfRevenue === null ? "—" : `${pctOfRevenue.toFixed(1)}%`,
       icon: Percent,
-      iconClass: "bg-violet-50 text-violet-600",
+      iconClass:
+        "bg-violet-50 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400",
     },
     {
       label: "Over threshold",
       display: `${overCount} ${overCount === 1 ? "category" : "categories"}`,
       icon: AlertTriangle,
       iconClass:
-        overCount > 0 ? "bg-red-50 text-red-600" : "bg-gray-50 text-gray-500",
+        overCount > 0
+          ? "bg-red-50 text-red-600 dark:bg-red-400/10 dark:text-red-400"
+          : "bg-gray-50 text-gray-500 dark:bg-white/5 dark:text-[#9aa6bd]",
     },
   ];
 
@@ -267,7 +258,7 @@ export default function ExpenseBudgetGauges() {
     );
 
   const moreButton =
-    "inline-flex cursor-pointer items-center gap-1 rounded-full border bg-white px-2.5 py-1 text-[11px] transition-colors hover:bg-[#f8f9fa]";
+    "inline-flex cursor-pointer items-center gap-1 rounded-full border bg-white dark:bg-white/5 px-2.5 py-1 text-[11px] transition-colors hover:bg-[#f8f9fa] dark:hover:bg-white/10";
 
   return (
     <div className="relative flex flex-col gap-4">
@@ -285,19 +276,13 @@ export default function ExpenseBudgetGauges() {
       >
         {gauges.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div
-              className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
-              style={{ backgroundColor: CHART_PALETTE.hover }}
-            >
-              <Gauge size={24} style={{ color: CHART_PALETTE.subtitle }} />
+            <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+              <Gauge size={24} className="text-[#9aa0a6] dark:text-[#9aa6bd]" />
             </div>
-            <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+            <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
               No budgets set yet
             </p>
-            <p
-              className="mt-1 text-xs"
-              style={{ color: CHART_PALETTE.subtitle }}
-            >
+            <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
               Use “Set Budget” to add spending thresholds per category.
             </p>
           </div>
@@ -325,11 +310,7 @@ export default function ExpenseBudgetGauges() {
                         Math.min(prev + 5, gauges.length),
                       )
                     }
-                    className={moreButton}
-                    style={{
-                      borderColor: CHART_PALETTE.control,
-                      color: CHART_PALETTE.title,
-                    }}
+                    className={`${moreButton} border-[#dadce0] text-[#3c4043] dark:border-white/15 dark:text-[#e8ecf4]`}
                   >
                     <ChevronDown size={12} />
                     Show {gauges.length - visibleCount} more
@@ -340,11 +321,7 @@ export default function ExpenseBudgetGauges() {
                     onClick={() =>
                       setVisibleCount((prev) => Math.max(prev - 5, 5))
                     }
-                    className={moreButton}
-                    style={{
-                      borderColor: CHART_PALETTE.control,
-                      color: CHART_PALETTE.title,
-                    }}
+                    className={`${moreButton} border-[#dadce0] text-[#3c4043] dark:border-white/15 dark:text-[#e8ecf4]`}
                   >
                     <ChevronUp size={12} />
                     Show less

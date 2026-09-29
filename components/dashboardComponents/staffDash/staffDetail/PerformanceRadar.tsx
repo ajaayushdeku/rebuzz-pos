@@ -703,7 +703,7 @@ export default function PerformanceRadar({
       <div className="mb-6 w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
         <div className="flex items-center gap-3 mb-6">
           <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
             style={{ borderColor: "#dbeafe", backgroundColor: "#eff6ff" }}
           >
             <Radar size={16} style={{ color: CHART_PALETTE.blue }} />
@@ -742,7 +742,7 @@ export default function PerformanceRadar({
       <div className="h-full w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
         <div className="flex items-center gap-3 mb-6">
           <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
             style={{ borderColor: "#dbeafe", backgroundColor: "#eff6ff" }}
           >
             <Radar size={16} style={{ color: CHART_PALETTE.blue }} />
@@ -847,7 +847,7 @@ export default function PerformanceRadar({
       <div className="h-full w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
         <div className="flex items-center gap-3 mb-6">
           <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
             style={{ borderColor: "#dbeafe", backgroundColor: "#eff6ff" }}
           >
             <Radar size={16} style={{ color: CHART_PALETTE.blue }} />
@@ -898,7 +898,7 @@ export default function PerformanceRadar({
       <div className="flex items-center justify-between ">
         <div className="flex items-center gap-3">
           <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
             style={{ borderColor: "#dbeafe", backgroundColor: "#eff6ff" }}
           >
             <Radar size={16} style={{ color: CHART_PALETTE.blue }} />

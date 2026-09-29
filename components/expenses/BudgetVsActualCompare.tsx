@@ -87,10 +87,10 @@ export default function BudgetVsActualCompare({
 }) {
   return (
     <section>
-      <h2 className="text-xl font-bold tracking-tight text-slate-900">
+      <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-[#e8ecf4]">
         Budget vs actual
       </h2>
-      <p className="mt-1 text-[15px] text-slate-500">
+      <p className="mt-1 text-[15px] text-slate-500 dark:text-[#9aa6bd]">
         How each category tracked against your monthly plan
       </p>
 
@@ -118,11 +118,13 @@ function BudgetBarChart({
   const width = (value: number) => `${(value / max) * 100}%`;
 
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-[0_1px_3px_rgba(15,23,42,0.06)] sm:p-7">
-      <h3 className="text-lg font-bold tracking-tight text-slate-900">
+    <div className="rounded-2xl bg-white dark:bg-[#161d2e] p-6 shadow-[0_1px_3px_rgba(15,23,42,0.06)] sm:p-7">
+      <h3 className="text-lg font-bold tracking-tight text-slate-900 dark:text-[#e8ecf4]">
         {title}
       </h3>
-      <p className="mt-1 text-sm text-slate-500">{description}</p>
+      <p className="mt-1 text-sm text-slate-500 dark:text-[#9aa6bd]">
+        {description}
+      </p>
 
       <div className="mt-7">
         {lines.map((line) => (
@@ -130,7 +132,7 @@ function BudgetBarChart({
             key={line.id}
             className="grid grid-cols-[84px_minmax(0,1fr)] items-center gap-x-4 py-2.5 sm:grid-cols-[110px_minmax(0,1fr)]"
           >
-            <span className="text-right text-[13px] font-medium leading-tight text-slate-600">
+            <span className="text-right text-[13px] font-medium leading-tight text-slate-600 dark:text-[#a9b4c7]">
               {line.category}
             </span>
 
@@ -143,7 +145,7 @@ function BudgetBarChart({
                 {ticks.map((tick) => (
                   <span
                     key={tick}
-                    className="absolute top-0 h-full border-l border-dashed border-slate-200"
+                    className="absolute top-0 h-full border-l border-dashed border-slate-200 dark:border-white/15"
                     style={{ left: `${(tick / max) * 100}%` }}
                   />
                 ))}
@@ -172,7 +174,7 @@ function BudgetBarChart({
             {ticks.map((tick) => (
               <span
                 key={tick}
-                className="absolute top-2 -translate-x-1/2 text-xs font-medium text-slate-400"
+                className="absolute top-2 -translate-x-1/2 text-xs font-medium text-slate-400 dark:text-[#7b869b]"
                 style={{ left: `${(tick / max) * 100}%` }}
               >
                 {tick === 0 ? "0k" : formatThousands(tick)}
@@ -237,13 +239,13 @@ function LegendItem({
 
 function BudgetTable({ lines }: { lines: BudgetLine[] }) {
   return (
-    <div className="overflow-hidden rounded-2xl bg-white shadow-[0_1px_3px_rgba(15,23,42,0.06)]">
+    <div className="overflow-hidden rounded-2xl bg-white dark:bg-[#161d2e] shadow-[0_1px_3px_rgba(15,23,42,0.06)]">
       <table className="w-full border-collapse text-left">
         <caption className="sr-only">
           Budget, actual spend and variance by category
         </caption>
         <thead>
-          <tr className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+          <tr className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-[#9aa6bd]">
             <th scope="col" className="px-6 py-4 font-semibold">
               Category
             </th>
@@ -267,10 +269,10 @@ function BudgetTable({ lines }: { lines: BudgetLine[] }) {
               >
                 {line.category}
               </th>
-              <td className="px-6 py-4 text-right text-[15px] text-slate-500">
+              <td className="px-6 py-4 text-right text-[15px] text-slate-500 dark:text-[#9aa6bd]">
                 {formatRupees(line.budget)}
               </td>
-              <td className="px-6 py-4 text-right text-[15px] font-semibold text-slate-900">
+              <td className="px-6 py-4 text-right text-[15px] font-semibold text-slate-900 dark:text-[#e8ecf4]">
                 {formatRupees(line.actual)}
               </td>
               <td className="px-6 py-4 text-right">
@@ -290,7 +292,7 @@ function VariancePill({ budget, actual }: { budget: number; actual: number }) {
 
   if (delta === 0) {
     return (
-      <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1.5 text-[13px] font-medium text-slate-500">
+      <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1.5 text-[13px] font-medium text-slate-500 dark:bg-white/10 dark:text-[#9aa6bd]">
         on budget
       </span>
     );
@@ -301,7 +303,9 @@ function VariancePill({ budget, actual }: { budget: number; actual: number }) {
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-semibold ${
-        over ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-700"
+        over
+          ? "bg-red-50 text-red-600 dark:bg-red-400/10 dark:text-red-400"
+          : "bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300"
       }`}
     >
       {over ? <CaretUpIcon /> : <CheckIcon />}

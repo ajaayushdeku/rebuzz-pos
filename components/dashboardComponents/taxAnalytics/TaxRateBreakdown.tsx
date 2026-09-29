@@ -97,25 +97,19 @@ function BreakdownSection({
 
   return (
     <div>
-      <h4
-        className="mb-3 text-[13px] font-medium"
-        style={{ color: CHART_PALETTE.title }}
-      >
+      <h4 className="mb-3 text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
         {title}
       </h4>
 
       {colored.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-1 py-12">
-          <div
-            className="mb-3 flex h-10 w-10 items-center justify-center rounded-full"
-            style={{ backgroundColor: CHART_PALETTE.hover }}
-          >
-            <Percent size={18} style={{ color: CHART_PALETTE.subtitle }} />
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+            <Percent size={18} className="text-[#9aa0a6] dark:text-[#9aa6bd]" />
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
             {emptyLabel}
           </p>
-          <p className="text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             Relevent data will appear here
           </p>
         </div>
@@ -143,16 +137,10 @@ function BreakdownSection({
               </PieChart>
             </ResponsiveContainer>
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-              <span
-                className="text-[11px]"
-                style={{ color: CHART_PALETTE.axis }}
-              >
+              <span className="text-[11px] text-[#5f6368] dark:text-[#a9b4c7]">
                 Total
               </span>
-              <span
-                className="text-sm font-semibold tracking-tight tabular-nums"
-                style={{ color: CHART_PALETTE.title }}
-              >
+              <span className="text-sm font-semibold tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                 {fmt(total)}
               </span>
             </div>
@@ -162,11 +150,7 @@ function BreakdownSection({
           <div className="min-w-0 overflow-x-auto">
             <div className="min-w-[420px]">
               <div
-                className={`${COLUMNS} border-b pb-2.5 text-[11px]`}
-                style={{
-                  borderColor: CHART_PALETTE.grid,
-                  color: CHART_PALETTE.axis,
-                }}
+                className={`${COLUMNS} border-b pb-2.5 text-[11px] border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]`}
               >
                 <span>Tax</span>
                 <span className="text-right">Taxable base</span>
@@ -180,41 +164,28 @@ function BreakdownSection({
                   return (
                     <div
                       key={t.key}
-                      className={`${COLUMNS} border-b py-2.5 last:border-0`}
-                      style={{ borderColor: CHART_PALETTE.grid }}
+                      className={`${COLUMNS} border-b py-2.5 last:border-0 border-[#e8eaed] dark:border-white/10`}
                     >
                       <div className="flex min-w-0 items-center gap-2">
                         <span
                           className="h-2.5 w-2.5 shrink-0 rounded-full"
                           style={{ backgroundColor: t.color }}
                         />
-                        <span
-                          className="truncate text-[13px]"
-                          style={{ color: CHART_PALETTE.title }}
-                        >
+                        <span className="truncate text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                           {t.label}
                         </span>
                       </div>
 
-                      <span
-                        className="text-right text-[13px] tabular-nums"
-                        style={{ color: CHART_PALETTE.axis }}
-                      >
+                      <span className="text-right text-[13px] tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
                         {fmt(t.base)}
                       </span>
 
-                      <span
-                        className="text-right text-[13px] font-medium tabular-nums"
-                        style={{ color: CHART_PALETTE.good }}
-                      >
+                      <span className="text-right text-[13px] font-medium tabular-nums text-[#1e8e3e] dark:text-[#10b981]">
                         {fmt(t.collected)}
                       </span>
 
                       <div className="flex items-center justify-end gap-2">
-                        <div
-                          className="h-1.5 max-w-[80px] flex-1 overflow-hidden rounded-full"
-                          style={{ backgroundColor: CHART_PALETTE.grid }}
-                        >
+                        <div className="h-1.5 max-w-[80px] flex-1 overflow-hidden rounded-full bg-[#e8eaed] dark:bg-white/10">
                           <div
                             className="h-full rounded-full transition-all duration-500"
                             style={{
@@ -223,10 +194,7 @@ function BreakdownSection({
                             }}
                           />
                         </div>
-                        <span
-                          className="w-10 shrink-0 text-right text-xs tabular-nums"
-                          style={{ color: CHART_PALETTE.axis }}
-                        >
+                        <span className="w-10 shrink-0 text-right text-xs tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
                           {pct.toFixed(1)}%
                         </span>
                       </div>
@@ -236,26 +204,16 @@ function BreakdownSection({
               </div>
 
               <div
-                className={`${COLUMNS} mt-1 border-t pt-2.5`}
-                style={{ borderColor: CHART_PALETTE.grid }}
+                className={`${COLUMNS} mt-1 border-t pt-2.5 border-[#e8eaed] dark:border-white/10`}
               >
-                <span
-                  className="text-[13px]"
-                  style={{ color: CHART_PALETTE.axis }}
-                >
+                <span className="text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">
                   Total
                 </span>
                 <span />
-                <span
-                  className="text-right text-[13px] font-medium tabular-nums"
-                  style={{ color: CHART_PALETTE.title }}
-                >
+                <span className="text-right text-[13px] font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                   {fmt(total)}
                 </span>
-                <span
-                  className="text-right text-xs tabular-nums"
-                  style={{ color: CHART_PALETTE.axis }}
-                >
+                <span className="text-right text-xs tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
                   100%
                 </span>
               </div>
@@ -267,11 +225,7 @@ function BreakdownSection({
             <div className="flex items-center justify-center gap-3 pt-1">
               <button
                 onClick={() => setShowAll((prev) => !prev)}
-                className="cursor-pointer rounded-full border bg-white px-3 py-1 text-[11px] transition-colors hover:bg-[#f8f9fa]"
-                style={{
-                  borderColor: CHART_PALETTE.control,
-                  color: CHART_PALETTE.title,
-                }}
+                className="cursor-pointer rounded-full border bg-white dark:bg-white/5 px-3 py-1 text-[11px] transition-colors hover:bg-[#f8f9fa] border-[#dadce0] dark:border-white/15 text-[#3c4043] dark:text-[#e8ecf4] dark:hover:bg-white/10"
               >
                 {showAll
                   ? "Show less"
@@ -315,24 +269,18 @@ export default function TaxRateBreakdown() {
       {isLoading ? (
         <TaxRateBreakdownSkeleton />
       ) : isError ? (
-        <p
-          className="py-16 text-center text-sm"
-          style={{ color: CHART_PALETTE.bad }}
-        >
+        <p className="py-16 text-center text-sm text-[#d93025] dark:text-[#f87171]">
           Failed to load tax breakdown
         </p>
       ) : totals.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <div
-            className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
-            style={{ backgroundColor: CHART_PALETTE.hover }}
-          >
-            <Percent size={24} style={{ color: CHART_PALETTE.subtitle }} />
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+            <Percent size={24} className="text-[#9aa0a6] dark:text-[#9aa6bd]" />
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
             No tax data available
           </p>
-          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             Tax Breakdown data will appear here
           </p>
         </div>
@@ -347,10 +295,7 @@ export default function TaxRateBreakdown() {
             />
           </div>
           {/* Vertical divider between columns */}
-          <div
-            className="absolute bottom-0 left-1/2 top-0 hidden w-px -translate-x-px lg:block"
-            style={{ backgroundColor: CHART_PALETTE.grid }}
-          />
+          <div className="absolute bottom-0 left-1/2 top-0 hidden w-px -translate-x-px bg-[#e8eaed] lg:block dark:bg-white/10" />
           <div className="lg:pl-6">
             <BreakdownSection
               title="Grouped taxes"

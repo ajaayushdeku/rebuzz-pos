@@ -77,19 +77,16 @@ export default function StockMovementChart({
     >
       {chartItems.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <div
-            className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
-            style={{ backgroundColor: CHART_PALETTE.hover }}
-          >
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
             <ChartColumnBig
               size={24}
-              style={{ color: CHART_PALETTE.subtitle }}
+              className="text-[#9aa0a6] dark:text-[#9aa6bd]"
             />
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
             No stock movement data available
           </p>
-          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             Stock Movement data will appear here
           </p>
         </div>
@@ -103,16 +100,12 @@ export default function StockMovementChart({
               return (
                 <div key={item.name} className="flex items-center gap-3">
                   <span
-                    className={`text-[13px] ${LABEL_W} shrink-0 truncate text-right leading-tight`}
-                    style={{ color: CHART_PALETTE.title }}
+                    className={`text-[13px] ${LABEL_W} shrink-0 truncate text-right leading-tight text-[#3c4043] dark:text-[#e8ecf4]`}
                     title={item.name}
                   >
                     {item.name}
                   </span>
-                  <div
-                    className="relative h-4 flex-1 overflow-hidden rounded-full"
-                    style={{ backgroundColor: CHART_PALETTE.grid }}
-                  >
+                  <div className="relative h-4 flex-1 overflow-hidden rounded-full bg-[#e8eaed] dark:bg-white/10">
                     <div
                       className="h-4 rounded-full transition-all duration-700"
                       style={{
@@ -122,8 +115,7 @@ export default function StockMovementChart({
                     />
                   </div>
                   <span
-                    className={`text-xs tabular-nums ${VALUE_W} shrink-0 text-right`}
-                    style={{ color: CHART_PALETTE.axis }}
+                    className={`text-xs tabular-nums ${VALUE_W} shrink-0 text-right text-[#5f6368] dark:text-[#a9b4c7]`}
                   >
                     {item.count.toLocaleString()}
                   </span>
@@ -140,8 +132,7 @@ export default function StockMovementChart({
               {ticks.map((v) => (
                 <span
                   key={v}
-                  className="text-xs tabular-nums"
-                  style={{ color: CHART_PALETTE.axis }}
+                  className="text-xs tabular-nums text-[#5f6368] dark:text-[#a9b4c7]"
                 >
                   {v.toLocaleString()}
                 </span>

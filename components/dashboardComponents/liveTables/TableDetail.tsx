@@ -15,7 +15,6 @@ import { fmtMinutes } from "@/lib/mockData/mock-live-tables";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useTableTicket } from "@/hooks/useTableTicket";
-import { CHART_PALETTE } from "../chartCard";
 
 type OrderRow = {
   name: string;
@@ -25,14 +24,18 @@ type OrderRow = {
 };
 
 const STATUS_BADGE: Record<string, string> = {
-  occupied: "border border-blue-200 bg-blue-50 text-blue-700",
-  free: "border border-green-200 bg-green-50 text-green-700",
+  occupied:
+    "border border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-400/10 dark:border-blue-400/25 dark:text-[#a8c4ee]",
+  free: "border border-green-200 bg-green-50 text-green-700 dark:bg-emerald-400/10 dark:border-emerald-400/25 dark:text-emerald-300",
 };
 
 const ITEM_STATUS_BADGE: Record<string, string> = {
-  served: "border border-green-200 bg-green-50 text-green-700",
-  pending: "border border-amber-200 bg-amber-50 text-amber-700",
-  preparing: "border border-blue-200 bg-blue-50 text-blue-700",
+  served:
+    "border border-green-200 bg-green-50 text-green-700 dark:bg-emerald-400/10 dark:border-emerald-400/25 dark:text-emerald-300",
+  pending:
+    "border border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-400/10 dark:border-amber-400/25 dark:text-amber-300",
+  preparing:
+    "border border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-400/10 dark:border-blue-400/25 dark:text-[#a8c4ee]",
 };
 
 interface TableDetailProps {
@@ -108,8 +111,8 @@ export default function TableDetail({
       title={table.name || `Table ${table.id}`}
       subtitle={`${table.shape} · ${table.zone} · ${table.capacity} seats`}
       icon={Armchair}
-      iconColor="text-blue-600"
-      iconBgColor="bg-blue-50"
+      iconColor="text-blue-600 dark:text-[#7ba2e3]"
+      iconBgColor="bg-blue-50 dark:bg-blue-400/10"
       maxWidth="max-w-2xl"
     >
       {/* ── 4 stat cards ── */}
@@ -118,7 +121,8 @@ export default function TableDetail({
           {[
             {
               icon: <DollarSign size={15} />,
-              iconClass: "bg-green-50 text-green-600",
+              iconClass:
+                "bg-green-50 text-green-600 dark:bg-emerald-400/10 dark:text-emerald-400",
               label: "Current bill",
               value: formatCurrencySymbol(
                 currentBill,
@@ -128,27 +132,29 @@ export default function TableDetail({
             },
             {
               icon: <Clock size={15} />,
-              iconClass: "bg-blue-50 text-blue-600",
+              iconClass:
+                "bg-blue-50 text-blue-600 dark:bg-blue-400/10 dark:text-[#7ba2e3]",
               label: "Time seated",
               value: fmtMinutes(seatedMinutes ?? 0),
             },
             {
               icon: <Users size={15} />,
-              iconClass: "bg-violet-50 text-violet-600",
+              iconClass:
+                "bg-violet-50 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400",
               label: "Seats",
               value: `${table.capacity}`,
             },
             {
               icon: <Sparkles size={15} />,
-              iconClass: "bg-amber-50 text-amber-600",
+              iconClass:
+                "bg-amber-50 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400",
               label: "Ticket",
               value: `ORD-${ticket?.invoice}` || "—",
             },
           ].map(({ icon, iconClass, label, value }) => (
             <div
               key={label}
-              className="flex items-center gap-3 rounded-xl border px-3.5 py-3"
-              style={{ borderColor: CHART_PALETTE.border }}
+              className="flex items-center gap-3 rounded-xl border px-3.5 py-3 border-[#e3e3e3] dark:border-white/10"
             >
               <span
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 ${iconClass}`}
@@ -156,16 +162,10 @@ export default function TableDetail({
                 {icon}
               </span>
               <div className="min-w-0">
-                <p
-                  className="text-[11px]"
-                  style={{ color: CHART_PALETTE.subtitle }}
-                >
+                <p className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                   {label}
                 </p>
-                <p
-                  className="mt-0.5 truncate text-[13px] font-medium tabular-nums"
-                  style={{ color: CHART_PALETTE.title }}
-                >
+                <p className="mt-0.5 truncate text-[13px] font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                   {value}
                 </p>
               </div>
@@ -176,10 +176,7 @@ export default function TableDetail({
 
       {/* ── Order details ── */}
       {isActive && ticketLoading && orders.length === 0 && (
-        <div
-          className="flex items-center justify-center gap-2 py-6 text-sm"
-          style={{ color: CHART_PALETTE.subtitle }}
-        >
+        <div className="flex items-center justify-center gap-2 py-6 text-sm text-[#9aa0a6] dark:text-[#9aa6bd]">
           <Loader2 className="h-4 w-4 animate-spin" />
           Loading order…
         </div>
@@ -190,14 +187,11 @@ export default function TableDetail({
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="text-sm">📋</span>
-              <p className="text-[13px]" style={{ color: CHART_PALETTE.title }}>
+              <p className="text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                 Order details
               </p>
             </div>
-            <p
-              className="text-xs tabular-nums"
-              style={{ color: CHART_PALETTE.subtitle }}
-            >
+            <p className="text-xs tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
               {totalItems} items
             </p>
           </div>
@@ -206,20 +200,13 @@ export default function TableDetail({
             {orders.map((item, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between gap-2 border-b py-2.5 last:border-0"
-                style={{ borderColor: CHART_PALETTE.grid }}
+                className="flex items-center justify-between gap-2 border-b py-2.5 last:border-0 border-[#e8eaed] dark:border-white/10"
               >
                 <div className="flex items-center gap-3">
-                  <span
-                    className="text-xs tabular-nums"
-                    style={{ color: CHART_PALETTE.subtitle }}
-                  >
+                  <span className="text-xs tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
                     {item.qty}×
                   </span>
-                  <span
-                    className="text-[13px]"
-                    style={{ color: CHART_PALETTE.title }}
-                  >
+                  <span className="text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                     {item.name}
                   </span>
                   <span
@@ -228,10 +215,7 @@ export default function TableDetail({
                     {item.status}
                   </span>
                 </div>
-                <span
-                  className="text-[13px] font-medium tabular-nums"
-                  style={{ color: CHART_PALETTE.title }}
-                >
+                <span className="text-[13px] font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                   {formatCurrencySymbol(
                     item.price * item.qty,
                     currency.symbol,
@@ -243,17 +227,11 @@ export default function TableDetail({
           </div>
 
           {/* Tax + Total */}
-          <div
-            className="mt-1 space-y-1.5 border-t pt-3"
-            style={{ borderColor: CHART_PALETTE.grid }}
-          >
+          <div className="mt-1 space-y-1.5 border-t pt-3 border-[#e8eaed] dark:border-white/10">
             {ticket && (
               <div className="flex items-center justify-between text-xs">
-                <span style={{ color: CHART_PALETTE.axis }}>Tax</span>
-                <span
-                  className="tabular-nums"
-                  style={{ color: CHART_PALETTE.title }}
-                >
+                <span className="text-[#5f6368] dark:text-[#a9b4c7]">Tax</span>
+                <span className="tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                   {formatCurrencySymbol(
                     taxAmount,
                     currency.symbol,
@@ -263,16 +241,10 @@ export default function TableDetail({
               </div>
             )}
             <div className="flex items-center justify-between">
-              <span
-                className="text-[13px]"
-                style={{ color: CHART_PALETTE.axis }}
-              >
+              <span className="text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">
                 Total
               </span>
-              <span
-                className="text-base font-semibold tabular-nums"
-                style={{ color: CHART_PALETTE.good }}
-              >
+              <span className="text-base font-semibold tabular-nums text-[#1e8e3e] dark:text-[#10b981]">
                 {formatCurrencySymbol(total, currency.symbol, currency.locale)}
               </span>
             </div>
@@ -283,27 +255,24 @@ export default function TableDetail({
       {/* Empty state for non-active tables */}
       {!isActive && (
         <div className="flex flex-col items-center justify-center py-6">
-          <div
-            className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
-            style={{ backgroundColor: CHART_PALETTE.hover }}
-          >
-            <Armchair size={24} style={{ color: CHART_PALETTE.subtitle }} />
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+            <Armchair
+              size={24}
+              className="text-[#9aa0a6] dark:text-[#9aa6bd]"
+            />
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
             Free table
           </p>
 
-          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             {table.status === "free" && "This table is available for seating."}
           </p>
         </div>
       )}
 
-      <div
-        className="mt-2 flex items-center justify-between border-t pt-4"
-        style={{ borderColor: CHART_PALETTE.grid }}
-      >
-        <span className="text-[13px]" style={{ color: CHART_PALETTE.axis }}>
+      <div className="mt-2 flex items-center justify-between border-t pt-4 border-[#e8eaed] dark:border-white/10">
+        <span className="text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">
           Table status
         </span>
 

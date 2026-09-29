@@ -70,9 +70,10 @@ const MOCK_SUGGESTIONS: MenuSuggestion[] = [
 ];
 
 const DIFFICULTY_STYLES = {
-  Easy: "border border-gray-300 text-gray-600",
-  Medium: "border border-gray-300 text-gray-600",
-  Hard: "border border-red-200 text-red-500",
+  Easy: "border border-gray-300 text-gray-600 dark:border-white/20 dark:text-[#a9b4c7]",
+  Medium:
+    "border border-gray-300 text-gray-600 dark:border-white/20 dark:text-[#a9b4c7]",
+  Hard: "border border-red-200 text-red-500 dark:border-red-400/25 dark:text-red-400",
 };
 
 export default function AIMenuSuggestions() {
@@ -82,8 +83,11 @@ export default function AIMenuSuggestions() {
     <div className="flex flex-col gap-4">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-violet-100 flex items-center justify-center shrink-0">
-          <Sparkles size={16} className="text-violet-600" />
+        <div className="w-9 h-9 rounded-lg bg-violet-100 flex items-center justify-center shrink-0 dark:bg-violet-400/15">
+          <Sparkles
+            size={16}
+            className="text-violet-600 dark:text-violet-400"
+          />
         </div>
 
         <ComponentHeader
@@ -100,7 +104,7 @@ export default function AIMenuSuggestions() {
         {MOCK_SUGGESTIONS.map((s) => (
           <div
             key={s.name}
-            className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col"
+            className="bg-white dark:bg-[#161d2e] rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col dark:border-white/10"
           >
             {/* Purple top accent */}
             <div className="h-1 bg-gradient-to-r from-violet-500 to-purple-400" />
@@ -109,19 +113,19 @@ export default function AIMenuSuggestions() {
               {/* Emoji + match */}
               <div className="flex items-center justify-between">
                 <span className="text-3xl">{s.emoji}</span>
-                <span className="text-xs font-semibold text-violet-500 bg-violet-50 border border-violet-100 rounded-full px-2.5 py-0.5">
+                <span className="text-xs font-semibold text-violet-500 bg-violet-50 border border-violet-100 rounded-full px-2.5 py-0.5 dark:bg-violet-400/10 dark:border-violet-400/20">
                   {s.matchPct}% match
                 </span>
               </div>
 
               {/* Name */}
-              <h3 className="text-sm font-bold text-gray-900 leading-snug">
+              <h3 className="text-sm font-bold text-gray-900 leading-snug dark:text-[#e8ecf4]">
                 {s.name}
               </h3>
 
               {/* Revenue + difficulty */}
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-green-600 bg-green-50 rounded-full px-2.5 py-0.5">
+                <span className="text-xs font-bold text-green-600 bg-green-50 rounded-full px-2.5 py-0.5 dark:bg-emerald-400/10 dark:text-emerald-400">
                   +
                   {formatCurrencySymbol(
                     s.revenuePerWeek,
@@ -138,15 +142,15 @@ export default function AIMenuSuggestions() {
               </div>
 
               {/* Description */}
-              <p className="text-xs text-gray-600 leading-relaxed flex-1">
+              <p className="text-xs text-gray-600 leading-relaxed flex-1 dark:text-[#a9b4c7]">
                 {s.description}
               </p>
 
               {/* Ingredients */}
               <div>
                 <div className="flex items-center gap-1.5 mb-2">
-                  <span className="text-gray-300">🍽</span>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  <span className="text-gray-300 dark:text-[#6b7588]">🍽</span>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest dark:text-[#7b869b]">
                     Uses these ingredients
                   </p>
                 </div>
@@ -154,7 +158,7 @@ export default function AIMenuSuggestions() {
                   {s.ingredients.map((ing) => (
                     <span
                       key={ing}
-                      className="text-[11px] border border-gray-200 rounded-full px-2.5 py-0.5 text-gray-600"
+                      className="text-[11px] border border-gray-200 rounded-full px-2.5 py-0.5 text-gray-600 dark:border-white/15 dark:text-[#a9b4c7]"
                     >
                       {ing}
                     </span>

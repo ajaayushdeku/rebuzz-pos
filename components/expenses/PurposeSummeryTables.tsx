@@ -33,7 +33,6 @@ import { getPurposeIcon } from "@/lib/purpose-icons";
 import toast from "react-hot-toast";
 import ExpenseIncomeForm from "./ExpenseIncomeForm";
 import { ComponentHeader } from "../ComponentHeader";
-import { CHART_PALETTE } from "../dashboardComponents/chartCard";
 
 // Small wrapper to render a purpose icon without creating a component during render
 function PurposeIcon({
@@ -114,7 +113,7 @@ function TransactionModal({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+          <DialogTitle className="text-sm font-semibold text-gray-900 flex items-center gap-2 dark:text-[#e8ecf4]">
             <span
               className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
               style={{
@@ -135,26 +134,29 @@ function TransactionModal({
         <div className="relative mb-3">
           <Search
             size={13}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#7b869b]"
           />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search remarks..."
-            className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/15"
           />
         </div>
 
         <div className="space-y-2">
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                <Receipt size={24} className="text-gray-500" />
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3 dark:bg-white/10">
+                <Receipt
+                  size={24}
+                  className="text-gray-500 dark:text-[#9aa6bd]"
+                />
               </div>
-              <p className="text-sm font-medium text-gray-500">
+              <p className="text-sm font-medium text-gray-500 dark:text-[#9aa6bd]">
                 No {type}s yet
               </p>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-gray-400 mt-1 dark:text-[#7b869b]">
                 All {type} transaction will appear here
               </p>
             </div>
@@ -162,24 +164,30 @@ function TransactionModal({
             filtered.map((t) => (
               <div
                 key={t._id}
-                className="border border-gray-100 rounded-lg px-3 py-2.5"
+                className="border border-gray-100 rounded-lg px-3 py-2.5 dark:border-white/10"
               >
                 {editTransaction?._id === t._id ? (
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-blue-600 italic">Editing...</p>
+                    <p className="text-sm text-blue-600 italic dark:text-[#7ba2e3]">
+                      Editing...
+                    </p>
                   </div>
                 ) : (
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-800">
+                      <p className="text-sm font-medium text-gray-800 dark:text-[#e8ecf4]">
                         {t.remark || "—"}
                       </p>
-                      <p className="text-xs text-gray-400">{t.date}</p>
+                      <p className="text-xs text-gray-400 dark:text-[#7b869b]">
+                        {t.date}
+                      </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <span
                         className={`text-sm font-semibold ${
-                          type === "expense" ? "text-red-600" : "text-green-600"
+                          type === "expense"
+                            ? "text-red-600 dark:text-red-400"
+                            : "text-green-600 dark:text-emerald-400"
                         }`}
                       >
                         {formatCurrencySymbol(
@@ -190,13 +198,13 @@ function TransactionModal({
                       </span>
                       <button
                         onClick={() => startEdit(t)}
-                        className="text-gray-400 hover:text-blue-500"
+                        className="text-gray-400 hover:text-blue-500 dark:text-[#7b869b]"
                       >
                         <Pencil size={13} />
                       </button>
                       <button
                         onClick={() => setDeleteTarget(t)}
-                        className="text-gray-400 hover:text-red-500"
+                        className="text-gray-400 hover:text-red-500 dark:text-[#7b869b]"
                       >
                         <Trash2 size={13} />
                       </button>
@@ -224,13 +232,13 @@ function TransactionModal({
       >
         <DialogContent className="max-w-sm" showCloseButton={!deleting}>
           <DialogHeader>
-            <div className="mx-auto mb-2 w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
-              <AlertTriangle className="h-6 w-6 text-red-500" />
+            <div className="mx-auto mb-2 w-12 h-12 rounded-full bg-red-50 flex items-center justify-center dark:bg-red-400/10">
+              <AlertTriangle className="h-6 w-6 text-red-500 dark:text-red-400" />
             </div>
-            <DialogTitle className="text-base font-semibold text-center text-gray-900">
+            <DialogTitle className="text-base font-semibold text-center text-gray-900 dark:text-[#e8ecf4]">
               Delete transaction?
             </DialogTitle>
-            <DialogDescription className="text-center text-sm text-gray-500">
+            <DialogDescription className="text-center text-sm text-gray-500 dark:text-[#9aa6bd]">
               {deleteTarget
                 ? `“${deleteTarget.remark || purposeName}” will be permanently removed. This action cannot be undone.`
                 : "This transaction will be permanently removed."}
@@ -298,7 +306,7 @@ function SummaryTable({ type }: { type: TransactionType }) {
   }, [transactions, type]);
 
   return (
-    <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+    <div className="bg-white dark:bg-transparent overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
       <table className="w-full table-fixed text-sm min-w-[380px]">
         {/* `table-fixed` with declared widths: auto layout sized the columns
             from whatever rows were on screen, so filtering, paging or a longer
@@ -309,13 +317,7 @@ function SummaryTable({ type }: { type: TransactionType }) {
           <col className="w-32" />
         </colgroup>
         <thead>
-          <tr
-            className="border-b text-[11px] tracking-wider"
-            style={{
-              borderColor: CHART_PALETTE.grid,
-              color: CHART_PALETTE.axis,
-            }}
-          >
+          <tr className="border-b text-[11px] tracking-wider border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
             <th className="text-left pb-3 pt-3 px-4 font-normal">Purpose</th>
             <th className="text-center pb-3 pt-3 px-4 font-normal">
               Transactions
@@ -328,16 +330,19 @@ function SummaryTable({ type }: { type: TransactionType }) {
             <tr>
               <td
                 colSpan={3}
-                className="text-center py-2 text-sm text-gray-400"
+                className="text-center py-2 text-sm text-gray-400 dark:text-[#7b869b]"
               >
                 <div className="flex flex-col items-center justify-center py-12">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                    <Receipt size={24} className="text-gray-500" />
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3 dark:bg-white/10">
+                    <Receipt
+                      size={24}
+                      className="text-gray-500 dark:text-[#9aa6bd]"
+                    />
                   </div>
-                  <p className="text-sm font-medium text-gray-500">
+                  <p className="text-sm font-medium text-gray-500 dark:text-[#9aa6bd]">
                     No {type}s yet
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-gray-400 mt-1 dark:text-[#7b869b]">
                     All {type} transaction will appear here
                   </p>
                 </div>
@@ -350,7 +355,7 @@ function SummaryTable({ type }: { type: TransactionType }) {
                 <tr
                   key={purposeId}
                   onClick={() => setSelected(purposeId)}
-                  className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
+                  className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors dark:border-white/5 dark:hover:bg-white/10"
                 >
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
@@ -373,23 +378,19 @@ function SummaryTable({ type }: { type: TransactionType }) {
                           )}
                         />
                       </span>
-                      <span
-                        className="text-[13px] font-medium tracking-wide "
-                        style={{ color: CHART_PALETTE.title }}
-                      >
+                      <span className="text-[13px] font-medium tracking-wide  text-[#3c4043] dark:text-[#e8ecf4]">
                         {purposeName}
                       </span>
                     </div>
                   </td>
-                  <td
-                    className="py-3 px-4 text-center text-xs"
-                    style={{ color: CHART_PALETTE.title }}
-                  >
+                  <td className="py-3 px-4 text-center text-xs text-[#3c4043] dark:text-[#e8ecf4]">
                     {count}
                   </td>
                   <td
                     className={`py-3 px-4 text-right text-[13px] tracking-wid font-medium ${
-                      type === "expense" ? "text-red-600" : "text-green-600"
+                      type === "expense"
+                        ? "text-red-600 dark:text-red-400"
+                        : "text-green-600 dark:text-emerald-400"
                     }`}
                   >
                     {formatCurrencySymbol(
@@ -472,7 +473,7 @@ export default function PurposeSummaryTables() {
   };
 
   return (
-    <div className="bg-white p-5">
+    <div className="bg-white dark:bg-transparent p-5">
       <div className="flex flex-col sm:flex-row items-center  mb-4">
         <ComponentHeader
           title="Purpose Summary"
@@ -484,13 +485,13 @@ export default function PurposeSummaryTables() {
       <div className="relative flex justify-center mb-4">
         <span
           aria-hidden="true"
-          className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
+          className="absolute inset-x-0 top-1/2 h-px bg-gray-200 dark:bg-white/15"
         />
         <div
           role="tablist"
           aria-label="Purpose summary"
           onKeyDown={handleTabKeyDown}
-          className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+          className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1 dark:bg-white/10"
         >
           {tabs.map((tab, i) => {
             const selected = tab.key === activeTab;
@@ -511,13 +512,13 @@ export default function PurposeSummaryTables() {
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex items-center gap-2 rounded-full px-4 py-1.5 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
                   selected
-                    ? "bg-white font-bold text-blue-950 shadow-sm"
-                    : "font-semibold text-blue-800 hover:text-blue-950"
+                    ? "bg-white font-bold text-blue-950 shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none"
+                    : "font-semibold text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee]"
                 }`}
               >
                 <Icon size={14} className="shrink-0" />
                 {tab.label}
-                <span className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 bg-[#e4f2fe] text-blue-950 ring-blue-900">
+                <span className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 bg-[#e4f2fe] text-blue-950 ring-blue-900 dark:bg-white/10">
                   {tab.count}
                 </span>
               </button>

@@ -89,43 +89,28 @@ const ItemRow = ({
   const accent = isFast ? CHART_PALETTE.good : CHART_PALETTE.warn;
 
   return (
-    <div
-      className="flex items-center justify-between gap-2 border-b py-3 last:border-0"
-      style={{ borderColor: CHART_PALETTE.grid }}
-    >
+    <div className="flex items-center justify-between gap-2 border-b py-3 last:border-0 border-[#e8eaed] dark:border-white/10">
       <div className="flex min-w-0 items-center gap-2.5">
         <div
           className="h-9 w-1 shrink-0 rounded-full"
           style={{ backgroundColor: accent }}
         />
         <div className="min-w-0">
-          <p
-            className="truncate text-[13px]"
-            style={{ color: CHART_PALETTE.title }}
-          >
+          <p className="truncate text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
             {item.name}
           </p>
-          <p
-            className="truncate text-[11px]"
-            style={{ color: CHART_PALETTE.subtitle }}
-          >
+          <p className="truncate text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
             {item.category}
           </p>
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
         <div className="text-right">
-          <p
-            className="text-[13px] font-medium tabular-nums"
-            style={{ color: CHART_PALETTE.title }}
-          >
+          <p className="text-[13px] font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
             {item.sold.toLocaleString()} sold
           </p>
           {item.sellThrough !== null && (
-            <p
-              className="text-[11px] tabular-nums"
-              style={{ color: CHART_PALETTE.subtitle }}
-            >
+            <p className="text-[11px] tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
               {(item.sellThrough * 100).toFixed(1)}% of{" "}
               {item.openingStock?.toLocaleString()} stock
             </p>
@@ -200,31 +185,28 @@ const Panel = ({
       <div>
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
-            <div
-              className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
-              style={{ backgroundColor: CHART_PALETTE.hover }}
-            >
+            <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
               {isFast ? (
-                <Flame size={24} style={{ color: CHART_PALETTE.subtitle }} />
+                <Flame
+                  size={24}
+                  className="text-[#9aa0a6] dark:text-[#9aa6bd]"
+                />
               ) : (
                 <TrendingDown
                   size={24}
-                  style={{ color: CHART_PALETTE.subtitle }}
+                  className="text-[#9aa0a6] dark:text-[#9aa6bd]"
                 />
               )}
             </div>
-            <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+            <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
               No {isFast ? "fast" : "slow"} moving items
             </p>
-            <p
-              className="mt-1 text-xs"
-              style={{ color: CHART_PALETTE.subtitle }}
-            >
+            <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
               {isFast ? "Fast" : "Slow"} moving items data will appear here
             </p>
           </div>
         ) : (
-          <div className="border-t" style={{ borderColor: CHART_PALETTE.grid }}>
+          <div className="border-t border-[#e8eaed] dark:border-white/10">
             {displayedItems.map((item) => (
               <ItemRow key={item.name} item={item} type={type} />
             ))}

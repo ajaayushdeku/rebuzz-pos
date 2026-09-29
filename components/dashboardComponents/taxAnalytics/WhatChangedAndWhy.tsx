@@ -4,7 +4,7 @@ import { TrendingUp, TrendingDown, Info } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { CHART_PALETTE, ChartCard } from "../chartCard";
+import { ChartCard } from "../chartCard";
 import { TaxComparisonSkeleton } from "./TaxAnalyticsSkeletons";
 
 const VAT_RATE = 0.13; // 13% VAT
@@ -134,10 +134,7 @@ export default function WhatChangedAndWhy() {
       {isLoading ? (
         <TaxComparisonSkeleton />
       ) : isError || !data ? (
-        <p
-          className="py-10 text-center text-sm"
-          style={{ color: CHART_PALETTE.bad }}
-        >
+        <p className="py-10 text-center text-sm text-[#d93025] dark:text-[#f87171]">
           Couldn&apos;t load VAT comparison. Please try again.
         </p>
       ) : (
@@ -146,16 +143,10 @@ export default function WhatChangedAndWhy() {
           <div className="flex items-center justify-between gap-4">
             {/* Last month */}
             <div>
-              <p
-                className="mb-1 text-[11px]"
-                style={{ color: CHART_PALETTE.subtitle }}
-              >
+              <p className="mb-1 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                 Last month
               </p>
-              <p
-                className="text-xl font-semibold tracking-tight tabular-nums"
-                style={{ color: CHART_PALETTE.axis }}
-              >
+              <p className="text-xl font-semibold tracking-tight tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
                 {fmt(data.lastMonth)}
               </p>
             </div>
@@ -163,11 +154,11 @@ export default function WhatChangedAndWhy() {
             {/* Change pill — center */}
             <div className="flex flex-1 justify-center">
               <span
-                className="inline-flex items-center gap-1.5 rounded-full border bg-white px-3 py-1 text-xs tabular-nums"
-                style={{
-                  borderColor: CHART_PALETTE.control,
-                  color: increased ? CHART_PALETTE.warn : CHART_PALETTE.blue,
-                }}
+                className={`inline-flex items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-xs tabular-nums dark:border-white/15 dark:bg-white/5 ${
+                  increased
+                    ? "text-[#e37400] dark:text-amber-400"
+                    : "text-[#1a73e8] dark:text-[#7ba2e3]"
+                }`}
               >
                 {increased ? (
                   <TrendingUp size={12} />
@@ -188,26 +179,16 @@ export default function WhatChangedAndWhy() {
           </div>
 
           {/* Reason */}
-          <div
-            className="mt-4 flex items-start gap-2 rounded-xl border px-3 py-2.5"
-            style={{ borderColor: CHART_PALETTE.border }}
-          >
+          <div className="mt-4 flex items-start gap-2 rounded-xl border px-3 py-2.5 border-[#e3e3e3] dark:border-white/10">
             <Info
               size={13}
-              className="mt-0.5 shrink-0"
-              style={{ color: CHART_PALETTE.subtitle }}
+              className="mt-0.5 shrink-0 text-[#9aa0a6] dark:text-[#9aa6bd]"
             />
             <div>
-              <p
-                className="mb-0.5 text-[11px] font-medium"
-                style={{ color: CHART_PALETTE.title }}
-              >
+              <p className="mb-0.5 text-[11px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
                 Why it changed
               </p>
-              <p
-                className="text-[11px] leading-relaxed"
-                style={{ color: CHART_PALETTE.axis }}
-              >
+              <p className="text-[11px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
                 {reason}
               </p>
             </div>

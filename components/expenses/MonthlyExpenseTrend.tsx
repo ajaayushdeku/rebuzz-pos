@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -20,11 +20,11 @@ import { useTrailingMonthsTransactions } from "@/hooks/useTrailingMonthsTransact
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import {
-  AXIS_TICK,
   BAR_RADIUS,
   CHART_PALETTE,
   ChartCard,
   ChartTooltipBox,
+  getAxisTick,
   yAxisTitle,
 } from "../dashboardComponents/chartCard";
 import { ChartColumnStacked, AlertTriangle } from "lucide-react";
@@ -76,13 +76,10 @@ const CustomTooltip = ({
       }))}
       footer={
         <div className="flex items-center justify-between gap-4">
-          <span className="text-xs" style={{ color: CHART_PALETTE.axis }}>
+          <span className="text-xs text-[#5f6368] dark:text-[#a9b4c7]">
             Total
           </span>
-          <span
-            className="text-xs font-medium"
-            style={{ color: CHART_PALETTE.title }}
-          >
+          <span className="text-xs font-medium text-[#3c4043] dark:text-[#e8ecf4]">
             {fmtK(total)}
           </span>
         </div>
@@ -167,6 +164,27 @@ export default function MonthlyExpenseTrend() {
     return formatCompactCurrency(v, currency.symbol, currency.locale);
   };
 
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
+
   if (isLoading)
     return (
       <>
@@ -190,22 +208,13 @@ export default function MonthlyExpenseTrend() {
       subtitle="Stacked breakdown of expenses over the last 6 months"
       controls={
         // States plainly that this card ignores the page's month filter.
-        <span
-          className="shrink-0 rounded-full border bg-white px-2 py-0.5 text-[11px]"
-          style={{
-            borderColor: CHART_PALETTE.control,
-            color: CHART_PALETTE.title,
-          }}
-        >
+        <span className="shrink-0 rounded-full border bg-white dark:bg-white/5 px-2 py-0.5 text-[11px] border-[#dadce0] dark:border-white/15 text-[#3c4043] dark:text-[#e8ecf4]">
           Last 6 months
         </span>
       }
     >
       {failedMonths > 0 && !isError && (
-        <p
-          className="mb-3 flex items-center gap-1.5 text-[11px]"
-          style={{ color: CHART_PALETTE.warn }}
-        >
+        <p className="mb-3 flex items-center gap-1.5 text-[11px] text-[#e37400] dark:text-amber-400">
           <AlertTriangle size={12} className="shrink-0" />
           {failedMonths} of 6 months could not be loaded — the chart is
           incomplete.
@@ -214,31 +223,28 @@ export default function MonthlyExpenseTrend() {
 
       {isError ? (
         <div className="py-16 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 dark:bg-red-400/10">
             <AlertTriangle size={22} className="text-red-400" />
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
             Could not load the expense trend
           </p>
-          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             None of the last six months could be fetched.
           </p>
         </div>
       ) : categories.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <div
-            className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
-            style={{ backgroundColor: CHART_PALETTE.hover }}
-          >
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
             <ChartColumnStacked
               size={24}
-              style={{ color: CHART_PALETTE.subtitle }}
+              className="text-[#9aa0a6] dark:text-[#9aa6bd]"
             />
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
             No expense data
           </p>
-          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             No expenses recorded in the last 6 months.
           </p>
         </div>

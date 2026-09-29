@@ -112,8 +112,8 @@ export default function BillScanner({ onExtracted }: BillScannerProps) {
         onClick={() => !preview && inputRef.current?.click()}
         className={`relative border-2 border-dashed rounded-xl transition-colors ${
           preview
-            ? "border-blue-200 bg-blue-50/30"
-            : "border-gray-200 hover:border-blue-300 hover:bg-blue-50/20 cursor-pointer"
+            ? "border-blue-200 bg-blue-50/30 dark:border-blue-400/25"
+            : "border-gray-200 hover:border-blue-300 hover:bg-blue-50/20 cursor-pointer dark:border-white/15"
         }`}
       >
         {preview ? (
@@ -130,20 +130,22 @@ export default function BillScanner({ onExtracted }: BillScannerProps) {
                 e.stopPropagation();
                 handleClear();
               }}
-              className="absolute top-2 right-2 w-6 h-6 bg-white rounded-full shadow flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors"
+              className="absolute top-2 right-2 w-6 h-6 bg-white rounded-full shadow flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors dark:text-[#7b869b]"
             >
               <X size={13} />
             </button>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-6 gap-2">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center dark:bg-blue-400/10">
               <Upload size={18} className="text-blue-500" />
             </div>
-            <p className="text-sm font-medium text-gray-600">
+            <p className="text-sm font-medium text-gray-600 dark:text-[#a9b4c7]">
               Upload bill or invoice
             </p>
-            <p className="text-xs text-gray-400">JPG, PNG, WEBP — max 5MB</p>
+            <p className="text-xs text-gray-400 dark:text-[#7b869b]">
+              JPG, PNG, WEBP — max 5MB
+            </p>
           </div>
         )}
       </div>
@@ -179,14 +181,14 @@ export default function BillScanner({ onExtracted }: BillScannerProps) {
 
       {/* Status feedback */}
       {status === "success" && (
-        <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 border border-green-100 rounded-lg px-3 py-2">
+        <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 border border-green-100 rounded-lg px-3 py-2 dark:bg-emerald-400/10 dark:text-emerald-400">
           <CheckCircle2 size={13} className="shrink-0" />
           Form filled from bill — review and confirm before saving.
         </div>
       )}
 
       {status === "error" && (
-        <div className="flex items-center gap-2 text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+        <div className="flex items-center gap-2 text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 dark:bg-red-400/10 dark:text-red-400">
           <AlertCircle size={13} className="shrink-0" />
           {errorMsg}
         </div>

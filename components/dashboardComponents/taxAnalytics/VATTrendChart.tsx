@@ -20,13 +20,14 @@ import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import {
-  AXIS_TICK,
   CHART_PALETTE,
   ChartCard,
   ChartLegend,
   ChartTooltipBox,
+  getAxisTick,
   yAxisTitle,
 } from "../chartCard";
+import { useEffect, useState } from "react";
 
 const INPUT_COLOR = "#22c55e";
 const NET_COLOR = "#f59e0b";
@@ -65,6 +66,26 @@ const CustomTooltip = ({
 };
 
 export default function VATTrendChart() {
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
   return (
     <ChartCard
       icon={ChartSpline}

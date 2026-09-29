@@ -18,7 +18,6 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useTableTicket } from "@/hooks/useTableTicket";
 import ChangeTableModal from "@/components/dashboardComponents/liveTables/ChangeTableModal";
-import { CHART_PALETTE } from "../chartCard";
 
 const STATUS_CONFIG: Record<
   string,
@@ -34,25 +33,25 @@ const STATUS_CONFIG: Record<
   all: {
     label: "All",
     hex: "#475569", // slate-600
-    textColor: "text-slate-600",
+    textColor: "text-slate-600 dark:text-[#a9b4c7]",
     border: "border-slate-500",
-    iconColor: "text-slate-600",
+    iconColor: "text-slate-600 dark:text-[#a9b4c7]",
     status: "all",
   },
   occupied: {
     label: "Occupied",
     hex: "#2563eb", // blue-600
-    textColor: "text-blue-600",
+    textColor: "text-blue-600 dark:text-[#7ba2e3]",
     border: "border-blue-500",
-    iconColor: "text-blue-600",
+    iconColor: "text-blue-600 dark:text-[#7ba2e3]",
     status: "occupied",
   },
   free: {
     label: "Free",
     hex: "#16a34a", // green-600
-    textColor: "text-green-600",
-    border: "border-gray-200",
-    iconColor: "text-green-600",
+    textColor: "text-green-600 dark:text-emerald-400",
+    border: "border-gray-200 dark:border-white/15",
+    iconColor: "text-green-600 dark:text-emerald-400",
     status: "free",
   },
 };
@@ -116,7 +115,7 @@ function TableCard({
       className={`group cursor-pointer rounded-2xl border bg-white px-5 pb-2 pt-4 transition-colors ${
         isSelected
           ? "border-blue-400 ring-2 ring-blue-400 ring-offset-1"
-          : "border-[#e3e3e3] hover:border-[#dadce0]"
+          : "border-[#e3e3e3] hover:border-[#dadce0] dark:border-white/10"
       }`}
     >
       {/* Header */}
@@ -138,7 +137,7 @@ function TableCard({
               e.stopPropagation();
               onViewDetails(table);
             }}
-            className="rounded-md p-0.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-blue-600"
+            className="rounded-md p-0.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-blue-600 dark:text-[#7b869b] dark:hover:bg-white/10"
           >
             <Eye size={16} />
           </button>
@@ -164,7 +163,7 @@ function TableCard({
 
             {menuOpen && (
               <div
-                className="absolute right-0 top-7 z-20 w-40 rounded-xl border border-[#dadce0] bg-white py-1.5 shadow-lg"
+                className="absolute right-0 top-7 z-20 w-40 rounded-xl dark:bg-[#1b2436] border border-[#dadce0] bg-white py-1.5 shadow-lg dark:border-white/15"
                 onClick={(e) => e.stopPropagation()}
               >
                 {isOccupied ? (
@@ -174,7 +173,7 @@ function TableCard({
                       setMenuOpen(false);
                       onChangeTable(table);
                     }}
-                    className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 transition-colors"
+                    className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 transition-colors dark:text-[#7ba2e3]"
                   >
                     <ArrowRightLeft size={14} className="text-blue-400" />
                     Change Table
@@ -187,9 +186,12 @@ function TableCard({
                         setMenuOpen(false);
                         onEdit(table);
                       }}
-                      className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors dark:text-[#c3ccdc] dark:hover:bg-white/10"
                     >
-                      <Pencil size={14} className="text-gray-400" />
+                      <Pencil
+                        size={14}
+                        className="text-gray-400 dark:text-[#7b869b]"
+                      />
                       Edit Table
                     </button>
                     <button
@@ -198,7 +200,7 @@ function TableCard({
                         setMenuOpen(false);
                         onDelete(table);
                       }}
-                      className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                      className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors dark:text-red-400"
                     >
                       <Trash2 size={14} className="text-red-400" />
                       Delete
@@ -212,18 +214,12 @@ function TableCard({
       </div>
 
       {/* Table Name */}
-      <h3
-        className="mb-5 text-xl font-semibold leading-none tracking-tight"
-        style={{ color: CHART_PALETTE.title }}
-      >
+      <h3 className="mb-5 text-xl font-semibold leading-none tracking-tight text-[#3c4043] dark:text-[#e8ecf4]">
         {table.name || `Table ${table.id}`}
       </h3>
 
       {/* Seats */}
-      <div
-        className="flex items-center gap-2 text-[13px]"
-        style={{ color: CHART_PALETTE.axis }}
-      >
+      <div className="flex items-center gap-2 text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">
         <Users size={15} strokeWidth={1.8} />
 
         <span>
@@ -232,19 +228,13 @@ function TableCard({
       </div>
 
       {/* Bottom Information */}
-      <div
-        className="mt-4 min-h-[34px] border-t pt-3"
-        style={{ borderColor: CHART_PALETTE.grid }}
-      >
+      <div className="mt-4 min-h-[34px] border-t pt-3 border-[#e8eaed] dark:border-white/10">
         {isActive ? (
           <div className="flex items-center justify-between">
             {/* Bill */}
             {bill != null ? (
               <div className="flex items-center gap-1.5">
-                <span
-                  className="text-xs font-medium tabular-nums"
-                  style={{ color: CHART_PALETTE.good }}
-                >
+                <span className="text-xs font-medium tabular-nums text-[#1e8e3e] dark:text-[#10b981]">
                   {formatCurrencySymbol(bill, currency.symbol, currency.locale)}
                 </span>
               </div>
@@ -254,10 +244,7 @@ function TableCard({
 
             {/* Time */}
             {seatedMinutes != null && (
-              <div
-                className="flex items-center gap-1.5 text-xs tabular-nums"
-                style={{ color: CHART_PALETTE.subtitle }}
-              >
+              <div className="flex items-center gap-1.5 text-xs tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
                 <Clock size={14} strokeWidth={1.8} />
 
                 <span>{fmtMinutes(seatedMinutes)}</span>
@@ -312,34 +299,35 @@ function DeleteTableModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 " onClick={onClose} />
-      <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white shadow-xl">
+      <div className="relative w-full max-w-sm overflow-hidden rounded-2xl dark:bg-[#161d2e] border border-[#e3e3e3] bg-white shadow-xl dark:border-white/10">
         <div className="px-6 py-5">
           <div className="flex items-center gap-3 mb-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-red-200 bg-red-50">
-              <Trash2 size={18} className="text-red-600" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-red-200 bg-red-50 dark:bg-red-400/10 dark:border-red-400/25">
+              <Trash2 size={18} className="text-red-600 dark:text-red-400" />
             </div>
-            <h3 className="text-[15px]" style={{ color: CHART_PALETTE.title }}>
+            <h3 className="text-[15px] text-[#3c4043] dark:text-[#e8ecf4]">
               Delete table
             </h3>
           </div>
-          <p
-            className="mb-5 text-[13px] leading-relaxed"
-            style={{ color: CHART_PALETTE.axis }}
-          >
+          <p className="mb-5 text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
             Are you sure you want to delete{" "}
-            <span style={{ color: CHART_PALETTE.title }}>
+            <span className="text-[#3c4043] dark:text-[#e8ecf4]">
               {table.name || `Table ${table.id}`}
             </span>
             ? This action cannot be undone.
           </p>
 
-          {error && <p className="mb-3 text-xs text-red-600">{error}</p>}
+          {error && (
+            <p className="mb-3 text-xs text-red-600 dark:text-red-400">
+              {error}
+            </p>
+          )}
 
           <div className="flex items-center justify-end gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="cursor-pointer rounded-xl px-5 py-2.5 text-[13px] font-semibold text-gray-600 transition hover:bg-gray-100"
+              className="cursor-pointer rounded-xl px-5 py-2.5 text-[13px] font-semibold text-gray-600 transition hover:bg-gray-100 dark:text-[#a9b4c7] dark:hover:bg-white/10"
             >
               Cancel
             </button>
@@ -430,7 +418,7 @@ export default function GridView({
               className={`mr-2 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium transition-all duration-200 ${
                 isActive
                   ? ""
-                  : `bg-white border-gray-200 text-gray-700 hover:bg-violet-50 hover:${config.border} hover:${config.textColor}`
+                  : `bg-white dark:bg-white/5 border-gray-200 text-gray-700 hover:bg-violet-50 hover:${config.border} hover:${config.textColor} dark:border-white/15 dark:text-[#c3ccdc] dark:hover:bg-violet-400/15`
               }`}
               style={
                 isActive
@@ -461,7 +449,7 @@ export default function GridView({
 
       {/* Indoor */}
       <div>
-        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 dark:text-[#7b869b]">
           Indoor · {indoor.length} {indoor.length === 1 ? "table" : "tables"}
         </h3>
 
@@ -483,7 +471,7 @@ export default function GridView({
 
       {/* Outdoor */}
       <div>
-        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 dark:text-[#7b869b]">
           Outdoor · {outdoor.length} {outdoor.length === 1 ? "table" : "tables"}
         </h3>
 

@@ -14,15 +14,19 @@ const STATUS_CONFIG: Record<
 > = {
   claimable: {
     badge: "Claimable",
-    badgeStyle: "bg-amber-50 text-amber-700 border border-amber-200",
+    badgeStyle:
+      "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-400/10 dark:border-amber-400/25 dark:text-amber-300",
     dotColor: "bg-amber-400",
-    tileClass: "bg-amber-50 text-amber-700",
+    tileClass:
+      "bg-amber-50 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300",
   },
   claimed: {
     badge: "Claimed",
-    badgeStyle: "bg-green-50 text-green-700 border border-green-200",
+    badgeStyle:
+      "bg-green-50 text-green-700 border border-green-200 dark:bg-emerald-400/10 dark:border-emerald-400/25 dark:text-emerald-300",
     dotColor: "bg-green-400",
-    tileClass: "bg-green-50 text-green-700",
+    tileClass:
+      "bg-green-50 text-green-700 dark:bg-emerald-400/10 dark:text-emerald-300",
   },
 };
 
@@ -37,14 +41,8 @@ function Total({
   color: string;
 }) {
   return (
-    <div
-      className="rounded-xl border px-3 py-3.5 text-center"
-      style={{ borderColor: CHART_PALETTE.border }}
-    >
-      <p
-        className="mb-1.5 text-[11px]"
-        style={{ color: CHART_PALETTE.subtitle }}
-      >
+    <div className="rounded-xl border px-3 py-3.5 text-center border-[#e3e3e3] dark:border-white/10">
+      <p className="mb-1.5 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
         {label}
       </p>
       <p
@@ -74,13 +72,10 @@ export default function TDSReceivable() {
       subtitle="Tax Deducted at Source by your clients on payments made to your business"
       controls={
         <div className="shrink-0 text-right">
-          <p className="text-[11px]" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
             Pending claim
           </p>
-          <p
-            className="text-lg font-semibold tracking-tight tabular-nums"
-            style={{ color: CHART_PALETTE.blue }}
-          >
+          <p className="text-lg font-semibold tracking-tight tabular-nums text-[#1a73e8] dark:text-[#7ba2e3]">
             {fmtK(d.claimable)}
           </p>
         </div>
@@ -93,20 +88,13 @@ export default function TDSReceivable() {
       <LockDimFeactureOverlay component_name="TDS Receivable" />
 
       {/* What the card is — kept, since TDS receivable is easy to misread */}
-      <div
-        className="flex items-start gap-2 rounded-xl border px-3 py-2.5"
-        style={{ borderColor: CHART_PALETTE.border }}
-      >
+      <div className="flex items-start gap-2 rounded-xl border px-3 py-2.5 border-[#e3e3e3] dark:border-white/10">
         <Info
           size={13}
-          className="mt-0.5 shrink-0"
-          style={{ color: CHART_PALETTE.subtitle }}
+          className="mt-0.5 shrink-0 text-[#9aa0a6] dark:text-[#9aa6bd]"
         />
-        <p
-          className="text-[11px] leading-relaxed"
-          style={{ color: CHART_PALETTE.axis }}
-        >
-          <span style={{ color: CHART_PALETTE.title }}>
+        <p className="text-[11px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
+          <span className="text-[#3c4043] dark:text-[#e8ecf4]">
             What is TDS Receivable?
           </span>{" "}
           When clients pay you for services, they may deduct TDS (e.g., 15%)
@@ -135,17 +123,13 @@ export default function TDSReceivable() {
       </div>
 
       {/* Entry list */}
-      <div
-        className="mt-5 border-t"
-        style={{ borderColor: CHART_PALETTE.grid }}
-      >
+      <div className="mt-5 border-t border-[#e8eaed] dark:border-white/10">
         {d.entries.map((entry) => {
           const cfg = STATUS_CONFIG[entry.status];
           return (
             <div
               key={entry.id}
-              className="flex items-center justify-between gap-4 border-b py-3 last:border-0"
-              style={{ borderColor: CHART_PALETTE.grid }}
+              className="flex items-center justify-between gap-4 border-b py-3 last:border-0 border-[#e8eaed] dark:border-white/10"
             >
               {/* Left — icon + client info */}
               <div className="flex min-w-0 items-center gap-3">
@@ -157,16 +141,10 @@ export default function TDSReceivable() {
                   />
                 </div>
                 <div className="min-w-0">
-                  <p
-                    className="truncate text-[13px]"
-                    style={{ color: CHART_PALETTE.title }}
-                  >
+                  <p className="truncate text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                     {entry.client}
                   </p>
-                  <p
-                    className="mt-0.5 text-[11px]"
-                    style={{ color: CHART_PALETTE.subtitle }}
-                  >
+                  <p className="mt-0.5 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                     {entry.period} · TDS @ {entry.tdsRate}%
                   </p>
                 </div>
@@ -174,10 +152,7 @@ export default function TDSReceivable() {
 
               {/* Right — amount + badge */}
               <div className="flex shrink-0 items-center gap-3">
-                <p
-                  className="text-[13px] font-medium tabular-nums"
-                  style={{ color: CHART_PALETTE.title }}
-                >
+                <p className="text-[13px] font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                   {formatCurrencySymbol(
                     entry.amount,
                     currency.symbol,

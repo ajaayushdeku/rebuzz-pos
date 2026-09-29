@@ -8,7 +8,7 @@ import { useMonthlySalesRevenue } from "@/hooks/useMonthlySalesRevenue";
 import { getPurposeIcon } from "@/lib/purpose-icons";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { CHART_PALETTE, ChartCard } from "../dashboardComponents/chartCard";
+import { ChartCard } from "../dashboardComponents/chartCard";
 import { isFixedCost } from "@/lib/costClassification";
 import {
   Activity,
@@ -29,15 +29,19 @@ const STATUS_STYLES: Record<
   { bg: string; text: string; border: string }
 > = {
   Healthy: {
-    bg: "bg-green-50",
-    text: "text-green-700",
-    border: "border-green-200",
+    bg: "bg-green-50 dark:bg-emerald-400/10",
+    text: "text-green-700 dark:text-emerald-300",
+    border: "border-green-200 dark:border-emerald-400/25",
   },
-  High: { bg: "bg-red-50", text: "text-red-600", border: "border-red-200" },
+  High: {
+    bg: "bg-red-50 dark:bg-red-400/10",
+    text: "text-red-600 dark:text-red-400",
+    border: "border-red-200 dark:border-red-400/25",
+  },
   "At limit": {
-    bg: "bg-amber-50",
-    text: "text-amber-700",
-    border: "border-amber-200",
+    bg: "bg-amber-50 dark:bg-amber-400/10",
+    text: "text-amber-700 dark:text-amber-300",
+    border: "border-amber-200 dark:border-amber-400/25",
   },
 };
 
@@ -54,11 +58,7 @@ const DEFAULT_TARGET = 30;
 
 /** The small outlined "show more / show less" control, as on the other cards. */
 const MORE_BUTTON =
-  "inline-flex cursor-pointer items-center gap-1 rounded-full border bg-white px-2.5 py-1 text-[11px] transition-colors hover:bg-[#f8f9fa]";
-const MORE_BUTTON_STYLE = {
-  borderColor: CHART_PALETTE.control,
-  color: CHART_PALETTE.title,
-};
+  "inline-flex cursor-pointer items-center gap-1 rounded-full border border-[#dadce0] bg-white px-2.5 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:hover:bg-white/10";
 
 function getStatus(pct: number, target: number): CostHealthStatus {
   if (pct > target) return "High";
@@ -112,10 +112,7 @@ function CostHealthCard({ card }: { card: CostCard }) {
     formatCurrencySymbol(value, currency.symbol, currency.locale);
 
   return (
-    <div
-      className="rounded-2xl border bg-white px-5 py-4"
-      style={{ borderColor: CHART_PALETTE.border }}
-    >
+    <div className="rounded-2xl border bg-white dark:bg-[#161d2e] px-5 py-4 border-[#e3e3e3] dark:border-white/10">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
@@ -123,10 +120,7 @@ function CostHealthCard({ card }: { card: CostCard }) {
             size: 15,
             style: { color: card.iconColor },
           })}
-          <p
-            className="truncate text-[13px]"
-            style={{ color: CHART_PALETTE.title }}
-          >
+          <p className="truncate text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
             {card.label}
           </p>
         </div>
@@ -155,7 +149,7 @@ function CostHealthCard({ card }: { card: CostCard }) {
               cy="35"
               r={radius}
               fill="none"
-              stroke={CHART_PALETTE.grid}
+              className="stroke-[#e8eaed] dark:stroke-[#2d3443]"
               strokeWidth="7"
             />
             <circle
@@ -179,16 +173,10 @@ function CostHealthCard({ card }: { card: CostCard }) {
 
         {/* Percentage + amount */}
         <div className="flex flex-col">
-          <span
-            className="text-3xl font-semibold tracking-tight tabular-nums"
-            style={{ color: CHART_PALETTE.title }}
-          >
+          <span className="text-3xl font-semibold tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
             {card.pct === null ? "—" : `${card.pct.toFixed(1)}%`}
           </span>
-          <span
-            className="mt-0.5 text-xs tabular-nums"
-            style={{ color: CHART_PALETTE.subtitle }}
-          >
+          <span className="mt-0.5 text-xs tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
             {formatMoney(card.amount)}
           </span>
         </div>
@@ -196,27 +184,21 @@ function CostHealthCard({ card }: { card: CostCard }) {
 
       {/* Progress bar with target marker */}
       <div className="mt-5">
-        <div
-          className="relative h-1.5 overflow-visible rounded-full"
-          style={{ backgroundColor: CHART_PALETTE.grid }}
-        >
+        <div className="relative h-1.5 overflow-visible rounded-full bg-[#e8eaed] dark:bg-white/10">
           <div
             className="absolute left-0 top-0 h-full rounded-full transition-all duration-500"
             style={{ width: `${barPct}%`, backgroundColor: barColor }}
           />
           {/* Target marker */}
           <div
-            className="absolute top-1/2 h-3.5 w-[2px] -translate-y-1/2"
-            style={{ left: "100%", backgroundColor: CHART_PALETTE.axis }}
+            className="absolute top-1/2 h-3.5 w-[2px] -translate-y-1/2 bg-[#5f6368] dark:bg-[#a9b4c7]"
+            style={{ left: "100%" }}
           />
         </div>
       </div>
 
       {/* Footer */}
-      <div
-        className="mt-3 flex items-center justify-between text-[11px]"
-        style={{ color: CHART_PALETTE.subtitle }}
-      >
+      <div className="mt-3 flex items-center justify-between text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
         <p>{card.pct === null ? "revenue unavailable" : "of revenue"}</p>
         <p className="tabular-nums">target ≤ {card.target}%</p>
       </div>
@@ -245,13 +227,10 @@ function SummaryFigure({
         <Icon size={15} />
       </div>
       <div className="min-w-0">
-        <p className="text-[11px]" style={{ color: CHART_PALETTE.subtitle }}>
+        <p className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
           {label}
         </p>
-        <p
-          className="truncate text-[13px] font-medium tabular-nums"
-          style={{ color: CHART_PALETTE.title }}
-        >
+        <p className="truncate text-[13px] font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
           {value}
         </p>
       </div>
@@ -313,10 +292,10 @@ function FixedVariableDonut({
           />
         </svg>
         {/* <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-xl font-bold text-gray-900">
+          <span className="text-xl font-bold text-gray-900 dark:text-[#e8ecf4]">
             {Math.round(fixedPct)}%
           </span>
-          <span className="text-[9px] text-gray-400">fixed</span>
+          <span className="text-[9px] text-gray-400 dark:text-[#7b869b]">fixed</span>
         </div> */}
       </div>
 
@@ -325,25 +304,16 @@ function FixedVariableDonut({
         <div>
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full bg-gray-800" />
-            <span
-              className="flex flex-row items-center gap-2 text-[13px]"
-              style={{ color: CHART_PALETTE.title }}
-            >
+            <span className="flex flex-row items-center gap-2 text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
               <span className="tabular-nums">
                 Fixed costs {fixedPct.toFixed(1)}%
               </span>
-              <span
-                className="tabular-nums"
-                style={{ color: CHART_PALETTE.axis }}
-              >
+              <span className="tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
                 {fmtRs(fixedAmount)}
               </span>
             </span>
           </div>
-          <p
-            className="ml-4 mt-0.5 text-[11px]"
-            style={{ color: CHART_PALETTE.subtitle }}
-          >
+          <p className="ml-4 mt-0.5 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
             Rent, utilities, insurance, ...
           </p>
         </div>
@@ -351,25 +321,16 @@ function FixedVariableDonut({
         <div>
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full bg-blue-400" />
-            <span
-              className="flex flex-row items-center gap-2 text-[13px]"
-              style={{ color: CHART_PALETTE.title }}
-            >
+            <span className="flex flex-row items-center gap-2 text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
               <span className="tabular-nums">
                 Variable costs {variablePct.toFixed(1)}%
               </span>
-              <span
-                className="tabular-nums"
-                style={{ color: CHART_PALETTE.axis }}
-              >
+              <span className="tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
                 {fmtRs(variableAmount)}
               </span>
             </span>
           </div>
-          <p
-            className="ml-4 mt-0.5 text-[11px]"
-            style={{ color: CHART_PALETTE.subtitle }}
-          >
+          <p className="ml-4 mt-0.5 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
             Food, transportation, marketing, ...
           </p>
         </div>
@@ -514,13 +475,13 @@ export default function CostHealth() {
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3"
+              className="bg-white dark:bg-[#161d2e] rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3 dark:border-white/10"
             >
               <div className="flex items-center justify-between">
-                <div className="h-3 w-20 bg-gray-100 rounded" />
-                <div className="w-4 h-4 bg-gray-200 rounded" />
+                <div className="h-3 w-20 bg-gray-100 rounded dark:bg-white/10" />
+                <div className="w-4 h-4 bg-gray-200 rounded dark:bg-white/15" />
               </div>
-              <div className="h-6 w-24 bg-gray-200 rounded" />
+              <div className="h-6 w-24 bg-gray-200 rounded dark:bg-white/15" />
             </div>
           ))}
         </div>
@@ -539,22 +500,16 @@ export default function CostHealth() {
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <div
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
               style={{ borderColor: "#fecdd3", backgroundColor: "#fff1f2" }}
             >
               <Activity size={16} style={{ color: "#e11d48" }} />
             </div>
             <div className="min-w-0">
-              <h3
-                className="text-[15px] font-normal"
-                style={{ color: CHART_PALETTE.title }}
-              >
+              <h3 className="text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
                 Cost health
               </h3>
-              <p
-                className="mt-0.5 text-xs tracking-wide"
-                style={{ color: CHART_PALETTE.subtitle }}
-              >
+              <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
                 {`Each cost as a share of ${revenueLabel}, against a target`}
               </p>
             </div>
@@ -563,24 +518,18 @@ export default function CostHealth() {
         </div>
 
         {cards.length === 0 ? (
-          <div
-            className="rounded-2xl border bg-white p-8"
-            style={{ borderColor: CHART_PALETTE.border }}
-          >
+          <div className="rounded-2xl border bg-white dark:bg-[#161d2e] p-8 border-[#e3e3e3] dark:border-white/10">
             <div className="flex flex-col items-center justify-center text-center">
-              <div
-                className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
-                style={{ backgroundColor: CHART_PALETTE.hover }}
-              >
-                <Activity size={24} style={{ color: CHART_PALETTE.subtitle }} />
+              <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+                <Activity
+                  size={24}
+                  className="text-[#9aa0a6] dark:text-[#9aa6bd]"
+                />
               </div>
-              <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+              <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
                 No expense data yet
               </p>
-              <p
-                className="mt-1 text-xs"
-                style={{ color: CHART_PALETTE.subtitle }}
-              >
+              <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                 Cost health cards will appear once you record expenses
               </p>
             </div>
@@ -604,7 +553,6 @@ export default function CostHealth() {
                       )
                     }
                     className={MORE_BUTTON}
-                    style={MORE_BUTTON_STYLE}
                   >
                     <ChevronDown size={12} />
                     Show {cards.length - visibleCount} more
@@ -616,7 +564,6 @@ export default function CostHealth() {
                       setVisibleCount((prev) => Math.max(prev - 4, 4))
                     }
                     className={MORE_BUTTON}
-                    style={MORE_BUTTON_STYLE}
                   >
                     <ChevronUp size={12} />
                     Show less
@@ -645,19 +592,16 @@ export default function CostHealth() {
       >
         {!hasData ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div
-              className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
-              style={{ backgroundColor: CHART_PALETTE.hover }}
-            >
-              <PieChart size={24} style={{ color: CHART_PALETTE.subtitle }} />
+            <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+              <PieChart
+                size={24}
+                className="text-[#9aa0a6] dark:text-[#9aa6bd]"
+              />
             </div>
-            <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+            <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
               No spend overview data
             </p>
-            <p
-              className="mt-1 text-xs"
-              style={{ color: CHART_PALETTE.subtitle }}
-            >
+            <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
               Has no spend data for this period
             </p>
           </div>
@@ -667,16 +611,10 @@ export default function CostHealth() {
               <div className="grid grid-cols-2 gap-4 lg:gap-6">
                 {/* Total spend */}
                 <div>
-                  <p
-                    className="mb-2 text-[13px]"
-                    style={{ color: CHART_PALETTE.axis }}
-                  >
+                  <p className="mb-2 text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">
                     Total spend
                   </p>
-                  <p
-                    className="text-3xl font-semibold tracking-tight tabular-nums"
-                    style={{ color: CHART_PALETTE.title }}
-                  >
+                  <p className="text-3xl font-semibold tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                     {fmtRs(overview.totalSpend)}
                   </p>
                   {/* Reads against the same revenue the cards use. Keyed to
@@ -689,12 +627,9 @@ export default function CostHealth() {
                         <>
                           <TrendingUp
                             size={13}
-                            style={{ color: CHART_PALETTE.bad }}
+                            className="text-[#d93025] dark:text-[#f87171]"
                           />
-                          <span
-                            className="text-xs"
-                            style={{ color: CHART_PALETTE.bad }}
-                          >
+                          <span className="text-xs text-[#d93025] dark:text-[#f87171]">
                             Over revenue
                           </span>
                         </>
@@ -702,12 +637,9 @@ export default function CostHealth() {
                         <>
                           <TrendingDown
                             size={13}
-                            style={{ color: CHART_PALETTE.good }}
+                            className="text-[#1e8e3e] dark:text-[#10b981]"
                           />
-                          <span
-                            className="text-xs"
-                            style={{ color: CHART_PALETTE.good }}
-                          >
+                          <span className="text-xs text-[#1e8e3e] dark:text-[#10b981]">
                             Within revenue
                           </span>
                         </>
@@ -719,27 +651,19 @@ export default function CostHealth() {
                 {/* Net profit */}
                 <div>
                   <div className="mb-2 flex flex-col items-start gap-0 md:flex-row md:gap-2">
-                    <span
-                      className="text-[13px]"
-                      style={{ color: CHART_PALETTE.axis }}
-                    >
+                    <span className="text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">
                       Net profit
                     </span>
-                    <span
-                      className="text-[11px]"
-                      style={{ color: CHART_PALETTE.subtitle }}
-                    >
+                    <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                       (Miscellaneous Income − Miscellaneous Expenses)
                     </span>
                   </div>
                   <p
-                    className="text-3xl font-semibold tracking-tight tabular-nums"
-                    style={{
-                      color:
-                        overview.netProfit >= 0
-                          ? CHART_PALETTE.good
-                          : CHART_PALETTE.bad,
-                    }}
+                    className={`text-3xl font-semibold tracking-tight tabular-nums ${
+                      overview.netProfit >= 0
+                        ? "text-[#1e8e3e] dark:text-[#10b981]"
+                        : "text-[#d93025] dark:text-[#f87171]"
+                    }`}
                   >
                     {fmtRs(overview.netProfit)}
                   </p>
@@ -750,10 +674,7 @@ export default function CostHealth() {
                       shop's. Hidden entirely when there is no base to divide
                       by, rather than printed as a flat 0%. */}
                   {overview.miscIncome > 0 && (
-                    <p
-                      className="mt-1 text-[13px] tabular-nums"
-                      style={{ color: CHART_PALETTE.axis }}
-                    >
+                    <p className="mt-1 text-[13px] tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
                       {overview.netProfitMarginPct}% of misc. income
                     </p>
                   )}
@@ -761,10 +682,7 @@ export default function CostHealth() {
               </div>
               {/* Fixed vs variable breakdown */}
               <div className="lg:min-w-[300px]">
-                <p
-                  className="mb-2 text-[13px]"
-                  style={{ color: CHART_PALETTE.axis }}
-                >
+                <p className="mb-2 text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">
                   Fixed vs variable
                 </p>
 
@@ -778,25 +696,22 @@ export default function CostHealth() {
             </div>
 
             {/* Bottom summary row */}
-            <div
-              className="mt-2 grid grid-cols-2 gap-4 border-t pt-5 md:grid-cols-4"
-              style={{ borderColor: CHART_PALETTE.grid }}
-            >
+            <div className="mt-2 grid grid-cols-2 gap-4 border-t pt-5 md:grid-cols-4 border-[#e8eaed] dark:border-white/10">
               <SummaryFigure
                 icon={Wallet}
-                iconClass="bg-red-50 text-red-600"
+                iconClass="bg-red-50 text-red-600 dark:bg-red-400/10 dark:text-red-400"
                 label="Total spend"
                 value={fmtRs(overview.totalSpend)}
               />
               <SummaryFigure
                 icon={Target}
-                iconClass="bg-blue-50 text-blue-600"
+                iconClass="bg-blue-50 text-blue-600 dark:bg-blue-400/10 dark:text-[#7ba2e3]"
                 label="Fixed costs"
                 value={fmtRs(overview.fixedAmount)}
               />
               <SummaryFigure
                 icon={DollarSign}
-                iconClass="bg-emerald-50 text-emerald-600"
+                iconClass="bg-emerald-50 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400"
                 label="Variable costs"
                 value={fmtRs(overview.variableAmount)}
               />
@@ -804,8 +719,8 @@ export default function CostHealth() {
                 icon={AlertTriangle}
                 iconClass={
                   overview.netProfit < 0
-                    ? "bg-red-50 text-red-600"
-                    : "bg-emerald-50 text-emerald-600"
+                    ? "bg-red-50 text-red-600 dark:bg-red-400/10 dark:text-red-400"
+                    : "bg-emerald-50 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400"
                 }
                 label="Net profit"
                 value={fmtRs(overview.netProfit)}

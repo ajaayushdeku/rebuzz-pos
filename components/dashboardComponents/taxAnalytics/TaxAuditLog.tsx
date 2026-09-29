@@ -16,7 +16,7 @@ import type {
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { CHART_PALETTE, ChartCard } from "../chartCard";
+import { ChartCard } from "../chartCard";
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -59,9 +59,21 @@ const STATUS_STYLES: Record<
   AuditLogStatus,
   { bg: string; text: string; label: string }
 > = {
-  pending: { bg: "bg-amber-50", text: "text-amber-700", label: "Pending" },
-  filed: { bg: "bg-gray-100", text: "text-gray-500", label: "Filed" },
-  overdue: { bg: "bg-red-50", text: "text-red-600", label: "Overdue" },
+  pending: {
+    bg: "bg-amber-50 dark:bg-amber-400/10",
+    text: "text-amber-700 dark:text-amber-300",
+    label: "Pending",
+  },
+  filed: {
+    bg: "bg-gray-100 dark:bg-white/10",
+    text: "text-gray-500 dark:text-[#9aa6bd]",
+    label: "Filed",
+  },
+  overdue: {
+    bg: "bg-red-50 dark:bg-red-400/10",
+    text: "text-red-600 dark:text-red-400",
+    label: "Overdue",
+  },
 };
 
 function StatusBadge({ status }: { status: AuditLogStatus }) {
@@ -81,10 +93,16 @@ type SortDir = "asc" | "desc" | null;
 
 function SortIcon({ dir }: { dir: SortDir }) {
   if (dir === "asc")
-    return <ChevronUp size={12} style={{ color: CHART_PALETTE.blue }} />;
+    return (
+      <ChevronUp size={12} className="text-[#1a73e8] dark:text-[#7ba2e3]" />
+    );
   if (dir === "desc")
-    return <ChevronDown size={12} style={{ color: CHART_PALETTE.blue }} />;
-  return <ArrowUpDown size={12} style={{ color: CHART_PALETTE.subtitle }} />;
+    return (
+      <ChevronDown size={12} className="text-[#1a73e8] dark:text-[#7ba2e3]" />
+    );
+  return (
+    <ArrowUpDown size={12} className="text-[#9aa0a6] dark:text-[#9aa6bd]" />
+  );
 }
 
 // ── Column config ─────────────────────────────────────────────────────────
@@ -173,11 +191,7 @@ export default function TaxAuditLog() {
       controls={
         <button
           onClick={() => exportCSV(sorted)}
-          className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border bg-white px-2.5 py-1 text-[11px] transition-colors hover:bg-[#f8f9fa]"
-          style={{
-            borderColor: CHART_PALETTE.control,
-            color: CHART_PALETTE.title,
-          }}
+          className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border bg-white px-2.5 py-1 text-[11px] transition-colors hover:bg-[#f8f9fa] border-[#dadce0] dark:border-white/15 text-[#3c4043] dark:text-[#e8ecf4] dark:hover:bg-white/10 dark:bg-white/5"
         >
           <Download size={12} />
           Export CSV
@@ -195,13 +209,7 @@ export default function TaxAuditLog() {
         <table className="w-full text-sm">
           {/* Header row */}
           <thead>
-            <tr
-              className="border-b"
-              style={{
-                borderColor: CHART_PALETTE.grid,
-                color: CHART_PALETTE.axis,
-              }}
-            >
+            <tr className="border-b border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
               {COLUMNS.map((col) => (
                 <th
                   key={col.key}
@@ -211,7 +219,7 @@ export default function TaxAuditLog() {
                       : col.align === "center"
                         ? "text-center"
                         : "text-left"
-                  } ${col.sortable ? "cursor-pointer transition-colors hover:text-[#3c4043]" : ""}`}
+                  } ${col.sortable ? "cursor-pointer transition-colors hover:text-[#3c4043] dark:hover:text-[#e8ecf4]" : ""}`}
                   onClick={() => col.sortable && handleSort(col.key)}
                 >
                   <span className="inline-flex items-center gap-1">
@@ -228,74 +236,50 @@ export default function TaxAuditLog() {
             {sorted.map((row) => (
               <tr
                 key={row.id}
-                className="border-b transition-colors last:border-0 hover:bg-[#f8f9fa]"
-                style={{ borderColor: CHART_PALETTE.grid }}
+                className="border-b transition-colors last:border-0 hover:bg-[#f8f9fa] border-[#e8eaed] dark:border-white/10 dark:hover:bg-white/10"
               >
                 {/* Period */}
                 <td className="px-4 py-3">
-                  <p
-                    className="text-[13px]"
-                    style={{ color: CHART_PALETTE.title }}
-                  >
+                  <p className="text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                     {row.period}
                   </p>
-                  <p
-                    className="mt-0.5 text-[11px]"
-                    style={{ color: CHART_PALETTE.subtitle }}
-                  >
+                  <p className="mt-0.5 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                     {row.txCode}
                   </p>
                 </td>
 
                 {/* Taxable Base */}
-                <td
-                  className="px-4 py-3 text-right text-[13px] tabular-nums"
-                  style={{ color: CHART_PALETTE.axis }}
-                >
+                <td className="px-4 py-3 text-right text-[13px] tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
                   {fmtRs(row.taxableBase)}
                 </td>
 
                 {/* Rate */}
-                <td
-                  className="px-4 py-3 text-center text-[13px] tabular-nums"
-                  style={{ color: CHART_PALETTE.axis }}
-                >
+                <td className="px-4 py-3 text-center text-[13px] tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
                   {row.rate}%
                 </td>
 
                 {/* VAT Collected */}
-                <td
-                  className="px-4 py-3 text-right text-[13px] font-medium tabular-nums"
-                  style={{ color: CHART_PALETTE.title }}
-                >
+                <td className="px-4 py-3 text-right text-[13px] font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                   {fmtRs(row.vatCollected)}
                 </td>
 
                 {/* VAT Paid */}
-                <td
-                  className="px-4 py-3 text-right text-[13px] tabular-nums"
-                  style={{ color: CHART_PALETTE.axis }}
-                >
+                <td className="px-4 py-3 text-right text-[13px] tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
                   {fmtRs(row.vatPaid)}
                 </td>
 
                 {/* Remitted */}
-                <td
-                  className="px-4 py-3 text-right text-[13px] tabular-nums"
-                  style={{ color: CHART_PALETTE.good }}
-                >
+                <td className="px-4 py-3 text-right text-[13px] tabular-nums text-[#1e8e3e] dark:text-[#10b981]">
                   {fmtRs(row.remitted)}
                 </td>
 
                 {/* Still Owed */}
                 <td
-                  className="px-4 py-3 text-right text-[13px] font-medium tabular-nums"
-                  style={{
-                    color:
-                      row.stillOwed > 0
-                        ? CHART_PALETTE.bad
-                        : CHART_PALETTE.subtitle,
-                  }}
+                  className={`px-4 py-3 text-right text-[13px] font-medium tabular-nums ${
+                    row.stillOwed > 0
+                      ? "text-[#d93025] dark:text-[#f87171]"
+                      : "text-[#9aa0a6] dark:text-[#9aa6bd]"
+                  }`}
                 >
                   {fmtRs(row.stillOwed)}
                 </td>
@@ -311,38 +295,26 @@ export default function TaxAuditLog() {
       </div>
 
       {/* Footer summary */}
-      <div
-        className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-3 text-xs"
-        style={{ borderColor: CHART_PALETTE.grid }}
-      >
-        <p style={{ color: CHART_PALETTE.subtitle }}>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-3 text-xs border-[#e8eaed] dark:border-white/10">
+        <p className="text-[#9aa0a6] dark:text-[#9aa6bd]">
           Showing {sorted.length} periods
         </p>
         <div className="flex flex-wrap items-center gap-4">
-          <span style={{ color: CHART_PALETTE.subtitle }}>
+          <span className="text-[#9aa0a6] dark:text-[#9aa6bd]">
             Total VAT collected:{" "}
-            <span
-              className="font-medium tabular-nums"
-              style={{ color: CHART_PALETTE.title }}
-            >
+            <span className="font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
               {fmtRs(sorted.reduce((s, r) => s + r.vatCollected, 0))}
             </span>
           </span>
-          <span style={{ color: CHART_PALETTE.subtitle }}>
+          <span className="text-[#9aa0a6] dark:text-[#9aa6bd]">
             Total remitted:{" "}
-            <span
-              className="font-medium tabular-nums"
-              style={{ color: CHART_PALETTE.good }}
-            >
+            <span className="font-medium tabular-nums text-[#1e8e3e] dark:text-[#10b981]">
               {fmtRs(sorted.reduce((s, r) => s + r.remitted, 0))}
             </span>
           </span>
-          <span style={{ color: CHART_PALETTE.subtitle }}>
+          <span className="text-[#9aa0a6] dark:text-[#9aa6bd]">
             Still owed:{" "}
-            <span
-              className="font-medium tabular-nums"
-              style={{ color: CHART_PALETTE.bad }}
-            >
+            <span className="font-medium tabular-nums text-[#d93025] dark:text-[#f87171]">
               {fmtRs(sorted.reduce((s, r) => s + r.stillOwed, 0))}
             </span>
           </span>

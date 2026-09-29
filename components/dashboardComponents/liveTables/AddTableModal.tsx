@@ -135,8 +135,8 @@ export default function AddTableModal({
           : "Add a table to the floor plan"
       }
       icon={Table2}
-      iconColor="text-blue-600"
-      iconBgColor="bg-blue-50"
+      iconColor="text-blue-600 dark:text-[#7ba2e3]"
+      iconBgColor="bg-blue-50 dark:bg-blue-400/10"
       maxWidth="max-w-xl"
       footer={
         <div className="flex items-center gap-2.5">
@@ -207,14 +207,18 @@ export default function AddTableModal({
               onClick={() => handleZoneSelect("indoor")}
               className={`flex items-center justify-center gap-2 rounded-xl border py-3 text-[13px] font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                 zone === "indoor"
-                  ? "border-blue-600 bg-blue-50 text-blue-700"
-                  : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                  ? "border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-400/10 dark:text-[#a8c4ee]"
+                  : "border-gray-200 bg-white dark:bg-white/5 text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-white/15 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:border-white/25"
               }`}
             >
               <Armchair
                 size={16}
                 strokeWidth={1.8}
-                className={zone === "indoor" ? "text-blue-600" : "text-gray-400"}
+                className={
+                  zone === "indoor"
+                    ? "text-blue-600 dark:text-[#7ba2e3]"
+                    : "text-gray-400 dark:text-[#7b869b]"
+                }
               />
               Indoor
             </button>
@@ -224,15 +228,17 @@ export default function AddTableModal({
               onClick={() => handleZoneSelect("outdoor")}
               className={`flex items-center justify-center gap-2 rounded-xl border py-3 text-[13px] font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 ${
                 zone === "outdoor"
-                  ? "border-orange-500 bg-orange-50 text-orange-700"
-                  : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                  ? "border-orange-500 bg-orange-50 text-orange-700 dark:bg-orange-400/10 dark:text-orange-300"
+                  : "border-gray-200 bg-white dark:bg-white/5 text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-white/15 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:border-white/25"
               }`}
             >
               <Sun
                 size={16}
                 strokeWidth={1.8}
                 className={
-                  zone === "outdoor" ? "text-orange-500" : "text-gray-400"
+                  zone === "outdoor"
+                    ? "text-orange-500"
+                    : "text-gray-400 dark:text-[#7b869b]"
                 }
               />
               Outdoor
@@ -249,8 +255,12 @@ export default function AddTableModal({
               aria-hidden
               className="pointer-events-none absolute inset-0 whitespace-pre-wrap break-words px-3.5 py-2.5 text-[13px]"
             >
-              {zone && <span className="text-gray-300">{zonePrefix}</span>}
-              <span className="text-gray-900">
+              {zone && (
+                <span className="text-gray-300 dark:text-[#6b7588]">
+                  {zonePrefix}
+                </span>
+              )}
+              <span className="text-gray-900 dark:text-[#e8ecf4]">
                 {restOfNote ? ` ${restOfNote}` : ""}
               </span>
             </div>
@@ -269,13 +279,15 @@ export default function AddTableModal({
               }}
               placeholder={zone ? "" : "Add a note (optional)"}
               rows={3}
-              className="relative w-full resize-none rounded-xl border border-gray-200 bg-transparent px-3.5 py-2.5 text-[13px] text-transparent caret-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+              className="relative w-full resize-none rounded-xl border border-gray-200 bg-transparent px-3.5 py-2.5 text-[13px] text-transparent caret-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-white/15"
             />
           </div>
         </div>
 
         {error && (
-          <p className="text-[11px] font-medium text-red-500">{error}</p>
+          <p className="text-[11px] font-medium text-red-500 dark:text-red-400">
+            {error}
+          </p>
         )}
       </form>
     </ModalShell>

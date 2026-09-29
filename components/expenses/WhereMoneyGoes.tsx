@@ -9,7 +9,7 @@ import RangeBadge from "@/components/ui/RangeBadge";
 import { getPurposeIcon } from "@/lib/purpose-icons";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { CHART_PALETTE, ChartCard } from "../dashboardComponents/chartCard";
+import { ChartCard } from "../dashboardComponents/chartCard";
 import { ExpenseCardSkeleton } from "./ExpenseAnalyticsSkeletons";
 
 export default function WhereMoneyGoes() {
@@ -127,8 +127,8 @@ export default function WhereMoneyGoes() {
       <>
         {" "}
         <div className="flex flex-col gap-2 animate-pulse">
-          <div className="h-4 w-48 bg-gray-200 rounded" />
-          <div className="h-3 w-72 bg-gray-100 rounded mb-3" />
+          <div className="h-4 w-48 bg-gray-200 rounded dark:bg-white/15" />
+          <div className="h-3 w-72 bg-gray-100 rounded mb-3 dark:bg-white/10" />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <ExpenseCardSkeleton rows={4} titleWidth="w-36" />
             <ExpenseCardSkeleton rows={4} titleWidth="w-32" />
@@ -144,22 +144,16 @@ export default function WhereMoneyGoes() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
             style={{ borderColor: "#fde68a", backgroundColor: "#fffbeb" }}
           >
             <Wallet size={16} style={{ color: "#d97706" }} />
           </div>
           <div className="min-w-0">
-            <h3
-              className="text-[15px] font-normal"
-              style={{ color: CHART_PALETTE.title }}
-            >
+            <h3 className="text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
               Where the money goes
             </h3>
-            <p
-              className="mt-0.5 text-xs tracking-wide"
-              style={{ color: CHART_PALETTE.subtitle }}
-            >
+            <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
               Category breakdown and top vendor concentration
             </p>
           </div>
@@ -186,19 +180,16 @@ export default function WhereMoneyGoes() {
         >
           {categorySpend.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <div
-                className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
-                style={{ backgroundColor: CHART_PALETTE.hover }}
-              >
-                <Wallet size={24} style={{ color: CHART_PALETTE.subtitle }} />
+              <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+                <Wallet
+                  size={24}
+                  className="text-[#9aa0a6] dark:text-[#9aa6bd]"
+                />
               </div>
-              <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+              <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
                 No expenses recorded yet.
               </p>
-              <p
-                className="mt-1 text-xs"
-                style={{ color: CHART_PALETTE.subtitle }}
-              >
+              <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                 Category Expense data will appear here
               </p>
             </div>
@@ -226,43 +217,30 @@ export default function WhereMoneyGoes() {
                         >
                           {createElement(Icon, { size: 13 })}
                         </span>
-                        <span
-                          className="truncate text-[13px]"
-                          style={{ color: CHART_PALETTE.title }}
-                        >
+                        <span className="truncate text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                           {cat.label}
                         </span>
                       </div>
                       <div className="shrink-0 text-right">
-                        <p
-                          className="text-[13px] font-medium tabular-nums"
-                          style={{ color: CHART_PALETTE.title }}
-                        >
+                        <p className="text-[13px] font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                           {fmtRs(cat.amount)}
                         </p>
                         {isFlat ? (
-                          <p
-                            className="text-[11px]"
-                            style={{ color: CHART_PALETTE.subtitle }}
-                          >
+                          <p className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                             flat
                           </p>
                         ) : (
                           <span className="flex items-baseline justify-end gap-1">
                             <span
-                              className="text-[11px] tabular-nums"
-                              style={{
-                                color: isUp
-                                  ? CHART_PALETTE.bad
-                                  : CHART_PALETTE.good,
-                              }}
+                              className={`text-[11px] tabular-nums ${
+                                isUp
+                                  ? "text-[#d93025] dark:text-[#f87171]"
+                                  : "text-[#1e8e3e] dark:text-[#10b981]"
+                              }`}
                             >
                               {isUp ? "↑" : "↓"} {Math.abs(cat.changePct)}%
                             </span>
-                            <span
-                              className="text-[11px]"
-                              style={{ color: CHART_PALETTE.subtitle }}
-                            >
+                            <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                               from last month
                             </span>
                           </span>
@@ -270,10 +248,7 @@ export default function WhereMoneyGoes() {
                       </div>
                     </div>
                     {/* Progress bar */}
-                    <div
-                      className="h-1.5 overflow-hidden rounded-full"
-                      style={{ backgroundColor: CHART_PALETTE.grid }}
-                    >
+                    <div className="h-1.5 overflow-hidden rounded-full bg-[#e8eaed] dark:bg-white/10">
                       <div
                         className="h-full rounded-full transition-all duration-500"
                         style={{
@@ -306,47 +281,26 @@ export default function WhereMoneyGoes() {
               <div key={supplier.rank}>
                 <div className="mb-1.5 flex items-center justify-between gap-2">
                   <div className="flex min-w-0 items-center gap-2.5">
-                    <span
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] tabular-nums"
-                      style={{
-                        backgroundColor: CHART_PALETTE.hover,
-                        color: CHART_PALETTE.axis,
-                      }}
-                    >
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] tabular-nums bg-[#f1f3f4] dark:bg-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
                       {supplier.rank}
                     </span>
-                    <span
-                      className="truncate text-[13px]"
-                      style={{ color: CHART_PALETTE.title }}
-                    >
+                    <span className="truncate text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                       {supplier.name}
                     </span>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p
-                      className="text-[13px] font-medium tabular-nums"
-                      style={{ color: CHART_PALETTE.title }}
-                    >
+                    <p className="text-[13px] font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                       {fmtRs(supplier.amount)}
                     </p>
-                    <p
-                      className="text-[11px] tabular-nums"
-                      style={{ color: CHART_PALETTE.subtitle }}
-                    >
+                    <p className="text-[11px] tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
                       {supplier.pctOfPurchases}% of purchases
                     </p>
                   </div>
                 </div>
-                <div
-                  className="h-1.5 overflow-hidden rounded-full"
-                  style={{ backgroundColor: CHART_PALETTE.grid }}
-                >
+                <div className="h-1.5 overflow-hidden rounded-full bg-[#e8eaed] dark:bg-white/10">
                   <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{
-                      width: `${supplier.pctOfPurchases * 3.5}%`,
-                      backgroundColor: CHART_PALETTE.blue,
-                    }}
+                    className="h-full rounded-full bg-[#1a73e8] transition-all duration-500 dark:bg-[#7ba2e3]"
+                    style={{ width: `${supplier.pctOfPurchases * 3.5}%` }}
                   />
                 </div>
               </div>
@@ -354,37 +308,24 @@ export default function WhereMoneyGoes() {
           </div>
 
           {/* Other vendors row */}
-          <div
-            className="mt-4 flex items-center justify-between border-t pt-3 text-xs"
-            style={{ borderColor: CHART_PALETTE.grid }}
-          >
-            <span style={{ color: CHART_PALETTE.subtitle }}>
+          <div className="mt-4 flex items-center justify-between border-t pt-3 text-xs border-[#e8eaed] dark:border-white/10">
+            <span className="text-[#9aa0a6] dark:text-[#9aa6bd]">
               Other {d.otherVendorsCount} vendors
             </span>
-            <span
-              className="tabular-nums"
-              style={{ color: CHART_PALETTE.axis }}
-            >
+            <span className="tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
               {fmtRs(d.otherVendorsAmount)}
             </span>
           </div>
 
           {/* Insight banner */}
-          <div
-            className="mt-4 flex items-start gap-2 rounded-xl border px-3 py-2.5"
-            style={{ borderColor: CHART_PALETTE.border }}
-          >
+          <div className="mt-4 flex items-start gap-2 rounded-xl border px-3 py-2.5 border-[#e3e3e3] dark:border-white/10">
             <Zap
               size={13}
-              className="mt-0.5 shrink-0"
-              style={{ color: CHART_PALETTE.subtitle }}
+              className="mt-0.5 shrink-0 text-[#9aa0a6] dark:text-[#9aa6bd]"
             />
-            <p
-              className="text-[11px] leading-relaxed"
-              style={{ color: CHART_PALETTE.axis }}
-            >
+            <p className="text-[11px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
               Your top {d.topVendorCount} of {d.totalVendorCount} vendors are{" "}
-              <span style={{ color: CHART_PALETTE.title }}>
+              <span className="text-[#3c4043] dark:text-[#e8ecf4]">
                 {d.topVendorPct}%
               </span>{" "}
               of all purchases — negotiate these first.

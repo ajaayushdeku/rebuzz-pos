@@ -399,18 +399,20 @@ export default function FloorPlanView({
   };
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white">
+    <div className="overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] dark:border-white/10">
       {/* Header */}
-      <div className="flex flex-col items-start justify-between gap-4 border-b border-[#e8eaed] px-6 py-4">
+      <div className="flex flex-col items-start justify-between gap-4 border-b border-[#e8eaed] px-6 py-4 dark:border-white/10">
         <div className="flex flex-col items-start gap-1">
           <div className="flex items-center gap-1.5">
-            <span className="text-[15px] text-[#3c4043]">Live Floor Plan</span>
-            <span className="flex flex-row items-center gap-1 rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700">
+            <span className="text-[15px] text-[#3c4043] dark:text-[#e8ecf4]">
+              Live Floor Plan
+            </span>
+            <span className="flex flex-row items-center gap-1 rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700 dark:bg-emerald-400/10 dark:border-emerald-400/25 dark:text-emerald-300">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />{" "}
               LIVE
             </span>
           </div>
-          <span className="text-xs tracking-wide text-[#9aa0a6]">
+          <span className="text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
             Real-time seating · updated{" "}
             {new Date().toLocaleTimeString("en-US", {
               hour: "2-digit",
@@ -427,18 +429,20 @@ export default function FloorPlanView({
                 className="w-2 h-2 rounded-full"
                 style={{ backgroundColor: color }}
               />
-              <span className="text-[13px] text-[#3c4043]">{label}</span>
+              <span className="text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
+                {label}
+              </span>
             </div>
           ))}
         </div>
       </div>
 
       {/* Zone tabs + Edit Layout controls */}
-      <div className="flex items-center justify-between gap-2 border-b border-[#e8eaed] px-6 py-3">
+      <div className="flex items-center justify-between gap-2 border-b border-[#e8eaed] px-6 py-3 dark:border-white/10">
         <div
           role="radiogroup"
           aria-label="Zone"
-          className="flex w-fit items-center gap-1 rounded-xl bg-[#e4f2fe] p-1"
+          className="flex w-fit items-center gap-1 rounded-xl bg-[#e4f2fe] p-1 dark:bg-white/10"
         >
           {[
             { id: "indoor", label: "Indoor", count: indoorTables.length },
@@ -452,12 +456,12 @@ export default function FloorPlanView({
               aria-checked={zone === id}
               className={`flex cursor-pointer items-center gap-2 rounded-lg px-3.5 py-1.5 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
                 zone === id
-                  ? "bg-white font-bold text-blue-950 shadow-sm"
-                  : "font-semibold text-blue-800 hover:text-blue-950"
+                  ? "bg-white font-bold text-blue-950 shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none dark:text-[#e8ecf4]"
+                  : "font-semibold text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee] dark:hover:text-white"
               }`}
             >
               {label}
-              <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#e4f2fe] px-1.5 py-px text-[10px] font-bold tabular-nums tracking-wide text-blue-950 ring-1 ring-blue-900/40">
+              <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#e4f2fe] px-1.5 py-px text-[10px] font-bold tabular-nums tracking-wide text-blue-950 ring-1 ring-blue-900/40 dark:bg-white/10 dark:text-[#e8ecf4]">
                 {count}
               </span>
             </button>
@@ -469,7 +473,7 @@ export default function FloorPlanView({
           {editing && (
             <button
               onClick={resetLayout}
-              className="flex cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-2.5 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
+              className="flex cursor-pointer items-center gap-1.5 rounded-full dark:bg-white/5 border border-[#dadce0] bg-white px-2.5 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
             >
               <RotateCcw size={13} />
               Reset
@@ -480,7 +484,7 @@ export default function FloorPlanView({
             className={`flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
               editing
                 ? "border-blue-600 bg-blue-600 text-white hover:bg-blue-700"
-                : "border-[#dadce0] bg-white text-[#3c4043] hover:bg-[#f8f9fa]"
+                : "border-[#dadce0] bg-white dark:bg-white/5 text-[#3c4043] hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
             }`}
           >
             {editing ? <Check size={13} /> : <Move size={13} />}
@@ -577,7 +581,7 @@ export default function FloorPlanView({
               onClick={() => setMode(id)}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-all ${
                 mode === id
-                  ? "bg-white text-gray-900 shadow-sm"
+                  ? "bg-white text-gray-900 shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none dark:text-[#e8ecf4]"
                   : "text-white/60 hover:text-white"
               }`}
             >

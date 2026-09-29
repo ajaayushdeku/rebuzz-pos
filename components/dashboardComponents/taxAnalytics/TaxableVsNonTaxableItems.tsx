@@ -3,7 +3,14 @@
 import { useRef, useState } from "react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { Scale, Sparkles, Box, Receipt, type LucideIcon } from "lucide-react";
+import {
+  Scale,
+  Sparkles,
+  Box,
+  Receipt,
+  ChevronDown,
+  type LucideIcon,
+} from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import type {
   NameType,
@@ -11,7 +18,7 @@ import type {
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
 import RangeBadge from "@/components/ui/RangeBadge";
-import { CHART_PALETTE, ChartCard, ChartTooltipBox } from "../chartCard";
+import { ChartCard, ChartTooltipBox } from "../chartCard";
 import { TaxableSplitSkeleton } from "./TaxAnalyticsSkeletons";
 import type {
   TaxableBreakdown,
@@ -75,92 +82,119 @@ function ItemList({
   const fmt = (v: number) =>
     formatCurrencySymbol(v, currency.symbol, currency.locale);
 
-  const [expanded, setExpanded] = useState(false);
+  // How many of the hidden rows a single click brings in.
+  const STEP = 4;
+  const [revealed, setRevealed] = useState(0);
   const hasMore = items.length > ITEMS_PER_PAGE;
-  const visible = expanded ? items : items.slice(0, ITEMS_PER_PAGE);
+  const head = items.slice(0, ITEMS_PER_PAGE);
 
-  if (visible.length === 0) {
+  // The remainder in groups of four. Each group animates on its own, so a click
+  // moves only the rows it brings in.
+  const chunks: TaxBreakdownItem[][] = [];
+  for (let i = ITEMS_PER_PAGE; i < items.length; i += STEP) {
+    chunks.push(items.slice(i, i + STEP));
+  }
+  const allShown = revealed >= chunks.length;
+  const nextCount = allShown
+    ? 0
+    : Math.min(STEP, items.length - ITEMS_PER_PAGE - revealed * STEP);
+
+  /** One line of the list. A component so both halves stay identical. */
+  const Row = ({ item }: { item: TaxBreakdownItem }) => (
+    <div className="flex items-start justify-between gap-2 border-b px-3 py-2.5 text-xs transition-colors last:border-0 hover:bg-[#f8f9fa] border-[#e8eaed] dark:border-white/10 dark:hover:bg-white/10">
+      <div className="min-w-0">
+        <p
+          className="truncate text-[13px] text-[#3c4043] dark:text-[#e8ecf4]"
+          title={item.name}
+        >
+          {item.name}
+        </p>
+        <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
+          <span className="tabular-nums tracking-wide">
+            {item.count.toLocaleString()} {item.count === 1 ? "unit" : "units"}
+          </span>
+          {showTaxableTag && (
+            <span
+              className={`rounded px-1 py-px text-[9px] font-semibold uppercase tracking-wide ${
+                item.taxable
+                  ? "bg-cyan-50 text-cyan-700 dark:bg-cyan-400/10 dark:text-cyan-300"
+                  : "bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-[#9aa6bd]"
+              }`}
+            >
+              {item.taxable ? "Taxable" : "Non-taxable"}
+            </span>
+          )}
+        </p>
+      </div>
+
+      <div className="shrink-0 text-right tracking-wide">
+        <p className="text-[13px] font-medium tabular-nums" style={{ color }}>
+          {fmt(item.revenue)}
+        </p>
+        {/* Tax generated — only meaningful where tax was charged. */}
+        {showTax && item.taxable && (
+          <p className="mt-0.5 text-[11px] tabular-nums text-[#1e8e3e] dark:text-[#10b981]">
+            Tax: {fmt(item.tax)}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+
+  if (items.length === 0) {
     return (
-      <p
-        className="border-t py-10 text-center text-xs"
-        style={{
-          borderColor: CHART_PALETTE.grid,
-          color: CHART_PALETTE.subtitle,
-        }}
-      >
+      <p className="border-t py-10 text-center text-xs border-[#e8eaed] dark:border-white/10 text-[#9aa0a6] dark:text-[#9aa6bd]">
         {emptyLabel}
       </p>
     );
   }
 
   return (
-    <div className="border-t" style={{ borderColor: CHART_PALETTE.grid }}>
-      {visible.map((item) => (
-        <div
-          key={item.name}
-          className="flex items-start justify-between gap-2 border-b px-3 py-2.5 text-xs transition-colors last:border-0 hover:bg-[#f8f9fa]"
-          style={{ borderColor: CHART_PALETTE.grid }}
-        >
-          <div className="min-w-0">
-            <p
-              className="truncate text-[13px]"
-              style={{ color: CHART_PALETTE.title }}
-              title={item.name}
-            >
-              {item.name}
-            </p>
-            <p
-              className="mt-0.5 flex items-center gap-1.5 text-[11px]"
-              style={{ color: CHART_PALETTE.subtitle }}
-            >
-              <span className="tabular-nums tracking-wide">
-                {item.count.toLocaleString()}{" "}
-                {item.count === 1 ? "unit" : "units"}
-              </span>
-              {showTaxableTag && (
-                <span
-                  className={`rounded px-1 py-px text-[9px] font-semibold uppercase tracking-wide ${
-                    item.taxable
-                      ? "bg-cyan-50 text-cyan-700"
-                      : "bg-gray-100 text-gray-500"
-                  }`}
-                >
-                  {item.taxable ? "Taxable" : "Non-taxable"}
-                </span>
-              )}
-            </p>
-          </div>
-
-          <div className="shrink-0 text-right tracking-wide">
-            <p
-              className="text-[13px] font-medium tabular-nums"
-              style={{ color }}
-            >
-              {fmt(item.revenue)}
-            </p>
-            {/* Tax generated — only meaningful where tax was charged. */}
-            {showTax && item.taxable && (
-              <p
-                className="mt-0.5 text-[11px] tabular-nums"
-                style={{ color: CHART_PALETTE.good }}
-              >
-                Tax: {fmt(item.tax)}
-              </p>
-            )}
-          </div>
-        </div>
+    <div className="border-t border-[#e8eaed] dark:border-white/10">
+      {head.map((item) => (
+        <Row key={item.name} item={item} />
       ))}
 
       {hasMore && (
-        <button
-          onClick={() => setExpanded((prev) => !prev)}
-          className="w-full cursor-pointer py-2 text-xs transition-colors hover:bg-[#f8f9fa]"
-          style={{ color: CHART_PALETTE.axis }}
-        >
-          {expanded
-            ? "Show less"
-            : `Show ${items.length - ITEMS_PER_PAGE} more`}
-        </button>
+        <>
+          {/* A grid track per group rather than a height: a group's height is
+              not known in advance, and `0fr` → `1fr` is the one way to
+              transition to `auto`. The rows stay mounted so there is something
+              to reveal; `inert` keeps the closed ones out of tab order. */}
+          {chunks.map((chunk, index) => (
+            <div
+              key={index}
+              className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${
+                index < revealed ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+              }`}
+            >
+              <div className="overflow-hidden" inert={index >= revealed}>
+                {chunk.map((item) => (
+                  <Row key={item.name} item={item} />
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {/* The rate breakdown's control: a centred pill rather than a full
+              bleed row. The chevron turns with the rows it opens. */}
+          <div className="flex items-center justify-center gap-3 border-t border-[#e8eaed] py-2 dark:border-white/10">
+            <button
+              type="button"
+              onClick={() => setRevealed((prev) => (allShown ? 0 : prev + 1))}
+              aria-expanded={revealed > 0}
+              className="flex cursor-pointer items-center gap-1 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:hover:bg-white/10"
+            >
+              {allShown ? "Show less" : `Show ${nextCount} more`}
+              <ChevronDown
+                size={12}
+                className={`shrink-0 transition-transform duration-300 motion-reduce:transition-none ${
+                  allShown ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
@@ -321,21 +355,24 @@ const TaxableVsNonTaxableItems = ({
       value: fmt(data.taxableRevenue),
       sub: `Catalogue · ${pct(data.taxableRevenue).toFixed(1)}% of revenue`,
       icon: Box,
-      iconClass: "bg-blue-50 text-blue-600",
+      iconClass:
+        "bg-blue-50 text-blue-600 dark:bg-blue-400/10 dark:text-[#7ba2e3]",
     },
     {
       label: "Non-Taxable Item's Revenue",
       value: fmt(data.nonTaxableRevenue),
       sub: `Catalogue · ${pct(data.nonTaxableRevenue).toFixed(1)}% of revenue`,
       icon: Box,
-      iconClass: "bg-rose-50 text-rose-600",
+      iconClass:
+        "bg-rose-50 text-rose-600 dark:bg-rose-400/10 dark:text-rose-400",
     },
     {
       label: "Tax Collected",
       value: fmt(data.taxableTaxAmount),
       sub: `Catalogue · effective rate ${effectiveRate.toFixed(1)}%`,
       icon: Receipt,
-      iconClass: "bg-emerald-50 text-emerald-600",
+      iconClass:
+        "bg-emerald-50 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400",
     },
     // Only shown once the range actually contains custom items. Kept apart
     // from the catalogue figures above: a custom item's taxability comes from
@@ -349,7 +386,8 @@ const TaxableVsNonTaxableItems = ({
               customTaxableCount === 1 ? "item" : "items"
             } · ${pct(data.customTaxableRevenue ?? 0).toFixed(1)}% of revenue`,
             icon: Sparkles,
-            iconClass: "bg-cyan-50 text-cyan-600",
+            iconClass:
+              "bg-cyan-50 text-cyan-600 dark:bg-cyan-400/10 dark:text-cyan-400",
           },
           {
             label: "Custom Non-Taxable Item's Revenue",
@@ -358,7 +396,8 @@ const TaxableVsNonTaxableItems = ({
               customNonTaxableCount === 1 ? "item" : "items"
             } · ${pct(data.customNonTaxableRevenue ?? 0).toFixed(1)}% of revenue`,
             icon: Sparkles,
-            iconClass: "bg-rose-50 text-rose-600",
+            iconClass:
+              "bg-rose-50 text-rose-600 dark:bg-rose-400/10 dark:text-rose-400",
           },
           {
             label: "Custom Tax Collected",
@@ -367,7 +406,8 @@ const TaxableVsNonTaxableItems = ({
               1,
             )}%`,
             icon: Receipt,
-            iconClass: "bg-violet-50 text-violet-600",
+            iconClass:
+              "bg-violet-50 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400",
           },
         ]
       : []),
@@ -389,24 +429,18 @@ const TaxableVsNonTaxableItems = ({
       {isLoading ? (
         <TaxableSplitSkeleton />
       ) : isError ? (
-        <p
-          className="py-16 text-center text-sm"
-          style={{ color: CHART_PALETTE.bad }}
-        >
+        <p className="py-16 text-center text-sm text-[#d93025] dark:text-[#f87171]">
           Failed to load taxable & non-taxable items
         </p>
       ) : totalRevenue === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <div
-            className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
-            style={{ backgroundColor: CHART_PALETTE.hover }}
-          >
-            <Scale size={24} style={{ color: CHART_PALETTE.subtitle }} />
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+            <Scale size={24} className="text-[#9aa0a6] dark:text-[#9aa6bd]" />
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
             No taxable & non-taxable items revenue data
           </p>
-          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             Taxable & Non-Taxable Items will appear here
           </p>
         </div>
@@ -436,16 +470,10 @@ const TaxableVsNonTaxableItems = ({
                 </PieChart>
               </ResponsiveContainer>
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                <span
-                  className="text-[11px]"
-                  style={{ color: CHART_PALETTE.axis }}
-                >
+                <span className="text-[11px] text-[#5f6368] dark:text-[#a9b4c7]">
                   Taxable
                 </span>
-                <span
-                  className="text-xl font-semibold tracking-tight tabular-nums"
-                  style={{ color: CHART_PALETTE.title }}
-                >
+                <span className="text-xl font-semibold tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                   {taxablePct.toFixed(0)}%
                 </span>
               </div>
@@ -460,14 +488,10 @@ const TaxableVsNonTaxableItems = ({
                 return (
                   <div
                     key={s.label}
-                    className="relative overflow-hidden rounded-xl border px-5 py-4"
-                    style={{ borderColor: CHART_PALETTE.border }}
+                    className="relative overflow-hidden rounded-xl border px-5 py-4 border-[#e3e3e3] dark:border-white/10"
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <span
-                        className="min-w-0 truncate text-[11px]"
-                        style={{ color: CHART_PALETTE.axis }}
-                      >
+                      <span className="min-w-0 truncate text-[11px] text-[#5f6368] dark:text-[#a9b4c7]">
                         {s.label}
                       </span>
                       {/* The tile takes the icon's colour, so `border-current/20`
@@ -479,16 +503,10 @@ const TaxableVsNonTaxableItems = ({
                       </div>
                     </div>
 
-                    <p
-                      className="mt-2 truncate text-lg font-semibold tracking-tight tabular-nums"
-                      style={{ color: CHART_PALETTE.title }}
-                    >
+                    <p className="mt-2 truncate text-lg font-semibold tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                       {s.value}
                     </p>
-                    <p
-                      className="mt-0.5 truncate text-[11px]"
-                      style={{ color: CHART_PALETTE.subtitle }}
-                    >
+                    <p className="mt-0.5 truncate text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                       {s.sub}
                     </p>
                   </div>
@@ -505,7 +523,7 @@ const TaxableVsNonTaxableItems = ({
                 role="tablist"
                 aria-label="Item tax classification"
                 onKeyDown={handleTabKeyDown}
-                className="flex items-center gap-1 rounded-xl bg-[#e4f2fe] p-1"
+                className="flex items-center gap-1 rounded-xl bg-[#e4f2fe] p-1 dark:bg-white/10"
               >
                 {tabs.map((tab, i) => {
                   const selected = tab.key === activeTab;
@@ -524,8 +542,8 @@ const TaxableVsNonTaxableItems = ({
                       onClick={() => setActiveTab(tab.key)}
                       className={`flex cursor-pointer items-center gap-2 rounded-lg px-4 py-1.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
                         selected
-                          ? "bg-white font-bold text-blue-950 shadow-sm"
-                          : "font-semibold text-blue-800 hover:text-blue-950"
+                          ? "bg-white font-bold text-blue-950 shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none"
+                          : "font-semibold text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee] dark:hover:text-white"
                       }`}
                     >
                       <span
@@ -533,7 +551,7 @@ const TaxableVsNonTaxableItems = ({
                         style={{ backgroundColor: tab.color }}
                       />
                       {tab.label}
-                      <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#e4f2fe] px-1.5 py-px text-[10px] font-bold tabular-nums tracking-wide text-blue-950 ring-1 ring-blue-900/40">
+                      <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#e4f2fe] px-1.5 py-px text-[10px] font-bold tabular-nums tracking-wide text-blue-950 ring-1 ring-blue-900/40 dark:bg-white/10 dark:text-[#e8ecf4]">
                         {tab.count}
                       </span>
                     </button>
@@ -550,10 +568,7 @@ const TaxableVsNonTaxableItems = ({
             </div>
 
             {activeTab === "custom" && (
-              <p
-                className="mb-2 text-[11px]"
-                style={{ color: CHART_PALETTE.subtitle }}
-              >
+              <p className="mb-2 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                 Added on an invoice rather than from the product catalogue —
                 classified by whether tax was charged.
               </p>

@@ -16,6 +16,7 @@ export const CHART_PALETTE = {
   control: "#dadce0",
   grid: "#e8eaed",
   title: "#3c4043",
+  tooltip: "#9FC2EE",
 
   subtitle: "#9aa0a6",
   axis: "#5f6368",

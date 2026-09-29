@@ -245,7 +245,7 @@ export default function BillsSection({
         <div className="flex items-center gap-3 mb-6">
           <div className="flex min-w-0 items-center gap-3">
             <div
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
               style={{ borderColor: "#d5ffed", backgroundColor: "#f5fffa" }}
             >
               <Receipt size={16} style={{ color: "#24bc36" }} />
@@ -284,7 +284,7 @@ export default function BillsSection({
         <div className="flex items-center gap-3 mb-6">
           <div className="flex min-w-0 items-center gap-3">
             <div
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
               style={{ borderColor: "#d5ffed", backgroundColor: "#f5fffa" }}
             >
               <Receipt size={16} style={{ color: "#24bc36" }} />
@@ -329,7 +329,7 @@ export default function BillsSection({
         <div className="flex items-center gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <div
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
               style={{ borderColor: "#8ff59c", backgroundColor: "#f5fffa" }}
             >
               <Receipt size={16} style={{ color: "#28d23c" }} />

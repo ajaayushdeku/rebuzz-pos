@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { ChartPie } from "lucide-react";
@@ -22,11 +22,11 @@ import type {
 } from "recharts/types/component/DefaultTooltipContent";
 import RangeBadge from "@/components/ui/RangeBadge";
 import {
-  AXIS_TICK,
   CHART_PALETTE,
   ChartCard,
   ChartPager,
   ChartTooltipBox,
+  getAxisTick,
 } from "../chartCard";
 import { TaxRankedChartSkeleton } from "./TaxAnalyticsSkeletons";
 
@@ -91,13 +91,8 @@ const CustomTooltip = ({
 function Total({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <p className="text-[11px]" style={{ color: CHART_PALETTE.subtitle }}>
-        {label}
-      </p>
-      <p
-        className="truncate text-base font-semibold tracking-tight tabular-nums"
-        style={{ color: CHART_PALETTE.title }}
-      >
+      <p className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">{label}</p>
+      <p className="truncate text-base font-semibold tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
         {value}
       </p>
     </div>
@@ -156,6 +151,27 @@ const TaxByCategory = ({
 
   const showPager = !isLoading && !isError && totalPages > 1;
 
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
+
   return (
     <ChartCard
       icon={ChartPie}
@@ -190,24 +206,21 @@ const TaxByCategory = ({
       {isLoading ? (
         <TaxRankedChartSkeleton />
       ) : isError ? (
-        <p
-          className="py-16 text-center text-sm"
-          style={{ color: CHART_PALETTE.bad }}
-        >
+        <p className="py-16 text-center text-sm text-[#d93025] dark:text-[#f87171]">
           Failed to load category tax data
         </p>
       ) : sorted.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <div
-            className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
-            style={{ backgroundColor: CHART_PALETTE.hover }}
-          >
-            <ChartPie size={24} style={{ color: CHART_PALETTE.subtitle }} />
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+            <ChartPie
+              size={24}
+              className="text-[#9aa0a6] dark:text-[#9aa6bd]"
+            />
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
             No tax by category data
           </p>
-          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             Tax by Category data will appear here
           </p>
         </div>
@@ -216,10 +229,7 @@ const TaxByCategory = ({
           {/* Totals — the figures behind the ranking, above the chart */}
           <div className="mb-4 flex items-center justify-between gap-3">
             <Total label="Total tax by category" value={fmt(totalTax)} />
-            <div
-              className="h-8 w-px"
-              style={{ backgroundColor: CHART_PALETTE.grid }}
-            />
+            <div className="h-8 w-px bg-[#e8eaed] dark:bg-white/10" />
             <div className="shrink-0 text-right">
               <Total
                 label="Categories"

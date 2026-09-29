@@ -22,11 +22,17 @@ import {
   ChevronRight,
   Expand,
   X,
+  CheckCircle2,
+  AlertTriangle,
+  CircleAlert,
+  Ban,
+  PackagePlus,
+  Infinity as InfinityIcon,
+  type LucideIcon,
 } from "lucide-react";
 import { useCategories } from "@/hooks/useCategories";
 import { useDiscounts } from "@/hooks/useDiscounts";
 import { normalizeColor } from "@/services/category.client";
-import { CHART_PALETTE } from "@/components/dashboardComponents/chartCard";
 
 /**
  * Per-status presentation.
@@ -38,52 +44,56 @@ import { CHART_PALETTE } from "@/components/dashboardComponents/chartCard";
 const statusConfig = {
   healthy: {
     bar: "bg-emerald-500",
-    badge: "border border-emerald-200 bg-emerald-50 text-emerald-700",
+    badge:
+      "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-[#161D2E] dark:border-emerald-400/25 dark:text-emerald-300",
     label: "In Stock",
-    icon: "✅",
-    text: "text-emerald-600",
-    card: "border-[#e3e3e3] bg-white hover:border-[#dadce0]",
-    count: "text-gray-900",
+    icon: CheckCircle2,
+    text: "text-emerald-600 dark:text-emerald-400",
+    card: "border-[#e3e3e3] bg-white dark:bg-[#161d2e] hover:border-[#dadce0] dark:border-white/10 dark:hover:border-white/25",
+    count: "text-gray-900 dark:text-[#e8ecf4]",
   },
 
   warning: {
     bar: "bg-amber-400",
-    badge: "border border-amber-200 bg-amber-50 text-amber-700",
+    badge:
+      "border border-amber-200 bg-amber-50 text-amber-700 dark:bg-[#161D2E] dark:border-amber-400/25 dark:text-amber-300",
     label: "Low Stock",
-    icon: "⚠️",
-    text: "text-amber-600",
-    card: "border-amber-200 bg-amber-50/40 hover:border-amber-300",
-    count: "text-amber-600",
+    icon: AlertTriangle,
+    text: "text-amber-600 dark:text-amber-400",
+    card: "border-amber-200 bg-amber-50/40 hover:border-amber-300 dark:bg-amber-400/10 dark:border-amber-400/25",
+    count: "text-amber-600 dark:text-amber-400",
   },
 
   critical: {
     bar: "bg-red-500",
-    badge: "border border-red-200 bg-red-50 text-red-600",
+    badge:
+      "border border-red-200 bg-red-50 text-red-600 dark:bg-[#161D2E]  dark:border-red-400/25 dark:text-red-300",
     label: "Critical",
-    icon: "🔴",
-    text: "text-red-600",
-    card: "border-red-200 bg-red-50/40 hover:border-red-300",
-    count: "text-red-600",
+    icon: CircleAlert,
+    text: "text-red-600 dark:text-red-400",
+    card: "border-red-200 bg-red-50/40 hover:border-red-300 dark:bg-red-400/10 dark:border-red-400/25",
+    count: "text-red-600 dark:text-red-400",
   },
 
   out: {
     bar: "bg-gray-900",
     badge: "border border-yellow-400 bg-yellow-100 text-yellow-900",
     label: "Out of Stock",
-    icon: "🚫",
+    icon: Ban,
     text: "text-yellow-900",
     card: "border-yellow-300 bg-yellow-50/50 hover:border-yellow-400",
-    count: "text-gray-900",
+    count: "text-gray-900 dark:text-[#e8ecf4]",
   },
 
   overstock: {
     bar: "bg-indigo-500",
-    badge: "border border-indigo-200 bg-indigo-50 text-indigo-700",
+    badge:
+      "border border-indigo-200 bg-indigo-50 text-indigo-700 dark:bg-[#161D2E] dark:border-indigo-400/25 dark:text-indigo-300",
     label: "Overstocked",
-    icon: "📦",
-    text: "text-indigo-600",
-    card: "border-indigo-200 bg-indigo-50/40 hover:border-indigo-300",
-    count: "text-indigo-600",
+    icon: PackagePlus,
+    text: "text-indigo-600 dark:text-indigo-300",
+    card: "border-indigo-200 bg-indigo-50/40 hover:border-indigo-300 dark:bg-indigo-400/10 dark:border-indigo-400/25",
+    count: "text-indigo-600 dark:text-indigo-300",
   },
 
   /**
@@ -92,13 +102,14 @@ const statusConfig = {
    * shelf being counted here rather than a shelf that happens to be fine.
    */
   untracked: {
-    bar: "bg-slate-300",
-    badge: "border border-slate-200 bg-slate-50 text-slate-600",
+    bar: "bg-slate-300 dark:bg-white/20",
+    badge:
+      "border border-slate-200 bg-slate-50 text-slate-600 dark:bg-[#161D2E] dark:border-white/15 dark:text-[#a9b4c7]",
     label: "Not Tracked",
-    icon: "♾️",
-    text: "text-slate-500",
-    card: "border-dashed border-[#dadce0] bg-gray-50/60 hover:border-gray-400",
-    count: "text-gray-400",
+    icon: InfinityIcon,
+    text: "text-slate-500 dark:text-[#9aa6bd]",
+    card: "border-dashed border-[#dadce0] bg-gray-50/60 hover:border-gray-400 dark:bg-white/5 dark:border-white/15",
+    count: "text-gray-400 dark:text-[#7b869b]",
   },
 };
 
@@ -136,7 +147,7 @@ function combinedDiscountPercent(
 function StatRow({
   label,
   value,
-  tone = "text-gray-700",
+  tone = "text-gray-700 dark:text-[#c3ccdc]",
 }: {
   label: string;
   value: string;
@@ -144,7 +155,7 @@ function StatRow({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-2">
-      <span className="text-[11px]" style={{ color: CHART_PALETTE.subtitle }}>
+      <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
         {label}
       </span>
       <span className={`text-[13px] font-medium tabular-nums ${tone}`}>
@@ -188,6 +199,7 @@ export default function ProductCard({
   const barPct = getBarPercent(item);
   const thresholdPct = getThresholdPercent(item);
   const cfg = statusConfig[status];
+  const StatusIcon: LucideIcon = cfg.icon;
   const { currency } = useCurrency();
   const { data: business } = useBusiness();
   const { data: categories = [] } = useCategories();
@@ -211,9 +223,15 @@ export default function ProductCard({
   const categoryTextColor = categoryColor
     ? `color-mix(in oklab, ${categoryColor}, black 45%)`
     : undefined;
+  const categoryTextColorDark = categoryColor
+    ? `color-mix(in oklab, ${categoryColor}, white 45%)`
+    : undefined;
 
   const categoryBoderColor = categoryColor
     ? `color-mix(in oklab, ${categoryColor}, black 20%)`
+    : undefined;
+  const categoryBorderColorDark = categoryColor
+    ? `color-mix(in oklab, ${categoryColor}, white 20%)`
     : undefined;
 
   // Only live discounts count — a disabled one takes nothing off the price.
@@ -291,7 +309,7 @@ export default function ProductCard({
           onClick={() => gallery.length && openLightbox(0)}
           disabled={!gallery.length}
           aria-label="View product image"
-          className="relative aspect-square w-full shrink-0 bg-gray-100 group focus:outline-none"
+          className="relative aspect-square w-full shrink-0 bg-gray-100 group focus:outline-none dark:bg-white/10"
         >
           {primary && !imgError ? (
             <>
@@ -315,7 +333,7 @@ export default function ProductCard({
               )}
             </>
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-white/5">
               <img
                 src={business?.logo || businessLogo.src}
                 alt="Business Logo"
@@ -328,9 +346,10 @@ export default function ProductCard({
               it their card was silent while collapsed, and an unlabelled card
               reads as an ordinary in-stock one. */}
           <span
-            className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10px] ${cfg.badge}`}
+            className={`absolute left-2 top-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] ${cfg.badge}`}
           >
-            {cfg.icon} {cfg.label}
+            <StatusIcon className="h-3 w-3 shrink-0" aria-hidden />
+            {cfg.label}
           </span>
         </button>
 
@@ -338,28 +357,29 @@ export default function ProductCard({
         <div className="p-3 flex flex-col flex-1">
           {/* Name + taxable pill */}
           <div className="flex  justify-between gap-2 mb-2">
-            <h3
-              className="line-clamp-2 min-w-0 flex-1 text-[13px] leading-snug"
-              style={{ color: CHART_PALETTE.title }}
-            >
+            <h3 className="line-clamp-2 min-w-0 flex-1 text-[13px] leading-snug text-[#3c4043] dark:text-[#e8ecf4]">
               {item.name}
             </h3>
 
             <span className="flex flex-row h-fit gap-1">
               {item.isTaxable && (
-                <span className="shrink-0 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] text-blue-600">
+                <span className="shrink-0 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] text-blue-600 dark:bg-blue-400/10 dark:border-blue-400/25 dark:text-[#7ba2e3]">
                   Taxable
                 </span>
               )}
 
               {item?.categories && (
                 <span
-                  className="shrink-0 rounded-full border px-2 py-0.5 text-[10px]"
-                  style={{
-                    color: categoryTextColor,
-                    backgroundColor: `${categoryColor}20`,
-                    borderColor: categoryBoderColor,
-                  }}
+                  className="shrink-0 rounded-full border border-[var(--cat-edge)] px-2 py-0.5 text-[10px] text-[var(--cat-ink)] dark:border-[var(--cat-edge-dark)] dark:text-[var(--cat-ink-dark)]"
+                  style={
+                    {
+                      "--cat-ink": categoryTextColor,
+                      "--cat-ink-dark": categoryTextColorDark,
+                      "--cat-edge": categoryBoderColor,
+                      "--cat-edge-dark": categoryBorderColorDark,
+                      backgroundColor: `${categoryColor}20`,
+                    } as React.CSSProperties
+                  }
                 >
                   {category?.name}
                 </span>
@@ -368,7 +388,7 @@ export default function ProductCard({
               {/* Meta badges */}
               {!item.isAvailable && (
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[10px] text-gray-500">
+                  <span className="rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[10px] text-gray-500 dark:bg-white/5 dark:border-white/15 dark:text-[#9aa6bd]">
                     Unavailable
                   </span>
                 </div>
@@ -396,7 +416,7 @@ export default function ProductCard({
                       >
                         {item.inStock.toLocaleString()}
                       </span>
-                      <span className="text-[11px] text-gray-500">
+                      <span className="text-[11px] text-gray-500 dark:text-[#9aa6bd]">
                         units in stock
                       </span>
                       {(status === "critical" || isOut) && (
@@ -412,7 +432,9 @@ export default function ProductCard({
                     nothing at all. */}
                     <div
                       className={`relative mt-2 w-full h-3 rounded-full overflow-hidden ${
-                        isOut ? "ring-1 ring-yellow-500/60" : "bg-gray-300/70"
+                        isOut
+                          ? "ring-1 ring-yellow-500/60"
+                          : "bg-gray-300/70 dark:bg-white/20"
                       }`}
                       style={isOut ? HAZARD_STRIPES : undefined}
                       role="img"
@@ -429,7 +451,7 @@ export default function ProductCard({
                       {!isOut && thresholdPct > 0 && thresholdPct < 100 && (
                         <span
                           aria-hidden="true"
-                          className="absolute top-0 h-full w-px bg-gray-500/40"
+                          className="absolute top-0 h-full w-px bg-gray-500/40 dark:bg-white/20"
                           style={{ left: `${thresholdPct}%` }}
                         />
                       )}
@@ -440,7 +462,7 @@ export default function ProductCard({
                         {thresholdNote()}
                       </span>
                       {item.orderedCount > 0 && (
-                        <span className="flex items-center gap-0.5 text-blue-500 font-medium shrink-0">
+                        <span className="flex items-center gap-0.5 text-blue-500 font-medium shrink-0 dark:text-[#7ba2e3]">
                           <TrendingUp size={10} />
                           {item.orderedCount} sold
                         </span>
@@ -451,13 +473,16 @@ export default function ProductCard({
                   // The counted products show a number, a bar and a threshold
                   // here. Saying plainly that there is nothing to count beats
                   // leaving the same space blank, which reads as missing data.
-                  <div className="flex items-center gap-2 rounded-lg border border-dashed border-gray-300 bg-white/60 px-2.5 py-2">
-                    <span className="text-sm leading-none">{cfg.icon}</span>
+                  <div className="flex items-center gap-2 rounded-lg border border-dashed border-gray-300 bg-white/60 dark:bg-white/5 px-2.5 py-2 dark:border-white/20">
+                    <StatusIcon
+                      className={`h-4 w-4 shrink-0 ${cfg.text}`}
+                      aria-hidden
+                    />
                     <div className="min-w-0">
-                      <p className="text-[11px] font-semibold text-gray-600">
+                      <p className="text-[11px] font-semibold text-gray-600 dark:text-[#a9b4c7]">
                         Stock not tracked
                       </p>
-                      <p className="text-[10px] text-gray-400">
+                      <p className="text-[10px] text-gray-400 dark:text-[#7b869b]">
                         Always sellable — no count is kept
                       </p>
                     </div>
@@ -467,17 +492,14 @@ export default function ProductCard({
 
               {/* Sales row */}
               {hasSales ? (
-                <div className="mb-3 flex flex-col gap-1 border-t border-[#e8eaed] pt-2">
+                <div className="mb-3 flex flex-col gap-1 border-t border-[#e8eaed] pt-2 dark:border-white/10">
                   {/* {sharedVariants > 0 && (
-                <p className="text-[10px] text-amber-600 mb-1.5">
+                <p className="text-[10px] text-amber-600 mb-1.5 dark:text-amber-400">
                   Combined across all {sharedVariants} variants
                 </p>
               )} */}
 
-                  <span
-                    className="ml-auto text-[10px]"
-                    style={{ color: CHART_PALETTE.subtitle }}
-                  >
+                  <span className="ml-auto text-[10px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                     Selected range
                   </span>
 
@@ -485,37 +507,34 @@ export default function ProductCard({
                     <StatRow
                       label="Revenue"
                       value={fmt(revenue ?? 0)}
-                      tone="text-blue-600"
+                      tone="text-blue-600 dark:text-[#7ba2e3]"
                     />
                     <StatRow
                       label="Orders"
                       value={(orderCount ?? 0).toLocaleString()}
-                      tone="text-violet-700"
+                      tone="text-violet-700 dark:text-violet-300"
                     />
                     <StatRow
                       label="Net profit"
                       value={fmt(netProfit ?? 0)}
                       tone={
                         (netProfit ?? 0) >= 0
-                          ? "text-emerald-600"
-                          : "text-red-500"
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-red-500 dark:text-red-400"
                       }
                     />
                   </div>
                 </div>
               ) : (
-                <div className="mb-3 flex flex-col items-center gap-1 border-t border-[#e8eaed] pt-3">
-                  <span
-                    className="text-center text-[10px]"
-                    style={{ color: CHART_PALETTE.subtitle }}
-                  >
+                <div className="mb-3 flex flex-col items-center gap-1 border-t border-[#e8eaed] pt-3 dark:border-white/10">
+                  <span className="text-center text-[10px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                     No sales data for this product in the selected date range.
                   </span>
                 </div>
               )}
 
               {/* Pricing */}
-              <div className="border-t border-[#e8eaed] pt-3">
+              <div className="border-t border-[#e8eaed] pt-3 dark:border-white/10">
                 <div className="space-y-1">
                   <StatRow label="Selling price" value={fmt(item.price)} />
                   <StatRow label="Cost price" value={fmt(item.costPrice)} />
@@ -536,11 +555,8 @@ export default function ProductCard({
 
                 {/* Images gallery section */}
                 {gallery.length > 0 && (
-                  <div className="mt-2 border-t border-[#e8eaed] pt-3">
-                    <p
-                      className="mb-2 text-[11px]"
-                      style={{ color: CHART_PALETTE.subtitle }}
-                    >
+                  <div className="mt-2 border-t border-[#e8eaed] pt-3 dark:border-white/10">
+                    <p className="mb-2 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                       Images
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -549,7 +565,7 @@ export default function ProductCard({
                           key={src}
                           type="button"
                           onClick={() => openLightbox(i)}
-                          className="w-12 h-12 rounded-lg overflow-hidden border border-gray-200 hover:border-blue-400 transition-colors"
+                          className="w-12 h-12 rounded-lg overflow-hidden border border-gray-200 hover:border-blue-400 transition-colors dark:border-white/15"
                         >
                           <img
                             src={src}
@@ -572,7 +588,7 @@ export default function ProductCard({
             onClick={() => setIsExpanded(!isExpanded)}
             aria-expanded={isExpanded}
             aria-controls={panelId}
-            className="mx-auto mt-auto flex cursor-pointer items-center justify-center gap-1 rounded-full border border-[#dadce0] bg-white px-2.5 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
+            className="mx-auto mt-auto flex cursor-pointer items-center justify-center gap-1 rounded-full border border-[#dadce0] bg-white dark:bg-white/5 px-2.5 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
           >
             <span>{isExpanded ? "Hide details" : "Show details"}</span>
             <ChevronDown

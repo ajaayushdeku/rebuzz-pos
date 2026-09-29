@@ -50,17 +50,19 @@ const AMOUNT_RANGE_MSG = `Amount must be between 0 and ${MAX_AMOUNT.toLocaleStri
 const TAB_STYLE = {
   expense: {
     icon: ArrowDownRight,
-    iconColor: "text-red-600",
-    iconBgColor: "bg-red-50",
-    active: "border-red-500 bg-red-50 text-red-700",
-    activeIcon: "text-red-500",
+    iconColor: "text-red-600 dark:text-red-400",
+    iconBgColor: "bg-red-50 dark:bg-red-400/10",
+    active:
+      "border-red-500 bg-red-50 text-red-700 dark:bg-red-400/10 dark:text-red-300",
+    activeIcon: "text-red-500 dark:text-red-400",
     submit: "bg-red-500 hover:bg-red-600",
   },
   income: {
     icon: ArrowUpRight,
-    iconColor: "text-emerald-600",
-    iconBgColor: "bg-emerald-50",
-    active: "border-emerald-500 bg-emerald-50 text-emerald-700",
+    iconColor: "text-emerald-600 dark:text-emerald-400",
+    iconBgColor: "bg-emerald-50 dark:bg-emerald-400/10",
+    active:
+      "border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300",
     activeIcon: "text-emerald-500",
     submit: "bg-emerald-500 hover:bg-emerald-600",
   },
@@ -294,13 +296,17 @@ export default function ExpenseIncomeForm({
                     className={`flex items-center justify-center gap-2 rounded-xl border py-3 text-[13px] font-medium capitalize transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                       active
                         ? style.active
-                        : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                        : "border-gray-200 bg-white dark:bg-white/5 text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-white/15 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:border-white/25"
                     }`}
                   >
                     <Icon
                       size={16}
                       strokeWidth={1.8}
-                      className={active ? style.activeIcon : "text-gray-400"}
+                      className={
+                        active
+                          ? style.activeIcon
+                          : "text-gray-400 dark:text-[#7b869b]"
+                      }
                     />
                     {t}
                   </button>
@@ -316,19 +322,19 @@ export default function ExpenseIncomeForm({
               <button
                 type="button"
                 onClick={() => setManagePurposeOpen(true)}
-                className="flex items-center gap-1 text-[11px] font-semibold text-blue-600 transition hover:text-blue-700"
+                className="flex items-center gap-1 text-[11px] font-semibold text-blue-600 transition hover:text-blue-700 dark:text-[#7ba2e3]"
               >
                 <Settings size={11} /> Manage
               </button>
             </div>
 
             {isPurposesLoading ? (
-              <div className="mt-2 flex items-center gap-2 rounded-xl border border-gray-200 px-3.5 py-3 text-[13px] text-gray-400">
+              <div className="mt-2 flex items-center gap-2 rounded-xl border border-gray-200 px-3.5 py-3 text-[13px] text-gray-400 dark:border-white/15 dark:text-[#7b869b]">
                 <Loader2 size={14} className="animate-spin" />
                 Loading purposes...
               </div>
             ) : purposes.length === 0 ? (
-              <div className="mt-2 rounded-xl border border-dashed border-gray-200 px-3.5 py-3 text-[13px] text-gray-400">
+              <div className="mt-2 rounded-xl border border-dashed border-gray-200 px-3.5 py-3 text-[13px] text-gray-400 dark:border-white/15 dark:text-[#7b869b]">
                 No {tab} purposes yet. Use “Manage” to add one.
               </div>
             ) : (
@@ -369,7 +375,7 @@ export default function ExpenseIncomeForm({
             )}
 
             {errors.purpose && (
-              <p className="mt-1.5 text-[11px] font-medium text-red-500">
+              <p className="mt-1.5 text-[11px] font-medium text-red-500 dark:text-red-400">
                 {errors.purpose}
               </p>
             )}
@@ -387,7 +393,7 @@ export default function ExpenseIncomeForm({
               }`}
             />
             {errors.remark && (
-              <p className="mt-1.5 text-[11px] font-medium text-red-500">
+              <p className="mt-1.5 text-[11px] font-medium text-red-500 dark:text-red-400">
                 {errors.remark}
               </p>
             )}
@@ -398,7 +404,7 @@ export default function ExpenseIncomeForm({
             <div>
               <SectionLabel>Amount</SectionLabel>
               <div className="relative mt-2">
-                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] text-gray-400">
+                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] text-gray-400 dark:text-[#7b869b]">
                   {formatCurrencySymbolOnly(currency.symbol)}
                 </span>
                 <input
@@ -432,12 +438,12 @@ export default function ExpenseIncomeForm({
               </div>
 
               {isAmountOutOfRange && (
-                <p className="mt-1.5 text-[11px] font-medium text-red-500">
+                <p className="mt-1.5 text-[11px] font-medium text-red-500 dark:text-red-400">
                   {AMOUNT_RANGE_MSG}
                 </p>
               )}
               {errors.amount && (
-                <p className="mt-1.5 text-[11px] font-medium text-red-500">
+                <p className="mt-1.5 text-[11px] font-medium text-red-500 dark:text-red-400">
                   {errors.amount}
                 </p>
               )}
@@ -454,7 +460,7 @@ export default function ExpenseIncomeForm({
                 }`}
               />
               {errors.date && (
-                <p className="mt-1.5 text-[11px] font-medium text-red-500">
+                <p className="mt-1.5 text-[11px] font-medium text-red-500 dark:text-red-400">
                   {errors.date}
                 </p>
               )}
@@ -464,14 +470,17 @@ export default function ExpenseIncomeForm({
           {/* ── Recurring ──
               Card + switch, matching the loyalty block in RecordPaymentModal:
               the options only appear once the switch is on. */}
-          <div className="rounded-xl border border-gray-200 px-4 py-3.5">
+          <div className="rounded-xl border border-gray-200 px-4 py-3.5 dark:border-white/15">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <p className="flex items-center gap-1.5 text-[13px] font-medium text-gray-900">
-                  <Repeat size={13} className="text-gray-400" />
+                <p className="flex items-center gap-1.5 text-[13px] font-medium text-gray-900 dark:text-[#e8ecf4]">
+                  <Repeat
+                    size={13}
+                    className="text-gray-400 dark:text-[#7b869b]"
+                  />
                   Recurring
                 </p>
-                <p className="mt-0.5 text-[11px] text-gray-400">
+                <p className="mt-0.5 text-[11px] text-gray-400 dark:text-[#7b869b]">
                   Repeat this transaction on a schedule
                 </p>
               </div>
@@ -481,7 +490,7 @@ export default function ExpenseIncomeForm({
                 aria-pressed={recurring}
                 onClick={() => setRecurring((p) => !p)}
                 className={`relative mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 ${
-                  recurring ? "bg-blue-600" : "bg-gray-200"
+                  recurring ? "bg-blue-600" : "bg-gray-200 dark:bg-white/15"
                 }`}
               >
                 <span
@@ -493,9 +502,11 @@ export default function ExpenseIncomeForm({
             </div>
 
             {recurring && (
-              <div className="mt-3 grid grid-cols-1 gap-4 border-t border-gray-100 pt-3 sm:grid-cols-2">
+              <div className="mt-3 grid grid-cols-1 gap-4 border-t border-gray-100 pt-3 sm:grid-cols-2 dark:border-white/10">
                 <div>
-                  <label className="text-[11px] text-gray-400">Frequency</label>
+                  <label className="text-[11px] text-gray-400 dark:text-[#7b869b]">
+                    Frequency
+                  </label>
                   <select
                     value={frequency}
                     onChange={(e) => setFrequency(e.target.value)}
@@ -509,7 +520,9 @@ export default function ExpenseIncomeForm({
                   </select>
                 </div>
                 <div>
-                  <label className="text-[11px] text-gray-400">End date</label>
+                  <label className="text-[11px] text-gray-400 dark:text-[#7b869b]">
+                    End date
+                  </label>
                   <input
                     type="date"
                     value={endDate}
@@ -520,7 +533,7 @@ export default function ExpenseIncomeForm({
                     }`}
                   />
                   {errors.endDate && (
-                    <p className="mt-1.5 text-[11px] font-medium text-red-500">
+                    <p className="mt-1.5 text-[11px] font-medium text-red-500 dark:text-red-400">
                       {errors.endDate}
                     </p>
                   )}

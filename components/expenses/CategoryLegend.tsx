@@ -1,7 +1,5 @@
 "use client";
 
-import { CHART_PALETTE } from "../dashboardComponents/chartCard";
-
 export interface LegendCategory {
   name: string;
   color: string;
@@ -33,10 +31,7 @@ export default function CategoryLegend({
           />
           {/* Grey, not the series colour: pale swatches like amber or cyan are
               legible as a block and not as small text. */}
-          <span
-            className="truncate text-[13px]"
-            style={{ color: CHART_PALETTE.title }}
-          >
+          <span className="truncate text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
             {cat.name}
           </span>
         </span>

@@ -24,7 +24,6 @@ import {
 } from "@/providers/ExpenseContext";
 import ExpenseIncomeForm from "./ExpenseIncomeForm";
 import { ComponentHeader } from "../ComponentHeader";
-import { CHART_PALETTE } from "../dashboardComponents/chartCard";
 
 type SortKey = "date" | "amount";
 type SortDir = "asc" | "desc";
@@ -164,7 +163,7 @@ export default function RecentTransactions() {
     filter === "all" ? "No transaction found" : `No ${filter} found`;
 
   return (
-    <div className="bg-white  p-5">
+    <div className="bg-white dark:bg-transparent  p-5">
       {/* ── Header: title ── */}
       <div className="flex flex-col sm:flex-row items-center  mb-4">
         <ComponentHeader
@@ -177,13 +176,13 @@ export default function RecentTransactions() {
       <div className="relative flex justify-center mb-4">
         <span
           aria-hidden="true"
-          className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
+          className="absolute inset-x-0 top-1/2 h-px bg-gray-200 dark:bg-white/15"
         />
         <div
           role="tablist"
           aria-label="Transaction kind"
           onKeyDown={handleTabKeyDown}
-          className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+          className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1 dark:bg-white/10"
         >
           {tabs.map((tab, i) => {
             const selected = tab.key === filter;
@@ -203,12 +202,12 @@ export default function RecentTransactions() {
                 onClick={() => setFilter(tab.key)}
                 className={`flex items-center gap-2 rounded-full px-4 py-1.5 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
                   selected
-                    ? "bg-white font-bold text-blue-950 shadow-sm"
-                    : "font-semibold text-blue-800 hover:text-blue-950"
+                    ? "bg-white font-bold text-blue-950 shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none"
+                    : "font-semibold text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee]"
                 }`}
               >
                 {tab.label}
-                <span className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 bg-[#e4f2fe] text-blue-950 ring-blue-900">
+                <span className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 bg-[#e4f2fe] text-blue-950 ring-blue-900 dark:bg-white/10">
                   {tab.count}
                 </span>
               </button>
@@ -220,13 +219,13 @@ export default function RecentTransactions() {
       <div className="relative flex-1 my-4">
         <Search
           size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#7b869b]"
         />
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by remarks or purpose..."
-          className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+          className="w-full pl-9 pr-4 py-2.5 text-[13px] dark:bg-white/5 dark:text-[#e8ecf4] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15"
         />
       </div>
 
@@ -235,7 +234,7 @@ export default function RecentTransactions() {
         id="recent-transactions-panel"
         role="tabpanel"
         aria-labelledby={`recent-tab-${filter}`}
-        className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        className="bg-white dark:bg-transparent overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
       >
         <table className="w-full table-fixed text-sm min-w-[700px]">
           {/* `table-fixed` with declared widths: auto layout sized the columns
@@ -249,17 +248,11 @@ export default function RecentTransactions() {
             <col className="w-24" />
           </colgroup>
           <thead>
-            <tr
-              className="border-b text-[11px] tracking-wider"
-              style={{
-                borderColor: CHART_PALETTE.grid,
-                color: CHART_PALETTE.axis,
-              }}
-            >
+            <tr className="border-b text-[11px] tracking-wider border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
               <th className="text-left pb-3 pt-3 px-4 font-normal">Details</th>
               <th className="text-left pb-3 pt-3 px-4 font-normal">Purpose</th>
               <th
-                className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#c3ccdc]"
                 onClick={() => toggleSort("date")}
               >
                 <span className="flex items-center gap-1">
@@ -267,7 +260,7 @@ export default function RecentTransactions() {
                 </span>
               </th>
               <th
-                className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#c3ccdc]"
                 onClick={() => toggleSort("amount")}
               >
                 <span className="flex items-center justify-end gap-1">
@@ -283,16 +276,19 @@ export default function RecentTransactions() {
               <tr>
                 <td
                   colSpan={5}
-                  className="text-center py-2 text-sm text-gray-400"
+                  className="text-center py-2 text-sm text-gray-400 dark:text-[#7b869b]"
                 >
                   <div className="flex flex-col items-center justify-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                      <Receipt size={24} className="text-gray-500" />
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3 dark:bg-white/10">
+                      <Receipt
+                        size={24}
+                        className="text-gray-500 dark:text-[#9aa6bd]"
+                      />
                     </div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium text-gray-500 dark:text-[#9aa6bd]">
                       {emptyLabel}
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-gray-400 mt-1 dark:text-[#7b869b]">
                       All recent transaction will appear here
                     </p>
                   </div>
@@ -302,13 +298,17 @@ export default function RecentTransactions() {
               filtered.map((t) => {
                 const isExpense = t.kind === "expense";
                 const Icon = isExpense ? TrendingDown : TrendingUp;
-                const color = isExpense ? "text-red-600" : "text-green-600";
-                const bg = isExpense ? "bg-red-50" : "bg-green-50";
+                const color = isExpense
+                  ? "text-red-600 dark:text-red-400"
+                  : "text-green-600 dark:text-emerald-400";
+                const bg = isExpense
+                  ? "bg-red-50 dark:bg-red-400/10"
+                  : "bg-green-50 dark:bg-emerald-400/10";
 
                 return (
                   <tr
                     key={t._id}
-                    className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
+                    className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors dark:border-white/5 dark:hover:bg-white/10"
                   >
                     {/* Details */}
                     <td className="py-3 px-4">
@@ -319,10 +319,7 @@ export default function RecentTransactions() {
                           <Icon size={13} className={color} />
                         </div>
                         <div className="min-w-0">
-                          <p
-                            className="text-[13px] font-medium  tracking-wide truncate"
-                            style={{ color: CHART_PALETTE.title }}
-                          >
+                          <p className="text-[13px] font-medium  tracking-wide truncate text-[#3c4043] dark:text-[#e8ecf4]">
                             {t.remark || "—"}
                           </p>
                           {t.isRecurring && (
@@ -358,7 +355,7 @@ export default function RecentTransactions() {
                     </td>
 
                     {/* Date */}
-                    <td className="py-3 px-4 text-xs text-gray-600">
+                    <td className="py-3 px-4 text-xs text-gray-600 dark:text-[#a9b4c7]">
                       {t.date}
                     </td>
 
@@ -379,14 +376,14 @@ export default function RecentTransactions() {
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => setEditTransaction(t)}
-                          className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer dark:text-[#7b869b]"
                           title="Edit transaction"
                         >
                           <Edit3 className="h-3.5 w-3.5" />
                         </button>
                         <button
                           onClick={() => setDeleteTarget(t)}
-                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer dark:text-[#7b869b]"
                           title="Delete transaction"
                         >
                           <Trash2 className="h-3.5 w-3.5" />

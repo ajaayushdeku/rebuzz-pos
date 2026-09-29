@@ -5,29 +5,36 @@ import { mockVAT20SummaryData } from "@/lib/mockData/mock-tax-data";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { CHART_PALETTE, ChartCard } from "../chartCard";
+import { ChartCard } from "../chartCard";
 
 const STATUS_STYLES = {
   ready: {
-    bg: "bg-green-50",
-    text: "text-green-700",
-    border: "border-green-200",
+    bg: "bg-green-50 dark:bg-emerald-400/10",
+    text: "text-green-700 dark:text-emerald-300",
+    border: "border-green-200 dark:border-emerald-400/25",
     label: "Ready to File",
-    icon: <CheckCircle2 size={12} className="text-green-600" />,
+    icon: (
+      <CheckCircle2
+        size={12}
+        className="text-green-600 dark:text-emerald-400"
+      />
+    ),
   },
   draft: {
-    bg: "bg-gray-50",
-    text: "text-gray-600",
-    border: "border-gray-200",
+    bg: "bg-gray-50 dark:bg-white/5",
+    text: "text-gray-600 dark:text-[#a9b4c7]",
+    border: "border-gray-200 dark:border-white/15",
     label: "Draft",
     icon: null,
   },
   filed: {
-    bg: "bg-blue-50",
-    text: "text-blue-700",
-    border: "border-blue-200",
+    bg: "bg-blue-50 dark:bg-blue-400/10",
+    text: "text-blue-700 dark:text-[#a8c4ee]",
+    border: "border-blue-200 dark:border-blue-400/25",
     label: "Filed",
-    icon: <CheckCircle2 size={12} className="text-blue-600" />,
+    icon: (
+      <CheckCircle2 size={12} className="text-blue-600 dark:text-[#7ba2e3]" />
+    ),
   },
 };
 
@@ -43,15 +50,15 @@ function Row({
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className="text-[13px]" style={{ color: CHART_PALETTE.axis }}>
+      <span className="text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">
         {label}
       </span>
       <span
-        className="text-[13px] tabular-nums"
-        style={{
-          color: colored ? CHART_PALETTE.blue : CHART_PALETTE.title,
-          fontWeight: colored ? 500 : 400,
-        }}
+        className={`text-[13px] tabular-nums ${
+          colored
+            ? "font-medium text-[#1a73e8] dark:text-[#7ba2e3]"
+            : "text-[#3c4043] dark:text-[#e8ecf4]"
+        }`}
       >
         {value}
       </span>
@@ -61,10 +68,7 @@ function Row({
 
 function SectionLabel({ label }: { label: string }) {
   return (
-    <p
-      className="mb-2 mt-4 text-[13px] font-medium"
-      style={{ color: CHART_PALETTE.title }}
-    >
+    <p className="mb-2 mt-4 text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
       {label}
     </p>
   );
@@ -106,10 +110,7 @@ export default function VAT20ReturnSummary() {
           value={fmt(d.taxableSales)}
         />
         <Row label="Exempt Sales" value={fmt(d.exemptSales)} />
-        <div
-          className="border-t pt-2.5"
-          style={{ borderColor: CHART_PALETTE.grid }}
-        >
+        <div className="border-t pt-2.5 border-[#e8eaed] dark:border-white/10">
           <Row
             label="Total Output VAT Collected"
             value={fmt(d.totalOutputVAT)}
@@ -123,10 +124,7 @@ export default function VAT20ReturnSummary() {
       <div className="space-y-2.5">
         <Row label="Input VAT Paid on Purchases" value={fmt(d.inputVATPaid)} />
         <Row label="VAT Refunds Claimed" value={fmt(d.vatRefundsClaimed)} />
-        <div
-          className="border-t pt-2.5"
-          style={{ borderColor: CHART_PALETTE.grid }}
-        >
+        <div className="border-t pt-2.5 border-[#e8eaed] dark:border-white/10">
           <Row
             label="Total Deductible VAT"
             value={fmt(d.totalDeductibleVAT)}
@@ -151,13 +149,7 @@ export default function VAT20ReturnSummary() {
       </div>
 
       {/* Download button */}
-      <button
-        className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border bg-white py-2.5 text-[13px] transition-colors hover:bg-[#f8f9fa]"
-        style={{
-          borderColor: CHART_PALETTE.control,
-          color: CHART_PALETTE.title,
-        }}
-      >
+      <button className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border bg-white py-2.5 text-[13px] transition-colors hover:bg-[#f8f9fa] border-[#dadce0] dark:border-white/15 text-[#3c4043] dark:text-[#e8ecf4] dark:hover:bg-white/10 dark:bg-white/5">
         <Download size={15} />
         Download Draft VAT-20
       </button>

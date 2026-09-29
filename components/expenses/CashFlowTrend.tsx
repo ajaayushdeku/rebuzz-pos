@@ -17,16 +17,17 @@ import type {
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import {
-  AXIS_TICK,
   CHART_PALETTE,
   ChartCard,
   ChartLegend,
   ChartTooltipBox,
+  getAxisTick,
   yAxisTitle,
 } from "../dashboardComponents/chartCard";
 import { ArrowLeftRight, AlertTriangle } from "lucide-react";
 import { useCashFlowTrend } from "@/hooks/useCashFlowTrend";
 import { CashFlowTrendSkeleton } from "./ExpenseAnalyticsSkeletons";
+import { useEffect, useState } from "react";
 
 const INFLOW_COLOR = "#22c55e";
 const OUTFLOW_COLOR = "#ef4444";
@@ -65,14 +66,11 @@ const CustomTooltip = ({
       }))}
       footer={
         <div className="flex items-center justify-between gap-4">
-          <span className="text-xs" style={{ color: CHART_PALETTE.axis }}>
+          <span className="text-xs text-[#5f6368] dark:text-[#a9b4c7]">
             Net
           </span>
           <span
-            className="text-xs font-medium"
-            style={{
-              color: net >= 0 ? CHART_PALETTE.good : CHART_PALETTE.bad,
-            }}
+            className={`text-xs font-medium ${net >= 0 ? "text-[#1e8e3e] dark:text-[#10b981]" : "text-[#d93025] dark:text-[#f87171]"}`}
           >
             {net >= 0 ? "+" : ""}
             {fmtK(net)}
@@ -95,6 +93,27 @@ export default function CashFlowTrend() {
   const fmtK = (v: number) => {
     return formatCompactCurrency(v, currency.symbol, currency.locale);
   };
+
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
 
   if (isLoading)
     return (
@@ -120,22 +139,13 @@ export default function CashFlowTrend() {
       controls={
         // States plainly that this card ignores the page's month filter —
         // otherwise the fixed window looks like the filter is broken.
-        <span
-          className="shrink-0 rounded-full border bg-white px-2 py-0.5 text-[11px]"
-          style={{
-            borderColor: CHART_PALETTE.control,
-            color: CHART_PALETTE.title,
-          }}
-        >
+        <span className="shrink-0 rounded-full border bg-white dark:bg-white/5 px-2 py-0.5 text-[11px] border-[#dadce0] dark:border-white/15 text-[#3c4043] dark:text-[#e8ecf4]">
           Last 6 months
         </span>
       }
     >
       {failedMonths > 0 && !isError && (
-        <p
-          className="mb-3 flex items-center gap-1.5 text-[11px]"
-          style={{ color: CHART_PALETTE.warn }}
-        >
+        <p className="mb-3 flex items-center gap-1.5 text-[11px] text-[#e37400] dark:text-amber-400">
           <AlertTriangle size={12} className="shrink-0" />
           {failedMonths} of 6 months could not be loaded — the chart is
           incomplete.
@@ -143,31 +153,28 @@ export default function CashFlowTrend() {
       )}
       {isError ? (
         <div className="py-16 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 dark:bg-red-400/10">
             <AlertTriangle size={22} className="text-red-400" />
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
             Could not load cash flow
           </p>
-          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             None of the last six months could be fetched.
           </p>
         </div>
       ) : !hasData ? (
         <div className="py-16 text-center">
-          <div
-            className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full"
-            style={{ backgroundColor: CHART_PALETTE.hover }}
-          >
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
             <ArrowLeftRight
               size={22}
-              style={{ color: CHART_PALETTE.subtitle }}
+              className="text-[#9aa0a6] dark:text-[#9aa6bd]"
             />
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
             No income or expenses recorded
           </p>
-          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             Nothing was logged in the last six months.
           </p>
         </div>

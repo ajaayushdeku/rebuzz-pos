@@ -117,7 +117,7 @@ export default function BudgetForm() {
       <Button
         variant="outline"
         onClick={() => setOpen(true)}
-        className="border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg flex items-center gap-2"
+        className="border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg flex items-center gap-2 dark:border-white/15 dark:text-[#c3ccdc] dark:hover:bg-white/10"
       >
         <Wallet className="h-4 w-4" />
         <span className="hidden lg:block"> Set Budget</span>
@@ -132,8 +132,8 @@ export default function BudgetForm() {
         title={editingId ? "Edit budget threshold" : "Set budget threshold"}
         subtitle="Set a spending threshold per expense category"
         icon={Wallet}
-        iconColor="text-blue-600"
-        iconBgColor="bg-blue-50"
+        iconColor="text-blue-600 dark:text-[#7ba2e3]"
+        iconBgColor="bg-blue-50 dark:bg-blue-400/10"
         maxWidth="max-w-xl"
         footer={
           <div className="flex items-center gap-2.5">
@@ -165,12 +165,13 @@ export default function BudgetForm() {
           <div>
             <div className="flex items-center justify-between">
               <SectionLabel>
-                Category <span className="text-red-500">*</span>
+                Category{" "}
+                <span className="text-red-500 dark:text-red-400">*</span>
               </SectionLabel>
               <button
                 type="button"
                 onClick={() => setManagingPurposes(true)}
-                className="flex items-center gap-1 text-[11px] font-semibold text-blue-600 transition hover:text-blue-700"
+                className="flex items-center gap-1 text-[11px] font-semibold text-blue-600 transition hover:text-blue-700 dark:text-[#7ba2e3]"
               >
                 <Settings size={11} />
                 Manage
@@ -210,7 +211,7 @@ export default function BudgetForm() {
             </Select>
 
             {errors.purpose && (
-              <p className="mt-1.5 text-[11px] font-medium text-red-500">
+              <p className="mt-1.5 text-[11px] font-medium text-red-500 dark:text-red-400">
                 {errors.purpose}
               </p>
             )}
@@ -219,11 +220,12 @@ export default function BudgetForm() {
           {/* ── Threshold amount ── */}
           <div>
             <SectionLabel>
-              Threshold amount <span className="text-red-500">*</span>
+              Threshold amount{" "}
+              <span className="text-red-500 dark:text-red-400">*</span>
             </SectionLabel>
 
             <div className="relative mt-2">
-              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] text-gray-400">
+              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] text-gray-400 dark:text-[#7b869b]">
                 {formatCurrencySymbolOnly(currency.symbol)}
               </span>
               <input
@@ -258,12 +260,12 @@ export default function BudgetForm() {
             </div>
 
             {isAmountOutOfRange && (
-              <p className="mt-1.5 text-[11px] font-medium text-red-500">
+              <p className="mt-1.5 text-[11px] font-medium text-red-500 dark:text-red-400">
                 {AMOUNT_RANGE_MSG}
               </p>
             )}
             {errors.amount && (
-              <p className="mt-1.5 text-[11px] font-medium text-red-500">
+              <p className="mt-1.5 text-[11px] font-medium text-red-500 dark:text-red-400">
                 {errors.amount}
               </p>
             )}
@@ -271,7 +273,7 @@ export default function BudgetForm() {
 
           {/* ── Existing thresholds ── */}
           {budgets.length > 0 && (
-            <div className="border-t border-gray-100 pt-5">
+            <div className="border-t border-gray-100 pt-5 dark:border-white/10">
               <SectionLabel>Current thresholds</SectionLabel>
               <div className="mt-2 max-h-52 space-y-1.5 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {budgets.map((b) => {
@@ -285,7 +287,7 @@ export default function BudgetForm() {
                       className={`flex items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 transition ${
                         isEditingRow
                           ? "border-blue-600 bg-blue-50/60"
-                          : "border-gray-200 bg-white hover:border-gray-300"
+                          : "border-gray-200 bg-white dark:bg-white/5 hover:border-gray-300 dark:border-white/15 dark:hover:border-white/25"
                       }`}
                     >
                       <div className="flex min-w-0 items-center gap-2.5">
@@ -298,13 +300,13 @@ export default function BudgetForm() {
                             ),
                           }}
                         />
-                        <span className="truncate text-[13px] font-medium text-gray-900">
+                        <span className="truncate text-[13px] font-medium text-gray-900 dark:text-[#e8ecf4]">
                           {name}
                         </span>
                       </div>
 
                       <div className="flex shrink-0 items-center gap-3">
-                        <span className="text-[13px] font-semibold text-gray-700 tabular-nums">
+                        <span className="text-[13px] font-semibold text-gray-700 tabular-nums dark:text-[#c3ccdc]">
                           {formatCurrencySymbol(
                             b.amount,
                             currency.symbol,
@@ -313,10 +315,8 @@ export default function BudgetForm() {
                         </span>
                         <button
                           type="button"
-                          onClick={() =>
-                            startEdit(b.id, b.purposeId, b.amount)
-                          }
-                          className="text-gray-300 transition-colors hover:text-blue-600"
+                          onClick={() => startEdit(b.id, b.purposeId, b.amount)}
+                          className="text-gray-300 transition-colors hover:text-blue-600 dark:text-[#6b7588]"
                           aria-label={`Edit budget for ${name}`}
                         >
                           <Pencil size={13} />
@@ -327,7 +327,7 @@ export default function BudgetForm() {
                             if (isEditingRow) resetForm();
                             deleteBudget(b.id);
                           }}
-                          className="text-gray-300 transition-colors hover:text-red-500"
+                          className="text-gray-300 transition-colors hover:text-red-500 dark:text-[#6b7588]"
                           aria-label={`Delete budget for ${name}`}
                         >
                           <Trash2 size={13} />

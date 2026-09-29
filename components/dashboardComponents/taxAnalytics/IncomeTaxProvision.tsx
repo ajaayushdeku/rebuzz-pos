@@ -62,13 +62,18 @@ function Figure({
       : tone === "warn"
         ? "text-amber-400"
         : "text-white";
-  const noteColor = tone === "good" ? "text-emerald-600" : "text-gray-500";
+  const noteColor =
+    tone === "good"
+      ? "text-emerald-600 dark:text-emerald-400"
+      : "text-gray-500 dark:text-[#9aa6bd]";
 
   return (
     <div className={`flex-1 rounded-xl px-4 py-3.5 ${box}`}>
       <p
         className={`mb-1.5 text-[11px] ${
-          tone === "good" ? "text-emerald-400" : "text-gray-400"
+          tone === "good"
+            ? "text-emerald-400"
+            : "text-gray-400 dark:text-[#7b869b]"
         }`}
       >
         {label}
@@ -128,7 +133,7 @@ export default function IncomeTaxProvision() {
                   <button
                     type="button"
                     aria-label="How to read Income Tax Provision"
-                    className="flex cursor-help items-center rounded-full text-gray-500 outline-none transition-colors hover:text-gray-300 focus-visible:ring-2 focus-visible:ring-blue-500"
+                    className="flex cursor-help items-center rounded-full text-gray-500 outline-none transition-colors hover:text-gray-300 focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-[#9aa6bd]"
                   >
                     <Info size={13} />
                   </button>
@@ -148,7 +153,7 @@ export default function IncomeTaxProvision() {
                 </TooltipContent>
               </HintTooltip>
             </h3>
-            <p className="mt-0.5 text-xs tracking-wide text-gray-400">
+            <p className="mt-0.5 text-xs tracking-wide text-gray-400 dark:text-[#7b869b]">
               Annual income tax estimate based on current month profit — accrued
               monthly for accurate reporting
             </p>
@@ -174,10 +179,13 @@ export default function IncomeTaxProvision() {
 
             {/* Arrow + rate */}
             <div className="flex shrink-0 flex-col items-center justify-center gap-1 px-1">
-              <p className="text-xs tabular-nums text-gray-400">
+              <p className="text-xs tabular-nums text-gray-400 dark:text-[#7b869b]">
                 ×{ANNUAL_TAX_RATE}%
               </p>
-              <ArrowRight size={16} className="text-gray-500" />
+              <ArrowRight
+                size={16}
+                className="text-gray-500 dark:text-[#9aa6bd]"
+              />
             </div>
 
             <Figure
@@ -189,7 +197,10 @@ export default function IncomeTaxProvision() {
 
             {/* Arrow */}
             <div className="flex shrink-0 items-center justify-center px-1">
-              <ArrowRight size={16} className="text-gray-500" />
+              <ArrowRight
+                size={16}
+                className="text-gray-500 dark:text-[#9aa6bd]"
+              />
             </div>
 
             <Figure
@@ -217,8 +228,13 @@ export default function IncomeTaxProvision() {
 
           {/* Info note */}
           <div className="mt-4 flex items-start gap-2 rounded-xl bg-gray-800/60 px-4 py-3">
-            <Info size={13} className="mt-0.5 shrink-0 text-gray-500" />
-            <p className="text-[11px] leading-relaxed text-gray-400">{note}</p>
+            <Info
+              size={13}
+              className="mt-0.5 shrink-0 text-gray-500 dark:text-[#9aa6bd]"
+            />
+            <p className="text-[11px] leading-relaxed text-gray-400 dark:text-[#7b869b]">
+              {note}
+            </p>
           </div>
         </>
       )}

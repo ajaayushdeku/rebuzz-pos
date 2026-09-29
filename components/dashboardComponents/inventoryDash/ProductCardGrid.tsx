@@ -8,6 +8,9 @@ import {
   BoxesIcon,
   ChevronUp,
   ChevronDown,
+  PackageCheck,
+  PackageX,
+  type LucideIcon,
 } from "lucide-react";
 
 import { InventoryItem } from "@/lib/mockData/mock-inventory-data";
@@ -17,7 +20,6 @@ import ProductCard from "@/components/product/ProductCard";
 import { FilterSelect } from "@/components/ui/FilterSelect";
 import { useCategories } from "@/hooks/useCategories";
 import { normalizeColor } from "@/services/category.client";
-import { CHART_PALETTE } from "../chartCard";
 
 const INITIAL_COUNT = 8;
 const LOAD_MORE_COUNT = 8;
@@ -42,10 +44,19 @@ type SortKey = "default" | ItemSortKey | SalesSortKey;
 
 // Stock-tracking filter tabs.
 type StockTab = "all" | "tracked" | "untracked";
-const STOCK_TABS: { value: StockTab; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "tracked", label: "Stock Track" },
-  { value: "untracked", label: "Non-Stock Track" },
+/**
+ * The icon stands in for the label below `sm`. Three tabs with names this long
+ * wrap the row on a phone, and the count beside each one is the part being
+ * compared, so the label is what can go.
+ */
+const STOCK_TABS: {
+  value: StockTab;
+  label: string;
+  icon: LucideIcon;
+}[] = [
+  { value: "all", label: "All", icon: BoxesIcon },
+  { value: "tracked", label: "Stock Track", icon: PackageCheck },
+  { value: "untracked", label: "Non-Stock Track", icon: PackageX },
 ];
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
@@ -80,7 +91,7 @@ const SORT_COMPARATORS: Record<
  * cards, so one chip standing out means it is the one in force.
  */
 const CATEGORY_PILL =
-  "cursor-pointer rounded-full border bg-white px-3.5 py-1 text-xs transition-colors hover:bg-[#f8f9fa]";
+  "cursor-pointer rounded-full border bg-white dark:bg-white/5 px-3.5 py-1 text-xs transition-colors hover:bg-[#f8f9fa] dark:hover:bg-white/10";
 
 const SALES_SORT_KEYS: SalesSortKey[] = [
   "revenue-desc",
@@ -98,11 +109,11 @@ type SaleFigures = {
 /** Skeleton card shown while loading more items */
 function SkeletonCard() {
   return (
-    <div className="relative rounded-2xl border border-[#e3e3e3] bg-white p-2">
-      <div className="h-2 rounded-lg bg-gray-200 mb-3" />
-      <div className="h-3 bg-gray-200 rounded w-3/4 mb-2" />
-      <div className="h-3 bg-gray-200 rounded w-1/2 mb-3" />
-      <div className="h-8 bg-gray-200 rounded w-full" />
+    <div className="relative rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] p-2 dark:border-white/10">
+      <div className="h-2 rounded-lg bg-gray-200 mb-3 dark:bg-white/15" />
+      <div className="h-3 bg-gray-200 rounded w-3/4 mb-2 dark:bg-white/15" />
+      <div className="h-3 bg-gray-200 rounded w-1/2 mb-3 dark:bg-white/15" />
+      <div className="h-8 bg-gray-200 rounded w-full dark:bg-white/15" />
     </div>
   );
 }
@@ -339,19 +350,19 @@ const ProductCardGrid = ({
         <div className="relative  w-full sm:w-72">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none dark:text-[#7b869b]"
           />
           <input
             type="text"
             placeholder="Search products..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-9 w-full rounded-lg border border-[#dadce0] bg-white pl-9 pr-8 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="h-9 w-full rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 dark:text-[#e8ecf4] pl-9 pr-8 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/15"
           />
           {search && (
             <button
               onClick={() => setSearch("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-[#7b869b]"
               aria-label="Clear search"
             >
               <X size={14} />
@@ -363,7 +374,10 @@ const ProductCardGrid = ({
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 shrink-0">
           {/* Sort */}
           <div className="flex items-center gap-2 shrink-0">
-            <ArrowUpDown size={14} className="text-gray-400" />
+            <ArrowUpDown
+              size={14}
+              className="text-gray-400 dark:text-[#7b869b]"
+            />
             <FilterSelect
               value={sortBy}
               options={SORT_OPTIONS}
@@ -385,14 +399,21 @@ const ProductCardGrid = ({
                 key={cat._id ?? cat.name}
                 type="button"
                 onClick={() => setSelectedCategory(cat._id)}
-                className={CATEGORY_PILL}
-                style={{
-                  color: isActive
-                    ? `color-mix(in oklab, ${categoryColor}, black 45%)`
-                    : CHART_PALETTE.title,
-                  backgroundColor: isActive ? `${categoryColor}20` : undefined,
-                  borderColor: isActive ? categoryColor : CHART_PALETTE.control,
-                }}
+                className={`${CATEGORY_PILL} ${
+                  isActive
+                    ? "text-[var(--pill-ink)] dark:text-[var(--pill-ink-dark)]"
+                    : "border-[#dadce0] text-[#3c4043] dark:border-white/15 dark:text-[#e8ecf4]"
+                }`}
+                style={
+                  isActive
+                    ? ({
+                        "--pill-ink": `color-mix(in oklab, ${categoryColor}, black 45%)`,
+                        "--pill-ink-dark": `color-mix(in oklab, ${categoryColor}, white 45%)`,
+                        backgroundColor: `${categoryColor}20`,
+                        borderColor: categoryColor,
+                      } as React.CSSProperties)
+                    : undefined
+                }
               >
                 {cat.name === "None" ? "Uncategorized" : cat.name}
               </button>
@@ -400,10 +421,7 @@ const ProductCardGrid = ({
           })}
 
           {/* Vertical divider */}
-          <div
-            className="mx-1 h-6 w-px shrink-0"
-            style={{ backgroundColor: CHART_PALETTE.control }}
-          />
+          <div className="mx-1 h-6 w-px shrink-0 bg-[#dadce0] dark:bg-white/15" />
 
           {/* User categories */}
           {customCategories
@@ -416,18 +434,21 @@ const ProductCardGrid = ({
                   key={cat._id ?? cat.name}
                   type="button"
                   onClick={() => setSelectedCategory(cat._id)}
-                  className={CATEGORY_PILL}
-                  style={{
-                    color: isActive
-                      ? `color-mix(in oklab, ${categoryColor}, black 45%)`
-                      : CHART_PALETTE.title,
-                    backgroundColor: isActive
-                      ? `${categoryColor}20`
-                      : undefined,
-                    borderColor: isActive
-                      ? `color-mix(in oklab, ${categoryColor}, black 15%)`
-                      : CHART_PALETTE.control,
-                  }}
+                  className={`${CATEGORY_PILL} ${
+                    isActive
+                      ? "text-[var(--pill-ink)] dark:text-[var(--pill-ink-dark)]"
+                      : "border-[#dadce0] text-[#3c4043] dark:border-white/15 dark:text-[#e8ecf4]"
+                  }`}
+                  style={
+                    isActive
+                      ? ({
+                          "--pill-ink": `color-mix(in oklab, ${categoryColor}, black 45%)`,
+                          "--pill-ink-dark": `color-mix(in oklab, ${categoryColor}, white 45%)`,
+                          backgroundColor: `${categoryColor}20`,
+                          borderColor: `color-mix(in oklab, ${categoryColor}, white 15%)`,
+                        } as React.CSSProperties)
+                      : undefined
+                  }
                 >
                   {cat.name}
                 </button>
@@ -440,10 +461,11 @@ const ProductCardGrid = ({
         <div
           role="radiogroup"
           aria-label="Stock tracking"
-          className="flex w-fit items-center gap-1 rounded-lg bg-gray-100 p-1"
+          className="flex w-fit items-center gap-1 rounded-lg bg-gray-100 p-1 dark:bg-white/10"
         >
           {STOCK_TABS.map((tab) => {
             const selected = stockTab === tab.value;
+            const Icon = tab.icon;
             return (
               <button
                 key={tab.value}
@@ -453,12 +475,13 @@ const ProductCardGrid = ({
                 onClick={() => setStockTab(tab.value)}
                 className={`flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
                   selected
-                    ? "bg-white font-semibold text-blue-900 shadow-sm"
-                    : "font-semibold text-gray-600 hover:text-blue-950"
+                    ? "bg-white font-semibold text-blue-900 shadow-sm dark:bg-white/15 dark:text-[#a8c4ee] dark:shadow-none"
+                    : "font-semibold text-gray-600 hover:text-blue-950 dark:text-[#a9b4c7]"
                 }`}
               >
-                {tab.label}
-                <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#e4f2fe] px-1.5 py-px text-[10px] font-bold tabular-nums tracking-wide text-blue-950 ring-1 ring-blue-900/40">
+                <Icon className="h-4 w-4 shrink-0 md:hidden" aria-hidden />
+                <span className="hidden md:inline">{tab.label}</span>
+                <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#e4f2fe] px-1.5 py-px text-[10px] font-bold tabular-nums tracking-wide text-blue-950 ring-1 ring-blue-900/40 dark:bg-white/10 dark:text-[#e8ecf4]">
                   {stockCounts[tab.value]}
                 </span>
               </button>
@@ -470,21 +493,21 @@ const ProductCardGrid = ({
       {/* Empty state */}
       {processed.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12">
-          <div
-            className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
-            style={{ backgroundColor: CHART_PALETTE.hover }}
-          >
-            <BoxesIcon size={24} style={{ color: CHART_PALETTE.subtitle }} />
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+            <BoxesIcon
+              size={24}
+              className="text-[#9aa0a6] dark:text-[#9aa6bd]"
+            />
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
             No products found
           </p>
-          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             Filtered product data will appear here
           </p>
 
           {search && (
-            <p className="mt-1 text-xs text-gray-300">
+            <p className="mt-1 text-xs text-gray-300 dark:text-[#6b7588]">
               Try a different search term.
             </p>
           )}
@@ -529,11 +552,11 @@ const ProductCardGrid = ({
             <button
               onClick={handleLoadMore}
               disabled={loading}
-              className="flex cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] disabled:opacity-50"
+              className="flex cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] disabled:opacity-50 dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10 dark:bg-white/5"
             >
               {loading && (
                 <svg
-                  className="animate-spin h-3.5 w-3.5 text-gray-500"
+                  className="animate-spin h-3.5 w-3.5 text-gray-500 dark:text-[#9aa6bd]"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -568,7 +591,7 @@ const ProductCardGrid = ({
             <button
               onClick={handleHide}
               disabled={loading}
-              className="flex cursor-pointer flex-row items-center gap-1 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex cursor-pointer flex-row items-center gap-1 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10 dark:bg-white/5"
             >
               <ChevronUp size={12} />
               Show less

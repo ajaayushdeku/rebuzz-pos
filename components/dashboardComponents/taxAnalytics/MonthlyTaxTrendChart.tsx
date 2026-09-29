@@ -19,15 +19,16 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useMonthlyTaxTrend } from "@/hooks/useMonthlyTaxTrend";
 import {
-  AXIS_TICK,
   BAR_RADIUS,
   CHART_PALETTE,
   ChartCard,
   ChartLegend,
   ChartTooltipBox,
+  getAxisTick,
   yAxisTitle,
 } from "../chartCard";
 import { TaxTrendChartSkeleton } from "./TaxAnalyticsSkeletons";
+import { useEffect, useState } from "react";
 
 const RATE_COLORS = [
   "#6366f1",
@@ -65,13 +66,10 @@ const CustomTooltip = ({
       }))}
       footer={
         <div className="flex items-center justify-between gap-4">
-          <span className="text-xs" style={{ color: CHART_PALETTE.axis }}>
+          <span className="text-xs text-[#5f6368] dark:text-[#a9b4c7]">
             Total
           </span>
-          <span
-            className="text-xs font-medium"
-            style={{ color: CHART_PALETTE.title }}
-          >
+          <span className="text-xs font-medium text-[#3c4043] dark:text-[#e8ecf4]">
             {fmt(total)}
           </span>
         </div>
@@ -90,6 +88,27 @@ export default function MonthlyTaxTrendChart() {
   const formatY = (v: number) =>
     formatCompactCurrency(v, currency.symbol, currency.locale);
 
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
+
   return (
     <ChartCard
       icon={ChartColumnBig}
@@ -105,10 +124,7 @@ export default function MonthlyTaxTrendChart() {
       {isLoading ? (
         <TaxTrendChartSkeleton />
       ) : isError ? (
-        <div
-          className="flex h-[280px] items-center justify-center text-sm"
-          style={{ color: CHART_PALETTE.bad }}
-        >
+        <div className="flex h-[280px] items-center justify-center text-sm text-[#d93025] dark:text-[#f87171]">
           Failed to load tax trend
         </div>
       ) : (

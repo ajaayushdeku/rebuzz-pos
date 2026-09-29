@@ -33,27 +33,30 @@ const InventoryMovementAnalysis = ({ items }: { items: MergedSalesItem[] }) => {
   const categories = [
     {
       label: "Fast Moving",
-      color: CHART_PALETTE.good,
+      colorClass: "text-[#1e8e3e] dark:text-[#10b981]",
       badge: marginBadge(fastMargin),
-      badgeClass: "border-green-200 font-semibold bg-green-50 text-green-700",
+      badgeClass:
+        "border-green-200 font-semibold bg-green-50 text-green-700 dark:bg-emerald-400/10 dark:border-emerald-400/25 dark:text-emerald-300",
       icon: TrendingUp,
       items: fast,
       note: nameList(fast),
     },
     {
       label: "Normal Velocity",
-      color: CHART_PALETTE.blue,
+      colorClass: "text-[#1a73e8] dark:text-[#7ba2e3]",
       badge: marginBadge(normalMargin),
-      badgeClass: "border-blue-200 font-semibold bg-blue-50 text-blue-700",
+      badgeClass:
+        "border-blue-200 font-semibold bg-blue-50 text-blue-700 dark:bg-blue-400/10 dark:border-blue-400/25 dark:text-[#a8c4ee]",
       icon: Minus,
       items: normal,
       note: nameList(normal),
     },
     {
       label: "Slow Moving",
-      color: CHART_PALETTE.warn,
+      colorClass: "text-[#e37400] dark:text-amber-400",
       badge: marginBadge(slowMargin),
-      badgeClass: "border-amber-200 font-semibold bg-amber-50 text-amber-700",
+      badgeClass:
+        "border-amber-200 font-semibold bg-amber-50 text-amber-700 dark:bg-amber-400/10 dark:border-amber-400/25 dark:text-amber-300",
       icon: TrendingDown,
       items: slow,
       note:
@@ -77,16 +80,16 @@ const InventoryMovementAnalysis = ({ items }: { items: MergedSalesItem[] }) => {
     >
       {items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <div
-            className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
-            style={{ backgroundColor: CHART_PALETTE.hover }}
-          >
-            <Activity size={24} style={{ color: CHART_PALETTE.subtitle }} />
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+            <Activity
+              size={24}
+              className="text-[#9aa0a6] dark:text-[#9aa6bd]"
+            />
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
             No inventory movement analysis data available
           </p>
-          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             Inventory Movement Analysis data will appear here
           </p>
         </div>
@@ -95,7 +98,7 @@ const InventoryMovementAnalysis = ({ items }: { items: MergedSalesItem[] }) => {
           {categories.map(
             ({
               label,
-              color,
+              colorClass,
               badge,
               badgeClass,
               icon: Icon,
@@ -104,19 +107,13 @@ const InventoryMovementAnalysis = ({ items }: { items: MergedSalesItem[] }) => {
             }) => (
               <div
                 key={label}
-                className="border-b py-3.5 first:pt-0 last:border-0 last:pb-0"
-                style={{ borderColor: CHART_PALETTE.grid }}
+                className="border-b py-3.5 first:pt-0 last:border-0 last:pb-0 border-[#e8eaed] dark:border-white/10"
               >
                 <div className="mb-1 flex items-center justify-between gap-2">
                   <div className="flex min-w-0 items-center gap-1.5">
-                    <Icon size={14} style={{ color }} />
-                    <span className="text-[13px] " style={{ color }}>
-                      {label}
-                    </span>
-                    <span
-                      className="truncate text-[11px] tabular-nums"
-                      style={{ color: CHART_PALETTE.subtitle }}
-                    >
+                    <Icon size={14} className={colorClass} />
+                    <span className={`text-[13px] ${colorClass}`}>{label}</span>
+                    <span className="truncate text-[11px] tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
                       {group.length} {group.length === 1 ? "item" : "items"} ·{" "}
                       {unitShare(group, totalUnits)}% of units
                     </span>
@@ -132,10 +129,7 @@ const InventoryMovementAnalysis = ({ items }: { items: MergedSalesItem[] }) => {
                     {badge}
                   </span>
                 </div>
-                <p
-                  className="ml-5 text-[11px] leading-relaxed"
-                  style={{ color: CHART_PALETTE.subtitle }}
-                >
+                <p className="ml-5 text-[11px] leading-relaxed text-[#9aa0a6] dark:text-[#9aa6bd]">
                   {note}
                 </p>
               </div>

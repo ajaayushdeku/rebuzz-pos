@@ -13,17 +13,18 @@ const GROUP_META = {
     label: "Out of stock",
     icon: PackageX,
     dot: "bg-red-500",
-    chip: "border-red-200 bg-red-50 text-red-700",
-    chipNum: "bg-red-100 text-red-700",
-    header: "text-red-600",
+    chip: "border-red-200 bg-red-50 text-red-700 dark:bg-red-400/10 dark:border-red-400/25 dark:text-red-300",
+    chipNum: "bg-red-100 text-red-700 dark:bg-red-400/15 dark:text-red-300",
+    header: "text-red-600 dark:text-red-400",
   },
   low: {
     label: "Low stock",
     icon: PackageMinus,
     dot: "bg-amber-500",
-    chip: "border-amber-200 bg-amber-50 text-amber-700",
-    chipNum: "bg-amber-100 text-amber-700",
-    header: "text-amber-600",
+    chip: "border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-400/10 dark:border-amber-400/25 dark:text-amber-300",
+    chipNum:
+      "bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300",
+    header: "text-amber-600 dark:text-amber-400",
   },
 } as const;
 
@@ -98,15 +99,11 @@ export default function InventoryAlerts({ items }: { items: InventoryItem[] }) {
               return (
                 <span
                   key={key}
-                  className="inline-flex items-center gap-1.5 text-xs"
-                  style={{ color: CHART_PALETTE.axis }}
+                  className="inline-flex items-center gap-1.5 text-xs text-[#5f6368] dark:text-[#a9b4c7]"
                 >
                   <span className={`h-2 w-2 rounded-full ${meta.dot}`} />
                   {meta.label}
-                  <span
-                    className="tabular-nums"
-                    style={{ color: CHART_PALETTE.title }}
-                  >
+                  <span className="tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                     {entries.length}
                   </span>
                 </span>
@@ -127,7 +124,7 @@ export default function InventoryAlerts({ items }: { items: InventoryItem[] }) {
                 >
                   <Icon size={13} />
                   {meta.label}
-                  <span style={{ color: CHART_PALETTE.subtitle }}>
+                  <span className="text-[#9aa0a6] dark:text-[#9aa6bd]">
                     ({entries.length})
                   </span>
                 </div>

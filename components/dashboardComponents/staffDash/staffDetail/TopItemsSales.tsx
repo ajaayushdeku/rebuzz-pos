@@ -171,7 +171,7 @@ function Header({
     <div className="flex w-full flex-row items-center justify-between gap-3">
       <div className="flex min-w-0 flex-row items-center gap-3">
         <div
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
           style={{ borderColor: "#a7f3d0", backgroundColor: "#ecfdf5" }}
         >
           <TrendingUp size={16} style={{ color: "#059669" }} />

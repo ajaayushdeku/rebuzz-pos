@@ -156,39 +156,46 @@ export default function ChangeTableModal({
         {/* From → To. The destination was only visible as a tick buried in
             the list; showing both ends states what is about to happen. */}
         <div className="flex items-stretch gap-2">
-          <div className="min-w-0 flex-1 rounded-xl border border-[#e3e3e3] bg-white px-3.5 py-3">
-            <p className="text-[11px] text-[#9aa0a6]">From</p>
-            <p className="mt-1 truncate text-[13px] font-medium text-[#3c4043]">
+          <div className="min-w-0 flex-1 rounded-xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-3.5 py-3 dark:border-white/10">
+            <p className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
+              From
+            </p>
+            <p className="mt-1 truncate text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
               {tableLabel(currentTable)}
             </p>
             {ticketNumber != null && (
-              <span className="mt-1.5 inline-block rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[11px] tabular-nums text-blue-700">
+              <span className="mt-1.5 inline-block rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[11px] tabular-nums text-blue-700 dark:bg-blue-400/10 dark:border-blue-400/25 dark:text-[#a8c4ee]">
                 Ticket #{ticketNumber}
               </span>
             )}
           </div>
 
           <div className="flex shrink-0 items-center">
-            <ArrowRight size={16} className="text-gray-300" />
+            <ArrowRight
+              size={16}
+              className="text-gray-300 dark:text-[#6b7588]"
+            />
           </div>
 
           <div
             className={`min-w-0 flex-1 rounded-xl border px-3.5 py-3 transition-colors ${
               selectedTable
-                ? "border-blue-200 bg-blue-50"
-                : "border-dashed border-[#dadce0] bg-white"
+                ? "border-blue-200 bg-blue-50 dark:bg-blue-400/10 dark:border-blue-400/25"
+                : "border-dashed border-[#dadce0] bg-white dark:bg-white/5 dark:border-white/15"
             }`}
           >
-            <p className="text-[11px] text-[#9aa0a6]">To</p>
+            <p className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">To</p>
             <p
               className={`mt-1 truncate text-[13px] font-medium ${
-                selectedTable ? "text-[#3c4043]" : "text-[#9aa0a6]"
+                selectedTable
+                  ? "text-[#3c4043] dark:text-[#e8ecf4]"
+                  : "text-[#9aa0a6] dark:text-[#9aa6bd]"
               }`}
             >
               {selectedTable ? tableLabel(selectedTable) : "Not selected"}
             </p>
             {selectedTable && (
-              <span className="mt-1.5 inline-block text-[11px] tabular-nums text-blue-600">
+              <span className="mt-1.5 inline-block text-[11px] tabular-nums text-blue-600 dark:text-[#7ba2e3]">
                 {selectedTable.capacity}{" "}
                 {selectedTable.capacity === 1 ? "seat" : "seats"}
               </span>
@@ -200,7 +207,7 @@ export default function ChangeTableModal({
         <div>
           <div className="mb-2 flex items-center justify-between gap-2">
             <SectionLabel>Select a free table</SectionLabel>
-            <span className="text-[11px] font-medium tabular-nums text-gray-400">
+            <span className="text-[11px] font-medium tabular-nums text-gray-400 dark:text-[#7b869b]">
               {freeTables.length} available
             </span>
           </div>
@@ -210,7 +217,7 @@ export default function ChangeTableModal({
             <div className="relative mb-2">
               <Search
                 size={14}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#7b869b]"
               />
               <input
                 value={search}
@@ -222,20 +229,23 @@ export default function ChangeTableModal({
           )}
 
           {freeTables.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-[#dadce0] px-4 py-10 text-center">
-              <div className="mx-auto mb-2.5 flex h-12 w-12 items-center justify-center rounded-full bg-[#f1f3f4]">
-                <Armchair size={20} className="text-gray-400" />
+            <div className="rounded-xl border border-dashed border-[#dadce0] px-4 py-10 text-center dark:border-white/15">
+              <div className="mx-auto mb-2.5 flex h-12 w-12 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+                <Armchair
+                  size={20}
+                  className="text-gray-400 dark:text-[#7b869b]"
+                />
               </div>
-              <p className="text-[13px] text-[#3c4043]">
+              <p className="text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                 No free tables right now
               </p>
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1 text-xs text-gray-400 dark:text-[#7b869b]">
                 Every other table is occupied or reserved.
               </p>
             </div>
           ) : visibleTables.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-[#dadce0] px-4 py-8 text-center">
-              <p className="text-[13px] text-[#3c4043]">
+            <div className="rounded-xl border border-dashed border-[#dadce0] px-4 py-8 text-center dark:border-white/15">
+              <p className="text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                 No table matches “{search.trim()}”
               </p>
             </div>
@@ -254,15 +264,17 @@ export default function ChangeTableModal({
                     aria-pressed={isSelected}
                     className={`flex w-full items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 text-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                       isSelected
-                        ? "border-blue-500 bg-blue-50 text-blue-700 ring-1 ring-blue-500"
-                        : "border-[#e3e3e3] text-[#3c4043] hover:border-[#dadce0] hover:bg-[#f8f9fa]"
+                        ? "border-blue-500 bg-blue-50 text-blue-700 ring-1 ring-blue-500 dark:bg-blue-400/10 dark:text-[#a8c4ee]"
+                        : "border-[#e3e3e3] text-[#3c4043] hover:border-[#dadce0] hover:bg-[#f8f9fa] dark:border-white/10 dark:text-[#e8ecf4] dark:hover:bg-white/10"
                     }`}
                   >
                     <span className="flex min-w-0 items-center gap-2.5">
                       <Armchair
                         size={15}
                         className={`shrink-0 ${
-                          isSelected ? "text-blue-500" : "text-gray-400"
+                          isSelected
+                            ? "text-blue-500"
+                            : "text-gray-400 dark:text-[#7b869b]"
                         }`}
                       />
                       <span className="truncate text-[13px]">
@@ -271,7 +283,7 @@ export default function ChangeTableModal({
                     </span>
 
                     <span className="flex shrink-0 items-center gap-2">
-                      <span className="text-xs tabular-nums text-[#9aa0a6]">
+                      <span className="text-xs tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
                         {t.capacity} {t.capacity === 1 ? "seat" : "seats"}
                       </span>
                       {isSelected && (
@@ -290,10 +302,13 @@ export default function ChangeTableModal({
         {error && (
           <div
             role="alert"
-            className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5"
+            className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 dark:bg-red-400/10 dark:border-red-400/25"
           >
-            <AlertCircle size={15} className="mt-0.5 shrink-0 text-red-500" />
-            <p className="text-xs text-red-600">{error}</p>
+            <AlertCircle
+              size={15}
+              className="mt-0.5 shrink-0 text-red-500 dark:text-red-400"
+            />
+            <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
           </div>
         )}
       </div>

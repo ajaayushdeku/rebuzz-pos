@@ -5,7 +5,6 @@ import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { ArrowUp, ArrowDown, Info } from "lucide-react";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
-import { CHART_PALETTE } from "../chartCard";
 
 interface VatStatCardProps {
   stat: VatStat;
@@ -23,10 +22,7 @@ export default function VatStatCard({
   const hasData = stat.amount !== null;
 
   return (
-    <div
-      className="group relative select-none overflow-hidden rounded-2xl border bg-white"
-      style={{ borderColor: CHART_PALETTE.border }}
-    >
+    <div className="group relative select-none overflow-hidden rounded-2xl border bg-white border-[#e3e3e3] dark:border-white/10 dark:bg-white/5">
       <LockDimFeactureOverlay component_name="VAT Stat Cards" />
       {/* Hover info — slides up from the bottom on hover (hidden when locked) */}
       {!locked && stat.description && (
@@ -40,26 +36,19 @@ export default function VatStatCard({
       <div className="relative flex h-full min-h-[170px] flex-col justify-between px-5 py-4">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
-          <h3
-            className="min-w-0 truncate text-[13px]"
-            style={{ color: CHART_PALETTE.axis }}
-          >
+          <h3 className="min-w-0 truncate text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">
             {stat.title}
           </h3>
 
           <Info
             size={13}
-            className="shrink-0 transition-colors"
-            style={{ color: CHART_PALETTE.subtitle }}
+            className="shrink-0 transition-colors text-[#9aa0a6] dark:text-[#9aa6bd]"
           />
         </div>
 
         {/* Value */}
         <div>
-          <p
-            className="text-2xl font-semibold tracking-tight tabular-nums"
-            style={{ color: CHART_PALETTE.title }}
-          >
+          <p className="text-2xl font-semibold tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
             {stat.amount !== null
               ? formatCurrencySymbol(
                   stat.amount,
@@ -74,27 +63,29 @@ export default function VatStatCard({
               <div>
                 <div className="mt-2 flex items-center gap-1.5">
                   {isPositive ? (
-                    <ArrowUp size={13} style={{ color: CHART_PALETTE.good }} />
+                    <ArrowUp
+                      size={13}
+                      className="text-[#1e8e3e] dark:text-[#10b981]"
+                    />
                   ) : (
-                    <ArrowDown size={13} style={{ color: CHART_PALETTE.bad }} />
+                    <ArrowDown
+                      size={13}
+                      className="text-[#d93025] dark:text-[#f87171]"
+                    />
                   )}
 
                   <span
-                    className="text-[13px] font-medium tabular-nums"
-                    style={{
-                      color: isPositive
-                        ? CHART_PALETTE.good
-                        : CHART_PALETTE.bad,
-                    }}
+                    className={`text-[13px] font-medium tabular-nums ${
+                      isPositive
+                        ? "text-[#1e8e3e] dark:text-[#10b981]"
+                        : "text-[#d93025] dark:text-[#f87171]"
+                    }`}
                   >
                     {stat.change}%
                   </span>
                 </div>
 
-                <p
-                  className="mt-1 text-[11px]"
-                  style={{ color: CHART_PALETTE.subtitle }}
-                >
+                <p className="mt-1 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                   vs last month
                 </p>
               </div>

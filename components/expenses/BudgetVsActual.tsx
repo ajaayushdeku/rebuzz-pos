@@ -6,7 +6,7 @@ import RangeBadge from "@/components/ui/RangeBadge";
 import { getPurposeIcon } from "@/lib/purpose-icons";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { CHART_PALETTE, ChartCard } from "../dashboardComponents/chartCard";
+import { ChartCard } from "../dashboardComponents/chartCard";
 import { ChartColumnBig } from "lucide-react";
 import { BudgetVsActualSkeleton } from "./ExpenseAnalyticsSkeletons";
 
@@ -15,10 +15,13 @@ const COLUMNS =
   "grid grid-cols-[1.4fr_1fr_1fr_1.3fr_1.4fr] items-center gap-3 min-w-[520px]";
 
 function getPctStyle(pct: number): string {
-  if (pct >= 100) return "bg-amber-100 text-amber-700";
-  if (pct >= 90) return "bg-amber-50  text-amber-600";
-  if (pct >= 80) return "bg-blue-50   text-blue-600";
-  return "bg-green-50 text-green-600";
+  if (pct >= 100)
+    return "bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300";
+  if (pct >= 90)
+    return "bg-amber-50  text-amber-600 dark:bg-amber-400/10 dark:text-amber-400";
+  if (pct >= 80)
+    return "bg-blue-50   text-blue-600 dark:bg-blue-400/10 dark:text-[#7ba2e3]";
+  return "bg-green-50 text-green-600 dark:bg-emerald-400/10 dark:text-emerald-400";
 }
 
 // variance = actual - budget → positive means over budget.
@@ -27,13 +30,7 @@ const VarianceBadge = ({ variance }: { variance: number }) => {
 
   if (variance === 0) {
     return (
-      <span
-        className="rounded-full border px-2 py-0.5 text-[11px]"
-        style={{
-          borderColor: CHART_PALETTE.control,
-          color: CHART_PALETTE.axis,
-        }}
-      >
+      <span className="rounded-full border px-2 py-0.5 text-[11px] border-[#dadce0] dark:border-white/15 text-[#5f6368] dark:text-[#a9b4c7]">
         on budget
       </span>
     );
@@ -43,8 +40,8 @@ const VarianceBadge = ({ variance }: { variance: number }) => {
     <span
       className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] tabular-nums md:text-[11px] ${
         over
-          ? "border-red-200 bg-red-50 text-red-600"
-          : "border-green-200 bg-green-50 text-green-700"
+          ? "border-red-200 bg-red-50 text-red-600 dark:bg-red-400/10 dark:border-red-400/25 dark:text-red-400"
+          : "border-green-200 bg-green-50 text-green-700 dark:bg-emerald-400/10 dark:border-emerald-400/25 dark:text-emerald-300"
       }`}
     >
       {over ? "↑" : "✓"}{" "}
@@ -126,19 +123,16 @@ export default function BudgetVsActual() {
     >
       {rows.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <div
-            className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
-            style={{ backgroundColor: CHART_PALETTE.hover }}
-          >
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
             <ChartColumnBig
               size={24}
-              style={{ color: CHART_PALETTE.subtitle }}
+              className="text-[#9aa0a6] dark:text-[#9aa6bd]"
             />
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
             No Budget vs Actual Expense data
           </p>
-          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             No budgets set yet — use “Set Budget” to add thresholds.
           </p>
         </div>
@@ -146,11 +140,7 @@ export default function BudgetVsActual() {
         <div className="overflow-x-auto">
           {/* Table header */}
           <div
-            className={`${COLUMNS} border-b pb-2.5 text-[11px]`}
-            style={{
-              borderColor: CHART_PALETTE.grid,
-              color: CHART_PALETTE.axis,
-            }}
+            className={`${COLUMNS} border-b pb-2.5 text-[11px] border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]`}
           >
             <span>Category</span>
             <span className="text-right">Actual</span>
@@ -164,8 +154,7 @@ export default function BudgetVsActual() {
             {rows.map((row) => (
               <div
                 key={row.category}
-                className={`${COLUMNS} border-b py-3 last:border-0`}
-                style={{ borderColor: CHART_PALETTE.grid }}
+                className={`${COLUMNS} border-b py-3 last:border-0 border-[#e8eaed] dark:border-white/10`}
               >
                 {/* Category */}
                 <div className="flex min-w-0 items-center gap-2">
@@ -180,19 +169,13 @@ export default function BudgetVsActual() {
                       size: 13,
                     })}
                   </span>
-                  <span
-                    className="truncate text-[13px]"
-                    style={{ color: CHART_PALETTE.title }}
-                  >
+                  <span className="truncate text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                     {row.category}
                   </span>
                 </div>
 
                 {/* Actual */}
-                <span
-                  className="text-right text-[13px] font-medium tabular-nums"
-                  style={{ color: CHART_PALETTE.title }}
-                >
+                <span className="text-right text-[13px] font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                   {formatCurrencySymbol(
                     row.actual,
                     currency.symbol,
@@ -201,10 +184,7 @@ export default function BudgetVsActual() {
                 </span>
 
                 {/* Budget */}
-                <span
-                  className="text-right text-[13px] tabular-nums"
-                  style={{ color: CHART_PALETTE.axis }}
-                >
+                <span className="text-right text-[13px] tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
                   {formatCurrencySymbol(
                     row.budget,
                     currency.symbol,
@@ -219,10 +199,7 @@ export default function BudgetVsActual() {
 
                 {/* Status: progress bar + % badge */}
                 <div className="flex items-center justify-end gap-2">
-                  <div
-                    className="h-1.5 w-16 overflow-hidden rounded-full"
-                    style={{ backgroundColor: CHART_PALETTE.grid }}
-                  >
+                  <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#e8eaed] dark:bg-white/10">
                     <div
                       className="h-full rounded-full transition-all duration-500"
                       style={{

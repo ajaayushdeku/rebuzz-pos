@@ -91,7 +91,8 @@ export default function InventoryValueSummary({
       label: "Total Revenue Generated",
       value: fmt(totalRevenue),
       icon: DollarSign,
-      iconClass: "bg-emerald-50 text-emerald-600",
+      iconClass:
+        "bg-emerald-50 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400",
       loading: salesLoading,
       ranged: true,
     },
@@ -99,7 +100,8 @@ export default function InventoryValueSummary({
       label: "Total Net Profit Generated",
       value: fmt(totalNetProfit),
       icon: LineChart,
-      iconClass: "bg-blue-50 text-blue-600",
+      iconClass:
+        "bg-blue-50 text-blue-600 dark:bg-blue-400/10 dark:text-[#7ba2e3]",
       loading: salesLoading,
       ranged: true,
     },
@@ -107,7 +109,8 @@ export default function InventoryValueSummary({
       label: "Total Item Order Count",
       value: totalOrderCount.toLocaleString(),
       icon: ShoppingCart,
-      iconClass: "bg-violet-50 text-violet-600",
+      iconClass:
+        "bg-violet-50 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400",
       loading: salesLoading,
       ranged: true,
     },
@@ -119,7 +122,8 @@ export default function InventoryValueSummary({
       label: "Total Selling Price",
       value: fmt(totalSelling),
       icon: Tag,
-      iconClass: "bg-emerald-50 text-emerald-600",
+      iconClass:
+        "bg-emerald-50 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400",
       loading: isLoading,
       ranged: false,
       note: negativeNote,
@@ -128,7 +132,8 @@ export default function InventoryValueSummary({
       label: "Total Cost Price",
       value: fmt(totalCost),
       icon: Wallet,
-      iconClass: "bg-amber-50 text-amber-600",
+      iconClass:
+        "bg-amber-50 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400",
       loading: isLoading,
       ranged: false,
       note: negativeNote,
@@ -137,7 +142,8 @@ export default function InventoryValueSummary({
       label: "Potential Margin",
       value: fmt(potentialMargin),
       icon: TrendingUp,
-      iconClass: "bg-blue-50 text-blue-600",
+      iconClass:
+        "bg-blue-50 text-blue-600 dark:bg-blue-400/10 dark:text-[#7ba2e3]",
       loading: isLoading,
       ranged: false,
     },
@@ -146,7 +152,7 @@ export default function InventoryValueSummary({
       label: "Total Products",
       value: productCount.toLocaleString(),
       icon: Package,
-      iconClass: "bg-gray-50 text-gray-600",
+      iconClass: "bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-[#a9b4c7]",
       loading: isLoading,
       ranged: false,
     },
@@ -155,7 +161,8 @@ export default function InventoryValueSummary({
       label: "Total Product Variants",
       value: variantCount.toLocaleString(),
       icon: Layers,
-      iconClass: "bg-indigo-50 text-indigo-600",
+      iconClass:
+        "bg-indigo-50 text-indigo-600 dark:bg-indigo-400/10 dark:text-indigo-300",
       loading: isLoading,
       ranged: false,
     },
@@ -172,14 +179,10 @@ export default function InventoryValueSummary({
     return (
       <div
         key={card.label}
-        className="rounded-2xl border bg-white px-5 py-4"
-        style={{ borderColor: CHART_PALETTE.border }}
+        className="rounded-2xl border bg-white dark:bg-[#161d2e] px-5 py-4 border-[#e3e3e3] dark:border-white/10"
       >
         <div className="flex items-center justify-between gap-2">
-          <span
-            className="tracking-wide truncate text-[12px]"
-            style={{ color: CHART_PALETTE.axis }}
-          >
+          <span className="tracking-wide truncate text-[12px] text-[#5f6368] dark:text-[#a9b4c7]">
             {card.label}
           </span>
           {/* The tile takes the icon's colour, so `border-current/20` frames
@@ -193,12 +196,9 @@ export default function InventoryValueSummary({
 
         <div className="mt-3 flex items-baseline justify-between gap-2">
           {card.loading ? (
-            <div className="h-6 w-24 animate-pulse rounded bg-gray-100" />
+            <div className="h-6 w-24 animate-pulse rounded bg-gray-100 dark:bg-white/10" />
           ) : (
-            <p
-              className="truncate text-xl font-semibold tracking-tight tabular-nums md:text-[22px]"
-              style={{ color: CHART_PALETTE.title }}
-            >
+            <p className="truncate text-xl font-semibold tracking-tight tabular-nums md:text-[22px] text-[#3c4043] dark:text-[#e8ecf4]">
               {card.value}
             </p>
           )}
@@ -206,10 +206,7 @@ export default function InventoryValueSummary({
         </div>
 
         {card.note && !card.loading && (
-          <p
-            className="mt-1.5 flex items-start gap-1 text-[11px] leading-snug"
-            style={{ color: CHART_PALETTE.warn }}
-          >
+          <p className="mt-1.5 flex items-start gap-1 text-[11px] leading-snug text-[#e37400] dark:text-amber-400">
             <TriangleAlert size={11} className="mt-px shrink-0" />
             {card.note}
           </p>
@@ -221,24 +218,18 @@ export default function InventoryValueSummary({
   return (
     <div className="mb-4">
       {/* <div className="mb-3">
-        <h2 className="text-sm font-semibold text-gray-800">
+        <h2 className="text-sm font-semibold text-gray-800 dark:text-[#e8ecf4]">
           Inventory Valuation
         </h2>
-        <p className="text-xs text-gray-400 mt-0.5">
+        <p className="text-xs text-gray-400 mt-0.5 dark:text-[#7b869b]">
           Stock value across all products · revenue, profit &amp; orders for the
           selected range
         </p>
       </div> */}
 
       {showError ? (
-        <div
-          className="rounded-2xl border bg-white px-6 py-5"
-          style={{ borderColor: CHART_PALETTE.border }}
-        >
-          <p
-            className="py-2 text-center text-xs"
-            style={{ color: CHART_PALETTE.bad }}
-          >
+        <div className="rounded-2xl border bg-white dark:bg-[#161d2e] px-6 py-5 border-[#e3e3e3] dark:border-white/10">
+          <p className="py-2 text-center text-xs text-[#d93025] dark:text-[#f87171]">
             Failed to load product valuation
           </p>
         </div>
@@ -246,7 +237,7 @@ export default function InventoryValueSummary({
         <div className="space-y-4">
           {/* Stock-based metrics */}
           <div>
-            <p className="mb-2 tracking-wide font-semibold text-[10px] text-gray-400 uppercase">
+            <p className="mb-2 tracking-wide font-semibold text-[10px] text-gray-400 uppercase dark:text-[#7b869b]">
               Current stock (all products)
             </p>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -256,7 +247,7 @@ export default function InventoryValueSummary({
 
           {/* Date-ranged metrics */}
           <div>
-            <p className="mb-2 tracking-wide font-semibold text-[10px] text-gray-400 uppercase">
+            <p className="mb-2 tracking-wide font-semibold text-[10px] text-gray-400 uppercase dark:text-[#7b869b]">
               For selected range
             </p>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">

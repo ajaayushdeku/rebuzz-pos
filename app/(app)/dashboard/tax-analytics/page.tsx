@@ -65,7 +65,7 @@ export default function TaxAnalyticsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
       <PageHeader
         title="Tax Analytics"
         subtitle="Overview of tax collected, refunded, and categorized"
@@ -174,7 +174,7 @@ export default function TaxAnalyticsPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1">
-          <h2 className="flex flex-row items-center text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">
+          <h2 className="flex flex-row items-center text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 dark:text-[#9aa6bd]">
             Income Tax <div className="h-px flex-1 bg-gray-200 ml-3" />
           </h2>
           <Panel>
@@ -189,7 +189,7 @@ export default function TaxAnalyticsPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1">
-          <h2 className="flex flex-row items-center text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">
+          <h2 className="flex flex-row items-center text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 dark:text-[#9aa6bd]">
             Reconciliation & Audit
             <div className="h-px flex-1 bg-gray-200 ml-3" />
           </h2>

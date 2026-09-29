@@ -11,12 +11,12 @@ const InventoryHeader = ({ items }: { items: InventoryItem[] }) => {
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-gray-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-gray-200 dark:border-white/15">
         <div>
           <h1 className="font-bold text-xl md:text-2xl truncate">
             Inventory Management
           </h1>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-xs text-gray-400 mt-0.5 dark:text-[#7b869b]">
             Monitor stock levels and manage supply intake.
           </p>
         </div>
@@ -24,7 +24,7 @@ const InventoryHeader = ({ items }: { items: InventoryItem[] }) => {
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            className="flex items-center gap-2 text-sm border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg px-4 py-2"
+            className="flex items-center gap-2 text-sm border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg px-4 py-2 dark:border-white/15 dark:text-[#a9b4c7] dark:hover:bg-white/10"
           >
             <CalendarDays size={15} />
             Audit Log

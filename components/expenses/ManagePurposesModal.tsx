@@ -33,9 +33,10 @@ const APPLIES_TO_LABEL: Record<AppliesTo, string> = {
 };
 
 const APPLIES_TO_BADGE: Record<AppliesTo, string> = {
-  expense: "bg-red-50 text-red-600",
-  income: "bg-green-50 text-green-600",
-  both: "bg-blue-50 text-blue-600",
+  expense: "bg-red-50 text-red-600 dark:bg-red-400/10 dark:text-red-400",
+  income:
+    "bg-green-50 text-green-600 dark:bg-emerald-400/10 dark:text-emerald-400",
+  both: "bg-blue-50 text-blue-600 dark:bg-blue-400/10 dark:text-[#7ba2e3]",
 };
 
 /**
@@ -98,7 +99,7 @@ function PurposeFields({
 
       <div>
         <SectionLabel>Icon</SectionLabel>
-        <div className="mt-2 grid max-h-36 grid-cols-8 gap-1.5 overflow-y-auto rounded-xl border border-gray-200 p-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mt-2 grid max-h-36 grid-cols-8 gap-1.5 overflow-y-auto rounded-xl border border-gray-200 p-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden dark:border-white/15">
           {ICON_PICKER_OPTIONS.map(({ key, Icon }) => {
             const active = icon === key;
             return (
@@ -110,7 +111,7 @@ function PurposeFields({
                 className={`flex h-8 w-8 items-center justify-center rounded-lg transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                   active
                     ? "bg-blue-600 text-white"
-                    : "text-gray-500 hover:bg-gray-100"
+                    : "text-gray-500 hover:bg-gray-100 dark:text-[#9aa6bd] dark:hover:bg-white/10"
                 }`}
                 title={key}
               >
@@ -263,26 +264,26 @@ export default function ManagePurposesModal({
         title="Manage purposes"
         subtitle="Each purpose can be used for expense, income, or both"
         icon={Tags}
-        iconColor="text-blue-600"
-        iconBgColor="bg-blue-50"
+        iconColor="text-blue-600 dark:text-[#7ba2e3]"
+        iconBgColor="bg-blue-50 dark:bg-blue-400/10"
         maxWidth="max-w-xl"
       >
         <div className="space-y-4">
           <button
             type="button"
             onClick={openCreate}
-            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-gray-300 py-3 text-[13px] font-semibold text-blue-600 transition-colors hover:border-blue-400 hover:bg-blue-50/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-gray-300 py-3 text-[13px] font-semibold text-blue-600 transition-colors hover:border-blue-400 hover:bg-blue-50/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/20 dark:text-[#7ba2e3]"
           >
             <Plus size={14} /> Add new purpose
           </button>
 
           {isPurposesLoading ? (
-            <div className="flex items-center justify-center gap-2 py-12 text-[13px] text-gray-400">
+            <div className="flex items-center justify-center gap-2 py-12 text-[13px] text-gray-400 dark:text-[#7b869b]">
               <Loader2 size={15} className="animate-spin" />
               Loading purposes
             </div>
           ) : allPurposes.length === 0 ? (
-            <p className="py-12 text-center text-[13px] text-gray-400">
+            <p className="py-12 text-center text-[13px] text-gray-400 dark:text-[#7b869b]">
               No purposes yet. Use “Add new purpose” to create one.
             </p>
           ) : (
@@ -293,7 +294,7 @@ export default function ManagePurposesModal({
                 return (
                   <div
                     key={p._id}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-3.5 py-3 transition hover:border-gray-300"
+                    className="flex items-center justify-between gap-3 rounded-xl dark:bg-white/5 border border-gray-200 bg-white px-3.5 py-3 transition hover:border-gray-300 dark:border-white/15 dark:hover:border-white/25"
                   >
                     <div className="flex min-w-0 items-center gap-3">
                       <div
@@ -304,11 +305,11 @@ export default function ManagePurposesModal({
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="truncate text-[13px] font-medium leading-tight text-gray-900">
+                          <p className="truncate text-[13px] font-medium leading-tight text-gray-900 dark:text-[#e8ecf4]">
                             {p.name}
                           </p>
                           {p.isDefault && (
-                            <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-400">
+                            <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-400 dark:bg-white/10 dark:text-[#7b869b]">
                               default
                             </span>
                           )}
@@ -325,7 +326,7 @@ export default function ManagePurposesModal({
                       <button
                         type="button"
                         onClick={() => openEdit(p)}
-                        className="rounded-lg p-1.5 text-gray-300 transition-colors hover:bg-blue-50 hover:text-blue-600"
+                        className="rounded-lg p-1.5 text-gray-300 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:text-[#6b7588]"
                         title="Edit purpose"
                       >
                         <Pencil size={13} />
@@ -333,7 +334,7 @@ export default function ManagePurposesModal({
                       <button
                         type="button"
                         onClick={() => setDeleteTarget(p)}
-                        className="rounded-lg p-1.5 text-gray-300 transition-colors hover:bg-red-50 hover:text-red-500"
+                        className="rounded-lg p-1.5 text-gray-300 transition-colors hover:bg-red-50 hover:text-red-500 dark:text-[#6b7588]"
                         title="Delete purpose"
                       >
                         <Trash2 size={13} />
@@ -355,8 +356,8 @@ export default function ManagePurposesModal({
         title="New purpose"
         subtitle="Add a purpose and choose where it applies"
         icon={Plus}
-        iconColor="text-blue-600"
-        iconBgColor="bg-blue-50"
+        iconColor="text-blue-600 dark:text-[#7ba2e3]"
+        iconBgColor="bg-blue-50 dark:bg-blue-400/10"
         maxWidth="max-w-md"
         footer={
           <div className="flex items-center gap-2.5">
@@ -405,8 +406,8 @@ export default function ManagePurposesModal({
         title="Edit purpose"
         subtitle="Update the name or where this purpose applies"
         icon={Pencil}
-        iconColor="text-blue-600"
-        iconBgColor="bg-blue-50"
+        iconColor="text-blue-600 dark:text-[#7ba2e3]"
+        iconBgColor="bg-blue-50 dark:bg-blue-400/10"
         maxWidth="max-w-md"
         footer={
           <div className="flex items-center gap-2.5">

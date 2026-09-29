@@ -10,29 +10,29 @@
 /** One table card: status row, name, then the figures footer. */
 function TableCardSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 pt-5 pb-4">
+    <div className="bg-white dark:bg-[#161d2e] rounded-2xl border border-gray-100 shadow-sm px-5 pt-5 pb-4 dark:border-white/10">
       {/* Status + menu */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="h-4 w-4 rounded bg-gray-200" />
-          <div className="h-3 w-16 rounded bg-gray-100" />
+          <div className="h-4 w-4 rounded bg-gray-200 dark:bg-white/15" />
+          <div className="h-3 w-16 rounded bg-gray-100 dark:bg-white/10" />
         </div>
-        <div className="h-4 w-4 rounded bg-gray-100" />
+        <div className="h-4 w-4 rounded bg-gray-100 dark:bg-white/10" />
       </div>
 
       {/* Table name + seats */}
       <div className="space-y-2 mb-4">
-        <div className="h-5 w-24 rounded bg-gray-200" />
-        <div className="h-2.5 w-16 rounded bg-gray-100" />
+        <div className="h-5 w-24 rounded bg-gray-200 dark:bg-white/15" />
+        <div className="h-2.5 w-16 rounded bg-gray-100 dark:bg-white/10" />
       </div>
 
       {/* Bill / time footer */}
-      <div className="flex items-end justify-between border-t border-gray-50 pt-3">
+      <div className="flex items-end justify-between border-t border-gray-50 pt-3 dark:border-white/5">
         <div className="space-y-1.5">
-          <div className="h-2.5 w-10 rounded bg-gray-100" />
-          <div className="h-4 w-16 rounded bg-gray-200" />
+          <div className="h-2.5 w-10 rounded bg-gray-100 dark:bg-white/10" />
+          <div className="h-4 w-16 rounded bg-gray-200 dark:bg-white/15" />
         </div>
-        <div className="h-2.5 w-12 rounded bg-gray-100" />
+        <div className="h-2.5 w-12 rounded bg-gray-100 dark:bg-white/10" />
       </div>
     </div>
   );
@@ -42,7 +42,7 @@ function TableCardSkeleton() {
 function ZoneSkeleton({ cards }: { cards: number }) {
   return (
     <div>
-      <div className="h-2.5 w-32 rounded bg-gray-100 mb-3" />
+      <div className="h-2.5 w-32 rounded bg-gray-100 mb-3 dark:bg-white/10" />
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {Array.from({ length: cards }).map((_, i) => (
           <TableCardSkeleton key={i} />
@@ -61,7 +61,7 @@ export function GridViewSkeleton() {
         {[64, 72, 80, 68].map((w, i) => (
           <div
             key={i}
-            className="h-7 rounded-full bg-gray-100"
+            className="h-7 rounded-full bg-gray-100 dark:bg-white/10"
             style={{ width: w }}
           />
         ))}
@@ -76,19 +76,19 @@ export function GridViewSkeleton() {
 /** Matches <FloorPlanView />: the live header bar above the plan canvas. */
 export function FloorPlanSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden animate-pulse">
+    <div className="bg-white dark:bg-[#161d2e] rounded-2xl border border-gray-100 shadow-sm overflow-hidden animate-pulse dark:border-white/10">
       {/* Header */}
-      <div className="flex flex-col items-start gap-2 px-5 py-3.5 border-b border-gray-100">
+      <div className="flex flex-col items-start gap-2 px-5 py-3.5 border-b border-gray-100 dark:border-white/10">
         <div className="flex items-center gap-2">
-          <div className="h-5 w-36 rounded bg-gray-200" />
-          <div className="h-4 w-14 rounded-full bg-gray-100" />
+          <div className="h-5 w-36 rounded bg-gray-200 dark:bg-white/15" />
+          <div className="h-4 w-14 rounded-full bg-gray-100 dark:bg-white/10" />
         </div>
-        <div className="h-2.5 w-56 rounded bg-gray-100" />
+        <div className="h-2.5 w-56 rounded bg-gray-100 dark:bg-white/10" />
       </div>
 
       {/* Canvas — scattered table pucks, so the area reads as a floor plan
           rather than an empty box. */}
-      <div className="relative h-[420px] bg-gray-50/60">
+      <div className="relative h-[420px] bg-gray-50/60 dark:bg-white/5">
         {[
           { top: "14%", left: "12%" },
           { top: "12%", left: "38%" },
@@ -102,7 +102,7 @@ export function FloorPlanSkeleton() {
         ].map((pos, i) => (
           <div
             key={i}
-            className="absolute h-14 w-14 rounded-xl bg-gray-200"
+            className="absolute h-14 w-14 rounded-xl bg-gray-200 dark:bg-white/15"
             style={pos}
           />
         ))}
@@ -118,13 +118,13 @@ export function LiveStatBarSkeleton() {
       {Array.from({ length: 3 }).map((_, i) => (
         <div
           key={i}
-          className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4"
+          className="bg-white dark:bg-[#161d2e] rounded-2xl border border-gray-100 shadow-sm p-4 dark:border-white/10"
         >
           <div className="flex items-center justify-between mb-2">
-            <div className="h-2.5 w-20 rounded bg-gray-100" />
-            <div className="h-7 w-7 rounded-lg bg-gray-100" />
+            <div className="h-2.5 w-20 rounded bg-gray-100 dark:bg-white/10" />
+            <div className="h-7 w-7 rounded-lg bg-gray-100 dark:bg-white/10" />
           </div>
-          <div className="h-6 w-24 rounded bg-gray-200" />
+          <div className="h-6 w-24 rounded bg-gray-200 dark:bg-white/15" />
         </div>
       ))}
     </div>
@@ -135,28 +135,28 @@ export function LiveStatBarSkeleton() {
 export function TableTicketCardsSkeleton({ cards = 3 }: { cards?: number }) {
   return (
     <div className="animate-pulse">
-      <div className="h-2.5 w-40 rounded bg-gray-100 mb-3" />
+      <div className="h-2.5 w-40 rounded bg-gray-100 mb-3 dark:bg-white/10" />
       <div className="grid grid-cols-2 items-start gap-3 md:grid-cols-2 xl:grid-cols-3">
         {Array.from({ length: cards }).map((_, i) => (
           <div
             key={i}
-            className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3"
+            className="bg-white dark:bg-[#161d2e] rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3 dark:border-white/10"
           >
             <div className="flex items-center justify-between">
-              <div className="h-4 w-20 rounded bg-gray-200" />
-              <div className="h-4 w-14 rounded-full bg-gray-100" />
+              <div className="h-4 w-20 rounded bg-gray-200 dark:bg-white/15" />
+              <div className="h-4 w-14 rounded-full bg-gray-100 dark:bg-white/10" />
             </div>
 
             {Array.from({ length: 3 }).map((_, row) => (
               <div key={row} className="flex items-center justify-between">
-                <div className="h-3 w-24 rounded bg-gray-100" />
-                <div className="h-3 w-12 rounded bg-gray-100" />
+                <div className="h-3 w-24 rounded bg-gray-100 dark:bg-white/10" />
+                <div className="h-3 w-12 rounded bg-gray-100 dark:bg-white/10" />
               </div>
             ))}
 
-            <div className="flex items-center justify-between border-t border-gray-50 pt-2.5">
-              <div className="h-3 w-14 rounded bg-gray-100" />
-              <div className="h-4 w-16 rounded bg-gray-200" />
+            <div className="flex items-center justify-between border-t border-gray-50 pt-2.5 dark:border-white/5">
+              <div className="h-3 w-14 rounded bg-gray-100 dark:bg-white/10" />
+              <div className="h-4 w-16 rounded bg-gray-200 dark:bg-white/15" />
             </div>
           </div>
         ))}

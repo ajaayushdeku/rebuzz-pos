@@ -8,7 +8,6 @@ import { fmtMinutes } from "@/lib/mockData/mock-live-tables";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useTableTicket } from "@/hooks/useTableTicket";
-import { CHART_PALETTE } from "../chartCard";
 
 type TicketLine = {
   name: string;
@@ -81,26 +80,20 @@ function TableTicketCard({
       className={`flex flex-col rounded-2xl border bg-white px-5 py-4 transition-colors ${
         isSelected
           ? "border-blue-400 ring-2 ring-blue-400 ring-offset-1"
-          : "border-[#e3e3e3] hover:border-[#dadce0]"
+          : "border-[#e3e3e3] hover:border-[#dadce0] dark:border-white/10"
       }`}
     >
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-current/20 bg-emerald-50 text-[13px] font-medium text-emerald-700">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-current/20 bg-emerald-50 text-[13px] font-medium text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300">
             {tableName.charAt(0).toUpperCase()}
           </span>
           <div className="min-w-0">
-            <p
-              className="truncate text-[15px] font-medium"
-              style={{ color: CHART_PALETTE.title }}
-            >
+            <p className="truncate text-[15px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
               {tableName}
             </p>
-            <p
-              className="mt-0.5 text-[11px]"
-              style={{ color: CHART_PALETTE.subtitle }}
-            >
+            <p className="mt-0.5 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
               {seatedMinutes != null && <>{fmtMinutes(seatedMinutes)} ago · </>}
               {itemCount} {itemCount === 1 ? "item" : "items"}
             </p>
@@ -108,20 +101,17 @@ function TableTicketCard({
         </div>
 
         <div className="shrink-0 text-right">
-          <p className="text-[11px]" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
             Total
           </p>
-          <p
-            className="text-[17px] font-semibold tracking-tight tabular-nums"
-            style={{ color: CHART_PALETTE.good }}
-          >
+          <p className="text-[17px] font-semibold tracking-tight tabular-nums text-[#1e8e3e] dark:text-[#10b981]">
             {money(total)}
           </p>
         </div>
       </div>
 
       {/* ── Table badge ── */}
-      <span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] text-emerald-700">
+      <span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] text-emerald-700 dark:bg-emerald-400/10 dark:border-emerald-400/25 dark:text-emerald-300">
         <Armchair size={12} />
         {tableName}
       </span>
@@ -129,18 +119,12 @@ function TableTicketCard({
       {/* ── Ticket lines ── */}
       <div className="mt-4 flex-1">
         {isLoading && lines.length === 0 ? (
-          <div
-            className="flex items-center justify-center gap-2 py-6 text-xs"
-            style={{ color: CHART_PALETTE.subtitle }}
-          >
+          <div className="flex items-center justify-center gap-2 py-6 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             <Loader2 size={14} className="animate-spin" />
             Loading ticket
           </div>
         ) : lines.length === 0 ? (
-          <p
-            className="py-6 text-center text-xs"
-            style={{ color: CHART_PALETTE.subtitle }}
-          >
+          <p className="py-6 text-center text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             No items on this ticket yet.
           </p>
         ) : (
@@ -151,35 +135,20 @@ function TableTicketCard({
                 className="flex items-start justify-between gap-3"
               >
                 <div className="flex min-w-0 items-start gap-2.5">
-                  <span
-                    className="mt-0.5 shrink-0 rounded-md px-1.5 py-0.5 text-[11px] tabular-nums"
-                    style={{
-                      backgroundColor: CHART_PALETTE.hover,
-                      color: CHART_PALETTE.axis,
-                    }}
-                  >
+                  <span className="mt-0.5 shrink-0 rounded-md px-1.5 py-0.5 text-[11px] tabular-nums bg-[#f1f3f4] dark:bg-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
                     x{line.qty}
                   </span>
                   <div className="min-w-0">
-                    <p
-                      className="truncate text-[13px]"
-                      style={{ color: CHART_PALETTE.title }}
-                    >
+                    <p className="truncate text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                       {line.name}
                     </p>
-                    <p
-                      className="mt-0.5 text-[11px] tabular-nums"
-                      style={{ color: CHART_PALETTE.subtitle }}
-                    >
+                    <p className="mt-0.5 text-[11px] tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
                       {money(line.unitPrice)} each
                     </p>
                   </div>
                 </div>
 
-                <span
-                  className="shrink-0 text-[13px] font-medium tabular-nums"
-                  style={{ color: CHART_PALETTE.title }}
-                >
+                <span className="shrink-0 text-[13px] font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                   {money(line.unitPrice * line.qty)}
                 </span>
               </div>
@@ -222,8 +191,8 @@ export default function TableTicketCards({
 
   return (
     <div>
-      <h3 className="flex flex-row items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-        <Receipt size={14} style={{ color: CHART_PALETTE.subtitle }} />
+      <h3 className="flex flex-row items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 dark:text-[#7b869b]">
+        <Receipt size={14} className="text-[#9aa0a6] dark:text-[#9aa6bd]" />
         Assigned tickets · {ticketed.length}{" "}
         {ticketed.length === 1 ? "table" : "tables"}
       </h3>

@@ -12,11 +12,7 @@ import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { getPurposeColor, useTracker } from "@/providers/ExpenseContext";
 import RangeBadge from "@/components/ui/RangeBadge";
-import {
-  CHART_PALETTE,
-  ChartCard,
-  ChartTooltipBox,
-} from "../dashboardComponents/chartCard";
+import { ChartCard, ChartTooltipBox } from "../dashboardComponents/chartCard";
 import { ChartPie, ChevronDown } from "lucide-react";
 import { ExpensesByCategorySkeleton } from "./ExpenseAnalyticsSkeletons";
 
@@ -167,16 +163,16 @@ export default function ExpensesByCategory() {
 
       {expenseByPurpose.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <div
-            className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
-            style={{ backgroundColor: CHART_PALETTE.hover }}
-          >
-            <ChartPie size={24} style={{ color: CHART_PALETTE.subtitle }} />
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+            <ChartPie
+              size={24}
+              className="text-[#9aa0a6] dark:text-[#9aa6bd]"
+            />
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
             No expense data
           </p>
-          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             Expenses by Category data will appear here
           </p>
         </div>
@@ -218,8 +214,7 @@ export default function ExpensesByCategory() {
                   y="47%"
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  className="text-lg font-semibold"
-                  fill={CHART_PALETTE.title}
+                  className="fill-[#3c4043] text-lg font-semibold dark:fill-[#e8ecf4]"
                 >
                   {totalExpense > 0
                     ? formatCurrencySymbol(
@@ -234,8 +229,7 @@ export default function ExpensesByCategory() {
                   y="58%"
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  className="text-xs"
-                  fill={CHART_PALETTE.axis}
+                  className="fill-[#5f6368] text-xs dark:fill-[#a9b4c7]"
                 >
                   Total
                 </text>
@@ -259,16 +253,10 @@ export default function ExpensesByCategory() {
                     className="h-2.5 w-2.5 shrink-0 rounded-full"
                     style={{ backgroundColor: entry.color }}
                   />
-                  <span
-                    className="w-20 shrink-0 truncate text-[13px]"
-                    style={{ color: CHART_PALETTE.title }}
-                  >
+                  <span className="w-20 shrink-0 truncate text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                     {entry.purpose}
                   </span>
-                  <div
-                    className="h-1.5 flex-1 overflow-hidden rounded-full"
-                    style={{ backgroundColor: CHART_PALETTE.grid }}
-                  >
+                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#e8eaed] dark:bg-white/10">
                     <div
                       className="h-full rounded-full transition-all duration-700 ease-out"
                       style={{
@@ -277,16 +265,10 @@ export default function ExpensesByCategory() {
                       }}
                     />
                   </div>
-                  <span
-                    className="w-12 shrink-0 text-right text-xs tabular-nums"
-                    style={{ color: CHART_PALETTE.axis }}
-                  >
+                  <span className="w-12 shrink-0 text-right text-xs tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
                     {entry.pct.toFixed(1)}%
                   </span>
-                  <span
-                    className="w-24 shrink-0 text-right text-[13px] font-medium tabular-nums"
-                    style={{ color: CHART_PALETTE.title }}
-                  >
+                  <span className="w-24 shrink-0 text-right text-[13px] font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                     {formatCurrencySymbol(
                       entry.amount,
                       currency.symbol,
@@ -303,7 +285,7 @@ export default function ExpensesByCategory() {
               <div className="flex animate-bounce justify-center pt-1.5">
                 <ChevronDown
                   size={14}
-                  style={{ color: CHART_PALETTE.subtitle }}
+                  className="text-[#9aa0a6] dark:text-[#9aa6bd]"
                 />
               </div>
             )}

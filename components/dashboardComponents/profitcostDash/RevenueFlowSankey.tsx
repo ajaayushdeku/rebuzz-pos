@@ -1096,7 +1096,7 @@ export default function RevenueFlowSankey() {
                     borderRadius: 8,
                     border: `1px solid ${CHART_PALETTE.control}`,
                     boxShadow: "0 1px 2px rgba(60,64,67,0.15)",
-                    color: CHART_PALETTE.title,
+                    color: CHART_PALETTE.tooltip,
                   }}
                   formatter={(value) => fmt(Number(value ?? 0))}
                 />

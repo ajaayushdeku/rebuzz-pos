@@ -182,7 +182,7 @@ export default function ShiftsSection({
         <div className="flex items-center justify-between mb-5">
           <div className="flex min-w-0 flex-row items-center gap-3">
             <div
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
               style={{ borderColor: "#fed7aa", backgroundColor: "#fff7ed" }}
             >
               <Clock size={16} style={{ color: "#ea580c" }} />

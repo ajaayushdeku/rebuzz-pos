@@ -109,7 +109,7 @@ export default function AtRiskCustomer({
         <div className="min-w-0">
           <div className="flex items-center gap-3">
             <div
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
               style={{ borderColor: "#fecdd3", backgroundColor: "#fff1f2" }}
             >
               <UserX size={16} style={{ color: "#e11d48" }} />

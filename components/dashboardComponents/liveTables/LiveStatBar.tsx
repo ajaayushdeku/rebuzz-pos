@@ -4,7 +4,6 @@ import { Gauge, DoorOpen, TrendingUp, type LucideIcon } from "lucide-react";
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { CHART_PALETTE } from "../chartCard";
 
 interface LiveStatBarProps {
   occupancyPct: number;
@@ -26,18 +25,12 @@ export default function LiveStatBar({
         label="Occupancy"
         value={`${occupancyPct}%`}
         icon={Gauge}
-        iconClass="bg-blue-50 text-blue-600"
+        iconClass="bg-blue-50 text-blue-600 dark:bg-blue-400/10 dark:text-[#7ba2e3]"
       >
-        <div
-          className="mt-2 h-1.5 overflow-hidden rounded-full"
-          style={{ backgroundColor: CHART_PALETTE.grid }}
-        >
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#e8eaed] dark:bg-white/10">
           <div
-            className="h-full rounded-full transition-all duration-500"
-            style={{
-              width: `${occupancyPct}%`,
-              backgroundColor: CHART_PALETTE.blue,
-            }}
+            className="h-full rounded-full bg-[#1a73e8] transition-all duration-500 dark:bg-[#7ba2e3]"
+            style={{ width: `${occupancyPct}%` }}
           />
         </div>
       </StatBox>
@@ -47,9 +40,9 @@ export default function LiveStatBar({
         label="Open Tables"
         value={openTables.toLocaleString()}
         icon={DoorOpen}
-        iconClass="bg-green-50 text-green-600"
+        iconClass="bg-green-50 text-green-600 dark:bg-emerald-400/10 dark:text-emerald-400"
       >
-        <p className="text-[11px]" style={{ color: CHART_PALETTE.subtitle }}>
+        <p className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
           Ready to seat now
         </p>
       </StatBox>
@@ -63,9 +56,9 @@ export default function LiveStatBar({
           currency.locale,
         )}
         icon={TrendingUp}
-        iconClass="bg-amber-50 text-amber-600"
+        iconClass="bg-amber-50 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400"
       >
-        <p className="text-[11px]" style={{ color: CHART_PALETTE.subtitle }}>
+        <p className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
           Open checks on floor
         </p>
       </StatBox>
@@ -89,16 +82,10 @@ function StatBox({
   children: React.ReactNode;
 }) {
   return (
-    <div
-      className="rounded-2xl border bg-white px-5 py-4"
-      style={{ borderColor: CHART_PALETTE.border }}
-    >
+    <div className="rounded-2xl border bg-white dark:bg-[#161d2e] px-5 py-4 border-[#e3e3e3] dark:border-white/10">
       {/* Label + Icon */}
       <div className="mb-3 flex items-center justify-between gap-2">
-        <span
-          className="truncate text-[13px]"
-          style={{ color: CHART_PALETTE.axis }}
-        >
+        <span className="truncate text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">
           {label}
         </span>
         <div
@@ -109,10 +96,7 @@ function StatBox({
       </div>
 
       {/* Value */}
-      <p
-        className="mb-1.5 truncate text-xl font-semibold tracking-tight tabular-nums md:text-[22px]"
-        style={{ color: CHART_PALETTE.title }}
-      >
+      <p className="mb-1.5 truncate text-xl font-semibold tracking-tight tabular-nums md:text-[22px] text-[#3c4043] dark:text-[#e8ecf4]">
         {value}
       </p>
 

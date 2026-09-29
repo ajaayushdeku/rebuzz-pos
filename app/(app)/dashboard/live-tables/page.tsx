@@ -66,7 +66,7 @@ export default function LiveTablesPage() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
       <div className="w-full mx-auto flex flex-col ">
         {/* mb-4 rather than the module's mb-6: the view toggle below sits
             closer to the rule here. */}

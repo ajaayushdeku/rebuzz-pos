@@ -12,7 +12,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { CHART_PALETTE, ChartCard } from "../chartCard";
+import { ChartCard } from "../chartCard";
 import { TaxRefundStatsSkeleton } from "./TaxAnalyticsSkeletons";
 
 interface RefundTaxItem {
@@ -39,15 +39,9 @@ function StatTile({
   sub: string;
 }) {
   return (
-    <div
-      className="rounded-xl border px-5 py-4"
-      style={{ borderColor: CHART_PALETTE.border }}
-    >
+    <div className="rounded-xl border px-5 py-4 border-[#e3e3e3] dark:border-white/10">
       <div className="flex items-start justify-between gap-2">
-        <span
-          className="min-w-0 truncate text-[11px]"
-          style={{ color: CHART_PALETTE.axis }}
-        >
+        <span className="min-w-0 truncate text-[11px] text-[#5f6368] dark:text-[#a9b4c7]">
           {label}
         </span>
         <div
@@ -56,16 +50,10 @@ function StatTile({
           <Icon size={15} />
         </div>
       </div>
-      <p
-        className="mt-2 truncate text-lg font-semibold tracking-tight tabular-nums"
-        style={{ color: CHART_PALETTE.title }}
-      >
+      <p className="mt-2 truncate text-lg font-semibold tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
         {value}
       </p>
-      <p
-        className="mt-0.5 truncate text-[11px]"
-        style={{ color: CHART_PALETTE.subtitle }}
-      >
+      <p className="mt-0.5 truncate text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
         {sub}
       </p>
     </div>
@@ -111,24 +99,18 @@ const TaxOnRefundedBills = ({
       {isLoading ? (
         <TaxRefundStatsSkeleton />
       ) : isError ? (
-        <p
-          className="py-16 text-center text-sm"
-          style={{ color: CHART_PALETTE.bad }}
-        >
+        <p className="py-16 text-center text-sm text-[#d93025] dark:text-[#f87171]">
           Failed to load Highest Tax Generated
         </p>
       ) : data.length === 0 ? (
         <div className="flex flex-col items-center justify-center pb-4">
-          <div
-            className="mb-3 flex h-16 w-16 items-center justify-center rounded-full"
-            style={{ backgroundColor: CHART_PALETTE.hover }}
-          >
-            <Undo2 size={24} style={{ color: CHART_PALETTE.subtitle }} />
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+            <Undo2 size={24} className="text-[#9aa0a6] dark:text-[#9aa6bd]" />
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
             No refunded bills
           </p>
-          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             Refunded transactions will appear here
           </p>
         </div>
@@ -137,14 +119,14 @@ const TaxOnRefundedBills = ({
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <StatTile
               icon={RefreshCcw}
-              iconClass="bg-red-50 text-red-600"
+              iconClass="bg-red-50 text-red-600 dark:bg-red-400/10 dark:text-red-400"
               label="Total refunded"
               value={fmt(totalRefundedAmount)}
               sub={`${data.length} ${data.length === 1 ? "bill" : "bills"}`}
             />
             <StatTile
               icon={TrendingDown}
-              iconClass="bg-orange-50 text-orange-600"
+              iconClass="bg-orange-50 text-orange-600 dark:bg-orange-400/10 dark:text-orange-400"
               label="Tax refunded"
               value={fmt(totalTaxRefunded)}
               sub={`${
@@ -155,7 +137,7 @@ const TaxOnRefundedBills = ({
             />
             <StatTile
               icon={AlertCircle}
-              iconClass="bg-blue-50 text-blue-600"
+              iconClass="bg-blue-50 text-blue-600 dark:bg-blue-400/10 dark:text-[#7ba2e3]"
               label="Avg. tax refund"
               value={fmt(avgRefundTaxAmount)}
               sub="Per bill"
@@ -163,17 +145,11 @@ const TaxOnRefundedBills = ({
           </div>
 
           <div className="mt-6">
-            <p
-              className="mb-1 text-[13px] font-medium"
-              style={{ color: CHART_PALETTE.title }}
-            >
+            <p className="mb-1 text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
               Recent refunds
             </p>
 
-            <div
-              className="max-h-80 overflow-y-auto border-t"
-              style={{ borderColor: CHART_PALETTE.grid }}
-            >
+            <div className="max-h-80 overflow-y-auto border-t border-[#e8eaed] dark:border-white/10">
               {data.map((bill) => (
                 <div
                   key={bill.billNumber}
@@ -186,24 +162,17 @@ const TaxOnRefundedBills = ({
                       router.push(`/invoices/${bill.billNumber}`);
                     }
                   }}
-                  className="flex cursor-pointer items-center justify-between gap-3 border-b px-3 py-3 transition-colors last:border-0 hover:bg-blue-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                  style={{ borderColor: CHART_PALETTE.grid }}
+                  className="flex cursor-pointer items-center justify-between gap-3 border-b px-3 py-3 transition-colors last:border-0 hover:bg-blue-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 border-[#e8eaed] dark:border-white/10"
                 >
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 bg-rose-50 text-rose-600">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 bg-rose-50 text-rose-600 dark:bg-rose-400/10 dark:text-rose-400">
                       <RefreshCcw size={15} />
                     </div>
                     <div className="min-w-0">
-                      <p
-                        className="truncate text-[13px]"
-                        style={{ color: CHART_PALETTE.title }}
-                      >
+                      <p className="truncate text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                         ORD-{bill.billNumber}
                       </p>
-                      <p
-                        className="mt-0.5 flex items-center gap-1.5 truncate text-[11px]"
-                        style={{ color: CHART_PALETTE.subtitle }}
-                      >
+                      <p className="mt-0.5 flex items-center gap-1.5 truncate text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                         <span className="truncate">{bill.reason}</span>
                         <span className="flex shrink-0 items-center gap-1">
                           <Calendar size={11} />
@@ -214,16 +183,10 @@ const TaxOnRefundedBills = ({
                   </div>
 
                   <div className="shrink-0 text-right">
-                    <p
-                      className="text-[13px] font-medium tabular-nums"
-                      style={{ color: CHART_PALETTE.bad }}
-                    >
+                    <p className="text-[13px] font-medium tabular-nums text-[#d93025] dark:text-[#f87171]">
                       −{fmt(bill.refundedAmount)}
                     </p>
-                    <p
-                      className="mt-0.5 text-[11px] tabular-nums"
-                      style={{ color: CHART_PALETTE.warn }}
-                    >
+                    <p className="mt-0.5 text-[11px] tabular-nums text-[#e37400] dark:text-amber-400">
                       Tax: −{fmt(bill.taxRefunded)}
                     </p>
                   </div>
