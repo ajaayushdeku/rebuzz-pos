@@ -22,6 +22,7 @@ import {
   CHART_PALETTE,
   ChartCard,
   ChartTooltipBox,
+  getAxisTick,
   yAxisTitle,
 } from "../../chartCard";
 
@@ -175,6 +176,27 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
   const maxOrders = Math.max(...displayData.map((d) => d.orders), 1);
   const yMax = maxOrders <= 1 ? 2 : maxOrders * 3;
 
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
+
   return (
     <ChartCard
       icon={BarChart3}
@@ -194,13 +216,12 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
         <div className="flex items-center justify-center py-12">
           <Loader2
             size={20}
-            className="animate-spin"
-            style={{ color: CHART_PALETTE.subtitle }}
+            className="animate-spin text-[#9aa0a6] dark:text-[#9aa6bd]"
           />
         </div>
       ) : error ? (
         <div className="text-center py-12">
-          <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3">
+          <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3 dark:bg-red-400/10">
             <svg
               className="w-6 h-6 text-red-400"
               fill="none"
@@ -215,12 +236,10 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
               />
             </svg>
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
-            {error}
-          </p>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">{error}</p>
           <button
             onClick={() => setReloadFlag((f) => f + 1)}
-            className="mt-3 cursor-pointer rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
+            className="mt-3 cursor-pointer rounded-full border border-[#dadce0] bg-white dark:bg-white/5 px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
           >
             Retry
           </button>
@@ -228,9 +247,9 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
       ) : (
         // ) : !isEmpty ? (
         //   <div className="text-center py-12">
-        //     <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3">
+        //     <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3 dark:bg-white/5">
         //       <svg
-        //         className="w-6 h-6 text-gray-300"
+        //         className="w-6 h-6 text-gray-300 dark:text-[#6b7588]"
         //         fill="none"
         //         viewBox="0 0 24 24"
         //         stroke="currentColor"
@@ -243,10 +262,10 @@ const WeeklySalesChart = ({ employeeId }: WeeklySalesChartProps) => {
         //         />
         //       </svg>
         //     </div>
-        //     <p className="text-sm font-medium text-gray-500">
+        //     <p className="text-sm font-medium text-gray-500 dark:text-[#9aa6bd]">
         //       No sales this week
         //     </p>
-        //     <p className="text-xs text-gray-400 mt-1">
+        //     <p className="text-xs text-gray-400 mt-1 dark:text-[#7b869b]">
         //       No sales recorded for this period
         //     </p>
         //   </div>

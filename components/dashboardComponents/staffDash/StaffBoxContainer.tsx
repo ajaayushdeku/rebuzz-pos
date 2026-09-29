@@ -66,14 +66,14 @@ export default function StaffBoxContainer({
         <div className="relative w-full sm:w-64">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none dark:text-[#7b869b]"
           />
           <input
             type="text"
             placeholder="Search employee..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-9 w-full rounded-lg border border-[#dadce0] bg-white py-5 pl-9 pr-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="h-9 w-full rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 dark:text-[#e8ecf4] py-5 pl-9 pr-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/15"
           />
         </div>
 
@@ -92,10 +92,10 @@ export default function StaffBoxContainer({
 
       {displayStaff.length === 0 ? (
         <div className="flex flex-col items-center py-8 text-center">
-          <span className="text-sm text-[#3c4043]">
+          <span className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
             No staff data available
           </span>
-          <p className="mt-1 max-w-sm text-xs text-[#9aa0a6]">
+          <p className="mt-1 max-w-sm text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             Try switching to a different date range or filter to see staff
             members and their performance.
           </p>

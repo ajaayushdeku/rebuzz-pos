@@ -112,9 +112,9 @@ function TableCard({
   return (
     <div
       onClick={onClick}
-      className={`group cursor-pointer rounded-2xl border bg-white px-5 pb-2 pt-4 transition-colors ${
+      className={`group cursor-pointer rounded-2xl border bg-white px-5 pb-2 pt-4 transition-colors dark:bg-[#161d2e] ${
         isSelected
-          ? "border-blue-400 ring-2 ring-blue-400 ring-offset-1"
+          ? "border-blue-400 ring-2 ring-blue-400 ring-offset-1 dark:ring-offset-[#0f1420]"
           : "border-[#e3e3e3] hover:border-[#dadce0] dark:border-white/10"
       }`}
     >
@@ -436,7 +436,7 @@ export default function GridView({
               />
               {config.label}
               <span
-                className={`inline-flex min-w-6 items-center justify-center rounded-full bg-gray-300/40 px-2 py-0.5 text-xs font-bold ${
+                className={`inline-flex min-w-6 items-center justify-center rounded-full bg-gray-300/40 px-2 py-0.5 text-xs font-bold dark:bg-white/15 ${
                   isActive ? "text-white" : ""
                 }`}
               >

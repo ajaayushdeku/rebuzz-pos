@@ -61,8 +61,8 @@ const StaffFilterModal = ({
       title="Filter employees"
       subtitle={`Select 1 – ${MAX_STAFF} employees to compare`}
       icon={Users}
-      iconColor="text-blue-600"
-      iconBgColor="bg-blue-50"
+      iconColor="text-blue-600 dark:text-[#7ba2e3]"
+      iconBgColor="bg-blue-50 dark:bg-blue-400/10"
       maxWidth="max-w-lg"
       footer={
         <div className="flex items-center gap-2.5">
@@ -86,10 +86,10 @@ const StaffFilterModal = ({
         <div>
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-baseline gap-1">
-              <span className="text-sm font-semibold text-gray-900 tabular-nums">
+              <span className="text-sm font-semibold text-gray-900 tabular-nums dark:text-[#e8ecf4]">
                 {draft.length}
               </span>
-              <span className="text-[11px] text-gray-400 tabular-nums">
+              <span className="text-[11px] text-gray-400 tabular-nums dark:text-[#7b869b]">
                 / {MAX_STAFF} selected
               </span>
             </div>
@@ -100,11 +100,11 @@ const StaffFilterModal = ({
                   setError("");
                   setDraft(allStaff.slice(0, MAX_STAFF));
                 }}
-                className="rounded-lg px-2 py-1 text-[11px] font-semibold text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-700"
+                className="rounded-lg px-2 py-1 text-[11px] font-semibold text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-700 dark:text-[#7ba2e3]"
               >
                 Select top {Math.min(MAX_STAFF, allStaff.length)}
               </button>
-              <span className="text-gray-200">|</span>
+              <span className="text-gray-200 dark:text-[#6b7588]">|</span>
               <button
                 type="button"
                 onClick={() => {
@@ -115,7 +115,7 @@ const StaffFilterModal = ({
                   setError("");
                   setDraft([]);
                 }}
-                className="rounded-lg px-2 py-1 text-[11px] font-semibold text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600"
+                className="rounded-lg px-2 py-1 text-[11px] font-semibold text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600 dark:text-[#7b869b] dark:hover:bg-white/10"
               >
                 Clear all
               </button>
@@ -123,7 +123,7 @@ const StaffFilterModal = ({
           </div>
 
           {/* Progress bar */}
-          <div className="h-1.5 overflow-hidden rounded-full bg-gray-100">
+          <div className="h-1.5 overflow-hidden rounded-full bg-gray-100 dark:bg-white/10">
             <div
               className="h-full rounded-full bg-blue-500 transition-all duration-300"
               style={{ width: `${(draft.length / MAX_STAFF) * 100}%` }}
@@ -133,7 +133,7 @@ const StaffFilterModal = ({
 
         {/* ── Error message ── */}
         {error && (
-          <p className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-[11px] font-medium text-red-500">
+          <p className="rounded-lg border border-red-100 dark:border-red-400/20 bg-red-50 px-3 py-2 text-[11px] font-medium text-red-500 dark:bg-red-400/10 dark:text-red-400">
             {error}
           </p>
         )}
@@ -156,10 +156,10 @@ const StaffFilterModal = ({
                   aria-pressed={isSelected}
                   className={`flex w-full items-center justify-between rounded-xl border px-3.5 py-2.5 text-left transition ${
                     isSelected
-                      ? "border-blue-600 bg-blue-50/60"
+                      ? "border-blue-600 bg-blue-50/60 dark:bg-blue-400/10"
                       : isDisabled
-                        ? "cursor-not-allowed border-gray-200 bg-gray-50 opacity-40"
-                        : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
+                        ? "cursor-not-allowed border-gray-200 bg-gray-50 opacity-40 dark:bg-white/5 dark:border-white/15"
+                        : "border-gray-200 bg-white dark:bg-white/5 hover:border-gray-300 hover:bg-gray-50 dark:border-white/15 dark:hover:bg-white/10 dark:hover:border-white/25"
                   }`}
                 >
                   <div className="flex min-w-0 items-center gap-3">
@@ -176,7 +176,9 @@ const StaffFilterModal = ({
                     />
                     <span
                       className={`truncate text-[13px] font-medium ${
-                        isSelected ? "text-blue-700" : "text-gray-900"
+                        isSelected
+                          ? "text-blue-700 dark:text-[#a8c4ee]"
+                          : "text-gray-900 dark:text-[#e8ecf4]"
                       }`}
                     >
                       {name}
@@ -186,7 +188,7 @@ const StaffFilterModal = ({
                     className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition ${
                       isSelected
                         ? "border-blue-600 bg-blue-600"
-                        : "border-gray-300"
+                        : "border-gray-300 dark:border-white/20"
                     }`}
                   >
                     {isSelected && <Check className="h-2.5 w-2.5 text-white" />}

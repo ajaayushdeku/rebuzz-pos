@@ -119,7 +119,7 @@ const ScrollButton = ({
     type="button"
     onClick={onClick}
     aria-label={side === "left" ? "Scroll left" : "Scroll right"}
-    className={`absolute top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border bg-white transition-colors hover:bg-[#f1f3f4] ${
+    className={`absolute top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border bg-white transition-colors hover:bg-[#f1f3f4] dark:bg-[#1b2436] dark:hover:bg-white/10 ${
       side === "left" ? "left-0" : "right-0"
     } border-[#dadce0] dark:border-white/15 text-[#5f6368] dark:text-[#a9b4c7]`}
   >

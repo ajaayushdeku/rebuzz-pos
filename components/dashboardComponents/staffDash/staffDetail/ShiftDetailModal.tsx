@@ -51,30 +51,32 @@ export default function ShiftDetailModal({
           : "Loading this shift's activity"
       }
       icon={Clock}
-      iconColor="text-amber-600"
-      iconBgColor="bg-amber-50"
+      iconColor="text-amber-600 dark:text-amber-400"
+      iconBgColor="bg-amber-50 dark:bg-amber-400/10"
       maxWidth="max-w-3xl"
     >
       {loading ? (
-        <div className="flex items-center justify-center gap-2 py-16 text-[13px] text-gray-400">
+        <div className="flex items-center justify-center gap-2 py-16 text-[13px] text-gray-400 dark:text-[#7b869b]">
           <Loader2 size={15} className="animate-spin" />
           Loading shift details
         </div>
       ) : error ? (
         <div className="py-16 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 dark:bg-red-400/10">
             <AlertTriangle size={22} className="text-red-400" />
           </div>
-          <p className="text-[13px] font-medium text-gray-500">{error}</p>
+          <p className="text-[13px] font-medium text-gray-500 dark:text-[#9aa6bd]">
+            {error}
+          </p>
         </div>
       ) : shiftDetail ? (
         <ShiftDetailContent shiftDetail={shiftDetail} />
       ) : (
         <div className="py-16 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-50">
-            <Clock size={20} className="text-gray-300" />
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-50 dark:bg-white/5">
+            <Clock size={20} className="text-gray-300 dark:text-[#6b7588]" />
           </div>
-          <p className="text-[13px] font-medium text-gray-500">
+          <p className="text-[13px] font-medium text-gray-500 dark:text-[#9aa6bd]">
             No shift details available
           </p>
         </div>
@@ -127,7 +129,11 @@ function ShiftDetailContent({ shiftDetail }: { shiftDetail: ShiftDetail }) {
     <div className="space-y-5">
       {/* Timing */}
       <div>
-        <SectionLabel icon={Clock} tone="text-amber-500" bg="bg-amber-50">
+        <SectionLabel
+          icon={Clock}
+          tone="text-amber-500"
+          bg="bg-amber-50 dark:bg-amber-400/10"
+        >
           Shift window
         </SectionLabel>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
@@ -150,7 +156,11 @@ function ShiftDetailContent({ shiftDetail }: { shiftDetail: ShiftDetail }) {
 
       {/* Cash */}
       <div>
-        <SectionLabel icon={Wallet} tone="text-emerald-500" bg="bg-emerald-50">
+        <SectionLabel
+          icon={Wallet}
+          tone="text-emerald-500"
+          bg="bg-emerald-50 dark:bg-emerald-400/10"
+        >
           Cash drawer
         </SectionLabel>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
@@ -166,7 +176,11 @@ function ShiftDetailContent({ shiftDetail }: { shiftDetail: ShiftDetail }) {
             <DetailCard
               label="Net Cash Change"
               value={`${isUp ? "+" : ""}${money(netCashChange)}`}
-              accent={isUp ? "text-emerald-600" : "text-red-500"}
+              accent={
+                isUp
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-red-500 dark:text-red-400"
+              }
               icon={isUp ? ArrowDownLeft : ArrowUpRight}
               iconClass={isUp ? "text-emerald-500" : "text-red-400"}
             />
@@ -177,10 +191,14 @@ function ShiftDetailContent({ shiftDetail }: { shiftDetail: ShiftDetail }) {
       {/* Transactions */}
       <div>
         <div className="mb-2.5 flex items-center gap-2">
-          <SectionLabel icon={Receipt} tone="text-purple-500" bg="bg-purple-50">
+          <SectionLabel
+            icon={Receipt}
+            tone="text-purple-500"
+            bg="bg-purple-50 dark:bg-purple-400/10"
+          >
             Shift Transactions
           </SectionLabel>
-          <span className="ml-auto text-[10px] font-medium text-gray-400">
+          <span className="ml-auto text-[10px] font-medium text-gray-400 dark:text-[#7b869b]">
             {transactions.length}{" "}
             {transactions.length === 1 ? "entry" : "entries"}
           </span>
@@ -189,14 +207,17 @@ function ShiftDetailContent({ shiftDetail }: { shiftDetail: ShiftDetail }) {
         {transactions.length === 0 ? (
           /* Previously the whole block was hidden, so a shift with no
              transactions ended abruptly after the cards with no explanation. */
-          <div className="rounded-xl border border-dashed border-gray-200 px-4 py-10 text-center">
-            <div className="mx-auto mb-2.5 flex h-11 w-11 items-center justify-center rounded-full bg-gray-50">
-              <Receipt size={18} className="text-gray-300" />
+          <div className="rounded-xl border border-dashed border-gray-200 px-4 py-10 text-center dark:border-white/15">
+            <div className="mx-auto mb-2.5 flex h-11 w-11 items-center justify-center rounded-full bg-gray-50 dark:bg-white/5">
+              <Receipt
+                size={18}
+                className="text-gray-300 dark:text-[#6b7588]"
+              />
             </div>
-            <p className="text-[13px] font-medium text-gray-500">
+            <p className="text-[13px] font-medium text-gray-500 dark:text-[#9aa6bd]">
               No transactions in this shift
             </p>
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs text-gray-400 dark:text-[#7b869b]">
               Pay ins, pay outs and sales will appear here.
             </p>
           </div>
@@ -204,7 +225,7 @@ function ShiftDetailContent({ shiftDetail }: { shiftDetail: ShiftDetail }) {
           <div className="overflow-x-auto ">
             <table className="w-full min-w-[640px] text-sm">
               <thead>
-                <tr className="bg-gray-50/80 text-[10px] border-b border-gray-500 uppercase tracking-wider text-gray-500">
+                <tr className="bg-gray-50/80 dark:bg-white/5 text-[10px] border-b border-gray-500 dark:border-white/15 uppercase tracking-wider text-gray-500 dark:text-[#9aa6bd]">
                   <th className="px-3 py-2.5 text-center font-semibold">
                     Invoice
                   </th>
@@ -232,31 +253,31 @@ function ShiftDetailContent({ shiftDetail }: { shiftDetail: ShiftDetail }) {
                   return (
                     <tr
                       key={txn._id}
-                      className="border-t border-gray-50 transition-colors last:border-0 hover:bg-gray-50/40"
+                      className="border-t border-gray-50 transition-colors last:border-0 hover:bg-gray-50/40 dark:border-white/5"
                     >
                       <td className="px-3 py-2.5 text-center">
-                        <span className="  px-2 py-0.5 font-mono text-[11px] text-gray-500">
+                        <span className="  px-2 py-0.5 font-mono text-[11px] text-gray-500 dark:text-[#9aa6bd]">
                           {txn.invoiceNo ? `#${txn.invoiceNo}` : "—"}
                         </span>
                       </td>
-                      <td className="max-w-[220px] truncate px-3 py-2.5 text-xs text-gray-500">
+                      <td className="max-w-[220px] truncate px-3 py-2.5 text-xs text-gray-500 dark:text-[#9aa6bd]">
                         {txn.note || "—"}
                       </td>
 
                       <td
                         className={`px-3 py-2.5 text-right text-xs font-bold tabular-nums ${
                           isPayIn
-                            ? "text-emerald-600"
+                            ? "text-emerald-600 dark:text-emerald-400"
                             : isPayOut
-                              ? "text-red-500"
-                              : "text-gray-900"
+                              ? "text-red-500 dark:text-red-400"
+                              : "text-gray-900 dark:text-[#e8ecf4]"
                         }`}
                       >
                         {isPayIn ? "+" : isPayOut ? "-" : ""}
                         {money(txn.transactionAmount)}
                       </td>
 
-                      <td className="px-3 py-2.5 text-xs capitalize text-center text-gray-500">
+                      <td className="px-3 py-2.5 text-xs capitalize text-center text-gray-500 dark:text-[#9aa6bd]">
                         {txn.paymentMethod === "Qr Payment"
                           ? "QR"
                           : (txn.paymentMethod ?? "—")}
@@ -266,10 +287,10 @@ function ShiftDetailContent({ shiftDetail }: { shiftDetail: ShiftDetail }) {
                         <span
                           className={`inline-flex items-center gap-1 whitespace-nowrap rounded-md px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${
                             isPayIn
-                              ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+                              ? "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-400/10 dark:text-emerald-300"
                               : isPayOut
-                                ? "bg-red-50 text-red-700 ring-red-200"
-                                : "bg-blue-50 text-blue-700 ring-blue-200"
+                                ? "bg-red-50 text-red-700 ring-red-200 dark:bg-red-400/10 dark:text-red-300"
+                                : "bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-400/10 dark:text-[#a8c4ee]"
                           }`}
                         >
                           {isPayIn ? (
@@ -283,7 +304,7 @@ function ShiftDetailContent({ shiftDetail }: { shiftDetail: ShiftDetail }) {
                         </span>
                       </td>
 
-                      <td className="px-3 py-2.5 text-xs text-right tabular-nums text-gray-600">
+                      <td className="px-3 py-2.5 text-xs text-right tabular-nums text-gray-600 dark:text-[#a9b4c7]">
                         {txDate
                           ? txDate.toLocaleString("en-US", {
                               month: "short",
@@ -325,7 +346,9 @@ function SectionLabel({
       >
         <Icon size={11} className={tone} />
       </div>
-      <h4 className="text-xs font-semibold text-gray-700">{children}</h4>
+      <h4 className="text-xs font-semibold text-gray-700 dark:text-[#c3ccdc]">
+        {children}
+      </h4>
     </div>
   );
 }
@@ -346,17 +369,17 @@ function DetailCard({
   iconClass?: string;
 }) {
   return (
-    <div className="rounded-xl border border-gray-100 bg-gray-50/60 p-3.5">
-      <p className="mb-1 truncate text-[10px] font-semibold uppercase tracking-[0.09em] text-gray-400">
+    <div className="rounded-xl border border-gray-100 bg-gray-50/60 p-3.5 dark:border-white/10 dark:bg-white/5">
+      <p className="mb-1 truncate text-[10px] font-semibold uppercase tracking-[0.09em] text-gray-400 dark:text-[#7b869b]">
         {label}
       </p>
       <p
-        className={`flex items-center gap-1.5 text-[15px] font-bold tabular-nums ${accent ?? "text-gray-900"}`}
+        className={`flex items-center gap-1.5 text-[15px] font-bold tabular-nums ${accent ?? "text-gray-900 dark:text-[#e8ecf4]"}`}
       >
         {Icon && (
           <Icon
             size={13}
-            className={`shrink-0 ${iconClass ?? "text-gray-400"}`}
+            className={`shrink-0 ${iconClass ?? "text-gray-400 dark:text-[#7b869b]"}`}
           />
         )}
         <span className="truncate">{value}</span>

@@ -19,7 +19,7 @@ import {
 } from "./staffDetailHelpers";
 import type { ShiftSummary, ShiftDetail } from "./staffDetailHelpers";
 import ShiftDetailModal from "./ShiftDetailModal";
-import { CardInfo, CHART_PALETTE } from "../../chartCard";
+import { CardInfo } from "../../chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
 
 interface ShiftsSectionProps {
@@ -133,8 +133,8 @@ function StatusBadge({ closingTime }: { closingTime?: string }) {
     <span
       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide ${
         isClosed
-          ? "bg-red-50 text-red-700 ring-1 ring-inset ring-red-200"
-          : "bg-green-50 text-green-700 ring-1 ring-inset ring-green-200"
+          ? "bg-red-50 text-red-700 ring-1 ring-inset ring-red-200 dark:bg-red-400/10 dark:text-red-300"
+          : "bg-green-50 text-green-700 ring-1 ring-inset ring-green-200 dark:bg-emerald-400/10 dark:text-emerald-300"
       }`}
     >
       <Circle
@@ -178,7 +178,7 @@ export default function ShiftsSection({
 
   return (
     <>
-      <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
+      <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10">
         <div className="flex items-center justify-between mb-5">
           <div className="flex min-w-0 flex-row items-center gap-3">
             <div
@@ -188,10 +188,7 @@ export default function ShiftsSection({
               <Clock size={16} style={{ color: "#ea580c" }} />
             </div>
             <div className="min-w-0">
-              <h3
-                className="flex items-center gap-1.5 text-[15px] font-normal"
-                style={{ color: CHART_PALETTE.title }}
-              >
+              <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
                 Staff Shifts
                 <CardInfo
                   heading="Reading this table"
@@ -200,10 +197,7 @@ export default function ShiftsSection({
                   body="Shifts this employee opened in the date range at the top of the page. Cash movement is pay-ins less pay-outs during the shift; closing cash is what was counted at the end. A shift with no closing time is still open, so its duration reads “—”. Click a row for the full breakdown."
                 />
               </h3>
-              <p
-                className="mt-0.5 text-xs tracking-wide"
-                style={{ color: CHART_PALETTE.subtitle }}
-              >
+              <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
                 {shifts.length} {shifts.length === 1 ? "shift" : "shifts"}{" "}
                 recorded
               </p>
@@ -218,7 +212,7 @@ export default function ShiftsSection({
           </div>
         ) : shiftError ? (
           <div className="text-center py-12">
-            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3">
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3 dark:bg-red-400/10">
               <svg
                 className="w-6 h-6 text-red-400"
                 fill="none"
@@ -233,11 +227,13 @@ export default function ShiftsSection({
                 />
               </svg>
             </div>
-            <p className="text-sm font-medium text-gray-500">{shiftError}</p>
+            <p className="text-sm font-medium text-gray-500 dark:text-[#9aa6bd]">
+              {shiftError}
+            </p>
             {onRetry && (
               <button
                 onClick={onRetry}
-                className="mt-3 cursor-pointer rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
+                className="mt-3 cursor-pointer rounded-full border border-[#dadce0] bg-white dark:bg-white/5 px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
               >
                 Retry
               </button>
@@ -245,11 +241,13 @@ export default function ShiftsSection({
           </div>
         ) : shiftList.length === 0 ? (
           <div className="text-center py-12">
-            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
-              <Clock size={24} className="text-gray-500" />
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3 dark:bg-white/10">
+              <Clock size={24} className="text-gray-500 dark:text-[#9aa6bd]" />
             </div>
-            <p className="text-sm font-medium text-gray-500">No shifts found</p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-sm font-medium text-gray-500 dark:text-[#9aa6bd]">
+              No shifts found
+            </p>
+            <p className="text-xs text-gray-400 mt-1 dark:text-[#7b869b]">
               Try adjusting your date range
             </p>
           </div>
@@ -271,13 +269,7 @@ export default function ShiftsSection({
                   <col className="w-24" />
                 </colgroup>
                 <thead>
-                  <tr
-                    className="border-b text-[11px] tracking-wider"
-                    style={{
-                      borderColor: CHART_PALETTE.grid,
-                      color: CHART_PALETTE.axis,
-                    }}
-                  >
+                  <tr className="border-b text-[11px] tracking-wider border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
                     <th className="text-left pb-2.5 pt-1 pr-3 pl-0 font-normal w-8">
                       S.No.
                     </th>
@@ -320,14 +312,14 @@ export default function ShiftsSection({
                       tabIndex={shift.shiftId ? 0 : -1}
                       role="button"
                       title="View shift details"
-                      className="cursor-pointer border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa] focus:bg-[#f8f9fa] focus:outline-none"
+                      className="cursor-pointer border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa] focus:bg-[#f8f9fa] focus:outline-none dark:border-white/10 dark:hover:bg-white/10"
                     >
-                      <td className="py-3.5 pr-3 pl-0 font-mono text-[11px] text-gray-400 align-top">
+                      <td className="py-3.5 pr-3 pl-0 font-mono text-[11px] text-gray-400 align-top dark:text-[#7b869b]">
                         #{String(shiftPage * pageSize + idx + 1)}
                       </td>
                       <td className="py-3.5 px-3 align-top">
                         <div className="leading-snug">
-                          <p className="mb-1.5 text-[11px] text-gray-400">
+                          <p className="mb-1.5 text-[11px] text-gray-400 dark:text-[#7b869b]">
                             {formatShiftDateRange(
                               shift.openingTime,
                               shift.closingTIme,
@@ -335,25 +327,21 @@ export default function ShiftsSection({
                           </p>
                           <div className="flex items-center gap-3">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[11px] text-[#9aa0a6]">
+                              <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                                 Open
                               </span>
-                              <span
-                                className="text-[11px] "
-                                style={{ color: CHART_PALETTE.title }}
-                              >
+                              <span className="text-[11px]  text-[#3c4043] dark:text-[#e8ecf4]">
                                 {extractTimeWithAmPm(shift.openingTime)}
                               </span>
                             </div>
-                            <span className="text-gray-300 text-[10px]">|</span>
+                            <span className="text-gray-300 text-[10px] dark:text-[#6b7588]">
+                              |
+                            </span>
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[11px] text-[#9aa0a6]">
+                              <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                                 Close
                               </span>
-                              <span
-                                className="text-[11px] "
-                                style={{ color: CHART_PALETTE.title }}
-                              >
+                              <span className="text-[11px]  text-[#3c4043] dark:text-[#e8ecf4]">
                                 {extractTimeWithAmPm(shift.closingTIme)}
                               </span>
                             </div>
@@ -361,19 +349,16 @@ export default function ShiftsSection({
                         </div>
                       </td>
                       <td className="py-3.5 px-3 align-top">
-                        <span
-                          className="inline-flex items-center gap-1.5 text-[13px]  tabular-nums font-medium"
-                          style={{ color: CHART_PALETTE.title }}
-                        >
-                          <Timer size={12} className="shrink-0 text-gray-400" />
+                        <span className="inline-flex items-center gap-1.5 text-[13px]  tabular-nums font-medium text-[#3c4043] dark:text-[#e8ecf4]">
+                          <Timer
+                            size={12}
+                            className="shrink-0 text-gray-400 dark:text-[#7b869b]"
+                          />
                           {shiftDuration(shift)}
                         </span>
                       </td>
                       <td className="py-3.5 px-3 text-right align-top">
-                        <span
-                          className="text-[13px]  font-medium tabular-nums "
-                          style={{ color: CHART_PALETTE.title }}
-                        >
+                        <span className="text-[13px]  font-medium tabular-nums  text-[#3c4043] dark:text-[#e8ecf4]">
                           {formatCurrencySymbol(
                             shift.openingCash ?? 0,
                             currency.symbol,
@@ -383,7 +368,7 @@ export default function ShiftsSection({
                       </td>
                       <td className="py-3.5 px-3 text-right align-top">
                         <div className="leading-tight space-y-1">
-                          <p className="flex items-center justify-end gap-1.5 text-[11px] font-medium text-emerald-600">
+                          <p className="flex items-center justify-end gap-1.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
                             <ArrowDownLeft size={10} className="shrink-0" />
                             {formatCurrencySymbol(
                               shift.payIn ?? 0,
@@ -391,7 +376,7 @@ export default function ShiftsSection({
                               currency.locale,
                             )}
                           </p>
-                          <p className="flex items-center justify-end gap-1.5 text-[11px] font-medium text-red-500">
+                          <p className="flex items-center justify-end gap-1.5 text-[11px] font-medium text-red-500 dark:text-red-400">
                             <ArrowUpRight size={10} className="shrink-0" />
                             {formatCurrencySymbol(
                               shift.payOut ?? 0,
@@ -402,10 +387,7 @@ export default function ShiftsSection({
                         </div>
                       </td>
                       <td className="py-3.5 px-3 text-right align-top">
-                        <span
-                          className="text-[13px]  font-medium tabular-nums "
-                          style={{ color: CHART_PALETTE.title }}
-                        >
+                        <span className="text-[13px]  font-medium tabular-nums  text-[#3c4043] dark:text-[#e8ecf4]">
                           {formatCurrencySymbol(
                             shift.closingCash ?? 0,
                             currency.symbol,
@@ -414,10 +396,7 @@ export default function ShiftsSection({
                         </span>
                       </td>
                       <td className="py-3.5 px-3 text-right align-top">
-                        <span
-                          className="text-[13px]  font-medium tabular-nums "
-                          style={{ color: CHART_PALETTE.title }}
-                        >
+                        <span className="text-[13px]  font-medium tabular-nums  text-[#3c4043] dark:text-[#e8ecf4]">
                           {formatCurrencySymbol(
                             shift.totalSale ?? 0,
                             currency.symbol,
@@ -471,20 +450,20 @@ const Pagination = ({
   onPageChange: (page: number) => void;
 }) => {
   return (
-    <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+    <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-white/10">
       <button
         onClick={() => onPageChange(Math.max(0, page - 1))}
         disabled={page === 0}
         className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
           page === 0
-            ? "text-gray-300 cursor-not-allowed"
-            : "text-gray-600 hover:bg-gray-100"
+            ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+            : "text-gray-600 hover:bg-gray-100 dark:text-[#a9b4c7] dark:hover:bg-white/10"
         }`}
       >
         <ChevronLeft size={14} />
         Previous
       </button>
-      <span className="text-xs text-gray-400 font-medium">
+      <span className="text-xs text-gray-400 font-medium dark:text-[#7b869b]">
         Page {page + 1} of {totalPages} · {total} shifts
       </span>
       <button
@@ -492,8 +471,8 @@ const Pagination = ({
         disabled={page >= totalPages - 1}
         className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
           page >= totalPages - 1
-            ? "text-gray-300 cursor-not-allowed"
-            : "text-gray-600 hover:bg-gray-100"
+            ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+            : "text-gray-600 hover:bg-gray-100 dark:text-[#a9b4c7] dark:hover:bg-white/10"
         }`}
       >
         Next

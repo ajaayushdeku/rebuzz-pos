@@ -121,21 +121,26 @@ export default function CustomerHistoryModal({
         history.length === 1 ? "order" : "orders"
       }`}
       icon={ShoppingBag}
-      iconColor="text-blue-600"
-      iconBgColor="bg-blue-50"
+      iconColor="text-blue-600 dark:text-[#7ba2e3]"
+      iconBgColor="bg-blue-50 dark:bg-blue-400/10"
       maxWidth="max-w-5xl"
     >
       {loading ? (
-        <div className="flex items-center justify-center gap-2 py-16 text-[13px] text-gray-400">
+        <div className="flex items-center justify-center gap-2 py-16 text-[13px] text-gray-400 dark:text-[#7b869b]">
           <Loader2 size={15} className="animate-spin" />
           Loading order history
         </div>
       ) : history.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16">
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-50">
-            <ShoppingBag size={20} className="text-gray-300" />
+          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-50 dark:bg-white/5">
+            <ShoppingBag
+              size={20}
+              className="text-gray-300 dark:text-[#6b7588]"
+            />
           </div>
-          <p className="text-[13px] text-gray-400">No order history found</p>
+          <p className="text-[13px] text-gray-400 dark:text-[#7b869b]">
+            No order history found
+          </p>
         </div>
       ) : (
         <>
@@ -145,7 +150,7 @@ export default function CustomerHistoryModal({
           >
             <table className="w-full text-sm min-w-[760px]">
               <thead>
-                <tr className="text-xs text-gray-400 border-b border-gray-100">
+                <tr className="text-xs text-gray-400 border-b border-gray-100 dark:border-white/10 dark:text-[#7b869b]">
                   <th className="text-left pb-3 pt-3 px-3 font-medium w-10">
                     #
                   </th>
@@ -202,13 +207,13 @@ export default function CustomerHistoryModal({
                           router.push(`/invoices/${purchase.invoiceNo}`);
                         }
                       }}
-                      className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                      className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors cursor-pointer dark:border-white/5"
                     >
-                      <td className="py-3 px-3 text-gray-400 text-xs">
+                      <td className="py-3 px-3 text-gray-400 text-xs dark:text-[#7b869b]">
                         {page * pageSize + idx + 1}
                       </td>
                       <td className="py-3 px-3">
-                        <span className="font-semibold text-gray-900 text-xs">
+                        <span className="font-semibold text-gray-900 text-xs dark:text-[#e8ecf4]">
                           {purchase.invoiceNo
                             ? `ORD-${purchase.invoiceNo}`
                             : (purchase.orderId ?? "—")}
@@ -217,14 +222,14 @@ export default function CustomerHistoryModal({
                       <td className="py-3 px-3">
                         {date ? (
                           <div>
-                            <span className="font-medium text-gray-800 text-xs block">
+                            <span className="font-medium text-gray-800 text-xs block dark:text-[#e8ecf4]">
                               {date.toLocaleTimeString("en-US", {
                                 hour: "2-digit",
                                 minute: "2-digit",
                                 hour12: false,
                               })}
                             </span>
-                            <span className="text-[11px] text-gray-400">
+                            <span className="text-[11px] text-gray-400 dark:text-[#7b869b]">
                               {date.toLocaleDateString("en-US", {
                                 month: "short",
                                 day: "numeric",
@@ -233,10 +238,12 @@ export default function CustomerHistoryModal({
                             </span>
                           </div>
                         ) : (
-                          <span className="text-gray-400">—</span>
+                          <span className="text-gray-400 dark:text-[#7b869b]">
+                            —
+                          </span>
                         )}
                       </td>
-                      <td className="py-3 px-3 text-xs text-gray-600">
+                      <td className="py-3 px-3 text-xs text-gray-600 dark:text-[#a9b4c7]">
                         {purchase.ticketName || "—"}
                       </td>
                       <td className="py-3 px-3 text-center">
@@ -246,7 +253,7 @@ export default function CustomerHistoryModal({
                           {paymentMethod}
                         </span>
                       </td>
-                      <td className="py-3 px-3 text-right text-xs font-semibold text-gray-900">
+                      <td className="py-3 px-3 text-right text-xs font-semibold text-gray-900 dark:text-[#e8ecf4]">
                         {formatCurrencySymbol(
                           purchase.grandTotal ?? 0,
                           currency.symbol,
@@ -271,20 +278,20 @@ export default function CustomerHistoryModal({
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-2 pt-3 border-t border-gray-100">
+            <div className="flex items-center justify-between mt-2 pt-3 border-t border-gray-100 dark:border-white/10">
               <button
                 onClick={() => setPage(Math.max(0, page - 1))}
                 disabled={page === 0}
                 className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   page === 0
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10"
                 }`}
               >
                 <ChevronLeft size={14} />
                 Previous
               </button>
-              <span className="text-xs text-gray-400 font-medium">
+              <span className="text-xs text-gray-400 font-medium dark:text-[#7b869b]">
                 Page {page + 1} of {totalPages}
               </span>
               <button
@@ -292,8 +299,8 @@ export default function CustomerHistoryModal({
                 disabled={page >= totalPages - 1}
                 className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   page >= totalPages - 1
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10"
                 }`}
               >
                 Next

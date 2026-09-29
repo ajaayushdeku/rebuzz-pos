@@ -189,7 +189,7 @@ export function PredictiveRestockingSkeleton({ rows = 4 }: { rows?: number }) {
               {["w-24", "w-20", "w-20", "w-24"].map((w, i) => (
                 <th key={i} className="pb-3 pt-3 px-4">
                   <div
-                    className={`h-3 ${w} bg-gray-100 rounded ${
+                    className={`h-3 ${w} bg-gray-100 rounded dark:bg-white/10 ${
                       i > 0 ? "ml-auto" : ""
                     }`}
                   />

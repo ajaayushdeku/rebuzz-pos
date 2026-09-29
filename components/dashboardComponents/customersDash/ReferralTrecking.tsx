@@ -1,6 +1,6 @@
 "use client";
 
-import { CHART_PALETTE, ChartCard } from "../chartCard";
+import { ChartCard } from "../chartCard";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { Share2 } from "lucide-react";
 
@@ -35,8 +35,10 @@ const REFERRALS: Referral[] = [
 ];
 
 const STATUS_STYLES = {
-  completed: "bg-emerald-100 text-emerald-700 border border-emerald-200",
-  pending: "bg-amber-100 text-amber-700 border border-amber-200",
+  completed:
+    "bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-400/15 dark:border-emerald-400/25 dark:text-emerald-300",
+  pending:
+    "bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-400/15 dark:border-amber-400/25 dark:text-amber-300",
 };
 
 export default function ReferralTracking() {
@@ -63,20 +65,20 @@ export default function ReferralTracking() {
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="border-b border-[#e8eaed]">
-              <th className="pb-2.5 pt-1 text-left text-[11px] font-normal text-[#5f6368]">
+            <tr className="border-b border-[#e8eaed] dark:border-white/10">
+              <th className="pb-2.5 pt-1 text-left text-[11px] font-normal text-[#5f6368] dark:text-[#a9b4c7]">
                 Ref ID
               </th>
-              <th className="pb-2.5 pt-1 text-left text-[11px] font-normal text-[#5f6368]">
+              <th className="pb-2.5 pt-1 text-left text-[11px] font-normal text-[#5f6368] dark:text-[#a9b4c7]">
                 Referrer
               </th>
-              <th className="pb-2.5 pt-1 text-left text-[11px] font-normal text-[#5f6368]">
+              <th className="pb-2.5 pt-1 text-left text-[11px] font-normal text-[#5f6368] dark:text-[#a9b4c7]">
                 Referred Customer
               </th>
-              <th className="pb-2.5 pt-1 text-left text-[11px] font-normal text-[#5f6368]">
+              <th className="pb-2.5 pt-1 text-left text-[11px] font-normal text-[#5f6368] dark:text-[#a9b4c7]">
                 Status
               </th>
-              <th className="pb-2.5 pt-1 text-right text-[11px] font-normal text-[#5f6368]">
+              <th className="pb-2.5 pt-1 text-right text-[11px] font-normal text-[#5f6368] dark:text-[#a9b4c7]">
                 Reward
               </th>
             </tr>
@@ -86,15 +88,15 @@ export default function ReferralTracking() {
             {REFERRALS.map((referral) => (
               <tr
                 key={referral.id}
-                className="border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa]"
+                className="border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa] dark:border-white/10 dark:hover:bg-white/10"
               >
-                <td className="py-3 text-xs tabular-nums text-[#9aa0a6]">
+                <td className="py-3 text-xs tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
                   {referral.refId}
                 </td>
-                <td className="py-3 text-[13px] text-[#3c4043]">
+                <td className="py-3 text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                   {referral.referrer}
                 </td>
-                <td className="py-3 text-[13px] text-[#5f6368]">
+                <td className="py-3 text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">
                   {referral.referredCustomer}
                 </td>
                 <td className="py-3">
@@ -104,7 +106,7 @@ export default function ReferralTracking() {
                     {referral.status}
                   </span>
                 </td>
-                <td className="py-3 text-right text-[13px] font-medium text-violet-600">
+                <td className="py-3 text-right text-[13px] font-medium text-violet-600 dark:text-violet-400">
                   {referral.reward}
                 </td>
               </tr>
@@ -114,20 +116,14 @@ export default function ReferralTracking() {
       </div>
 
       {/* Summary */}
-      <div
-        className="mt-4 rounded-xl border px-4 py-2.5"
-        style={{ borderColor: CHART_PALETTE.border }}
-      >
-        <p
-          className="text-[11px] leading-relaxed"
-          style={{ color: CHART_PALETTE.axis }}
-        >
-          <span style={{ color: CHART_PALETTE.title }}>
+      <div className="mt-4 rounded-xl border px-4 py-2.5 border-[#e3e3e3] dark:border-white/10">
+        <p className="text-[11px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
+          <span className="text-[#3c4043] dark:text-[#e8ecf4]">
             {REFERRALS.length} active referrals
           </span>{" "}
           — {completed} completed, {pending} pending conversion. Total rewards
           issued:
-          <span style={{ color: CHART_PALETTE.title }}>
+          <span className="text-[#3c4043] dark:text-[#e8ecf4]">
             {" "}
             $10 Credit + Free Coffee
           </span>

@@ -66,14 +66,14 @@ function FilterDropdown({
         <span className="truncate">{selected?.label ?? "—"}</span>
         <ChevronDown
           size={14}
-          className={`shrink-0 text-gray-400 transition-transform duration-200 ${
+          className={`shrink-0 text-gray-400 transition-transform duration-200 dark:text-[#7b869b] ${
             open ? "rotate-180" : ""
           }`}
         />
       </button>
 
       <div
-        className={`absolute z-30 mt-1 w-full origin-top rounded-md dark:bg-[#1b2436] border border-gray-200 bg-white shadow-lg p-1 transition-all duration-200 ${
+        className={`absolute z-30 mt-1 w-full origin-top rounded-md dark:bg-[#1b2436] border border-gray-200 dark:border-white/15 bg-white shadow-lg p-1 transition-all duration-200 ${
           open
             ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
             : "opacity-0 scale-95 -translate-y-1 pointer-events-none"

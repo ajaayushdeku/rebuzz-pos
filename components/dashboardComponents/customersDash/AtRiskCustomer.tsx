@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { TriangleAlert } from "lucide-react";
 import CustomerHistoryModal from "@/components/dashboardComponents/customersDash/CustomerHistoryModal";
-import { CardInfo, CHART_PALETTE } from "../chartCard";
+import { CardInfo } from "../chartCard";
 
 type SpendingLevel = "High" | "Medium" | "Low";
 
@@ -36,16 +36,16 @@ type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 const spendLevelStyles: Record<SpendingLevel, { cell: string; badge: string }> =
   {
     High: {
-      cell: "text-yellow-800",
-      badge: "bg-yellow-200",
+      cell: "text-yellow-800 dark:text-amber-200",
+      badge: "bg-yellow-200 dark:bg-amber-400/15",
     },
     Medium: {
-      cell: "text-blue-800",
-      badge: "bg-blue-200",
+      cell: "text-blue-800 dark:text-[#a8c4ee]",
+      badge: "bg-blue-200 dark:bg-blue-400/15",
     },
     Low: {
-      cell: "text-gray-800",
-      badge: "bg-gray-200",
+      cell: "text-gray-800 dark:text-[#e8ecf4]",
+      badge: "bg-gray-200 dark:bg-white/15",
     },
   };
 
@@ -104,7 +104,7 @@ export default function AtRiskCustomer({
     );
 
   return (
-    <div className="w-full overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
+    <div className="w-full overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="flex items-center gap-3">
@@ -115,10 +115,7 @@ export default function AtRiskCustomer({
               <UserX size={16} style={{ color: "#e11d48" }} />
             </div>
             <div className="min-w-0">
-              <h3
-                className="flex items-center gap-1.5 text-[15px] font-normal"
-                style={{ color: CHART_PALETTE.title }}
-              >
+              <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
                 At-Risk Customers
                 <CardInfo
                   heading="Reading this table"
@@ -126,17 +123,14 @@ export default function AtRiskCustomer({
                   body="Customers who have not bought in over two weeks, plus anyone enrolled who has never bought at all. The count in the corner is the whole list, not just this page. Use it to pick who to win back."
                 />
               </h3>
-              <p
-                className="mt-0.5 text-xs tracking-wide"
-                style={{ color: CHART_PALETTE.subtitle }}
-              >
+              <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
                 Inactive customers for over two weeks or with no purchases yet,
                 requiring re-engagement
               </p>
             </div>
           </div>
         </div>
-        <span className="flex shrink-0 items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] text-amber-700">
+        <span className="flex shrink-0 items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] text-amber-700 dark:bg-amber-400/10 dark:border-amber-400/25 dark:text-amber-300">
           <TriangleAlert size={11} className="shrink-0" />
           <span className="whitespace-nowrap tabular-nums">
             {numCustomers} at risk
@@ -148,7 +142,7 @@ export default function AtRiskCustomer({
       <div className="relative mt-4 mb-2 w-full ">
         <Search
           size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#7b869b]"
         />
         <input
           type="text"
@@ -158,12 +152,12 @@ export default function AtRiskCustomer({
             setSearch(e.target.value);
             setPage(0);
           }}
-          className="h-9 w-full rounded-lg border border-[#dadce0] bg-white pl-9 pr-8 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="h-9 w-full rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 pl-9 pr-8 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/15"
         />
         {search && (
           <button
             onClick={() => setSearch("")}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#3c4043]"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#3c4043] dark:text-[#7b869b] dark:hover:text-[#e8ecf4]"
           >
             <X size={14} />
           </button>
@@ -171,19 +165,19 @@ export default function AtRiskCustomer({
       </div>
 
       {/* Table - horizontally scrollable on mobile */}
-      {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
+      {/* <div className="bg-white dark:bg-[#161d2e] rounded-xl border border-gray-200 shadow-sm overflow-x-auto dark:border-white/15"> */}
       <div
-        className="bg-white overflow-x-auto pb-2 scrollbar-hide"
+        className="bg-white dark:bg-transparent overflow-x-auto pb-2 scrollbar-hide"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         <table className="w-full text-sm min-w-[600px]">
           <thead>
-            <tr className="border-b border-[#e8eaed] text-[11px] text-[#5f6368]">
+            <tr className="border-b border-[#e8eaed] text-[11px] text-[#5f6368] dark:border-white/10 dark:text-[#a9b4c7]">
               <th className="text-left px-4 pb-2.5 pt-1 font-normal w-12">
                 S.No
               </th>
               <th
-                className="text-left px-4 pb-2.5 pt-1 font-normal cursor-pointer select-none hover:text-[#3c4043]"
+                className="text-left px-4 pb-2.5 pt-1 font-normal cursor-pointer select-none hover:text-[#3c4043] dark:hover:text-[#e8ecf4]"
                 onClick={() => toggleSort("name")}
               >
                 <span className="flex items-center gap-1">
@@ -194,7 +188,7 @@ export default function AtRiskCustomer({
                 Alert Reason
               </th>
               <th
-                className="flex items-center justify-center px-4 pb-2.5 pt-1 font-normal cursor-pointer select-none hover:text-[#3c4043]"
+                className="flex items-center justify-center px-4 pb-2.5 pt-1 font-normal cursor-pointer select-none hover:text-[#3c4043] dark:hover:text-[#e8ecf4]"
                 onClick={() => toggleSort("spendLevel")}
               >
                 <span className="flex  w-fit items-center gap-1">
@@ -211,16 +205,19 @@ export default function AtRiskCustomer({
               <tr>
                 <td
                   colSpan={5}
-                  className="text-center py-2 text-sm text-gray-400"
+                  className="text-center py-2 text-sm text-gray-400 dark:text-[#7b869b]"
                 >
                   <div className="flex flex-col items-center justify-center py-12">
-                    <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4]">
-                      <UserX size={24} className="text-gray-500" />
+                    <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+                      <UserX
+                        size={24}
+                        className="text-gray-500 dark:text-[#9aa6bd]"
+                      />
                     </div>
-                    <p className="text-sm text-[#3c4043]">
+                    <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
                       No at-risk customer found
                     </p>
-                    <p className="mt-1 text-xs text-[#9aa0a6]">
+                    <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                       At-risk customer data will appear here
                     </p>
                   </div>
@@ -230,18 +227,18 @@ export default function AtRiskCustomer({
               paged.map((customer, idx) => (
                 <tr
                   key={customer.rank}
-                  className="border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa]"
+                  className="border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa] dark:border-white/10 dark:hover:bg-white/10"
                 >
-                  <td className="py-3 px-4 text-gray-400 text-xs">
+                  <td className="py-3 px-4 text-gray-400 text-xs dark:text-[#7b869b]">
                     {page * pageSize + idx + 1}
                   </td>
                   <td className="py-3 px-4">
-                    <span className="font-medium text-xs text-gray-900">
+                    <span className="font-medium text-xs text-gray-900 dark:text-[#e8ecf4]">
                       {customer.name}
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    <span className=" text-xs text-gray-600 p-1 rounded-2xl inline-block px-3">
+                    <span className=" text-xs text-gray-600 p-1 rounded-2xl inline-block px-3 dark:text-[#a9b4c7]">
                       {`Inactive for about 2 weeks`}
                     </span>
                   </td>
@@ -283,21 +280,21 @@ export default function AtRiskCustomer({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-white/10">
         <button
           onClick={() => setPage(Math.max(0, page - 1))}
           disabled={page === 0}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             page === 0
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10"
           }`}
         >
           <ChevronLeft size={14} />
           Previous
         </button>
 
-        <span className="text-xs text-gray-400 font-medium">
+        <span className="text-xs text-gray-400 font-medium dark:text-[#7b869b]">
           Page {page + 1} of {totalPages} · {sorted.length} customers
         </span>
 
@@ -306,8 +303,8 @@ export default function AtRiskCustomer({
           disabled={page >= totalPages - 1}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             page >= totalPages - 1
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10"
           }`}
         >
           Next

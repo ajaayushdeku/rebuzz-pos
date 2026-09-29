@@ -212,7 +212,7 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
       controls={
         !isEmpty && (
           <div className="relative flex flex-row items-center gap-2 mb-4">
-            <div className="flex items-center gap-1 rounded-xl bg-[#e4f2fe] p-1">
+            <div className="flex items-center gap-1 rounded-xl bg-[#e4f2fe] p-1 dark:bg-white/10">
               {ORDERS.map(({ id, label, icon, hint }) => (
                 <button
                   key={id}
@@ -227,34 +227,25 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
                   title={hint}
                   className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
                     order === id
-                      ? "bg-white font-bold text-blue-950 shadow-sm"
-                      : "font-semibold text-blue-800 hover:text-blue-950"
+                      ? "bg-white dark:bg-white/15 dark:shadow-none font-bold text-blue-950 shadow-sm dark:text-[#e8ecf4]"
+                      : "font-semibold text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee] dark:hover:text-white"
                   }`}
                 >
                   {createElement(icon, { size: 12 })}
-                  {label}
+                  <span className="hidden md:block">{label}</span>
                 </button>
               ))}
             </div>
 
-            <div
-              className="mx-1 h-6 w-px"
-              style={{ backgroundColor: CHART_PALETTE.control }}
-            />
+            <div className="mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" />
 
             {/* Enrolled total — the chart shows the split but never the size
                 of the programme it is splitting. */}
             <div className="flex flex-col items-end">
-              <span
-                className="text-[11px]"
-                style={{ color: CHART_PALETTE.subtitle }}
-              >
+              <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                 Enrolled
               </span>
-              <p
-                className="mt-0.5 text-base font-semibold leading-tight tracking-tight tabular-nums"
-                style={{ color: CHART_PALETTE.title }}
-              >
+              <p className="mt-0.5 text-base font-semibold leading-tight tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                 {totalMembers.toLocaleString()}
               </p>
             </div>
@@ -279,19 +270,13 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
       {/* Chart */}
       {isEmpty ? (
         <div className="flex h-44 flex-col items-center justify-center gap-2 text-center sm:h-56 md:h-64">
-          <div
-            className="flex h-16 w-16 items-center justify-center rounded-full"
-            style={{ backgroundColor: CHART_PALETTE.hover }}
-          >
-            <Award size={24} style={{ color: CHART_PALETTE.subtitle }} />
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+            <Award size={24} className="text-[#9aa0a6] dark:text-[#9aa6bd]" />
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
             No loyalty tier data
           </p>
-          <p
-            className="max-w-[15rem] text-xs"
-            style={{ color: CHART_PALETTE.subtitle }}
-          >
+          <p className="max-w-[15rem] text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             Tier breakdown appears once tiers are set up in loyalty settings and
             customers are enrolled.
           </p>

@@ -463,7 +463,7 @@ export default function ForgotPasswordPage() {
                         setServerError(null);
                       }}
                       placeholder="At least 8 characters"
-                      className={`h-12 w-full rounded-xl border bg-white dark:bg-white/5 px-4 pr-20 text-[15px] text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:ring-4 ${
+                      className={`h-12 w-full rounded-xl border bg-white dark:bg-white/5 px-4 pr-20 text-[15px] text-gray-900 dark:text-[#e8ecf4] outline-none transition-colors placeholder:text-gray-400 focus:ring-4 ${
                         fieldErrors.password
                           ? "border-red-300 focus:border-red-400 focus:ring-red-400/15 dark:border-red-400/40"
                           : "border-gray-300 focus:border-blue-600 focus:ring-blue-600/10 dark:border-white/15"
@@ -506,7 +506,7 @@ export default function ForgotPasswordPage() {
                         setServerError(null);
                       }}
                       placeholder="Re-enter your new password"
-                      className={`h-12 w-full rounded-xl border bg-white dark:bg-white/5 px-4 pr-20 text-[15px] text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:ring-4 ${
+                      className={`h-12 w-full rounded-xl border bg-white dark:bg-white/5 px-4 pr-20 text-[15px] text-gray-900 dark:text-[#e8ecf4] outline-none transition-colors placeholder:text-gray-400 focus:ring-4 ${
                         fieldErrors.confirmPassword
                           ? "border-red-300 focus:border-red-400 focus:ring-red-400/15 dark:border-red-400/40"
                           : "border-gray-300 focus:border-blue-600 focus:ring-blue-600/10 dark:border-white/15"

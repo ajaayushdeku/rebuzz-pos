@@ -17,7 +17,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
 import CustomerFormModal from "@/components/invoice/CustomerFormModal";
 import CustomerHistoryModal from "@/components/dashboardComponents/customersDash/CustomerHistoryModal";
-import { CardInfo, CHART_PALETTE } from "../chartCard";
+import { CardInfo } from "../chartCard";
 import { useTierStyle } from "@/hooks/useLoyaltyTiers";
 import type { LoyaltyTier } from "@/lib/types/customer";
 
@@ -44,7 +44,8 @@ export type TopCustomersProps = {
  * ladder loads. There is no table of tier names here any more: the names are
  * the business's, so the colours have to come from its loyalty settings.
  */
-const NEUTRAL_TIER = "bg-gray-100 text-gray-600";
+const NEUTRAL_TIER =
+  "bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-[#a9b4c7]";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -101,7 +102,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
     );
 
   return (
-    <div className="w-full overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
+    <div className="w-full overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div className="flex items-center gap-3">
           <div
@@ -111,10 +112,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
             <Trophy size={16} style={{ color: "#d97706" }} />
           </div>
           <div className="min-w-0">
-            <h3
-              className="flex items-center gap-1.5 text-[15px] font-normal"
-              style={{ color: CHART_PALETTE.title }}
-            >
+            <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
               Customer Leaderboard
               <CardInfo
                 heading="Reading this table"
@@ -122,10 +120,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                 body="Your customers ranked by what they have spent this month. Click a column heading to sort by visits, spend or points instead. Loyalty tier is the rung they sit on in loyalty settings."
               />
             </h3>
-            <p
-              className="mt-0.5 text-xs tracking-wide"
-              style={{ color: CHART_PALETTE.subtitle }}
-            >
+            <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
               Highest value contributors this month
             </p>
           </div>
@@ -133,7 +128,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
 
         <button
           onClick={() => setCreateModalOpen(true)}
-          className="inline-flex h-8 shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-[#dadce0] bg-white px-3 text-[11px] text-[#3c4043] transition-colors outline-none hover:bg-[#f8f9fa] focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="inline-flex h-8 shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-full dark:bg-white/5 border border-[#dadce0] bg-white px-3 text-[11px] text-[#3c4043] transition-colors outline-none hover:bg-[#f8f9fa] focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
         >
           <UserPlus className="h-3.5 w-3.5" />
           Add New Customer
@@ -144,7 +139,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
       <div className="relative mt-4 mb-2 w-full ">
         <Search
           size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#7b869b]"
         />
         <input
           type="text"
@@ -154,12 +149,12 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
             setSearch(e.target.value);
             setPage(0);
           }}
-          className="h-9 w-full rounded-lg border border-[#dadce0] bg-white pl-9 pr-8 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="h-9 w-full rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 pl-9 pr-8 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/15"
         />
         {search && (
           <button
             onClick={() => setSearch("")}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#3c4043]"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#3c4043] dark:text-[#7b869b] dark:hover:text-[#e8ecf4]"
           >
             <X size={14} />
           </button>
@@ -167,19 +162,19 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
       </div>
 
       {/* Table */}
-      {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
+      {/* <div className="bg-white dark:bg-[#161d2e] rounded-xl border border-gray-200 shadow-sm overflow-x-auto dark:border-white/15"> */}
       <div
-        className="bg-white overflow-x-auto pb-2 scrollbar-hide"
+        className="bg-white dark:bg-transparent overflow-x-auto pb-2 scrollbar-hide"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         <table className="w-full text-sm min-w-[600px]">
           <thead>
-            <tr className="border-b border-[#e8eaed] text-[11px] text-[#5f6368]">
+            <tr className="border-b border-[#e8eaed] text-[11px] text-[#5f6368] dark:border-white/10 dark:text-[#a9b4c7]">
               <th className="text-left px-4 pb-2.5 pt-1 font-normal w-12">
                 S.No
               </th>
               <th
-                className="text-left px-4 pb-2.5 pt-1 font-normal cursor-pointer select-none hover:text-[#3c4043]"
+                className="text-left px-4 pb-2.5 pt-1 font-normal cursor-pointer select-none hover:text-[#3c4043] dark:hover:text-[#e8ecf4]"
                 onClick={() => toggleSort("customer")}
               >
                 <span className="flex items-center gap-1">
@@ -187,7 +182,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                 </span>
               </th>
               <th
-                className="flex items-center justify-center  px-4 pb-2.5 pt-1 font-normal cursor-pointer select-none hover:text-[#3c4043]"
+                className="flex items-center justify-center  px-4 pb-2.5 pt-1 font-normal cursor-pointer select-none hover:text-[#3c4043] dark:hover:text-[#e8ecf4]"
                 onClick={() => toggleSort("numVisits")}
               >
                 <span className="flex w-fit items-center justify-end gap-1">
@@ -198,7 +193,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                 Loyalty Tier
               </th>
               <th
-                className="text-right px-4 pb-2.5 pt-1 font-normal cursor-pointer select-none hover:text-[#3c4043]"
+                className="text-right px-4 pb-2.5 pt-1 font-normal cursor-pointer select-none hover:text-[#3c4043] dark:hover:text-[#e8ecf4]"
                 onClick={() => toggleSort("totalSpent")}
               >
                 <span className="flex items-center justify-end gap-1">
@@ -207,7 +202,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
               </th>
 
               <th
-                className="text-right px-4 pb-2.5 pt-1 font-normal cursor-pointer select-none hover:text-[#3c4043]"
+                className="text-right px-4 pb-2.5 pt-1 font-normal cursor-pointer select-none hover:text-[#3c4043] dark:hover:text-[#e8ecf4]"
                 onClick={() => toggleSort("loyaltyPoints")}
               >
                 <span className="flex items-center justify-end gap-1">
@@ -225,14 +220,19 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
               <tr>
                 <td
                   colSpan={7}
-                  className="text-center py-2 text-sm text-gray-400"
+                  className="text-center py-2 text-sm text-gray-400 dark:text-[#7b869b]"
                 >
                   <div className="flex flex-col items-center justify-center py-12">
-                    <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4]">
-                      <Trophy size={24} className="text-gray-500" />
+                    <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+                      <Trophy
+                        size={24}
+                        className="text-gray-500 dark:text-[#9aa6bd]"
+                      />
                     </div>
-                    <p className="text-sm text-[#3c4043]">No customer data</p>
-                    <p className="mt-1 text-xs text-[#9aa0a6]">
+                    <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
+                      No customer data
+                    </p>
+                    <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                       Customer Leaderboard data will appear here
                     </p>
                   </div>
@@ -242,18 +242,18 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
               paged.map((customer, idx) => (
                 <tr
                   key={customer.rank}
-                  className="border-b border-[#e8eaed] last:border-0 hover:bg-gray-50 transition-colors"
+                  className="border-b border-[#e8eaed] last:border-0 hover:bg-gray-50 transition-colors dark:border-white/10 dark:hover:bg-white/10"
                 >
-                  <td className="py-3 px-4 text-gray-400 text-xs">
+                  <td className="py-3 px-4 text-gray-400 text-xs dark:text-[#7b869b]">
                     {page * pageSize + idx + 1}
                   </td>
                   <td className="py-3 px-4">
-                    <span className="font-medium text-xs text-gray-900">
+                    <span className="font-medium text-xs text-gray-900 dark:text-[#e8ecf4]">
                       {customer.customer}
                     </span>
                   </td>
                   <td className="py-3 px-4 text-center">
-                    <span className="font-semibold text-xs tracking-wide text-gray-900">
+                    <span className="font-semibold text-xs tracking-wide text-gray-900 dark:text-[#e8ecf4]">
                       {customer.numVisits}
                     </span>
                   </td>
@@ -269,7 +269,7 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                       {customer.loyaltyTier}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-right text-xs font-semibold text-gray-900 tracking-wide">
+                  <td className="py-3 px-4 text-right text-xs font-semibold text-gray-900 tracking-wide dark:text-[#e8ecf4]">
                     {/* {formatCurrency(customer.totalSpent, currency)} */}
                     {formatCurrencySymbol(
                       customer.totalSpent,
@@ -277,13 +277,13 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                       currency.locale,
                     )}
                   </td>
-                  <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900">
-                    <span className="font-semibold text-gray-800 tracking-wide ">
+                  <td className="py-3 px-4 text-xs text-right font-semibold text-gray-900 dark:text-[#e8ecf4]">
+                    <span className="font-semibold text-gray-800 tracking-wide  dark:text-[#e8ecf4]">
                       {formatAmount(
                         customer.loyaltyPoints ?? 0,
                         currency.locale,
                       )}
-                      <span className=" ml-1 text-[9px] text-gray-400">
+                      <span className=" ml-1 text-[9px] text-gray-400 dark:text-[#7b869b]">
                         pts
                       </span>
                     </span>
@@ -308,21 +308,21 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-white/10">
         <button
           onClick={() => setPage(Math.max(0, page - 1))}
           disabled={page === 0}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             page === 0
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10"
           }`}
         >
           <ChevronLeft size={14} />
           Previous
         </button>
 
-        <span className="text-xs text-gray-400 font-medium">
+        <span className="text-xs text-gray-400 font-medium dark:text-[#7b869b]">
           Page {page + 1} of {totalPages} · {sorted.length} customers
         </span>
 
@@ -331,8 +331,8 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
           disabled={page >= totalPages - 1}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             page >= totalPages - 1
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10"
           }`}
         >
           Next

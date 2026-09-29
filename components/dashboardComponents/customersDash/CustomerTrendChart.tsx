@@ -144,13 +144,10 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
       }))}
       footer={
         <div className="flex items-center justify-between gap-4">
-          <span className="text-xs" style={{ color: CHART_PALETTE.axis }}>
+          <span className="text-xs text-[#5f6368] dark:text-[#a9b4c7]">
             Total
           </span>
-          <span
-            className="text-xs font-medium"
-            style={{ color: CHART_PALETTE.title }}
-          >
+          <span className="text-xs font-medium text-[#3c4043] dark:text-[#e8ecf4]">
             {total.toLocaleString()}
           </span>
         </div>
@@ -189,30 +186,21 @@ export default function CustomerTrendChart({ data }: CustomerTrendProps) {
         !isEmpty &&
         latest && (
           <div className="flex shrink-0 flex-col items-end">
-            <span
-              className="text-[11px]"
-              style={{ color: CHART_PALETTE.subtitle }}
-            >
+            <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
               {latest.month} · total customers
             </span>
-            <p
-              className="mt-0.5 text-base font-semibold leading-tight tracking-tight tabular-nums"
-              style={{ color: CHART_PALETTE.title }}
-            >
+            <p className="mt-0.5 text-base font-semibold leading-tight tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
               {stackTotal(latest).toLocaleString()}
             </p>
-            <div
-              className="mt-1 flex items-center gap-3 text-[11px]"
-              style={{ color: CHART_PALETTE.subtitle }}
-            >
+            <div className="mt-1 flex items-center gap-3 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
               <span className="tabular-nums">
-                <span style={{ color: CHART_PALETTE.title }}>
+                <span className="text-[#3c4043] dark:text-[#e8ecf4]">
                   {boughtInMonth(latest).toLocaleString()}
                 </span>{" "}
                 bought
               </span>
               <span className="tabular-nums">
-                <span style={{ color: CHART_PALETTE.title }}>
+                <span className="text-[#3c4043] dark:text-[#e8ecf4]">
                   {joinedInMonth(latest).toLocaleString()}
                 </span>{" "}
                 joined

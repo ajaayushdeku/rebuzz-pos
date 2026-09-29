@@ -432,7 +432,7 @@ export function DateRangeFilter({
               {/* Date input fields — stacked, since the column is narrow. */}
               <div className="flex flex-col gap-2.5">
                 <div>
-                  <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
+                  <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#7b869b]">
                     {mode === "single" ? "Date" : "Start Date"}
                   </label>
                   <input

@@ -21,16 +21,16 @@ type AtRiskCustomer = {
 const spendLevelStyles: Record<SpendingLevel, { cell: string; badge: string }> =
   {
     High: {
-      cell: "text-yellow-800",
-      badge: "bg-yellow-200",
+      cell: "text-yellow-800 dark:text-amber-200",
+      badge: "bg-yellow-200 dark:bg-amber-400/15",
     },
     Medium: {
-      cell: "text-blue-800",
-      badge: "bg-blue-200",
+      cell: "text-blue-800 dark:text-[#a8c4ee]",
+      badge: "bg-blue-200 dark:bg-blue-400/15",
     },
     Low: {
-      cell: "text-gray-800",
-      badge: "bg-gray-200",
+      cell: "text-gray-800 dark:text-[#e8ecf4]",
+      badge: "bg-gray-200 dark:bg-white/15",
     },
   };
 
@@ -74,7 +74,7 @@ export const columns: ColumnDef<AtRiskCustomer>[] = [
   {
     header: "Alert Reason",
     cell: () => (
-      <p className="border text-sm text-gray-600 border-gray-500 p-1 rounded-2xl w-40 flex items-center justify-center">
+      <p className="border text-sm text-gray-600 border-gray-500 dark:border-white/20 p-1 rounded-2xl w-40 flex items-center justify-center dark:text-[#a9b4c7]">
         Haven&lsquo;t been active for about 2 weeks
       </p>
     ),
@@ -98,7 +98,7 @@ export const columns: ColumnDef<AtRiskCustomer>[] = [
   {
     header: "Action",
     cell: () => (
-      <Button className="bg-gray-50 text-blue-600 hover:bg-blue-600 hover:text-gray-100 border-blue-500 border">
+      <Button className="bg-gray-50 text-blue-600 hover:bg-blue-600 hover:text-gray-100 border-blue-500 border dark:bg-white/5 dark:text-[#7ba2e3]">
         Send Offer
       </Button>
     ),

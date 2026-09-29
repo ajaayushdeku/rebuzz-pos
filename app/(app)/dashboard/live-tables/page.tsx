@@ -95,7 +95,7 @@ export default function LiveTablesPage() {
           <div
             role="radiogroup"
             aria-label="Table view"
-            className="flex w-fit items-center gap-1 rounded-xl bg-[#e4f2fe] p-1"
+            className="flex w-fit items-center gap-1 rounded-xl bg-[#e4f2fe] p-1 dark:bg-white/10"
           >
             {[
               { id: "grid", label: "Grid View", icon: LayoutGrid },
@@ -109,10 +109,10 @@ export default function LiveTablesPage() {
                   role="radio"
                   aria-checked={selected}
                   onClick={() => setTab(id as Tab)}
-                  className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-4 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                  className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-4 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] dark:focus-visible:ring-offset-[#242a38] ${
                     selected
-                      ? "bg-white font-semibold text-blue-950 shadow-sm"
-                      : "font-semibold text-blue-800 hover:text-blue-950"
+                      ? "bg-white font-semibold text-blue-950 shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none"
+                      : "font-semibold text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee] dark:hover:text-white"
                   }`}
                 >
                   <Icon size={14} />
@@ -125,19 +125,23 @@ export default function LiveTablesPage() {
           {isLoading ? (
             <LiveTablesSkeleton />
           ) : isError ? (
-            <div className="flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-[#e3e3e3] bg-white p-16 text-center">
-              <p className="text-sm text-[#d93025]">Failed to load tables</p>
-              <p className="text-xs text-[#9aa0a6]">
+            <div className="flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-[#e3e3e3] bg-white p-16 text-center dark:border-white/10 dark:bg-[#161d2e]">
+              <p className="text-sm text-[#d93025] dark:text-[#f87171]">
+                Failed to load tables
+              </p>
+              <p className="text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                 Please check your connection and try again.
               </p>
             </div>
           ) : tables.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-[#e3e3e3] bg-white p-16 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f1f3f4]">
-                <Utensils className="h-6 w-6 text-[#9aa0a6]" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+                <Utensils className="h-6 w-6 text-[#9aa0a6] dark:text-[#9aa6bd]" />
               </div>
-              <p className="text-sm text-[#3c4043]">No tables yet</p>
-              <p className="text-xs text-[#9aa0a6]">
+              <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
+                No tables yet
+              </p>
+              <p className="text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                 Tables you add will appear here.
               </p>
             </div>

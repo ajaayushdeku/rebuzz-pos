@@ -5,7 +5,7 @@ import { Loader2, Radar, Calculator } from "lucide-react";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { CardInfo, CHART_PALETTE } from "../../chartCard";
+import { CardInfo } from "../../chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
 import {
   PERFORMANCE_TARGETS,
@@ -279,7 +279,7 @@ function RadarChart({
           y={axis.labelY}
           textAnchor="middle"
           dominantBaseline="middle"
-          className="text-[11px] fill-gray-600 font-medium"
+          className="text-[11px] fill-gray-600 font-medium dark:fill-[#859CA6]"
           style={{ fontSize: "11px", fontFamily: "inherit" }}
         >
           {axis.point.label}
@@ -319,37 +319,43 @@ function MetricTooltip({
 
   return (
     <div
-      className="pointer-events-none absolute z-50 min-w-44 rounded-lg border border-[#dadce0] bg-white px-3 py-2.5 shadow-sm"
+      className="pointer-events-none absolute z-50 min-w-44 rounded-lg border border-[#dadce0] bg-white px-3 py-2.5 shadow-sm dark:border-white/15 dark:bg-[#1b2436]"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
         transform: "translate(-50%, -110%)",
       }}
     >
-      <p className="mb-2 text-[13px] text-[#3c4043]">{metric.label}</p>
+      <p className="mb-2 text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
+        {metric.label}
+      </p>
 
       <div className="space-y-1.5">
         {/* Score */}
         <div className="flex items-center justify-between gap-6 text-xs">
-          <span className="text-gray-400">Score</span>
-          <span className="font-bold text-blue-600">{metric.score} / 100</span>
+          <span className="text-gray-400 dark:text-[#7b869b]">Score</span>
+          <span className="font-bold text-blue-600 dark:text-[#7ba2e3]">
+            {metric.score} / 100
+          </span>
         </div>
 
         {/* Employee value */}
         <div className="flex items-center justify-between gap-6 text-xs">
-          <span className="text-gray-400">Value</span>
-          <span className="font-semibold text-gray-900">{metric.unit}</span>
+          <span className="text-gray-400 dark:text-[#7b869b]">Value</span>
+          <span className="font-semibold text-gray-900 dark:text-[#e8ecf4]">
+            {metric.unit}
+          </span>
         </div>
 
         {/* Benchmark — skip for Refund Rate since lower is better */}
         {!isRefund && (
           <div className="flex items-center justify-between gap-6 text-xs">
-            <span className="text-gray-400">
+            <span className="text-gray-400 dark:text-[#7b869b]">
               {/* Peer and target benchmarks answer different questions, so the
                   tooltip has to say which one this axis used. */}
               {metric.benchmarkKind === "peer" ? "Top performer" : "Target"}
             </span>
-            <span className="font-semibold text-violet-600">
+            <span className="font-semibold text-violet-600 dark:text-violet-400">
               {metric.benchmarkUnit}
             </span>
           </div>
@@ -357,7 +363,7 @@ function MetricTooltip({
 
         {/* Visual progress bar */}
         <div className="pt-1">
-          <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-white/10">
             <div
               className={`h-full rounded-full transition-all ${
                 metric.score >= 75
@@ -374,8 +380,8 @@ function MetricTooltip({
         </div>
 
         {/* Description */}
-        <div className="border-t border-gray-100 pt-1.5 mt-1">
-          <p className="text-[10px] text-gray-400 leading-tight">
+        <div className="border-t border-gray-100 pt-1.5 mt-1 dark:border-white/10">
+          <p className="text-[10px] text-gray-400 leading-tight dark:text-[#7b869b]">
             {metric.description}
           </p>
         </div>
@@ -700,26 +706,20 @@ export default function PerformanceRadar({
 
   if (loading) {
     return (
-      <div className="mb-6 w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
+      <div className="mb-6 w-full rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10">
         <div className="flex items-center gap-3 mb-6">
           <div
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
             style={{ borderColor: "#dbeafe", backgroundColor: "#eff6ff" }}
           >
-            <Radar size={16} style={{ color: CHART_PALETTE.blue }} />
+            <Radar size={16} className="text-[#1a73e8] dark:text-[#7ba2e3]" />
           </div>
 
           <div className="min-w-0">
-            <h3
-              className="text-[15px] font-normal"
-              style={{ color: CHART_PALETTE.title }}
-            >
+            <h3 className="text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
               Performance Radar
             </h3>
-            <p
-              className="mt-0.5 text-xs tracking-wide"
-              style={{ color: CHART_PALETTE.subtitle }}
-            >
+            <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
               Loading metrics…
             </p>
           </div>
@@ -727,8 +727,7 @@ export default function PerformanceRadar({
         <div className="flex items-center justify-center py-12">
           <Loader2
             size={20}
-            className="animate-spin"
-            style={{ color: CHART_PALETTE.subtitle }}
+            className="animate-spin text-[#9aa0a6] dark:text-[#9aa6bd]"
           />
         </div>
       </div>
@@ -739,33 +738,27 @@ export default function PerformanceRadar({
 
   if (error) {
     return (
-      <div className="h-full w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
+      <div className="h-full w-full rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10">
         <div className="flex items-center gap-3 mb-6">
           <div
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
             style={{ borderColor: "#dbeafe", backgroundColor: "#eff6ff" }}
           >
-            <Radar size={16} style={{ color: CHART_PALETTE.blue }} />
+            <Radar size={16} className="text-[#1a73e8] dark:text-[#7ba2e3]" />
           </div>
 
           <div className="min-w-0">
-            <h3
-              className="text-[15px] font-normal"
-              style={{ color: CHART_PALETTE.title }}
-            >
+            <h3 className="text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
               Performance Radar
             </h3>
-            <p
-              className="mt-0.5 text-xs tracking-wide"
-              style={{ color: CHART_PALETTE.subtitle }}
-            >
+            <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
               Unable to load data
             </p>
           </div>
         </div>
 
         <div className="text-center py-8">
-          <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3">
+          <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3 dark:bg-red-400/10">
             <svg
               className="w-6 h-6 text-red-400"
               fill="none"
@@ -780,7 +773,9 @@ export default function PerformanceRadar({
               />
             </svg>
           </div>
-          <p className="text-sm font-medium text-gray-500">{error}</p>
+          <p className="text-sm font-medium text-gray-500 dark:text-[#9aa6bd]">
+            {error}
+          </p>
           <button
             onClick={() => {
               setLoading(true);
@@ -844,39 +839,33 @@ export default function PerformanceRadar({
 
   if (chartData.length === 0) {
     return (
-      <div className="h-full w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
+      <div className="h-full w-full rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10">
         <div className="flex items-center gap-3 mb-6">
           <div
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
             style={{ borderColor: "#dbeafe", backgroundColor: "#eff6ff" }}
           >
-            <Radar size={16} style={{ color: CHART_PALETTE.blue }} />
+            <Radar size={16} className="text-[#1a73e8] dark:text-[#7ba2e3]" />
           </div>
 
           <div className="min-w-0">
-            <h3
-              className="text-[15px] font-normal"
-              style={{ color: CHART_PALETTE.title }}
-            >
+            <h3 className="text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
               Performance Radar
             </h3>
-            <p
-              className="mt-0.5 text-xs tracking-wide"
-              style={{ color: CHART_PALETTE.subtitle }}
-            >
+            <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
               No data available
             </p>
           </div>
         </div>
 
         <div className="text-center py-8">
-          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
-            <Radar size={24} className="text-gray-500" />
+          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3 dark:bg-white/10">
+            <Radar size={24} className="text-gray-500 dark:text-[#9aa6bd]" />
           </div>
-          <p className="text-sm font-medium text-gray-500">
+          <p className="text-sm font-medium text-gray-500 dark:text-[#9aa6bd]">
             No performance data found
           </p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-gray-400 mt-1 dark:text-[#7b869b]">
             No sales or billing data for this period
           </p>
         </div>
@@ -893,7 +882,7 @@ export default function PerformanceRadar({
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="h-full w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
+    <div className="h-full w-full rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10">
       {/* Header */}
       <div className="flex items-center justify-between ">
         <div className="flex items-center gap-3">
@@ -901,14 +890,11 @@ export default function PerformanceRadar({
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
             style={{ borderColor: "#dbeafe", backgroundColor: "#eff6ff" }}
           >
-            <Radar size={16} style={{ color: CHART_PALETTE.blue }} />
+            <Radar size={16} className="text-[#1a73e8] dark:text-[#7ba2e3]" />
           </div>
 
           <div className="min-w-0">
-            <h3
-              className="flex items-center gap-1.5 text-[15px] font-normal"
-              style={{ color: CHART_PALETTE.title }}
-            >
+            <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
               Performance Radar
               <CardInfo
                 heading="Reading this chart"
@@ -917,10 +903,7 @@ export default function PerformanceRadar({
                 body="Six measures over the date range at the top of the page, each scored out of 100 against the rest of the team — so 100 means best of the team on that axis, not perfect. A wider shape is a stronger all-round shift. Hover a point for what it was measured against."
               />
             </h3>
-            <p
-              className="mt-0.5 text-xs tracking-wide"
-              style={{ color: CHART_PALETTE.subtitle }}
-            >
+            <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
               {`${dateRange.startDate} to ${dateRange.endDate}`}
             </p>
           </div>
@@ -933,23 +916,25 @@ export default function PerformanceRadar({
           <button
             onClick={() => setShowBaseline(!showBaseline)}
             aria-expanded={showBaseline}
-            className="cursor-pointer rounded-lg p-1.5 transition-colors hover:bg-[#f1f3f4]"
+            className="cursor-pointer rounded-lg p-1.5 transition-colors hover:bg-[#f1f3f4] dark:hover:bg-white/10"
             title="How scores are calculated"
           >
             <Calculator
               size={15}
-              style={{
-                color: showBaseline
-                  ? CHART_PALETTE.blue
-                  : CHART_PALETTE.subtitle,
-              }}
+              className={
+                showBaseline
+                  ? "text-[#1a73e8] dark:text-[#7ba2e3]"
+                  : "text-[#9aa0a6] dark:text-[#9aa6bd]"
+              }
             />
           </button>
-          <div className="flex items-center gap-1.5 bg-blue-50 px-3 py-1.5 rounded-lg">
-            <span className="text-[11px] text-gray-500 font-medium">
+          <div className="flex items-center gap-1.5 bg-blue-50 px-3 py-1.5 rounded-lg dark:bg-blue-400/10">
+            <span className="text-[11px] text-gray-500 font-medium dark:text-[#9aa6bd]">
               Avg Score
             </span>
-            <span className="text-sm font-bold text-blue-600">{avgScore}</span>
+            <span className="text-sm font-bold text-blue-600 dark:text-[#7ba2e3]">
+              {avgScore}
+            </span>
           </div>
 
           <RangeBadge
@@ -961,24 +946,24 @@ export default function PerformanceRadar({
 
       {/* Baseline info panel */}
       {showBaseline && (
-        <div className=" p-3 mt-3.5 rounded-xl bg-gray-50 border border-gray-100">
-          <p className="text-[11px] font-semibold text-gray-700 mb-2">
+        <div className=" p-3 mt-3.5 rounded-xl bg-gray-50 border border-gray-100 dark:bg-white/5 dark:border-white/10">
+          <p className="text-[11px] font-semibold text-gray-700 mb-2 dark:text-[#c3ccdc]">
             How Scores Are Calculated
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-2">
             {chartData.map((metric) => (
               <div
                 key={metric.label}
-                className="text-[10px] text-gray-500 leading-relaxed"
+                className="text-[10px] text-gray-500 leading-relaxed dark:text-[#9aa6bd]"
               >
-                <span className="font-medium text-gray-700">
+                <span className="font-medium text-gray-700 dark:text-[#c3ccdc]">
                   {metric.label}
                 </span>
                 : {metric.description}
               </div>
             ))}
           </div>
-          <p className="text-[10px] text-gray-400 mt-2 border-t border-gray-200 pt-2">
+          <p className="text-[10px] text-gray-400 mt-2 border-t border-gray-200 pt-2 dark:border-white/15 dark:text-[#7b869b]">
             Each metric is normalized to a 0–100 scale. The outer hexagon
             represents the maximum benchmark score (100). Higher values indicate
             better performance.

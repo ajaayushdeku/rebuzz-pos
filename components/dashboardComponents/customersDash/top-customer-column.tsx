@@ -23,20 +23,20 @@ export type TopCustomersProps = {
 export const tierStyles: Record<LoyaltyTier, { cell: string; badge: string }> =
   {
     Gold: {
-      cell: "text-yellow-800",
-      badge: "bg-yellow-200",
+      cell: "text-yellow-800 dark:text-amber-200",
+      badge: "bg-yellow-200 dark:bg-amber-400/15",
     },
     Silver: {
-      cell: "text-gray-800",
-      badge: "bg-gray-200",
+      cell: "text-gray-800 dark:text-[#e8ecf4]",
+      badge: "bg-gray-200 dark:bg-white/15",
     },
     Bronze: {
       cell: "text-brown-800",
       badge: "bg-brown-200",
     },
     None: {
-      cell: "text-gray-800",
-      badge: "bg-gray-200",
+      cell: "text-gray-800 dark:text-[#e8ecf4]",
+      badge: "bg-gray-200 dark:bg-white/15",
     },
   };
 

@@ -133,7 +133,7 @@ export function RecentTransactionsSkeleton({ rows = 3 }: { rows?: number }) {
               {["w-14", "w-20", "w-16", "w-14"].map((w, i) => (
                 <th key={i} className="pb-3 pt-3 px-4">
                   <div
-                    className={`h-3 ${w} bg-gray-100 rounded ${
+                    className={`h-3 ${w} bg-gray-100 rounded dark:bg-white/10 ${
                       i === 2 ? "ml-auto" : i === 3 ? "mx-auto" : ""
                     }`}
                   />

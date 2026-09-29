@@ -10,7 +10,7 @@ import {
 } from "../staffDash/staffDetail/staffDetailHelpers";
 import type { ShiftDetail } from "../staffDash/staffDetail/staffDetailHelpers";
 import ShiftDetailModal from "../staffDash/staffDetail/ShiftDetailModal";
-import { CHART_PALETTE, ChartCard, ChartPager } from "../chartCard";
+import { ChartCard, ChartPager } from "../chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
 import SegmentedControl from "@/components/ui/SegmentedControl";
 // import { DateRangeFilter, type DateRangeValue } from "./DateRangeFilter";
@@ -54,7 +54,6 @@ export default function LatestShifts({
   endDate,
 }: LatestShiftsProps) {
   const { currency } = useCurrency();
-  const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalDetail, setModalDetail] = useState<ShiftDetail | null>(null);
   const [modalLoading, setModalLoading] = useState(false);
@@ -169,8 +168,8 @@ export default function LatestShifts({
   const getStatusColor = (closingTime: string | undefined) => {
     const isClosed = !!closingTime;
     return isClosed
-      ? "border border-rose-200 bg-rose-50 text-rose-700"
-      : "border border-green-200 bg-green-50 text-green-700";
+      ? "border border-rose-200 bg-rose-50 text-rose-700 dark:text-rose-300 dark:bg-rose-400/10 dark:border-rose-400/25"
+      : "border border-green-200 bg-green-50 text-green-700 dark:bg-emerald-400/10 dark:border-emerald-400/25 dark:text-emerald-300";
   };
 
   const fetchShiftDetail = useCallback(async (shiftId: string) => {
@@ -236,22 +235,18 @@ export default function LatestShifts({
         <div className="flex items-center justify-center py-12">
           <Loader2
             size={20}
-            className="animate-spin"
-            style={{ color: CHART_PALETTE.subtitle }}
+            className="animate-spin text-[#9aa0a6] dark:text-[#9aa6bd]"
           />
         </div>
       ) : filteredShifts.length === 0 ? (
         <div className="text-center py-12">
-          <div
-            className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full"
-            style={{ backgroundColor: CHART_PALETTE.hover }}
-          >
-            <Clock size={24} style={{ color: CHART_PALETTE.subtitle }} />
+          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+            <Clock size={24} className="text-[#9aa0a6] dark:text-[#9aa6bd]" />
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
             No shifts found
           </p>
-          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             Shift data will appear here
           </p>
         </div>
@@ -260,13 +255,7 @@ export default function LatestShifts({
           <div className="overflow-x-auto">
             <table className="w-full min-w-[500px] text-sm">
               <thead>
-                <tr
-                  className="border-b text-[11px] tracking-wider"
-                  style={{
-                    borderColor: CHART_PALETTE.grid,
-                    color: CHART_PALETTE.axis,
-                  }}
-                >
+                <tr className="border-b text-[11px] tracking-wider border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
                   <th className="pb-2.5 pl-0 pt-1 text-left font-normal">
                     S.No.
                   </th>
@@ -291,73 +280,43 @@ export default function LatestShifts({
                 {pagedShifts.map((shift, idx) => (
                   <tr
                     key={shift.shiftId}
-                    className="cursor-pointer border-b transition-colors last:border-0"
-                    style={{
-                      borderColor: CHART_PALETTE.grid,
-                      backgroundColor:
-                        hoveredRow === shift.shiftId
-                          ? CHART_PALETTE.hover
-                          : "transparent",
-                    }}
-                    onMouseEnter={() => setHoveredRow(shift.shiftId)}
-                    onMouseLeave={() => setHoveredRow(null)}
+                    className="cursor-pointer border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa] dark:border-white/10 dark:hover:bg-white/5"
                     onClick={() =>
                       shift.shiftId && fetchShiftDetail(shift.shiftId)
                     }
                   >
                     <td className="py-3 pl-0">
-                      <span
-                        className="text-[11px] tabular-nums"
-                        style={{ color: CHART_PALETTE.subtitle }}
-                      >
+                      <span className="text-[11px] tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
                         #{idx + 1}
                       </span>
                     </td>
                     <td className="py-3 pl-0">
-                      <span
-                        className="text-[13px]"
-                        style={{ color: CHART_PALETTE.title }}
-                      >
+                      <span className="text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                         {shift.employeeName || "Unknown"}
                       </span>
                     </td>
                     <td className="py-3 px-3">
                       <div className="flex flex-col gap-0.5">
-                        <span
-                          className="text-[11px]"
-                          style={{ color: CHART_PALETTE.subtitle }}
-                        >
+                        <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                           {formatFullDate(shift.openingTime)}
                         </span>
-                        <span
-                          className="text-xs"
-                          style={{ color: CHART_PALETTE.title }}
-                        >
+                        <span className="text-xs text-[#3c4043] dark:text-[#e8ecf4]">
                           {formatDate(shift.openingTime)}
                         </span>
                       </div>
                     </td>
                     <td className="py-3 px-3">
                       <div className="flex flex-col gap-0.5">
-                        <span
-                          className="text-[11px]"
-                          style={{ color: CHART_PALETTE.subtitle }}
-                        >
+                        <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                           {formatFullDate(shift.closingTime)}
                         </span>
-                        <span
-                          className="text-xs"
-                          style={{ color: CHART_PALETTE.title }}
-                        >
+                        <span className="text-xs text-[#3c4043] dark:text-[#e8ecf4]">
                           {formatDate(shift.closingTime)}
                         </span>
                       </div>
                     </td>
                     <td className="py-3 px-3 text-right">
-                      <span
-                        className="text-[13px] font-medium tabular-nums"
-                        style={{ color: CHART_PALETTE.title }}
-                      >
+                      <span className="text-[13px] font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                         {formatCurrencySymbol(
                           shift.totalSale ?? 0,
                           currency.symbol,

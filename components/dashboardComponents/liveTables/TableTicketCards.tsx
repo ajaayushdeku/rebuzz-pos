@@ -77,9 +77,9 @@ function TableTicketCard({
     <div
       ref={cardRef}
       aria-current={isSelected ? "true" : undefined}
-      className={`flex flex-col rounded-2xl border bg-white px-5 py-4 transition-colors ${
+      className={`flex flex-col rounded-2xl border bg-white px-5 py-4 transition-colors dark:bg-[#161d2e] ${
         isSelected
-          ? "border-blue-400 ring-2 ring-blue-400 ring-offset-1"
+          ? "border-blue-400 ring-2 ring-blue-400 ring-offset-1 dark:ring-offset-[#0f1420]"
           : "border-[#e3e3e3] hover:border-[#dadce0] dark:border-white/10"
       }`}
     >

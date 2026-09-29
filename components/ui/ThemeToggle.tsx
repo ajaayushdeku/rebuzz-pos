@@ -77,7 +77,7 @@ export default function ThemeToggle() {
       // The label names the action instead, which is true either way.
       aria-label="Switch between light and dark theme"
       title="Switch theme"
-      className="relative h-5 w-[38px] shrink-0 cursor-pointer overflow-hidden rounded-full border border-[#bcd4ef] bg-gradient-to-b from-[#cfe6fb] to-[#a9cdf2] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#244074]/40 dark:border-white/10 dark:from-[#16203a] dark:to-[#0d1424]"
+      className="relative h-5 w-[38px] shrink-0 cursor-pointer overflow-hidden rounded-full border border-[#bcd4ef] bg-gradient-to-b from-[#cfe6fb] to-[#a9cdf2] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#244074]/40 dark:border-[#C3CCDC]/50 dark:from-[#16203a] dark:to-[#0d1424]"
     >
       {/* Daytime sky, behind the knob and only while it is light. */}
       {CLOUDS.map((cloud, i) => (

@@ -651,7 +651,7 @@ export default function ProductStockEditModal({
                 </span>
 
                 <ChevronDown
-                  className={`absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 text-slate-400 transition-transform duration-300 ease-out motion-reduce:transition-none ${
+                  className={`absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 dark:text-[#7b869b] text-slate-400 transition-transform duration-300 ease-out motion-reduce:transition-none ${
                     isChangedExpanded ? "rotate-0" : "rotate-180"
                   }`}
                 />

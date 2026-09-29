@@ -16,8 +16,10 @@ function HeaderSkeleton({
 }) {
   return (
     <div className="space-y-2">
-      <div className={`h-4 ${titleWidth} bg-gray-200 rounded`} />
-      <div className={`h-3 ${subWidth} bg-gray-100 rounded`} />
+      <div
+        className={`h-4 ${titleWidth} bg-gray-200 rounded dark:bg-white/15`}
+      />
+      <div className={`h-3 ${subWidth} bg-gray-100 rounded dark:bg-white/10`} />
     </div>
   );
 }
@@ -30,7 +32,7 @@ function BarsSkeleton() {
       {BAR_HEIGHTS.map((h, i) => (
         <div
           key={i}
-          className="flex-1 bg-gray-100 rounded-t"
+          className="flex-1 bg-gray-100 rounded-t dark:bg-white/10"
           style={{ height: `${h}%` }}
         />
       ))}
@@ -45,14 +47,14 @@ export function StatsCardGridSkeleton({ count = 4 }: { count?: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+          className="bg-white dark:bg-[#161d2e] rounded-xl border border-gray-100 shadow-sm p-4 dark:border-white/10"
         >
           <div className="flex items-center justify-between mb-2">
-            <div className="h-3 w-16 bg-gray-100 rounded" />
-            <div className="w-6 h-6 rounded-lg bg-gray-200 shrink-0" />
+            <div className="h-3 w-16 bg-gray-100 rounded dark:bg-white/10" />
+            <div className="w-6 h-6 rounded-lg bg-gray-200 shrink-0 dark:bg-white/15" />
           </div>
-          <div className="h-5 w-20 bg-gray-200 rounded" />
-          <div className="h-3 w-14 bg-gray-100 rounded mt-1.5" />
+          <div className="h-5 w-20 bg-gray-200 rounded dark:bg-white/15" />
+          <div className="h-3 w-14 bg-gray-100 rounded mt-1.5 dark:bg-white/10" />
         </div>
       ))}
     </div>
@@ -71,18 +73,18 @@ export function StaffDetailListSkeleton({
 }) {
   return (
     <div
-      className={`bg-white ${rounded} border border-gray-200 shadow-sm p-5 animate-pulse`}
+      className={`bg-white dark:bg-[#161d2e] ${rounded} border border-gray-200 shadow-sm p-5 animate-pulse dark:border-white/15`}
     >
       <div className="mb-4">
         <HeaderSkeleton titleWidth={titleWidth} />
       </div>
 
       {/* Column headers */}
-      <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
+      <div className="flex items-center gap-3 pb-3 border-b border-gray-100 dark:border-white/10">
         {["w-10", "w-24", "w-20", "w-20", "w-16"].map((w, i) => (
           <div
             key={i}
-            className={`h-3 ${w} bg-gray-100 rounded ${i === 0 ? "" : "flex-1"}`}
+            className={`h-3 ${w} bg-gray-100 rounded ${i === 0 ? "" : "flex-1"} dark:bg-white/10`}
           />
         ))}
       </div>
@@ -92,13 +94,13 @@ export function StaffDetailListSkeleton({
         {Array.from({ length: rows }).map((_, i) => (
           <div
             key={i}
-            className="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0"
+            className="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0 dark:border-white/5"
           >
-            <div className="h-3 w-10 bg-gray-100 rounded" />
-            <div className="h-3 flex-1 max-w-[8rem] bg-gray-200 rounded" />
-            <div className="h-3 flex-1 max-w-[6rem] bg-gray-100 rounded" />
-            <div className="h-3 flex-1 max-w-[6rem] bg-gray-100 rounded" />
-            <div className="h-5 w-16 bg-gray-100 rounded-full" />
+            <div className="h-3 w-10 bg-gray-100 rounded dark:bg-white/10" />
+            <div className="h-3 flex-1 max-w-[8rem] bg-gray-200 rounded dark:bg-white/15" />
+            <div className="h-3 flex-1 max-w-[6rem] bg-gray-100 rounded dark:bg-white/10" />
+            <div className="h-3 flex-1 max-w-[6rem] bg-gray-100 rounded dark:bg-white/10" />
+            <div className="h-5 w-16 bg-gray-100 rounded-full dark:bg-white/10" />
           </div>
         ))}
       </div>
@@ -115,7 +117,7 @@ export function StaffDetailSkeleton() {
       <div className="flex flex-col gap-6">
         {/* Weekly sales + performance radar */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100 animate-pulse">
+          <div className="bg-white dark:bg-[#1b2436] rounded-xl px-4 py-3 shadow-lg border border-gray-100 animate-pulse dark:border-white/10">
             <div className="mb-4">
               <HeaderSkeleton titleWidth="w-36" subWidth="w-52" />
             </div>
@@ -124,12 +126,12 @@ export function StaffDetailSkeleton() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-100 min-w-44 animate-pulse">
+          <div className="bg-white dark:bg-[#1b2436] rounded-xl px-4 py-3 shadow-lg border border-gray-100 min-w-44 animate-pulse dark:border-white/10">
             <div className="mb-4">
               <HeaderSkeleton titleWidth="w-40" subWidth="w-48" />
             </div>
             <div className="h-56 flex items-center justify-center">
-              <div className="w-44 h-44 rounded-full border-[18px] border-gray-100" />
+              <div className="w-44 h-44 rounded-full border-[18px] border-gray-100 dark:border-white/10" />
             </div>
           </div>
         </div>

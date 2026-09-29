@@ -22,8 +22,10 @@ import {
   CHART_PALETTE,
   ChartCard,
   ChartTooltipBox,
+  getAxisTick,
   yAxisTitle,
 } from "../chartCard";
+import { useEffect, useState } from "react";
 
 export interface StaffRevenue {
   name: string;
@@ -89,6 +91,27 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
   const yTicks = [0, step, step * 2, step * 3, step * 4];
   const yMax = yTicks[yTicks.length - 1] * 1.05;
 
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
+
   return (
     <ChartCard
       icon={ChartColumnBig}
@@ -115,7 +138,7 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
             margin={{
               top: 0,
               right: 20,
-              left: 20,
+              left: 10,
               bottom: 0,
             }}
             barCategoryGap="15%"

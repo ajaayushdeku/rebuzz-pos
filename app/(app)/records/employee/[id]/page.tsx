@@ -430,8 +430,9 @@ export default function StaffDetailPage() {
   }, []);
 
   return (
-    // <div className="min-h-screen bg-gray-50/50 px-6 py-8 md:px-10">
-    <div className="min-h-screen bg-50 px-6 py-8 md:px-10">
+    // `bg-50` was not a Tailwind class, so this page had no surface of its own
+    // and simply showed the shell behind it.
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
       <div>
         <StaffDetailHeader
           employeeId={employeeId}

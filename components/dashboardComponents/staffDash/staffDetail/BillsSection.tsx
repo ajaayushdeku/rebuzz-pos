@@ -18,7 +18,7 @@ import {
   normalizePaymentMethod,
   paymentMethodStyle,
 } from "@/lib/config/transaction";
-import { CardInfo, CHART_PALETTE } from "../../chartCard";
+import { CardInfo } from "../../chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
 import StatusPill from "@/components/ui/StatusPill";
 import SegmentedControl, {
@@ -241,7 +241,7 @@ export default function BillsSection({
 
   if (loading) {
     return (
-      <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
+      <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10">
         <div className="flex items-center gap-3 mb-6">
           <div className="flex min-w-0 items-center gap-3">
             <div
@@ -251,10 +251,7 @@ export default function BillsSection({
               <Receipt size={16} style={{ color: "#24bc36" }} />
             </div>
             <div className="min-w-0">
-              <h3
-                className="flex items-center gap-1.5 text-[15px] font-normal"
-                style={{ color: CHART_PALETTE.title }}
-              >
+              <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
                 Transactions / Bills
                 <CardInfo
                   heading="Reading this table"
@@ -262,17 +259,17 @@ export default function BillsSection({
                   body="Bills this employee closed in the date range at the top of the page. Use the status buttons to narrow it, and the search box to find one by invoice number, bill number or customer name."
                 />
               </h3>
-              <p
-                className="mt-0.5 text-xs tracking-wide"
-                style={{ color: CHART_PALETTE.subtitle }}
-              >
+              <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
                 Loading transactions…
               </p>
             </div>
           </div>
         </div>
         <div className="flex items-center justify-center py-12">
-          <Loader2 size={20} className="animate-spin text-[#9aa0a6]" />
+          <Loader2
+            size={20}
+            className="animate-spin text-[#9aa0a6] dark:text-[#9aa6bd]"
+          />
         </div>
       </div>
     );
@@ -280,7 +277,7 @@ export default function BillsSection({
 
   if (error) {
     return (
-      <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
+      <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10">
         <div className="flex items-center gap-3 mb-6">
           <div className="flex min-w-0 items-center gap-3">
             <div
@@ -290,10 +287,7 @@ export default function BillsSection({
               <Receipt size={16} style={{ color: "#24bc36" }} />
             </div>
             <div className="min-w-0">
-              <h3
-                className="flex items-center gap-1.5 text-[15px] font-normal"
-                style={{ color: CHART_PALETTE.title }}
-              >
+              <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
                 Transactions / Bills
                 <CardInfo
                   heading="Reading this table"
@@ -301,20 +295,17 @@ export default function BillsSection({
                   body="Bills this employee closed in the date range at the top of the page. Use the status buttons to narrow it, and the search box to find one by invoice number, bill number or customer name."
                 />
               </h3>
-              <p
-                className="mt-0.5 text-xs tracking-wide"
-                style={{ color: CHART_PALETTE.subtitle }}
-              >
+              <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
                 Unable to load data
               </p>
             </div>
           </div>
         </div>
         <div className="text-center py-8">
-          <p className="text-sm text-[#3c4043]">{error}</p>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">{error}</p>
           <button
             onClick={() => setLoading(true)}
-            className="mt-3 cursor-pointer rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
+            className="mt-3 cursor-pointer rounded-full border border-[#dadce0] bg-white dark:bg-white/5 px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
           >
             Retry
           </button>
@@ -324,7 +315,7 @@ export default function BillsSection({
   }
 
   return (
-    <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5">
+    <div className="w-full rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-3">
           <div className="flex min-w-0 items-center gap-3">
@@ -335,10 +326,7 @@ export default function BillsSection({
               <Receipt size={16} style={{ color: "#28d23c" }} />
             </div>
             <div className="min-w-0">
-              <h3
-                className="flex items-center gap-1.5 text-[15px] font-normal"
-                style={{ color: CHART_PALETTE.title }}
-              >
+              <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
                 Transactions / Bills
                 <CardInfo
                   heading="Reading this table"
@@ -346,10 +334,7 @@ export default function BillsSection({
                   body="Bills this employee closed in the date range at the top of the page. Use the status buttons to narrow it, and the search box to find one by invoice number, bill number or customer name."
                 />
               </h3>
-              <p
-                className="mt-0.5 text-xs tracking-wide"
-                style={{ color: CHART_PALETTE.subtitle }}
-              >
+              <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
                 {`${filteredBills.length} ${filteredBills.length === 1 ? "bill" : "bills"}`}
               </p>
             </div>
@@ -365,7 +350,7 @@ export default function BillsSection({
         <div className="relative w-full sm:w-64">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#7b869b]"
           />
           <input
             type="text"
@@ -375,12 +360,12 @@ export default function BillsSection({
               setSearchQuery(e.target.value);
               setPage(0);
             }}
-            className="h-9 w-full rounded-lg border border-[#dadce0] bg-white pl-9 pr-8 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="h-9 w-full rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 pl-9 pr-8 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/15"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-[#7b869b]"
             >
               <X size={14} />
             </button>
@@ -402,17 +387,19 @@ export default function BillsSection({
 
       {displayBills.length === 0 ? (
         <div className="text-center py-12">
-          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4]">
-            <Receipt size={24} className="text-gray-500" />
+          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+            <Receipt size={24} className="text-gray-500 dark:text-[#9aa6bd]" />
           </div>
-          <p className="text-sm text-[#3c4043]">No transaction data found</p>
-          <p className="mt-1 text-xs text-[#9aa0a6]">
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
+            No transaction data found
+          </p>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             No transactions found for this date range
           </p>
         </div>
       ) : (
         <div className="overflow-x-auto scrollbar-hide">
-          <table className="w-full table-fixed text-sm min-w-[800px]">
+          <table className="w-full table-fixed text-sm min-w-[1010px]">
             {/* `table-fixed` with declared widths: auto layout sized the columns
                 from whatever rows were on screen, so filtering, paging or a longer
                 name moved them. Invoice Name takes the slack. */}
@@ -427,13 +414,7 @@ export default function BillsSection({
               <col className="w-32" />
             </colgroup>
             <thead>
-              <tr
-                className="border-b text-[11px] tracking-wider"
-                style={{
-                  borderColor: CHART_PALETTE.grid,
-                  color: CHART_PALETTE.axis,
-                }}
-              >
+              <tr className="border-b text-[11px] tracking-wider border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
                 <th className="text-left px-4 pb-2.5 pt-1 font-normal w-12">
                   S.No.
                 </th>
@@ -475,62 +456,49 @@ export default function BillsSection({
                   <tr
                     key={bill._id}
                     onClick={() => router.push(`/invoices/${bill.invoiceNo}`)}
-                    className="border-b border-[#e8eaed] last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
+                    className="border-b border-[#e8eaed] last:border-0 cursor-pointer hover:bg-gray-50 transition-colors dark:border-white/10 dark:hover:bg-white/10"
                   >
-                    <td className="py-3 px-4 text-gray-400 text-xs">
+                    <td className="py-3 px-4 text-gray-400 text-xs dark:text-[#7b869b]">
                       {page * pageSize + idx + 1}
                     </td>
                     <td className="py-3 px-4">
-                      <span
-                        className="font-medium text-xs  block"
-                        style={{ color: CHART_PALETTE.title }}
-                      >
+                      <span className="font-medium text-xs  block text-[#3c4043] dark:text-[#e8ecf4]">
                         BILL-{bill.paidBillNo}
                       </span>
                       {stamp && (
-                        <span className="text-[11px] font-normal text-gray-400">
+                        <span className="text-[11px] font-normal text-gray-400 dark:text-[#7b869b]">
                           {timeAgo(stamp.instant)}
                         </span>
                       )}
                     </td>
                     <td className="py-3 px-4">
-                      <span
-                        className="font-medium text-xs"
-                        style={{ color: CHART_PALETTE.title }}
-                      >
+                      <span className="font-medium text-xs text-[#3c4043] dark:text-[#e8ecf4]">
                         ORD-{bill.invoiceNo}
                       </span>
                     </td>
                     <td className="py-3 px-4">
                       {stamp ? (
                         <div>
-                          <span
-                            className=" text-xs tracking-wide block"
-                            style={{ color: CHART_PALETTE.title }}
-                          >
+                          <span className=" text-xs tracking-wide block text-[#3c4043] dark:text-[#e8ecf4]">
                             {stamp.time24}
-                            <span
-                              className="text-[10px] font-normal "
-                              style={{ color: CHART_PALETTE.subtitle }}
-                            >
+                            <span className="text-[10px] font-normal  text-[#9aa0a6] dark:text-[#9aa6bd]">
                               {"  "}[ {stamp.time12} ]
                             </span>
                           </span>
-                          <span
-                            className="text-[11px] "
-                            style={{ color: CHART_PALETTE.subtitle }}
-                          >
+                          <span className="text-[11px]  text-[#9aa0a6] dark:text-[#9aa6bd]">
                             {stamp.date}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-gray-400">—</span>
+                        <span className="text-gray-400 dark:text-[#7b869b]">
+                          —
+                        </span>
                       )}
                     </td>
 
                     <td
-                      className="py-3 px-4 text-[13px]"
-                      style={{ color: CHART_PALETTE.title }}
+                      className="truncate py-3 px-4 text-[13px] text-[#3c4043] dark:text-[#e8ecf4]"
+                      title={bill.ticketName || undefined}
                     >
                       {bill.ticketName || "—"}
                     </td>
@@ -543,10 +511,7 @@ export default function BillsSection({
                       </span>
                     </td>
 
-                    <td
-                      className="py-3 px-4 text-[13px] text-right font-medium "
-                      style={{ color: CHART_PALETTE.title }}
-                    >
+                    <td className="py-3 px-4 text-[13px] text-right font-medium  text-[#3c4043] dark:text-[#e8ecf4]">
                       {formatCurrencySymbol(
                         bill.grandTotal ?? 0,
                         currency.symbol,
@@ -569,21 +534,21 @@ export default function BillsSection({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-white/10">
           <button
             onClick={() => setPage(Math.max(0, page - 1))}
             disabled={page === 0}
             className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
               page === 0
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10"
             }`}
           >
             <ChevronLeft size={14} />
             Previous
           </button>
 
-          <span className="text-xs text-gray-400 font-medium">
+          <span className="text-xs text-gray-400 font-medium dark:text-[#7b869b]">
             Page {page + 1} of {totalPages} · {filteredBills.length}{" "}
             transactions
           </span>
@@ -593,8 +558,8 @@ export default function BillsSection({
             disabled={page >= totalPages - 1}
             className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
               page >= totalPages - 1
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10"
             }`}
           >
             Next

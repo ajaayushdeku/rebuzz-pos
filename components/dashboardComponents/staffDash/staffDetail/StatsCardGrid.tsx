@@ -61,7 +61,7 @@ function LoadMoreButton({
   return (
     <button
       onClick={onClick}
-      className="flex cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
+      className="flex cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white dark:bg-white/5 px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
     >
       <ChevronDown size={12} />
       Show {Math.min(increment, remaining)} more
@@ -101,12 +101,17 @@ export default function StatsCardGrid({
   // ── Error state ────────────────────────────────────────────────────────────
   if (error) {
     return (
-      <div className="mb-6 flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+      <div className="mb-6 flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:bg-red-400/10 dark:border-red-400/25">
         <div className="flex min-w-0 items-center gap-2.5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100">
-            <AlertTriangle size={16} className="text-red-600" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100 dark:bg-red-400/15">
+            <AlertTriangle
+              size={16}
+              className="text-red-600 dark:text-red-400"
+            />
           </div>
-          <p className="truncate text-[13px] text-[#3c4043]">{error}</p>
+          <p className="truncate text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
+            {error}
+          </p>
         </div>
         {onRetry && (
           <button
@@ -123,12 +128,14 @@ export default function StatsCardGrid({
   // ── Empty state ────────────────────────────────────────────────────────────
   if (!overview) {
     return (
-      <div className="mb-6 rounded-2xl border border-[#e3e3e3] bg-white px-4 py-8 text-center">
-        <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-gray-50">
-          <BarChart3 size={20} className="text-gray-300" />
+      <div className="mb-6 rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-4 py-8 text-center dark:border-white/10">
+        <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-gray-50 dark:bg-white/5">
+          <BarChart3 size={20} className="text-gray-300 dark:text-[#6b7588]" />
         </div>
-        <p className="text-sm font-medium text-gray-500">No stats available</p>
-        <p className="mt-1 text-xs text-gray-400">
+        <p className="text-sm font-medium text-gray-500 dark:text-[#9aa6bd]">
+          No stats available
+        </p>
+        <p className="mt-1 text-xs text-gray-400 dark:text-[#7b869b]">
           No activity recorded for this period
         </p>
       </div>
@@ -157,7 +164,7 @@ export default function StatsCardGrid({
     value: (overview.totalOrders ?? 0).toLocaleString(),
     icon: ShoppingCart,
     iconColor: "text-blue-500",
-    bgColor: "bg-blue-50",
+    bgColor: "bg-blue-50 dark:bg-blue-400/10",
     // The only figure in this grid that does not follow the date filter.
     ranged: false,
   };
@@ -172,7 +179,7 @@ export default function StatsCardGrid({
           value: (overview.totalSales ?? 0).toLocaleString(),
           icon: TrendingUp,
           iconColor: "text-indigo-500",
-          bgColor: "bg-indigo-50",
+          bgColor: "bg-indigo-50 dark:bg-indigo-400/10",
           ranged: true,
         },
         {
@@ -181,7 +188,7 @@ export default function StatsCardGrid({
           value: money(overview.totalRevenue ?? 0),
           icon: DollarSign,
           iconColor: "text-green-500",
-          bgColor: "bg-green-50",
+          bgColor: "bg-green-50 dark:bg-emerald-400/10",
           ranged: true,
         },
         ...kpi(overview.totalProfit, {
@@ -190,7 +197,7 @@ export default function StatsCardGrid({
           value: money(overview.totalProfit ?? 0),
           icon: PiggyBank,
           iconColor: "text-emerald-500",
-          bgColor: "bg-emerald-50",
+          bgColor: "bg-emerald-50 dark:bg-emerald-400/10",
           ranged: true,
         }),
         ...kpi(overview.profitMargin, {
@@ -199,7 +206,7 @@ export default function StatsCardGrid({
           value: `${(overview.profitMargin ?? 0).toFixed(2)}%`,
           icon: Percent,
           iconColor: "text-cyan-500",
-          bgColor: "bg-cyan-50",
+          bgColor: "bg-cyan-50 dark:bg-cyan-400/10",
           ranged: true,
         }),
         ...kpi(overview.avgBillValue, {
@@ -208,7 +215,7 @@ export default function StatsCardGrid({
           value: money(overview.avgBillValue ?? 0),
           icon: DollarSign,
           iconColor: "text-amber-500",
-          bgColor: "bg-amber-50",
+          bgColor: "bg-amber-50 dark:bg-amber-400/10",
           ranged: true,
         }),
         {
@@ -217,7 +224,7 @@ export default function StatsCardGrid({
           value: money(totalPayIn),
           icon: ArrowDownLeft,
           iconColor: "text-emerald-500",
-          bgColor: "bg-emerald-50",
+          bgColor: "bg-emerald-50 dark:bg-emerald-400/10",
           ranged: true,
         },
         {
@@ -225,8 +232,8 @@ export default function StatsCardGrid({
           label: "Total Pay Out",
           value: money(totalPayOut),
           icon: ArrowUpRight,
-          iconColor: "text-red-500",
-          bgColor: "bg-red-50",
+          iconColor: "text-red-500 dark:text-red-400",
+          bgColor: "bg-red-50 dark:bg-red-400/10",
           ranged: true,
         },
         ...kpi(overview.totalShiftMinutes, {
@@ -235,7 +242,7 @@ export default function StatsCardGrid({
           value: formatMinutesToHours(overview.totalShiftMinutes ?? 0),
           icon: Timer,
           iconColor: "text-blue-500",
-          bgColor: "bg-blue-50",
+          bgColor: "bg-blue-50 dark:bg-blue-400/10",
           ranged: true,
         }),
         {
@@ -244,7 +251,7 @@ export default function StatsCardGrid({
           value: overview.avgTime ?? "—",
           icon: Clock,
           iconColor: "text-indigo-500",
-          bgColor: "bg-indigo-50",
+          bgColor: "bg-indigo-50 dark:bg-indigo-400/10",
           ranged: true,
         },
         ...kpi(overview.salesPerHour, {
@@ -253,7 +260,7 @@ export default function StatsCardGrid({
           value: money(overview.salesPerHour ?? 0),
           icon: Zap,
           iconColor: "text-violet-500",
-          bgColor: "bg-violet-50",
+          bgColor: "bg-violet-50 dark:bg-violet-400/10",
           ranged: true,
         }),
         ...kpi(overview.billsPerHour, {
@@ -262,7 +269,7 @@ export default function StatsCardGrid({
           value: (overview.billsPerHour ?? 0).toFixed(2),
           icon: TrendingUp,
           iconColor: "text-teal-500",
-          bgColor: "bg-teal-50",
+          bgColor: "bg-teal-50 dark:bg-teal-400/10",
           ranged: true,
         }),
         ...kpi(overview.avgItemsPerBill, {
@@ -271,7 +278,7 @@ export default function StatsCardGrid({
           value: (overview.avgItemsPerBill ?? 0).toFixed(2),
           icon: List,
           iconColor: "text-pink-500",
-          bgColor: "bg-pink-50",
+          bgColor: "bg-pink-50 dark:bg-pink-400/10",
           ranged: true,
         }),
         ...kpi(overview.itemsSold, {
@@ -280,7 +287,7 @@ export default function StatsCardGrid({
           value: (overview.itemsSold ?? 0).toLocaleString(),
           icon: Package,
           iconColor: "text-orange-500",
-          bgColor: "bg-orange-50",
+          bgColor: "bg-orange-50 dark:bg-orange-400/10",
           ranged: true,
         }),
         ...kpi(overview.totalRefunds, {
@@ -288,8 +295,8 @@ export default function StatsCardGrid({
           label: "Total Refunds",
           value: (overview.totalRefunds ?? 0).toLocaleString(),
           icon: RefreshCcw,
-          iconColor: "text-red-500",
-          bgColor: "bg-red-50",
+          iconColor: "text-red-500 dark:text-red-400",
+          bgColor: "bg-red-50 dark:bg-red-400/10",
           ranged: true,
         }),
         ...kpi(overview.refundedAmount, {
@@ -298,7 +305,7 @@ export default function StatsCardGrid({
           value: money(overview.refundedAmount ?? 0),
           icon: Scale,
           iconColor: "text-rose-500",
-          bgColor: "bg-rose-50",
+          bgColor: "bg-rose-50 dark:bg-rose-400/10",
           ranged: true,
         }),
       ];
@@ -337,7 +344,7 @@ export default function StatsCardGrid({
               }
               // The undo of "Show more", so it carries the negative colour
               // rather than looking like a second way forward.
-              className="flex cursor-pointer flex-row items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11px] text-rose-700 transition-colors hover:bg-rose-100"
+              className="flex cursor-pointer flex-row items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11px] text-rose-700 transition-colors hover:bg-rose-100 dark:bg-rose-400/10 dark:border-rose-400/25 dark:text-rose-300"
             >
               <ChevronUp size={12} />
               Hide

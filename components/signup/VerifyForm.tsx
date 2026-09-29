@@ -262,7 +262,7 @@ export default function VerifyForm() {
                     onChange={(e) => handleChange(i, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(i, e)}
                     disabled={isVerifying}
-                    className={`h-12 w-10 md:h-14 md:w-12 text-center text-lg md:text-xl font-bold rounded-xl border-2 bg-white outline-none transition-all
+                    className={`h-12 w-10 md:h-14 md:w-12 text-center text-lg md:text-xl font-bold rounded-xl border-2 bg-white dark:bg-white/5 outline-none transition-all
                     ${isVerifying ? "opacity-50 cursor-not-allowed" : ""}
                     ${digit ? "border-blue-600 text-blue-900 dark:text-[#a8c4ee]" : "border-gray-300 text-gray-800 dark:text-[#e8ecf4] dark:border-white/15"}
                     focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10`}

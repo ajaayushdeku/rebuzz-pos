@@ -1,5 +1,5 @@
 "use client";
-import { CHART_PALETTE, ChartCard, ChartTooltipBox } from "../chartCard";
+import { ChartCard, ChartTooltipBox } from "../chartCard";
 import { ChartPie } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import type {
@@ -106,19 +106,16 @@ export default function CustomerSegmentationChart({
       {/* Pie Chart + Legend */}
       {isEmpty ? (
         <div className="flex h-40 flex-col items-center justify-center gap-2 text-center sm:h-60">
-          <div
-            className="flex h-16 w-16 items-center justify-center rounded-full"
-            style={{ backgroundColor: CHART_PALETTE.hover }}
-          >
-            <ChartPie size={24} style={{ color: CHART_PALETTE.subtitle }} />
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+            <ChartPie
+              size={24}
+              className="text-[#9aa0a6] dark:text-[#9aa6bd]"
+            />
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
             No customer activity
           </p>
-          <p
-            className="max-w-[15rem] text-xs"
-            style={{ color: CHART_PALETTE.subtitle }}
-          >
+          <p className="max-w-[15rem] text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             Segments appear once customers place orders in the last 15 days.
           </p>
         </div>
@@ -150,16 +147,10 @@ export default function CustomerSegmentationChart({
             </ResponsiveContainer>
 
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-              <p
-                className="text-xl font-semibold leading-none tracking-tight tabular-nums sm:text-2xl"
-                style={{ color: CHART_PALETTE.title }}
-              >
+              <p className="text-xl font-semibold leading-none tracking-tight tabular-nums sm:text-2xl text-[#3c4043] dark:text-[#e8ecf4]">
                 {total.toLocaleString()}
               </p>
-              <p
-                className="mt-1 text-[11px]"
-                style={{ color: CHART_PALETTE.subtitle }}
-              >
+              <p className="mt-1 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                 Customers
               </p>
             </div>
@@ -168,34 +159,22 @@ export default function CustomerSegmentationChart({
           {/* Legend — aligned rows rather than fixed-width centred blocks, so
               the counts line up in a column and long names can't push the
               value out of the card. */}
-          <div
-            className="mt-4 grid grid-cols-1 gap-x-6 gap-y-2 border-t pt-3 sm:grid-cols-2"
-            style={{ borderColor: CHART_PALETTE.grid }}
-          >
+          <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-2 border-t pt-3 sm:grid-cols-2 border-[#e8eaed] dark:border-white/10">
             {coloredData.map((entry) => (
               <div key={entry.name} className="flex items-center gap-2">
                 <span
                   className="h-2.5 w-2.5 shrink-0 rounded-full"
                   style={{ backgroundColor: entry.color }}
                 />
-                <span
-                  className="min-w-0 flex-1 truncate text-[13px]"
-                  style={{ color: CHART_PALETTE.title }}
-                >
+                <span className="min-w-0 flex-1 truncate text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                   {entry.name}
                 </span>
                 <span className="flex flex-row items-center">
                   {" "}
-                  <span
-                    className="shrink-0 text-[13px] font-medium tabular-nums"
-                    style={{ color: CHART_PALETTE.title }}
-                  >
+                  <span className="shrink-0 text-[13px] font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                     {entry.value.toLocaleString()}
                   </span>
-                  <span
-                    className="w-10 shrink-0 text-right text-[11px] tabular-nums"
-                    style={{ color: CHART_PALETTE.subtitle }}
-                  >
+                  <span className="w-10 shrink-0 text-right text-[11px] tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
                     [ {entry.share.toFixed(0)}% ]
                   </span>
                 </span>

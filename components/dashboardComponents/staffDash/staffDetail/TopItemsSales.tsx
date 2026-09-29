@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, TrendingUp, AlertTriangle } from "lucide-react";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
-import { CardInfo, CHART_PALETTE, ChartPager } from "../../chartCard";
+import { CardInfo, ChartPager } from "../../chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -156,7 +156,7 @@ const ROW_GRID =
   "grid grid-cols-[1.25rem_5.5rem_1fr_2.75rem] items-center gap-3 md:grid-cols-[1.25rem_7rem_1fr_4rem]";
 
 const CARD =
-  "w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5";
+  "w-full rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] px-6 pb-5 pt-5 dark:border-white/10";
 
 /** Header is identical in all four states; it used to be pasted into each. */
 function Header({
@@ -177,10 +177,7 @@ function Header({
           <TrendingUp size={16} style={{ color: "#059669" }} />
         </div>
         <div className="min-w-0">
-          <h3
-            className="flex items-center gap-1.5 text-[15px] font-normal"
-            style={{ color: CHART_PALETTE.title }}
-          >
+          <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
             Top Items Sold
             <CardInfo
               heading="Reading this card"
@@ -189,10 +186,7 @@ function Header({
               body="Units this employee sold of each product over the date range at the top of the page, best seller first. Each bar is measured against the top item in the whole list, so bars stay comparable as you page through. Units in the corner counts every item in the list, not just this page."
             />
           </h3>
-          <p
-            className="mt-0.5 text-xs tracking-wide"
-            style={{ color: CHART_PALETTE.subtitle }}
-          >
+          <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
             {subHeader}
           </p>
         </div>
@@ -327,8 +321,7 @@ export default function TopItemsSales({
         <div className="flex items-center justify-center py-12">
           <Loader2
             size={20}
-            className="animate-spin"
-            style={{ color: CHART_PALETTE.subtitle }}
+            className="animate-spin text-[#9aa0a6] dark:text-[#9aa6bd]"
           />
         </div>
       </div>
@@ -341,15 +334,13 @@ export default function TopItemsSales({
       <div className={CARD}>
         <Header subHeader="Unable to load data" />
         <div className="py-8 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 dark:bg-red-400/10">
             <AlertTriangle size={22} className="text-red-400" />
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
-            {error}
-          </p>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">{error}</p>
           <button
             onClick={() => setReload((n) => n + 1)}
-            className="mt-3 cursor-pointer rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
+            className="mt-3 cursor-pointer rounded-full border border-[#dadce0] bg-white dark:bg-white/5 px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
           >
             Retry
           </button>
@@ -364,16 +355,16 @@ export default function TopItemsSales({
       <div className={CARD}>
         <Header subHeader="Units sold per item – fast vs slow movers" />
         <div className="py-8 text-center">
-          <div
-            className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full"
-            style={{ backgroundColor: CHART_PALETTE.hover }}
-          >
-            <TrendingUp size={24} style={{ color: CHART_PALETTE.subtitle }} />
+          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+            <TrendingUp
+              size={24}
+              className="text-[#9aa0a6] dark:text-[#9aa6bd]"
+            />
           </div>
-          <p className="text-sm" style={{ color: CHART_PALETTE.title }}>
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
             No sales data available
           </p>
-          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             No top items sold data for this period
           </p>
         </div>
@@ -421,16 +412,10 @@ export default function TopItemsSales({
 
         {/* The list is paged, so the total says how much it covers. */}
         <div className="flex shrink-0 flex-col items-end">
-          <span
-            className="text-[11px]"
-            style={{ color: CHART_PALETTE.subtitle }}
-          >
+          <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
             Units
           </span>
-          <p
-            className="mt-0.5 text-base font-semibold leading-tight tracking-tight tabular-nums"
-            style={{ color: CHART_PALETTE.title }}
-          >
+          <p className="mt-0.5 text-base font-semibold leading-tight tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
             {totalUnits.toLocaleString()}
           </p>
         </div>
@@ -443,25 +428,18 @@ export default function TopItemsSales({
           // the data ever repeats an id again.
           <div key={safePage * PAGE_SIZE + idx} className={ROW_GRID}>
             {/* Rank continues across pages — page 2 starts at 9, not 1. */}
-            <span
-              className="text-[11px] tabular-nums"
-              style={{ color: CHART_PALETTE.subtitle }}
-            >
+            <span className="text-[11px] tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
               {safePage * PAGE_SIZE + idx + 1}
             </span>
 
             <span
-              className="min-w-0 truncate text-[13px] leading-tight"
-              style={{ color: CHART_PALETTE.title }}
+              className="min-w-0 truncate text-[13px] leading-tight text-[#3c4043] dark:text-[#e8ecf4]"
               title={row.name}
             >
               {row.name}
             </span>
 
-            <div
-              className="relative h-4 overflow-hidden rounded-full"
-              style={{ backgroundColor: CHART_PALETTE.grid }}
-            >
+            <div className="relative h-4 overflow-hidden rounded-full bg-[#e8eaed] dark:bg-white/10">
               <div
                 className="h-4 rounded-full transition-all duration-700"
                 style={{
@@ -472,15 +450,12 @@ export default function TopItemsSales({
             </div>
 
             <div className="text-right">
-              <span
-                className="text-[13px] font-medium tabular-nums"
-                style={{ color: CHART_PALETTE.title }}
-              >
+              <span className="text-[13px] font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                 {row.quantity.toLocaleString()}
               </span>
               {/* Only the analytics endpoint carries revenue. */}
               {/* {row.revenue !== undefined && (
-                <span className="block truncate text-[10px] tabular-nums text-gray-400">
+                <span className="block truncate text-[10px] tabular-nums text-gray-400 dark:text-[#7b869b]">
                   {formatCurrencySymbol(
                     row.revenue,
                     currency.symbol,
@@ -501,8 +476,7 @@ export default function TopItemsSales({
           {axisTicks.map((tick, i) => (
             <span
               key={`${tick}-${i}`}
-              className="text-xs tabular-nums"
-              style={{ color: CHART_PALETTE.axis }}
+              className="text-xs tabular-nums text-[#5f6368] dark:text-[#a9b4c7]"
             >
               {tick}
             </span>

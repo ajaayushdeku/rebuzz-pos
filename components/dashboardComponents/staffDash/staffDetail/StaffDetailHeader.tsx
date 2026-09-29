@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { initials } from "@/lib/utils";
 import { DateRangeFilter } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
-import { CHART_PALETTE } from "../../chartCard";
 
 interface StaffDetailHeaderProps {
   employeeId: string;
@@ -49,8 +48,7 @@ function Meta({
 }) {
   return (
     <span
-      className="flex items-center gap-1.5"
-      style={{ color: CHART_PALETTE.subtitle }}
+      className="flex items-center gap-1.5 text-[#9aa0a6] dark:text-[#9aa6bd]"
       title={title ?? value}
     >
       <Icon size={11} className="shrink-0" />
@@ -74,13 +72,13 @@ export default function StaffDetailHeader({
   const RoleIcon = roleStyle.icon;
 
   return (
-    <div className="mb-6 flex flex-col gap-4 rounded-2xl bg-white  sm:flex-row sm:items-center sm:justify-between">
+    <div className="mb-6 flex flex-col gap-4 rounded-2xl bg-white dark:bg-[#0F1420]  sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-center gap-3">
         <button
           onClick={() => router.push("/dashboard/employee")}
           aria-label="Back to employees"
           title="Back to employees"
-          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#dadce0] bg-white text-[#5f6368] transition-colors hover:bg-[#f8f9fa] hover:text-[#3c4043]"
+          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#dadce0] bg-white dark:bg-white/5 text-[#5f6368] transition-colors hover:bg-[#f8f9fa] hover:text-[#3c4043] dark:border-white/15 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"
         >
           <ArrowLeft size={16} />
         </button>
@@ -106,10 +104,7 @@ export default function StaffDetailHeader({
 
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <h1
-              className="truncate  text-lg font-semibold tracking-tight md:text-2xl"
-              style={{ color: CHART_PALETTE.title }}
-            >
+            <h1 className="truncate  text-lg font-semibold tracking-tight md:text-2xl text-[#3c4043] dark:text-[#e8ecf4]">
               {name || "Staff"}
             </h1>
             {role && (

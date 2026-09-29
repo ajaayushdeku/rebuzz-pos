@@ -27,7 +27,7 @@ export type StatSpec = {
 };
 
 export const STAT_CARD =
-  "rounded-2xl border border-[#e3e3e3] bg-white px-5 py-4";
+  "rounded-2xl border border-[#e3e3e3] bg-white px-5 py-4 dark:border-white/10 dark:bg-[#161d2e]";
 
 export default function StatCard({
   label,
@@ -40,7 +40,9 @@ export default function StatCard({
   return (
     <div className={STAT_CARD}>
       <div className="flex items-center justify-between gap-2">
-        <span className="truncate text-[13px] text-[#5f6368]">{label}</span>
+        <span className="truncate text-[13px] text-[#5f6368] dark:text-[#9aa6bd]">
+          {label}
+        </span>
         {/* The square takes the icon's colour, so `border-current/20` frames
             it in the same hue — as the card icons do. */}
         <div
@@ -52,7 +54,7 @@ export default function StatCard({
 
       {/* Tag rides the value row so it costs no extra height. */}
       <div className="mt-3 flex items-baseline justify-between gap-2">
-        <p className="truncate text-xl font-semibold tracking-tight tabular-nums text-[#3c4043] md:text-[22px]">
+        <p className="truncate text-xl font-semibold tracking-tight tabular-nums text-[#3c4043] md:text-[22px] dark:text-[#e8ecf4]">
           {value}
         </p>
         {ranged && <RangeTag />}
@@ -66,10 +68,10 @@ export function StatCardSkeleton() {
   return (
     <div className={`${STAT_CARD} animate-pulse`}>
       <div className="flex items-center justify-between gap-2">
-        <div className="h-3.5 w-20 rounded bg-gray-100" />
-        <div className="h-8 w-8 shrink-0 rounded-lg bg-gray-100" />
+        <div className="h-3.5 w-20 rounded bg-gray-100 dark:bg-white/10" />
+        <div className="h-8 w-8 shrink-0 rounded-lg bg-gray-100 dark:bg-white/10" />
       </div>
-      <div className="mt-3 h-6 w-24 rounded bg-gray-100" />
+      <div className="mt-3 h-6 w-24 rounded bg-gray-100 dark:bg-white/10" />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -25,10 +25,10 @@ import {
 import SampleDataBadge from "@/components/ui/sampledatabadge";
 import StaffFilterModal from "./StaffFilterModal";
 import {
-  AXIS_TICK,
   CHART_PALETTE,
   ChartCard,
   ChartTooltipBox,
+  getAxisTick,
   yAxisTitle,
 } from "../chartCard";
 import RangeBadge from "@/components/ui/RangeBadge";
@@ -131,7 +131,7 @@ const CustomLegend = ({
           className="h-2.5 w-2.5 shrink-0 rounded-full"
           style={{ backgroundColor: color }}
         />
-        <span className="text-[13px]" style={{ color: CHART_PALETTE.title }}>
+        <span className="text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
           {key}
         </span>
       </span>
@@ -298,6 +298,27 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
     }
   };
 
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
+
   return (
     <ChartCard
       icon={TrendingUp}
@@ -323,16 +344,10 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
               onChange={handlePresetChange}
               className="w-[210px]"
             />
-            <div
-              className="mx-1 h-6 w-px"
-              style={{ backgroundColor: CHART_PALETTE.control }}
-            />
+            <div className="mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" />
             {/* Custom From / To hour inputs */}
             <div className="flex items-center gap-1.5">
-              <label
-                className="whitespace-nowrap text-xs"
-                style={{ color: CHART_PALETTE.subtitle }}
-              >
+              <label className="whitespace-nowrap text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                 From
               </label>
               <input
@@ -341,12 +356,9 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
                 max={23}
                 value={fromHour}
                 onChange={(e) => handleFromChange(Number(e.target.value))}
-                className="w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-2.5 text-xs text-[#3c4043] tabular-nums focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-14 rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 dark:text-[#e8ecf4] px-2 py-2.5 text-xs text-[#3c4043] tabular-nums focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-500 dark:border-white/15 dark:text-[#e8ecf4]"
               />
-              <label
-                className="whitespace-nowrap text-xs"
-                style={{ color: CHART_PALETTE.subtitle }}
-              >
+              <label className="whitespace-nowrap text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                 To
               </label>
               <input
@@ -355,20 +367,17 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
                 max={23}
                 value={toHour}
                 onChange={(e) => handleToChange(Number(e.target.value))}
-                className="w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-2.5 text-xs text-[#3c4043] tabular-nums focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-14 rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 dark:text-[#e8ecf4] px-2 py-2.5 text-xs text-[#3c4043] tabular-nums focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-500 dark:border-white/15 dark:text-[#e8ecf4]"
               />
             </div>
 
-            <div
-              className="mx-1 h-6 w-px"
-              style={{ backgroundColor: CHART_PALETTE.control }}
-            />
+            <div className="mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" />
 
             {/* Employee filter */}
             {!isEmpty && allStaffNames.length > 0 && (
               <button
                 onClick={() => setModalOpen(true)}
-                className="flex shrink-0 cursor-pointer flex-row items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-2.5 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
+                className="flex shrink-0 cursor-pointer flex-row items-center gap-1.5 dark:bg-white/5 rounded-full border border-[#dadce0] bg-white px-2.5 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
               >
                 <SlidersHorizontal size={12} />
                 Filter employee
@@ -387,7 +396,7 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
           </div>
 
           {rangeError && (
-            <p className="text-xs" style={{ color: CHART_PALETTE.bad }}>
+            <p className="text-xs text-[#d93025] dark:text-[#f87171]">
               {rangeError}
             </p>
           )}
@@ -424,20 +433,20 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
         {canScrollLeft && (
           <button
             onClick={() => scroll("left")}
-            className="absolute left-0 top-1/2 z-10 -translate-y-1/2 cursor-pointer rounded-full border border-[#dadce0] bg-white/90 p-2 shadow-sm transition-colors hover:bg-white"
+            className="absolute left-0 top-1/2 z-10 -translate-y-1/2 cursor-pointer dark:bg-[#1b2436] rounded-full border border-[#dadce0] bg-white/90 p-2 shadow-sm transition-colors hover:bg-white dark:border-white/15"
             aria-label="Scroll left"
           >
-            <ChevronLeft className="w-4 h-4 text-gray-600" />
+            <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-[#a9b4c7]" />
           </button>
         )}
 
         {canScrollRight && (
           <button
             onClick={() => scroll("right")}
-            className="absolute right-0 top-1/2 z-10 -translate-y-1/2 cursor-pointer rounded-full border border-[#dadce0] bg-white/90 p-2 shadow-sm transition-colors hover:bg-white"
+            className="absolute right-0 top-1/2 z-10 -translate-y-1/2 cursor-pointer dark:bg-[#1b2436] rounded-full border border-[#dadce0] bg-white/90 p-2 shadow-sm transition-colors hover:bg-white dark:border-white/15"
             aria-label="Scroll right"
           >
-            <ChevronRight className="w-4 h-4 text-gray-600" />
+            <ChevronRight className="w-4 h-4 text-gray-600 dark:text-[#a9b4c7]" />
           </button>
         )}
 
@@ -454,7 +463,7 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={flatData}
-                margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+                margin={{ top: 10, right: 20, left: 10, bottom: 10 }}
               >
                 <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
                 <XAxis
@@ -476,11 +485,14 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
                       x={x}
                       y={Number(y) + 8}
                       textAnchor="middle"
-                      fill={CHART_PALETTE.axis}
+                      className="fill-[#5f6368] dark:fill-[#9aa6bd]"
                       fontSize={12}
                     >
                       {payload.value}
-                      <tspan fontSize={10} fill={CHART_PALETTE.subtitle}>
+                      <tspan
+                        fontSize={10}
+                        className="fill-[#9aa0a6] dark:fill-[#7b869b]"
+                      >
                         {" "}
                         [{toAmPm(payload.value)}]
                       </tspan>
@@ -493,7 +505,7 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
                   tick={AXIS_TICK}
                   ticks={yTicks}
                   domain={[0, paddedMax]}
-                  width={70}
+                  width={80}
                   label={yAxisTitle("Bills taken")}
                 />
                 <Tooltip content={<CustomTooltip />} />
