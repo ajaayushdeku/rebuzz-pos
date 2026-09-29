@@ -20,7 +20,7 @@ type LoginFormValues = {
 
 /** The input style shared by both fields, so they always agree. */
 const INPUT_CLASS =
-  "h-12 w-full rounded-xl border border-gray-300 bg-white px-4 text-[15px] text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10";
+  "h-12 w-full rounded-xl border border-gray-300 bg-white dark:bg-white/5 px-4 text-[15px] text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 dark:text-[#e8ecf4] dark:border-white/15 dark:placeholder:text-[#7b869b]";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -90,7 +90,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-white font-sans">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-white font-sans dark:bg-[#0f1420]">
       <header className="relative flex flex-col items-center justify-center gap-4  px-6  sm:px-10">
         <div className="mt-2">
           {" "}
@@ -110,7 +110,7 @@ const LoginPage = () => {
             priority
           />
           <span className="text-2xl font-bold tracking-tight">
-            <span style={{ color: "#244074" }}>Re</span>
+            <span className="text-[#244074] dark:text-[#7ba2e3]">Re</span>
             <span style={{ color: "#E26924" }}>Buzz</span>
           </span>
         </Link>
@@ -118,13 +118,13 @@ const LoginPage = () => {
 
       <main className=" relative flex flex-1 items-center justify-center px-6">
         <div className="w-full max-w-xl">
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600">
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600 dark:text-[#7ba2e3]">
             Welcome back
           </p>
-          <h1 className="text-2xl font-bold leading-tight tracking-tight text-gray-900 sm:text-3xl">
+          <h1 className="text-2xl font-bold leading-tight tracking-tight text-gray-900 sm:text-3xl dark:text-[#e8ecf4]">
             Log in and continue selling
           </h1>
-          <p className="mt-1.5 text-sm leading-relaxed text-gray-500">
+          <p className="mt-1.5 text-sm leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
             Enter your details to pick up where you left off. Your customers are
             waiting for you.
           </p>
@@ -134,7 +134,7 @@ const LoginPage = () => {
             <div>
               <label
                 htmlFor="email"
-                className="mb-1.5 block text-[13px] font-semibold text-gray-700"
+                className="mb-1.5 block text-[13px] font-semibold text-gray-700 dark:text-[#c3ccdc]"
               >
                 Email
               </label>
@@ -152,7 +152,7 @@ const LoginPage = () => {
                 })}
               />
               {errors.email && (
-                <p className="mt-1 text-xs text-red-500">
+                <p className="mt-1 text-xs text-red-500 dark:text-red-400">
                   {errors.email.message}
                 </p>
               )}
@@ -161,7 +161,7 @@ const LoginPage = () => {
             {/* Password */}
             <div>
               <label
-                className="mb-1.5 block text-[13px] font-semibold text-gray-700"
+                className="mb-1.5 block text-[13px] font-semibold text-gray-700 dark:text-[#c3ccdc]"
                 htmlFor="password"
               >
                 Password
@@ -179,20 +179,20 @@ const LoginPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-blue-600 text-xs font-semibold hover:underline cursor-pointer"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-blue-600 text-xs font-semibold hover:underline cursor-pointer dark:text-[#7ba2e3]"
                 >
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1 text-xs text-red-500">
+                <p className="mt-1 text-xs text-red-500 dark:text-red-400">
                   {errors.password.message}
                 </p>
               )}
               <div className="mt-1">
                 <Link
                   href="/forgot-password"
-                  className="text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                  className="text-xs text-gray-500 hover:text-blue-600 transition-colors dark:text-[#9aa6bd] dark:hover:text-[#a8c4ee]"
                 >
                   Forgot your password?
                 </Link>
@@ -201,8 +201,8 @@ const LoginPage = () => {
 
             {/* Server error */}
             {serverError && (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
-                <p className="text-[13px] leading-snug text-red-600">
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-400/25 dark:bg-red-400/10">
+                <p className="text-[13px] leading-snug text-red-600 dark:text-red-300">
                   {serverError}
                 </p>
               </div>
@@ -221,11 +221,11 @@ const LoginPage = () => {
           </form>
 
           <div className="mt-4 text-center">
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-[#9aa6bd]">
               New to ReBuzz?{" "}
               <Link
                 href="/signup"
-                className="font-semibold text-blue-600 transition-colors hover:text-blue-700"
+                className="font-semibold text-blue-600 transition-colors hover:text-blue-700 dark:text-[#7ba2e3] dark:hover:text-[#a8c4ee]"
               >
                 Create an account
               </Link>
@@ -235,7 +235,7 @@ const LoginPage = () => {
           <div className="mt-3 text-center">
             <Link
               href="/"
-              className="inline-flex items-center gap-1 text-xs text-gray-400 transition-colors hover:text-gray-600"
+              className="inline-flex items-center gap-1 text-xs text-gray-400 transition-colors hover:text-gray-600 dark:text-[#7b869b] dark:hover:text-[#c3ccdc]"
             >
               <ArrowLeft className="h-3 w-3" />
               Back to home
@@ -243,8 +243,8 @@ const LoginPage = () => {
           </div>
 
           {/* Demo button — for development only */}
-          <div className="mt-2 border-t border-dashed border-gray-200 pt-5">
-            <p className="mb-2.5 text-center text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+          <div className="mt-2 border-t border-dashed border-gray-200 pt-5 dark:border-white/15">
+            <p className="mb-2.5 text-center text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-[#7b869b]">
               Quick demo access
             </p>
             <Button
@@ -256,7 +256,7 @@ const LoginPage = () => {
                 })
               }
               disabled={isLoading}
-              className="h-11 w-full cursor-pointer rounded-full border border-dashed border-[2px] border-rose-400 bg-rose-50/60 text-[13px] font-medium text-rose-700 transition-all duration-200 hover:border-blue-400 hover:bg-blue-100 hover:text-cyan-800 disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-11 w-full cursor-pointer rounded-full border border-dashed border-[2px] border-rose-400 bg-rose-50/60 text-[13px] font-medium text-rose-700 transition-all duration-200 hover:border-blue-400 hover:bg-blue-100 hover:text-cyan-800 disabled:cursor-not-allowed disabled:opacity-50 dark:text-rose-300 dark:bg-rose-400/10 dark:hover:bg-blue-400/20 dark:hover:text-cyan-300"
             >
               <span className="flex items-center justify-center gap-2">
                 {isLoading ? (

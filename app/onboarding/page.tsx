@@ -126,9 +126,9 @@ const OnBoarding = () => {
   const isLastStep = step === TOTAL_STEPS;
 
   return (
-    <div className="min-h-screen flex font-sans bg-slate-100">
+    <div className="min-h-screen flex font-sans bg-slate-100 dark:bg-[#0f1420]">
       {/* Left: Form Panel */}
-      <div className="flex flex-col justify-center px-16 py-12 bg-white w-full max-w-140 shadow-[4px_0_40px_rgba(0,0,0,0.06)]">
+      <div className="flex flex-col justify-center px-16 py-12 bg-white dark:bg-[#161d2e] w-full max-w-140 shadow-[4px_0_40px_rgba(0,0,0,0.06)]">
         <ProgressBar current={step} />
 
         {/* Animated Step Content */}
@@ -191,11 +191,11 @@ const OnBoarding = () => {
 
         {step === 1 && (
           <>
-            <p className="text-center text-slate-400 text-xs mt-5">
+            <p className="text-center text-slate-400 text-xs mt-5 dark:text-[#7b869b]">
               Already have an account?{" "}
               <a
                 href="#"
-                className="text-indigo-500 font-semibold no-underline hover:underline"
+                className="text-indigo-500 font-semibold no-underline hover:underline dark:text-indigo-400"
               >
                 Sign in
               </a>

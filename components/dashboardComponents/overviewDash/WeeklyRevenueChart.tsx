@@ -16,14 +16,15 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { CustomTooltipProps, DataPoint } from "@/lib/types/chart";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import {
-  AXIS_TICK,
   BAR_RADIUS,
   CHART_PALETTE,
   ChartCard,
   ChartTooltipBox,
+  getAxisTick,
   yAxisTitle,
 } from "@/components/dashboardComponents/chartCard";
 import { ChartColumnBig } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface WeeklyRevenueChartProps {
   data: DataPoint[];
@@ -84,6 +85,27 @@ const WeeklyRevenueChart = ({ data, peakDay }: WeeklyRevenueChartProps) => {
   const { currency } = useCurrency();
   const formatYAxis = (value: number): string =>
     formatCompactCurrency(value, currency.symbol, currency.locale);
+
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
 
   return (
     <ChartCard

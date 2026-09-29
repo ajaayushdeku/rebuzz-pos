@@ -19,18 +19,19 @@ import { mockYearOverYearData } from "@/lib/mockData/mock-growthtrackerdata";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import {
-  AXIS_TICK,
   BAR_RADIUS,
   CHART_PALETTE,
   ChartCard,
   ChartLegend,
   ChartTooltipBox,
+  getAxisTick,
   yAxisTitle,
 } from "@/components/dashboardComponents/chartCard";
 import { ChartColumnBig } from "lucide-react";
+import { useEffect, useState } from "react";
 
 /** The two years' colours, shared by the bars, legend and hover box. */
-const LAST_YEAR_COLOR = CHART_PALETTE.control;
+const LAST_YEAR_COLOR = CHART_PALETTE.subtitle;
 const THIS_YEAR_COLOR = CHART_PALETTE.blue;
 // Types
 
@@ -116,7 +117,7 @@ const CustomTooltip = ({
       footer={
         growth !== null ? (
           <div className="flex items-center justify-between gap-4">
-            <span className="text-xs" style={{ color: CHART_PALETTE.axis }}>
+            <span className="text-xs text-[#5f6368] dark:text-[#a9b4c7]">
               YoY Growth
             </span>
             <span
@@ -151,6 +152,27 @@ export default function YearOverYearChart({ data }: YearOverYearProps) {
 
   const yTicks = getYAxisTicks(displayData);
   const yMax = yTicks[yTicks.length - 1] * 1.05;
+
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
 
   return (
     <ChartCard

@@ -37,19 +37,23 @@ const STATUS_BADGE: Record<
 > = {
   no_target: {
     label: "Set a goal",
-    className: "bg-gray-50 text-gray-500 border-gray-200",
+    className:
+      "bg-gray-50 text-gray-500 border-gray-200 dark:bg-white/5 dark:border-white/15 dark:text-[#9aa6bd]",
   },
   behind: {
     label: "Behind target",
-    className: "bg-red-50 text-red-600 border-red-200",
+    className:
+      "bg-red-50 text-red-600 border-red-200 dark:bg-red-400/10 dark:border-red-400/25 dark:text-red-300",
   },
   on_track: {
     label: "On track",
-    className: "bg-blue-50 text-blue-700 border-blue-200",
+    className:
+      "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-400/10 dark:border-blue-400/25 dark:text-[#a8c4ee]",
   },
   surpassed: {
     label: "Surpassed",
-    className: "bg-green-50 text-green-700 border-green-200",
+    className:
+      "bg-green-50 text-green-700 border-green-200 dark:bg-emerald-400/10 dark:border-emerald-400/25 dark:text-emerald-300",
   },
 };
 
@@ -174,7 +178,7 @@ export default function TargetTrackerCard() {
 
       {/* Goal label + badge */}
       <div className="mb-2 flex items-center justify-between gap-2">
-        <p className="text-[11px]" style={{ color: CHART_PALETTE.axis }}>
+        <p className="text-[11px] text-[#5f6368] dark:text-[#a9b4c7]">
           {PERIOD_LABEL[activePeriod]}
         </p>
         {!isLoading && !isError && (
@@ -188,28 +192,22 @@ export default function TargetTrackerCard() {
 
       {/* Actual value */}
       {isLoading ? (
-        <div className="mb-4 h-9 w-32 animate-pulse rounded-md bg-[#f1f3f4]" />
+        <div className="mb-4 h-9 w-32 animate-pulse rounded-md bg-[#f1f3f4] dark:bg-white/10" />
       ) : (
-        <p
-          className="mb-4 text-3xl font-normal tracking-wide"
-          style={{ color: CHART_PALETTE.title }}
-        >
+        <p className="mb-4 text-3xl font-normal tracking-wide text-[#3c4043] dark:text-[#e8ecf4]">
           {fmt(achieved)}
         </p>
       )}
 
       {isError && (
-        <p className="-mt-3 mb-3 text-[11px] text-red-500">
+        <p className="-mt-3 mb-3 text-[11px] text-red-500 dark:text-red-400">
           Couldn&apos;t load target progress. Please try again.
         </p>
       )}
 
       {/* Progress bar + editable goal */}
       <div className="mb-3">
-        <div
-          className="mb-1.5 flex items-center justify-between gap-2 text-xs"
-          style={{ color: CHART_PALETTE.axis }}
-        >
+        <div className="mb-1.5 flex items-center justify-between gap-2 text-xs text-[#5f6368] dark:text-[#a9b4c7]">
           <span className="shrink-0 font-medium">
             {hasTarget ? `${pct}% achieved` : "No goal set"}
           </span>
@@ -219,7 +217,7 @@ export default function TargetTrackerCard() {
             <span className="flex items-center gap-1.5">
               Goal:
               <div className="relative">
-                <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-[#7b869b]">
                   {currency.symbol}
                 </span>
                 <input
@@ -234,8 +232,7 @@ export default function TargetTrackerCard() {
                     if (e.key === "Escape") cancelEdit();
                   }}
                   placeholder="0"
-                  className="w-24 rounded-md border py-1 pl-7 pr-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
-                  style={{ borderColor: CHART_PALETTE.control }}
+                  className="w-24 rounded-md border py-1 pl-7 pr-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50 border-[#dadce0] dark:border-white/15"
                 />
               </div>
               <button
@@ -243,8 +240,7 @@ export default function TargetTrackerCard() {
                 onClick={commitEdit}
                 disabled={saving}
                 title="Save target"
-                className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                style={{ backgroundColor: CHART_PALETTE.blue }}
+                className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-white transition-opacity hover:opacity-90 disabled:opacity-50 bg-[#1a73e8] dark:bg-[#7ba2e3]"
               >
                 {saving ? (
                   <Loader2 size={13} className="animate-spin" />
@@ -257,11 +253,7 @@ export default function TargetTrackerCard() {
                 onClick={cancelEdit}
                 disabled={saving}
                 title="Cancel"
-                className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border transition-colors hover:bg-[#f1f3f4] disabled:opacity-50"
-                style={{
-                  borderColor: CHART_PALETTE.control,
-                  color: CHART_PALETTE.axis,
-                }}
+                className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border transition-colors hover:bg-[#f1f3f4] disabled:opacity-50 border-[#dadce0] dark:border-white/15 text-[#5f6368] dark:text-[#a9b4c7]"
               >
                 <X size={13} />
               </button>
@@ -272,7 +264,7 @@ export default function TargetTrackerCard() {
               onClick={startEdit}
               disabled={isLoading || isError}
               title="Click to edit target"
-              className="inline-flex items-center gap-1 tracking-wide transition-colors hover:text-[#3c4043] disabled:opacity-50"
+              className="inline-flex items-center gap-1 tracking-wide transition-colors hover:text-[#3c4043] disabled:opacity-50 dark:hover:text-[#e8ecf4]"
             >
               {hasTarget ? `Goal: ${fmt(target)}` : "Set a goal"}
               <Pencil size={11} className="opacity-50" />
@@ -282,7 +274,7 @@ export default function TargetTrackerCard() {
 
         {/* % bar — always shown when a goal exists, including in edit mode */}
         {hasTarget && (
-          <div className="h-2 overflow-hidden rounded-full bg-[#e8eaed]">
+          <div className="h-2 overflow-hidden rounded-full bg-[#e8eaed] dark:bg-white/10">
             <div
               className="h-full rounded-full transition-all duration-500"
               style={{ width: `${pct}%`, backgroundColor: STATUS_BAR[status] }}
@@ -292,25 +284,19 @@ export default function TargetTrackerCard() {
       </div>
 
       {/* Remaining / progress detail */}
-      <div
-        className="flex items-center justify-between border-t pt-3 text-xs"
-        style={{ borderColor: CHART_PALETTE.grid }}
-      >
-        <span style={{ color: CHART_PALETTE.axis }}>
+      <div className="flex items-center justify-between border-t pt-3 text-xs border-[#e8eaed] dark:border-white/10">
+        <span className="text-[#5f6368] dark:text-[#a9b4c7]">
           {!hasTarget ? (
-            <span style={{ color: CHART_PALETTE.subtitle }}>
+            <span className="text-[#9aa0a6] dark:text-[#9aa6bd]">
               Set a goal to start tracking progress
             </span>
           ) : status === "surpassed" ? (
-            <span className="font-semibold text-green-600">
+            <span className="font-semibold text-green-600 dark:text-emerald-400">
               Target surpassed 🎉
             </span>
           ) : (
             <>
-              <span
-                className="font-semibold tracking-wide"
-                style={{ color: CHART_PALETTE.title }}
-              >
+              <span className="font-semibold tracking-wide text-[#3c4043] dark:text-[#e8ecf4]">
                 {fmt(remaining)}
               </span>{" "}
               remaining to hit target
@@ -318,10 +304,7 @@ export default function TargetTrackerCard() {
           )}
         </span>
         {hasTarget && (
-          <span
-            className="font-medium tracking-wide"
-            style={{ color: CHART_PALETTE.subtitle }}
-          >
+          <span className="font-medium tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
             {fmt(achieved)} of {fmt(target)}
           </span>
         )}

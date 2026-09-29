@@ -9,7 +9,7 @@ import {
   formatVariantName,
 } from "@/utils/helper";
 import RangeBadge from "@/components/ui/RangeBadge";
-import { CHART_PALETTE, ChartCard } from "../chartCard";
+import { ChartCard } from "../chartCard";
 
 type TimePeriod = "morning" | "lunch" | "afternoon" | "evening";
 
@@ -222,15 +222,12 @@ export default function TimeWiseProductAnalysis({
       className="select-none"
     >
       {isLoading ? (
-        <div
-          className="flex items-center justify-center py-10"
-          style={{ color: CHART_PALETTE.axis }}
-        >
+        <div className="flex items-center justify-center py-10 text-[#5f6368] dark:text-[#a9b4c7]">
           <Loader2 size={18} className="animate-spin" />
           <span className="ml-2 text-xs">Loading analysis...</span>
         </div>
       ) : isError ? (
-        <div className="py-10 text-center text-xs text-red-600">
+        <div className="py-10 text-center text-xs text-red-600 dark:text-red-400">
           Couldn&apos;t load time-wise analysis. Please try again.
         </div>
       ) : (
@@ -240,29 +237,23 @@ export default function TimeWiseProductAnalysis({
           {data.map((item) => (
             <div
               key={item.period}
-              className="rounded-xl border border-gray-100 p-4 transition-colors hover:bg-gray-50"
+              className="rounded-xl border border-gray-100 p-4 transition-colors hover:bg-gray-50 dark:hover:bg-white/10 dark:border-white/10"
             >
               {/* Text in the page's type: 11px grey labels, the title colour
                   for names, 12px secondary lines. */}
-              <p className="text-[11px]" style={{ color: CHART_PALETTE.axis }}>
+              <p className="text-[11px] text-[#5f6368] dark:text-[#a9b4c7]">
                 {item.title}
               </p>
 
-              <h4
-                className="mt-2.5 text-sm font-medium"
-                style={{ color: CHART_PALETTE.title }}
-              >
+              <h4 className="mt-2.5 text-sm font-medium text-[#3c4043] dark:text-[#e8ecf4]">
                 {item.productName}
               </h4>
 
-              <div className="mt-4 flex items-center justify-between border-t border-gray-50 pt-3">
-                <span
-                  className="text-xs tabular-nums"
-                  style={{ color: CHART_PALETTE.axis }}
-                >
+              <div className="mt-4 flex items-center justify-between border-t border-gray-50 pt-3 dark:border-white/5">
+                <span className="text-xs tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
                   {formatNumber(item.unitsSold, currency.locale)} units sold
                 </span>
-                <span className="text-xs font-medium tabular-nums text-green-600">
+                <span className="text-xs font-medium tabular-nums text-green-600 dark:text-emerald-400">
                   {fmt(item.revenue)}
                 </span>
               </div>

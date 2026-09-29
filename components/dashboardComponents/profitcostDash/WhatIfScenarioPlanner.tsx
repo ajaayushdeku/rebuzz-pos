@@ -15,7 +15,7 @@ import { formatCurrencySymbol } from "@/utils/helper";
 import RangeBadge from "@/components/ui/RangeBadge";
 import ExpenseBadge from "@/components/ui/ExpenseBadge";
 import type { ScenarioBaseline } from "@/services/dashboardServices/apiProfitCost";
-import { CHART_PALETTE, ChartCard } from "../chartCard";
+import { ChartCard } from "../chartCard";
 
 interface ScenarioAdjustments {
   priceAdjustment: number;
@@ -189,11 +189,7 @@ export default function WhatIfScenarioPlanner({
             <button
               type="button"
               onClick={() => setAdjustments(DEFAULTS)}
-              className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-full border bg-white px-2 py-0.5 text-[11px] transition-colors hover:bg-[#f8f9fa]"
-              style={{
-                borderColor: CHART_PALETTE.control,
-                color: CHART_PALETTE.title,
-              }}
+              className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-full border bg-white px-2 py-0.5 text-[11px] transition-colors hover:bg-[#f8f9fa] border-[#dadce0] dark:border-white/15 text-[#3c4043] dark:text-[#e8ecf4] dark:bg-white/5 dark:hover:bg-white/10"
             >
               <RotateCcw size={11} />
               Reset
@@ -204,13 +200,7 @@ export default function WhatIfScenarioPlanner({
       className="h-full"
     >
       {!hasData ? (
-        <p
-          className="rounded-xl border border-dashed px-4 py-10 text-center text-xs"
-          style={{
-            borderColor: CHART_PALETTE.control,
-            color: CHART_PALETTE.subtitle,
-          }}
-        >
+        <p className="rounded-xl border border-dashed px-4 py-10 text-center text-xs border-[#dadce0] dark:border-white/15 text-[#9aa0a6] dark:text-[#9aa6bd]">
           No sales in this period, so there is nothing to model yet.
         </p>
       ) : (
@@ -218,7 +208,9 @@ export default function WhatIfScenarioPlanner({
           {/* Outcome */}
           <div className="min-w-0 lg:w-[460px] lg:shrink-0 xl:w-[520px]">
             <div className="rounded-xl bg-slate-900 p-5 text-white">
-              <p className="text-[11px] text-slate-400">Projected net profit</p>
+              <p className="text-[11px] text-slate-400 dark:text-[#7b869b]">
+                Projected net profit
+              </p>
               <div className="mt-1 flex flex-wrap items-baseline gap-2">
                 <p className="text-[28px] font-semibold leading-none tracking-tight tabular-nums">
                   {money(projected.profit)}
@@ -244,7 +236,7 @@ export default function WhatIfScenarioPlanner({
 
               <div className="mt-5 grid grid-cols-2 gap-4 border-t border-white/10 pt-4">
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-slate-500">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-[#9aa6bd]">
                     Margin
                   </p>
                   <p className="mt-0.5 text-[15px] font-semibold tabular-nums">
@@ -262,7 +254,7 @@ export default function WhatIfScenarioPlanner({
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-slate-500">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-[#9aa6bd]">
                     Orders
                   </p>
                   <p className="mt-0.5 text-[15px] font-semibold tabular-nums">
@@ -275,13 +267,17 @@ export default function WhatIfScenarioPlanner({
                   can be checked rather than trusted. */}
               <div className="mt-4 space-y-1.5 border-t border-white/10 pt-4 text-[11px]">
                 <div className="flex justify-between gap-3">
-                  <span className="text-slate-400">{revenueLabel}</span>
+                  <span className="text-slate-400 dark:text-[#7b869b]">
+                    {revenueLabel}
+                  </span>
                   <span className="tabular-nums text-slate-200">
                     {money(projected.revenue)}
                   </span>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <span className="text-slate-400">Cost of goods</span>
+                  <span className="text-slate-400 dark:text-[#7b869b]">
+                    Cost of goods
+                  </span>
                   <span className="tabular-nums text-slate-200">
                     −{money(projected.cogs)}
                   </span>
@@ -290,14 +286,18 @@ export default function WhatIfScenarioPlanner({
                     charges none is not asked to read a row of zeroes. */}
                 {baseline.tax > 0 && (
                   <div className="flex justify-between gap-3">
-                    <span className="text-slate-400">Tax</span>
+                    <span className="text-slate-400 dark:text-[#7b869b]">
+                      Tax
+                    </span>
                     <span className="tabular-nums text-slate-200">
                       −{money(projected.tax)}
                     </span>
                   </div>
                 )}
                 <div className="flex justify-between gap-3">
-                  <span className="text-slate-400">Other costs (Expenses)</span>
+                  <span className="text-slate-400 dark:text-[#7b869b]">
+                    Other costs (Expenses)
+                  </span>
                   <span className="tabular-nums text-slate-200">
                     −{money(otherCosts)}
                   </span>
@@ -312,7 +312,7 @@ export default function WhatIfScenarioPlanner({
             </div>
 
             {baseline.missing.length > 0 && (
-              <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800">
+              <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800 dark:text-amber-200 dark:bg-amber-400/10">
                 <Info className="mt-px h-3.5 w-3.5 shrink-0" />
                 <span>
                   Some figures could not be loaded (
@@ -340,20 +340,17 @@ export default function WhatIfScenarioPlanner({
                   className={isLocked ? "opacity-50" : undefined}
                 >
                   <div className="mb-1 flex items-baseline justify-between gap-3">
-                    <span
-                      className="flex items-center gap-1.5 text-[13px] font-medium"
-                      style={{ color: CHART_PALETTE.title }}
-                    >
+                    <span className="flex items-center gap-1.5 text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
                       {isLocked && <Lock size={11} className="shrink-0" />}
                       {slider.label}
                     </span>
                     <span
                       className={`text-[13px] font-semibold tabular-nums ${
                         good
-                          ? "text-green-600"
+                          ? "text-green-600 dark:text-emerald-400"
                           : bad
-                            ? "text-red-600"
-                            : "text-gray-400"
+                            ? "text-red-600 dark:text-red-400"
+                            : "text-gray-400 dark:text-[#7b869b]"
                       }`}
                     >
                       {value > 0 ? "+" : ""}
@@ -361,10 +358,7 @@ export default function WhatIfScenarioPlanner({
                     </span>
                   </div>
 
-                  <p
-                    className="mb-2 text-[11px] leading-relaxed"
-                    style={{ color: CHART_PALETTE.subtitle }}
-                  >
+                  <p className="mb-2 text-[11px] leading-relaxed text-[#9aa0a6] dark:text-[#9aa6bd]">
                     {slider.locked ?? slider.hint}
                   </p>
 
@@ -377,13 +371,10 @@ export default function WhatIfScenarioPlanner({
                     disabled={isLocked}
                     aria-label={slider.label}
                     onChange={(e) => set(slider.key, Number(e.target.value))}
-                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-[#e8eaed] accent-violet-600 disabled:cursor-not-allowed"
+                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-[#e8eaed] accent-violet-600 disabled:cursor-not-allowed dark:bg-white/10"
                   />
 
-                  <div
-                    className="mt-1 flex justify-between text-[10px] tabular-nums"
-                    style={{ color: CHART_PALETTE.subtitle }}
-                  >
+                  <div className="mt-1 flex justify-between text-[10px] tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
                     <span>{slider.min}%</span>
                     <span>0</span>
                     <span>+{slider.max}%</span>

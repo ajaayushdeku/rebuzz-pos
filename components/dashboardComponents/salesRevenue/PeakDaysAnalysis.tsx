@@ -13,14 +13,15 @@ import {
 } from "recharts";
 import {
   BAR_RADIUS,
-  AXIS_TICK,
   CHART_PALETTE,
   ChartCard,
   ChartLegend,
   ChartTooltipBox,
   niceTicks,
   yAxisTitle,
+  getAxisTick,
 } from "../chartCard";
+import { useEffect, useState } from "react";
 
 export interface PeakDayData {
   day: string;
@@ -76,6 +77,27 @@ const PeakDaysAnalysis = ({ data }: PeakDayDataProps) => {
   // At least 0–4, so a quiet (or empty) range still counts in whole numbers
   // instead of stretching a fraction of one over the full height.
   const ticks = niceTicks(0, Math.max(maxVal, 4));
+
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
 
   return (
     <ChartCard
@@ -146,7 +168,7 @@ const PeakDaysAnalysis = ({ data }: PeakDayDataProps) => {
             </BarChart>
           </ResponsiveContainer>
           {/* // ) : (
-          //   <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+          //   <div className="flex flex-col items-center justify-center py-16 text-gray-400 dark:text-[#7b869b]">
           //     <p className="text-sm">No data for the selected period</p>
           //     <p className="text-xs mt-1">Try adjusting the date range above</p>
           //   </div>

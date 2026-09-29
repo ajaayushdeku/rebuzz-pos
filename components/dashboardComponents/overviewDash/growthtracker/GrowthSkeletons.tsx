@@ -13,8 +13,10 @@ function HeaderSkeleton({
 }) {
   return (
     <div className="space-y-2">
-      <div className={`h-4 ${titleWidth} bg-gray-200 rounded`} />
-      <div className={`h-3 ${subWidth} bg-gray-100 rounded`} />
+      <div
+        className={`h-4 ${titleWidth} bg-gray-200 rounded dark:bg-white/15`}
+      />
+      <div className={`h-3 ${subWidth} bg-gray-100 rounded dark:bg-white/10`} />
     </div>
   );
 }
@@ -28,7 +30,7 @@ function ChartBodySkeleton({ height = "h-[300px]" }: { height?: string }) {
       {BAR_HEIGHTS.map((h, i) => (
         <div
           key={i}
-          className="flex-1 bg-gray-100 rounded-t"
+          className="flex-1 bg-gray-100 rounded-t dark:bg-white/10"
           style={{ height: `${h}%` }}
         />
       ))}
@@ -42,8 +44,8 @@ function LegendSkeleton({ items = 2 }: { items?: number }) {
     <div className="flex items-center justify-center gap-6 mt-3">
       {Array.from({ length: items }).map((_, i) => (
         <div key={i} className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-gray-200" />
-          <div className="h-3 w-16 bg-gray-100 rounded" />
+          <div className="w-3 h-3 rounded-full bg-gray-200 dark:bg-white/15" />
+          <div className="h-3 w-16 bg-gray-100 rounded dark:bg-white/10" />
         </div>
       ))}
     </div>
@@ -62,24 +64,24 @@ export function GrowthStatsSkeleton({ count = 6 }: { count?: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="bg-surface-card border-surface-border w-full rounded-xl border p-4 shadow-sm md:p-5"
+          className="bg-surface-card border-surface-border w-full rounded-xl border p-4 shadow-sm md:p-5 dark:bg-[#161d2e] dark:border-white/10"
         >
           {/* Label + icon */}
           <div className="flex items-center justify-between gap-2">
-            <div className="h-3.5 w-24 bg-gray-200 rounded" />
-            <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-gray-200 shrink-0" />
+            <div className="h-3.5 w-24 bg-gray-200 rounded dark:bg-white/15" />
+            <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-gray-200 shrink-0 dark:bg-white/15" />
           </div>
 
           {/* Value + month chip */}
           <div className="mt-3 md:mt-4 flex items-baseline gap-1.5">
-            <div className="h-6 w-28 bg-gray-200 rounded" />
-            <div className="h-4 w-9 bg-gray-100 rounded-md shrink-0" />
+            <div className="h-6 w-28 bg-gray-200 rounded dark:bg-white/15" />
+            <div className="h-4 w-9 bg-gray-100 rounded-md shrink-0 dark:bg-white/10" />
           </div>
 
           {/* Previous month + badge */}
-          <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-gray-100 pt-2.5">
-            <div className="h-3 w-20 bg-gray-100 rounded" />
-            <div className="h-5 w-14 bg-gray-200 rounded-full shrink-0" />
+          <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-gray-100 pt-2.5 dark:border-white/10">
+            <div className="h-3 w-20 bg-gray-100 rounded dark:bg-white/10" />
+            <div className="h-5 w-14 bg-gray-200 rounded-full shrink-0 dark:bg-white/15" />
           </div>
         </div>
       ))}
@@ -93,14 +95,14 @@ export function GrowthStatsSkeleton({ count = 6 }: { count?: number }) {
  */
 export function TargetVsActualSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full animate-pulse">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full animate-pulse dark:bg-[#161d2e] dark:border-white/10">
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-full bg-gray-200 shrink-0" />
+          <div className="w-5 h-5 rounded-full bg-gray-200 shrink-0 dark:bg-white/15" />
           <HeaderSkeleton titleWidth="w-44" subWidth="w-56" />
         </div>
         {/* "Set Targets" button */}
-        <div className="h-7 w-24 bg-gray-200 rounded-xl shrink-0" />
+        <div className="h-7 w-24 bg-gray-200 rounded-xl shrink-0 dark:bg-white/15" />
       </div>
 
       <ChartBodySkeleton />
@@ -112,7 +114,7 @@ export function TargetVsActualSkeleton() {
 /** Matches <YearOverYearChart /> — header, 300px bar chart, legend. */
 export function YearOverYearSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full animate-pulse">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 w-full animate-pulse dark:bg-[#161d2e] dark:border-white/10">
       <div className="mb-2">
         <HeaderSkeleton titleWidth="w-48" subWidth="w-64" />
       </div>
@@ -129,23 +131,23 @@ export function YearOverYearSkeleton() {
  */
 export function GrowthByCategorySkeleton({ rows = 4 }: { rows?: number }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6 animate-pulse">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-6 animate-pulse dark:bg-[#161d2e] dark:border-white/10">
       <HeaderSkeleton titleWidth="w-44" subWidth="w-72" />
 
       <div className="space-y-4">
         {Array.from({ length: rows }).map((_, i) => (
           <div key={i} className="space-y-1.5">
             <div className="flex items-center justify-between gap-3">
-              <div className="h-3 w-28 bg-gray-200 rounded" />
-              <div className="h-5 w-16 bg-gray-200 rounded-full shrink-0" />
+              <div className="h-3 w-28 bg-gray-200 rounded dark:bg-white/15" />
+              <div className="h-5 w-16 bg-gray-200 rounded-full shrink-0 dark:bg-white/15" />
             </div>
-            <div className="w-full h-2.5 bg-gray-100 rounded-full" />
+            <div className="w-full h-2.5 bg-gray-100 rounded-full dark:bg-white/10" />
           </div>
         ))}
       </div>
 
       {/* Load More button */}
-      <div className="h-8 w-32 bg-gray-100 rounded-lg mx-auto" />
+      <div className="h-8 w-32 bg-gray-100 rounded-lg mx-auto dark:bg-white/10" />
     </div>
   );
 }

@@ -15,7 +15,7 @@ import {
 } from "@/lib/mockData/mock-refundBreakDown";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
 import { ChartPie } from "lucide-react";
-import { CHART_PALETTE, ChartCard, ChartTooltipBox } from "../chartCard";
+import { ChartCard, ChartTooltipBox } from "../chartCard";
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -120,7 +120,7 @@ export default function RefundBreakdown() {
             className="pointer-events-none absolute flex flex-col items-center justify-center"
             style={{ zIndex: 1 }}
           >
-            <span className="text-[11px]" style={{ color: CHART_PALETTE.axis }}>
+            <span className="text-[11px] text-[#5f6368] dark:text-[#a9b4c7]">
               Total Lost
             </span>
 
@@ -137,31 +137,21 @@ export default function RefundBreakdown() {
           {data.map((item) => (
             <div
               key={item.id}
-              className="flex items-center justify-between border-b py-2.5 last:border-0"
-              style={{ borderColor: CHART_PALETTE.grid }}
+              className="flex items-center justify-between border-b py-2.5 last:border-0 border-[#e8eaed] dark:border-white/10"
             >
               <div className="flex items-center gap-2.5">
                 <span
                   className="h-2.5 w-2.5 shrink-0 rounded-full"
                   style={{ backgroundColor: item.color }}
                 />
-                <span
-                  className="text-[13px]"
-                  style={{ color: CHART_PALETTE.title }}
-                >
+                <span className="text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                   {item.reason}
                 </span>
-                <span
-                  className="text-xs tabular-nums"
-                  style={{ color: CHART_PALETTE.subtitle }}
-                >
+                <span className="text-xs tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
                   ({item.refunds})
                 </span>
               </div>
-              <span
-                className="text-[13px] font-medium tabular-nums"
-                style={{ color: CHART_PALETTE.title }}
-              >
+              <span className="text-[13px] font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                 {formatCurrencySymbol(
                   item.amount,
                   currency.symbol,

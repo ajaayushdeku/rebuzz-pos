@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   ComposedChart,
@@ -19,11 +19,11 @@ import { CustomTooltipProps } from "@/lib/types/chart";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import {
-  AXIS_TICK,
   CHART_PALETTE,
   ChartCard,
   ChartLegend,
   ChartTooltipBox,
+  getAxisTick,
   yAxisTitle,
 } from "@/components/dashboardComponents/chartCard";
 import { fetchTargets } from "@/services/apiTarget.client";
@@ -91,14 +91,15 @@ const CustomTooltip = ({
       footer={
         variance !== null ? (
           <div className="flex items-center justify-between gap-4">
-            <span className="text-xs" style={{ color: CHART_PALETTE.axis }}>
+            <span className="text-xs text-[#5f6368] dark:text-[#a9b4c7]">
               Variance
             </span>
             <span
-              className="text-xs font-medium tabular-nums"
-              style={{
-                color: variance >= 0 ? CHART_PALETTE.good : CHART_PALETTE.bad,
-              }}
+              className={`text-xs font-medium tabular-nums ${
+                variance >= 0
+                  ? "text-[#1e8e3e] dark:text-[#10b981]"
+                  : "text-[#d93025] dark:text-[#f87171]"
+              }`}
             >
               {variance >= 0 ? "+" : ""}
               {formatCurrencySymbol(variance, currency.symbol, currency.locale)}
@@ -173,6 +174,27 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
   //   );
   // }
 
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
+
   return (
     <>
       <ChartCard
@@ -187,7 +209,7 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
         controls={
           <button
             onClick={() => setModalOpen(true)}
-            className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
+            className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:bg-white/10 dark:hover:text-white"
           >
             <SquarePen size={11} />
             Set Targets
@@ -196,78 +218,92 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
       >
         {isEmpty && <SampleDataBadge />}
 
-        <ResponsiveContainer width="100%" height={300}>
-          <ComposedChart
-            data={chartData}
-            margin={{ top: 10, right: 20, left: 10, bottom: 10 }}
-          >
-            <defs>
-              <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={ACTUAL_COLOR} stopOpacity={0.2} />
-                <stop
-                  offset="100%"
-                  stopColor={ACTUAL_COLOR}
-                  stopOpacity={0.02}
-                />
-              </linearGradient>
-            </defs>
+        {/* The hover cursor is a hairline in `control` grey: faint on white,
+            but a bright streak on the dark card. Scoped here rather than added
+            to the card, which would also flatten Hourly Sales' violet cursor. */}
+        <div className="dark:[&_.recharts-tooltip-cursor]:stroke-[#3d4657]">
+          <ResponsiveContainer width="100%" height={300}>
+            <ComposedChart
+              data={chartData}
+              margin={{ top: 10, right: 20, left: 10, bottom: 10 }}
+            >
+              <defs>
+                <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="0%"
+                    stopColor={ACTUAL_COLOR}
+                    stopOpacity={0.2}
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor={ACTUAL_COLOR}
+                    stopOpacity={0.02}
+                  />
+                </linearGradient>
+              </defs>
 
-            <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
-            <XAxis
-              dataKey="month"
-              axisLine={false}
-              tickLine={false}
-              tick={AXIS_TICK}
-              dy={8}
-            />
-            <YAxis
-              tickFormatter={formatYAxis}
-              axisLine={false}
-              tickLine={false}
-              tick={AXIS_TICK}
-              ticks={yTicks}
-              domain={[0, yMax]}
-              width={80}
-              label={yAxisTitle("Revenue")}
-            />
-            <Tooltip
-              content={<CustomTooltip currency={currency} />}
-              cursor={{ stroke: CHART_PALETTE.control, strokeWidth: 1 }}
-            />
-            <Legend content={<CustomLegend />} />
+              <CartesianGrid vertical={false} stroke={CHART_PALETTE.grid} />
+              <XAxis
+                dataKey="month"
+                axisLine={false}
+                tickLine={false}
+                tick={AXIS_TICK}
+                dy={8}
+              />
+              <YAxis
+                tickFormatter={formatYAxis}
+                axisLine={false}
+                tickLine={false}
+                tick={AXIS_TICK}
+                ticks={yTicks}
+                domain={[0, yMax]}
+                width={80}
+                label={yAxisTitle("Revenue")}
+              />
+              <Tooltip
+                content={<CustomTooltip currency={currency} />}
+                cursor={{ stroke: CHART_PALETTE.control, strokeWidth: 1 }}
+              />
+              <Legend content={<CustomLegend />} />
 
-            <Area
-              type="monotone"
-              dataKey="actual"
-              name="Actual"
-              stroke={ACTUAL_COLOR}
-              strokeWidth={2.5}
-              fill="url(#actualGradient)"
-              dot={{ r: 4, fill: ACTUAL_COLOR, stroke: "#fff", strokeWidth: 2 }}
-              activeDot={{
-                r: 6,
-                fill: ACTUAL_COLOR,
-                stroke: "#fff",
-                strokeWidth: 2,
-              }}
-            />
-            <Line
-              type="monotone"
-              dataKey="target"
-              name="Target"
-              stroke={TARGET_COLOR}
-              strokeWidth={2}
-              strokeDasharray="6 4"
-              dot={false}
-              activeDot={{
-                r: 4,
-                fill: TARGET_COLOR,
-                stroke: "#fff",
-                strokeWidth: 2,
-              }}
-            />
-          </ComposedChart>
-        </ResponsiveContainer>
+              <Area
+                type="monotone"
+                dataKey="actual"
+                name="Actual"
+                stroke={ACTUAL_COLOR}
+                strokeWidth={2.5}
+                fill="url(#actualGradient)"
+                dot={{
+                  r: 4,
+                  fill: ACTUAL_COLOR,
+                  stroke: "#fff",
+                  strokeWidth: 2,
+                }}
+                activeDot={{
+                  r: 6,
+                  fill: ACTUAL_COLOR,
+                  stroke: "#fff",
+                  strokeWidth: 2,
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="target"
+                name="Target"
+                stroke={TARGET_COLOR}
+                strokeWidth={2}
+                strokeDasharray="6 4"
+                dot={false}
+                activeDot={{
+                  r: 4,
+                  fill: TARGET_COLOR,
+                  stroke: "#fff",
+                  strokeWidth: 2,
+                }}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
       </ChartCard>
 
       <SetTargetsModal

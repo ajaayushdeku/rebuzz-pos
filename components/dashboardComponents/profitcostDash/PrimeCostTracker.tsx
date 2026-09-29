@@ -90,21 +90,23 @@ export default function PrimeCostTracker() {
 
       {/* Current Prime Cost */}
       <div className="mb-2">
-        <p className="mb-1 text-[11px]" style={{ color: CHART_PALETTE.axis }}>
+        <p className="mb-1 text-[11px] text-[#5f6368] dark:text-[#a9b4c7]">
           Current Prime Cost
         </p>
         <div className="flex items-baseline gap-2">
-          <p className="text-3xl font-semibold tracking-tight text-green-600">
+          <p className="text-3xl font-semibold tracking-tight text-green-600 dark:text-emerald-400">
             {avgPrimeCost.toFixed(1)}%
           </p>
-          <p className="text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             Target: 55%-65%
           </p>
         </div>
       </div>
 
       {/* Chart */}
-      <div className="h-56 md:h-64">
+      {/* The hover cursor is a `control`-grey hairline: faint on white,
+          a bright streak on the dark card. */}
+      <div className="h-56 md:h-64 dark:[&_.recharts-tooltip-cursor]:stroke-[#3d4657]">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}

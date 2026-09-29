@@ -41,8 +41,8 @@ function StepRail({ current }: { current: 1 | 2 }) {
                   isDone
                     ? "border-blue-600 bg-blue-600 text-white"
                     : isCurrent
-                      ? "border-blue-600 bg-white text-blue-600 ring-4 ring-blue-600/10"
-                      : "border-gray-200 bg-white text-gray-400"
+                      ? "border-blue-600 bg-white dark:bg-[#161d2e] text-blue-600 ring-4 ring-blue-600/10 dark:text-[#7ba2e3]"
+                      : "border-gray-200 bg-white dark:bg-[#161d2e] text-gray-400 dark:text-[#7b869b] dark:border-white/15"
                 }`}
               >
                 {isDone ? <Check size={13} strokeWidth={3} /> : step}
@@ -50,7 +50,9 @@ function StepRail({ current }: { current: 1 | 2 }) {
 
               <span
                 className={`text-[10px] font-medium whitespace-nowrap ${
-                  isCurrent || isDone ? "text-gray-700" : "text-gray-400"
+                  isCurrent || isDone
+                    ? "text-gray-700 dark:text-[#c3ccdc]"
+                    : "text-gray-400 dark:text-[#7b869b]"
                 }`}
               >
                 {label}
@@ -184,7 +186,7 @@ export default function VerifyForm() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-white font-sans">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-white font-sans dark:bg-[#0f1420]">
       <header className="relative flex flex-col items-center justify-center gap-4  pb-4 px-6  sm:px-10">
         <div className="mt-2">
           {" "}
@@ -204,7 +206,7 @@ export default function VerifyForm() {
             priority
           />
           <span className="text-2xl font-bold tracking-tight">
-            <span style={{ color: "#244074" }}>Re</span>
+            <span className="text-[#244074] dark:text-[#7ba2e3]">Re</span>
             <span style={{ color: "#E26924" }}>Buzz</span>
           </span>
         </Link>
@@ -217,27 +219,30 @@ export default function VerifyForm() {
               <span className="flex h-6 w-6 items-center justify-center ">
                 <MailCheck
                   size={16}
-                  className="text-blue-600"
+                  className="text-blue-600 dark:text-[#7ba2e3]"
                   strokeWidth={2.5}
                 />
               </span>
-              <span className=" text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600">
+              <span className=" text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600 dark:text-[#7ba2e3]">
                 Step 1 of 2 &middot; Create account
               </span>
             </span>
-            <h1 className="text-2xl font-bold leading-tight tracking-tight text-gray-900 sm:text-3xl">
+            <h1 className="text-2xl font-bold leading-tight tracking-tight text-gray-900 sm:text-3xl dark:text-[#e8ecf4]">
               Check your inbox
             </h1>
-            <p className="mt-1.5 text-sm leading-relaxed text-gray-500">
+            <p className="mt-1.5 text-sm leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
               Enter the {CODE_LENGTH}-digit code we sent to{" "}
-              <span className="font-semibold text-gray-700">{email}</span>.
+              <span className="font-semibold text-gray-700 dark:text-[#c3ccdc]">
+                {email}
+              </span>
+              .
             </p>
           </div>
 
           <div className="mt-4 space-y-4">
             {/* OTP Inputs */}
             <div>
-              <p className="mb-1.5 block text-[13px] font-semibold text-gray-700">
+              <p className="mb-1.5 block text-[13px] font-semibold text-gray-700 dark:text-[#c3ccdc]">
                 Verification Code
               </p>
               <div
@@ -259,7 +264,7 @@ export default function VerifyForm() {
                     disabled={isVerifying}
                     className={`h-12 w-10 md:h-14 md:w-12 text-center text-lg md:text-xl font-bold rounded-xl border-2 bg-white outline-none transition-all
                     ${isVerifying ? "opacity-50 cursor-not-allowed" : ""}
-                    ${digit ? "border-blue-600 text-blue-900" : "border-gray-300 text-gray-800"}
+                    ${digit ? "border-blue-600 text-blue-900 dark:text-[#a8c4ee]" : "border-gray-300 text-gray-800 dark:text-[#e8ecf4] dark:border-white/15"}
                     focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10`}
                   />
                 ))}
@@ -267,13 +272,13 @@ export default function VerifyForm() {
             </div>
 
             {/* Expiry Timer */}
-            <p className="text-center text-xs text-gray-500">
+            <p className="text-center text-xs text-gray-500 dark:text-[#9aa6bd]">
               Code expires in{" "}
               <span
                 className={
                   secondsLeft <= 60
-                    ? "text-red-500 font-semibold"
-                    : "font-medium text-gray-700"
+                    ? "text-red-500 font-semibold dark:text-red-400"
+                    : "font-medium text-gray-700 dark:text-[#c3ccdc]"
                 }
               >
                 {minutes}:{seconds.toString().padStart(2, "0")}
@@ -281,15 +286,17 @@ export default function VerifyForm() {
             </p>
 
             {/* Spam folder notice */}
-            <p className="text-xs text-gray-400 text-center">
+            <p className="text-xs text-gray-400 text-center dark:text-[#7b869b]">
               Didn&lsquo;t receive the code? Check your{" "}
-              <span className="font-medium text-gray-500">spam folder</span> or
-              try again.
+              <span className="font-medium text-gray-500 dark:text-[#9aa6bd]">
+                spam folder
+              </span>{" "}
+              or try again.
             </p>
 
             {serverError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-                <p className="text-xs text-red-600 text-center font-medium">
+              <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 dark:border-red-400/25 dark:bg-red-400/10">
+                <p className="text-xs text-red-600 text-center font-medium dark:text-red-300">
                   {serverError}
                 </p>
               </div>
@@ -310,7 +317,7 @@ export default function VerifyForm() {
             <div className="text-center">
               <Link
                 href="/signup"
-                className="text-xs font-medium text-gray-500 transition-colors hover:text-blue-700"
+                className="text-xs font-medium text-gray-500 transition-colors hover:text-blue-700 dark:text-[#9aa6bd] dark:hover:text-[#a8c4ee]"
               >
                 Back to sign up
               </Link>

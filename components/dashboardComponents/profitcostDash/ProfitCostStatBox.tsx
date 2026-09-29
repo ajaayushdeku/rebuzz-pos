@@ -4,7 +4,6 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { StatBoxProps } from "../StatBox";
 import { formatCurrencySymbol } from "@/utils/helper";
 import RangeTag from "@/components/ui/RangeTag";
-import { CHART_PALETTE } from "../chartCard";
 
 /**
  * A stat tile in the ChartCard look: hairline border, no shadow, a bordered
@@ -33,15 +32,9 @@ export default function StatBox({
   const Icon = ICON_MAP[iconName];
 
   return (
-    <div
-      className="rounded-2xl border bg-white px-5 py-4"
-      style={{ borderColor: CHART_PALETTE.border }}
-    >
+    <div className="rounded-2xl border bg-white px-5 py-4 border-[#e3e3e3] dark:border-white/10 dark:bg-white/5">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <span
-          className="truncate text-[13px] font-medium"
-          style={{ color: CHART_PALETTE.axis }}
-        >
+        <span className="truncate text-[13px] font-medium text-[#5f6368] dark:text-[#a9b4c7]">
           {label}
         </span>
         {/* The tile takes the icon's colour, so `border-current/20` gives a
@@ -56,10 +49,7 @@ export default function StatBox({
           the top row's width — the same placement as the inventory summary
           tiles, so a range-scoped figure looks the same wherever it appears. */}
       <div className="flex items-baseline justify-between gap-2">
-        <p
-          className="truncate text-2xl font-semibold tracking-tight tabular-nums"
-          style={{ color: CHART_PALETTE.title }}
-        >
+        <p className="truncate text-2xl font-semibold tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
           {formatValue(value)}
         </p>
         <RangeTag />

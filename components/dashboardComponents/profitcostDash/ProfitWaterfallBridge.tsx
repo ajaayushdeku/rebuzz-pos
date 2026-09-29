@@ -21,21 +21,22 @@ import type {
   WaterfallStep,
 } from "@/services/dashboardServices/apiProfitCost";
 import {
-  AXIS_TICK,
   BAR_RADIUS,
   CHART_PALETTE,
   ChartCard,
   ChartLegend,
+  getAxisTick,
   niceTicks,
   yAxisTitle,
 } from "../chartCard";
+import { useEffect, useState } from "react";
 
 const BAR_COLORS: Record<WaterfallStep["type"], string> = {
   start: CHART_PALETTE.darkBlue,
   // deduct: "#ea4335",
   deduct: "#F43F5E",
   // Inert, so it is drawn as an absence rather than a cost.
-  locked: CHART_PALETTE.grid,
+  locked: CHART_PALETTE.subtitle,
   result: "#34a853",
 };
 
@@ -65,6 +66,26 @@ function WrappedTick({
       lines = [text.slice(0, at), text.slice(at + 1)];
     }
   }
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
   return (
     <text
       x={x}
@@ -102,13 +123,8 @@ function StepTooltip({
   const row = "flex flex-row justify-between gap-4";
 
   return (
-    <div
-      className="min-w-44 rounded-lg border bg-white px-3 py-2.5 text-xs shadow-sm"
-      style={{ borderColor: CHART_PALETTE.control, color: CHART_PALETTE.axis }}
-    >
-      <p className="mb-1.5" style={{ color: CHART_PALETTE.title }}>
-        {label}
-      </p>
+    <div className="min-w-44 rounded-lg border border-[#dadce0] bg-white px-3 py-2.5 text-xs text-[#5f6368] shadow-sm dark:border-white/15 dark:bg-[#1b2436] dark:text-[#a9b4c7]">
+      <p className="mb-1.5 text-[#3c4043] dark:text-[#e8ecf4]">{label}</p>
 
       {step.type === "locked" ? (
         <p className="max-w-52 leading-relaxed">
@@ -119,28 +135,21 @@ function StepTooltip({
         <>
           <p className={row}>
             Before
-            <span
-              className="tabular-nums"
-              style={{ color: CHART_PALETTE.title }}
-            >
+            <span className="tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
               {money(step.value + step.deduction)}
             </span>
           </p>
-          <p className={row} style={{ color: CHART_PALETTE.bad }}>
+          <p className={`${row} text-[#d93025] dark:text-[#f87171]`}>
             Deduction
             <span className="font-medium tabular-nums">
               −{money(step.deduction)}
             </span>
           </p>
           <p
-            className={`${row} mt-1 border-t pt-1`}
-            style={{ borderColor: CHART_PALETTE.grid }}
+            className={`${row} mt-1 border-t pt-1 border-[#e8eaed] dark:border-white/10`}
           >
             After
-            <span
-              className="font-medium tabular-nums"
-              style={{ color: CHART_PALETTE.title }}
-            >
+            <span className="font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
               {money(step.value)}
             </span>
           </p>
@@ -148,10 +157,7 @@ function StepTooltip({
       ) : (
         <p className={row}>
           Running total
-          <span
-            className="font-medium tabular-nums"
-            style={{ color: CHART_PALETTE.title }}
-          >
+          <span className="font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
             {money(step.value)}
           </span>
         </p>
@@ -186,6 +192,27 @@ export default function ProfitWaterfallBridge({
   );
   const locked = steps.some((s) => s.type === "locked");
 
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
+
   return (
     <ChartCard
       icon={ChartColumnDecreasing}
@@ -209,13 +236,7 @@ export default function ProfitWaterfallBridge({
       }
     >
       {!hasData ? (
-        <p
-          className="rounded-xl border border-dashed px-4 py-14 text-center text-xs"
-          style={{
-            borderColor: CHART_PALETTE.control,
-            color: CHART_PALETTE.subtitle,
-          }}
-        >
+        <p className="rounded-xl border border-dashed px-4 py-14 text-center text-xs border-[#dadce0] dark:border-white/15 text-[#9aa0a6] dark:text-[#9aa6bd]">
           No revenue in this period, so there is nothing to break down yet.
         </p>
       ) : (
@@ -290,22 +311,13 @@ export default function ProfitWaterfallBridge({
           />
 
           {/* From → to: where the money started and where it ended up. */}
-          <div
-            className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t pt-3 text-xs tracking-wide"
-            style={{
-              borderColor: CHART_PALETTE.grid,
-              color: CHART_PALETTE.axis,
-            }}
-          >
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t pt-3 text-xs tracking-wide border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
             <span>
               From{" "}
-              <span
-                className="font-medium tabular-nums"
-                style={{ color: CHART_PALETTE.title }}
-              >
+              <span className="font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                 {money(revenue)}
               </span>{" "}
-              <span style={{ color: CHART_PALETTE.subtitle }}>
+              <span className="text-[#9aa0a6] dark:text-[#9aa6bd]">
                 {(steps[0]?.label ?? "revenue").toLowerCase()}
               </span>
             </span>
@@ -313,23 +325,23 @@ export default function ProfitWaterfallBridge({
             <span>
               to{" "}
               <span
-                className="font-medium tabular-nums"
-                style={{
-                  color: net >= 0 ? CHART_PALETTE.good : CHART_PALETTE.bad,
-                }}
+                className={`font-medium tabular-nums ${
+                  net >= 0
+                    ? "text-[#1e8e3e] dark:text-[#10b981]"
+                    : "text-[#d93025] dark:text-[#f87171]"
+                }`}
               >
                 {money(net)}
               </span>{" "}
-              <span style={{ color: CHART_PALETTE.subtitle }}>net profit</span>
+              <span className="text-[#9aa0a6] dark:text-[#9aa6bd]">
+                net profit
+              </span>
             </span>
 
             {/* Only while the labor step is inert. Once payroll is recorded
                 the step deducts like any other and needs no caveat. */}
             {locked && (
-              <span
-                className="flex items-center gap-1.5"
-                style={{ color: CHART_PALETTE.subtitle }}
-              >
+              <span className="flex items-center gap-1.5 text-[#9aa0a6] dark:text-[#9aa6bd]">
                 <Lock size={11} />
                 No staff pay recorded
               </span>
@@ -337,7 +349,7 @@ export default function ProfitWaterfallBridge({
           </div>
 
           {missing.length > 0 && (
-            <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800">
+            <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800 dark:bg-amber-400/10">
               <Info className="mt-px h-3.5 w-3.5 shrink-0" />
               <span>
                 Some figures could not be loaded ({missing.join(", ")}), so

@@ -21,13 +21,14 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { Grid2x2 } from "lucide-react";
 import {
-  AXIS_TICK,
   CHART_PALETTE,
   ChartCard,
   ChartLegend,
   ChartTooltipBox,
+  getAxisTick,
   yAxisTitle,
 } from "../chartCard";
+import { useEffect, useState } from "react";
 
 const CATEGORY_COLORS: Record<MenuCategory, string> = {
   Coffee: CHART_PALETTE.darkBlue,
@@ -72,8 +73,11 @@ const CustomTooltip = ({
     <ChartTooltipBox
       label={
         <>
-          <span style={{ color: CHART_PALETTE.title }}>{d.name}</span>
-          <span style={{ color: CHART_PALETTE.subtitle }}> · {d.category}</span>
+          <span className="text-[#3c4043] dark:text-[#e8ecf4]">{d.name}</span>
+          <span className="text-[#9aa0a6] dark:text-[#9aa6bd]">
+            {" "}
+            · {d.category}
+          </span>
         </>
       }
       rows={[
@@ -95,6 +99,27 @@ const CustomTooltip = ({
 export default function MenuEngineeringMatrix() {
   const { currency } = useCurrency();
   const categories = Object.keys(CATEGORY_COLORS) as MenuCategory[];
+
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
 
   return (
     <ChartCard

@@ -333,7 +333,7 @@ export function DateRangeFilter({
             )}
           >
             <CalendarIcon className="mr-1 h-4 w-4 dark:text-[#9aa6bd]" />
-            ww {displayText}
+            {displayText}
           </Button>
         </DialogTrigger>
 

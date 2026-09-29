@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { CustomTooltipProps } from "@/lib/types/chart";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
@@ -16,10 +16,10 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import {
-  AXIS_TICK,
   CHART_PALETTE,
   ChartCard,
   ChartTooltipBox,
+  getAxisTick,
   yAxisTitle,
 } from "@/components/dashboardComponents/chartCard";
 import { FilterSelect } from "@/components/ui/FilterSelect";
@@ -194,6 +194,27 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
     updateScrollButtons();
   };
 
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
+
   return (
     <ChartCard
       icon={Clock}
@@ -310,13 +331,7 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
           className="overflow-x-auto pb-2 scrollbar-hide"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {/* Each dot is ringed in white so it reads as a cut-out of the
-              card; on the dark card that ring has to be the card's colour or
-              every point wears a bright halo. */}
-          <div
-            className="dark:[&_.recharts-dot]:stroke-[#161d2e]"
-            style={{ minWidth: Math.max(filteredData.length * 95, 600) }}
-          >
+          <div style={{ minWidth: Math.max(filteredData.length * 95, 600) }}>
             <ResponsiveContainer width="100%" height={280}>
               <AreaChart
                 data={filteredData}

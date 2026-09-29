@@ -72,11 +72,11 @@ const PhasePill = ({
   active?: boolean;
 }) => (
   <span
-    className={`rounded-full border px-2.5 py-1 text-[11px] ${active ? "bg-blue-50/60" : "bg-white"}`}
-    style={{
-      borderColor: active ? "#d2e3fc" : CHART_PALETTE.control,
-      color: active ? CHART_PALETTE.blue : CHART_PALETTE.axis,
-    }}
+    className={`rounded-full border px-2.5 py-1 text-[11px] ${
+      active
+        ? "border-[#d2e3fc] bg-blue-50/60 text-[#1a73e8] dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-[#7ba2e3]"
+        : "border-[#dadce0] bg-white text-[#5f6368] dark:border-white/15 dark:bg-white/5 dark:text-[#a9b4c7]"
+    }`}
   >
     {children}
   </span>

@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { type ReactNode } from "react";
 import { ChevronLeft, ChevronRight, Info, type LucideIcon } from "lucide-react";
 
 import {
@@ -43,12 +43,22 @@ const CHART_DARK = [
   "dark:[&_.recharts-cartesian-axis-tick-line]:stroke-[#2d3443]",
   "dark:[&_.recharts-label]:fill-[#9aa6bd]!",
   "dark:[&_.recharts-tooltip-cursor]:fill-[#222838]",
+  "dark:[&_.recharts-dot]:stroke-[#161d2e]",
   "dark:[&_.recharts-reference-line_line]:stroke-[#3d4657]",
 ].join(" ");
 
+export const getAxisTick = (isDark: boolean) =>
+  ({
+    fill: isDark ? CHART_PALETTE.subtitle : CHART_PALETTE.axis,
+    fontSize: 12,
+  }) as const;
+
 export const BAR_RADIUS: [number, number, number, number] = [4, 4, 0, 0];
 
-export const AXIS_TICK = { fill: CHART_PALETTE.axis, fontSize: 12 } as const;
+export const AXIS_TICK = {
+  fill: CHART_PALETTE.axis,
+  fontSize: 12,
+} as const;
 
 export function niceTicks(min: number, max: number, steps = 4): number[] {
   const lo = Math.min(0, min);

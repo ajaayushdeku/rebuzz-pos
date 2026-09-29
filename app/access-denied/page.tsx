@@ -19,16 +19,16 @@ export const metadata = {
  */
 export default function AccessDeniedPage() {
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-white font-sans">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-white font-sans dark:bg-[#0f1420]">
       {/* Two washes behind the page, warm rather than the app's blue, so the
           screen reads as a stop before a word of it has been read. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -left-40 -top-40 h-[32rem] w-[32rem] rounded-full bg-red-100/60 blur-3xl"
+        className="pointer-events-none absolute -left-40 -top-40 h-[32rem] w-[32rem] rounded-full bg-red-100/60 blur-3xl dark:bg-red-500/10"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -bottom-48 -right-32 h-[36rem] w-[36rem] rounded-full bg-orange-100/50 blur-3xl"
+        className="pointer-events-none absolute -bottom-48 -right-32 h-[36rem] w-[36rem] rounded-full bg-orange-100/50 blur-3xl dark:bg-orange-500/10"
       />
 
       <header className="relative px-6 py-6 sm:px-10">
@@ -44,8 +44,9 @@ export default function AccessDeniedPage() {
             className="rounded-lg"
             priority
           />
-          <span className="text-xl font-bold tracking-tight text-gray-900">
-            ReBuzz
+          <span className="text-2xl font-bold tracking-tight">
+            <span className="text-[#244074] dark:text-[#7ba2e3]">Re</span>
+            <span style={{ color: "#E26924" }}>Buzz</span>
           </span>
         </Link>
       </header>
@@ -57,10 +58,10 @@ export default function AccessDeniedPage() {
         >
           <span className="absolute inset-4 rounded-full bg-red-400/20 animate-ping motion-reduce:animate-none" />
           <span className="absolute inset-8 rounded-full bg-red-400/25 animate-ping [animation-delay:500ms] [animation-duration:3s] motion-reduce:animate-none" />
-          <span className="absolute inset-10 rounded-full bg-white shadow-sm" />
+          <span className="absolute inset-10 rounded-full bg-white shadow-sm dark:bg-[#161d2e]" />
 
           <ShieldAlert
-            className="relative h-20 w-20 text-red-500 sm:h-24 sm:w-24"
+            className="relative h-20 w-20 text-red-500 sm:h-24 sm:w-24 dark:text-red-400"
             strokeWidth={1.5}
           />
 
@@ -70,28 +71,28 @@ export default function AccessDeniedPage() {
           </span>
         </div>
 
-        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-red-500">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-red-500 dark:text-red-400">
           Access denied
         </p>
 
-        <h1 className="max-w-2xl text-3xl font-bold leading-tight tracking-tight text-gray-900 sm:text-4xl">
+        <h1 className="max-w-2xl text-3xl font-bold leading-tight tracking-tight text-gray-900 sm:text-4xl dark:text-[#e8ecf4]">
           This account can&rsquo;t open the POS
         </h1>
 
-        <p className="mt-4 max-w-md text-[15px] leading-relaxed text-gray-500">
+        <p className="mt-4 max-w-md text-[15px] leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
           Your details were correct, but only administrator accounts are allowed
           to sign in here. Nothing has been changed on your account.
         </p>
 
         <Link
           href="/"
-          className="mt-9 inline-flex items-center justify-center gap-2 rounded-full bg-gray-900 px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-800"
+          className="mt-9 inline-flex items-center justify-center gap-2 rounded-full bg-gray-900 px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-800 dark:bg-white/10 dark:hover:bg-white/20"
         >
           <ArrowLeft size={16} aria-hidden />
           Back to home
         </Link>
 
-        <p className="mt-6 max-w-sm text-xs leading-relaxed text-gray-400">
+        <p className="mt-6 max-w-sm text-xs leading-relaxed text-gray-400 dark:text-[#7b869b]">
           Think this is a mistake? Ask the business owner to check the role set
           on your account.
         </p>

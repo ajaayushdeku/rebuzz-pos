@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -18,12 +18,12 @@ import { TrendingUp } from "lucide-react";
 import ChartSkeleton from "@/components/ui/chartskeleton";
 import {
   BAR_RADIUS,
-  AXIS_TICK,
   CHART_PALETTE,
   ChartCard,
   ChartLegend,
   ChartTooltipBox,
   PillSwitch,
+  getAxisTick,
   niceTicks,
   yAxisTitle,
 } from "../chartCard";
@@ -84,11 +84,9 @@ const ChartMessage = ({
   detail?: string;
 }) => (
   <div className="flex h-64 flex-col items-center justify-center text-center sm:h-72">
-    <p className="text-sm" style={{ color: CHART_PALETTE.axis }}>
-      {title}
-    </p>
+    <p className="text-sm text-[#5f6368] dark:text-[#a9b4c7]">{title}</p>
     {detail && (
-      <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+      <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
         {detail}
       </p>
     )}
@@ -111,6 +109,27 @@ export default function SalesTrendChart() {
       ? Math.max(...rawData.map((d) => d.totalRevenue))
       : 0,
   );
+
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
 
   return (
     <ChartCard

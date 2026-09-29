@@ -53,8 +53,8 @@ function StepRail({
       : "border-blue-600 bg-blue-600 text-white";
   const ring =
     tone === "green"
-      ? "border-emerald-500 bg-white text-emerald-600 ring-4 ring-emerald-500/10"
-      : "border-blue-600 bg-white text-blue-600 ring-4 ring-blue-600/10";
+      ? "border-emerald-500 bg-white dark:bg-[#161d2e] text-emerald-600 ring-4 ring-emerald-500/10 dark:text-emerald-400"
+      : "border-blue-600 bg-white dark:bg-[#161d2e] text-blue-600 ring-4 ring-blue-600/10 dark:text-[#7ba2e3]";
   const bar = tone === "green" ? "bg-emerald-500" : "bg-blue-600";
 
   return (
@@ -74,7 +74,7 @@ function StepRail({
                     ? filled
                     : isCurrent
                       ? ring
-                      : "border-gray-200 bg-white text-gray-400"
+                      : "border-gray-200 bg-white dark:bg-[#161d2e] text-gray-400 dark:text-[#7b869b] dark:border-white/15"
                 }`}
               >
                 {isDone ? <Check size={13} strokeWidth={3} /> : step}
@@ -82,7 +82,9 @@ function StepRail({
 
               <span
                 className={`text-[10px] font-medium whitespace-nowrap ${
-                  isCurrent || isDone ? "text-gray-700" : "text-gray-400"
+                  isCurrent || isDone
+                    ? "text-gray-700 dark:text-[#c3ccdc]"
+                    : "text-gray-400 dark:text-[#7b869b]"
                 }`}
               >
                 {label}
@@ -247,7 +249,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-white font-sans">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-white font-sans dark:bg-[#0f1420]">
       <header className="relative flex flex-col items-center justify-center gap-4  px-6  pb-4 sm:px-10">
         <div className="mt-2">
           {" "}
@@ -284,13 +286,13 @@ export default function ForgotPasswordPage() {
                 <span className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/25">
                   <Mail size={20} className="text-white" strokeWidth={2} />
                 </span>
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600">
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600 dark:text-[#7ba2e3]">
                   Step 1 · Your email
                 </p>
-                <h1 className="text-2xl font-bold leading-tight tracking-tight text-gray-900 sm:text-3xl">
+                <h1 className="text-2xl font-bold leading-tight tracking-tight text-gray-900 sm:text-3xl dark:text-[#e8ecf4]">
                   Forgot Pasword?
                 </h1>
-                <p className="mt-1.5 text-sm leading-relaxed text-gray-500">
+                <p className="mt-1.5 text-sm leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
                   Enter your email address and we&lsquo;ll send you a reset
                   token.
                 </p>
@@ -300,7 +302,7 @@ export default function ForgotPasswordPage() {
                 <div>
                   <Label
                     htmlFor="reset-email"
-                    className="mb-1.5 block text-[13px] font-semibold text-gray-700"
+                    className="mb-1.5 block text-[13px] font-semibold text-gray-700 dark:text-[#c3ccdc]"
                   >
                     Email address
                   </Label>
@@ -313,14 +315,14 @@ export default function ForgotPasswordPage() {
                       setServerError(null);
                     }}
                     placeholder="Enter your email"
-                    className="h-12 w-full rounded-xl border border-gray-300 bg-white px-4 text-[15px] text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10"
+                    className="h-12 w-full rounded-xl border border-gray-300 bg-white dark:bg-white/5 px-4 text-[15px] text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 dark:text-[#e8ecf4] dark:border-white/15 dark:placeholder:text-[#7b869b]"
                     autoFocus
                   />
                 </div>
 
                 {serverError && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-                    <p className="text-xs text-red-600 text-center font-medium">
+                  <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 dark:border-red-400/25 dark:bg-red-400/10">
+                    <p className="text-xs text-red-600 text-center font-medium dark:text-red-300">
                       {serverError}
                     </p>
                   </div>
@@ -345,7 +347,7 @@ export default function ForgotPasswordPage() {
               <div className="mt-6 text-center">
                 <Link
                   href="/login"
-                  className="text-xs text-gray-500 hover:text-blue-600 transition-colors font-medium inline-flex items-center gap-1"
+                  className="text-xs text-gray-500 hover:text-blue-600 transition-colors font-medium inline-flex items-center gap-1 dark:text-[#9aa6bd] dark:hover:text-[#a8c4ee]"
                 >
                   <ArrowLeft className="h-3 w-3" />
                   Back to login
@@ -363,22 +365,25 @@ export default function ForgotPasswordPage() {
                 <span className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/25">
                   <KeyRound size={20} className="text-white" strokeWidth={2} />
                 </span>
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600">
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600 dark:text-[#7ba2e3]">
                   Step 2 · Reset code
                 </p>
-                <h1 className="text-2xl font-bold leading-tight tracking-tight text-gray-900 sm:text-3xl">
+                <h1 className="text-2xl font-bold leading-tight tracking-tight text-gray-900 sm:text-3xl dark:text-[#e8ecf4]">
                   Reset your password
                 </h1>
-                <p className="mt-1.5 text-sm leading-relaxed text-gray-500">
+                <p className="mt-1.5 text-sm leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
                   Enter the {CODE_LENGTH}-digit code we sent to{" "}
-                  <span className="font-semibold text-gray-700">{email}</span>.
+                  <span className="font-semibold text-gray-700 dark:text-[#c3ccdc]">
+                    {email}
+                  </span>
+                  .
                 </p>
               </div>
 
               <form onSubmit={handleResetPassword} className="mt-4 space-y-4">
                 {/* OTP Inputs */}
                 <div>
-                  <Label className="mb-1.5 block text-[13px] font-semibold text-gray-700">
+                  <Label className="mb-1.5 block text-[13px] font-semibold text-gray-700 dark:text-[#c3ccdc]">
                     Reset Code
                   </Label>
                   <div
@@ -398,29 +403,29 @@ export default function ForgotPasswordPage() {
                         onChange={(e) => handleDigitChange(i, e.target.value)}
                         onKeyDown={(e) => handleKeyDown(i, e)}
                         disabled={isLoading}
-                        className={`h-12 w-10 md:h-14 md:w-12 text-center text-lg md:text-xl font-bold rounded-xl border-2 bg-white outline-none transition-all
+                        className={`h-12 w-10 md:h-14 md:w-12 text-center text-lg md:text-xl font-bold rounded-xl border-2 bg-white dark:bg-white/5 outline-none transition-all
                         ${isLoading ? "opacity-50 cursor-not-allowed" : ""}
-                        ${digit ? "border-blue-600 text-blue-900" : "border-gray-300 text-gray-800"}
+                        ${digit ? "border-blue-600 text-blue-900 dark:text-[#a8c4ee]" : "border-gray-300 text-gray-800 dark:text-[#e8ecf4] dark:border-white/15"}
                         ${fieldErrors.token ? "border-red-400" : ""}
                         focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10`}
                       />
                     ))}
                   </div>
                   {fieldErrors.token && (
-                    <p className="mt-1.5 text-xs text-red-500 text-center">
+                    <p className="mt-1.5 text-xs text-red-500 text-center dark:text-red-400">
                       {fieldErrors.token}
                     </p>
                   )}
                 </div>
 
                 {/* Expiry Timer */}
-                <p className="text-center text-xs text-gray-500">
+                <p className="text-center text-xs text-gray-500 dark:text-[#9aa6bd]">
                   Code expires in{" "}
                   <span
                     className={
                       secondsLeft <= 60
-                        ? "text-red-500 font-semibold"
-                        : "font-medium text-gray-700"
+                        ? "text-red-500 font-semibold dark:text-red-400"
+                        : "font-medium text-gray-700 dark:text-[#c3ccdc]"
                     }
                   >
                     {minutes}:{seconds.toString().padStart(2, "0")}
@@ -428,9 +433,11 @@ export default function ForgotPasswordPage() {
                 </p>
 
                 {/* Spam folder notice */}
-                <p className="text-xs text-gray-400 text-center">
+                <p className="text-xs text-gray-400 text-center dark:text-[#7b869b]">
                   Didn&lsquo;t receive the code? Check your{" "}
-                  <span className="font-medium text-gray-500">spam folder</span>{" "}
+                  <span className="font-medium text-gray-500 dark:text-[#9aa6bd]">
+                    spam folder
+                  </span>{" "}
                   or try again.
                 </p>
 
@@ -438,7 +445,7 @@ export default function ForgotPasswordPage() {
                 <div>
                   <Label
                     htmlFor="new-password"
-                    className="mb-1.5 block text-[13px] font-semibold text-gray-700"
+                    className="mb-1.5 block text-[13px] font-semibold text-gray-700 dark:text-[#c3ccdc]"
                   >
                     New Password
                   </Label>
@@ -456,22 +463,22 @@ export default function ForgotPasswordPage() {
                         setServerError(null);
                       }}
                       placeholder="At least 8 characters"
-                      className={`h-12 w-full rounded-xl border bg-white px-4 pr-20 text-[15px] text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:ring-4 ${
+                      className={`h-12 w-full rounded-xl border bg-white dark:bg-white/5 px-4 pr-20 text-[15px] text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:ring-4 ${
                         fieldErrors.password
-                          ? "border-red-300 focus:border-red-400 focus:ring-red-400/15"
-                          : "border-gray-300 focus:border-blue-600 focus:ring-blue-600/10"
+                          ? "border-red-300 focus:border-red-400 focus:ring-red-400/15 dark:border-red-400/40"
+                          : "border-gray-300 focus:border-blue-600 focus:ring-blue-600/10 dark:border-white/15"
                       }`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword((prev) => !prev)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-600 text-xs font-semibold hover:underline cursor-pointer"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-600 text-xs font-semibold hover:underline cursor-pointer dark:text-[#7ba2e3]"
                     >
                       {showPassword ? "Hide" : "Show"}
                     </button>
                   </div>
                   {fieldErrors.password && (
-                    <p className="mt-1 text-xs text-red-500">
+                    <p className="mt-1 text-xs text-red-500 dark:text-red-400">
                       {fieldErrors.password}
                     </p>
                   )}
@@ -481,7 +488,7 @@ export default function ForgotPasswordPage() {
                 <div>
                   <Label
                     htmlFor="confirm-password"
-                    className="mb-1.5 block text-[13px] font-semibold text-gray-700"
+                    className="mb-1.5 block text-[13px] font-semibold text-gray-700 dark:text-[#c3ccdc]"
                   >
                     Confirm Password
                   </Label>
@@ -499,22 +506,22 @@ export default function ForgotPasswordPage() {
                         setServerError(null);
                       }}
                       placeholder="Re-enter your new password"
-                      className={`h-12 w-full rounded-xl border bg-white px-4 pr-20 text-[15px] text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:ring-4 ${
+                      className={`h-12 w-full rounded-xl border bg-white dark:bg-white/5 px-4 pr-20 text-[15px] text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:ring-4 ${
                         fieldErrors.confirmPassword
-                          ? "border-red-300 focus:border-red-400 focus:ring-red-400/15"
-                          : "border-gray-300 focus:border-blue-600 focus:ring-blue-600/10"
+                          ? "border-red-300 focus:border-red-400 focus:ring-red-400/15 dark:border-red-400/40"
+                          : "border-gray-300 focus:border-blue-600 focus:ring-blue-600/10 dark:border-white/15"
                       }`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirm((prev) => !prev)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-600 text-xs font-semibold hover:underline cursor-pointer"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-600 text-xs font-semibold hover:underline cursor-pointer dark:text-[#7ba2e3]"
                     >
                       {showConfirm ? "Hide" : "Show"}
                     </button>
                   </div>
                   {fieldErrors.confirmPassword && (
-                    <p className="mt-1 text-xs text-red-500">
+                    <p className="mt-1 text-xs text-red-500 dark:text-red-400">
                       {fieldErrors.confirmPassword}
                     </p>
                   )}
@@ -522,8 +529,8 @@ export default function ForgotPasswordPage() {
 
                 {/* Server error */}
                 {serverError && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-                    <p className="text-xs text-red-600 text-center font-medium">
+                  <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 dark:border-red-400/25 dark:bg-red-400/10">
+                    <p className="text-xs text-red-600 text-center font-medium dark:text-red-300">
                       {serverError}
                     </p>
                   </div>
@@ -554,7 +561,7 @@ export default function ForgotPasswordPage() {
                     setFieldErrors({});
                     setDigits(Array(CODE_LENGTH).fill(""));
                   }}
-                  className="text-xs text-gray-500 hover:text-blue-600 transition-colors font-medium inline-flex items-center gap-1 cursor-pointer"
+                  className="text-xs text-gray-500 hover:text-blue-600 transition-colors font-medium inline-flex items-center gap-1 cursor-pointer dark:text-[#9aa6bd] dark:hover:text-[#a8c4ee]"
                 >
                   <ArrowLeft className="h-3 w-3" />
                   Back to email step
@@ -576,13 +583,13 @@ export default function ForgotPasswordPage() {
                     strokeWidth={2}
                   />
                 </span>
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400">
                   Step 3 · All set
                 </p>
-                <h1 className="text-2xl font-bold leading-tight tracking-tight text-gray-900 sm:text-3xl">
+                <h1 className="text-2xl font-bold leading-tight tracking-tight text-gray-900 sm:text-3xl dark:text-[#e8ecf4]">
                   Password reset successful
                 </h1>
-                <p className="mt-1.5 text-sm leading-relaxed text-gray-500">
+                <p className="mt-1.5 text-sm leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
                   Your password has been updated. You can now log in with your
                   new password.
                 </p>

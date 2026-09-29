@@ -7,7 +7,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  CHART_PALETTE,
   ChartCard,
   PillSwitch,
 } from "@/components/dashboardComponents/chartCard";
@@ -50,17 +49,48 @@ type ViewMode = "currentWeek" | "currentMonth";
 
 // Color schemes — easy to extend or swap
 
+type Stops = [
+  [number, number, number],
+  [number, number, number],
+  [number, number, number],
+];
+
 export interface ColorScheme {
   name: string;
-  stops: [
-    [number, number, number],
-    [number, number, number],
-    [number, number, number],
-  ];
+  /** Quiet -> busy on a white card: pale, then saturated, then deep. */
+  stops: Stops;
+  /** Text on the pale end, and on the saturated end. */
   lightText: string;
   darkText: string;
+  /** Where the cell gets dark enough to need the other text colour. */
   threshold: number;
+  /**
+   * The same hue on a dark card, running the other way: quiet sits just above
+   * the card so an empty slot recedes, busy is the brightest cell there is.
+   * Deep-on-dark would hide exactly the slots the card exists to point at.
+   */
+  dark: {
+    stops: Stops;
+  };
 }
+
+/**
+ * The two inks a cell can wear on a dark card. Which one is used is decided per
+ * cell from the cell's own luminance rather than from a threshold on the value:
+ * the dark ramp's middle is mid-luminance, where either ink alone sits at about
+ * 2.9:1, and taking the better of the two never drops below about 4:1.
+ */
+const DARK_INK_LIGHT = "#e8ecf4";
+const DARK_INK_DARK = "#0f1420";
+
+/** WCAG relative luminance, for choosing between those two. */
+const relativeLuminance = ([r, g, b]: [number, number, number]): number => {
+  const channel = (v: number) => {
+    const s = v / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+};
 
 export const COLOR_SCHEMES: Record<string, ColorScheme> = {
   blue: {
@@ -73,6 +103,13 @@ export const COLOR_SCHEMES: Record<string, ColorScheme> = {
     lightText: "#1e40af",
     darkText: "#ffffff",
     threshold: 0.45,
+    dark: {
+      stops: [
+        [28, 40, 64],
+        [59, 130, 246],
+        [147, 197, 253],
+      ],
+    },
   },
   green: {
     name: "Green",
@@ -84,6 +121,13 @@ export const COLOR_SCHEMES: Record<string, ColorScheme> = {
     lightText: "#166534",
     darkText: "#ffffff",
     threshold: 0.45,
+    dark: {
+      stops: [
+        [20, 45, 38],
+        [34, 197, 94],
+        [134, 239, 172],
+      ],
+    },
   },
   purple: {
     name: "Purple",
@@ -95,6 +139,13 @@ export const COLOR_SCHEMES: Record<string, ColorScheme> = {
     lightText: "#6b21a8",
     darkText: "#ffffff",
     threshold: 0.45,
+    dark: {
+      stops: [
+        [38, 30, 60],
+        [139, 92, 246],
+        [196, 181, 253],
+      ],
+    },
   },
   orange: {
     name: "Orange",
@@ -106,6 +157,13 @@ export const COLOR_SCHEMES: Record<string, ColorScheme> = {
     lightText: "#9a3412",
     darkText: "#ffffff",
     threshold: 0.4,
+    dark: {
+      stops: [
+        [58, 36, 22],
+        [249, 115, 22],
+        [253, 186, 116],
+      ],
+    },
   },
 };
 
@@ -164,26 +222,37 @@ const formatCellDate = (iso: string): string => {
 
 const lerp = (a: number, b: number, t: number) => Math.round(a + (b - a) * t);
 
+type Variant = "light" | "dark";
+
+/** Where `value` sits between the view's quietest and busiest slot, 0–1. */
+const fraction = (value: number, min: number, max: number): number =>
+  max === min ? 0 : (value - min) / (max - min);
+
+/** The ramp's colour at `t`, low → mid → high. */
+const rampColor = (t: number, stops: Stops): [number, number, number] => {
+  const [low, mid, high] = stops;
+  return t < 0.5
+    ? [
+        lerp(low[0], mid[0], t * 2),
+        lerp(low[1], mid[1], t * 2),
+        lerp(low[2], mid[2], t * 2),
+      ]
+    : [
+        lerp(mid[0], high[0], (t - 0.5) * 2),
+        lerp(mid[1], high[1], (t - 0.5) * 2),
+        lerp(mid[2], high[2], (t - 0.5) * 2),
+      ];
+};
+
 const getCellColor = (
   value: number,
   min: number,
   max: number,
   scheme: ColorScheme,
+  variant: Variant = "light",
 ): string => {
-  const t = max === min ? 0 : (value - min) / (max - min);
-  const [low, mid, high] = scheme.stops;
-  const [r, g, b] =
-    t < 0.5
-      ? [
-          lerp(low[0], mid[0], t * 2),
-          lerp(low[1], mid[1], t * 2),
-          lerp(low[2], mid[2], t * 2),
-        ]
-      : [
-          lerp(mid[0], high[0], (t - 0.5) * 2),
-          lerp(mid[1], high[1], (t - 0.5) * 2),
-          lerp(mid[2], high[2], (t - 0.5) * 2),
-        ];
+  const stops = variant === "dark" ? scheme.dark.stops : scheme.stops;
+  const [r, g, b] = rampColor(fraction(value, min, max), stops);
   return `rgb(${r},${g},${b})`;
 };
 
@@ -192,10 +261,39 @@ const getCellTextColor = (
   min: number,
   max: number,
   scheme: ColorScheme,
+  variant: Variant = "light",
 ): string => {
   const t = max === min ? 0 : (value - min) / (max - min);
+  if (variant === "dark") {
+    // Measured, not thresholded: the dark ramp's middle is mid-luminance, and
+    // 0.18 is where the brighter ink stops being the more readable of the two.
+    return relativeLuminance(rampColor(t, scheme.dark.stops)) > 0.18
+      ? DARK_INK_DARK
+      : DARK_INK_LIGHT;
+  }
   return t > scheme.threshold ? scheme.darkText : scheme.lightText;
 };
+
+/**
+ * Both colours for one cell, as custom properties. CSS decides which pair is
+ * in force, so no component here has to know the theme.
+ */
+const cellVars = (
+  value: number,
+  min: number,
+  max: number,
+  scheme: ColorScheme,
+): React.CSSProperties =>
+  ({
+    "--cell": getCellColor(value, min, max, scheme),
+    "--cell-dark": getCellColor(value, min, max, scheme, "dark"),
+    "--cell-text": getCellTextColor(value, min, max, scheme),
+    "--cell-text-dark": getCellTextColor(value, min, max, scheme, "dark"),
+  }) as React.CSSProperties;
+
+/** What a cell wears to read those four properties. */
+const CELL_COLORS =
+  "bg-[var(--cell)] text-[var(--cell-text)] dark:bg-[var(--cell-dark)] dark:text-[var(--cell-text-dark)]";
 
 // Stats helpers
 
@@ -321,16 +419,14 @@ const VIEW_OPTIONS: {
 ];
 
 const Legend = ({ scheme }: { scheme: ColorScheme }) => (
-  <div className="flex shrink-0 items-center gap-2 text-[11px] text-[#9aa0a6]">
+  <div className="flex shrink-0 items-center gap-2 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
     <span>Low</span>
     <div className="flex h-4 w-24 overflow-hidden rounded">
       {Array.from({ length: 12 }).map((_, i) => (
         <div
           key={i}
-          className="flex-1 h-full"
-          style={{
-            backgroundColor: getCellColor(i, 0, 11, scheme),
-          }}
+          className="h-full flex-1 bg-[var(--cell)] dark:bg-[var(--cell-dark)]"
+          style={cellVars(i, 0, 11, scheme)}
         />
       ))}
     </div>
@@ -412,7 +508,9 @@ export default function Heatmap({
 
         {/* Color scheme picker */}
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-[#9aa0a6]">Color:</span>
+          <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
+            Color:
+          </span>
           <div className="flex gap-1.5">
             {Object.entries(COLOR_SCHEMES).map(([key, s]) => (
               <button
@@ -423,7 +521,7 @@ export default function Heatmap({
                 aria-pressed={schemeKey === key}
                 className={`h-6 w-6 cursor-pointer rounded-full transition-all ${
                   schemeKey === key
-                    ? "scale-110 ring-2 ring-[#5f6368] ring-offset-1"
+                    ? "scale-110 ring-2 ring-[#5f6368] ring-offset-1 dark:ring-[#e8ecf4] dark:ring-offset-[#161d2e]"
                     : "hover:scale-105"
                 }`}
                 style={{
@@ -444,7 +542,7 @@ export default function Heatmap({
               {HOURS.map((hour) => (
                 <div
                   key={hour}
-                  className="flex-1 text-center text-[11px] text-[#5f6368]"
+                  className="flex-1 text-center text-[11px] text-[#5f6368] dark:text-[#9aa6bd]"
                 >
                   <span className="sm:hidden">
                     {hour.replace("am", "").replace("pm", "")}
@@ -458,11 +556,11 @@ export default function Heatmap({
               {DAYS.map((day) => (
                 <div key={day} className="flex items-center mb-1">
                   <div className="w-14 shrink-0 pr-1 leading-tight">
-                    <span className="block text-[11px] text-[#5f6368] sm:text-xs">
+                    <span className="block text-[11px] text-[#5f6368] sm:text-xs dark:text-[#9aa6bd]">
                       {day}
                     </span>
                     {data.weekDates?.[day] && (
-                      <span className="block text-[10px] text-[#9aa0a6]">
+                      <span className="block text-[10px] text-[#9aa0a6] dark:text-[#7b869b]">
                         {formatCellDate(data.weekDates[day])}
                       </span>
                     )}
@@ -474,21 +572,13 @@ export default function Heatmap({
                         <Tooltip key={hour}>
                           <TooltipTrigger asChild>
                             <div
-                              className="flex h-8 flex-1 cursor-default select-none items-center justify-center rounded-md text-xs font-semibold transition-transform hover:scale-105 sm:h-10 sm:rounded-sm"
-                              style={{
-                                backgroundColor: getCellColor(
-                                  value,
-                                  currentWeekMin,
-                                  currentWeekMax,
-                                  scheme,
-                                ),
-                                color: getCellTextColor(
-                                  value,
-                                  currentWeekMin,
-                                  currentWeekMax,
-                                  scheme,
-                                ),
-                              }}
+                              className={`flex h-8 flex-1 cursor-default select-none items-center justify-center rounded-md text-xs font-semibold transition-transform hover:scale-105 sm:h-10 sm:rounded-sm ${CELL_COLORS}`}
+                              style={cellVars(
+                                value,
+                                currentWeekMin,
+                                currentWeekMax,
+                                scheme,
+                              )}
                             >
                               <span>{value}</span>{" "}
                               {/* hide numbers on mobile — too small */}
@@ -520,7 +610,7 @@ export default function Heatmap({
               {DAYS.map((day) => (
                 <div
                   key={day}
-                  className="flex-1 text-center text-[11px] text-[#5f6368]"
+                  className="flex-1 text-center text-[11px] text-[#5f6368] dark:text-[#9aa6bd]"
                 >
                   <span className="sm:hidden">{day.slice(0, 2)}</span>{" "}
                   {/* Mo, Tu, We... */}
@@ -533,11 +623,11 @@ export default function Heatmap({
               {monthWeeks.map((week) => (
                 <div key={week} className="flex items-center mb-1.5">
                   <div className="w-16 shrink-0 pr-1 leading-tight">
-                    <span className="block text-[11px] text-[#5f6368] sm:text-xs">
+                    <span className="block text-[11px] text-[#5f6368] sm:text-xs dark:text-[#9aa6bd]">
                       {week}
                     </span>
                     {data.monthName && (
-                      <span className="block text-[10px] text-[#9aa0a6]">
+                      <span className="block text-[10px] text-[#9aa0a6] dark:text-[#7b869b]">
                         ({data.monthName})
                       </span>
                     )}
@@ -554,9 +644,9 @@ export default function Heatmap({
                         return (
                           <div
                             key={day}
-                            className="flex h-12 flex-1 select-none flex-col items-center justify-center rounded-md border border-dashed border-[#e8eaed] bg-[#f8f9fa] sm:h-16 sm:rounded-lg"
+                            className="flex h-12 flex-1 select-none flex-col items-center justify-center rounded-md border border-dashed border-[#e8eaed] bg-[#f8f9fa] sm:h-16 sm:rounded-lg dark:border-white/10 dark:bg-white/5"
                           >
-                            <span className="text-[9px] text-[#9aa0a6] sm:text-[10px]">
+                            <span className="text-[9px] text-[#9aa0a6] sm:text-[10px] dark:text-[#7b869b]">
                               {dateLabel}
                             </span>
                           </div>
@@ -567,25 +657,17 @@ export default function Heatmap({
                         <Tooltip key={day}>
                           <TooltipTrigger asChild>
                             <div
-                              className={`flex-1 rounded-md sm:rounded-lg flex flex-col items-center justify-center cursor-default select-none transition-transform hover:scale-105 h-12 sm:h-16 ${
+                              className={`flex h-12 flex-1 cursor-default select-none flex-col items-center justify-center rounded-md transition-transform hover:scale-105 sm:h-16 sm:rounded-lg ${CELL_COLORS} ${
                                 cell.inMonth
                                   ? ""
-                                  : "opacity-70 ring-1 ring-inset ring-[#dadce0]"
+                                  : "opacity-70 ring-1 ring-inset ring-[#dadce0] dark:ring-white/20"
                               }`}
-                              style={{
-                                backgroundColor: getCellColor(
-                                  cell.count,
-                                  currentMonthMin,
-                                  currentMonthMax,
-                                  scheme,
-                                ),
-                                color: getCellTextColor(
-                                  cell.count,
-                                  currentMonthMin,
-                                  currentMonthMax,
-                                  scheme,
-                                ),
-                              }}
+                              style={cellVars(
+                                cell.count,
+                                currentMonthMin,
+                                currentMonthMax,
+                                scheme,
+                              )}
                             >
                               <span className="text-[9px] sm:text-[10px] font-medium opacity-80 leading-none">
                                 {dateLabel}
@@ -600,7 +682,7 @@ export default function Heatmap({
                               <span className="font-semibold">
                                 {dateLabel} ({day})
                                 {!cell.inMonth && (
-                                  <span className="font-normal text-gray-300">
+                                  <span className="font-normal text-gray-300 dark:text-[#6b7588]">
                                     {" "}
                                     · prev month
                                   </span>
@@ -623,7 +705,7 @@ export default function Heatmap({
       </div>
 
       {/* Stats footer */}
-      <div className="mt-6 grid grid-cols-1 gap-3 border-t border-[#e8eaed] pt-4 sm:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-3 border-t border-[#e8eaed] pt-4 sm:grid-cols-3 dark:border-white/10">
         {view === "currentWeek" ? (
           <>
             {[
@@ -632,40 +714,51 @@ export default function Heatmap({
                 primary: `${currentWeekStats.peakDay} @ ${currentWeekStats.peakHour}`,
                 secondary: `${currentWeekStats.peakValue} orders`,
                 secondaryColor: `rgb(${scheme.stops[1].join(",")})`,
+                secondaryClass: undefined,
               },
               {
                 label: "Quietest Slot",
                 primary: `${currentWeekStats.quietDay} @ ${currentWeekStats.quietHour}`,
                 secondary: `${currentWeekStats.quietValue} orders`,
-                secondaryColor: undefined,
+                secondaryClass: "text-[#9aa0a6] dark:text-[#9aa6bd]",
               },
               {
                 label: "Busiest Day",
                 primary: currentWeekStats.busiestDay,
                 secondary: `${currentWeekStats.busiestDayTotal} total orders`,
-                secondaryColor: CHART_PALETTE.good,
+                secondaryClass: "text-[#1e8e3e] dark:text-[#10b981]",
               },
-            ].map(({ label, primary, secondary, secondaryColor }) => (
-              <div
-                key={label}
-                className="flex items-center justify-between sm:flex-col sm:items-center border-b sm:border-b-0 pb-3 sm:pb-0 last:border-b-0 last:pb-0"
-              >
-                <p className="text-[11px] text-[#9aa0a6] sm:mb-1">{label}</p>
-                <div className="text-right sm:text-center">
-                  <p className="text-sm font-semibold text-[#3c4043]">
-                    {primary}
+            ].map(
+              ({
+                label,
+                primary,
+                secondary,
+                secondaryColor,
+                secondaryClass,
+              }) => (
+                <div
+                  key={label}
+                  className="flex items-center justify-between sm:flex-col sm:items-center border-b sm:border-b-0 pb-3 sm:pb-0 last:border-b-0 last:pb-0"
+                >
+                  <p className="text-[11px] text-[#9aa0a6] sm:mb-1 dark:text-[#9aa6bd]">
+                    {label}
                   </p>
-                  <p
-                    className="text-xs font-medium sm:text-sm"
-                    style={{
-                      color: secondaryColor ?? CHART_PALETTE.subtitle,
-                    }}
-                  >
-                    {secondary}
-                  </p>
+                  <div className="text-right sm:text-center">
+                    <p className="text-sm font-semibold text-[#3c4043] dark:text-[#e8ecf4]">
+                      {primary}
+                    </p>
+                    <p
+                      className={`text-xs font-medium sm:text-sm ${secondaryClass ?? ""}`}
+                      style={
+                        secondaryColor ? { color: secondaryColor } : undefined
+                      }
+                    >
+                      {secondary}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ),
+            )}
           </>
         ) : (
           <>
@@ -675,40 +768,51 @@ export default function Heatmap({
                 primary: `${currentMonthStats.peakWeek} · ${currentMonthStats.peakDay}`,
                 secondary: `${currentMonthStats.peakValue} orders`,
                 secondaryColor: `rgb(${scheme.stops[1].join(",")})`,
+                secondaryClass: undefined,
               },
               {
                 label: "Quietest Slot",
                 primary: `${currentMonthStats.quietWeek} · ${currentMonthStats.quietDay}`,
                 secondary: `${currentMonthStats.quietValue} orders`,
-                secondaryColor: undefined,
+                secondaryClass: "text-[#9aa0a6] dark:text-[#9aa6bd]",
               },
               {
                 label: "Busiest Week",
                 primary: currentMonthStats.busiestWeek,
                 secondary: `${currentMonthStats.busiestWeekTotal} total orders`,
-                secondaryColor: CHART_PALETTE.good,
+                secondaryClass: "text-[#1e8e3e] dark:text-[#10b981]",
               },
-            ].map(({ label, primary, secondary, secondaryColor }) => (
-              <div
-                key={label}
-                className="flex items-center justify-between sm:flex-col sm:items-center border-b sm:border-b-0 pb-3 sm:pb-0 last:border-b-0 last:pb-0"
-              >
-                <p className="text-[11px] text-[#9aa0a6] sm:mb-1">{label}</p>
-                <div className="text-right sm:text-center">
-                  <p className="text-sm font-semibold text-[#3c4043]">
-                    {primary}
+            ].map(
+              ({
+                label,
+                primary,
+                secondary,
+                secondaryColor,
+                secondaryClass,
+              }) => (
+                <div
+                  key={label}
+                  className="flex items-center justify-between sm:flex-col sm:items-center border-b sm:border-b-0 pb-3 sm:pb-0 last:border-b-0 last:pb-0"
+                >
+                  <p className="text-[11px] text-[#9aa0a6] sm:mb-1 dark:text-[#9aa6bd]">
+                    {label}
                   </p>
-                  <p
-                    className="text-xs font-medium sm:text-sm"
-                    style={{
-                      color: secondaryColor ?? CHART_PALETTE.subtitle,
-                    }}
-                  >
-                    {secondary}
-                  </p>
+                  <div className="text-right sm:text-center">
+                    <p className="text-sm font-semibold text-[#3c4043] dark:text-[#e8ecf4]">
+                      {primary}
+                    </p>
+                    <p
+                      className={`text-xs font-medium sm:text-sm ${secondaryClass ?? ""}`}
+                      style={
+                        secondaryColor ? { color: secondaryColor } : undefined
+                      }
+                    >
+                      {secondary}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ),
+            )}
           </>
         )}
       </div>

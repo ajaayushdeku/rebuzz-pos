@@ -17,7 +17,7 @@ import { getDaysColor } from "@/lib/utils";
 import { useSlowProducts } from "@/hooks/useSlowProducts";
 import { FilterSelect } from "@/components/ui/FilterSelect";
 import { formatNumber } from "@/utils/helper";
-import { CHART_PALETTE, ChartCard } from "../chartCard";
+import { ChartCard } from "../chartCard";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -133,13 +133,9 @@ export default function SlowProducts({
               }}
               // Spinner arrows hidden: at this size they covered the
               // placeholder ("Custo…"), and the field is for typing a number.
-              className="h-[26px] w-[72px] rounded-lg border bg-white px-2.5 text-[11px] outline-none [appearance:textfield] placeholder:text-[#9aa0a6] focus-visible:ring-2 focus-visible:ring-blue-500 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              style={{
-                borderColor: CHART_PALETTE.control,
-                color: CHART_PALETTE.title,
-              }}
+              className="h-[26px] w-[72px] rounded-lg border bg-white px-2.5 text-[11px] outline-none [appearance:textfield] placeholder:text-[#9aa0a6] focus-visible:ring-2 focus-visible:ring-blue-500 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none border-[#dadce0] dark:border-white/15 text-[#3c4043] dark:text-[#e8ecf4] dark:bg-white/5"
             />
-            <span className="text-[11px]" style={{ color: CHART_PALETTE.axis }}>
+            <span className="text-[11px] text-[#5f6368] dark:text-[#a9b4c7]">
               days
             </span>
           </div>
@@ -167,8 +163,7 @@ export default function SlowProducts({
         <div className="relative  w-full ">
           <Search
             size={13}
-            className="absolute left-3 top-1/2 -translate-y-1/2"
-            style={{ color: CHART_PALETTE.subtitle }}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9aa0a6] dark:text-[#9aa6bd]"
           />
           <input
             type="text"
@@ -178,17 +173,13 @@ export default function SlowProducts({
               setSearch(e.target.value);
               setPage(0);
             }}
-            className="w-full rounded-lg border bg-white py-2 pl-8 pr-8 text-[11px] outline-none placeholder:text-[#9aa0a6] focus-visible:ring-2 focus-visible:ring-blue-500"
-            style={{
-              borderColor: CHART_PALETTE.control,
-              color: CHART_PALETTE.title,
-            }}
+            className="w-full rounded-lg border bg-white py-2 pl-8 pr-8 text-[11px] outline-none placeholder:text-[#9aa0a6] focus-visible:ring-2 focus-visible:ring-blue-500 border-[#dadce0] dark:border-white/15 text-[#3c4043] dark:text-[#e8ecf4] dark:bg-white/5"
           />
           {search && (
             <button
               onClick={() => setSearch("")}
               aria-label="Clear search"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-[#9aa0a6] hover:text-[#5f6368]"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-[#9aa0a6] hover:text-[#5f6368] dark:text-[#9aa6bd] dark:hover:text-[#e8ecf4]"
             >
               <X size={13} />
             </button>
@@ -217,23 +208,13 @@ export default function SlowProducts({
                 }}
                 // Spinner arrows hidden: at this size they covered the
                 // placeholder ("Custo…"), and the field is for typing a number.
-                className="h-[26px] w-[72px] rounded-lg border bg-white py-2 px-2.5 text-[11px] outline-none [appearance:textfield] placeholder:text-[#9aa0a6] focus-visible:ring-2 focus-visible:ring-blue-500 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                style={{
-                  borderColor: CHART_PALETTE.control,
-                  color: CHART_PALETTE.title,
-                }}
+                className="h-[26px] w-[72px] rounded-lg border bg-white py-2 px-2.5 text-[11px] outline-none [appearance:textfield] placeholder:text-[#9aa0a6] focus-visible:ring-2 focus-visible:ring-blue-500 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none border-[#dadce0] dark:border-white/15 text-[#3c4043] dark:text-[#e8ecf4] dark:bg-white/5"
               />
-              <span
-                className="text-[11px]"
-                style={{ color: CHART_PALETTE.axis }}
-              >
+              <span className="text-[11px] text-[#5f6368] dark:text-[#a9b4c7]">
                 days
               </span>
             </div>
-            <div
-              className="mx-1 h-6 w-px"
-              style={{ backgroundColor: CHART_PALETTE.control }}
-            />
+            <div className="mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" />
             {/* FilterSelect owns its trigger's classes, so the pill look is
               applied to its button from the wrapper. */}
             <FilterSelect
@@ -255,13 +236,7 @@ export default function SlowProducts({
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr
-              className="border-b text-left"
-              style={{
-                borderColor: CHART_PALETTE.grid,
-                color: CHART_PALETTE.axis,
-              }}
-            >
+            <tr className="border-b text-left border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
               <th className="w-12 px-3 pb-2.5 pt-1 text-[11px] font-normal whitespace-nowrap">
                 S.No
               </th>
@@ -283,22 +258,16 @@ export default function SlowProducts({
             </tr>
           </thead>
 
-          <tbody style={{ color: CHART_PALETTE.title }}>
+          <tbody className="text-[#3c4043] dark:text-[#e8ecf4]">
             {isFetching && !fetchedData ? (
               <tr>
                 <td colSpan={4} className="py-12 text-center">
                   <div className="flex items-center justify-center gap-2">
                     <div
-                      className="h-4 w-4 animate-spin rounded-full border-2"
-                      style={{
-                        borderColor: CHART_PALETTE.blue,
-                        borderTopColor: "transparent",
-                      }}
+                      className="h-4 w-4 animate-spin rounded-full border-2 border-[#1a73e8] dark:border-[#7ba2e3]"
+                      style={{ borderTopColor: "transparent" }}
                     />
-                    <span
-                      className="text-xs"
-                      style={{ color: CHART_PALETTE.axis }}
-                    >
+                    <span className="text-xs text-[#5f6368] dark:text-[#a9b4c7]">
                       Loading...
                     </span>
                   </div>
@@ -309,19 +278,16 @@ export default function SlowProducts({
                 <td colSpan={4} className="py-2 text-center">
                   <div className="flex flex-col items-center justify-center py-12">
                     {/* Green: an empty list here is good news. */}
-                    <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-50">
-                      <PackageCheck size={22} className="text-green-600" />
+                    <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-50 dark:bg-emerald-400/10">
+                      <PackageCheck
+                        size={22}
+                        className="text-green-600 dark:text-emerald-400"
+                      />
                     </div>
-                    <p
-                      className="text-sm"
-                      style={{ color: CHART_PALETTE.title }}
-                    >
+                    <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
                       No slow moving product data
                     </p>
-                    <p
-                      className="mt-1 text-xs"
-                      style={{ color: CHART_PALETTE.subtitle }}
-                    >
+                    <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                       All products sales are in good state.
                     </p>
                   </div>
@@ -333,12 +299,10 @@ export default function SlowProducts({
                 return (
                   <tr
                     key={`${product.productName ?? product.name}-${product.variantLabel ?? ""}`}
-                    className="border-b transition-colors last:border-0 hover:bg-[#f8f9fa]"
-                    style={{ borderColor: CHART_PALETTE.grid }}
+                    className="border-b transition-colors last:border-0 hover:bg-[#f8f9fa] border-[#e8eaed] dark:hover:bg-white/10 dark:border-white/10"
                   >
                     <td
-                      className={`${TD} tabular-nums`}
-                      style={{ color: CHART_PALETTE.subtitle }}
+                      className={`${TD} tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]`}
                     >
                       {page * pageSize + idx + 1}
                     </td>
@@ -369,21 +333,21 @@ export default function SlowProducts({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-white/10">
         <button
           onClick={() => setPage(Math.max(0, page - 1))}
           disabled={page === 0}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             page === 0
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7]"
           }`}
         >
           <ChevronLeft size={14} />
           Previous
         </button>
 
-        <span className="text-xs text-gray-400 font-medium">
+        <span className="text-xs text-gray-400 font-medium dark:text-[#7b869b]">
           Page {page + 1} of {totalPages} · {sorted.length} products
         </span>
 
@@ -392,8 +356,8 @@ export default function SlowProducts({
           disabled={page >= totalPages - 1}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             page >= totalPages - 1
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7]"
           }`}
         >
           Next

@@ -14,7 +14,7 @@
  * server — so keep the two in step.
  */
 const CARD_FRAME =
-  "w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5 animate-pulse";
+  "w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5 animate-pulse dark:bg-white/5 dark:border-white/10";
 
 /** ChartCard's header: icon tile, title and subtitle, a pill on the right. */
 function HeaderSkeleton({
@@ -27,13 +27,17 @@ function HeaderSkeleton({
   return (
     <div className="mb-5 flex items-center justify-between gap-3">
       <div className="flex items-center gap-3">
-        <div className="h-9 w-9 shrink-0 rounded-xl border border-blue-100 bg-blue-50/60" />
+        <div className="h-9 w-9 shrink-0 rounded-xl border border-blue-100 dark:border-blue-400/20 bg-blue-50/60 dark:bg-blue-400/10" />
         <div className="space-y-2">
-          <div className={`h-4 ${titleWidth} rounded bg-gray-200`} />
-          <div className={`h-3 ${subWidth} rounded bg-gray-100`} />
+          <div
+            className={`h-4 ${titleWidth} rounded bg-gray-200 dark:bg-white/15`}
+          />
+          <div
+            className={`h-3 ${subWidth} rounded bg-gray-100 dark:bg-white/10`}
+          />
         </div>
       </div>
-      <div className="h-6 w-28 rounded-full border border-[#dadce0]" />
+      <div className="h-6 w-28 rounded-full border border-[#dadce0] dark:border-white/15" />
     </div>
   );
 }
@@ -41,12 +45,12 @@ function HeaderSkeleton({
 /** Matches ProfitCostStatBox: label and icon tile, then the value. */
 function StatTileSkeleton() {
   return (
-    <div className="rounded-2xl border border-[#e3e3e3] bg-white px-5 py-4 animate-pulse">
+    <div className="rounded-2xl border border-[#e3e3e3] bg-white px-5 py-4 animate-pulse dark:bg-white/5 dark:border-white/10">
       <div className="mb-3 flex items-center justify-between">
-        <div className="h-3 w-24 rounded bg-gray-200" />
-        <div className="h-8 w-8 rounded-lg border border-gray-100 bg-gray-50" />
+        <div className="h-3 w-24 rounded bg-gray-200 dark:bg-white/15" />
+        <div className="h-8 w-8 rounded-lg border border-gray-100 bg-gray-50 dark:bg-white/5 dark:border-white/10" />
       </div>
-      <div className="h-7 w-32 rounded bg-gray-200" />
+      <div className="h-7 w-32 rounded bg-gray-200 dark:bg-white/15" />
     </div>
   );
 }
@@ -72,13 +76,13 @@ export function ProfitPerProductSkeleton({ rows = 4 }: { rows?: number }) {
       <HeaderSkeleton titleWidth="w-40" subWidth="w-72" />
 
       {/* Search */}
-      <div className="mb-3 h-8 w-full rounded-lg border border-[#dadce0]" />
+      <div className="mb-3 h-8 w-full rounded-lg border border-[#dadce0] dark:border-white/15" />
 
       {/* Table */}
-      <div className="bg-white overflow-x-auto scrollbar-hide">
+      <div className="bg-white overflow-x-auto scrollbar-hide dark:bg-white/5">
         <table className="w-full text-sm min-w-[600px]">
           <thead>
-            <tr className="border-b border-gray-100">
+            <tr className="border-b border-gray-100 dark:border-white/10">
               {["w-8", "w-20", "w-16", "w-14", "w-14", "w-14"].map((w, i) => (
                 <th key={i} className="pb-3 pt-3 px-4">
                   <div
@@ -92,20 +96,23 @@ export function ProfitPerProductSkeleton({ rows = 4 }: { rows?: number }) {
           </thead>
           <tbody>
             {Array.from({ length: rows }).map((_, i) => (
-              <tr key={i} className="border-b border-gray-50 last:border-0">
+              <tr
+                key={i}
+                className="border-b border-gray-50 last:border-0 dark:border-white/5"
+              >
                 <td className="py-3 px-4">
-                  <div className="h-3 w-4 bg-gray-100 rounded" />
+                  <div className="h-3 w-4 bg-gray-100 rounded dark:bg-white/10" />
                 </td>
                 <td className="py-3 px-4">
-                  <div className="h-3 w-32 bg-gray-200 rounded" />
+                  <div className="h-3 w-32 bg-gray-200 rounded dark:bg-white/15" />
                 </td>
                 {Array.from({ length: 3 }).map((_, j) => (
                   <td key={j} className="py-3 px-4">
-                    <div className="h-3 w-16 bg-gray-100 rounded ml-auto" />
+                    <div className="h-3 w-16 bg-gray-100 rounded ml-auto dark:bg-white/10" />
                   </td>
                 ))}
                 <td className="py-3 px-4">
-                  <div className="h-5 w-14 bg-gray-100 rounded-full ml-auto" />
+                  <div className="h-5 w-14 bg-gray-100 rounded-full ml-auto dark:bg-white/10" />
                 </td>
               </tr>
             ))}
@@ -114,10 +121,10 @@ export function ProfitPerProductSkeleton({ rows = 4 }: { rows?: number }) {
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
-        <div className="h-6 w-24 bg-gray-100 rounded-lg" />
-        <div className="h-3 w-40 bg-gray-100 rounded" />
-        <div className="h-6 w-24 bg-gray-100 rounded-lg" />
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-white/10">
+        <div className="h-6 w-24 bg-gray-100 rounded-lg dark:bg-white/10" />
+        <div className="h-3 w-40 bg-gray-100 rounded dark:bg-white/10" />
+        <div className="h-6 w-24 bg-gray-100 rounded-lg dark:bg-white/10" />
       </div>
     </div>
   );
@@ -141,12 +148,12 @@ export function DayTimeProfitHeatmapSkeleton() {
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex">
             {/* Sticky day-label column */}
-            <div className="sticky left-0 z-10 bg-white shrink-0">
+            <div className="sticky left-0 z-10 bg-white shrink-0 dark:bg-white/5">
               <div className="h-6 mb-1 w-12" />
               {Array.from({ length: HEATMAP_DAYS }).map((_, i) => (
                 <div key={i} className="h-10 flex gap-1 items-center mb-1">
                   <div className="w-12 pl-1">
-                    <div className="h-3 w-8 bg-gray-200 rounded" />
+                    <div className="h-3 w-8 bg-gray-200 rounded dark:bg-white/15" />
                   </div>
                 </div>
               ))}
@@ -161,7 +168,7 @@ export function DayTimeProfitHeatmapSkeleton() {
               >
                 {Array.from({ length: HEATMAP_HOURS }).map((_, i) => (
                   <div key={i} className="h-6 flex items-center justify-center">
-                    <div className="h-3 w-8 bg-gray-100 rounded" />
+                    <div className="h-3 w-8 bg-gray-100 rounded dark:bg-white/10" />
                   </div>
                 ))}
               </div>
@@ -174,7 +181,10 @@ export function DayTimeProfitHeatmapSkeleton() {
                   style={{ gridTemplateColumns: columns }}
                 >
                   {Array.from({ length: HEATMAP_HOURS }).map((_, col) => (
-                    <div key={col} className="h-10 rounded bg-gray-100" />
+                    <div
+                      key={col}
+                      className="h-10 rounded bg-gray-100 dark:bg-white/10"
+                    />
                   ))}
                 </div>
               ))}
@@ -185,16 +195,19 @@ export function DayTimeProfitHeatmapSkeleton() {
 
       {/* Legend */}
       <div className="flex items-center justify-end gap-2 mt-4">
-        <div className="h-3 w-8 bg-gray-100 rounded" />
-        <div className="w-4 h-4 rounded bg-gray-200" />
-        <div className="h-3 w-2 bg-gray-100 rounded" />
-        <div className="h-3 w-6 bg-gray-100 rounded" />
+        <div className="h-3 w-8 bg-gray-100 rounded dark:bg-white/10" />
+        <div className="w-4 h-4 rounded bg-gray-200 dark:bg-white/15" />
+        <div className="h-3 w-2 bg-gray-100 rounded dark:bg-white/10" />
+        <div className="h-3 w-6 bg-gray-100 rounded dark:bg-white/10" />
         <div className="flex gap-1">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="w-4 h-4 rounded bg-gray-200" />
+            <div
+              key={i}
+              className="w-4 h-4 rounded bg-gray-200 dark:bg-white/15"
+            />
           ))}
         </div>
-        <div className="h-3 w-16 bg-gray-100 rounded" />
+        <div className="h-3 w-16 bg-gray-100 rounded dark:bg-white/10" />
       </div>
     </div>
   );

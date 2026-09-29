@@ -11,7 +11,7 @@ import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import RangeBadge from "@/components/ui/RangeBadge";
 import { Grid3x3 } from "lucide-react";
-import { CHART_PALETTE, ChartCard } from "../chartCard";
+import { ChartCard } from "../chartCard";
 
 export interface DayTimeProfitData {
   day: string;
@@ -24,20 +24,26 @@ interface DayTimeProfitHeatmapProps {
 }
 
 const getColor = (profit: number): string => {
-  if (profit < 0) return "bg-red-300";
-  if (profit >= 200) return "bg-emerald-600";
-  if (profit >= 150) return "bg-emerald-500";
-  if (profit >= 100) return "bg-emerald-400";
-  if (profit >= 50) return "bg-emerald-300";
-  if (profit > 0) return "bg-emerald-200";
-  if (profit === 0) return "bg-emerald-100";
-  return "bg-emerald-100";
+  if (profit < 0) return "bg-red-300 dark:bg-red-500/35";
+  if (profit >= 200) return "bg-emerald-600 dark:bg-emerald-400/90";
+  if (profit >= 150) return "bg-emerald-500 dark:bg-emerald-400/70";
+  if (profit >= 100) return "bg-emerald-400 dark:bg-emerald-400/50";
+  if (profit >= 50) return "bg-emerald-300 dark:bg-emerald-400/35";
+  if (profit > 0) return "bg-emerald-200 dark:bg-emerald-400/20";
+  if (profit === 0) return "bg-emerald-100 dark:bg-emerald-400/10";
+  return "bg-emerald-100 dark:bg-emerald-400/10";
 };
 
+/**
+ * Ink for a cell. On white the deep end needs white text; on the dark card the
+ * ends swap over — the quiet cells are the dark ones now, and only the brightest
+ * band is light enough to take dark ink.
+ */
 const getTextColor = (profit: number): string => {
-  if (profit < 0) return "text-red-900";
-  if (profit >= 90) return "text-white";
-  return "text-gray-700";
+  if (profit < 0) return "text-red-900 dark:text-red-200";
+  if (profit >= 150) return "text-white dark:text-[#0f1420]";
+  if (profit >= 90) return "text-white dark:text-[#e8ecf4]";
+  return "text-gray-700 dark:text-[#c3ccdc]";
 };
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -106,16 +112,13 @@ export default function DayTimeProfitHeatmap({
           {/* Flex layout: fixed day labels + scrollable cells */}
           <div className="flex">
             {/* Fixed day labels column */}
-            <div className="sticky left-0 z-10 shrink-0 bg-white">
+            <div className="sticky left-0 z-10 shrink-0 bg-white dark:bg-[#161D2E]">
               {/* Time header spacer */}
               <div className="mb-1 h-6 w-12"></div>
               {/* Day labels */}
               {DAYS.map((day) => (
                 <div key={day} className="mb-1 flex h-10 items-center gap-1">
-                  <span
-                    className="w-12 pl-1 text-xs"
-                    style={{ color: CHART_PALETTE.axis }}
-                  >
+                  <span className="w-12 pl-1 text-xs text-[#5f6368] dark:text-[#a9b4c7]">
                     {day}
                   </span>
                 </div>
@@ -134,8 +137,7 @@ export default function DayTimeProfitHeatmap({
                 {TIME_COLUMNS.map(({ label }) => (
                   <div
                     key={label}
-                    className="flex h-6 items-center justify-center text-center text-[11px]"
-                    style={{ color: CHART_PALETTE.subtitle }}
+                    className="flex h-6 items-center justify-center text-center text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]"
                   >
                     {label}
                   </div>
@@ -201,27 +203,17 @@ export default function DayTimeProfitHeatmap({
       </div>
 
       {/* Legend: the colour scale, under the grid on the right */}
-      <div
-        className="mt-3 flex items-center justify-end gap-2 pr-2 text-[13px]"
-        style={{ color: CHART_PALETTE.title }}
-      >
-        <span className="h-2.5 w-2.5 rounded-[2px] bg-red-300" />
+      <div className="mt-3 flex items-center justify-end gap-2 pr-2 text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
+        <span className={`h-2.5 w-2.5 rounded-[2px] ${getColor(-1)}`} />
         <span>Loss</span>
-        <span
-          className="mx-1 h-3 w-px"
-          style={{ backgroundColor: CHART_PALETTE.control }}
-        />
+        <span className="mx-1 h-3 w-px bg-[#dadce0] dark:bg-white/15" />
         <span>Low</span>
         <div className="flex gap-0.5">
-          {[
-            "bg-emerald-100",
-            "bg-emerald-200",
-            "bg-emerald-300",
-            "bg-emerald-400",
-            "bg-emerald-500",
-            "bg-emerald-600",
-          ].map((shade) => (
-            <span key={shade} className={`h-2.5 w-4 rounded-[2px] ${shade}`} />
+          {[0, 25, 75, 125, 175, 250].map((sample) => (
+            <span
+              key={sample}
+              className={`h-2.5 w-4 rounded-[2px] ${getColor(sample)}`}
+            />
           ))}
         </div>
         <span>High profit</span>

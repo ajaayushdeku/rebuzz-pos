@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 export const ComponentHeader = ({
   title,
   subHeader,
-  titleColor = "text-gray-900",
+  titleColor = "text-gray-900 dark:text-[#e8ecf4]",
 }: {
   title: ReactNode;
   subHeader: ReactNode;
@@ -16,7 +16,7 @@ export const ComponentHeader = ({
       >
         {title}
       </h2>
-      <p className="text-xs text-gray-400 mt-0.5  tracking-[0.5px] ">
+      <p className="text-xs text-gray-400 mt-0.5  tracking-[0.5px] dark:text-[#9aa6bd]">
         {subHeader}
       </p>
     </div>

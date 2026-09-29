@@ -16,11 +16,11 @@ import { CustomTooltipProps } from "@/lib/types/chart";
 import { TrendingUp } from "lucide-react";
 import ChartSkeleton from "@/components/ui/chartskeleton";
 import {
-  AXIS_TICK,
   CHART_PALETTE,
   ChartCard,
   ChartLegend,
   ChartTooltipBox,
+  getAxisTick,
   niceTicks,
   yAxisTitle,
 } from "../chartCard";
@@ -96,6 +96,27 @@ export default function GrossProfitTrendChart() {
     values.length > 0 ? Math.max(...values) : 0,
   );
 
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
+
   return (
     <ChartCard
       icon={TrendingUp}
@@ -111,15 +132,12 @@ export default function GrossProfitTrendChart() {
       {isLoading ? (
         <ChartSkeleton />
       ) : isError ? (
-        <div
-          className="flex h-56 items-center justify-center text-sm"
-          style={{ color: CHART_PALETTE.axis }}
-        >
+        <div className="flex h-56 items-center justify-center text-sm text-[#5f6368] dark:text-[#a9b4c7]">
           Failed to load profit data
         </div>
       ) : (
         <>
-          <div className="h-56 sm:h-64 md:h-72">
+          <div className="h-56 sm:h-64 md:h-72 dark:[&_.recharts-tooltip-cursor]:stroke-[#3d4657]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={data}

@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Target, Loader2, Save } from "lucide-react";
+import {
+  Target,
+  Loader2,
+  Save,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+} from "lucide-react";
 import ModalShell, {
   modalGhostButton,
   modalPrimaryButton,
@@ -104,11 +111,21 @@ export default function SetTargetsModal({
     setDraft((prev) => ({ ...prev, [month]: isNaN(parsed) ? 0 : parsed }));
   };
 
-  // Variance vs actual, avoiding Infinity% when the target is 0.
-  const getVariance = (actual: number, target: number): string => {
-    if (target === 0) return actual === 0 ? "0.0" : "100.0";
+  // Variance vs actual. Null when no target is set: the old code answered
+  // "0.0" or "100.0" there, which reads as a verdict on a month the owner has
+  // not planned yet.
+  const getVariance = (actual: number, target: number): string | null => {
+    if (target <= 0) return null;
     return Math.abs(((actual - target) / target) * 100).toFixed(1);
   };
+
+  // How much of the year is planned, for the footer.
+  const monthsSet = rows.filter((m) => (draft[m.month] ?? 0) > 0).length;
+
+  // Which row to mark as today's, when the year on screen is the current one.
+  const now = new Date();
+  const currentMonth =
+    resolvedYear === now.getFullYear() ? now.getMonth() + 1 : null;
 
   return (
     <ModalShell
@@ -118,20 +135,30 @@ export default function SetTargetsModal({
       title="Set monthly targets"
       subtitle={`Enter revenue targets for each month of ${resolvedYear}`}
       icon={Target}
-      iconColor="text-blue-600"
-      iconBgColor="bg-blue-50"
+      iconColor="text-blue-600 dark:text-[#a8c4ee]"
+      iconBgColor="bg-blue-50 dark:bg-blue-400/15"
       maxWidth="max-w-lg"
       footer={
         <div className="space-y-2.5">
           {/* Total stays in the footer so it is visible while scrolling the
               month list. One line rather than a card — the modal was running
               tall and this block was the cheapest height to give back. */}
-          <div className="flex items-center justify-between gap-3 rounded-lg border border-blue-100 bg-blue-50/60 px-3 py-4">
-            <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-500">
-              <Target size={13} className="text-blue-600" />
-              Total annual target
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-blue-100 bg-blue-50/60 px-3 py-4 dark:border-blue-400/20 dark:bg-blue-400/10">
+            <span className="min-w-0">
+              <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-500 dark:text-[#a9b4c7]">
+                <Target
+                  size={13}
+                  className="text-blue-600 dark:text-[#a8c4ee]"
+                />
+                Total annual target
+              </span>
+              {/* How much of the year is actually planned — the total alone
+                  looks the same whether one month is set or twelve. */}
+              <span className="mt-0.5 block text-[11px] text-gray-400 dark:text-[#7b869b]">
+                {monthsSet} of 12 months set
+              </span>
             </span>
-            <span className="text-[18px] font-bold text-gray-700 tabular-nums">
+            <span className="text-[18px] font-bold text-gray-700 tabular-nums dark:text-[#e8ecf4]">
               {formatCurrencySymbol(
                 totalTarget,
                 currency.symbol,
@@ -172,12 +199,12 @@ export default function SetTargetsModal({
       }
     >
       {isLoading ? (
-        <div className="flex items-center justify-center gap-2 py-16 text-[13px] text-gray-400">
+        <div className="flex items-center justify-center gap-2 py-16 text-[13px] text-gray-400 dark:text-[#9aa6bd]">
           <Loader2 size={15} className="animate-spin" />
           Loading targets
         </div>
       ) : isError ? (
-        <div className="py-16 text-center text-[13px] text-red-500">
+        <div className="py-16 text-center text-[13px] text-red-500 dark:text-red-400">
           Couldn&apos;t load targets. Please try again.
         </div>
       ) : (
@@ -185,8 +212,8 @@ export default function SetTargetsModal({
            dropping the per-row borders and padding takes ~12px off every row. */
         <div className="max-h-[42vh] overflow-y-auto rounded-md [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <table className="w-full border-collapse text-sm">
-            <thead className="sticky top-0 z-10 bg-gray-50">
-              <tr className="text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-400">
+            <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-[#1b2436]">
+              <tr className="text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-400 dark:text-[#9aa6bd]">
                 <th className="px-3 py-2 text-left">Month</th>
                 <th className="px-3 py-2 text-right">Actual</th>
                 <th className="px-3 py-2 text-right">Target</th>
@@ -197,19 +224,28 @@ export default function SetTargetsModal({
               {rows.map((row) => {
                 const targetValue = draft[row.month] ?? 0;
                 const variance = getVariance(row.actual, targetValue);
-                const isOnTrack =
-                  targetValue === 0 || row.actual >= targetValue;
+                const isOnTrack = row.actual >= targetValue;
+                const isCurrent = row.month === currentMonth;
 
                 return (
                   <tr
                     key={row.month}
-                    className="border-t border-gray-100 py-2 transition-colors hover:bg-gray-50/70"
+                    className={`border-t border-gray-100 py-2 transition-colors hover:bg-gray-50/70 dark:border-white/10 dark:hover:bg-white/5 ${
+                      isCurrent ? "bg-blue-50/40 dark:bg-blue-400/5" : ""
+                    }`}
                   >
-                    <td className="px-3 py-1.5 text-[13px] font-semibold text-gray-900">
-                      {MONTHS_SHORT[row.month - 1]}
+                    <td className="px-3 py-1.5 text-[13px] font-semibold text-gray-900 dark:text-[#e8ecf4]">
+                      <span className="flex items-center gap-1.5">
+                        {MONTHS_SHORT[row.month - 1]}
+                        {isCurrent && (
+                          <span className="rounded-full bg-blue-100 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-blue-700 dark:bg-blue-400/20 dark:text-[#a8c4ee]">
+                            now
+                          </span>
+                        )}
+                      </span>
                     </td>
 
-                    <td className="px-3 py-1.5 text-right text-[12px] font-semibold text-blue-600 tabular-nums">
+                    <td className="px-3 py-1.5 text-right text-[12px] font-semibold text-blue-600 tabular-nums dark:text-[#7ba2e3]">
                       {formatCurrencySymbol(
                         row.actual,
                         currency.symbol,
@@ -219,7 +255,7 @@ export default function SetTargetsModal({
 
                     <td className="px-3 py-1.5">
                       <div className="relative ml-auto w-32">
-                        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-gray-400">
+                        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-gray-400 dark:text-[#7b869b]">
                           {currency.symbol}
                         </span>
                         <input
@@ -231,18 +267,35 @@ export default function SetTargetsModal({
                           disabled={saving}
                           min={0}
                           step={1000}
-                          className="h-8 w-full rounded-lg border border-gray-200 bg-white pl-7 pr-2 text-right text-[12px] tabular-nums text-gray-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50"
+                          className="h-8 w-full rounded-lg border border-gray-200 bg-white pl-7 pr-2 text-right text-[12px] tabular-nums text-gray-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 [appearance:textfield] dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         />
                       </div>
                     </td>
 
-                    <td
-                      className={`px-3 py-1.5 text-right text-[11px] font-semibold tabular-nums ${
-                        isOnTrack ? "text-green-600" : "text-red-500"
-                      }`}
-                    >
-                      <span className="mr-0.5">{isOnTrack ? "▲" : "▼"}</span>
-                      {variance}%
+                    <td className="px-3 py-1.5 text-right text-[11px] font-semibold tabular-nums">
+                      {variance === null ? (
+                        <span
+                          title="No target set for this month"
+                          className="inline-flex items-center gap-0.5 text-gray-300 dark:text-[#6b7588]"
+                        >
+                          <Minus size={11} />
+                        </span>
+                      ) : (
+                        <span
+                          className={`inline-flex items-center gap-0.5 ${
+                            isOnTrack
+                              ? "text-green-600 dark:text-[#10b981]"
+                              : "text-red-500 dark:text-[#f87171]"
+                          }`}
+                        >
+                          {isOnTrack ? (
+                            <TrendingUp size={11} />
+                          ) : (
+                            <TrendingDown size={11} />
+                          )}
+                          {variance}%
+                        </span>
+                      )}
                     </td>
                   </tr>
                 );

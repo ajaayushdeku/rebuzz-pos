@@ -20,14 +20,15 @@ import type {
   VarianceBar,
 } from "@/services/dashboardServices/apiProfitCost";
 import {
-  AXIS_TICK,
   BAR_RADIUS,
   CHART_PALETTE,
   ChartCard,
   ChartLegend,
+  getAxisTick,
   niceTicks,
   yAxisTitle,
 } from "../chartCard";
+import { useEffect, useState } from "react";
 
 // The same colours as the Profit Waterfall Bridge above it: revenue in the
 // muted blue, a cost in its red, a gain in the light green, and the two
@@ -88,6 +89,26 @@ function WrappedTick({
       lines = [text.slice(0, at), text.slice(at + 1)];
     }
   }
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
   return (
     <text
       x={x}
@@ -128,41 +149,30 @@ function CauseTooltip({
   const row = "flex flex-row justify-between gap-4";
 
   return (
-    <div
-      className="min-w-44 rounded-lg border bg-white px-3 py-2.5 text-xs shadow-sm"
-      style={{ borderColor: CHART_PALETTE.control, color: CHART_PALETTE.axis }}
-    >
-      <p className="mb-1.5" style={{ color: CHART_PALETTE.title }}>
-        {label}
-      </p>
+    <div className="min-w-44 rounded-lg border border-[#dadce0] bg-white px-3 py-2.5 text-xs text-[#5f6368] shadow-sm dark:border-white/15 dark:bg-[#1b2436] dark:text-[#a9b4c7]">
+      <p className="mb-1.5 text-[#3c4043] dark:text-[#e8ecf4]">{label}</p>
 
       <p className={row}>
         This month
-        <span
-          className="font-medium tabular-nums"
-          style={{ color: CHART_PALETTE.title }}
-        >
+        <span className="font-medium tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
           {money(bar.current)}
         </span>
       </p>
       <p className={row}>
         Last month
-        <span className="tabular-nums" style={{ color: CHART_PALETTE.title }}>
+        <span className="tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
           {money(bar.previous)}
         </span>
       </p>
 
       <p
-        className={`${row} mt-1 border-t pt-1`}
-        style={{
-          borderColor: CHART_PALETTE.grid,
-          color:
-            variance === 0
-              ? CHART_PALETTE.subtitle
-              : helped
-                ? CHART_PALETTE.good
-                : CHART_PALETTE.bad,
-        }}
+        className={`${row} mt-1 border-t border-[#e8eaed] pt-1 dark:border-white/10 ${
+          variance === 0
+            ? "text-[#9aa0a6] dark:text-[#9aa6bd]"
+            : helped
+              ? "text-[#1e8e3e] dark:text-[#10b981]"
+              : "text-[#d93025] dark:text-[#f87171]"
+        }`}
       >
         Variance
         <span className="font-medium tabular-nums">
@@ -174,15 +184,15 @@ function CauseTooltip({
 
       {!isEnd && (
         <p
-          className={`${row} mt-1 border-t pt-1`}
-          style={{ borderColor: CHART_PALETTE.grid }}
+          className={`${row} mt-1 border-t pt-1 border-[#e8eaed] dark:border-white/10`}
         >
           Profit so far
           <span
-            className="font-medium tabular-nums"
-            style={{
-              color: bar.value < 0 ? BELOW_ZERO : CHART_PALETTE.title,
-            }}
+            className={`font-medium tabular-nums ${
+              bar.value < 0
+                ? "text-[#b91c1c] dark:text-[#fca5a5]"
+                : "text-[#3c4043] dark:text-[#e8ecf4]"
+            }`}
           >
             {money(bar.value)}
           </span>
@@ -228,6 +238,27 @@ export default function ProfitVarianceBridge({
     values.length > 0 ? Math.max(...values) : 0,
   );
 
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
+
   return (
     <ChartCard
       icon={ArrowLeftRight}
@@ -247,13 +278,7 @@ export default function ProfitVarianceBridge({
       controls={<ExpenseBadge variant="pill" />}
     >
       {!hasData ? (
-        <p
-          className="rounded-xl border border-dashed px-4 py-14 text-center text-xs"
-          style={{
-            borderColor: CHART_PALETTE.control,
-            color: CHART_PALETTE.subtitle,
-          }}
-        >
+        <p className="rounded-xl border border-dashed px-4 py-14 text-center text-xs border-[#dadce0] dark:border-white/15 text-[#9aa0a6] dark:text-[#9aa6bd]">
           Nothing moved between these two months, so there is no change to
           explain yet.
         </p>
@@ -308,18 +333,18 @@ export default function ProfitVarianceBridge({
 
           <ChartLegend items={LEGEND_ITEMS} />
           {/* 
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3 text-[12px] tracking-wide">
-            <span className="text-gray-500 text-[12px] tracking-wide">
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3 text-[12px] tracking-wide dark:border-white/10">
+            <span className="text-gray-500 text-[12px] tracking-wide dark:text-[#9aa6bd]">
               vs{" "}
-              <span className="font-semibold text-gray-700">
+              <span className="font-semibold text-gray-700 dark:text-[#c3ccdc]">
                 {monthName(previous.start)}
               </span>
             </span>
-            <span className="text-gray-500">
+            <span className="text-gray-500 dark:text-[#9aa6bd]">
               Net profit{" "}
               <span
                 className={`font-semibold tabular-nums ${
-                  up ? "text-green-600" : "text-red-600"
+                  up ? "text-green-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
                 }`}
               >
                 {up ? "up" : "down"} {money(Math.abs(change))}
@@ -328,7 +353,7 @@ export default function ProfitVarianceBridge({
           </div> */}
 
           {inProgress && (
-            <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800">
+            <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800 dark:text-amber-200 dark:bg-amber-400/10">
               <Info className="mt-px h-3.5 w-3.5 shrink-0" />
 
               <span>
@@ -340,7 +365,7 @@ export default function ProfitVarianceBridge({
             </p>
           )}
 
-          {/* <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-gray-50 px-3 py-2.5 text-[11px] leading-relaxed text-gray-500">
+          {/* <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-gray-50 px-3 py-2.5 text-[11px] leading-relaxed text-gray-500 dark:bg-white/5 dark:text-[#9aa6bd]">
             <Info className="mt-px h-3.5 w-3.5 shrink-0" />
             <span>
               Fixed to whole months, so the date range at the top of the page
@@ -351,7 +376,7 @@ export default function ProfitVarianceBridge({
           </p> */}
 
           {missing.length > 0 && (
-            <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800">
+            <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800 dark:text-amber-200 dark:bg-amber-400/10">
               <Info className="mt-px h-3.5 w-3.5 shrink-0" />
               <span>
                 Some figures could not be loaded ({missing.join(", ")}), so

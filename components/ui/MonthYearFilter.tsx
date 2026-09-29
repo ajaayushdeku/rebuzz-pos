@@ -70,19 +70,19 @@ export function FilterDropdown({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-[13px] text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 cursor-pointer transition"
+        className="w-full flex items-center justify-between gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-[13px] text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 cursor-pointer transition dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc]"
       >
         <span className="truncate">{selected?.label ?? "—"}</span>
         <ChevronDown
           size={14}
-          className={`shrink-0 text-gray-400 transition-transform duration-200 ${
+          className={`shrink-0 text-gray-400 transition-transform duration-200 dark:text-[#7b869b] ${
             open ? "rotate-180" : ""
           }`}
         />
       </button>
 
       <div
-        className={`absolute z-30 mt-1 w-full origin-top rounded-md border border-gray-200 bg-white shadow-lg p-1 transition-all duration-200 ${
+        className={`absolute z-30 mt-1 w-full origin-top rounded-md border border-gray-200 bg-white shadow-lg p-1 transition-all duration-200 dark:border-white/15 dark:bg-[#1b2436] ${
           open
             ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
             : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
@@ -98,8 +98,8 @@ export function FilterDropdown({
             }}
             className={`w-full text-left px-2.5 py-1.5 text-[13px] rounded-md transition-colors cursor-pointer ${
               value === opt.value
-                ? "bg-blue-50 text-blue-700 font-medium"
-                : "text-gray-600 hover:bg-gray-100"
+                ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-400/15 dark:text-[#a8c4ee]"
+                : "text-gray-600 hover:bg-gray-100 dark:text-[#c3ccdc] dark:hover:bg-white/10"
             }`}
           >
             {opt.label}
@@ -134,7 +134,7 @@ export function MonthYearFilter({
 
   return (
     <div className="flex items-center gap-1.5">
-      <CalendarDays className="h-4 w-4 text-gray-400 shrink-0" />
+      <CalendarDays className="h-4 w-4 text-gray-400 shrink-0 dark:text-[#9aa6bd]" />
       <FilterDropdown
         value={month}
         options={MONTHS.map((name, idx) => ({ value: idx + 1, label: name }))}

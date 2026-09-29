@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { CustomTooltipProps } from "@/lib/types/chart";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
@@ -20,13 +20,13 @@ import { FilterSelect } from "@/components/ui/FilterSelect";
 import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import {
   BAR_RADIUS,
-  AXIS_TICK,
   CHART_PALETTE,
   ChartCard,
   ChartLegend,
   ChartTooltipBox,
   niceTicks,
   yAxisTitle,
+  getAxisTick,
 } from "../chartCard";
 
 export interface PeakHourlyData {
@@ -105,7 +105,7 @@ const HOUR_RANGE_OPTIONS = [
 
 /** The From / To hour inputs, outlined like the card's other controls. */
 const HOUR_INPUT_CLASS =
-  "w-14 rounded-lg border bg-white px-2 py-2 text-xs focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500";
+  "w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-2 text-xs text-[#3c4043] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]";
 
 /** A round arrow over the chart's edge, shown while there is more to scroll. */
 const ScrollButton = ({
@@ -121,8 +121,7 @@ const ScrollButton = ({
     aria-label={side === "left" ? "Scroll left" : "Scroll right"}
     className={`absolute top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border bg-white transition-colors hover:bg-[#f1f3f4] ${
       side === "left" ? "left-0" : "right-0"
-    }`}
-    style={{ borderColor: CHART_PALETTE.control, color: CHART_PALETTE.axis }}
+    } border-[#dadce0] dark:border-white/15 text-[#5f6368] dark:text-[#a9b4c7]`}
   >
     {side === "left" ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
   </button>
@@ -232,6 +231,27 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
     updateScrollButtons();
   };
 
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
+
   return (
     <ChartCard
       icon={Clock}
@@ -257,17 +277,11 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
               />
 
               {/* Vertical divider */}
-              <div
-                className="mx-1 h-6 w-px"
-                style={{ backgroundColor: CHART_PALETTE.control }}
-              />
+              <div className="mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" />
 
               {/* Custom From / To hour inputs */}
               <div className="flex items-center gap-1.5">
-                <label
-                  className="whitespace-nowrap text-xs"
-                  style={{ color: CHART_PALETTE.axis }}
-                >
+                <label className="whitespace-nowrap text-xs text-[#5f6368] dark:text-[#a9b4c7]">
                   From
                 </label>
                 <input
@@ -277,15 +291,8 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
                   value={fromHour}
                   onChange={(e) => handleFromChange(Number(e.target.value))}
                   className={HOUR_INPUT_CLASS}
-                  style={{
-                    borderColor: CHART_PALETTE.control,
-                    color: CHART_PALETTE.title,
-                  }}
                 />
-                <label
-                  className="whitespace-nowrap text-xs"
-                  style={{ color: CHART_PALETTE.axis }}
-                >
+                <label className="whitespace-nowrap text-xs text-[#5f6368] dark:text-[#a9b4c7]">
                   To
                 </label>
                 <input
@@ -295,10 +302,6 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
                   value={toHour}
                   onChange={(e) => handleToChange(Number(e.target.value))}
                   className={HOUR_INPUT_CLASS}
-                  style={{
-                    borderColor: CHART_PALETTE.control,
-                    color: CHART_PALETTE.title,
-                  }}
                 />
               </div>
             </div>
@@ -362,7 +365,10 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
                       fontSize={10}
                     >
                       {payload.value}
-                      <tspan fontSize={8} fill={CHART_PALETTE.subtitle}>
+                      <tspan
+                        fontSize={8}
+                        className="fill-[#9aa0a6] dark:fill-[#7b869b]"
+                      >
                         {" "}
                         [{toAmPm(payload.value)}]
                       </tspan>

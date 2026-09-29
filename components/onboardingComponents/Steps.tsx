@@ -31,10 +31,10 @@ interface StepOneProps {
 export const StepOne = ({ form, update }: StepOneProps) => {
   return (
     <div>
-      <h1 className="text-3xl font-extrabold text-slate-900 mb-1">
+      <h1 className="text-3xl font-extrabold text-slate-900 mb-1 dark:text-[#e8ecf4]">
         Welcome aboard!
       </h1>
-      <p className="text-slate-500 mb-8 text-sm">
+      <p className="text-slate-500 mb-8 text-sm dark:text-[#9aa6bd]">
         Let&lsquo;s start with the basics.
       </p>
       <div className="grid grid-cols-2 gap-x-4">
@@ -69,10 +69,10 @@ interface StepTwoProps {
 export const StepTwo = ({ form, update }: StepTwoProps) => {
   return (
     <div>
-      <h1 className="text-3xl font-extrabold text-slate-900 mb-1">
+      <h1 className="text-3xl font-extrabold text-slate-900 mb-1 dark:text-[#e8ecf4]">
         About your business
       </h1>
-      <p className="text-slate-500 mb-8 text-sm">
+      <p className="text-slate-500 mb-8 text-sm dark:text-[#9aa6bd]">
         Help us personalize your experience.
       </p>
       <FormInput
@@ -126,10 +126,10 @@ interface StepThreeProps {
 export const StepThree = ({ form, toggleGoal }: StepThreeProps) => {
   return (
     <div>
-      <h1 className="text-3xl font-extrabold text-slate-900 mb-1">
+      <h1 className="text-3xl font-extrabold text-slate-900 mb-1 dark:text-[#e8ecf4]">
         What brings you here?
       </h1>
-      <p className="text-slate-500 mb-8 text-sm">
+      <p className="text-slate-500 mb-8 text-sm dark:text-[#9aa6bd]">
         Select all that apply — we&apos;ll set up your dashboard accordingly.
       </p>
       <div className="grid grid-cols-2 gap-3 mb-6">

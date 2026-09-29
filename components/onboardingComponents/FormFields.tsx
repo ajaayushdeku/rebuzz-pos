@@ -24,7 +24,7 @@ export const FormInput = ({
 }: FormInputProps) => {
   return (
     <div className="mb-5">
-      <label className="block text-xs font-semibold text-gray-700 mb-1.5 tracking-wide">
+      <label className="block text-xs font-semibold text-gray-700 mb-1.5 tracking-wide dark:text-[#c3ccdc]">
         {label}
       </label>
       <input
@@ -32,7 +32,7 @@ export const FormInput = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-4 py-2.5 rounded-xl border-[1.5px] border-slate-200 bg-slate-50 text-slate-800 text-sm outline-none transition-all duration-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 focus:bg-white"
+        className="w-full px-4 py-2.5 rounded-xl border-[1.5px] border-slate-200 bg-slate-50 text-slate-800 text-sm outline-none transition-all duration-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 focus:bg-white dark:text-[#e8ecf4] dark:border-white/15 dark:bg-white/5"
       />
     </div>
   );
@@ -55,12 +55,12 @@ export const FormSelect = ({
 }: FormSelectProps) => {
   return (
     <div className="mb-5">
-      <label className="block text-xs font-semibold text-gray-700 mb-1.5 tracking-wide">
+      <label className="block text-xs font-semibold text-gray-700 mb-1.5 tracking-wide dark:text-[#c3ccdc]">
         {label}
       </label>
 
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="w-full rounded-xl border-[1.5px] border-slate-200 bg-slate-50 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100">
+        <SelectTrigger className="w-full rounded-xl border-[1.5px] border-slate-200 bg-slate-50 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-white/15 dark:bg-white/5">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
 

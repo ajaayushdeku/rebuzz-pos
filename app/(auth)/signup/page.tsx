@@ -32,7 +32,7 @@ const BUSINESS_SLUG = process.env.NEXT_PUBLIC_BUSINESS_SLUG ?? "java";
 
 /** The input style shared by every field, so they always agree. */
 const INPUT_CLASS =
-  "h-12 w-full rounded-xl border border-gray-300 bg-white px-4 text-[15px] text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10";
+  "h-12 w-full rounded-xl border border-gray-300 bg-white dark:bg-white/5 px-4 text-[15px] text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 dark:text-[#e8ecf4] dark:border-white/15 dark:placeholder:text-[#7b869b]";
 
 const SignUpPage = () => {
   const [serverError, setServerError] = useState<string | null>(null);
@@ -78,7 +78,7 @@ const SignUpPage = () => {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-white font-sans">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-white font-sans dark:bg-[#0f1420]">
       <header className="relative flex flex-col items-center justify-center gap-4  pb-4 px-6  sm:px-10">
         <div className="mt-2">
           {" "}
@@ -98,7 +98,7 @@ const SignUpPage = () => {
             priority
           />
           <span className="text-2xl font-bold tracking-tight">
-            <span style={{ color: "#244074" }}>Re</span>
+            <span className="text-[#244074] dark:text-[#7ba2e3]">Re</span>
             <span style={{ color: "#E26924" }}>Buzz</span>
           </span>
         </Link>
@@ -110,17 +110,21 @@ const SignUpPage = () => {
               so come the two halves of signup read as one flow. */}
           <span className="mb-1 inline-flex items-center gap-1 pt-1  pr-3">
             <span className="flex h-6 w-6 items-center justify-center">
-              <UserPlus size={16} className="text-blue-600" strokeWidth={2.5} />
+              <UserPlus
+                size={16}
+                className="text-blue-600 dark:text-[#7ba2e3]"
+                strokeWidth={2.5}
+              />
             </span>
-            <span className=" text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600">
+            <span className=" text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600 dark:text-[#7ba2e3]">
               Step 1 of 2 &middot; Create account
             </span>
           </span>
 
-          <h1 className="text-2xl font-bold leading-tight tracking-tight text-gray-900 sm:text-3xl">
+          <h1 className="text-2xl font-bold leading-tight tracking-tight text-gray-900 sm:text-3xl dark:text-[#e8ecf4]">
             Create your account
           </h1>
-          <p className="mt-1.5 text-sm leading-relaxed text-gray-500">
+          <p className="mt-1.5 text-sm leading-relaxed text-gray-500 dark:text-[#9aa6bd]">
             Free to start, and no card needed — you can be selling in minutes.
           </p>
 
@@ -132,7 +136,7 @@ const SignUpPage = () => {
             {/* Full Name — full width across the grid on larger screens. */}
             <div className="sm:col-span-2">
               <label
-                className="mb-1.5 block text-[13px] font-medium text-gray-700"
+                className="mb-1.5 block text-[13px] font-medium text-gray-700 dark:text-[#c3ccdc]"
                 htmlFor="fullName"
               >
                 Full Name
@@ -147,7 +151,7 @@ const SignUpPage = () => {
                 })}
               />
               {errors.fullName && (
-                <p className="mt-1 text-xs text-red-500">
+                <p className="mt-1 text-xs text-red-500 dark:text-red-400">
                   {errors.fullName.message}
                 </p>
               )}
@@ -156,7 +160,7 @@ const SignUpPage = () => {
             {/* Email */}
             <div>
               <label
-                className="mb-1.5 block text-[13px] font-medium text-gray-700"
+                className="mb-1.5 block text-[13px] font-medium text-gray-700 dark:text-[#c3ccdc]"
                 htmlFor="email"
               >
                 Email
@@ -175,7 +179,7 @@ const SignUpPage = () => {
                 })}
               />
               {errors.email && (
-                <p className="mt-1 text-xs text-red-500">
+                <p className="mt-1 text-xs text-red-500 dark:text-red-400">
                   {errors.email.message}
                 </p>
               )}
@@ -184,7 +188,7 @@ const SignUpPage = () => {
             {/* Phone Number */}
             <div>
               <label
-                className="mb-1.5 block text-[13px] font-medium text-gray-700"
+                className="mb-1.5 block text-[13px] font-medium text-gray-700 dark:text-[#c3ccdc]"
                 htmlFor="phone"
               >
                 Phone Number
@@ -203,7 +207,7 @@ const SignUpPage = () => {
                 })}
               />
               {errors.phone && (
-                <p className="mt-1 text-xs text-red-500">
+                <p className="mt-1 text-xs text-red-500 dark:text-red-400">
                   {errors.phone.message}
                 </p>
               )}
@@ -212,7 +216,7 @@ const SignUpPage = () => {
             {/* Password */}
             <div>
               <label
-                className="mb-1.5 block text-[13px] font-medium text-gray-700"
+                className="mb-1.5 block text-[13px] font-medium text-gray-700 dark:text-[#c3ccdc]"
                 htmlFor="password"
               >
                 Password
@@ -234,22 +238,22 @@ const SignUpPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-blue-600 text-xs font-semibold hover:underline cursor-pointer"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-blue-600 text-xs font-semibold hover:underline cursor-pointer dark:text-[#7ba2e3]"
                 >
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
               {errors.password ? (
-                <p className="mt-1 text-xs text-red-500">
+                <p className="mt-1 text-xs text-red-500 dark:text-red-400">
                   {errors.password.message}
                 </p>
               ) : passwordValue.length >= 8 && passwordHints.length > 0 ? (
-                <p className="mt-1 text-xs text-amber-600">
+                <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
                   Your password is valid, but adding{" "}
                   {passwordHints.join(" and ")} would make it stronger.
                 </p>
               ) : (
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-gray-500 dark:text-[#9aa6bd]">
                   At least 8 characters, but longer is better.
                 </p>
               )}
@@ -258,7 +262,7 @@ const SignUpPage = () => {
             {/* Confirm Password */}
             <div>
               <label
-                className="mb-1.5 block text-[13px] font-medium text-gray-700"
+                className="mb-1.5 block text-[13px] font-medium text-gray-700 dark:text-[#c3ccdc]"
                 htmlFor="cpass"
               >
                 Confirm Password
@@ -278,17 +282,17 @@ const SignUpPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword((prev) => !prev)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-blue-600 text-xs font-semibold hover:underline cursor-pointer"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-blue-600 text-xs font-semibold hover:underline cursor-pointer dark:text-[#7ba2e3]"
                 >
                   {showConfirmPassword ? "Hide" : "Show"}
                 </button>
               </div>
               {errors.cpass ? (
-                <p className="mt-1 text-xs text-red-500">
+                <p className="mt-1 text-xs text-red-500 dark:text-red-400">
                   {errors.cpass.message}
                 </p>
               ) : (
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-gray-500 dark:text-[#9aa6bd]">
                   Must match your password.
                 </p>
               )}
@@ -298,11 +302,13 @@ const SignUpPage = () => {
                 screens. */}
             <div className="sm:col-span-2">
               <label
-                className="mb-1.5 block text-[13px] font-medium text-gray-700"
+                className="mb-1.5 block text-[13px] font-medium text-gray-700 dark:text-[#c3ccdc]"
                 htmlFor="redeemCode"
               >
                 Redeem Code{" "}
-                <span className="text-gray-400 font-normal">(optional)</span>
+                <span className="text-gray-400 font-normal dark:text-[#7b869b]">
+                  (optional)
+                </span>
               </label>
               <input
                 type="text"
@@ -315,8 +321,8 @@ const SignUpPage = () => {
 
             {/* Server error */}
             {serverError && (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 sm:col-span-2">
-                <p className="text-[13px] leading-snug text-red-600">
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 sm:col-span-2 dark:border-red-400/25 dark:bg-red-400/10">
+                <p className="text-[13px] leading-snug text-red-600 dark:text-red-300">
                   {serverError}
                 </p>
               </div>
@@ -332,11 +338,11 @@ const SignUpPage = () => {
           </form>
 
           <div className="mt-4 text-center">
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-[#9aa6bd]">
               Already have an account?{" "}
               <Link
                 href="/login"
-                className="font-semibold text-blue-600 transition-colors hover:text-blue-700"
+                className="font-semibold text-blue-600 transition-colors hover:text-blue-700 dark:text-[#7ba2e3] dark:hover:text-[#a8c4ee]"
               >
                 Log in
               </Link>
@@ -346,7 +352,7 @@ const SignUpPage = () => {
           <div className="mt-4 text-center">
             <Link
               href="/"
-              className="inline-flex items-center gap-1 text-xs text-gray-400 transition-colors hover:text-gray-600"
+              className="inline-flex items-center gap-1 text-xs text-gray-400 transition-colors hover:text-gray-600 dark:text-[#7b869b] dark:hover:text-[#c3ccdc]"
             >
               <ArrowLeft className="h-3 w-3" />
               Back to home

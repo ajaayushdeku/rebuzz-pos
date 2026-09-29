@@ -11,7 +11,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import RangeBadge from "@/components/ui/RangeBadge";
 import type { UnitEconomicsData } from "@/services/dashboardServices/apiProfitCost";
-import { CHART_PALETTE, ChartCard } from "../chartCard";
+import { ChartCard } from "../chartCard";
 
 export default function UnitEconomics({ data }: { data: UnitEconomicsData }) {
   const { currency } = useCurrency();
@@ -92,8 +92,7 @@ export default function UnitEconomics({ data }: { data: UnitEconomicsData }) {
           return (
             <div
               key={item.label}
-              className="rounded-xl border px-4 py-4 transition-colors hover:bg-[#f8f9fa]"
-              style={{ borderColor: CHART_PALETTE.border }}
+              className="rounded-xl border px-4 py-4 transition-colors hover:bg-[#f8f9fa] border-[#e3e3e3] dark:border-white/10 dark:hover:bg-white/10"
             >
               <div className="flex items-start gap-2">
                 <Icon
@@ -101,10 +100,7 @@ export default function UnitEconomics({ data }: { data: UnitEconomicsData }) {
                   strokeWidth={2}
                 />
 
-                <p
-                  className="whitespace-pre-line text-[11px] leading-5"
-                  style={{ color: CHART_PALETTE.axis }}
-                >
+                <p className="whitespace-pre-line text-[11px] leading-5 text-[#5f6368] dark:text-[#a9b4c7]">
                   {item.label}
                 </p>
               </div>
@@ -112,17 +108,11 @@ export default function UnitEconomics({ data }: { data: UnitEconomicsData }) {
               {/* Reserved space keeps the four value rows on one baseline
                   whether or not a card carries a secondary line. */}
               <div className="mt-4 min-h-[2.6rem]">
-                <p
-                  className="text-lg font-semibold tracking-tight tabular-nums"
-                  style={{ color: CHART_PALETTE.title }}
-                >
+                <p className="text-lg font-semibold tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                   {item.value}
                 </p>
                 {item.sub && (
-                  <p
-                    className="mt-0.5 text-[11px] leading-4 tabular-nums"
-                    style={{ color: CHART_PALETTE.subtitle }}
-                  >
+                  <p className="mt-0.5 text-[11px] leading-4 tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
                     {item.sub}
                   </p>
                 )}

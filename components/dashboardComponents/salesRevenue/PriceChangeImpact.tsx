@@ -6,7 +6,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import type { PriceChangeImpactItem } from "@/lib/mockData/mockInsightData";
 import LockDimFeactureOverlay from "@/components/LockDimFeactureOverlay";
-import { CHART_PALETTE, ChartCard } from "../chartCard";
+import { ChartCard } from "../chartCard";
 
 interface PriceChangeImpactProps {
   data: PriceChangeImpactItem[];
@@ -42,21 +42,14 @@ export default function PriceChangeImpact({ data }: PriceChangeImpactProps) {
       <LockDimFeactureOverlay component_name="Prime Change Impact" />
 
       {/* Table */}
-      <div
-        className="overflow-x-auto rounded-xl border"
-        style={{ borderColor: CHART_PALETTE.border }}
-      >
+      <div className="overflow-x-auto rounded-xl border border-[#e3e3e3] dark:border-white/10">
         <table className="w-full text-xs">
           <thead>
-            <tr
-              className="border-b bg-[#f8f9fa]"
-              style={{ borderColor: CHART_PALETTE.border }}
-            >
+            <tr className="border-b bg-[#f8f9fa] border-[#e3e3e3] dark:border-white/10 dark:bg-white/5">
               {HEADINGS.map((h) => (
                 <th
                   key={h.label}
-                  className={`px-3 py-2.5 text-[11px] font-normal ${h.align}`}
-                  style={{ color: CHART_PALETTE.axis }}
+                  className={`px-3 py-2.5 text-[11px] font-normal ${h.align} text-[#5f6368] dark:text-[#a9b4c7]`}
                 >
                   {h.label}
                 </th>
@@ -70,38 +63,25 @@ export default function PriceChangeImpact({ data }: PriceChangeImpactProps) {
               return (
                 <tr
                   key={item.id}
-                  className="border-b last:border-0"
-                  style={{ borderColor: CHART_PALETTE.grid }}
+                  className="border-b last:border-0 border-[#e8eaed] dark:border-white/10"
                 >
                   <td className="px-3 py-3.5">
-                    <div style={{ color: CHART_PALETTE.title }}>
+                    <div className="text-[#3c4043] dark:text-[#e8ecf4]">
                       {item.productName}
                     </div>
-                    <div
-                      className="mt-0.5 text-[11px]"
-                      style={{ color: CHART_PALETTE.subtitle }}
-                    >
+                    <div className="mt-0.5 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                       Updated {item.updatedDate}
                     </div>
                   </td>
 
                   <td className="whitespace-nowrap px-3 py-3.5">
-                    <span
-                      className="line-through"
-                      style={{ color: CHART_PALETTE.subtitle }}
-                    >
+                    <span className="line-through text-[#9aa0a6] dark:text-[#9aa6bd]">
                       {fmt(item.oldPrice)}
                     </span>
-                    <span
-                      className="mx-1.5"
-                      style={{ color: CHART_PALETTE.control }}
-                    >
+                    <span className="mx-1.5 text-[#dadce0] dark:text-[#3d4657]">
                       →
                     </span>
-                    <span
-                      className="font-medium"
-                      style={{ color: CHART_PALETTE.title }}
-                    >
+                    <span className="font-medium text-[#3c4043] dark:text-[#e8ecf4]">
                       {fmt(item.newPrice)}
                     </span>
                   </td>

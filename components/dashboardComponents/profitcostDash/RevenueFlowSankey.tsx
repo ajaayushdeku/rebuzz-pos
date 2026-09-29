@@ -884,21 +884,20 @@ export default function RevenueFlowSankey() {
     >
       {data.isLoading ? (
         <div
-          className="flex flex-col items-center justify-center gap-3 p-16"
-          style={{ height: chartHeight, color: CHART_PALETTE.subtitle }}
+          className="flex flex-col items-center justify-center gap-3 p-16 text-[#9aa0a6] dark:text-[#9aa6bd]"
+          style={{ height: chartHeight }}
         >
           <Loader2 className="h-6 w-6 animate-spin" />
           <p className="text-sm"> Loading revenue flow…</p>
         </div>
       ) : data.isError || stages.totalIncome <= 0 ? (
         <div
-          className="flex flex-col items-center justify-center text-sm"
-          style={{ height: chartHeight, color: CHART_PALETTE.axis }}
+          className="flex flex-col items-center justify-center text-sm text-[#5f6368] dark:text-[#a9b4c7]"
+          style={{ height: chartHeight }}
         >
           <Waypoints
             size={28}
-            className="mb-2"
-            style={{ color: CHART_PALETTE.subtitle }}
+            className="mb-2 text-[#9aa0a6] dark:text-[#9aa6bd]"
           />
           {data.isError
             ? "Failed to load revenue flow data"
@@ -906,7 +905,11 @@ export default function RevenueFlowSankey() {
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <div ref={chartRef} style={{ height: chartHeight, minWidth: 440 }}>
+          <div
+            ref={chartRef}
+            className="dark:[&_.recharts-default-tooltip]:border-white/15! dark:[&_.recharts-default-tooltip]:bg-[#1b2436]! dark:[&_.recharts-default-tooltip]:text-[#e8ecf4]!"
+            style={{ height: chartHeight, minWidth: 440 }}
+          >
             <ResponsiveContainer width="100%" height="100%">
               <Sankey
                 data={sankeyData}
@@ -974,10 +977,10 @@ export default function RevenueFlowSankey() {
                       <text
                         x={labelX}
                         y={midY - 4}
-                        fill="#374151"
                         fontSize={11}
                         fontWeight={600}
                         {...halo}
+                        className="fill-[#374151] stroke-white dark:fill-[#c3ccdc] dark:stroke-[#161d2e]"
                       >
                         {node.name}
                         {node.share && (
@@ -1002,10 +1005,10 @@ export default function RevenueFlowSankey() {
                         <text
                           x={labelX}
                           y={midY + 23}
-                          fill="#94A3B8"
                           fontSize={9.5}
                           fontWeight={500}
                           {...halo}
+                          className="fill-[#94A3B8] stroke-white dark:fill-[#7b869b] dark:stroke-[#161d2e]"
                         >
                           {node.caption}
                         </text>
@@ -1014,11 +1017,11 @@ export default function RevenueFlowSankey() {
                       <text
                         x={labelX}
                         y={midY + 11}
-                        fill="#111827"
                         fontSize={11.5}
                         fontWeight={700}
                         style={{ fontVariantNumeric: "tabular-nums" }}
                         {...halo}
+                        className="fill-[#111827] stroke-white dark:fill-[#e8ecf4] dark:stroke-[#161d2e]"
                       >
                         {fmt(node.displayValue ?? node.value ?? 0)}
                       </text>
@@ -1088,7 +1091,6 @@ export default function RevenueFlowSankey() {
               >
                 <Tooltip
                   cursor={false}
-                  // The shared hover-box look: hairline border, soft shadow.
                   contentStyle={{
                     fontSize: 12,
                     borderRadius: 8,

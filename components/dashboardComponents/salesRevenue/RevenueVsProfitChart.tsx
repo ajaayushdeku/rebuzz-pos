@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -24,7 +24,6 @@ import { ChartColumnBig } from "lucide-react";
 import RangeBadge from "@/components/ui/RangeBadge";
 import {
   BAR_RADIUS,
-  AXIS_TICK,
   CHART_PALETTE,
   ChartCard,
   ChartLegend,
@@ -32,6 +31,7 @@ import {
   ChartTooltipBox,
   niceTicks,
   yAxisTitle,
+  getAxisTick,
 } from "../chartCard";
 
 const REVENUE_COLOR = CHART_PALETTE.blue;
@@ -140,6 +140,26 @@ export default function RevenueVsProfitChart({
   const firstShown = page * ITEMS_PER_PAGE + 1;
   const lastShown = Math.min(allData.length, (page + 1) * ITEMS_PER_PAGE);
 
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
   return (
     <ChartCard
       icon={ChartColumnBig}
@@ -166,7 +186,7 @@ export default function RevenueVsProfitChart({
       }
     >
       {isError && (
-        <p className="-mt-2 mb-3 text-xs text-amber-600">
+        <p className="-mt-2 mb-3 text-xs text-amber-600 dark:text-amber-400">
           Could not refresh — showing last known data.
         </p>
       )}

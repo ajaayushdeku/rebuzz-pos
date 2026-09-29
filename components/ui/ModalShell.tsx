@@ -8,18 +8,18 @@ import { useLockAppScroll } from "@/hooks/useLockAppScroll";
 
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-400">
+    <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-400 dark:text-[#9aa6bd]">
       {children}
     </span>
   );
 }
 
 export const modalInput =
-  "h-11 w-full rounded-xl border bg-white px-3.5 text-[13px] outline-none transition focus:ring-2";
+  "h-11 w-full rounded-xl border bg-white px-3.5 text-[13px] outline-none transition focus:ring-2 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
 export const modalInputIdle =
-  "border-gray-200 focus:border-blue-500 focus:ring-blue-500/20";
+  "border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 dark:border-white/15";
 export const modalInputError =
-  "border-red-300 focus:border-red-400 focus:ring-red-500/20";
+  "border-red-300 focus:border-red-400 focus:ring-red-500/20 dark:border-red-400/50";
 
 /**
  * Matching treatment for a shadcn <SelectTrigger>. Its base sets height via
@@ -27,14 +27,14 @@ export const modalInputError =
  * carry the same variant prefix or it loses on specificity and stays 36px.
  */
 export const modalSelectTrigger =
-  "w-full data-[size=default]:h-11 rounded-xl bg-white px-3.5 text-[13px] shadow-none focus-visible:ring-2";
+  "w-full data-[size=default]:h-11 rounded-xl bg-white px-3.5 text-[13px] shadow-none focus-visible:ring-2 dark:bg-white/5 dark:text-[#e8ecf4]";
 export const modalSelectTriggerIdle =
-  "border-gray-200 focus-visible:border-blue-500 focus-visible:ring-blue-500/20";
+  "border-gray-200 focus-visible:border-blue-500 focus-visible:ring-blue-500/20 dark:border-white/15";
 export const modalSelectTriggerError =
   "border-red-300 focus-visible:border-red-400 focus-visible:ring-red-500/20";
 
 export const modalGhostButton =
-  "shrink-0 rounded-xl px-5 py-3 text-[13px] font-semibold text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50";
+  "shrink-0 rounded-xl px-5 py-3 text-[13px] font-semibold text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 dark:text-[#c3ccdc] dark:hover:bg-white/10 dark:hover:text-white";
 export const modalPrimaryButton =
   "flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white shadow-md transition-all disabled:cursor-not-allowed disabled:opacity-50";
 
@@ -111,7 +111,7 @@ export default function ModalShell({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 p-4  print:hidden"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 p-4  print:hidden dark:bg-black/70"
       onClick={() => !busy && onClose()}
     >
       <div
@@ -119,21 +119,21 @@ export default function ModalShell({
         aria-modal="true"
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
-        className={`relative w-full ${maxWidth} overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 duration-200`}
+        className={`relative w-full ${maxWidth} overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 duration-200 dark:bg-[#161d2e] dark:ring-white/10`}
       >
         {hideHeader && !busy && (
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-[#9aa6bd] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"
           >
             <X size={16} strokeWidth={2.2} />
           </button>
         )}
 
         {!hideHeader && (
-          <div className="flex items-start justify-between border-b border-gray-100 px-6 py-4">
+          <div className="flex items-start justify-between border-b border-gray-100 px-6 py-4 dark:border-white/10">
             <div className="flex min-w-0 items-center gap-3">
               {Icon && (
                 <div
@@ -143,11 +143,11 @@ export default function ModalShell({
                 </div>
               )}
               <div className="min-w-0">
-                <h2 className="text-[15px] font-semibold leading-tight text-gray-900">
+                <h2 className="text-[15px] font-semibold leading-tight text-gray-900 dark:text-[#e8ecf4]">
                   {title}
                 </h2>
                 {subtitle && (
-                  <p className="mt-0.5 truncate text-[12px] text-gray-400">
+                  <p className="mt-0.5 truncate text-[12px] text-gray-400 dark:text-[#9aa6bd]">
                     {subtitle}
                   </p>
                 )}
@@ -157,7 +157,7 @@ export default function ModalShell({
               type="button"
               onClick={() => !busy && onClose()}
               aria-label="Close"
-              className="-mr-1.5 -mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="-mr-1.5 -mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-[#9aa6bd] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"
             >
               <X size={16} strokeWidth={2.2} />
             </button>
@@ -171,7 +171,9 @@ export default function ModalShell({
         </div>
 
         {footer && (
-          <div className="border-t border-gray-100 px-6 py-4 z-1">{footer}</div>
+          <div className="border-t border-gray-100 px-6 py-4 z-1 dark:border-white/10">
+            {footer}
+          </div>
         )}
       </div>
     </div>,
@@ -208,27 +210,37 @@ export function DocumentRow({
     <>
       <div
         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition ${
-          selected ? "bg-blue-100" : "bg-gray-100"
+          selected
+            ? "bg-blue-100 dark:bg-blue-400/20"
+            : "bg-gray-100 dark:bg-white/10"
         }`}
       >
         <Icon
           size={16}
           strokeWidth={1.8}
-          className={selected ? "text-blue-600" : "text-gray-500"}
+          className={
+            selected
+              ? "text-blue-600 dark:text-[#a8c4ee]"
+              : "text-gray-500 dark:text-[#9aa6bd]"
+          }
         />
       </div>
 
       <div className="min-w-0 flex-1 text-left">
-        <p className="text-[13px] font-medium leading-tight text-gray-900">
+        <p className="text-[13px] font-medium leading-tight text-gray-900 dark:text-[#e8ecf4]">
           {label}
         </p>
-        <p className="mt-0.5 text-[11px] text-gray-400">{description}</p>
+        <p className="mt-0.5 text-[11px] text-gray-400 dark:text-[#9aa6bd]">
+          {description}
+        </p>
       </div>
 
       {selectable ? (
         <span
           className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition ${
-            selected ? "border-blue-600 bg-blue-600" : "border-gray-300"
+            selected
+              ? "border-blue-600 bg-blue-600"
+              : "border-gray-300 dark:border-white/25"
           }`}
         >
           {selected && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
@@ -252,8 +264,8 @@ export function DocumentRow({
         onClick={onSelect}
         className={`${base} focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 ${
           selected
-            ? "border-blue-600 bg-blue-50/60"
-            : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
+            ? "border-blue-600 bg-blue-50/60 dark:bg-blue-400/10"
+            : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 dark:border-white/15 dark:bg-white/5 dark:hover:border-white/25 dark:hover:bg-white/10"
         }`}
       >
         {body}
@@ -262,7 +274,9 @@ export function DocumentRow({
   }
 
   return (
-    <div className={`${base} border-gray-200 bg-white hover:border-gray-300`}>
+    <div
+      className={`${base} border-gray-200 bg-white hover:border-gray-300 dark:border-white/15 dark:bg-white/5 dark:hover:border-white/25`}
+    >
       {body}
     </div>
   );

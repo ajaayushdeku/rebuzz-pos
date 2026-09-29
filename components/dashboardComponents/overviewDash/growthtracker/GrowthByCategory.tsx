@@ -150,7 +150,7 @@ export default function GrowthByCategory() {
         // The comparison the whole panel rests on. It was only in the code
         // before, so every percentage on screen was against an unstated
         // baseline.
-        <span className="shrink-0 rounded-full border border-[#dadce0] bg-white px-2.5 py-1 text-[11px] text-[#3c4043]">
+        <span className="shrink-0 rounded-full border border-[#dadce0] bg-white px-2.5 py-1 text-[11px] text-[#3c4043] dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc]">
           Last 30 days vs previous 30
         </span>
       }
@@ -161,24 +161,29 @@ export default function GrowthByCategory() {
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="animate-pulse space-y-2">
               <div className="flex items-center justify-between">
-                <div className="h-3 w-24 bg-gray-200 rounded" />
-                <div className="h-3 w-14 bg-gray-200 rounded" />
+                <div className="h-3 w-24 bg-gray-200 rounded dark:bg-white/15" />
+                <div className="h-3 w-14 bg-gray-200 rounded dark:bg-white/15" />
               </div>
-              <div className="h-2.5 w-full bg-gray-100 rounded-full" />
+              <div className="h-2.5 w-full bg-gray-100 rounded-full dark:bg-white/10" />
             </div>
           ))}
         </div>
       ) : isError ? (
-        <div className="flex items-center justify-center py-10 text-sm text-[#9aa0a6]">
+        <div className="flex items-center justify-center py-10 text-sm text-[#9aa0a6] dark:text-[#9aa6bd]">
           Failed to load category growth
         </div>
       ) : rows.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4]">
-            <TrendingUp size={24} className="text-gray-500" />
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+            <TrendingUp
+              size={24}
+              className="text-gray-500 dark:text-[#9aa6bd]"
+            />
           </div>
-          <p className="text-sm text-[#3c4043]">No category found</p>
-          <p className="mt-1 text-xs text-[#9aa0a6]">
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
+            No category found
+          </p>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             Category growth data will appear here
           </p>
         </div>
@@ -193,12 +198,12 @@ export default function GrowthByCategory() {
                 ? "bg-emerald-500"
                 : negative
                   ? "bg-red-500"
-                  : "bg-gray-300";
+                  : "bg-gray-300 dark:bg-white/20";
               const badgeStyle = positive
-                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-300"
                 : negative
-                  ? "border-red-200 bg-red-50 text-red-600"
-                  : "border-[#dadce0] bg-[#f8f9fa] text-[#5f6368]";
+                  ? "border-red-200 bg-red-50 text-red-600 dark:border-red-400/25 dark:bg-red-400/10 dark:text-red-300"
+                  : "border-[#dadce0] bg-[#f8f9fa] text-[#5f6368] dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc]";
               const TrendIcon = positive
                 ? ArrowUpRight
                 : negative
@@ -223,7 +228,7 @@ export default function GrowthByCategory() {
                 >
                   {/* Name and direction */}
                   <div className="flex items-center justify-between gap-3">
-                    <span className="truncate text-[13px] font-medium text-[#3c4043]">
+                    <span className="truncate text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
                       {row.name}
                     </span>
                     <div
@@ -238,20 +243,20 @@ export default function GrowthByCategory() {
                       computed but never rendered before, which left a bar with
                       no number to anchor it. */}
                   <div className="mt-2 flex items-center gap-3">
-                    <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-[#f1f3f4]">
+                    <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-[#f1f3f4] dark:bg-white/10">
                       <div
                         className={`h-full rounded-full transition-all duration-700 ${barColor}`}
                         style={{ width: `${share}%` }}
                       />
                     </div>
-                    <span className="w-24 shrink-0 text-right text-[12px] font-semibold tracking-wide tabular-nums text-[#3c4043]">
+                    <span className="w-24 shrink-0 text-right text-[12px] font-semibold tracking-wide tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                       {fmt(row.current)}
                     </span>
                   </div>
 
                   {/* What it is being compared against — a percentage with no
                       baseline on screen is a number nobody can check. */}
-                  <p className="mt-1 text-[11px] tracking-wide tabular-nums text-[#9aa0a6]">
+                  <p className="mt-1 text-[11px] tracking-wide tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
                     {row.previous > 0
                       ? `from ${fmt(row.previous)} last period`
                       : "nothing sold last period"}
@@ -263,7 +268,7 @@ export default function GrowthByCategory() {
           {loadMoreCategory < rows.length ? (
             <button
               onClick={handleLoadMore}
-              className="mx-auto mt-5 flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
+              className="mx-auto mt-5 flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:bg-white/10 dark:hover:text-white"
             >
               <ChevronDown size={12} />
               Show {rows.length - loadMoreCategory} more
@@ -272,7 +277,7 @@ export default function GrowthByCategory() {
             <button
               onClick={() => setLoadMoreCategory(4)}
               // Negative colour, as the employee grid's Hide uses.
-              className="mx-auto mt-5 flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11px] text-rose-700 transition-colors hover:bg-rose-100"
+              className="mx-auto mt-5 flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11px] text-rose-700 transition-colors hover:bg-rose-100 dark:border-rose-400/25 dark:bg-rose-400/10 dark:text-rose-300 dark:hover:bg-rose-400/20"
             >
               <ChevronUp size={12} />
               Hide

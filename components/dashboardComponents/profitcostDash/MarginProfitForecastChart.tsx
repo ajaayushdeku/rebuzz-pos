@@ -22,14 +22,15 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCompactCurrency } from "@/utils/helper";
 import { ChartSpline } from "lucide-react";
 import {
-  AXIS_TICK,
   BAR_RADIUS,
   CHART_PALETTE,
   ChartCard,
   ChartLegend,
   ChartTooltipBox,
+  getAxisTick,
   yAxisTitle,
 } from "../chartCard";
+import { useEffect, useState } from "react";
 
 // ── Colours ───────────────────────────────────────────────────────────────
 
@@ -116,6 +117,27 @@ const CustomTooltip = ({
 export default function MarginProfitForecastChart() {
   const { currency } = useCurrency();
   const data = buildChartData(mockMarginTrendData);
+
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
 
   return (
     <ChartCard

@@ -16,13 +16,13 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import { useRefundAnalysis } from "@/hooks/useRefundAnalysis";
 import RangeBadge from "@/components/ui/RangeBadge";
-import { CHART_PALETTE, ChartCard } from "../chartCard";
+import { ChartCard } from "../chartCard";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
 /** Header cell: quiet grey label, normal weight, clickable to sort. */
 const TH =
-  "px-3 pb-2.5 pt-1 text-[11px] font-normal whitespace-nowrap cursor-pointer select-none transition-colors hover:text-[#3c4043]";
+  "px-3 pb-2.5 pt-1 text-[11px] font-normal whitespace-nowrap cursor-pointer select-none transition-colors hover:text-[#3c4043] dark:hover:text-[#e8ecf4]";
 /** Body cell: small text in the title colour. */
 const TD = "px-3 py-2.5 text-xs";
 
@@ -136,8 +136,7 @@ export default function RefundAnalysis({
       <div className="relative mb-3 w-full">
         <Search
           size={13}
-          className="absolute left-3 top-1/2 -translate-y-1/2"
-          style={{ color: CHART_PALETTE.subtitle }}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9aa0a6] dark:text-[#9aa6bd]"
         />
         <input
           type="text"
@@ -147,17 +146,13 @@ export default function RefundAnalysis({
             setSearch(e.target.value);
             setPage(0);
           }}
-          className="w-full rounded-lg border bg-white py-2 pl-8 pr-8 text-[11px] outline-none placeholder:text-[#9aa0a6] focus-visible:ring-2 focus-visible:ring-blue-500"
-          style={{
-            borderColor: CHART_PALETTE.control,
-            color: CHART_PALETTE.title,
-          }}
+          className="w-full rounded-lg border bg-white py-2 pl-8 pr-8 text-[11px] outline-none placeholder:text-[#9aa0a6] focus-visible:ring-2 focus-visible:ring-blue-500 border-[#dadce0] dark:border-white/15 text-[#3c4043] dark:text-[#e8ecf4] dark:bg-white/5"
         />
         {search && (
           <button
             onClick={() => setSearch("")}
             aria-label="Clear search"
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-[#9aa0a6] hover:text-[#5f6368]"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-[#9aa0a6] hover:text-[#5f6368] dark:hover:text-[#e8ecf4] dark:text-[#9aa6bd]"
           >
             <X size={13} />
           </button>
@@ -169,13 +164,7 @@ export default function RefundAnalysis({
       <div className="overflow-x-auto scrollbar-hide">
         <table className="w-full min-w-[580px] table-auto">
           <thead>
-            <tr
-              className="border-b text-left"
-              style={{
-                borderColor: CHART_PALETTE.grid,
-                color: CHART_PALETTE.axis,
-              }}
-            >
+            <tr className="border-b text-left border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
               <th className="w-12 px-3 pb-2.5 pt-1 text-[11px] font-normal whitespace-nowrap">
                 S.No
               </th>
@@ -202,22 +191,16 @@ export default function RefundAnalysis({
             </tr>
           </thead>
 
-          <tbody style={{ color: CHART_PALETTE.title }}>
+          <tbody className="text-[#3c4043] dark:text-[#e8ecf4]">
             {isFetching && !fetchedData ? (
               <tr>
                 <td colSpan={5} className="py-12 text-center">
                   <div className="flex items-center justify-center gap-2">
                     <div
-                      className="h-4 w-4 animate-spin rounded-full border-2"
-                      style={{
-                        borderColor: CHART_PALETTE.blue,
-                        borderTopColor: "transparent",
-                      }}
+                      className="h-4 w-4 animate-spin rounded-full border-2 border-[#1a73e8] dark:border-[#7ba2e3]"
+                      style={{ borderTopColor: "transparent" }}
                     />
-                    <span
-                      className="text-xs"
-                      style={{ color: CHART_PALETTE.axis }}
-                    >
+                    <span className="text-xs text-[#5f6368] dark:text-[#a9b4c7]">
                       Loading...
                     </span>
                   </div>
@@ -227,22 +210,16 @@ export default function RefundAnalysis({
               <tr>
                 <td colSpan={5} className="py-2 text-center">
                   <div className="flex flex-col items-center justify-center py-12">
-                    <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[#f1f3f4]">
+                    <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
                       <Undo2
                         size={22}
-                        style={{ color: CHART_PALETTE.subtitle }}
+                        className="text-[#9aa0a6] dark:text-[#9aa6bd]"
                       />
                     </div>
-                    <p
-                      className="text-sm font-medium"
-                      style={{ color: CHART_PALETTE.title }}
-                    >
+                    <p className="text-sm font-medium text-[#3c4043] dark:text-[#e8ecf4]">
                       No refund data
                     </p>
-                    <p
-                      className="mt-1 text-xs"
-                      style={{ color: CHART_PALETTE.subtitle }}
-                    >
+                    <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                       Refunded data will appear here
                     </p>
                   </div>
@@ -255,37 +232,32 @@ export default function RefundAnalysis({
                   onClick={() => router.push(`/invoices/${item.invoiceNo}`)}
                   // A light blue hover, so the row still reads as a link to
                   // its bill.
-                  className="cursor-pointer border-b transition-colors last:border-0 hover:bg-blue-50/60"
-                  style={{ borderColor: CHART_PALETTE.grid }}
+                  className="cursor-pointer border-b transition-colors last:border-0 hover:bg-blue-50/60 border-[#e8eaed] dark:border-white/10"
                 >
                   <td
-                    className={`${TD} tabular-nums`}
-                    style={{ color: CHART_PALETTE.subtitle }}
+                    className={`${TD} tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]`}
                   >
                     {page * pageSize + idx + 1}
                   </td>
 
                   <td className={TD}>
                     {item.name}
-                    <span
-                      className="ml-2 tabular-nums"
-                      style={{ color: CHART_PALETTE.subtitle }}
-                    >
+                    <span className="ml-2 tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
                       #{item.invoiceNo}
                     </span>
                   </td>
 
-                  <td className={TD} style={{ color: CHART_PALETTE.axis }}>
+                  <td className={`${TD} text-[#5f6368] dark:text-[#a9b4c7]`}>
                     {formatDate(item.createdAt)}
                   </td>
 
-                  <td className={TD} style={{ color: CHART_PALETTE.axis }}>
+                  <td className={`${TD} text-[#5f6368] dark:text-[#a9b4c7]`}>
                     {formatDate(item.updatedAt)}
                   </td>
 
                   {/* Money lost, so red and signed. */}
                   <td
-                    className={`${TD} text-right font-medium tabular-nums text-red-600`}
+                    className={`${TD} text-right font-medium tabular-nums text-red-600 dark:text-red-400`}
                   >
                     -
                     {formatCurrencySymbol(
@@ -302,21 +274,21 @@ export default function RefundAnalysis({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-white/10">
         <button
           onClick={() => setPage(Math.max(0, page - 1))}
           disabled={page === 0}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             page === 0
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7]"
           }`}
         >
           <ChevronLeft size={14} />
           Previous
         </button>
 
-        <span className="text-xs text-gray-400 font-medium">
+        <span className="text-xs text-gray-400 font-medium dark:text-[#7b869b]">
           Page {page + 1} of {totalPages} · {sorted.length} refund entries
         </span>
 
@@ -325,8 +297,8 @@ export default function RefundAnalysis({
           disabled={page >= totalPages - 1}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             page >= totalPages - 1
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7]"
           }`}
         >
           Next

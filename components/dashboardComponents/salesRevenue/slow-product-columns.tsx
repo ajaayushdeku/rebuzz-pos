@@ -57,7 +57,9 @@ export const slowProductColumns: ColumnDef<SlowProduct>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <span className="text-gray-500">{row.getValue("stockAmount")} units</span>
+      <span className="text-gray-500 dark:text-[#9aa6bd]">
+        {row.getValue("stockAmount")} units
+      </span>
     ),
   },
 ];

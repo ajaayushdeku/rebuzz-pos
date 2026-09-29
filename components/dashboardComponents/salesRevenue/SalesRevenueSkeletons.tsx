@@ -15,7 +15,7 @@
 
 /** <ChartCard />'s frame: `border` is CHART_PALETTE.border. */
 const CARD_FRAME =
-  "relative w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5 animate-pulse";
+  "relative w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5 animate-pulse dark:bg-[#161d2e] dark:border-white/10";
 
 /**
  * <ChartCard />'s header row: the 36px icon square, title over subtitle, and
@@ -33,11 +33,15 @@ function HeaderSkeleton({
       <div className="flex min-w-0 items-center gap-3">
         <div className="h-9 w-9 shrink-0 rounded-xl border border-blue-100 bg-blue-50/60" />
         <div className="min-w-0 space-y-1.5">
-          <div className={`h-4 ${titleWidth} max-w-full rounded bg-gray-200`} />
-          <div className={`h-3 ${subWidth} max-w-full rounded bg-gray-100`} />
+          <div
+            className={`h-4 ${titleWidth} max-w-full rounded bg-gray-200 dark:bg-white/15`}
+          />
+          <div
+            className={`h-3 ${subWidth} max-w-full rounded bg-gray-100 dark:bg-white/10`}
+          />
         </div>
       </div>
-      <div className="h-5 w-28 rounded-full border border-[#dadce0] bg-white" />
+      <div className="h-5 w-28 rounded-full border border-[#dadce0] bg-white dark:bg-[#161d2e] dark:border-white/15" />
     </div>
   );
 }
@@ -48,8 +52,8 @@ function LegendSkeleton({ items = 1 }: { items?: number }) {
     <div className="mt-3 flex items-center justify-end gap-x-5 pr-2">
       {Array.from({ length: items }).map((_, i) => (
         <div key={i} className="flex items-center gap-1.5">
-          <div className="h-2.5 w-2.5 rounded-full bg-gray-200" />
-          <div className="h-3 w-20 rounded bg-gray-100" />
+          <div className="h-2.5 w-2.5 rounded-full bg-gray-200 dark:bg-white/15" />
+          <div className="h-3 w-20 rounded bg-gray-100 dark:bg-white/10" />
         </div>
       ))}
     </div>
@@ -73,13 +77,13 @@ export function PeakHoursAnalysisSkeleton() {
 
       {/* Hour range toolbar */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <div className="h-10 w-[210px] rounded-xl border border-gray-200 bg-white" />
-        <div className="mx-1 h-6 w-px bg-[#dadce0]" />
+        <div className="h-10 w-[210px] rounded-xl border border-gray-200 bg-white dark:bg-[#161d2e] dark:border-white/15" />
+        <div className="mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" />
         <div className="flex items-center gap-1.5">
-          <div className="h-3 w-8 rounded bg-gray-100" />
-          <div className="h-8 w-14 rounded-lg border border-[#dadce0] bg-white" />
-          <div className="h-3 w-6 rounded bg-gray-100" />
-          <div className="h-8 w-14 rounded-lg border border-[#dadce0] bg-white" />
+          <div className="h-3 w-8 rounded bg-gray-100 dark:bg-white/10" />
+          <div className="h-8 w-14 rounded-lg border border-[#dadce0] bg-white dark:bg-[#161d2e] dark:border-white/15" />
+          <div className="h-3 w-6 rounded bg-gray-100 dark:bg-white/10" />
+          <div className="h-8 w-14 rounded-lg border border-[#dadce0] bg-white dark:bg-[#161d2e] dark:border-white/15" />
         </div>
       </div>
 
@@ -88,7 +92,7 @@ export function PeakHoursAnalysisSkeleton() {
         {HOUR_BARS.map((h, i) => (
           <div
             key={i}
-            className="flex-1 bg-gray-100"
+            className="flex-1 bg-gray-100 dark:bg-white/10"
             style={{ height: `${h}%` }}
           />
         ))}
@@ -123,8 +127,14 @@ export function PeakDaysAnalysisSkeleton() {
       <div className="flex h-[300px] w-full items-end justify-between gap-4 pt-4">
         {DAY_BARS.map(([a, b], i) => (
           <div key={i} className="flex flex-1 items-end justify-center gap-1">
-            <div className="w-1/3 bg-gray-100" style={{ height: `${a}%` }} />
-            <div className="w-1/3 bg-gray-100/70" style={{ height: `${b}%` }} />
+            <div
+              className="w-1/3 bg-gray-100 dark:bg-white/10"
+              style={{ height: `${a}%` }}
+            />
+            <div
+              className="w-1/3 bg-gray-100/70 dark:bg-white/10"
+              style={{ height: `${b}%` }}
+            />
           </div>
         ))}
       </div>

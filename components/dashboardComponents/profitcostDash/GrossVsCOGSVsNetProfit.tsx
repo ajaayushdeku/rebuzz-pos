@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -22,13 +22,13 @@ import { useSalesByCategory } from "@/hooks/useSalesByCategory";
 import { ChartColumnBig } from "lucide-react";
 import RangeBadge from "@/components/ui/RangeBadge";
 import {
-  AXIS_TICK,
   BAR_RADIUS,
   CHART_PALETTE,
   ChartCard,
   ChartLegend,
   ChartPager,
   ChartTooltipBox,
+  getAxisTick,
   niceTicks,
   yAxisTitle,
 } from "../chartCard";
@@ -85,9 +85,9 @@ const CustomTooltip = ({
         value: (
           // A loss reads in red.
           <span
-            style={
+            className={
               entry.dataKey === "netProfit" && (entry.value as number) < 0
-                ? { color: CHART_PALETTE.bad }
+                ? "text-[#d93025] dark:text-[#f87171]"
                 : undefined
             }
           >
@@ -103,23 +103,23 @@ const CustomTooltip = ({
         <>
           {/* Gross → COGS → Net, as shares of the gross. */}
           <div className="flex justify-between gap-4 text-xs">
-            <span style={{ color: CHART_PALETTE.axis }}>Margin</span>
+            <span className="text-[#5f6368] dark:text-[#a9b4c7]">Margin</span>
             <span
-              className="font-medium"
-              style={{
-                color:
-                  margin >= 40
-                    ? CHART_PALETTE.good
-                    : margin >= 20
-                      ? CHART_PALETTE.warn
-                      : CHART_PALETTE.bad,
-              }}
+              className={`font-medium ${
+                margin >= 40
+                  ? "text-[#1e8e3e] dark:text-[#10b981]"
+                  : margin >= 20
+                    ? "text-[#e37400] dark:text-amber-400"
+                    : "text-[#d93025] dark:text-[#f87171]"
+              }`}
             >
               {margin}%
             </span>
           </div>
           <div className="flex justify-between gap-4 text-xs">
-            <span style={{ color: CHART_PALETTE.axis }}>COGS ratio</span>
+            <span className="text-[#5f6368] dark:text-[#a9b4c7]">
+              COGS ratio
+            </span>
             {/* The COGS yellow is too pale to read as text on white; its
                 dark shade carries the figure. */}
             <span className="font-medium" style={{ color: "#b06000" }}>
@@ -145,7 +145,7 @@ const ChartSkeleton = () => (
       {skeletonHeights.map((height, i) => (
         <div
           key={i}
-          className="flex-1 rounded-t-lg bg-gray-100"
+          className="flex-1 rounded-t-lg bg-gray-100 dark:bg-white/10"
           style={{
             height: `${height}px`,
             alignSelf: "flex-end",
@@ -153,7 +153,7 @@ const ChartSkeleton = () => (
         />
       ))}
     </div>
-    <div className="h-px bg-gray-100 w-full" />
+    <div className="h-px bg-gray-100 w-full dark:bg-white/10" />
   </div>
 );
 
@@ -238,6 +238,27 @@ export default function GrossVsCOGSVsNetProfit({
   const firstShown = page * ITEMS_PER_PAGE + 1;
   const lastShown = Math.min(allChartData.length, (page + 1) * ITEMS_PER_PAGE);
 
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
+
   return (
     <ChartCard
       icon={ChartColumnBig}
@@ -266,7 +287,7 @@ export default function GrossVsCOGSVsNetProfit({
       }
     >
       {isError && (
-        <p className="-mt-2 mb-3 text-xs text-amber-600">
+        <p className="-mt-2 mb-3 text-xs text-amber-600 dark:text-amber-400">
           Could not refresh — showing last known data.
         </p>
       )}
@@ -292,7 +313,7 @@ export default function GrossVsCOGSVsNetProfit({
                   currency.symbol,
                   currency.locale,
                 ),
-                color: "bg-gray-100 text-gray-700",
+                color: "bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-[#c3ccdc]",
               },
               {
                 label: "COGS",
@@ -312,18 +333,18 @@ export default function GrossVsCOGSVsNetProfit({
                 ),
                 color:
                   totalNet >= 0
-                    ? "bg-blue-50 text-blue-700"
-                    : "bg-red-50 text-red-700",
+                    ? "bg-blue-50 text-blue-700 dark:bg-blue-400/10 dark:text-[#a8c4ee]"
+                    : "bg-red-50 text-red-700 dark:bg-red-400/10 dark:text-red-300",
               },
               {
                 label: "Avg Margin",
                 value: `${overallMargin}%`,
                 color:
                   overallMargin >= 40
-                    ? "bg-green-50 text-green-700"
+                    ? "bg-green-50 text-green-700 dark:bg-emerald-400/10 dark:text-emerald-300"
                     : overallMargin >= 20
                       ? "bg-yellow-50 text-yellow-700"
-                      : "bg-red-50 text-red-700",
+                      : "bg-red-50 text-red-700 dark:bg-red-400/10 dark:text-red-300",
               },
             ].map(({ label, value, color }) => (
               <div
@@ -340,12 +361,9 @@ export default function GrossVsCOGSVsNetProfit({
 
       {/* Empty state */}
       {!isFetching && allChartData.length === 0 ? (
-        <div
-          className="flex h-56 flex-col items-center justify-center sm:h-72"
-          style={{ color: CHART_PALETTE.axis }}
-        >
+        <div className="flex h-56 flex-col items-center justify-center sm:h-72 text-[#5f6368] dark:text-[#a9b4c7]">
           <p className="text-sm">No category data for this date range</p>
-          <p className="mt-1 text-xs" style={{ color: CHART_PALETTE.subtitle }}>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             Try adjusting the filter above
           </p>
         </div>

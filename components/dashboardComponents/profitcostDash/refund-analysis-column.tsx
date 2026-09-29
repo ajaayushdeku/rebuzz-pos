@@ -51,7 +51,7 @@ export const getRefundReasonColumns = (
       </Button>
     ),
     cell: ({ row }) => (
-      <span className="font-semibold text-red-600">
+      <span className="font-semibold text-red-600 dark:text-red-400">
         -{formatCurrency(Number(row.getValue("loss")), currency)}
       </span>
     ),
