@@ -54,7 +54,7 @@ const GroupTaxTable = ({
         <div className="min-w-[680px]">
           {/* The same grid the standard table declares, so the two line up
               when the tab is switched; "Includes" takes the flexible track. */}
-          <table className="w-full table-fixed text-sm">
+          <table className="w-full table-fixed text-sm min-w-[990px]">
             <colgroup>
               <col className="w-14" />
               <col className="w-64" />

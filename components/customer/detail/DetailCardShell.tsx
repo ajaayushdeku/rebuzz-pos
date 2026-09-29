@@ -6,7 +6,8 @@ import type { LucideIcon } from "lucide-react";
  * flat white card with a hairline border, the same frame the dashboard cards
  * use. It replaces a borderless `shadow-sm` box.
  */
-export const DETAIL_CARD = "rounded-2xl border border-[#e3e3e3] bg-white p-5";
+export const DETAIL_CARD =
+  "rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] p-5 dark:border-white/10";
 
 /**
  * Icon chip, heading, optional right-hand action — the three cards on this

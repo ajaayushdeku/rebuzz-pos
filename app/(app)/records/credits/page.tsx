@@ -13,7 +13,6 @@ import {
   fetchCreditsClient,
   fetchCreditsByStatus,
 } from "@/services/apiCredit.client";
-import { CHART_PALETTE } from "@/components/dashboardComponents/chartCard";
 import PageHeader from "@/components/ui/PageHeader";
 
 type TabKey = "credited" | "completed" | "archived";
@@ -72,9 +71,9 @@ export default function Page() {
       label: "Total Credits",
       value: stats.count,
       icon: Users,
-      iconColor: "text-blue-600",
-      bgColor: "bg-blue-50",
-      valueColor: "text-gray-700",
+      iconColor: "text-blue-600 dark:text-[#a8c4ee]",
+      bgColor: "bg-blue-50 dark:bg-blue-400/15",
+      valueColor: "text-gray-700 dark:text-[#e8ecf4]",
       format: "number" as const,
       subText: `${stats.count === 1 ? "Credit" : "Credits"} Total`,
     },
@@ -82,9 +81,9 @@ export default function Page() {
       label: "Credit Value",
       value: stats.totalValue,
       icon: Wallet,
-      iconColor: "text-violet-600",
-      bgColor: "bg-violet-50",
-      valueColor: "text-gray-700",
+      iconColor: "text-violet-600 dark:text-violet-300",
+      bgColor: "bg-violet-50 dark:bg-violet-400/15",
+      valueColor: "text-gray-700 dark:text-[#e8ecf4]",
       format: "currency" as const,
       subText: "Total value of all credits",
     },
@@ -92,9 +91,9 @@ export default function Page() {
       label: "Outstanding Due",
       value: stats.totalDue,
       icon: HandCoins,
-      iconColor: "text-rose-600",
-      bgColor: "bg-red-50",
-      valueColor: "text-rose-700",
+      iconColor: "text-rose-600 dark:text-rose-300",
+      bgColor: "bg-red-50 dark:bg-red-400/15",
+      valueColor: "text-rose-700 dark:text-[#fca5a5]",
       format: "currency" as const,
       subText: "Total amount due",
     },
@@ -131,7 +130,7 @@ export default function Page() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
       {/* Header */}
       {header}
 
@@ -148,7 +147,7 @@ export default function Page() {
         ) : (
           <>
             {/* Stats — always reflect all credits, regardless of the selected tab */}
-            <div className="bg-white pb-2 mb-4">
+            <div className="bg-white pb-2 mb-4 dark:bg-transparent">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {statItems.map((item) => {
                   const displayValue =
@@ -163,17 +162,14 @@ export default function Page() {
                   return (
                     <div
                       key={item.label}
-                      className="bg-white rounded-xl border border-[#e3e3e3] p-4"
+                      className="bg-white rounded-xl border border-[#e3e3e3] p-4 dark:border-white/10 dark:bg-[#161d2e]"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span
-                          className="truncate text-[13px] font-medium"
-                          style={{ color: CHART_PALETTE.axis }}
-                        >
+                        <span className="truncate text-[13px] font-medium text-[#5f6368] dark:text-[#a9b4c7]">
                           {item.label}
                         </span>
                         <div
-                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 ${item.bgColor ?? "bg-gray-50"} ${item.iconColor ?? "text-gray-500"} `}
+                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 ${item.bgColor ?? "bg-gray-50 dark:bg-white/5"} ${item.iconColor ?? "text-gray-500 dark:text-[#9aa6bd]"} `}
                         >
                           <item.icon size={16} />
                         </div>
@@ -184,7 +180,7 @@ export default function Page() {
                         {displayValue}
                       </p>
                       {item.subText && (
-                        <p className="text-[11px] text-gray-500 truncate tracking-wide">
+                        <p className="text-[11px] text-gray-500 truncate tracking-wide dark:text-[#9aa6bd]">
                           {item.subText}
                         </p>
                       )}
@@ -198,13 +194,13 @@ export default function Page() {
             <div className="relative flex justify-center mt-8">
               <span
                 aria-hidden="true"
-                className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
+                className="absolute inset-x-0 top-1/2 h-px bg-gray-200 dark:bg-white/10"
               />
               <div
                 role="tablist"
                 aria-label="Credit status"
                 onKeyDown={handleTabKeyDown}
-                className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+                className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1 dark:bg-white/10"
               >
                 {tabs.map((tab, i) => {
                   const selected = tab.key === activeTab;
@@ -222,16 +218,16 @@ export default function Page() {
                       aria-controls={`credits-panel-${tab.key}`}
                       tabIndex={selected ? 0 : -1}
                       onClick={() => setActiveTab(tab.key)}
-                      className={`flex items-center gap-2 rounded-full px-5 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                      className={`flex items-center gap-2 rounded-full px-5 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] dark:focus-visible:ring-offset-[#242a38] ${
                         selected
-                          ? "bg-white font-bold text-blue-950 shadow-sm"
-                          : "font-semibold text-blue-800 hover:text-blue-950"
+                          ? "bg-white font-bold text-blue-950 shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none"
+                          : "font-semibold text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee] dark:hover:text-white"
                       }`}
                     >
                       {tab.label}
                       <span
                         className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 
-                         bg-[#e4f2fe] text-blue-950 ring-blue-900"
+                         bg-[#e4f2fe] text-blue-950 ring-blue-900 dark:bg-white/10 dark:text-[#e8ecf4] dark:ring-white/20"
                       >
                         {tab.count === null ? "–" : tab.count}
                       </span>

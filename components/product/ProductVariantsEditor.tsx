@@ -74,7 +74,7 @@ export function buildVariantRows(
 }
 
 const numberInput =
-  "w-full h-8 rounded-lg border border-slate-200 px-2 text-[13px] text-slate-800 tabular-nums focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+  "w-full h-8 rounded-lg border border-slate-200 px-2 text-[13px] text-slate-800 tabular-nums focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:text-[#e8ecf4]";
 
 /** Values are entered as tags — type, press Enter. */
 function ValueTags({
@@ -140,7 +140,7 @@ function ValueTags({
             ? `${MAX_VALUES} values is the limit`
             : "Type a value, press Enter"
         }
-        className="mt-2 h-8 w-full bg-white rounded-lg border border-slate-200 px-2.5 text-[13px] placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:bg-slate-50"
+        className="mt-2 h-8 w-full bg-white dark:bg-white/5 rounded-lg border border-slate-200 px-2.5 text-[13px] placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:bg-slate-50 dark:disabled:bg-white/10 dark:placeholder:text-[#7b869b] dark:border-white/15"
       />
     </div>
   );
@@ -166,9 +166,9 @@ export function VariantOptionsEditor({
   return (
     <div className="space-y-4">
       {/* ── How it works ── */}
-      <div className="flex gap-2.5 rounded-xl bg-slate-50 px-3.5 py-3">
-        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />
-        <div className="text-[11px] leading-relaxed text-slate-500">
+      <div className="flex gap-2.5 rounded-xl bg-slate-50 px-3.5 py-3 dark:bg-white/5">
+        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-[#9aa6bd]" />
+        <div className="text-[11px] leading-relaxed text-slate-500 dark:text-[#9aa6bd]">
           An option is the attribute — Size, Flavour. Its values are the
           choices. Every combination of values becomes a variant you can price
           and stock separately. Up to {MAX_OPTIONS} options, {MAX_VALUES} values
@@ -181,10 +181,10 @@ export function VariantOptionsEditor({
         {options.map((option, i) => (
           <div
             key={option.id}
-            className="rounded-xl border border-slate-200 bg-slate-50/40  p-3.5"
+            className="rounded-xl border border-slate-200 bg-slate-50/40  p-3.5 dark:border-white/15 dark:bg-white/5"
           >
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400 dark:text-[#9aa6bd]">
                 Option {i + 1}
               </span>
               <button
@@ -192,7 +192,7 @@ export function VariantOptionsEditor({
                 onClick={() =>
                   setOptions(options.filter((o) => o.id !== option.id))
                 }
-                className="rounded-lg p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
+                className="rounded-lg p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-red-400/15 dark:text-[#9aa6bd]"
                 aria-label={`Remove option ${i + 1}`}
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -209,7 +209,7 @@ export function VariantOptionsEditor({
                 )
               }
               placeholder="Option name, e.g. Size"
-              className="mb-2.5 h-9 w-full mb-2 rounded-lg bg-white border border-slate-200 px-3 text-[13px] font-medium text-slate-800 placeholder:text-slate-300 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              className="mb-2.5 h-9 w-full mb-2 rounded-lg bg-white dark:bg-white/5 border border-slate-200 px-3 text-[13px] font-medium text-slate-800 placeholder:text-slate-300 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:placeholder:text-[#7b869b] dark:border-white/15 dark:text-[#e8ecf4]"
             />
 
             <ValueTags
@@ -234,7 +234,7 @@ export function VariantOptionsEditor({
                 { id: crypto.randomUUID(), title: "", values: [] },
               ])
             }
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 text-[13px] font-semibold text-slate-600 transition hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-700"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 text-[13px] font-semibold text-slate-600 transition hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-700 dark:border-white/20 dark:text-[#a9b4c7]"
           >
             <Plus className="h-3.5 w-3.5" />
             {options.length === 0 ? "Add an option" : "Add another option"}
@@ -300,11 +300,11 @@ export function VariantRowsEditor({
 
   if (rows.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-slate-300 px-4 py-10 text-center">
-        <p className="text-[13px] font-medium text-slate-500">
+      <div className="rounded-xl border border-dashed border-slate-300 px-4 py-10 text-center dark:border-white/20">
+        <p className="text-[13px] font-medium text-slate-500 dark:text-[#9aa6bd]">
           No combinations yet
         </p>
-        <p className="mt-1 text-[11px] text-slate-400">
+        <p className="mt-1 text-[11px] text-slate-400 dark:text-[#9aa6bd]">
           Go back and give an option a name and at least one value.
         </p>
       </div>
@@ -314,13 +314,13 @@ export function VariantRowsEditor({
   return (
     <div className="space-y-4">
       {/* ── What these came from ── */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-xl bg-slate-50 px-3.5 py-3">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-xl bg-slate-50 px-3.5 py-3 dark:bg-white/5">
         {usableOptions(options).map((option) => (
           <div key={option.id} className="flex items-baseline gap-1.5">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.06em] text-slate-400">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.06em] text-slate-400 dark:text-[#9aa6bd]">
               {option.title}
             </span>
-            <span className="text-[11px] capitalize text-slate-600">
+            <span className="text-[11px] capitalize text-slate-600 dark:text-[#a9b4c7]">
               {option.values.join(" · ")}
             </span>
           </div>
@@ -328,10 +328,10 @@ export function VariantRowsEditor({
       </div>
 
       <div className="flex items-baseline justify-between">
-        <h4 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+        <h4 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#9aa6bd]">
           Variants
         </h4>
-        <span className="text-[11px] text-slate-400">
+        <span className="text-[11px] text-slate-400 dark:text-[#9aa6bd]">
           {rows.length} combination{rows.length > 1 ? "s" : ""}
           {atRowCap && ` · capped at ${MAX_ROWS}`}
         </span>
@@ -339,14 +339,14 @@ export function VariantRowsEditor({
 
       {/* Set every row at once — with nine or more, typing the same cost
           into each is the slowest part of the job. */}
-      <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
-        <p className="mb-2 text-[11px] font-medium text-slate-500">
+      <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3 dark:border-white/15 dark:bg-white/5">
+        <p className="mb-2 text-[11px] font-medium text-slate-500 dark:text-[#9aa6bd]">
           Set all rows
         </p>
         <div className="flex flex-wrap items-end gap-2">
           {FIELDS.map(({ field, label }) => (
             <div key={field} className="min-w-0 flex-1">
-              <label className="mb-1 block text-[10px] font-medium uppercase tracking-[0.06em] text-slate-400">
+              <label className="mb-1 block text-[10px] font-medium uppercase tracking-[0.06em] text-slate-400 dark:text-[#9aa6bd]">
                 {label}
               </label>
               <input
@@ -357,14 +357,14 @@ export function VariantRowsEditor({
                   setBulk((b) => ({ ...b, [field]: e.target.value }))
                 }
                 placeholder="—"
-                className={`${numberInput} bg-white`}
+                className={`${numberInput} bg-white dark:bg-white/5`}
               />
             </div>
           ))}
           <button
             type="button"
             onClick={applyBulk}
-            className="h-8 shrink-0 rounded-lg bg-slate-800 px-3 text-[12px] font-semibold text-white transition hover:bg-slate-900"
+            className="h-8 shrink-0 rounded-lg bg-slate-800 px-3 text-[12px] font-semibold text-white transition hover:bg-slate-900 dark:bg-white/15 dark:hover:bg-white/25"
           >
             Apply
           </button>
@@ -378,10 +378,10 @@ export function VariantRowsEditor({
             key={row.key}
             className={`rounded-xl border p-3 transition ${
               errors[row.key]
-                ? "border-rose-300 bg-rose-50/40"
+                ? "border-rose-300 bg-rose-50/40 dark:border-rose-400/40"
                 : row.isAvailable
-                  ? "border-slate-200 bg-slate-50/40 "
-                  : "border-slate-200 bg-slate-50/60 opacity-70"
+                  ? "border-slate-200 bg-slate-50/40 dark:border-white/15 "
+                  : "border-slate-200 bg-slate-50/60 opacity-70 dark:border-white/15 dark:bg-white/5"
             }`}
           >
             <div className="mb-2.5 flex items-center justify-between gap-3">
@@ -390,13 +390,13 @@ export function VariantRowsEditor({
                   className="h-3.5 w-1 shrink-0 rounded-full bg-cyan-500"
                   aria-hidden="true"
                 />
-                <span className="truncate text-[13px] font-semibold capitalize text-slate-800">
+                <span className="truncate text-[13px] font-semibold capitalize text-slate-800 dark:text-[#e8ecf4]">
                   {row.optionValues.join(" · ")}
                 </span>
               </div>
 
               <label className="flex shrink-0 items-center gap-2">
-                <span className="text-[11px] text-slate-400">
+                <span className="text-[11px] text-slate-400 dark:text-[#9aa6bd]">
                   {row.isAvailable ? "Available" : "Hidden"}
                 </span>
                 <button
@@ -405,7 +405,9 @@ export function VariantRowsEditor({
                     updateRow(row.key, { isAvailable: !row.isAvailable })
                   }
                   className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
-                    row.isAvailable ? "bg-emerald-500" : "bg-slate-200"
+                    row.isAvailable
+                      ? "bg-emerald-500"
+                      : "bg-slate-200 dark:bg-white/10"
                   }`}
                   aria-label={`${row.isAvailable ? "Hide" : "Show"} ${row.optionValues.join(" ")}`}
                 >
@@ -428,17 +430,17 @@ export function VariantRowsEditor({
                   <label
                     className={`mb-1 block text-[10px] font-medium uppercase tracking-[0.06em] ${
                       tone === "amber"
-                        ? "text-amber-700"
+                        ? "text-amber-700 dark:text-amber-300"
                         : tone === "emerald"
-                          ? "text-emerald-700"
-                          : "text-blue-700"
+                          ? "text-emerald-700 dark:text-emerald-300"
+                          : "text-blue-700 dark:text-[#a8c4ee]"
                     }`}
                   >
                     {label}
                   </label>
                   <div className="relative">
                     {money && (
-                      <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-[12px] text-slate-400">
+                      <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-[12px] text-slate-400 dark:text-[#9aa6bd]">
                         {currencySymbol}
                       </span>
                     )}
@@ -451,7 +453,7 @@ export function VariantRowsEditor({
                           [field]: Number(e.target.value),
                         } as Partial<VariantRow>)
                       }
-                      className={`${numberInput} bg-white ${money ? "pl-7" : ""}`}
+                      className={`${numberInput} bg-white dark:bg-white/5 ${money ? "pl-7" : ""}`}
                     />
                   </div>
                 </div>
@@ -459,7 +461,7 @@ export function VariantRowsEditor({
             </div>
 
             {errors[row.key] && (
-              <p className="mt-2 text-[11px] text-rose-600">
+              <p className="mt-2 text-[11px] text-rose-600 dark:text-rose-300">
                 {errors[row.key]}
               </p>
             )}

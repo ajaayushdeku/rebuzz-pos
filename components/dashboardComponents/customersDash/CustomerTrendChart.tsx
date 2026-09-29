@@ -19,14 +19,15 @@ import type {
 import SampleDataBadge from "@/components/ui/sampledatabadge";
 import { mockCustomerTrendData } from "@/lib/mockData/mock-customer-data";
 import {
-  AXIS_TICK,
   CHART_PALETTE,
   ChartCard,
   ChartLegend,
   ChartTooltipBox,
+  getAxisTick,
   yAxisTitle,
 } from "../chartCard";
 import { TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
 
 // Types
 
@@ -41,16 +42,6 @@ export interface CustomerTrendData {
 
 // Series
 
-/**
- * Bottom of the stack first. One list drives the bars, the legend and the
- * colours together — previously the four `<Bar>`s, four near-identical shape
- * components and a hand-written legend array each repeated the same hex codes,
- * and the legend was ordered Active/Inactive/New/… while the stack was ordered
- * Inactive/Active/New/…, so the two could not be read against each other.
- *
- * Colours match CustomerSegmentationChart's segments, which are the same four
- * categories.
- */
 const SERIES = [
   { key: "inactive", label: "Inactive", color: "#EF4444" },
   { key: "active", label: "Active", color: "#10B981" },
@@ -58,10 +49,6 @@ const SERIES = [
   { key: "newActive", label: "New & Active", color: "#3b96ff" },
 ] as const;
 
-/**
- * One shape per series, built once at module scope. Defining these inside the
- * component would hand Recharts a new component type on every render.
- */
 const BAR_SHAPES = SERIES.map(({ color }, i) => {
   const isTop = i === SERIES.length - 1;
   const radius: [number, number, number, number] = isTop
@@ -171,6 +158,27 @@ export default function CustomerTrendChart({ data }: CustomerTrendProps) {
   const { ticks: yTicks, max: yMax } = getYAxisConfig(maxStackHeight);
 
   const latest = displayData[displayData.length - 1];
+
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
 
   return (
     <ChartCard

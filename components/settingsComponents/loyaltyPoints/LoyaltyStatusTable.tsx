@@ -50,7 +50,7 @@ export default function LoyaltyStatusTable({
         {/* `table-fixed` with declared widths: auto layout sized the columns
             from the tiers on screen, so adding or editing one moved them.
             Status takes the slack. */}
-        <table className="w-full min-w-[520px] table-fixed text-sm">
+        <table className="w-full min-w-[600px] table-fixed text-sm">
           <colgroup>
             <col className="w-16" />
             <col />

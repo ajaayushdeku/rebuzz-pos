@@ -154,8 +154,8 @@ export default function EditCustomerModal({
           : "Update the customer's details"
       }
       icon={User}
-      iconColor="text-blue-600"
-      iconBgColor="bg-blue-50"
+      iconColor="text-blue-600 dark:text-[#7ba2e3]"
+      iconBgColor="bg-blue-50 dark:bg-blue-400/10"
       maxWidth="max-w-xl"
       footer={
         <div className="flex items-center gap-2.5">
@@ -192,14 +192,14 @@ export default function EditCustomerModal({
         {/* Profile photo */}
         <div>
           <SectionLabel>Profile photo</SectionLabel>
-          <div className="mt-2 flex items-center gap-4 rounded-xl border border-gray-200 p-3">
+          <div className="mt-2 flex items-center gap-4 rounded-xl border border-gray-200 p-3 dark:border-white/15">
             {previewSrc ? (
               <div className="relative shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={previewSrc}
                   alt="Profile preview"
-                  className="h-16 w-16 rounded-full border border-gray-200 object-cover"
+                  className="h-16 w-16 rounded-full border border-gray-200 object-cover dark:border-white/15"
                 />
                 {/* Only a newly picked file can be discarded here — removing an
                     already-saved photo isn't supported by the API. */}
@@ -215,8 +215,11 @@ export default function EditCustomerModal({
                 )}
               </div>
             ) : (
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-dashed border-gray-300 bg-gray-50">
-                <ImageIcon size={18} className="text-gray-400" />
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-dashed border-gray-300 bg-gray-50 dark:bg-white/5 dark:border-white/20">
+                <ImageIcon
+                  size={18}
+                  className="text-gray-400 dark:text-[#7b869b]"
+                />
               </div>
             )}
 
@@ -224,12 +227,12 @@ export default function EditCustomerModal({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-gray-700 transition hover:border-blue-400 hover:text-blue-600"
+                className="flex items-center gap-1.5 rounded-lg border border-gray-20 dark:bg-white/5 dark:text-[#e8ecf4]0 bg-white px-3 py-1.5 text-[12px] font-semibold text-gray-700 transition hover:border-blue-400 hover:text-blue-600 dark:border-white/15 dark:text-[#c3ccdc]"
               >
                 <ImageIcon size={13} />
                 {imageFile ? "Change photo" : "Upload photo"}
               </button>
-              <p className="mt-1.5 text-[11px] text-gray-400">
+              <p className="mt-1.5 text-[11px] text-gray-400 dark:text-[#7b869b]">
                 PNG or JPG, up to 5 MB.
               </p>
             </div>
@@ -247,7 +250,7 @@ export default function EditCustomerModal({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <SectionLabel>
-              Name <span className="text-red-500">*</span>
+              Name <span className="text-red-500 dark:text-red-400">*</span>
             </SectionLabel>
             <input
               type="text"
@@ -263,7 +266,9 @@ export default function EditCustomerModal({
             <input
               type="email"
               value={form.email}
-              onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, email: e.target.value }))
+              }
               placeholder="john@example.com"
               className={`mt-2 ${modalInput} ${modalInputIdle}`}
             />
@@ -274,8 +279,8 @@ export default function EditCustomerModal({
             read as a single field, matching CustomerFormModal's step 1. */}
         <div>
           <SectionLabel>Phone</SectionLabel>
-          <div className="mt-2 flex items-center rounded-xl border border-gray-200 bg-white transition focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20">
-            <span className="pl-3.5 text-gray-400">
+          <div className="mt-2 flex items-center rounded-xl border border-gray-200 b dark:bg-white/5 dark:text-[#e8ecf4]g-white transition focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 dark:border-white/15">
+            <span className="pl-3.5 text-gray-400 dark:text-[#7b869b]">
               <Phone size={15} />
             </span>
             <input
@@ -288,11 +293,13 @@ export default function EditCustomerModal({
               aria-label="Country code"
               className="h-11 w-24 bg-transparent px-2 text-center text-[13px] tabular-nums outline-none"
             />
-            <span className="h-6 w-px shrink-0 bg-gray-200" />
+            <span className="h-6 w-px shrink-0 bg-gray-200 dark:bg-white/15" />
             <input
               type="tel"
               value={form.phone}
-              onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, phone: e.target.value }))
+              }
               placeholder="98XXXXXXXX"
               aria-label="Phone number"
               className="h-11 flex-1 bg-transparent px-3 text-[13px] tabular-nums outline-none"
@@ -320,7 +327,7 @@ export default function EditCustomerModal({
             onChange={(e) => setForm((p) => ({ ...p, note: e.target.value }))}
             placeholder="Additional info... (optional)"
             rows={3}
-            className="mt-2 w-full resize-none rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-[13px] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+            className="mt-2 w-full resize-none rounded-xl border border-gray-200 dark:bg-white/5 dark:text-[#e8ecf4] bg-white px-3.5 py-2.5 text-[13px] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-white/15"
           />
         </div>
       </div>

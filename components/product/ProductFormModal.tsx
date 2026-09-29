@@ -43,10 +43,13 @@ import { useCurrency } from "@/providers/CurrencyContext";
  * used only on labels, icons and rails — never as a fill.
  */
 const DOMAIN = {
-  price: { rail: "bg-emerald-500", label: "text-emerald-700" },
-  cost: { rail: "bg-amber-500", label: "text-amber-700" },
-  stock: { rail: "bg-blue-500", label: "text-blue-700" },
-  discount: { rail: "bg-cyan-500", label: "text-cyan-700" },
+  price: {
+    rail: "bg-emerald-500",
+    label: "text-emerald-700 dark:text-emerald-300",
+  },
+  cost: { rail: "bg-amber-500", label: "text-amber-700 dark:text-amber-300" },
+  stock: { rail: "bg-blue-500", label: "text-blue-700 dark:text-[#a8c4ee]" },
+  discount: { rail: "bg-cyan-500", label: "text-cyan-700 dark:text-cyan-300" },
 } as const;
 
 type ProductFormData = {
@@ -97,7 +100,7 @@ function Toggle({
       type="button"
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
-        checked ? "bg-blue-600" : "bg-slate-200"
+        checked ? "bg-blue-600" : "bg-slate-200 dark:bg-white/10"
       }`}
     >
       <span
@@ -147,7 +150,7 @@ function StepBar({
         return (
           <div key={s.id} className="flex items-center gap-1">
             {i > 0 && (
-              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-300 dark:text-[#6b7588]" />
             )}
             <button
               type="button"
@@ -156,10 +159,10 @@ function StepBar({
               aria-current={isCurrent ? "step" : undefined}
               className={`inline-flex items-center gap-1.5 rounded-full py-1 pl-1 pr-2.5 text-[12px] font-semibold transition ${
                 isCurrent
-                  ? "bg-blue-50/90 text-cyan-700 ring-1 ring-inset ring-blue-100"
+                  ? "bg-blue-50/90 text-cyan-700 ring-1 ring-inset ring-blue-100 dark:bg-blue-400/10 dark:ring-blue-400/25 dark:text-cyan-300"
                   : reachable
-                    ? "text-slate-500 hover:bg-slate-100"
-                    : "text-slate-300"
+                    ? "text-slate-500 hover:bg-slate-100 dark:hover:bg-white/10 dark:text-[#9aa6bd]"
+                    : "text-slate-300 dark:text-[#6b7588]"
               }`}
             >
               <span
@@ -168,7 +171,7 @@ function StepBar({
                     ? "bg-cyan-600 text-white"
                     : i < current
                       ? "bg-slate-800 text-white"
-                      : "bg-slate-100 text-slate-400"
+                      : "bg-slate-100 text-slate-400 dark:text-[#9aa6bd] dark:bg-white/10"
                 }`}
               >
                 {i < current ? <Check className="h-3 w-3" /> : i + 1}
@@ -195,10 +198,14 @@ function Section({
   return (
     <section className="space-y-3">
       <div className="flex items-baseline justify-between">
-        <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+        <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#9aa6bd]">
           {title}
         </h3>
-        {note && <span className="text-[11px] text-slate-400">{note}</span>}
+        {note && (
+          <span className="text-[11px] text-slate-400 dark:text-[#9aa6bd]">
+            {note}
+          </span>
+        )}
       </div>
       {children}
     </section>
@@ -232,27 +239,33 @@ function Field({
         )}
         <label
           className={`text-[11px] font-medium uppercase tracking-[0.06em] ${
-            domain ? DOMAIN[domain].label : "text-slate-400"
+            domain ? DOMAIN[domain].label : "text-slate-400 dark:text-[#9aa6bd]"
           }`}
         >
           {label}
-          {required && <span className="text-rose-500"> *</span>}
+          {required && (
+            <span className="text-rose-500 dark:text-[#f87171]"> *</span>
+          )}
         </label>
       </div>
       {children}
       {error ? (
-        <p className="mt-1 text-[11px] text-rose-600">{error}</p>
+        <p className="mt-1 text-[11px] text-rose-600 dark:text-rose-300">
+          {error}
+        </p>
       ) : hint ? (
-        <p className="mt-1 text-[11px] text-slate-400">{hint}</p>
+        <p className="mt-1 text-[11px] text-slate-400 dark:text-[#9aa6bd]">
+          {hint}
+        </p>
       ) : null}
     </div>
   );
 }
 
 const inputBase =
-  "w-full h-9 rounded-lg border px-3 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:border-transparent transition";
-const inputClass = `${inputBase} border-slate-200 focus:ring-blue-500`;
-const inputErrorClass = `${inputBase} border-rose-300 focus:ring-rose-400`;
+  "w-full h-9 rounded-lg border px-3 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:border-transparent transition dark:placeholder:text-[#7b869b] dark:text-[#e8ecf4]";
+const inputClass = `${inputBase} border-slate-200 focus:ring-blue-500 dark:border-white/15`;
+const inputErrorClass = `${inputBase} border-rose-300 focus:ring-rose-400 dark:border-rose-400/40`;
 
 interface ProductFormModalProps {
   open: boolean;
@@ -677,7 +690,7 @@ export default function ProductFormModal({
             <button
               type="button"
               onClick={onClose}
-              className="shrink-0 rounded-xl px-5 py-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-100"
+              className="shrink-0 rounded-xl px-5 py-3 text-[13px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
             >
               Close
             </button>
@@ -691,15 +704,18 @@ export default function ProductFormModal({
           </div>
         }
       >
-        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5">
-          <AlertCircle size={16} className="mt-0.5 shrink-0 text-amber-600" />
-          <div className="space-y-1.5 text-[13px] leading-relaxed text-amber-900">
+        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5 dark:border-amber-400/25 dark:bg-amber-400/10">
+          <AlertCircle
+            size={16}
+            className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-300"
+          />
+          <div className="space-y-1.5 text-[13px] leading-relaxed text-amber-900 dark:text-amber-200">
             <p>
               You have used all{" "}
               <span className="font-semibold">{FREE_PRODUCT_LIMIT}</span>{" "}
               products your Free plan allows, so a new one cannot be added.
             </p>
-            <p className="text-amber-800/90">
+            <p className="text-amber-800/90 dark:text-amber-200/90">
               Upgrading lifts the limit. Nothing you already have is affected —
               your products, their variants and their stock stay exactly as they
               are, and you can keep editing them.
@@ -707,7 +723,7 @@ export default function ProductFormModal({
           </div>
         </div>
 
-        <p className="mt-3 text-[12px] leading-relaxed text-slate-500">
+        <p className="mt-3 text-[12px] leading-relaxed text-slate-500 dark:text-[#9aa6bd]">
           Variants do not count toward the limit — only base products do. If a
           new line is a size or a flavour of something you already sell, add it
           as a variant of that product instead.
@@ -728,17 +744,20 @@ export default function ProductFormModal({
       bodyMaxHeight="max-h-[78vh]"
       bodyMinHeight="min-h-[78vh]"
       footer={
-        <div className="space-y-3 absolute bottom-0 left-0 right-0 z-10 border-t border-slate-200 bg-white px-6 py-4">
+        <div className="space-y-3 absolute bottom-0 left-0 right-0 z-10 border-t border-slate-200 bg-white px-6 py-4 dark:border-white/15 dark:bg-[#161d2e]">
           {/* Server-side failure for the whole submit — sits by the Save
               button so the reason is where the retry is. Per-field validation
               still renders under its own control. */}
           {submitError && (
             <div
               role="alert"
-              className="flex items-start gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2.5"
+              className="flex items-start gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2.5 dark:border-rose-400/25 dark:bg-rose-400/10"
             >
-              <AlertCircle size={14} className="mt-px shrink-0 text-rose-500" />
-              <p className="text-[12px] font-medium text-rose-700">
+              <AlertCircle
+                size={14}
+                className="mt-px shrink-0 text-rose-500 dark:text-[#f87171]"
+              />
+              <p className="text-[12px] font-medium text-rose-700 dark:text-rose-300">
                 {submitError}
               </p>
             </div>
@@ -753,7 +772,7 @@ export default function ProductFormModal({
                 type="button"
                 onClick={handleClose}
                 disabled={isPending}
-                className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50"
+                className="rounded-lg border border-slate-200 bg-white dark:bg-white/5 px-4 py-2 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#c3ccdc]"
               >
                 Cancel
               </button>
@@ -775,7 +794,7 @@ export default function ProductFormModal({
             </div>
           ) : (
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-400 dark:text-[#9aa6bd]">
                 {step === "options"
                   ? canPrice
                     ? `${variantRows.length} combination${
@@ -791,7 +810,7 @@ export default function ProductFormModal({
                   onClick={() =>
                     setStep(step === "variants" ? "options" : "details")
                   }
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white dark:bg-white/5 px-4 py-2 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#c3ccdc]"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />
                   Back
@@ -845,7 +864,7 @@ export default function ProductFormModal({
         {/* ── Image ── */}
         <Section title="Image">
           <div className="flex items-center gap-4">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-white/15 dark:bg-white/5">
               {imagePreview ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -854,7 +873,10 @@ export default function ProductFormModal({
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <ImageIcon size={22} className="text-slate-300" />
+                <ImageIcon
+                  size={22}
+                  className="text-slate-300 dark:text-[#6b7588]"
+                />
               )}
             </div>
             <div className="min-w-0 flex-1">
@@ -869,7 +891,7 @@ export default function ProductFormModal({
                 <button
                   type="button"
                   onClick={() => imageInputRef.current?.click()}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#c3ccdc]"
                 >
                   <Upload size={13} />
                   {imagePreview ? "Change image" : "Upload image"}
@@ -878,26 +900,26 @@ export default function ProductFormModal({
                   <button
                     type="button"
                     onClick={clearImage}
-                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold text-rose-500 transition hover:bg-rose-50"
+                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold text-rose-500 transition hover:bg-rose-50 dark:hover:bg-red-400/15 dark:text-[#f87171]"
                   >
                     <X size={13} />
                     Remove
                   </button>
                 )}
               </div>
-              <p className="mt-1.5 ml-1.5 text-[11px] text-slate-400">
+              <p className="mt-1.5 ml-1.5 text-[11px] text-slate-400 dark:text-[#9aa6bd]">
                 PNG or JPG, up to 1MB.
               </p>
 
               {imageFile && (
                 <p className="mt-1.5 ml-1.5 flex items-baseline gap-1.5 text-[11px]">
                   <span
-                    className="min-w-0 truncate font-medium text-slate-600"
+                    className="min-w-0 truncate font-medium text-slate-600 dark:text-[#a9b4c7]"
                     title={imageFile.name}
                   >
                     {imageFile.name}
                   </span>
-                  <span className="shrink-0 text-slate-400">
+                  <span className="shrink-0 text-slate-400 dark:text-[#9aa6bd]">
                     ({formatFileSize(imageFile.size)})
                   </span>
                 </p>
@@ -932,7 +954,7 @@ export default function ProductFormModal({
                       type="color"
                       value={newCategoryColor}
                       onChange={(e) => setNewCategoryColor(e.target.value)}
-                      className="h-9 w-9 shrink-0 cursor-pointer rounded-lg border border-slate-200"
+                      className="h-9 w-9 shrink-0 cursor-pointer rounded-lg border border-slate-200 dark:border-white/15"
                     />
                   </div>
                   <div className="flex gap-3">
@@ -943,7 +965,7 @@ export default function ProductFormModal({
                         setNewCategoryName("");
                         setNewCategoryColor("#60a5fa");
                       }}
-                      className="text-xs font-medium text-slate-500 hover:text-slate-700"
+                      className="text-xs font-medium text-slate-500 hover:text-slate-700 dark:hover:text-[#e8ecf4] dark:text-[#9aa6bd]"
                     >
                       Cancel
                     </button>
@@ -969,7 +991,7 @@ export default function ProductFormModal({
                         }
                       }}
                       disabled={createCategoryMutation.isPending}
-                      className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+                      className="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:hover:text-[#c3d6f4] dark:text-[#a8c4ee]"
                     >
                       {createCategoryMutation.isPending
                         ? "Creating..."
@@ -992,14 +1014,14 @@ export default function ProductFormModal({
                       onChange={(v) => set("categoryId", v)}
                       placeholder="No category"
                       className="w-full"
-                      triggerClassName="h-9 border border-slate-200 rounded-lg"
+                      triggerClassName="h-9 border border-slate-200 rounded-lg dark:border-white/15"
                       capitalize={false}
                     />
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowNewCategory(true)}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700 dark:hover:text-[#e8ecf4] dark:hover:bg-white/5 dark:border-white/15 dark:text-[#9aa6bd]"
                     title="Create new category"
                   >
                     <Plus className="h-3.5 w-3.5" />
@@ -1027,7 +1049,9 @@ export default function ProductFormModal({
             !hasVariants && marginPct !== null ? (
               <span
                 className={`inline-flex items-center gap-1 font-medium tabular-nums ${
-                  margin >= 0 ? "text-emerald-600" : "text-rose-600"
+                  margin >= 0
+                    ? "text-emerald-600 dark:text-emerald-300"
+                    : "text-rose-600 dark:text-rose-300"
                 }`}
               >
                 {margin >= 0 ? (
@@ -1042,7 +1066,7 @@ export default function ProductFormModal({
           }
         >
           {hasVariants && (
-            <p className="rounded-lg bg-blue-50 px-3 py-2 text-[11px] leading-relaxed text-cyan-700">
+            <p className="rounded-lg bg-blue-50 px-3 py-2 text-[11px] leading-relaxed text-cyan-700 dark:text-cyan-300 dark:bg-blue-400/10">
               Each variant carries its own price and cost, so these are set per
               row below.
             </p>
@@ -1055,7 +1079,7 @@ export default function ProductFormModal({
           >
             <Field label="Selling price" domain="price" error={errors.price}>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-slate-400">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-slate-400 dark:text-[#9aa6bd]">
                   {symbol}
                 </span>
                 <input
@@ -1071,7 +1095,7 @@ export default function ProductFormModal({
 
             <Field label="Cost price" domain="cost" error={errors.costPrice}>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-slate-400">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-slate-400 dark:text-[#9aa6bd]">
                   {symbol}
                 </span>
                 <input
@@ -1099,7 +1123,7 @@ export default function ProductFormModal({
           }
         >
           {discounts.length === 0 ? (
-            <p className="text-[13px] text-slate-400">
+            <p className="text-[13px] text-slate-400 dark:text-[#9aa6bd]">
               No discounts yet. Create one below.
             </p>
           ) : (
@@ -1120,21 +1144,23 @@ export default function ProductFormModal({
                     }
                     className={`flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-[13px] transition ${
                       isSelected
-                        ? "border-blue-300 bg-blue-50/60"
-                        : "border-slate-100 hover:border-slate-200 hover:bg-slate-50"
+                        ? "border-blue-300 bg-blue-50/60 dark:border-blue-400/40 dark:bg-blue-400/10"
+                        : "border-slate-100 hover:border-slate-200 hover:bg-slate-50 dark:hover:border-white/20 dark:hover:bg-white/5 dark:border-white/10"
                     }`}
                   >
                     <span className="flex min-w-0 items-center gap-2">
                       <span
                         className={`h-3.5 w-1 shrink-0 rounded-full ${
-                          isSelected ? DOMAIN.discount.rail : "bg-slate-200"
+                          isSelected
+                            ? DOMAIN.discount.rail
+                            : "bg-slate-200 dark:bg-white/10"
                         }`}
                         aria-hidden="true"
                       />
-                      <span className="truncate font-medium text-slate-800">
+                      <span className="truncate font-medium text-slate-800 dark:text-[#e8ecf4]">
                         {d.name}
                       </span>
-                      <span className="shrink-0 text-[11px] text-slate-400 tabular-nums">
+                      <span className="shrink-0 text-[11px] text-slate-400 tabular-nums dark:text-[#9aa6bd]">
                         {d.type === "percentage"
                           ? `${d.rate}% off`
                           : `${symbol}${d.rate} off`}
@@ -1145,7 +1171,7 @@ export default function ProductFormModal({
                       className={`flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border-2 ${
                         isSelected
                           ? "border-blue-500 bg-blue-500"
-                          : "border-slate-300"
+                          : "border-slate-300 dark:border-white/20"
                       }`}
                     >
                       {isSelected && <Check className="h-3 w-3 text-white" />}
@@ -1156,20 +1182,20 @@ export default function ProductFormModal({
             </div>
           )}
 
-          <div className="border-t border-slate-100 pt-3">
+          <div className="border-t border-slate-100 pt-3 dark:border-white/10">
             <CreateDiscountDialog />
           </div>
         </Section>
 
         {/* ── Tax & stock ── */}
         <Section title="Tax & stock">
-          <div className="divide-y divide-slate-100 rounded-xl border border-slate-200">
+          <div className="divide-y divide-slate-100 rounded-xl border border-slate-200 dark:border-white/15 dark:divide-white/10">
             <div className="flex items-center justify-between gap-4 px-4 py-3">
               <div>
-                <p className="text-[13px] font-medium text-slate-800">
+                <p className="text-[13px] font-medium text-slate-800 dark:text-[#e8ecf4]">
                   Taxable
                 </p>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-slate-400 dark:text-[#9aa6bd]">
                   Apply tax to this product
                 </p>
               </div>
@@ -1181,10 +1207,10 @@ export default function ProductFormModal({
 
             <div className="flex items-center justify-between gap-4 px-4 py-3">
               <div>
-                <p className="text-[13px] font-medium text-slate-800">
+                <p className="text-[13px] font-medium text-slate-800 dark:text-[#e8ecf4]">
                   Track stock
                 </p>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-slate-400 dark:text-[#9aa6bd]">
                   Monitor inventory levels
                 </p>
               </div>
@@ -1209,7 +1235,7 @@ export default function ProductFormModal({
                   on extends it rather than opening a detached block. */}
             {form.usesStocks && hasVariants && (
               <div className="px-4 py-3">
-                <p className="rounded-lg bg-blue-50 px-3 py-2 text-[11px] leading-relaxed text-cyan-700">
+                <p className="rounded-lg bg-blue-50 px-3 py-2 text-[11px] leading-relaxed text-cyan-700 dark:text-cyan-300 dark:bg-blue-400/10">
                   Stock is counted per variant, in the section below.
                 </p>
               </div>
@@ -1252,7 +1278,7 @@ export default function ProductFormModal({
                       !errors.lowStock &&
                       form.lowStock > 0 &&
                       form.lowStock <= 5 ? (
-                        <span className="text-amber-600">
+                        <span className="text-amber-600 dark:text-amber-300">
                           Alerts when stock reaches {form.lowStock}
                         </span>
                       ) : undefined
@@ -1284,7 +1310,7 @@ export default function ProductFormModal({
                         form.lowStock > 0 &&
                         form.lowStock <= form.inStock &&
                         form.lowStock <= 5
-                          ? "border-amber-300 focus:ring-amber-400"
+                          ? "border-amber-300 focus:ring-amber-400 dark:border-amber-400/40"
                           : ""
                       }`}
                       placeholder="e.g. 5"
@@ -1292,7 +1318,7 @@ export default function ProductFormModal({
                   </Field>
                 </div>
 
-                <p className="rounded-lg bg-slate-50 px-3 py-2 text-[11px] leading-relaxed text-slate-500">
+                <p className="rounded-lg bg-slate-50 px-3 py-2 text-[11px] leading-relaxed text-slate-500 dark:text-[#9aa6bd] dark:bg-white/5">
                   The inventory page charts stock against a 5,000-unit scale.
                   You can still hold more than that.
                 </p>
@@ -1310,7 +1336,7 @@ export default function ProductFormModal({
               : undefined
           }
         >
-          <div className="rounded-xl border border-slate-200">
+          <div className="rounded-xl border border-slate-200 dark:border-white/15">
             <div className="flex items-center justify-between gap-4 px-4 py-3">
               <div className="flex items-start gap-2.5">
                 <span
@@ -1318,10 +1344,10 @@ export default function ProductFormModal({
                   aria-hidden="true"
                 />
                 <div>
-                  <p className="text-[13px] font-medium text-slate-800">
+                  <p className="text-[13px] font-medium text-slate-800 dark:text-[#e8ecf4]">
                     Sell in variants
                   </p>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-400 dark:text-[#9aa6bd]">
                     For different sizes, colours or other options
                   </p>
                 </div>
@@ -1351,7 +1377,7 @@ export default function ProductFormModal({
             {/* The editors live on their own pages; what stays here is a
                 summary of what they produced and the way back into them. */}
             {hasVariants && (
-              <div className="space-y-3 border-t border-slate-100 p-4">
+              <div className="space-y-3 border-t border-slate-100 p-4 dark:border-white/10">
                 {namedOptions.length > 0 ? (
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
                     {namedOptions.map((option) => (
@@ -1359,23 +1385,23 @@ export default function ProductFormModal({
                         key={option.id}
                         className="flex items-baseline gap-1.5"
                       >
-                        <span className="text-[10px] font-semibold uppercase tracking-[0.06em] text-slate-400">
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.06em] text-slate-400 dark:text-[#9aa6bd]">
                           {option.title}
                         </span>
-                        <span className="text-[12px] capitalize text-slate-600">
+                        <span className="text-[12px] capitalize text-slate-600 dark:text-[#a9b4c7]">
                           {option.values.join(" · ")}
                         </span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-[12px] text-slate-400">
+                  <p className="text-[12px] text-slate-400 dark:text-[#9aa6bd]">
                     No options yet — add one to generate variants.
                   </p>
                 )}
 
                 {variantErrorCount > 0 && (
-                  <p className="flex items-center gap-1.5 text-[11px] font-medium text-rose-600">
+                  <p className="flex items-center gap-1.5 text-[11px] font-medium text-rose-600 dark:text-rose-300">
                     <AlertCircle className="h-3.5 w-3.5 shrink-0" />
                     {variantErrorCount} variant
                     {variantErrorCount > 1 ? "s need" : " needs"} fixing on the
@@ -1387,7 +1413,7 @@ export default function ProductFormModal({
                   <button
                     type="button"
                     onClick={() => setStep("options")}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-slate-700 transition hover:bg-slate-50"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white dark:bg-white/5 px-3 py-1.5 text-[12px] font-semibold text-slate-700 transition hover:bg-slate-50 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#c3ccdc]"
                   >
                     <SlidersHorizontal className="h-3.5 w-3.5" />
                     Edit options
@@ -1396,7 +1422,7 @@ export default function ProductFormModal({
                     type="button"
                     onClick={() => setStep("variants")}
                     disabled={!canPrice}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-[12px] font-semibold text-cyan-700 transition hover:bg-blue-100 disabled:opacity-40"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-[12px] font-semibold text-cyan-700 transition hover:bg-blue-100 disabled:opacity-40 dark:hover:bg-blue-400/20 dark:border-blue-400/25 dark:text-cyan-300 dark:bg-blue-400/10"
                   >
                     Price {variantRows.length} variant
                     {variantRows.length === 1 ? "" : "s"}

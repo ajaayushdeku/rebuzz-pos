@@ -8,7 +8,6 @@ import {
   WhatsAppIcon,
   whatsappLink,
 } from "@/components/customer/CustomerTable";
-import { CHART_PALETTE } from "@/components/dashboardComponents/chartCard";
 import { NO_TIER_STYLE } from "./customerDetailHelpers";
 import { useTierStyle } from "@/hooks/useLoyaltyTiers";
 
@@ -24,8 +23,7 @@ function Meta({
 }) {
   return (
     <span
-      className="flex items-center gap-1.5"
-      style={{ color: CHART_PALETTE.subtitle }}
+      className="flex items-center gap-1.5 text-[#9aa0a6] dark:text-[#9aa6bd]"
       title={title ?? value}
     >
       <Icon size={11} className="shrink-0" />
@@ -53,7 +51,7 @@ export default function CustomerDetailHeader({
   const style = tierStyle(loyaltyStatus);
   const tierClass = style
     ? `${style.bgColor} ${style.color}`
-    : `${NO_TIER_STYLE.bg} text-[#5f6368]`;
+    : `${NO_TIER_STYLE.bg} text-[#5f6368] dark:text-[#a9b4c7]`;
 
   return (
     <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
@@ -62,7 +60,7 @@ export default function CustomerDetailHeader({
           onClick={onBack}
           aria-label="Back to customers"
           title="Back to customers"
-          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#dadce0] bg-white text-[#5f6368] transition-colors hover:bg-[#f8f9fa] hover:text-[#3c4043]"
+          className="flex h-9 w-9 shrink-0 cursor-pointer dark:bg-white/5 items-center justify-center rounded-full border border-[#dadce0] bg-white text-[#5f6368] transition-colors hover:bg-[#f8f9fa] hover:text-[#3c4043] dark:border-white/15 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"
         >
           <ArrowLeft size={16} />
         </button>
@@ -71,7 +69,7 @@ export default function CustomerDetailHeader({
           <CustomerAvatar
             src={imageUrl}
             name={customer.name}
-            className="h-11 w-11 shrink-0 border border-[#e3e3e3]"
+            className="h-11 w-11 shrink-0 border  border-[#474B54]"
             textClass="text-sm"
             onClick={onViewPhoto}
           />
@@ -96,14 +94,11 @@ export default function CustomerDetailHeader({
 
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <h1
-              className="truncate text-lg font-semibold tracking-tight md:text-2xl"
-              style={{ color: CHART_PALETTE.title }}
-            >
+            <h1 className="truncate text-lg font-semibold tracking-tight md:text-2xl text-[#3c4043] dark:text-[#e8ecf4]">
               {customer.name}
             </h1>
             {customer.isDeactivated && (
-              <span className="shrink-0 rounded-full border border-red-200 bg-red-50 px-2 py-[3px] text-[10px] font-semibold uppercase tracking-[0.08em] text-red-600">
+              <span className="shrink-0 rounded-full border border-red-200 bg-red-50 px-2 py-[3px] text-[10px] font-semibold uppercase tracking-[0.08em] text-red-600 dark:bg-red-400/10 dark:border-red-400/25 dark:text-red-400">
                 Inactive
               </span>
             )}
@@ -130,7 +125,7 @@ export default function CustomerDetailHeader({
         </span>
 
         {customer.isDeactivated && (
-          <span className="shrink-0 rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-600">
+          <span className="shrink-0 rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-600 dark:bg-red-400/10 dark:text-red-400">
             Inactive
           </span>
         )}
@@ -138,7 +133,7 @@ export default function CustomerDetailHeader({
         {customer.phone && (
           <>
             {" "}
-            <div className="h-5 w-[2px] bg-gray-300" />{" "}
+            <div className="h-5 w-[2px] bg-gray-300 dark:bg-white/20" />{" "}
             {/* <a
               href={whatsappLink(customer.phone)}
               target="_blank"
@@ -161,7 +156,7 @@ export default function CustomerDetailHeader({
               target="_blank"
               rel="noopener noreferrer"
               title={`Chat on WhatsApp — ${customer.phone}`}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-green-600 transition-colors hover:bg-green-50"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-green-600 transition-colors hover:bg-green-50 dark:text-emerald-400"
             >
               <WhatsAppIcon className="h-6 w-6" />
             </a>

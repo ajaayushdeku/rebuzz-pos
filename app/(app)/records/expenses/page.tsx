@@ -15,7 +15,7 @@ function ExpenseRecordsPage() {
   const { isLoading } = useTracker();
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
       {/* ── Header ── */}
       <PageHeader
         title="Expense & Income"
@@ -39,7 +39,7 @@ function ExpenseRecordsPage() {
             <PurposeSummaryTables />
 
             {/* Horizontal divider */}
-            <div className="border-t border-gray-200 my-6" />
+            <div className="border-t border-gray-200 my-6 dark:border-white/10" />
 
             <RecentTransactions />
           </>

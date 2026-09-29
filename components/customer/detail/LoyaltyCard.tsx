@@ -71,12 +71,12 @@ export default function LoyaltyCard({
       <CardHeader
         icon={Star}
         iconColor="text-amber-500"
-        iconBg="bg-amber-50"
+        iconBg="bg-amber-50 dark:bg-amber-400/10"
         action={
           <button
             onClick={onEdit}
             title="Edit loyalty points"
-            className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
+            className="flex shrink-0 cursor-pointer dark:bg-white/5 items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
           >
             <Pencil size={11} />
             Edit
@@ -84,10 +84,7 @@ export default function LoyaltyCard({
         }
       >
         <div className="min-w-0">
-          <h3
-            className="flex items-center gap-1.5 text-[15px] font-normal"
-            style={{ color: CHART_PALETTE.title }}
-          >
+          <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
             Loyalty Program
             <CardInfo
               heading="Reading this card"
@@ -96,17 +93,14 @@ export default function LoyaltyCard({
               body="The tier this customer has reached and the points behind it — the tier ladder itself is set in loyalty settings. Purchases and spending are all-time. A due amount is money still owed on past orders."
             />
           </h3>
-          <p
-            className="mt-0.5 text-xs tracking-wide"
-            style={{ color: CHART_PALETTE.subtitle }}
-          >
+          <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
             Customer&lsquo;s loyalty points, due amount and total spending
           </p>
         </div>
       </CardHeader>
 
       {/* Tier & points */}
-      <div className="mb-4 rounded-xl  bg-gray-50 px-4 py-3">
+      <div className="mb-4 rounded-xl  bg-gray-50 px-4 py-3 dark:bg-white/5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <span
@@ -115,37 +109,22 @@ export default function LoyaltyCard({
               {loyaltyStatus}
             </span>
             <div className="min-w-0">
-              <p
-                className="text-[11px] uppercase tracking-wide"
-                style={{ color: CHART_PALETTE.subtitle }}
-              >
+              <p className="text-[11px] uppercase tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
                 Loyalty points
               </p>
-              <p
-                className="truncate text-[22px] font-semibold tracking-tight tabular-nums"
-                style={{ color: CHART_PALETTE.title }}
-              >
+              <p className="truncate text-[22px] font-semibold tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                 {formatAmount(customer.loyaltyPoint ?? 0, currency.locale)}{" "}
-                <span
-                  className="text-[11px] font-normal"
-                  style={{ color: CHART_PALETTE.subtitle }}
-                >
+                <span className="text-[11px] font-normal text-[#9aa0a6] dark:text-[#9aa6bd]">
                   pts
                 </span>
               </p>
             </div>
           </div>
           <div className="shrink-0 text-right">
-            <p
-              className="text-[11px] uppercase tracking-wide"
-              style={{ color: CHART_PALETTE.subtitle }}
-            >
+            <p className="text-[11px] uppercase tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
               Purchases
             </p>
-            <p
-              className="text-lg font-semibold tabular-nums"
-              style={{ color: CHART_PALETTE.title }}
-            >
+            <p className="text-lg font-semibold tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
               {(customer.numberOfPurchases ?? 0).toLocaleString()}
             </p>
           </div>

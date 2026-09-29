@@ -38,8 +38,7 @@ type CustomerFormData = {
 };
 
 type CreateResult =
-  | { success: true; data: unknown }
-  | { success: false; error: string };
+  { success: true; data: unknown } | { success: false; error: string };
 
 const INITIAL_FORM: CustomerFormData = {
   name: "",
@@ -59,7 +58,7 @@ const STEPS = [
 /** Shared red callout for a step's error. */
 function FormError({ message }: { message: string }) {
   return (
-    <p className="flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3.5 py-2.5 text-[12px] font-medium text-red-600">
+    <p className="flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3.5 py-2.5 text-[12px] font-medium text-red-600 dark:bg-red-400/10 dark:border-red-400/20 dark:text-red-400">
       <AlertCircle size={14} className="mt-px shrink-0" />
       {message}
     </p>
@@ -200,8 +199,7 @@ export default function CustomerFormModal({
 
     // Build a Customer object from the API response
     const createdData = (result.data as Record<string, unknown>)?.data as
-      | Record<string, unknown>
-      | undefined;
+      Record<string, unknown> | undefined;
     const createdCustomer: Customer = {
       id: (createdData?._id as string) ?? "",
       name: (createdData?.name as string) ?? form.name,
@@ -235,8 +233,8 @@ export default function CustomerFormModal({
           : "Fill in the details for this new customer"
       }
       icon={UserPlus}
-      iconColor="text-blue-600"
-      iconBgColor="bg-blue-50"
+      iconColor="text-blue-600 dark:text-[#7ba2e3]"
+      iconBgColor="bg-blue-50 dark:bg-blue-400/10"
       maxWidth="max-w-xl"
       footer={
         /* Both steps put their primary action here — step 1's button used to
@@ -317,8 +315,8 @@ export default function CustomerFormModal({
                     done
                       ? "bg-blue-600 text-white"
                       : active
-                        ? "bg-blue-50 text-blue-600 ring-2 ring-blue-600"
-                        : "bg-gray-100 text-gray-400"
+                        ? "bg-blue-50 text-blue-600 ring-2 ring-blue-600 dark:bg-blue-400/10 dark:text-[#7ba2e3]"
+                        : "bg-gray-100 text-gray-400 dark:bg-white/10 dark:text-[#7b869b]"
                   }`}
                 >
                   {done ? <Check size={16} /> : <Icon size={15} />}
@@ -326,19 +324,23 @@ export default function CustomerFormModal({
                 <div className="leading-tight">
                   <p
                     className={`text-[13px] font-semibold ${
-                      done || active ? "text-gray-900" : "text-gray-400"
+                      done || active
+                        ? "text-gray-900 dark:text-[#e8ecf4]"
+                        : "text-gray-400 dark:text-[#7b869b]"
                     }`}
                   >
                     {s.label}
                   </p>
-                  <p className="text-[11px] text-gray-400">Step {s.id} of 2</p>
+                  <p className="text-[11px] text-gray-400 dark:text-[#7b869b]">
+                    Step {s.id} of 2
+                  </p>
                 </div>
               </div>
 
               {i < STEPS.length - 1 && (
                 <div
                   className={`mx-3 h-0.5 flex-1 rounded-full transition-colors duration-300 ${
-                    step > s.id ? "bg-blue-600" : "bg-gray-200"
+                    step > s.id ? "bg-blue-600" : "bg-gray-200 dark:bg-white/15"
                   }`}
                 />
               )}
@@ -355,13 +357,13 @@ export default function CustomerFormModal({
                 a single field, rather than two boxes that happen to sit side
                 by side. */}
             <div
-              className={`mt-2 flex items-center rounded-xl border bg-white transition focus-within:ring-2 ${
+              className={`mt-2 flex items-center rounded-xl border bg-white transiti dark:bg-white/5 dark:text-[#e8ecf4]on focus-within:ring-2 ${
                 checkError
-                  ? "border-red-300 focus-within:border-red-400 focus-within:ring-red-500/20"
-                  : "border-gray-200 focus-within:border-blue-500 focus-within:ring-blue-500/20"
+                  ? "border-red-300 focus-within:border-red-400 focus-within:ring-red-500/20 dark:border-red-400/40"
+                  : "border-gray-200 focus-within:border-blue-500 focus-within:ring-blue-500/20 dark:border-white/15"
               }`}
             >
-              <span className="pl-3.5 text-gray-400">
+              <span className="pl-3.5 text-gray-400 dark:text-[#7b869b]">
                 <Phone size={15} />
               </span>
               <input
@@ -372,7 +374,7 @@ export default function CustomerFormModal({
                 aria-label="Country code"
                 className="h-11 w-16 bg-transparent px-2 text-center text-[13px] tabular-nums outline-none"
               />
-              <span className="h-6 w-px shrink-0 bg-gray-200" />
+              <span className="h-6 w-px shrink-0 bg-gray-200 dark:bg-white/15" />
               <input
                 type="tel"
                 value={phone}
@@ -383,7 +385,7 @@ export default function CustomerFormModal({
                 className="h-11 flex-1 bg-transparent px-3 text-[13px] tabular-nums outline-none"
               />
             </div>
-            <p className="mt-1.5 text-[11px] text-gray-400">
+            <p className="mt-1.5 text-[11px] text-gray-400 dark:text-[#7b869b]">
               We&apos;ll check whether this number already belongs to a
               customer.
             </p>
@@ -398,14 +400,14 @@ export default function CustomerFormModal({
           {/* Profile photo */}
           <div>
             <SectionLabel>Profile photo</SectionLabel>
-            <div className="mt-2 flex items-center gap-4 rounded-xl border border-gray-200 p-3">
+            <div className="mt-2 flex items-center gap-4 rounded-xl border border-gray-200 p-3 dark:border-white/15">
               {imagePreview ? (
                 <div className="relative shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={imagePreview}
                     alt="Profile preview"
-                    className="h-16 w-16 rounded-full border border-gray-200 object-cover"
+                    className="h-16 w-16 rounded-full border border-gray-200 object-cover dark:border-white/15"
                   />
                   <button
                     type="button"
@@ -417,8 +419,11 @@ export default function CustomerFormModal({
                   </button>
                 </div>
               ) : (
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-dashed border-gray-300 bg-gray-50">
-                  <ImageIcon size={18} className="text-gray-400" />
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-dashed border-gray-300 bg-gray-50 dark:bg-white/5 dark:border-white/20">
+                  <ImageIcon
+                    size={18}
+                    className="text-gray-400 dark:text-[#7b869b]"
+                  />
                 </div>
               )}
 
@@ -426,12 +431,12 @@ export default function CustomerFormModal({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-gray-700 transition hover:border-blue-400 hover:text-blue-600"
+                  className="flex items-center gap-1.5 rounded-lg border border-gray-20 dark:bg-white/5 dark:text-[#e8ecf4]0 bg-white px-3 py-1.5 text-[12px] font-semibold text-gray-700 transition hover:border-blue-400 hover:text-blue-600 dark:border-white/15 dark:text-[#c3ccdc]"
                 >
                   <ImageIcon size={13} />
                   {imageFile ? "Change photo" : "Upload photo"}
                 </button>
-                <p className="mt-1.5 text-[11px] text-gray-400">
+                <p className="mt-1.5 text-[11px] text-gray-400 dark:text-[#7b869b]">
                   PNG or JPG, up to 5 MB.
                 </p>
               </div>
@@ -449,7 +454,7 @@ export default function CustomerFormModal({
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <SectionLabel>
-                Name <span className="text-red-500">*</span>
+                Name <span className="text-red-500 dark:text-red-400">*</span>
               </SectionLabel>
               <input
                 type="text"
@@ -466,7 +471,7 @@ export default function CustomerFormModal({
 
             <div>
               <SectionLabel>
-                Email <span className="text-red-500">*</span>
+                Email <span className="text-red-500 dark:text-red-400">*</span>
               </SectionLabel>
               <input
                 type="email"
@@ -486,12 +491,15 @@ export default function CustomerFormModal({
               than two greyed-out inputs pretending to be editable. */}
           <div>
             <SectionLabel>Phone</SectionLabel>
-            <div className="mt-2 flex h-11 items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3.5">
-              <Lock size={13} className="shrink-0 text-gray-400" />
-              <span className="text-[13px] text-gray-600 tabular-nums">
+            <div className="mt-2 flex h-11 items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3.5 dark:bg-white/5 dark:border-white/15">
+              <Lock
+                size={13}
+                className="shrink-0 text-gray-400 dark:text-[#7b869b]"
+              />
+              <span className="text-[13px] text-gray-600 tabular-nums dark:text-[#a9b4c7]">
                 {form.countryCode} {form.phone}
               </span>
-              <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">
+              <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400">
                 <Check size={10} />
                 Checked
               </span>
@@ -518,7 +526,7 @@ export default function CustomerFormModal({
               onChange={(e) => setForm({ ...form, note: e.target.value })}
               placeholder="Additional info... (optional)"
               rows={3}
-              className="mt-2 w-full resize-none rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-[13px] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+              className="mt-2 w-full resize-none rounded-xl border border-gray-200 dark:bg-white/5 dark:text-[#e8ecf4] bg-white px-3.5 py-2.5 text-[13px] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-white/15"
             />
           </div>
 

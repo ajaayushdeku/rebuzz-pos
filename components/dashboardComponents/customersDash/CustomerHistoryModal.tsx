@@ -6,10 +6,10 @@ import { Loader2, ShoppingBag, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
 
 import ModalShell from "@/components/ui/ModalShell";
+import StatusPill from "@/components/ui/StatusPill";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import {
-  statusStyles,
   paymentMethods,
   normalizePaymentMethod,
   paymentMethodStyle,
@@ -183,7 +183,6 @@ export default function CustomerHistoryModal({
                   const status: "completed" | "refunded" = isRefunded
                     ? "refunded"
                     : "completed";
-                  const s = statusStyles[status] ?? statusStyles["completed"];
 
                   // const paymentMethod = (purchase.paymentMethod ?? "Cash") as
                   //   | "Card"
@@ -261,13 +260,7 @@ export default function CustomerHistoryModal({
                         )}
                       </td>
                       <td className="py-3 px-3 text-center">
-                        <span
-                          className={`${s.badge} ${s.cell} text-xs font-medium px-2 py-0.5 rounded-full inline-block`}
-                        >
-                          {status
-                            ?.toLowerCase()
-                            .replace(/\b\w/g, (char) => char.toUpperCase())}
-                        </span>
+                        <StatusPill label={status} />
                       </td>
                     </tr>
                   );

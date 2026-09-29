@@ -95,16 +95,21 @@ export default function Page() {
 
   if (creditLoading || (invoiceNo != null && ticketLoading)) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 size={18} className="animate-spin text-gray-400" />
+      <div className="min-h-screen flex items-center justify-center dark:bg-[#0f1420]">
+        <Loader2
+          size={18}
+          className="animate-spin text-gray-400 dark:text-[#7b869b]"
+        />
       </div>
     );
   }
 
   if (creditError || !credit) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-400 text-sm">Credit not found.</p>
+      <div className="min-h-screen flex items-center justify-center dark:bg-[#0f1420]">
+        <p className="text-gray-400 text-sm dark:text-[#9aa6bd]">
+          Credit not found.
+        </p>
       </div>
     );
   }
@@ -118,15 +123,15 @@ export default function Page() {
   const state = creditState(credit);
   if (state === "completed" || state === "archived") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-3 px-6 text-center">
-        <p className="text-sm text-gray-600">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 px-6 text-center dark:bg-[#0f1420]">
+        <p className="text-sm text-gray-600 dark:text-[#a9b4c7]">
           This credit is {state === "completed" ? "settled" : "archived"} and
           can no longer be edited.
         </p>
         <button
           type="button"
           onClick={() => router.push(`/records/credits/${creditId}`)}
-          className="cursor-pointer rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50"
+          className="cursor-pointer rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50 dark:border-white/15 dark:text-[#a8c4ee] dark:hover:bg-white/10"
         >
           Back to the credit
         </button>
@@ -138,14 +143,14 @@ export default function Page() {
   // no base to edit against. Said plainly rather than rendering an empty form.
   if (ticketError || !initialData) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-3 px-6 text-center">
-        <p className="text-sm text-gray-600">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 px-6 text-center dark:bg-[#0f1420]">
+        <p className="text-sm text-gray-600 dark:text-[#a9b4c7]">
           The invoice behind this credit could not be loaded.
         </p>
         <button
           type="button"
           onClick={() => router.push(`/records/credits/${creditId}`)}
-          className="cursor-pointer rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50"
+          className="cursor-pointer rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50 dark:border-white/15 dark:text-[#a8c4ee] dark:hover:bg-white/10"
         >
           Back to the credit
         </button>

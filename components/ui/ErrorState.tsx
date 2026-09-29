@@ -26,13 +26,17 @@ export default function ErrorState({
   isRetrying = false,
 }: ErrorStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center bg-white px-6 py-16 text-center">
-      <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-red-50">
-        <AlertTriangle size={24} className="text-red-500" />
+    <div className="flex flex-col items-center justify-center bg-white px-6 py-16 text-center dark:bg-transparent">
+      <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-red-50 dark:bg-red-400/15">
+        <AlertTriangle size={24} className="text-red-500 dark:text-[#f87171]" />
       </div>
 
-      <p className="text-sm font-semibold text-gray-900">{title}</p>
-      <p className="mt-1 max-w-sm text-xs text-gray-400">{message}</p>
+      <p className="text-sm font-semibold text-gray-900 dark:text-[#e8ecf4]">
+        {title}
+      </p>
+      <p className="mt-1 max-w-sm text-xs text-gray-400 dark:text-[#9aa6bd]">
+        {message}
+      </p>
 
       {onRetry && (
         <button

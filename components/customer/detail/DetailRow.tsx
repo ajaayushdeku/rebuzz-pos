@@ -20,24 +20,15 @@ export default function DetailRow({
   value: ReactNode;
 }) {
   return (
-    <div className="flex items-start gap-3 border-b border-[#e8eaed] py-2.5 last:border-b-0">
-      <div
-        className="mt-0.5 shrink-0"
-        style={{ color: CHART_PALETTE.subtitle }}
-      >
+    <div className="flex items-start gap-3 border-b border-[#e8eaed] py-2.5 last:border-b-0 dark:border-white/10">
+      <div className="mt-0.5 shrink-0 text-[#9aa0a6] dark:text-[#9aa6bd]">
         {icon}
       </div>
       <div className="min-w-0 flex-1 ">
-        <p
-          className="text-[11px] uppercase mb-0.5"
-          style={{ color: CHART_PALETTE.subtitle }}
-        >
+        <p className="text-[11px] uppercase mb-0.5 text-[#9aa0a6] dark:text-[#9aa6bd]">
           {label}
         </p>
-        <p
-          className="break-words text-[14px] font-medium"
-          style={{ color: CHART_PALETTE.title }}
-        >
+        <p className="break-words text-[14px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
           {value ?? "—"}
         </p>
       </div>

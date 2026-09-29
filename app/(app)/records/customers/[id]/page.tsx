@@ -64,13 +64,15 @@ export default function CustomerDetailPage() {
 
   if (!customer) {
     return (
-      <div className="min-h-screen bg-gray-50/50 px-6 py-8 md:px-10">
+      <div className="min-h-screen bg-gray-50/50 px-6 py-8 md:px-10 dark:bg-[#0f1420]">
         <div className="mx-auto max-w-6xl">
           <div className="flex flex-col items-center justify-center py-20">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-              <User size={28} className="text-gray-300" />
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-white/10">
+              <User size={28} className="text-gray-300 dark:text-[#6b7588]" />
             </div>
-            <p className="mb-4 text-sm text-gray-500">Customer not found</p>
+            <p className="mb-4 text-sm text-gray-500 dark:text-[#9aa6bd]">
+              Customer not found
+            </p>
             <Button
               variant="outline"
               onClick={() => router.push("/records/customers")}
@@ -102,7 +104,7 @@ export default function CustomerDetailPage() {
   const openPhoto = imageUrl ? () => setViewerOpen(true) : undefined;
 
   return (
-    <div className="bg-50 min-h-screen px-6 py-8 md:px-10">
+    <div className="bg-surface-page min-h-screen px-6 py-8 md:px-10 dark:bg-[#0f1420]">
       <div>
         <CustomerDetailHeader
           customer={customer}

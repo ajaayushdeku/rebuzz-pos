@@ -30,7 +30,6 @@ import ColumnPicker, {
 } from "@/components/ui/ColumnPicker";
 import { useDeleteProduct } from "@/hooks/useProducts";
 import toast from "react-hot-toast";
-import { CHART_PALETTE } from "../dashboardComponents/chartCard";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -83,7 +82,7 @@ function ProductThumb({
         onError={() => setFailed(true)}
         onClick={onOpen}
         title={onOpen ? "View photo" : undefined}
-        className={`h-9 w-9 shrink-0 rounded-md border border-gray-200 bg-gray-50 object-cover ${
+        className={`h-9 w-9 shrink-0 rounded-md border border-gray-200 bg-gray-50 object-cover dark:border-white/10 dark:bg-white/5 ${
           onOpen ? "cursor-pointer transition hover:brightness-90" : ""
         }`}
       />
@@ -91,7 +90,7 @@ function ProductThumb({
   }
 
   return (
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-gray-100 to-gray-200 text-[11px] font-bold text-gray-500">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-gray-100 to-gray-200 text-[11px] font-bold text-gray-500 dark:from-white/15 dark:to-white/5 dark:text-[#c3ccdc]">
       {initials(name)}
     </span>
   );
@@ -264,12 +263,12 @@ export default function ProductTable({
 
   const TaxBadge = ({ taxable }: { taxable: boolean }) =>
     taxable ? (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-400/15 dark:text-rose-200 dark:border-rose-400/25">
         <Percent className="h-3 w-3" />
         Taxable
       </span>
     ) : (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-400 border border-gray-200">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-400 border border-gray-200 dark:bg-white/5 dark:text-[#9aa6bd] dark:border-white/15">
         Non-taxable
       </span>
     );
@@ -283,7 +282,7 @@ export default function ProductTable({
         <div className="relative flex-1">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#7b869b]"
           />
           <input
             value={search}
@@ -292,7 +291,7 @@ export default function ProductTable({
               setPage(0);
             }}
             placeholder="Search products or variants..."
-            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]"
           />
         </div>
 
@@ -306,7 +305,7 @@ export default function ProductTable({
       </div>
 
       {/* ── Table ────────────────────────────────────────── */}
-      <div className="bg-white overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="bg-white overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden dark:bg-transparent">
         <table
           className="w-full table-fixed text-sm"
           // Scales with what is actually shown. A fixed floor sized for every
@@ -325,13 +324,7 @@ export default function ProductTable({
             )}
           </colgroup>
           <thead>
-            <tr
-              className="border-b text-[11px] tracking-wider"
-              style={{
-                borderColor: CHART_PALETTE.grid,
-                color: CHART_PALETTE.axis,
-              }}
-            >
+            <tr className="border-b text-[11px] tracking-wider border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
               {/* <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
                 S.No
               </th> */}
@@ -339,13 +332,13 @@ export default function ProductTable({
                   it would be wider than the thing it names. */}
               {/* <th className="w-12 pb-3 pt-3 px-4 font-medium" /> */}
               {showColumn("profile") && (
-                <th className=" text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600">
+                <th className=" text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]">
                   Profile
                 </th>
               )}
               {showColumn("name") && (
                 <th
-                  className="text-left pb-3 pt-3 px-4  font-normal cursor-pointer select-none hover:text-gray-600"
+                  className="text-left pb-3 pt-3 px-4  font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]"
                   onClick={() => toggleSort("name")}
                 >
                   <span className="flex items-center gap-1">
@@ -361,7 +354,7 @@ export default function ProductTable({
               )}
               {showColumn("price") && (
                 <th
-                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]"
                   onClick={() => toggleSort("price")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -394,16 +387,19 @@ export default function ProductTable({
               <tr>
                 <td
                   colSpan={colCount}
-                  className="text-center py-2 text-sm text-gray-400"
+                  className="text-center py-2 text-sm text-gray-400 dark:text-[#9aa6bd]"
                 >
                   <div className="flex flex-col items-center justify-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                      <Package size={24} className="text-gray-500" />
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3 dark:bg-white/10">
+                      <Package
+                        size={24}
+                        className="text-gray-500 dark:text-[#9aa6bd]"
+                      />
                     </div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium text-gray-500 dark:text-[#c3ccdc]">
                       No products found
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-gray-400 mt-1 dark:text-[#7b869b]">
                       Products you add will appear here.
                     </p>
                   </div>
@@ -420,8 +416,10 @@ export default function ProductTable({
                   <tr
                     key={product.id}
                     onClick={() => handleRowClick(product)}
-                    className={`border-b border-gray-50 last:border-0 cursor-pointer transition-colors ${
-                      isExpanded ? "bg-blue-50/40" : "hover:bg-gray-50"
+                    className={`border-b border-gray-50 last:border-0 cursor-pointer transition-colors dark:border-white/5 ${
+                      isExpanded
+                        ? "bg-blue-50/40 dark:bg-blue-400/10"
+                        : "hover:bg-gray-50 dark:hover:bg-white/5"
                     }`}
                   >
                     {/* <td className="py-3 px-4 text-gray-400 text-xs">
@@ -454,14 +452,11 @@ export default function ProductTable({
                     {showColumn("name") && (
                       <td className="py-3  px-4">
                         <span className="flex items-left gap-2">
-                          <span
-                            className="font-medium text-[13px] "
-                            style={{ color: CHART_PALETTE.title }}
-                          >
+                          <span className="font-medium text-[13px]  text-[#3c4043] dark:text-[#e8ecf4]">
                             {product.name}
                           </span>
                           {variantCount > 0 && (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-purple-50 text-purple-600 border border-purple-200">
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-purple-50 text-purple-600 border border-purple-200 dark:bg-purple-400/15 dark:text-purple-300 dark:border-purple-400/25">
                               {variantCount} variant
                               {variantCount > 1 ? "s" : ""}
                             </span>
@@ -481,7 +476,7 @@ export default function ProductTable({
                                   ? `Hide variants of ${product.name}`
                                   : `Show variants of ${product.name}`
                               }
-                              className="shrink-0 rounded-md p-0.5 text-gray-400 transition-colors hover:bg-blue-100 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                              className="shrink-0 rounded-md p-0.5 text-gray-400 transition-colors hover:bg-blue-100 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-[#7b869b] dark:hover:bg-blue-400/20 dark:hover:text-[#a8c4ee]"
                             >
                               {isExpanded ? (
                                 <ChevronDown className="h-3.5 w-3.5" />
@@ -499,19 +494,13 @@ export default function ProductTable({
                     )}
                     {showColumn("description") && (
                       <td className="py-3 px-4">
-                        <span
-                          className="text-[13px] truncate max-w-[200px] block"
-                          style={{ color: CHART_PALETTE.title }}
-                        >
+                        <span className="text-[13px] truncate max-w-[200px] block text-[#3c4043] dark:text-[#e8ecf4]">
                           {product.description || "—"}
                         </span>
                       </td>
                     )}
                     {showColumn("price") && (
-                      <td
-                        className="py-3 px-4 text-[13px] text-right font-medium  tabular-nums"
-                        style={{ color: CHART_PALETTE.title }}
-                      >
+                      <td className="py-3 px-4 text-[13px] text-right font-medium  tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                         {priceLabel(product)}
                       </td>
                     )}
@@ -523,22 +512,19 @@ export default function ProductTable({
                     {showColumn("stock") && (
                       <td className="py-3 px-4 text-center">
                         {!product.usesStocks ? (
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-gray-400 dark:text-[#7b869b]">
                             Not tracked
                           </span>
                         ) : (
                           <div className="flex items-center justify-center gap-1.5">
-                            <Package className="h-3.5 w-3.5 text-blue-500" />
-                            <span
-                              className="text-[13px] font-medium tabular-nums  tracking-wide"
-                              style={{ color: CHART_PALETTE.title }}
-                            >
+                            <Package className="h-3.5 w-3.5 text-blue-500 dark:text-[#7ba2e3]" />
+                            <span className="text-[13px] font-medium tabular-nums  tracking-wide text-[#3c4043] dark:text-[#e8ecf4]">
                               {formatNumber(stockOf(product))}
                             </span>
                             {product.lowStock !== undefined &&
                               product.lowStock > 0 &&
                               variantCount === 0 && (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 font-semibold border border-amber-200">
+                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 font-semibold border border-amber-200 dark:bg-amber-400/15 dark:text-amber-300 dark:border-amber-400/25">
                                   Low: {product.lowStock}
                                 </span>
                               )}
@@ -553,14 +539,14 @@ export default function ProductTable({
                       >
                         <button
                           onClick={() => handleEdit(product)}
-                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors dark:text-[#7b869b] dark:hover:bg-blue-400/15 dark:hover:text-[#a8c4ee]"
                           title="Edit product"
                         >
                           <Edit3 className="h-3.5 w-3.5" />
                         </button>
                         <button
                           onClick={() => handleDelete(product)}
-                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors dark:text-[#7b869b] dark:hover:bg-red-400/15 dark:hover:text-[#f87171]"
                           title="Delete product"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -575,7 +561,7 @@ export default function ProductTable({
                         <tr
                           key={`${product.id}-${variant.id}`}
                           onClick={() => handleRowClick(product)}
-                          className="cursor-pointer border-b border-gray-50 bg-gray-50/50 transition-colors last:border-0 hover:bg-gray-100/70"
+                          className="cursor-pointer border-b border-gray-50 bg-gray-50/50 transition-colors last:border-0 hover:bg-gray-100/70 dark:border-white/5 dark:bg-white/5 dark:hover:bg-white/10"
                         >
                           {/* <td className="py-2.5 px-4" /> */}
                           {/* A variant has no picture of its own — it shares
@@ -588,11 +574,8 @@ export default function ProductTable({
                           {showColumn("name") && (
                             <td className="py-2.5 pr-4">
                               <span className="flex items-center gap-1.5 pl-6">
-                                <CornerDownRight className="h-3.5 w-3.5 shrink-0 text-gray-300" />
-                                <span
-                                  className="text-xs font-medium capitalize "
-                                  style={{ color: CHART_PALETTE.title }}
-                                >
+                                <CornerDownRight className="h-3.5 w-3.5 shrink-0 text-gray-300 dark:text-[#6b7588]" />
+                                <span className="text-xs font-medium capitalize  text-[#3c4043] dark:text-[#e8ecf4]">
                                   {variant.optionValues.length > 0
                                     ? variant.optionValues.join(" · ")
                                     : "Default"}
@@ -602,19 +585,13 @@ export default function ProductTable({
                           )}
                           {showColumn("description") && (
                             <td className="py-2.5 px-4">
-                              <span
-                                className="block max-w-[200px] truncate text-xs "
-                                style={{ color: CHART_PALETTE.title }}
-                              >
+                              <span className="block max-w-[200px] truncate text-xs  text-[#3c4043] dark:text-[#e8ecf4]">
                                 Variant of {product.name}
                               </span>
                             </td>
                           )}
                           {showColumn("price") && (
-                            <td
-                              className="py-2.5 px-4 text-right text-[11px] font-medium tabular-nums "
-                              style={{ color: CHART_PALETTE.title }}
-                            >
+                            <td className="py-2.5 px-4 text-right text-[11px] font-medium tabular-nums  text-[#3c4043] dark:text-[#e8ecf4]">
                               {fmt(variant.price)}
                             </td>
                           )}
@@ -627,18 +604,18 @@ export default function ProductTable({
                           {showColumn("stock") && (
                             <td className="py-2.5 px-4 text-center">
                               {!product.usesStocks ? (
-                                <span className="text-xs text-gray-400">
+                                <span className="text-xs text-gray-400 dark:text-[#7b869b]">
                                   Not tracked
                                 </span>
                               ) : (
                                 <div className="flex items-center justify-center gap-1.5">
-                                  <Package className="h-3.5 w-3.5 text-blue-400" />
-                                  <span className="text-xs font-medium tabular-nums text-gray-600">
+                                  <Package className="h-3.5 w-3.5 text-blue-400 dark:text-[#7ba2e3]" />
+                                  <span className="text-xs font-medium tabular-nums text-gray-600 dark:text-[#c3ccdc]">
                                     {formatNumber(Number(variant.inStock)) ?? 0}
                                   </span>
                                   {variant.lowStock !== undefined &&
                                     variant.lowStock > 0 && (
-                                      <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 font-semibold border border-amber-200">
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 font-semibold border border-amber-200 dark:bg-amber-400/15 dark:text-amber-300 dark:border-amber-400/25">
                                         Low: {variant.lowStock}
                                       </span>
                                     )}
@@ -656,7 +633,7 @@ export default function ProductTable({
                                   product can't be removed from a variant row. */}
                               <button
                                 onClick={() => handleEdit(product)}
-                                className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors dark:text-[#7b869b] dark:hover:bg-blue-400/15 dark:hover:text-[#a8c4ee]"
                                 title={`Edit ${product.name}`}
                               >
                                 <Edit3 className="h-3.5 w-3.5" />
@@ -674,21 +651,21 @@ export default function ProductTable({
       </div>
 
       {/* ── Pagination ──────────────────────────────────── */}
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-white/10">
         <button
           onClick={() => setPage(Math.max(0, safePage - 1))}
           disabled={safePage === 0}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             safePage === 0
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"
           }`}
         >
           <ChevronLeft size={14} />
           Previous
         </button>
 
-        <span className="text-xs text-gray-400 font-medium tabular-nums">
+        <span className="text-xs text-gray-400 font-medium tabular-nums dark:text-[#9aa6bd]">
           Page {safePage + 1} of {totalPages} · {rowCount} product
           {rowCount === 1 ? "" : "s"}
           {totalVariants > 0 && `, ${totalVariants} variants`}
@@ -699,8 +676,8 @@ export default function ProductTable({
           disabled={safePage >= totalPages - 1}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             safePage >= totalPages - 1
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"
           }`}
         >
           Next

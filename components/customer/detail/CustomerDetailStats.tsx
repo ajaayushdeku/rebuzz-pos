@@ -50,12 +50,14 @@ export default function CustomerDetailStats({
       value: (
         <>
           {formatAmount(customer.loyaltyPoint ?? 0, currency.locale)}
-          <span className="ml-1 text-[11px] text-gray-400">pts</span>
+          <span className="ml-1 text-[11px] text-gray-400 dark:text-[#7b869b]">
+            pts
+          </span>
         </>
       ),
       icon: Star,
       iconColor: "text-amber-500",
-      bgColor: "bg-amber-50",
+      bgColor: "bg-amber-50 dark:bg-amber-400/10",
     },
     {
       key: "spent",
@@ -63,7 +65,7 @@ export default function CustomerDetailStats({
       value: money(totalSpent),
       icon: DollarSign,
       iconColor: "text-green-500",
-      bgColor: "bg-green-50",
+      bgColor: "bg-green-50 dark:bg-emerald-400/10",
     },
     {
       key: "orders",
@@ -71,7 +73,7 @@ export default function CustomerDetailStats({
       value: totalOrders.toLocaleString(),
       icon: ShoppingBag,
       iconColor: "text-blue-500",
-      bgColor: "bg-blue-50",
+      bgColor: "bg-blue-50 dark:bg-blue-400/10",
     },
     {
       key: "due",
@@ -84,8 +86,14 @@ export default function CustomerDetailStats({
       // Red only while something is actually owed — a customer who owes
       // nothing was reading as a warning.
       ...(owesMoney
-        ? { iconColor: "text-red-500", bgColor: "bg-red-50" }
-        : { iconColor: "text-emerald-500", bgColor: "bg-emerald-50" }),
+        ? {
+            iconColor: "text-red-500 dark:text-red-400",
+            bgColor: "bg-red-50 dark:bg-red-400/10",
+          }
+        : {
+            iconColor: "text-emerald-500",
+            bgColor: "bg-emerald-50 dark:bg-emerald-400/10",
+          }),
     },
   ];
 

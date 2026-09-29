@@ -17,9 +17,14 @@ export default function LoadingState({
   message = "Loading...",
 }: LoadingStateProps) {
   return (
-    <div className="flex items-center justify-center gap-2 bg-white px-6 py-16 text-center">
-      <Loader2 size={18} className="animate-spin text-blue-500" />
-      <span className="text-sm text-gray-500">{message}</span>
+    <div className="flex items-center justify-center gap-2 bg-white px-6 py-16 text-center dark:bg-transparent">
+      <Loader2
+        size={18}
+        className="animate-spin text-blue-500 dark:text-[#7ba2e3]"
+      />
+      <span className="text-sm text-gray-500 dark:text-[#9aa6bd]">
+        {message}
+      </span>
     </div>
   );
 }

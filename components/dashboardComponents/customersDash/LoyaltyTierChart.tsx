@@ -1,5 +1,5 @@
 "use client";
-import { createElement, useState } from "react";
+import { createElement, useEffect, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -19,11 +19,11 @@ import type {
 } from "recharts/types/component/DefaultTooltipContent";
 import { ArrowUp01, Award, List } from "lucide-react";
 import {
-  AXIS_TICK,
   CHART_PALETTE,
   ChartCard,
   ChartPager,
   ChartTooltipBox,
+  getAxisTick,
 } from "../chartCard";
 
 /**
@@ -194,6 +194,26 @@ export default function LoyaltyTierChart({ data }: TierDataProps) {
     0,
   );
   const yAxisWidth = Math.min(120, Math.max(62, longestLabel * 7 + 12));
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const AXIS_TICK = getAxisTick(isDark);
 
   return (
     <ChartCard

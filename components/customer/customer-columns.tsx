@@ -23,10 +23,13 @@ export type Customer = {
 // ── Tier badge styling ─────────────────────────────────────────────────────
 
 const TIER_STYLES: Record<LoyaltyTier, string> = {
-  Bronze: "bg-amber-100 text-amber-800 border-amber-200",
-  Silver: "bg-slate-200 text-slate-800 border-slate-300",
-  Gold: "bg-yellow-100 text-yellow-800 border-yellow-300",
-  Platinum: "bg-indigo-100 text-indigo-800 border-indigo-300",
+  Bronze:
+    "bg-amber-100 text-amber-800 border-amber-200 dark:border-amber-400/25 dark:bg-amber-400/15 dark:text-amber-200",
+  Silver:
+    "bg-slate-200 text-slate-800 border-slate-300 dark:border-white/20 dark:bg-white/15 dark:text-[#e8ecf4]",
+  Gold: "bg-yellow-100 text-yellow-800 border-yellow-300 dark:border-yellow-400/30 dark:bg-yellow-400/15 dark:text-yellow-200",
+  Platinum:
+    "bg-indigo-100 text-indigo-800 border-indigo-300 dark:border-indigo-400/30 dark:bg-indigo-400/15 dark:text-indigo-200",
 };
 
 const TierBadge = ({ tier }: { tier: LoyaltyTier }) => (

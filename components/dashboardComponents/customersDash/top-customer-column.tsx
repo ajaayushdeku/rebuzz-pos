@@ -30,9 +30,12 @@ export const tierStyles: Record<LoyaltyTier, { cell: string; badge: string }> =
       cell: "text-gray-800 dark:text-[#e8ecf4]",
       badge: "bg-gray-200 dark:bg-white/15",
     },
+    // `brown` is not a Tailwind colour and never was, so this badge has been
+    // rendering with no fill and inherited text in both themes. Orange is the
+    // nearest real family, and it stays distinct from Gold's yellow.
     Bronze: {
-      cell: "text-brown-800",
-      badge: "bg-brown-200",
+      cell: "text-orange-900 dark:text-orange-200",
+      badge: "bg-orange-200 dark:bg-orange-400/15",
     },
     None: {
       cell: "text-gray-800 dark:text-[#e8ecf4]",

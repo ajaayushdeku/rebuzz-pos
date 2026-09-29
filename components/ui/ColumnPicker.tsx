@@ -69,15 +69,15 @@ export default function ColumnPicker({
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className={`flex items-center justify-between gap-2 rounded-xl border border-gray-200 bg-white py-2.5 pl-3 pr-2.5 text-[13px] text-gray-600 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`}
+          className={`flex items-center justify-between gap-2 rounded-xl border border-gray-200 bg-white py-2.5 pl-3 pr-2.5 text-[13px] text-gray-600 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:bg-white/10 ${className}`}
         >
           <span className="flex items-center gap-2">
-            <Columns3 size={14} className="text-gray-400" />
+            <Columns3 size={14} className="text-gray-400 dark:text-[#7b869b]" />
             Columns
           </span>
           {/* The count is the useful part of the trigger — it says the table
               is filtered without the menu being open. */}
-          <span className="text-[11px] font-medium tabular-nums text-gray-400">
+          <span className="text-[11px] font-medium tabular-nums text-gray-400 dark:text-[#9aa6bd]">
             {shownCount}/{selectable.length}
           </span>
         </button>
@@ -117,7 +117,7 @@ export default function ColumnPicker({
         {atFloor && (
           <>
             <DropdownMenuSeparator />
-            <p className="px-2 py-1.5 text-[11px] leading-relaxed text-gray-400">
+            <p className="px-2 py-1.5 text-[11px] leading-relaxed text-gray-400 dark:text-[#9aa6bd]">
               At least {minVisible} columns stay visible.
             </p>
           </>

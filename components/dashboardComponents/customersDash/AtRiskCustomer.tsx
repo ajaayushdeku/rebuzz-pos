@@ -170,7 +170,15 @@ export default function AtRiskCustomer({
         className="bg-white dark:bg-transparent overflow-x-auto pb-2 scrollbar-hide"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        <table className="w-full text-sm min-w-[600px]">
+        <table className="w-full table-fixed min-w-[500px] md:min-w-[910px] text-sm">
+          <colgroup>
+            <col className="w-16" />
+            <col className="w-25 md:w-38" />
+            <col className="w-32 md:w-55" />
+            <col className="w-25 md:w-32" />
+            <col className="w-20 md:w-80" />
+          </colgroup>
+
           <thead>
             <tr className="border-b border-[#e8eaed] text-[11px] text-[#5f6368] dark:border-white/10 dark:text-[#a9b4c7]">
               <th className="text-left px-4 pb-2.5 pt-1 font-normal w-12">
@@ -233,12 +241,15 @@ export default function AtRiskCustomer({
                     {page * pageSize + idx + 1}
                   </td>
                   <td className="py-3 px-4">
-                    <span className="font-medium text-xs text-gray-900 dark:text-[#e8ecf4]">
+                    <span
+                      className="block truncate font-medium text-xs text-gray-900 dark:text-[#e8ecf4]"
+                      title={customer.name}
+                    >
                       {customer.name}
                     </span>
                   </td>
-                  <td className="py-3 px-4">
-                    <span className=" text-xs text-gray-600 p-1 rounded-2xl inline-block px-3 dark:text-[#a9b4c7]">
+                  <td className="py-3 px-4 text-left">
+                    <span className=" text-xs text-gray-600  rounded-2xl inline-block  dark:text-[#a9b4c7]">
                       {`Inactive for about 2 weeks`}
                     </span>
                   </td>
@@ -252,7 +263,7 @@ export default function AtRiskCustomer({
                     </span>
                   </td>
                   <td className="py-3 px-4 text-center md:text-right">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-end gap-1 md:gap-2">
                       <button
                         onClick={() => setHistoryFor(customer)}
                         disabled={!customer.id}

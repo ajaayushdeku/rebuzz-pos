@@ -33,7 +33,7 @@ export function CustomerAvatar({
         onError={() => setFailed(true)}
         onClick={onClick}
         title={onClick ? "View photo" : undefined}
-        className={`rounded-full object-cover bg-gray-100 ${
+        className={`rounded-full object-cover bg-gray-100 dark:bg-white/10 ${
           onClick ? "cursor-pointer" : ""
         } ${className}`}
       />

@@ -286,9 +286,9 @@ export default function CreditDetailPage() {
   // ── States ──────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex items-center gap-2 text-gray-400 text-sm">
-          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center dark:bg-[#0f1420]">
+        <div className="flex items-center gap-2 text-gray-400 text-sm dark:text-[#9aa6bd]">
+          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent dark:border-[#7ba2e3] dark:border-t-transparent rounded-full animate-spin" />
           Loading credit...
         </div>
       </div>
@@ -297,7 +297,7 @@ export default function CreditDetailPage() {
 
   if (error || !credit) {
     return (
-      <div className="min-h-screen px-6 py-10">
+      <div className="min-h-screen px-6 py-10 dark:bg-[#0f1420]">
         <ErrorState
           title="Couldn't load this credit"
           message="The credit record didn't come back from the server. It may have been removed, or the connection dropped."
@@ -311,7 +311,7 @@ export default function CreditDetailPage() {
   const isArchived = state === "archived";
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen dark:bg-[#0f1420]">
       <CreditDetailTopBar
         invoiceName={credit.ticketName ?? ""}
         invoiceNo={credit.invoiceNo}

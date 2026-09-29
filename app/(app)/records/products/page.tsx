@@ -27,7 +27,7 @@ export default function Page() {
   const nearLimit = isFree && !atLimit && remaining <= 5;
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
       <div className="w-full mx-auto">
         <PageHeader
           title="Products"
@@ -48,19 +48,21 @@ export default function Page() {
             role={atLimit ? "alert" : undefined}
             className={`mt-4 flex flex-wrap items-start gap-2.5 rounded-xl border px-4 py-3 ${
               atLimit
-                ? "border-amber-200 bg-amber-50"
-                : "border-blue-200 bg-blue-50"
+                ? "border-amber-200 bg-amber-50 dark:border-amber-400/25 dark:bg-amber-400/10"
+                : "border-blue-200 bg-blue-50 dark:border-blue-400/25 dark:bg-blue-400/10"
             }`}
           >
             {atLimit ? (
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" />
             ) : (
-              <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-[#a8c4ee]" />
             )}
 
             <p
               className={`min-w-0 flex-1 text-[13px] leading-relaxed ${
-                atLimit ? "text-amber-900" : "text-blue-900"
+                atLimit
+                  ? "text-amber-900 dark:text-amber-200"
+                  : "text-blue-900 dark:text-[#c3d6f4]"
               }`}
             >
               {atLimit ? (
@@ -84,7 +86,9 @@ export default function Page() {
             <Link
               href="/subscriptions"
               className={`shrink-0 text-[13px] font-semibold underline-offset-2 hover:underline ${
-                atLimit ? "text-amber-700" : "text-blue-700"
+                atLimit
+                  ? "text-amber-700 dark:text-amber-300"
+                  : "text-blue-700 dark:text-[#a8c4ee]"
               }`}
             >
               View plans

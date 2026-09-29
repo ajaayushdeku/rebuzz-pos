@@ -51,7 +51,7 @@ const StandardTaxTable = ({
               columns from its own content, so switching tabs moved them. The
               empty fourth track matches the group table's "Includes" column,
               which is what keeps the two grids aligned. */}
-          <table className="w-full table-fixed text-sm">
+          <table className="w-full table-fixed text-sm min-w-[990px]">
             {/* Same widths as the group table, "Combined Rate" included, so
                 the shared columns do not move when the tab is switched. */}
             <colgroup>

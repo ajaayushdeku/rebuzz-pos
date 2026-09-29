@@ -28,10 +28,16 @@ import { useLockAppScroll } from "@/hooks/useLockAppScroll";
  * themselves stay near-black so the numbers read first.
  */
 const DOMAIN = {
-  price: { rail: "bg-emerald-500", label: "text-emerald-700" },
-  cost: { rail: "bg-amber-500", label: "text-amber-700" },
-  stock: { rail: "bg-blue-500", label: "text-blue-700" },
-  variant: { rail: "bg-violet-500", label: "text-violet-700" },
+  price: {
+    rail: "bg-emerald-500",
+    label: "text-emerald-700 dark:text-emerald-300",
+  },
+  cost: { rail: "bg-amber-500", label: "text-amber-700 dark:text-amber-300" },
+  stock: { rail: "bg-blue-500", label: "text-blue-700 dark:text-[#a8c4ee]" },
+  variant: {
+    rail: "bg-violet-500",
+    label: "text-violet-700 dark:text-violet-300",
+  },
 } as const;
 
 interface ProductDetailModalProps {
@@ -53,10 +59,14 @@ function Section({
   return (
     <section>
       <div className="flex items-baseline justify-between mb-2.5">
-        <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+        <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#9aa6bd]">
           {title}
         </h3>
-        {note && <span className="text-[11px] text-slate-400">{note}</span>}
+        {note && (
+          <span className="text-[11px] text-slate-400 dark:text-[#9aa6bd]">
+            {note}
+          </span>
+        )}
       </div>
       {children}
     </section>
@@ -87,10 +97,14 @@ function Figure({
         >
           {label}
         </p>
-        <p className="text-[22px] font-semibold tracking-tight text-slate-900 tabular-nums leading-snug truncate">
+        <p className="text-[22px] font-semibold tracking-tight text-slate-900 tabular-nums leading-snug truncate dark:text-[#e8ecf4]">
           {value}
         </p>
-        {sub && <p className="text-[11px] text-slate-400 mt-0.5">{sub}</p>}
+        {sub && (
+          <p className="text-[11px] text-slate-400 mt-0.5 dark:text-[#9aa6bd]">
+            {sub}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -106,10 +120,10 @@ function MetaRow({
 }) {
   return (
     <div className="flex items-center justify-between gap-4 py-2.5">
-      <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 shrink-0">
+      <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 shrink-0 dark:text-[#9aa6bd]">
         {label}
       </span>
-      <span className="text-[13px] text-slate-700 text-right min-w-0 truncate">
+      <span className="text-[13px] text-slate-700 text-right min-w-0 truncate dark:text-[#c3ccdc]">
         {children}
       </span>
     </div>
@@ -215,7 +229,7 @@ export default function ProductDetailModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 "
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 dark:bg-black/70"
       onClick={onClose}
     >
       {/* Panel — wide enough for the five-column variant table, and capped in
@@ -224,15 +238,15 @@ export default function ProductDetailModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="product-detail-title"
-        className="relative flex w-full max-w-3xl max-h-[85vh] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl animate-in fade-in-0 zoom-in-95 duration-200"
+        className="relative flex w-full max-w-3xl max-h-[85vh] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl animate-in fade-in-0 zoom-in-95 duration-200 dark:bg-[#161d2e] dark:ring-1 dark:ring-white/10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Header ── */}
-        <header className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
+        <header className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5 dark:border-white/10">
           <div className="flex gap-4 min-w-0">
             {/* Product Image */}
             {product.image ? (
-              <div className="shrink-0 w-16 h-16 rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
+              <div className="shrink-0 w-16 h-16 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 dark:border-white/15 dark:bg-white/5">
                 <Image
                   src={product.image}
                   alt={product.name}
@@ -242,19 +256,19 @@ export default function ProductDetailModal({
                 />
               </div>
             ) : (
-              <div className="shrink-0 w-16 h-16 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center">
-                <ImageOff className="h-6 w-6 text-slate-300" />
+              <div className="shrink-0 w-16 h-16 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center dark:border-white/15 dark:bg-white/5">
+                <ImageOff className="h-6 w-6 text-slate-300 dark:text-[#6b7588]" />
               </div>
             )}
 
             <div className="min-w-0">
               <h2
                 id="product-detail-title"
-                className="text-lg font-bold text-slate-800"
+                className="text-lg font-bold text-slate-800 dark:text-[#e8ecf4]"
               >
                 {product.name}
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5 dark:text-[#9aa6bd]">
                 {product.description || "Product details"}
               </p>
             </div>
@@ -264,7 +278,7 @@ export default function ProductDetailModal({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="-mr-1 -mt-1 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors shrink-0"
+            className="-mr-1 -mt-1 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors shrink-0 dark:hover:text-[#e8ecf4] dark:hover:bg-white/10 dark:text-[#9aa6bd]"
           >
             <X className="h-4 w-4" />
           </button>
@@ -324,7 +338,7 @@ export default function ProductDetailModal({
               sub={
                 hasVariants && rollup ? (
                   rollup.lowCount > 0 ? (
-                    <span className="text-amber-600 font-medium">
+                    <span className="text-amber-600 font-medium dark:text-amber-300">
                       {rollup.lowCount} variant
                       {rollup.lowCount > 1 ? "s" : ""} low
                     </span>
@@ -334,7 +348,7 @@ export default function ProductDetailModal({
                 ) : !product.usesStocks ? (
                   "not tracked"
                 ) : flatLow ? (
-                  <span className="text-amber-600 font-medium">
+                  <span className="text-amber-600 font-medium dark:text-amber-300">
                     at or below {product.lowStock}
                   </span>
                 ) : (
@@ -347,13 +361,15 @@ export default function ProductDetailModal({
           {/* Margin — one line, and only when there's a single price pair to
               compare. With variants it belongs per row, in the table below. */}
           {flatMargin !== null && (
-            <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-              <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400">
+            <div className="flex items-center justify-between border-t border-slate-100 pt-4 dark:border-white/10">
+              <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 dark:text-[#9aa6bd]">
                 Margin per unit
               </span>
               <span
                 className={`flex items-center gap-1.5 text-[13px] font-semibold tabular-nums ${
-                  flatMargin >= 0 ? "text-emerald-600" : "text-rose-600"
+                  flatMargin >= 0
+                    ? "text-emerald-600 dark:text-emerald-300"
+                    : "text-rose-600 dark:text-rose-300"
                 }`}
               >
                 {flatMargin >= 0 ? (
@@ -363,7 +379,7 @@ export default function ProductDetailModal({
                 )}
                 {fmt(flatMargin)}
                 {flatMarginPct !== null && (
-                  <span className="font-normal text-slate-400">
+                  <span className="font-normal text-slate-400 dark:text-[#9aa6bd]">
                     ({flatMarginPct}%)
                   </span>
                 )}
@@ -381,11 +397,11 @@ export default function ProductDetailModal({
                   : `${variants.length} total`
               }
             >
-              <div className="overflow-hidden rounded-xl border border-slate-200">
+              <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-white/15">
                 <table className="w-full text-[12px]">
                   {/* Sticks to the modal body's scroll container */}
-                  <thead className="sticky top-0 z-10 bg-slate-50">
-                    <tr className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+                  <thead className="sticky top-0 z-10 bg-slate-50 dark:bg-[#1b2436]">
+                    <tr className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400 dark:text-[#9aa6bd]">
                       <th className="px-3 py-2 text-left font-semibold">
                         Variant
                       </th>
@@ -403,7 +419,7 @@ export default function ProductDetailModal({
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 dark:divide-white/10">
                     {variants.map((v) => {
                       const stock = v.inStock ?? 0;
                       const low =
@@ -423,20 +439,20 @@ export default function ProductDetailModal({
                                 className={`h-3.5 w-1 rounded-full shrink-0 ${DOMAIN.variant.rail}`}
                                 aria-hidden="true"
                               />
-                              <span className="truncate font-medium capitalize text-slate-800">
+                              <span className="truncate font-medium capitalize text-slate-800 dark:text-[#e8ecf4]">
                                 {variantLabel(v)}
                               </span>
                               {unavailable && (
-                                <Ban className="h-3 w-3 shrink-0 text-slate-400" />
+                                <Ban className="h-3 w-3 shrink-0 text-slate-400 dark:text-[#9aa6bd]" />
                               )}
                             </div>
                           </td>
 
-                          <td className="px-3 py-2.5 text-right font-semibold tabular-nums text-slate-900">
+                          <td className="px-3 py-2.5 text-right font-semibold tabular-nums text-slate-900 dark:text-[#e8ecf4]">
                             {fmt(v.price)}
                           </td>
 
-                          <td className="px-3 py-2.5 text-right tabular-nums text-slate-500">
+                          <td className="px-3 py-2.5 text-right tabular-nums text-slate-500 dark:text-[#9aa6bd]">
                             {(v.costPrice ?? 0) > 0
                               ? fmt(v.costPrice as number)
                               : "—"}
@@ -445,10 +461,10 @@ export default function ProductDetailModal({
                           <td
                             className={`px-3 py-2.5 text-right font-medium tabular-nums ${
                               m === null
-                                ? "text-slate-300"
+                                ? "text-slate-300 dark:text-[#6b7588]"
                                 : m >= 0
-                                  ? "text-emerald-600"
-                                  : "text-rose-600"
+                                  ? "text-emerald-600 dark:text-emerald-300"
+                                  : "text-rose-600 dark:text-rose-300"
                             }`}
                           >
                             {m === null ? "—" : fmt(m)}
@@ -458,8 +474,8 @@ export default function ProductDetailModal({
                             <span
                               className={
                                 low
-                                  ? "inline-flex items-center gap-1 font-medium text-amber-700"
-                                  : "text-slate-600"
+                                  ? "inline-flex items-center gap-1 font-medium text-amber-700 dark:text-amber-300"
+                                  : "text-slate-600 dark:text-[#a9b4c7]"
                               }
                             >
                               {low && <AlertTriangle className="h-3 w-3" />}
@@ -477,18 +493,20 @@ export default function ProductDetailModal({
 
           {/* Details */}
           <Section title="Details">
-            <div className="divide-y divide-slate-100 border-t border-slate-100">
+            <div className="divide-y divide-slate-100 border-t border-slate-100 dark:border-white/10 dark:divide-white/10">
               <MetaRow label="Category">
                 {product.categories ? (
                   <span className="inline-flex items-center gap-2">
                     <span
-                      className="h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-inset ring-black/10"
+                      className="h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-inset ring-black/10 dark:ring-white/20"
                       style={{ backgroundColor: categoryColor ?? "#e2e8f0" }}
                     />
                     {category?.name ?? "Uncategorised"}
                   </span>
                 ) : (
-                  <span className="text-slate-400">Not assigned</span>
+                  <span className="text-slate-400 dark:text-[#9aa6bd]">
+                    Not assigned
+                  </span>
                 )}
               </MetaRow>
 
@@ -496,8 +514,8 @@ export default function ProductDetailModal({
                 <span
                   className={
                     product.isTaxable
-                      ? "inline-flex items-center gap-1.5 font-medium text-emerald-700"
-                      : "text-slate-400"
+                      ? "inline-flex items-center gap-1.5 font-medium text-emerald-700 dark:text-emerald-300"
+                      : "text-slate-400 flex flex-row  items-center gap-1.5 dark:text-[#9aa6bd]"
                   }
                 >
                   <Percent className="h-3 w-3" />
@@ -509,8 +527,8 @@ export default function ProductDetailModal({
                 <span
                   className={
                     product.usesStocks
-                      ? "inline-flex items-center gap-1.5 font-medium text-blue-700"
-                      : "text-slate-400"
+                      ? "inline-flex items-center gap-1.5 font-medium text-blue-700 dark:text-[#a8c4ee]"
+                      : "text-slate-400 dark:text-[#9aa6bd]"
                   }
                 >
                   <Package className="h-3 w-3" />
@@ -520,7 +538,7 @@ export default function ProductDetailModal({
 
               {hasVariants && (
                 <MetaRow label="Structure">
-                  <span className="inline-flex items-center gap-1.5 font-medium text-violet-700">
+                  <span className="inline-flex items-center gap-1.5 font-medium text-violet-700 dark:text-violet-300">
                     <Layers className="h-3 w-3" />
                     {variants.length} variant{variants.length > 1 ? "s" : ""}
                   </span>
@@ -530,7 +548,7 @@ export default function ProductDetailModal({
               {product.soldBy && (
                 <MetaRow label="Sold by">
                   <span className="inline-flex items-center gap-1.5 capitalize">
-                    <Scale className="h-3 w-3 text-slate-400" />
+                    <Scale className="h-3 w-3 text-slate-400 dark:text-[#9aa6bd]" />
                     {product.soldBy}
                   </span>
                 </MetaRow>
@@ -540,11 +558,11 @@ export default function ProductDetailModal({
         </div>
 
         {/* ── Footer ── */}
-        <footer className="flex justify-end border-t border-slate-100 bg-slate-50/60 px-6 py-2">
+        <footer className="flex justify-end border-t border-slate-100 bg-slate-50/60 px-6 py-2 dark:border-white/10 dark:bg-white/5">
           <button
             type="button"
             onClick={onClose}
-            className="w-fit px-4 py-2 bg-white text-gray-700 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-xs cursor-pointer border border-gray-300 hover:text-white hover:border-red-500 hover:shadow-lg"
+            className="w-fit px-4 py-2 bg-white dark:bg-white/5 text-gray-700 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-xs cursor-pointer border border-gray-300 hover:text-white hover:border-red-500 hover:shadow-lg dark:border-white/20 dark:text-[#c3ccdc]"
           >
             Done
           </button>

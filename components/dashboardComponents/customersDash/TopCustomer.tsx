@@ -167,7 +167,16 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
         className="bg-white dark:bg-transparent overflow-x-auto pb-2 scrollbar-hide"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        <table className="w-full text-sm min-w-[600px]">
+        <table className="w-full table-fixed min-w-[960px] text-sm">
+          <colgroup>
+            <col className="w-16" />
+            <col className="w-25 md:w-38" />
+            <col className="w-24" />
+            <col className="w-20 md:w-40" />
+            <col className="w-42" />
+            <col className="w-42" />
+            <col className="w-20 md:w-45" />
+          </colgroup>
           <thead>
             <tr className="border-b border-[#e8eaed] text-[11px] text-[#5f6368] dark:border-white/10 dark:text-[#a9b4c7]">
               <th className="text-left px-4 pb-2.5 pt-1 font-normal w-12">
@@ -182,10 +191,10 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                 </span>
               </th>
               <th
-                className="flex items-center justify-center  px-4 pb-2.5 pt-1 font-normal cursor-pointer select-none hover:text-[#3c4043] dark:hover:text-[#e8ecf4]"
+                className="px-4 pb-2.5 pt-1 text-center font-normal cursor-pointer select-none hover:text-[#3c4043] dark:hover:text-[#e8ecf4]"
                 onClick={() => toggleSort("numVisits")}
               >
-                <span className="flex w-fit items-center justify-end gap-1">
+                <span className="flex items-center justify-center gap-1">
                   Visits {SortIcon({ colKey: "numVisits" })}
                 </span>
               </th>
@@ -248,7 +257,10 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                     {page * pageSize + idx + 1}
                   </td>
                   <td className="py-3 px-4">
-                    <span className="font-medium text-xs text-gray-900 dark:text-[#e8ecf4]">
+                    <span
+                      className="block truncate font-medium text-xs text-gray-900 dark:text-[#e8ecf4]"
+                      title={customer.customer}
+                    >
                       {customer.customer}
                     </span>
                   </td>
@@ -289,11 +301,11 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
                     </span>
                   </td>
 
-                  <td className="py-3  text-center md:text-right">
+                  <td className="py-3 text-right">
                     <button
                       onClick={() => setHistoryFor(customer)}
                       disabled={!customer.id}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs
+                      className="inline-flex items-center text-right  gap-1.5 px-3 md:px-5 py-1.5 text-xs
                   font-semibold text-blue-500 hover:text-blue-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <History size={14} />

@@ -13,6 +13,98 @@ export interface LoyaltyStatus {
   hex: string;
 }
 
+/**
+ * The dark half of every swatch below, keyed by its light class.
+ *
+ * Written out rather than derived. A tier's colours are stored per business as
+ * these Tailwind strings, so a business configured before dark mode existed
+ * has only the light half on record — but a hue interpolated into
+ * `dark:text-${hue}-300` would never reach the stylesheet, for the same reason
+ * the swatches themselves are written out in full.
+ */
+const TIER_DARK: Record<string, string> = {
+  "text-orange-700": "dark:text-orange-300",
+  "bg-orange-100": "dark:bg-orange-400/15",
+  "border-orange-200": "dark:border-orange-400/25",
+  "text-gray-700": "dark:text-[#c3ccdc]",
+  "text-gray-600": "dark:text-[#c3ccdc]",
+  "bg-gray-100": "dark:bg-white/10",
+  "border-gray-200": "dark:border-white/15",
+  "text-yellow-700": "dark:text-yellow-300",
+  "bg-yellow-100": "dark:bg-yellow-400/15",
+  "border-yellow-200": "dark:border-yellow-400/25",
+  "text-cyan-700": "dark:text-cyan-300",
+  "bg-cyan-100": "dark:bg-cyan-400/15",
+  "border-cyan-200": "dark:border-cyan-400/25",
+  "text-indigo-700": "dark:text-indigo-300",
+  "bg-indigo-100": "dark:bg-indigo-400/15",
+  "border-indigo-200": "dark:border-indigo-400/25",
+  "text-rose-700": "dark:text-rose-300",
+  "bg-rose-100": "dark:bg-rose-400/15",
+  "border-rose-200": "dark:border-rose-400/25",
+  "text-emerald-700": "dark:text-emerald-300",
+  "bg-emerald-100": "dark:bg-emerald-400/15",
+  "border-emerald-200": "dark:border-emerald-400/25",
+  "text-violet-700": "dark:text-violet-300",
+  "bg-violet-100": "dark:bg-violet-400/15",
+  "border-violet-200": "dark:border-violet-400/25",
+  "text-amber-700": "dark:text-amber-300",
+  "bg-amber-100": "dark:bg-amber-400/15",
+  "border-amber-200": "dark:border-amber-400/25",
+  "text-sky-700": "dark:text-sky-300",
+  "bg-sky-100": "dark:bg-sky-400/15",
+  "border-sky-200": "dark:border-sky-400/25",
+  "text-fuchsia-700": "dark:text-fuchsia-300",
+  "bg-fuchsia-100": "dark:bg-fuchsia-400/15",
+  "border-fuchsia-200": "dark:border-fuchsia-400/25",
+  "text-lime-700": "dark:text-lime-300",
+  "bg-lime-100": "dark:bg-lime-400/15",
+  "border-lime-200": "dark:border-lime-400/25",
+  "text-blue-700": "dark:text-blue-300",
+  "bg-blue-100": "dark:bg-blue-400/15",
+  "border-blue-200": "dark:border-blue-400/25",
+  "text-red-700": "dark:text-red-300",
+  "bg-red-100": "dark:bg-red-400/15",
+  "border-red-200": "dark:border-red-400/25",
+  "text-teal-700": "dark:text-teal-300",
+  "bg-teal-100": "dark:bg-teal-400/15",
+  "border-teal-200": "dark:border-teal-400/25",
+  "text-purple-700": "dark:text-purple-300",
+  "bg-purple-100": "dark:bg-purple-400/15",
+  "border-purple-200": "dark:border-purple-400/25",
+  "text-green-700": "dark:text-green-300",
+  "bg-green-100": "dark:bg-green-400/15",
+  "border-green-200": "dark:border-green-400/25",
+  "text-pink-700": "dark:text-pink-300",
+  "bg-pink-100": "dark:bg-pink-400/15",
+  "border-pink-200": "dark:border-pink-400/25",
+  "text-slate-700": "dark:text-[#c3ccdc]",
+  "text-slate-600": "dark:text-[#c3ccdc]",
+  "bg-slate-100": "dark:bg-white/10",
+  "border-slate-200": "dark:border-white/15",
+  "text-stone-700": "dark:text-[#c3ccdc]",
+  "text-stone-600": "dark:text-[#c3ccdc]",
+  "bg-stone-100": "dark:bg-white/10",
+  "border-stone-200": "dark:border-white/15",
+};
+
+/**
+ * Add the dark-mode half of a tier's swatch, whatever it was stored as.
+ *
+ * Idempotent: a swatch that already carries its dark half passes through, and
+ * a class the table does not know is left exactly as it is.
+ */
+export function withTierDark(classes: string): string {
+  if (!classes || classes.includes("dark:")) return classes;
+  return classes
+    .split(/\s+/)
+    .map((token) => {
+      const dark = TIER_DARK[token];
+      return dark ? `${token} ${dark}` : token;
+    })
+    .join(" ");
+}
+
 /** One swatch a tier can be painted with. */
 export interface TierSwatch {
   /** The Tailwind hue, and the key the assignment pool tracks. */

@@ -9,10 +9,7 @@ import {
   normalizePaymentMethod,
   paymentMethodStyle,
 } from "@/lib/config/transaction";
-import {
-  CardInfo,
-  CHART_PALETTE,
-} from "@/components/dashboardComponents/chartCard";
+import { CardInfo } from "@/components/dashboardComponents/chartCard";
 import StatusPill from "@/components/ui/StatusPill";
 import { OrderHistoryTableSkeleton } from "@/components/customer/CustomerDetailSkeletons";
 import TablePagination from "@/components/ui/TablePagination";
@@ -45,18 +42,15 @@ export default function OrderHistorySection({
       <CardHeader
         icon={Calendar}
         iconColor="text-blue-500"
-        iconBg="bg-blue-50"
+        iconBg="bg-blue-50 dark:bg-blue-400/10"
         action={
-          <span className="shrink-0 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] tabular-nums text-[#3c4043]">
+          <span className="shrink-0 rounded-full border border-[#dadce0] bg-white dark:bg-white/5 px-3 py-1 text-[11px] tabular-nums text-[#3c4043] dark:border-white/15 dark:text-[#e8ecf4]">
             {history.length} {history.length === 1 ? "order" : "orders"}
           </span>
         }
       >
         <div className="min-w-0">
-          <h3
-            className="flex items-center gap-1.5 text-[15px] font-normal"
-            style={{ color: CHART_PALETTE.title }}
-          >
+          <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
             Order History
             <CardInfo
               heading="Reading this table"
@@ -65,10 +59,7 @@ export default function OrderHistorySection({
               body="Every order this customer has paid for, newest page first. Times are Nepal time, with the 12-hour reading beside them. Click a row to open its invoice."
             />
           </h3>
-          <p
-            className="mt-0.5 text-xs tracking-wide"
-            style={{ color: CHART_PALETTE.subtitle }}
-          >
+          <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
             All orders placed by this customer
           </p>
         </div>
@@ -78,18 +69,23 @@ export default function OrderHistorySection({
         <OrderHistoryTableSkeleton />
       ) : history.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4]">
-            <ShoppingBag size={24} className="text-gray-500" />
+          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+            <ShoppingBag
+              size={24}
+              className="text-gray-500 dark:text-[#9aa6bd]"
+            />
           </div>
-          <p className="text-sm text-[#3c4043]">No orders yet</p>
-          <p className="mt-1 text-xs text-[#9aa0a6]">
+          <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
+            No orders yet
+          </p>
+          <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
             This customer&apos;s orders will appear here
           </p>
         </div>
       ) : (
         <>
           <div className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <table className="w-full table-fixed min-w-[850px] text-sm">
+            <table className="w-full table-fixed min-w-[1010px] text-sm">
               {/* `table-fixed` with declared widths: auto layout sized the columns
                   from whatever rows were on screen, so filtering, paging or a longer
                   name moved them. Invoice Name takes the slack. */}
@@ -101,16 +97,10 @@ export default function OrderHistorySection({
                 <col className="w-36" />
                 <col className="w-28" />
                 <col className="w-32" />
-                <col className="w-28" />
+                <col className="w-32" />
               </colgroup>
               <thead>
-                <tr
-                  className="border-b text-[11px] tracking-wider"
-                  style={{
-                    borderColor: CHART_PALETTE.grid,
-                    color: CHART_PALETTE.axis,
-                  }}
-                >
+                <tr className="border-b text-[11px] tracking-wider border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
                   <th className="w-10 px-3 pb-2.5 pt-1 text-left font-normal">
                     S.No.
                   </th>
@@ -165,25 +155,19 @@ export default function OrderHistorySection({
                         purchase.invoiceNo &&
                         router.push(`/invoices/${purchase.invoiceNo}`)
                       }
-                      className="cursor-pointer border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa]"
+                      className="cursor-pointer border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa] dark:border-white/10 dark:hover:bg-white/10"
                     >
-                      <td className="px-3 py-3 text-xs tabular-nums text-[#9aa0a6]">
+                      <td className="px-3 py-3 text-xs tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
                         {safePage * PAGE_SIZE + idx + 1}
                       </td>
                       <td className="px-3 py-3">
-                        <span
-                          className="block text-xs font-medium"
-                          style={{ color: CHART_PALETTE.title }}
-                        >
+                        <span className="block text-xs font-medium text-[#3c4043] dark:text-[#e8ecf4]">
                           {purchase.invoiceNo
                             ? `ORD-${purchase.invoiceNo}`
                             : (purchase.orderId ?? "—")}
                         </span>
                         {stamp && (
-                          <span
-                            className="text-[11px] "
-                            style={{ color: CHART_PALETTE.subtitle }}
-                          >
+                          <span className="text-[11px]  text-[#9aa0a6] dark:text-[#9aa6bd]">
                             {timeAgo(stamp.instant)}
                           </span>
                         )}
@@ -194,39 +178,26 @@ export default function OrderHistorySection({
                             beside it, the date under it. */}
                         {stamp ? (
                           <div>
-                            <span
-                              className="block text-xs  tracking-wide tabular-nums "
-                              style={{ color: CHART_PALETTE.title }}
-                            >
+                            <span className="block text-xs  tracking-wide tabular-nums  text-[#3c4043] dark:text-[#e8ecf4]">
                               {stamp.time24}
-                              <span
-                                className="text-[10px] font-normal "
-                                style={{ color: CHART_PALETTE.subtitle }}
-                              >
+                              <span className="text-[10px] font-normal  text-[#9aa0a6] dark:text-[#9aa6bd]">
                                 {"  "}[ {stamp.time12} ]
                               </span>
                             </span>
-                            <span
-                              className="text-[11px] tabular-nums "
-                              style={{ color: CHART_PALETTE.subtitle }}
-                            >
+                            <span className="text-[11px] tabular-nums  text-[#9aa0a6] dark:text-[#9aa6bd]">
                               {stamp.date}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-gray-400">—</span>
+                          <span className="text-gray-400 dark:text-[#7b869b]">
+                            —
+                          </span>
                         )}
                       </td>
-                      <td
-                        className="px-3 py-3 text-[13px] text-[#5f6368]"
-                        style={{ color: CHART_PALETTE.title }}
-                      >
+                      <td className="px-3 py-3 text-[13px] text-[#5f6368] text-[#3c4043] dark:text-[#e8ecf4]">
                         {purchase.ticketName || "—"}
                       </td>
-                      <td
-                        className="px-3 py-3 text-[13px] text-[#5f6368]"
-                        style={{ color: CHART_PALETTE.title }}
-                      >
+                      <td className="px-3 py-3 text-[13px] text-[#5f6368] text-[#3c4043] dark:text-[#e8ecf4]">
                         {customerName || "—"}
                       </td>
                       <td className="px-3 py-3 text-center">
@@ -236,10 +207,7 @@ export default function OrderHistorySection({
                           {paymentMethod}
                         </span>
                       </td>
-                      <td
-                        className="px-3 py-3 text-right text-[13px] font-medium tabular-nums "
-                        style={{ color: CHART_PALETTE.title }}
-                      >
+                      <td className="px-3 py-3 text-right text-[13px] font-medium tabular-nums  text-[#3c4043] dark:text-[#e8ecf4]">
                         {formatCurrencySymbol(
                           purchase.grandTotal ?? 0,
                           currency.symbol,

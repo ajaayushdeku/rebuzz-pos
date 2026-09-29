@@ -40,7 +40,7 @@ export default function StatBox({
         {/* The tile takes the icon's colour, so `border-current/20` gives a
             border in the same hue — as ChartCard's icon border does. */}
         <div
-          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 ${bgColor ?? "bg-gray-50"} ${iconColor ?? "text-gray-500"}`}
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 ${bgColor ?? "bg-gray-50 dark:bg-white/5"} ${iconColor ?? "text-gray-500 dark:text-[#9aa6bd]"}`}
         >
           <Icon size={16} />
         </div>

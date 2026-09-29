@@ -207,7 +207,7 @@ export default function RecentTransactions() {
                 }`}
               >
                 {tab.label}
-                <span className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 bg-[#e4f2fe] text-blue-950 ring-blue-900 dark:bg-white/10">
+                <span className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 bg-[#e4f2fe] text-blue-950 ring-blue-900 dark:bg-white/10 dark:text-[#e8ecf4] dark:ring-white/20">
                   {tab.count}
                 </span>
               </button>
@@ -236,7 +236,7 @@ export default function RecentTransactions() {
         aria-labelledby={`recent-tab-${filter}`}
         className="bg-white dark:bg-transparent overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
       >
-        <table className="w-full table-fixed text-sm min-w-[700px]">
+        <table className="w-full table-fixed text-sm min-w-[710px]">
           {/* `table-fixed` with declared widths: auto layout sized the columns
               from whatever rows were on screen, so filtering, paging or a longer
               name moved them. Details takes the slack. */}

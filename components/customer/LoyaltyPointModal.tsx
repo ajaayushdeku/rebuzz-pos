@@ -76,8 +76,8 @@ export default function LoyaltyPointModal({
           : "Adjust the customer's points balance"
       }
       icon={Star}
-      iconColor="text-cyan-600"
-      iconBgColor="bg-cyan-50"
+      iconColor="text-cyan-600 dark:text-cyan-300"
+      iconBgColor="bg-cyan-50 dark:bg-cyan-400/15"
       maxWidth="max-w-lg"
       footer={
         <div className="flex items-center gap-2.5">
@@ -113,23 +113,25 @@ export default function LoyaltyPointModal({
       <div className="space-y-6">
         {/* Current balance */}
         {customer && (
-          <div className="flex items-center justify-between rounded-xl border border-cyan-100 bg-cyan-50/60 px-4 py-3">
+          <div className="flex items-center justify-between rounded-xl border border-cyan-100 bg-cyan-50/60 px-4 py-3 dark:border-cyan-400/20 dark:bg-cyan-400/10">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-cyan-100">
-                <Star size={15} className="text-cyan-500" />
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-cyan-100 dark:bg-cyan-400/15">
+                <Star size={15} className="text-cyan-500 dark:text-cyan-300" />
               </div>
               <div className="min-w-0">
-                <p className="text-[13px] font-medium leading-tight text-gray-900">
+                <p className="text-[13px] font-medium leading-tight text-gray-900 dark:text-[#e8ecf4]">
                   Current balance
                 </p>
-                <p className="mt-0.5 truncate text-[11px] text-gray-400">
+                <p className="mt-0.5 truncate text-[11px] text-gray-400 dark:text-[#7b869b]">
                   {customer.name}
                 </p>
               </div>
             </div>
-            <p className="text-xl font-bold text-cyan-700/80 tabular-nums tracking-wide">
+            <p className="text-xl font-bold text-cyan-700/80 tabular-nums tracking-wide dark:text-cyan-200">
               {formatAmount(customer.loyaltyPoint ?? 0, currency.locale)}{" "}
-              <span className=" text-[11px] text-cyan-600/80">pts</span>
+              <span className=" text-[11px] text-cyan-600/80 dark:text-cyan-300/80">
+                pts
+              </span>
             </p>
           </div>
         )}
@@ -137,7 +139,7 @@ export default function LoyaltyPointModal({
         <div>
           <SectionLabel>Loyalty points</SectionLabel>
           <div className="relative mt-2">
-            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] text-cyan-400">
+            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] text-cyan-400 dark:text-cyan-300">
               ★
             </span>
             <input
@@ -150,7 +152,7 @@ export default function LoyaltyPointModal({
               className={`${modalInput} ${modalInputIdle} pl-9 tabular-nums`}
             />
           </div>
-          <p className="mt-1.5 text-[11px] text-gray-400">
+          <p className="mt-1.5 text-[11px] text-gray-400 dark:text-[#7b869b]">
             Enter the new total points balance for this customer.
           </p>
         </div>

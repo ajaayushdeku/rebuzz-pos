@@ -75,7 +75,7 @@ export default function Page() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
       <div className="w-full mx-auto ">
         <InvoiceHeader />
 
@@ -97,13 +97,13 @@ export default function Page() {
             <div className="relative flex justify-center">
               <span
                 aria-hidden="true"
-                className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
+                className="absolute inset-x-0 top-1/2 h-px bg-gray-200 dark:bg-white/10"
               />
               <div
                 role="tablist"
                 aria-label="Invoice view"
                 onKeyDown={handleTabKeyDown}
-                className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+                className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1 dark:bg-white/10"
               >
                 {tabs.map((tab, i) => {
                   const selected = tab.key === activeTab;
@@ -121,16 +121,16 @@ export default function Page() {
                       aria-controls={`invoices-panel-${tab.key}`}
                       tabIndex={selected ? 0 : -1}
                       onClick={() => setActiveTab(tab.key)}
-                      className={`flex items-center gap-2 rounded-full px-5 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                      className={`flex items-center gap-2 rounded-full px-5 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] dark:focus-visible:ring-offset-[#242a38] ${
                         selected
-                          ? "bg-white font-bold text-blue-950 shadow-sm"
-                          : "font-semibold text-blue-800 hover:text-blue-950"
+                          ? "bg-white font-bold text-blue-950 shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none"
+                          : "font-semibold text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee] dark:hover:text-white"
                       }`}
                     >
                       {tab.label}
                       <span
                         className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 
-                         bg-[#e4f2fe] text-blue-950 ring-blue-900"
+                         bg-[#e4f2fe] text-blue-950 ring-blue-900 dark:bg-white/10 dark:text-[#e8ecf4] dark:ring-white/20"
                       >
                         {tab.count === null ? "–" : tab.count}
                       </span>

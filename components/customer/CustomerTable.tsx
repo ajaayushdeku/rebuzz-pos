@@ -33,14 +33,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
 import { useTierStyle } from "@/hooks/useLoyaltyTiers";
-import { CHART_PALETTE } from "../dashboardComponents/chartCard";
 
 /**
  * Not a tier, so it is deliberately the quietest thing in the column — it
  * reads as "not banded" rather than as a rank of its own. Every real tier is
  * painted by the loyalty settings, so there is no table of names here.
  */
-const NO_TIER_STYLE = "bg-gray-50 text-gray-500 border-gray-200";
+const NO_TIER_STYLE =
+  "bg-gray-50 text-gray-500 border-gray-200 dark:bg-white/5 dark:text-[#9aa6bd] dark:border-white/15";
 
 /**
  * One tier badge.
@@ -264,7 +264,7 @@ export default function CustomerTable({
         <div className="relative flex-1">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#7b869b]"
           />
           <input
             value={search}
@@ -273,7 +273,7 @@ export default function CustomerTable({
               setPage(0);
             }}
             placeholder="Search by name, email or phone..."
-            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]"
           />
         </div>
 
@@ -286,9 +286,9 @@ export default function CustomerTable({
         />
       </div>
 
-      {/* Table â€” horizontally scrollable on mobile */}
+      {/* Table — horizontally scrollable on mobile */}
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
-      <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] dark:bg-transparent">
         <table
           className="w-full table-fixed text-sm"
           // Scales with what is actually shown. A fixed floor sized for every
@@ -307,13 +307,7 @@ export default function CustomerTable({
             )}
           </colgroup>
           <thead>
-            <tr
-              className="border-b text-[11px] tracking-wider"
-              style={{
-                borderColor: CHART_PALETTE.grid,
-                color: CHART_PALETTE.axis,
-              }}
-            >
+            <tr className="border-b text-[11px] tracking-wider border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
               {/* <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
                 S.No
               </th> */}
@@ -321,13 +315,13 @@ export default function CustomerTable({
                   over it would be wider than the thing it names. */}
               {/* <th className="w-12 pb-3 pt-3 px-4 font-medium" /> */}
               {showColumn("profile") && (
-                <th className=" text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600">
+                <th className=" text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]">
                   Profile
                 </th>
               )}
               {showColumn("name") && (
                 <th
-                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]"
                   onClick={() => toggleSort("name")}
                 >
                   <span className="flex items-center gap-1">
@@ -344,7 +338,7 @@ export default function CustomerTable({
               {showColumn("points") && (
                 <th className="text-right pb-3 pt-3 pl-4 pr-8 font-normal ">
                   Points
-                  <span className="ml-0.5 text-[9px] text-gray-400">
+                  <span className="ml-0.5 text-[9px] text-gray-400 dark:text-[#7b869b]">
                     ( pts )
                   </span>
                 </th>
@@ -383,16 +377,19 @@ export default function CustomerTable({
               <tr>
                 <td
                   colSpan={colCount}
-                  className="text-center py-2 text-sm text-gray-400"
+                  className="text-center py-2 text-sm text-gray-400 dark:text-[#9aa6bd]"
                 >
                   <div className="flex flex-col items-center justify-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                      <Users size={24} className="text-gray-500" />
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3 dark:bg-white/10">
+                      <Users
+                        size={24}
+                        className="text-gray-500 dark:text-[#9aa6bd]"
+                      />
                     </div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium text-gray-500 dark:text-[#c3ccdc]">
                       No customers found
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-gray-400 mt-1 dark:text-[#7b869b]">
                       Customers you add will appear here.
                     </p>
                   </div>
@@ -403,7 +400,7 @@ export default function CustomerTable({
                 <tr
                   key={customer.id}
                   onClick={() => handleRowClick(customer)}
-                  className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
+                  className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors dark:border-white/5 dark:hover:bg-white/5"
                 >
                   {/* <td className="py-3 px-4 text-gray-400 text-xs">
                     {page * pageSize + idx + 1}
@@ -439,14 +436,15 @@ export default function CustomerTable({
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
                         <span
-                          className="truncate text-[13px] font-medium"
-                          style={{ color: CHART_PALETTE.title }}
+                          className="truncate text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]"
                           title={customer.name}
                         >
                           {customer.name}
                         </span>
                         {customer.isDeactivated && (
-                          <span className="text-xs text-red-500">Inactive</span>
+                          <span className="text-xs text-red-500 dark:text-[#f87171]">
+                            Inactive
+                          </span>
                         )}
                       </div>
                     </td>
@@ -479,16 +477,13 @@ export default function CustomerTable({
                         className="gap-1.5 items-center"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <span
-                          className="font-medium text-[13px] tracking-wide "
-                          style={{ color: CHART_PALETTE.title }}
-                        >
+                        <span className="font-medium text-[13px] tracking-wide  text-[#3c4043] dark:text-[#e8ecf4]">
                           {/* {formatAmount(customer.loyaltyPoint, currency.locale)}{" "} */}
                           {formatAmount(
                             customer.loyaltyPoint ?? 0,
                             currency.locale,
                           )}
-                          <span className=" ml-1 text-[9px] text-gray-400">
+                          <span className=" ml-1 text-[9px] text-gray-400 dark:text-[#7b869b]">
                             pts
                           </span>
                         </span>
@@ -498,7 +493,7 @@ export default function CustomerTable({
                             setLoyaltyCustomer(customer);
                             setLoyaltyOpen(true);
                           }}
-                          className="p-1 px-2 text-blue-300 hover:text-cyan-500 hover:bg-cyan-50 rounded-md transition-colors cursor-pointer"
+                          className="p-1 px-2 text-blue-300 hover:text-cyan-500 hover:bg-cyan-50 rounded-md transition-colors cursor-pointer dark:text-[#7ba2e3] dark:hover:bg-cyan-400/15 dark:hover:text-cyan-300"
                           title="Update loyalty points"
                         >
                           <Edit3 className="h-3 w-3" />
@@ -508,26 +503,20 @@ export default function CustomerTable({
                   )}
 
                   {showColumn("purchases") && (
-                    <td
-                      className="py-3 px-4 text-xs text-center font-medium tracking-wide "
-                      style={{ color: CHART_PALETTE.title }}
-                    >
-                      {customer.numberOfPurchases ?? "â€”"}
+                    <td className="py-3 px-4 text-xs text-center font-medium tracking-wide  text-[#3c4043] dark:text-[#e8ecf4]">
+                      {customer.numberOfPurchases ?? "—"}
                     </td>
                   )}
 
                   {showColumn("dueAmount") && (
-                    <td
-                      className="py-3 px-4 text-[13px] text-right tracking-wide font-medium"
-                      style={{ color: CHART_PALETTE.title }}
-                    >
+                    <td className="py-3 px-4 text-[13px] text-right tracking-wide font-medium text-[#3c4043] dark:text-[#e8ecf4]">
                       {customer.totalDueAmount !== undefined
                         ? formatCurrencySymbol(
                             customer.totalDueAmount,
                             currency.symbol,
                             currency.locale,
                           )
-                        : "â€”"}
+                        : "—"}
                     </td>
                   )}
 
@@ -542,12 +531,14 @@ export default function CustomerTable({
                           target="_blank"
                           rel="noopener noreferrer"
                           title={`Chat on WhatsApp — ${customer.phone}`}
-                          className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-green-600 hover:bg-green-50 transition-colors"
+                          className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-green-600 hover:bg-green-50 transition-colors dark:text-emerald-300 dark:hover:bg-emerald-400/15"
                         >
                           <WhatsAppIcon className="h-4 w-4" />
                         </a>
                       ) : (
-                        <span className="text-gray-300">—</span>
+                        <span className="text-gray-300 dark:text-[#6b7588]">
+                          —
+                        </span>
                       )}
                     </td>
                   )}
@@ -559,14 +550,14 @@ export default function CustomerTable({
                     >
                       <button
                         onClick={(e) => handleEdit(e, customer)}
-                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors dark:text-[#7b869b] dark:hover:bg-blue-400/15 dark:hover:text-[#a8c4ee]"
                         title="Edit customer"
                       >
                         <Edit3 className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() => setDeleteConfirm(customer)}
-                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors dark:text-[#7b869b] dark:hover:bg-red-400/15 dark:hover:text-[#f87171]"
                         title="Delete customer"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -581,21 +572,21 @@ export default function CustomerTable({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-white/10">
         <button
           onClick={() => setPage(Math.max(0, page - 1))}
           disabled={page === 0}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             page === 0
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"
           }`}
         >
           <ChevronLeft size={14} />
           Previous
         </button>
 
-        <span className="text-xs text-gray-400 font-medium">
+        <span className="text-xs text-gray-400 font-medium dark:text-[#9aa6bd]">
           Page {page + 1} of {totalPages} · {sorted.length} customers
         </span>
 
@@ -604,8 +595,8 @@ export default function CustomerTable({
           disabled={page >= totalPages - 1}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             page >= totalPages - 1
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"
           }`}
         >
           Next

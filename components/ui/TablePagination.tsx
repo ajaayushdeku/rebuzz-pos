@@ -35,7 +35,7 @@ export default function TablePagination({
     }`;
 
   return (
-    <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
+    <div className="mt-4 flex items-center justify-between border-t border-gray-100 dark:border-white/10 pt-3">
       <button
         onClick={() => onPageChange(Math.max(0, page - 1))}
         disabled={atStart}

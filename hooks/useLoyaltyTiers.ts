@@ -3,7 +3,10 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { LoyaltyStatus } from "@/components/settingsComponents/loyaltyPoints/loyaltyStatusConfig";
+import {
+  withTierDark,
+  type LoyaltyStatus,
+} from "@/components/settingsComponents/loyaltyPoints/loyaltyStatusConfig";
 import {
   createLoyaltyTier,
   deleteLoyaltyTier,
@@ -57,8 +60,8 @@ export function useTierStyle(): (name: string) => TierStyle | undefined {
     const byName = new Map<string, TierStyle>();
     for (const tier of tiers) {
       byName.set(tier.name.trim().toLowerCase(), {
-        color: tier.color,
-        bgColor: tier.bgColor,
+        color: withTierDark(tier.color),
+        bgColor: withTierDark(tier.bgColor),
       });
     }
     return (name: string) => byName.get(name.trim().toLowerCase());
