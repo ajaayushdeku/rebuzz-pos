@@ -13,15 +13,6 @@ export interface LoyaltyStatus {
   hex: string;
 }
 
-/**
- * The dark half of every swatch below, keyed by its light class.
- *
- * Written out rather than derived. A tier's colours are stored per business as
- * these Tailwind strings, so a business configured before dark mode existed
- * has only the light half on record — but a hue interpolated into
- * `dark:text-${hue}-300` would never reach the stylesheet, for the same reason
- * the swatches themselves are written out in full.
- */
 const TIER_DARK: Record<string, string> = {
   "text-orange-700": "dark:text-orange-300",
   "bg-orange-100": "dark:bg-orange-400/15",

@@ -54,6 +54,8 @@ const EditCategoryModal = ({
       title={editTarget ? "Edit Category" : "Create New Category"}
       subtitle="Name your category and pick a colour to identify it"
       icon={Tag}
+      iconColor="text-blue-600 dark:text-[#7ba2e3]"
+      iconBgColor="bg-blue-50 dark:bg-blue-400/10"
       footer={
         <div className="flex items-center justify-end gap-2">
           <button
@@ -88,15 +90,15 @@ const EditCategoryModal = ({
         {/* ── Details ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#6b7588]">
+            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
               Details
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5 dark:text-[#9aa6bd]">
+            <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
               How this category appears across the app
             </p>
           </div>
 
-          <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#6b7588]">
+          <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
             Category Name
           </label>
           <input
@@ -110,10 +112,10 @@ const EditCategoryModal = ({
         {/* ── Colour ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#6b7588]">
+            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
               Colour
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5 dark:text-[#9aa6bd]">
+            <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
               Pick a preset or enter a custom hex value
             </p>
           </div>
@@ -141,7 +143,7 @@ const EditCategoryModal = ({
           {/* Custom colour + hex */}
           <div className="mt-3 grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#6b7588]">
+              <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
                 Custom
               </label>
               <input
@@ -156,7 +158,7 @@ const EditCategoryModal = ({
               />
             </div>
             <div>
-              <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#6b7588]">
+              <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
                 Hex
               </label>
               <div className="relative">
@@ -181,7 +183,7 @@ const EditCategoryModal = ({
         {/* ── Preview ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-600 dark:text-[#a9b4c7]">
+            <h3 className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-600 dark:text-[#95A1B8]">
               Preview
             </h3>
           </div>

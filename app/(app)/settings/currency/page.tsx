@@ -46,7 +46,9 @@ function CurrencyRow({
         <CountryFlag countryCode={option.countryCode} label="" />
 
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-gray-800 dark:text-[#e8ecf4]">{option.code}</p>
+          <p className="text-sm font-semibold text-gray-800 dark:text-[#e8ecf4]">
+            {option.code}
+          </p>
           <p className="truncate text-xs text-gray-600 dark:text-[#9aa6bd]">
             {option.name} — {option.country}
           </p>
@@ -119,14 +121,14 @@ export default function CurrencyPage() {
         {/* Search */}
         <div className="relative mb-4">
           <Search
-            size={13}
+            size={14}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#7b869b]"
           />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by currency, code or country..."
-            className="w-full pl-8 pr-3 py-2 text-[13px] border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]"
+            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]"
           />
         </div>
 
@@ -156,7 +158,12 @@ export default function CurrencyPage() {
 
         {/* List — the popular three appear here too, so the full list stays
             complete rather than having three arbitrary gaps in it. */}
-        <div className="space-y-1.5 max-h-96 overflow-y-auto pr-1">
+        <div
+          className="space-y-1.5 max-h-96 overflow-y-auto pr-1    scrollbar-hide
+    [-ms-overflow-style:none]
+    [scrollbar-width:none]
+    [&::-webkit-scrollbar]:hidden"
+        >
           {filtered.map((c) => (
             <CurrencyRow key={c.code} option={c} onSelect={handleSelect} />
           ))}

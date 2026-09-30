@@ -113,6 +113,8 @@ export const CreateTaxDialog = () => {
         title="Create Tax"
         subtitle="Add a single tax rate, or combine existing taxes into a group"
         icon={Receipt}
+        iconColor="text-blue-600 dark:text-[#7ba2e3]"
+        iconBgColor="bg-blue-50 dark:bg-blue-400/10"
         maxWidth="max-w-xl"
         footer={
           <div className="flex items-center justify-end gap-2">
@@ -154,10 +156,10 @@ export const CreateTaxDialog = () => {
           {/* ── Tax type ── */}
           <div>
             <div className="mb-3">
-              <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#6b7588]">
+              <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
                 Tax Type
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5 dark:text-[#9aa6bd]">
+              <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
                 Pick what kind of tax you want to create
               </p>
             </div>
@@ -184,14 +186,14 @@ export const CreateTaxDialog = () => {
             <>
               <div>
                 <div className="mb-3">
-                  <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#6b7588]">
+                  <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
                     Details
                   </h3>
-                  <p className="text-xs text-slate-500 mt-0.5 dark:text-[#9aa6bd]">
+                  <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
                     How this tax appears on invoices
                   </p>
                 </div>
-                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#6b7588]">
+                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
                   Tax Name
                 </label>
                 <input
@@ -209,14 +211,14 @@ export const CreateTaxDialog = () => {
 
               <div>
                 <div className="mb-3">
-                  <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#6b7588]">
+                  <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
                     Rate
                   </h3>
-                  <p className="text-xs text-slate-500 mt-0.5 dark:text-[#9aa6bd]">
+                  <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
                     Percentage added to the taxable amount
                   </p>
                 </div>
-                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#6b7588]">
+                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
                   Rate (%)
                 </label>
                 <div className="relative">
@@ -247,14 +249,14 @@ export const CreateTaxDialog = () => {
             <>
               <div>
                 <div className="mb-3">
-                  <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#6b7588]">
+                  <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
                     Details
                   </h3>
-                  <p className="text-xs text-slate-500 mt-0.5 dark:text-[#9aa6bd]">
+                  <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
                     How this group appears when applied to a product
                   </p>
                 </div>
-                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#6b7588]">
+                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
                   Group Tax Name
                 </label>
                 <input
@@ -267,10 +269,10 @@ export const CreateTaxDialog = () => {
 
               <div>
                 <div className="mb-3">
-                  <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#6b7588]">
+                  <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
                     Select Taxes to Group
                   </h3>
-                  <p className="text-xs text-slate-500 mt-0.5 dark:text-[#9aa6bd]">
+                  <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
                     Their rates are added together to form the group rate
                   </p>
                 </div>

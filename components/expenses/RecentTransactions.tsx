@@ -178,6 +178,7 @@ export default function RecentTransactions() {
           aria-hidden="true"
           className="absolute inset-x-0 top-1/2 h-px bg-gray-200 dark:bg-white/15"
         />
+
         <div
           role="tablist"
           aria-label="Transaction kind"

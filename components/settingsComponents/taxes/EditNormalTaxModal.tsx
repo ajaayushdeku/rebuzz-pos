@@ -32,6 +32,8 @@ const EditNormalTaxModal = ({
       title={tax ? "Edit Tax" : "Create New Tax"}
       subtitle="Name the tax and set the rate applied to taxable items"
       icon={Receipt}
+      iconColor="text-blue-600 dark:text-[#7ba2e3]"
+      iconBgColor="bg-blue-50 dark:bg-blue-400/10"
       footer={
         <div className="flex items-center justify-end gap-2">
           <button
@@ -64,15 +66,15 @@ const EditNormalTaxModal = ({
         {/* ── Details ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#6b7588]">
+            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
               Details
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5 dark:text-[#9aa6bd]">
+            <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
               How this tax appears on invoices
             </p>
           </div>
 
-          <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#6b7588]">
+          <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
             Tax Name
           </label>
           <input
@@ -86,15 +88,15 @@ const EditNormalTaxModal = ({
         {/* ── Rate ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#6b7588]">
+            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#95A1B8]">
               Rate
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5 dark:text-[#9aa6bd]">
+            <p className="text-xs text-slate-500 mt-0.5 dark:text-[#6b7588]">
               Percentage added to the taxable amount
             </p>
           </div>
 
-          <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#6b7588]">
+          <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#95A1B8]">
             Rate (%)
           </label>
           <div className="relative">

@@ -189,7 +189,7 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
             className="flex h-auto items-center gap-2.5 rounded-lg px-2 py-0.5"
           >
             {businessLogo ? (
-              <span className="h-7 w-7 shrink-0 overflow-hidden rounded-full border border-blue-200 bg-white">
+              <span className="h-7 w-7 shrink-0 overflow-hidden rounded-full border border-blue-200 dark:border-[#7BA2E3] bg-white">
                 <Image
                   src={businessLogo}
                   alt="Business logo"

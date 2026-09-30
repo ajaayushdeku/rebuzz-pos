@@ -684,6 +684,8 @@ export default function ProductFormModal({
         title="Product limit reached"
         subtitle={`The Free plan includes ${FREE_PRODUCT_LIMIT} products.`}
         icon={Package}
+        iconColor="text-blue-600 dark:text-[#7ba2e3]"
+        iconBgColor="bg-blue-50 dark:bg-blue-400/10"
         maxWidth="max-w-lg"
         footer={
           <div className="flex items-center gap-2.5">
@@ -740,6 +742,8 @@ export default function ProductFormModal({
       title={heading.title}
       subtitle={heading.subtitle}
       icon={Package}
+      iconColor="text-blue-600 dark:text-[#7ba2e3]"
+      iconBgColor="bg-blue-50 dark:bg-blue-400/10"
       maxWidth="max-w-5xl"
       bodyMaxHeight="max-h-[78vh]"
       bodyMinHeight="min-h-[78vh]"

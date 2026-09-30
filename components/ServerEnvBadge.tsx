@@ -23,16 +23,18 @@ function resolveEnv(): EnvInfo {
   if (API_URL.includes("api.beta.")) {
     return {
       label: "Testing Server",
-      className: "bg-blue-50 text-blue-700 border-blue-200",
-      dot: "bg-blue-500",
+      className:
+        "bg-blue-50 text-blue-700 border-blue-200 dark:bg-white/10 dark:text-[#7BA2CA] dark:border-[#7BA2CA]",
+      dot: "bg-blue-500 dark:bg-[#7BA2CA]",
       icon: FlaskConical,
     };
   }
   if (API_URL.includes("appapi.")) {
     return {
       label: "Production Server",
-      className: "bg-green-50 text-green-700 border-green-200",
-      dot: "bg-green-500",
+      className:
+        "bg-green-50 text-green-700 border-green-200 dark:bg-white/10 dark:text-[#00D492] dark:border-[#00D492]",
+      dot: "bg-green-500 dark:bg-[#00D492]",
       icon: ShieldCheck,
     };
   }
@@ -68,7 +70,7 @@ export default function ServerEnvBadge({
   return (
     <span
       title={API_URL || "No API URL configured"}
-      className={`inline-flex items-center gap-2 md:gap-1.5 rounded-full border px-2.5 py-1.5 md:py-0.5 text-xs font-semibold whitespace-nowrap ${env.className} ${className}`}
+      className={`inline-flex items-center gap-2 md:gap-1.5 rounded-full border px-2.5 py-1 md:py-0.5 text-xs font-semibold whitespace-nowrap ${env.className} ${className}`}
     >
       {/* Pulsing status dot — the ring reads as "connected and live" the way a
           stream indicator does. Held still when the OS asks for less motion. */}

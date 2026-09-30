@@ -143,11 +143,11 @@ export default function ModalShell({
                 </div>
               )}
               <div className="min-w-0">
-                <h2 className="text-[15px] font-semibold leading-tight text-gray-900 dark:text-[#e8ecf4]">
+                <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
                   {title}
-                </h2>
+                </h3>
                 {subtitle && (
-                  <p className="mt-0.5 truncate text-[12px] text-gray-400 dark:text-[#9aa6bd]">
+                  <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
                     {subtitle}
                   </p>
                 )}

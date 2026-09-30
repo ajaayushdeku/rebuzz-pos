@@ -467,7 +467,7 @@ export default function TaxSettingsPage() {
             setDeleteTarget(null);
           }
         }}
-        icon={deleteTarget?.type === "normal" ? Percent : Layers}
+        icon={deleteTarget?.type === "normal" ? Receipt : Layers}
         title={
           deleteTarget?.type === "normal" ? "Delete tax?" : "Delete group tax?"
         }
