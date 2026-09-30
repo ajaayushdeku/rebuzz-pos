@@ -114,7 +114,7 @@ export default function ExportPdfModal({
         icon={FileText}
       >
         {!invoice ? (
-          <div className="flex items-center justify-center gap-2 py-14 text-[13px] text-gray-400">
+          <div className="flex items-center justify-center gap-2 py-14 text-[13px] text-gray-400 dark:text-[#9aa6bd]">
             <Loader2 size={15} className="animate-spin" />
             Loading invoice
           </div>
@@ -133,7 +133,7 @@ export default function ExportPdfModal({
                       type="button"
                       onClick={() => handleDownloadPDF(type)}
                       disabled={!!generatingFor}
-                      className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 px-3 text-[12px] font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 px-3 text-[12px] font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:border-white/25 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#c3ccdc]"
                     >
                       {isGenerating ? (
                         <>
@@ -152,7 +152,7 @@ export default function ExportPdfModal({
               );
             })}
 
-            <p className="pt-1 text-[11px] leading-relaxed text-gray-400">
+            <p className="pt-1 text-[11px] leading-relaxed text-gray-400 dark:text-[#9aa6bd]">
               Each file is A4 and ready to print.
             </p>
           </div>

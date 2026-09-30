@@ -94,7 +94,7 @@ export default function Page() {
             <InvoiceStats invoices={invoices} />
 
             {/* Tabs — the rule runs edge to edge and the pill sits on top of it */}
-            <div className="relative flex justify-center">
+            <div className="relative flex justify-center mb-6">
               <span
                 aria-hidden="true"
                 className="absolute inset-x-0 top-1/2 h-px bg-gray-200 dark:bg-white/10"
@@ -103,7 +103,7 @@ export default function Page() {
                 role="tablist"
                 aria-label="Invoice view"
                 onKeyDown={handleTabKeyDown}
-                className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1 dark:bg-white/10"
+                className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1 dark:bg-[#272C37]"
               >
                 {tabs.map((tab, i) => {
                   const selected = tab.key === activeTab;

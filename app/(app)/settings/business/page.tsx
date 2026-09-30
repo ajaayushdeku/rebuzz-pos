@@ -318,7 +318,7 @@ export default function BusinessSettingsPage() {
             !editing && !isLoading ? (
               <Button
                 onClick={startEdit}
-                className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm text-white hover:bg-blue-700 dark:hover:bg-blue-500"
+                className="inline-flex h-9 shrink-0 cursor-pointer select-none items-center justify-center gap-2 tracking-wide whitespace-nowrap rounded-lg border border-blue-300 bg-white text-blue-600  px-3.5 text-sm font-semibold transition-colors outline-none over:border-blue-400 hover:bg-blue-50 active:bg-blue-100 focus-visible:border-blue-500 focus-visible:ring-[3px] focus-visible:ring-blue-500/30 active:bg-blue-800 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 dark:border-[#7ba2e3]/40 dark:bg-white/5 dark:text-[#7ba2e3] dark:hover:border-[#7ba2e3]/60 dark:hover:bg-white/10 dark:active:bg-white/15"
               >
                 <Pencil className="h-4 w-4" />
                 Edit business

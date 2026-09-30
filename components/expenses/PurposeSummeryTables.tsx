@@ -491,7 +491,7 @@ export default function PurposeSummaryTables() {
           role="tablist"
           aria-label="Purpose summary"
           onKeyDown={handleTabKeyDown}
-          className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1 dark:bg-white/10"
+          className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1 dark:bg-[#272C37]"
         >
           {tabs.map((tab, i) => {
             const selected = tab.key === activeTab;

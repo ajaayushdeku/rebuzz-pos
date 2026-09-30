@@ -356,7 +356,7 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
                 max={23}
                 value={fromHour}
                 onChange={(e) => handleFromChange(Number(e.target.value))}
-                className="w-14 rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 dark:text-[#e8ecf4] px-2 py-2.5 text-xs text-[#3c4043] tabular-nums focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-500 dark:border-white/15 dark:text-[#e8ecf4]"
+                className="w-14 rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 px-2 py-2.5 text-xs text-[#3c4043] tabular-nums focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-500 dark:border-white/15 dark:text-[#e8ecf4]"
               />
               <label className="whitespace-nowrap text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                 To
@@ -367,7 +367,7 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
                 max={23}
                 value={toHour}
                 onChange={(e) => handleToChange(Number(e.target.value))}
-                className="w-14 rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 dark:text-[#e8ecf4] px-2 py-2.5 text-xs text-[#3c4043] tabular-nums focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-500 dark:border-white/15 dark:text-[#e8ecf4]"
+                className="w-14 rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 px-2 py-2.5 text-xs text-[#3c4043] tabular-nums focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-500 dark:border-white/15 dark:text-[#e8ecf4]"
               />
             </div>
 

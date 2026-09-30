@@ -227,7 +227,7 @@ export default function EditCustomerModal({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-1.5 rounded-lg border border-gray-20 dark:bg-white/5 dark:text-[#e8ecf4]0 bg-white px-3 py-1.5 text-[12px] font-semibold text-gray-700 transition hover:border-blue-400 hover:text-blue-600 dark:border-white/15 dark:text-[#c3ccdc]"
+                className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-gray-700 transition hover:border-blue-400 hover:text-blue-600 dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:border-blue-400/60 dark:hover:text-[#a8c4ee]"
               >
                 <ImageIcon size={13} />
                 {imageFile ? "Change photo" : "Upload photo"}
@@ -279,7 +279,7 @@ export default function EditCustomerModal({
             read as a single field, matching CustomerFormModal's step 1. */}
         <div>
           <SectionLabel>Phone</SectionLabel>
-          <div className="mt-2 flex items-center rounded-xl border border-gray-200 b dark:bg-white/5 dark:text-[#e8ecf4]g-white transition focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 dark:border-white/15">
+          <div className="mt-2 flex items-center rounded-xl border border-gray-200 bg-white dark:bg-white/5 transition focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 dark:border-white/15">
             <span className="pl-3.5 text-gray-400 dark:text-[#7b869b]">
               <Phone size={15} />
             </span>

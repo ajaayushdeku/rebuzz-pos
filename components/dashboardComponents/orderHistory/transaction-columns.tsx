@@ -103,7 +103,9 @@ export const getTransactionColumns = (
     cell: ({ row }) => (
       <div>
         <p className="text-[14px] font-semibold">{row.original.timestamp}</p>
-        <p className="text-[12px] text-gray-600">{row.original.date}</p>
+        <p className="text-[12px] text-gray-600 dark:text-[#a9b4c7]">
+          {row.original.date}
+        </p>
       </div>
     ),
     sortingFn: "datetime",
@@ -132,7 +134,9 @@ export const getTransactionColumns = (
           </p>
           {/* Show invoiceName as sub-label if customer name is different */}
           {customerName && customerName !== invoiceName && (
-            <p className="text-xs text-gray-400">{invoiceName}</p>
+            <p className="text-xs text-gray-400 dark:text-[#9aa6bd]">
+              {invoiceName}
+            </p>
           )}
         </div>
       );

@@ -18,24 +18,24 @@ import { fetchCreditPaymentHistory } from "@/services/apiCredit.client";
  */
 function PaymentDate({ raw }: { raw: string }) {
   const d = parseNepalDateTime(raw);
-  if (!d) return <span className="text-gray-400">—</span>;
+  if (!d) return <span className="text-gray-400 dark:text-[#9aa6bd]">—</span>;
 
   return (
     <div>
-      <span className="block text-[12px] font-semibold text-gray-700">
+      <span className="block text-[12px] font-semibold text-gray-700 dark:text-[#c3ccdc]">
         {d.toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
           year: "numeric",
         })}
       </span>
-      <span className="mt-0.5 block text-[11px] tabular-nums text-gray-500">
+      <span className="mt-0.5 block text-[11px] tabular-nums text-gray-500 dark:text-[#9aa6bd]">
         {d.toLocaleTimeString("en-US", {
           hour: "2-digit",
           minute: "2-digit",
           hour12: false,
         })}
-        <span className="text-gray-500">
+        <span className="text-gray-500 dark:text-[#9aa6bd]">
           {"  "}[{" "}
           {d.toLocaleTimeString("en-US", {
             hour: "2-digit",
@@ -70,7 +70,7 @@ export default function CreditPaymentHistory({
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 py-3 text-xs text-gray-400">
+      <div className="flex items-center gap-2 py-3 text-xs text-gray-400 dark:text-[#9aa6bd]">
         <Loader2 className="h-4 w-4 animate-spin" />
         Loading payment history...
       </div>
@@ -79,7 +79,7 @@ export default function CreditPaymentHistory({
 
   if (isError) {
     return (
-      <div className="rounded-lg border border-red-100 bg-red-50/60 py-2.5 px-3 text-xs text-red-500">
+      <div className="rounded-lg border border-red-100 bg-red-50/60 dark:bg-red-400/10 py-2.5 px-3 text-xs text-red-500 dark:border-red-400/20 dark:text-red-300">
         {error instanceof Error
           ? error.message
           : "Failed to load payment history"}
@@ -92,7 +92,7 @@ export default function CreditPaymentHistory({
 
   if (paidPayments.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-gray-200 bg-white/80 py-3 px-3 mt-3 text-xs text-gray-500">
+      <div className="rounded-lg border border-dashed border-gray-200 bg-white/80 py-3 px-3 mt-3 text-xs text-gray-500 dark:border-white/15 dark:bg-transparent dark:text-[#9aa6bd]">
         No payments recorded yet.
       </div>
     );
@@ -100,13 +100,13 @@ export default function CreditPaymentHistory({
 
   return (
     <div className="py-2">
-      <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+      <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-[#9aa6bd]">
         Payment history
       </p>
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white ">
+      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:bg-white/5 dark:border-white/15 ">
         <table className="w-full text-xs">
           <thead>
-            <tr className="border-b border-gray-100 bg-gray-800 text-[11px] text-white px-3.5  tracking-wide">
+            <tr className="border-b border-gray-100 bg-gray-800 text-[11px] text-white px-3.5  tracking-wide dark:border-white/10 dark:bg-white/10">
               <th className="w-[15px] text-left py-2.5 px-3.5 font-semibold">
                 #
               </th>
@@ -122,25 +122,27 @@ export default function CreditPaymentHistory({
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-white/10">
             {paidPayments.map((p, idx) => (
               <tr
                 key={p._id}
-                className="transition-colors border-t border-gray-200  hover:bg-gray-50/60"
+                className="transition-colors border-t border-gray-200  hover:bg-gray-50/60 dark:border-white/15"
               >
-                <td className="py-2.5 px-3.5 text-gray-600">{idx + 1}.</td>
+                <td className="py-2.5 px-3.5 text-gray-600 dark:text-[#a9b4c7]">
+                  {idx + 1}.
+                </td>
                 <td className="py-2.5 px-3.5">
                   <PaymentDate raw={p.paymentDate} />
                 </td>
-                <td className="py-2.5 px-3.5 font-semibold text-gray-600 capitalize">
+                <td className="py-2.5 px-3.5 font-semibold text-gray-600 capitalize dark:text-[#a9b4c7]">
                   {p.paymentMethod === "Qr Payment"
                     ? "QR Payment"
                     : p.paymentMethod}
                 </td>
-                <td className="py-2.5 px-3.5 text-right font-semibold text-emerald-600">
+                <td className="py-2.5 px-3.5 text-right font-semibold text-emerald-600 dark:text-emerald-300">
                   {fmt(p.paymentAmount ?? 0)}
                 </td>
-                <td className="py-2.5 px-3.5 text-right font-semibold text-gray-700">
+                <td className="py-2.5 px-3.5 text-right font-semibold text-gray-700 dark:text-[#c3ccdc]">
                   {fmt(p.dueAmount ?? 0)}
                 </td>
               </tr>

@@ -28,7 +28,6 @@ import ColumnPicker, {
   type TableColumn,
 } from "@/components/ui/ColumnPicker";
 import toast from "react-hot-toast";
-import { CHART_PALETTE } from "../chartCard";
 
 /** Relative "time ago" label: moments / min / hours / days ago. */
 function timeAgo(date: Date): string {
@@ -366,13 +365,13 @@ export default function Transactions({
       <div className="relative flex justify-center mb-4 mt-2">
         <span
           aria-hidden="true"
-          className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
+          className="absolute inset-x-0 top-1/2 h-px bg-gray-200 dark:bg-white/10"
         />
         <div
           role="tablist"
           aria-label="Transaction status"
           onKeyDown={handleTabKeyDown}
-          className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+          className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1 dark:bg-[#272C37]"
         >
           {tabs.map((tab, i) => {
             const selected = tab.key === activeTab;
@@ -390,14 +389,14 @@ export default function Transactions({
                 aria-controls="transactions-panel"
                 tabIndex={selected ? 0 : -1}
                 onClick={() => selectTab(tab.key)}
-                className={`flex items-center gap-2 rounded-full px-5 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                className={`flex items-center gap-2 rounded-full px-5 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] dark:focus-visible:ring-offset-[#242a38] ${
                   selected
-                    ? "bg-white font-bold text-blue-950 shadow-sm"
-                    : "font-semibold text-blue-800 hover:text-blue-950"
+                    ? "bg-white font-bold text-blue-950 shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none"
+                    : "font-semibold text-blue-800 hover:text-blue-950 dark:text-blue-200"
                 }`}
               >
                 {tab.label}
-                <span className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 bg-[#e4f2fe]  text-blue-950 ring-blue-900">
+                <span className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 bg-[#e4f2fe]  text-blue-950 ring-blue-900 dark:bg-white/10 dark:text-[#e8ecf4] dark:ring-white/20">
                   {tab.count}
                 </span>
               </button>
@@ -411,7 +410,7 @@ export default function Transactions({
         <div className="relative flex-1">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#9aa6bd]"
           />
           <input
             value={search}
@@ -420,7 +419,7 @@ export default function Transactions({
               setPage(0);
             }}
             placeholder="Search by customer or order ID..."
-            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15"
           />
         </div>
 
@@ -428,7 +427,7 @@ export default function Transactions({
           <button
             type="button"
             onClick={() => setPaymentOpen((o) => !o)}
-            className="w-full flex items-center justify-between gap-2 pl-3 pr-2.5 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition"
+            className="w-full flex items-center justify-between gap-2 pl-3 pr-2.5 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition dark:border-white/15 dark:text-[#a9b4c7]"
           >
             <span>
               {paymentFilter === "all" ? "All Payment" : paymentFilter}
@@ -437,16 +436,16 @@ export default function Transactions({
               size={14}
               className={`text-gray-400 transition-transform duration-200 ${
                 paymentOpen ? "rotate-180" : ""
-              }`}
+              } dark:text-[#9aa6bd]`}
             />
           </button>
 
           <div
-            className={`absolute z-30 mt-1.5 w-full origin-top rounded-md border border-gray-200 bg-white shadow-lg p-1 transition-all duration-200 ${
+            className={`absolute z-30 mt-1.5 w-full origin-top rounded-md border border-gray-200 bg-white dark:bg-[#1b2436] shadow-lg p-1 transition-all duration-200 ${
               paymentOpen
                 ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
                 : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
-            }`}
+            } dark:border-white/15`}
           >
             {[
               { value: "all", label: "All Payment" },
@@ -464,8 +463,8 @@ export default function Transactions({
                 }}
                 className={`w-full text-left px-3 py-1.5 text-[13px] rounded-md transition-colors cursor-pointer ${
                   paymentFilter === opt.value
-                    ? "bg-blue-50 text-blue-700 font-medium"
-                    : "text-gray-600 hover:bg-gray-100"
+                    ? "bg-blue-50 text-blue-700 font-medium dark:text-blue-300 dark:bg-blue-400/10"
+                    : "text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
                 }`}
               >
                 {opt.label}
@@ -488,7 +487,7 @@ export default function Transactions({
         id="transactions-panel"
         role="tabpanel"
         aria-labelledby={`transactions-tab-${activeTab}`}
-        className="bg-white overflow-x-auto scrollbar-hide focus-visible:outline-none"
+        className="bg-white overflow-x-auto scrollbar-hide focus-visible:outline-none dark:bg-transparent"
       >
         <table
           className="w-full table-fixed text-sm"
@@ -507,13 +506,7 @@ export default function Transactions({
             )}
           </colgroup>
           <thead>
-            <tr
-              className="border-b text-[11px] tracking-wider"
-              style={{
-                borderColor: CHART_PALETTE.grid,
-                color: CHART_PALETTE.axis,
-              }}
-            >
+            <tr className="border-b text-[11px] tracking-wider border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
               {/* <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
                 S.No
               </th> */}
@@ -522,7 +515,7 @@ export default function Transactions({
               )}
               {showColumn("billId") && (
                 <th
-                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]"
                   onClick={() => toggleSort("id")}
                 >
                   <span className="flex items-center gap-1">
@@ -532,7 +525,7 @@ export default function Transactions({
               )}
               {showColumn("orderId") && (
                 <th
-                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]"
                   onClick={() => toggleSort("id")}
                 >
                   <span className="flex items-center gap-1">
@@ -547,7 +540,7 @@ export default function Transactions({
               )}
               {showColumn("customer") && (
                 <th
-                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]"
                   onClick={() => toggleSort("invoiceName")}
                 >
                   <span className="flex items-center gap-1">
@@ -562,7 +555,7 @@ export default function Transactions({
               )}
               {showColumn("amount") && (
                 <th
-                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]"
                   onClick={() => toggleSort("amount")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -573,7 +566,7 @@ export default function Transactions({
               {/* Takes the slot Status has vacated at the end. */}
               {showColumn("timestamp") && (
                 <th
-                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]"
                   onClick={() => toggleSort("timestamp")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -599,16 +592,19 @@ export default function Transactions({
               <tr>
                 <td
                   colSpan={colCount}
-                  className="text-center py-2 text-sm text-gray-400"
+                  className="text-center py-2 text-sm text-gray-400 dark:text-[#9aa6bd]"
                 >
                   <div className="flex flex-col items-center justify-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                      <Receipt size={24} className="text-gray-500" />
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3 dark:bg-white/10">
+                      <Receipt
+                        size={24}
+                        className="text-gray-500 dark:text-[#9aa6bd]"
+                      />
                     </div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium text-gray-500 dark:text-[#9aa6bd]">
                       {emptyMessage}
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-gray-400 mt-1 dark:text-[#9aa6bd]">
                       Transactions will appear here.
                     </p>
                   </div>
@@ -628,9 +624,9 @@ export default function Transactions({
                     onClick={() =>
                       router.push(`/invoices/${transaction?.invoiceNo}`)
                     }
-                    className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
+                    className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors dark:hover:bg-white/5 dark:border-white/5"
                   >
-                    {/* <td className="py-3 px-4 text-gray-400 text-xs">
+                    {/* <td className="py-3 px-4 text-gray-400 text-xs dark:text-[#9aa6bd]">
                       {page * pageSize + idx + 1}
                     </td> */}
                     {showColumn("status") && (
@@ -645,17 +641,11 @@ export default function Transactions({
                     )}
                     {showColumn("billId") && (
                       <td className="py-3 px-4">
-                        <span
-                          className="font-medium text-xs block"
-                          style={{ color: CHART_PALETTE.title }}
-                        >
+                        <span className="font-medium text-xs block text-[#3c4043] dark:text-[#e8ecf4]">
                           BILL-{transaction.billNo}
                         </span>
                         {billDate && (
-                          <span
-                            className="text-[11px] "
-                            style={{ color: CHART_PALETTE.subtitle }}
-                          >
+                          <span className="text-[11px]  text-[#9aa0a6] dark:text-[#9aa6bd]">
                             {timeAgo(billDate)}
                           </span>
                         )}
@@ -663,18 +653,14 @@ export default function Transactions({
                     )}
                     {showColumn("orderId") && (
                       <td className="py-3 px-4">
-                        <span
-                          className="font-medium text-xs "
-                          style={{ color: CHART_PALETTE.title }}
-                        >
+                        <span className="font-medium text-xs  text-[#3c4043] dark:text-[#e8ecf4]">
                           ORD-{transaction.invoiceNo}
                         </span>
                       </td>
                     )}
                     {showColumn("invoiceName") && (
                       <td
-                        className="truncate py-3 px-4 text-[13px]"
-                        style={{ color: CHART_PALETTE.title }}
+                        className="truncate py-3 px-4 text-[13px] text-[#3c4043] dark:text-[#e8ecf4]"
                         title={transaction.invoiceName || undefined}
                       >
                         {transaction.invoiceName || "—"}
@@ -682,8 +668,7 @@ export default function Transactions({
                     )}
                     {showColumn("customer") && (
                       <td
-                        className="truncate py-3 px-4 text-[13px]"
-                        style={{ color: CHART_PALETTE.title }}
+                        className="truncate py-3 px-4 text-[13px] text-[#3c4043] dark:text-[#e8ecf4]"
                         title={transaction.customer?.name || undefined}
                       >
                         {transaction.customer?.name || "—"}
@@ -701,10 +686,7 @@ export default function Transactions({
                     )}
 
                     {showColumn("amount") && (
-                      <td
-                        className="whitespace-nowrap py-3 px-4 text-right text-[13px] font-medium tracking-wide tabular-nums"
-                        style={{ color: CHART_PALETTE.title }}
-                      >
+                      <td className="whitespace-nowrap py-3 px-4 text-right text-[13px] font-medium tracking-wide tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                         {formatCurrencySymbol(
                           Number(transaction.amount),
                           currency.symbol,
@@ -716,24 +698,15 @@ export default function Transactions({
                     {/* Takes the slot Status has vacated at the end. */}
                     {showColumn("timestamp") && (
                       <td className="py-3 px-4 text-right">
-                        <span
-                          className="block text-xs tracking-wide whitespace-nowrap"
-                          style={{ color: CHART_PALETTE.title }}
-                        >
+                        <span className="block text-xs tracking-wide whitespace-nowrap text-[#3c4043] dark:text-[#e8ecf4]">
                           {transaction.timestamp}
                           {transaction.timestamp12h && (
-                            <span
-                              className="text-[10px] font-normal"
-                              style={{ color: CHART_PALETTE.subtitle }}
-                            >
+                            <span className="text-[10px] font-normal text-[#9aa0a6] dark:text-[#9aa6bd]">
                               {"  "}[ {transaction.timestamp12h} ]
                             </span>
                           )}
                         </span>
-                        <span
-                          className="text-[11px]"
-                          style={{ color: CHART_PALETTE.subtitle }}
-                        >
+                        <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                           {transaction.date}
                         </span>
                       </td>
@@ -745,15 +718,14 @@ export default function Transactions({
                       onClick={(e) => e.stopPropagation()}
                     >
                       {isRefunded ? (
-                        <span className="text-xs text-gray-400 italic">
+                        <span className="py-1.5 text-xs text-gray-400 italic dark:text-[#9aa6bd]">
                           Refunded
                         </span>
                       ) : (
                         <button
                           onClick={() => setRefundTarget(transaction)}
                           title="Refund this transaction"
-                          className="py-1.5 text-xs flex flex-row items-center gap-2 text-gray-400 hover:text-orange-600  transition-colors hover:cursor-pointer tracking-wide font-medium"
-                          style={{ color: CHART_PALETTE.subtitle }}
+                          className="py-1.5 text-xs flex flex-row items-center gap-2 text-gray-400 hover:text-orange-600  transition-colors hover:cursor-pointer tracking-wide font-medium text-[#9aa0a6] dark:text-[#9aa6bd] dark:hover:text-orange-600"
                         >
                           Refund <RotateCcw size={12} />
                         </button>
@@ -768,21 +740,21 @@ export default function Transactions({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-white/10">
         <button
           onClick={() => setPage(Math.max(0, page - 1))}
           disabled={page === 0}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             page === 0
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
           }`}
         >
           <ChevronLeft size={14} />
           Previous
         </button>
 
-        <span className="text-xs text-gray-400 font-medium">
+        <span className="text-xs text-gray-400 font-medium dark:text-[#9aa6bd]">
           Page {page + 1} of {totalPages} · {sorted.length} transactions
         </span>
 
@@ -791,8 +763,8 @@ export default function Transactions({
           disabled={page >= totalPages - 1}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             page >= totalPages - 1
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
           }`}
         >
           Next

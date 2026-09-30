@@ -32,8 +32,8 @@ export default function RefundModal({
       open={open}
       onClose={onClose}
       icon={RotateCcw}
-      iconColor="text-orange-600"
-      iconBgColor="bg-orange-50"
+      iconColor="text-orange-600 dark:text-orange-300"
+      iconBgColor="bg-orange-50 dark:bg-orange-400/10"
       title="Refund transaction?"
       description={
         transaction?.id

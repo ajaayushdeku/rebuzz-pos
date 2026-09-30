@@ -130,10 +130,7 @@ export default function OfferStepCard({
             )}
 
             <div className="min-w-0">
-              <h2
-                className="flex items-center gap-1.5 text-[15px] font-normal"
-                style={{ color: CHART_PALETTE.title }}
-              >
+              <h2 className="flex items-center gap-1.5 text-[15px] font-medium text-[#3c4043] dark:text-white">
                 {/* The bubble beside the card is hidden below `sm`, so the
                     step number rides the title there instead. */}
                 <span

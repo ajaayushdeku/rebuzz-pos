@@ -26,7 +26,6 @@ import {
 } from "@/components/ui/dialog";
 import toast from "react-hot-toast";
 import { parseNepalDateTime } from "../dashboardComponents/staffDash/staffDetail/staffDetailHelpers";
-import { CHART_PALETTE } from "../dashboardComponents/chartCard";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -140,14 +139,14 @@ export default function ArchivedInvoicesTable({
   if (isLoading)
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+        <Loader2 className="h-6 w-6 animate-spin text-blue-500 dark:text-blue-300" />
       </div>
     );
 
   return (
     <>
-      <div className="bg-white ">
-        {/* <h2 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="bg-white dark:bg-transparent ">
+        {/* <h2 className="text-lg font-semibold text-gray-900 mb-4 dark:text-[#e8ecf4]">
           Archived Invoices
         </h2> */}
 
@@ -165,7 +164,7 @@ export default function ArchivedInvoicesTable({
         <div className="relative mb-4">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#9aa6bd]"
           />
           <input
             value={search}
@@ -174,7 +173,7 @@ export default function ArchivedInvoicesTable({
               setPage(0);
             }}
             placeholder="Search archived invoices..."
-            className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15"
           />
         </div>
 
@@ -182,18 +181,12 @@ export default function ArchivedInvoicesTable({
         <div className="overflow-x-auto scrollbar-hide">
           <table className="w-full text-sm min-w-[900px]">
             <thead>
-              <tr
-                className="border-b text-[11px] tracking-wider"
-                style={{
-                  borderColor: CHART_PALETTE.grid,
-                  color: CHART_PALETTE.axis,
-                }}
-              >
+              <tr className="border-b text-[11px] tracking-wider border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
                 {/* <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
                   S.No
                 </th> */}
                 <th
-                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]"
                   onClick={() => toggleSort("invoice")}
                 >
                   <span className="flex items-center gap-1">
@@ -207,7 +200,7 @@ export default function ArchivedInvoicesTable({
                   Customer
                 </th>
                 <th
-                  className=" text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                  className=" text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]"
                   onClick={() => toggleSort("amount")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -215,7 +208,7 @@ export default function ArchivedInvoicesTable({
                   </span>
                 </th>
                 <th
-                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]"
                   onClick={() => toggleSort("created_at")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -232,16 +225,19 @@ export default function ArchivedInvoicesTable({
                 <tr>
                   <td
                     colSpan={7}
-                    className="text-center py-2 text-sm text-gray-400"
+                    className="text-center py-2 text-sm text-gray-400 dark:text-[#9aa6bd]"
                   >
                     <div className="flex flex-col items-center justify-center py-12">
-                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                        <Archive size={24} className="text-gray-500" />
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3 dark:bg-white/10">
+                        <Archive
+                          size={24}
+                          className="text-gray-500 dark:text-[#9aa6bd]"
+                        />
                       </div>
-                      <p className="text-sm font-medium text-gray-500">
+                      <p className="text-sm font-medium text-gray-500 dark:text-[#9aa6bd]">
                         No archived invoice found
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-gray-400 mt-1 dark:text-[#9aa6bd]">
                         All recently archived invoice will appear here
                       </p>
                     </div>
@@ -256,66 +252,48 @@ export default function ArchivedInvoicesTable({
                     <tr
                       key={inv.invoice}
                       // onClick={() => router.push(`/invoices/${inv.invoice}`)}
-                      className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors cursor-pointer"
+                      className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors cursor-pointer dark:hover:bg-white/5 dark:border-white/5"
                     >
-                      {/* <td className="py-3 px-4 text-gray-400 text-xs">
+                      {/* <td className="py-3 px-4 text-gray-400 text-xs dark:text-[#9aa6bd]">
                         {page * pageSize + idx + 1}
                       </td> */}
                       <td className="py-3 px-4">
-                        <span
-                          className="font-medium text-xs block"
-                          style={{ color: CHART_PALETTE.title }}
-                        >
+                        <span className="font-medium text-xs block text-[#3c4043] dark:text-[#e8ecf4]">
                           ORD-{inv.invoice}
                         </span>
                         {(() => {
                           const d = parseNepalDateTime(inv.created_at ?? "");
                           return d ? (
-                            <span className="text-[11px] text-gray-400">
+                            <span className="text-[11px] text-gray-400 dark:text-[#9aa6bd]">
                               {timeAgo(d)}
                             </span>
                           ) : null;
                         })()}
                       </td>
-                      <td
-                        className="py-3 px-4 text-[13px]"
-                        style={{ color: CHART_PALETTE.title }}
-                      >
+                      <td className="py-3 px-4 text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                         {inv.ticket_name || "—"}
                       </td>
-                      <td
-                        className="py-3 px-4 text-[13px]"
-                        style={{ color: CHART_PALETTE.title }}
-                      >
+                      <td className="py-3 px-4 text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                         {inv.customer_name ?? "—"}
                       </td>
-                      <td
-                        className="py-3 px-4 text-[13px] text-right font-medium"
-                        style={{ color: CHART_PALETTE.title }}
-                      >
+                      <td className="py-3 px-4 text-[13px] text-right font-medium text-[#3c4043] dark:text-[#e8ecf4]">
                         {formatCurrencySymbol(
                           Number(inv.amount),
                           currency.symbol,
                           currency.locale,
                         )}
                       </td>
-                      <td className="py-3 px-4 text-gray-500 text-right text-xs">
+                      <td className="py-3 px-4 text-gray-500 text-right text-xs dark:text-[#9aa6bd]">
                         {/* {formatDatetime(inv.archivedAt || inv.created_at)} */}
 
-                        <span
-                          className=" text-xs block"
-                          style={{ color: CHART_PALETTE.title }}
-                        >
+                        <span className=" text-xs block text-[#3c4043] dark:text-[#e8ecf4]">
                           {invoiceArchivedDate?.toLocaleTimeString("en-US", {
                             hour: "2-digit",
                             minute: "2-digit",
                             hour12: false,
                           })}
                           {invoiceArchivedDate && (
-                            <span
-                              className="text-[10px] font-normal "
-                              style={{ color: CHART_PALETTE.subtitle }}
-                            >
+                            <span className="text-[10px] font-normal  text-[#9aa0a6] dark:text-[#9aa6bd]">
                               {"  "}[{" "}
                               {invoiceArchivedDate.toLocaleTimeString("en-US", {
                                 hour: "2-digit",
@@ -326,10 +304,7 @@ export default function ArchivedInvoicesTable({
                             </span>
                           )}
                         </span>
-                        <span
-                          className="text-[11px]"
-                          style={{ color: CHART_PALETTE.subtitle }}
-                        >
+                        <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                           {invoiceArchivedDate?.toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
@@ -344,7 +319,7 @@ export default function ArchivedInvoicesTable({
                         >
                           <button
                             onClick={() => setRestoreTarget(inv)}
-                            className="py-1.5 text-xs flex flex-row items-center gap-2 text-gray-400 hover:text-green-600 rounded-lg transition-colors hover:cursor-pointer"
+                            className="py-1.5 text-xs flex flex-row items-center gap-2 text-gray-400 hover:text-green-600 rounded-lg transition-colors hover:cursor-pointer dark:text-[#9aa6bd]"
                             title="Restore invoice"
                           >
                             Unarchive <RotateCcw className="h-3.5 w-3.5" />
@@ -361,21 +336,21 @@ export default function ArchivedInvoicesTable({
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+          <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-white/10">
             <button
               onClick={() => setPage(Math.max(0, page - 1))}
               disabled={page === 0}
               className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                 page === 0
-                  ? "text-gray-300 cursor-not-allowed"
-                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                  ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
               }`}
             >
               <ChevronLeft size={14} />
               Previous
             </button>
 
-            <span className="text-xs text-gray-400 font-medium">
+            <span className="text-xs text-gray-400 font-medium dark:text-[#9aa6bd]">
               Page {page + 1} of {totalPages} · {sorted.length} archived
               invoices
             </span>
@@ -385,8 +360,8 @@ export default function ArchivedInvoicesTable({
               disabled={page >= totalPages - 1}
               className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                 page >= totalPages - 1
-                  ? "text-gray-300 cursor-not-allowed"
-                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                  ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
               }`}
             >
               Next
@@ -403,8 +378,8 @@ export default function ArchivedInvoicesTable({
       >
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <div className="mx-auto w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-2">
-              <RotateCcw className="h-5 w-5 text-green-600" />
+            <div className="mx-auto w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-2 dark:bg-emerald-400/15">
+              <RotateCcw className="h-5 w-5 text-green-600 dark:text-emerald-300" />
             </div>
             <DialogTitle className="text-center text-base font-semibold">
               Restore Invoice?
@@ -412,14 +387,14 @@ export default function ArchivedInvoicesTable({
           </DialogHeader>
 
           <div className="text-center space-y-1 py-1">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-[#a9b4c7]">
               Restore invoice{" "}
-              <span className="font-semibold text-gray-900">
+              <span className="font-semibold text-gray-900 dark:text-[#e8ecf4]">
                 ORD-{restoreTarget?.invoice}
               </span>
               ?
             </p>
-            <p className="text-xs text-green-600 bg-green-50 border border-green-100 rounded-lg px-3 py-2 mt-2">
+            <p className="text-xs text-green-600 bg-green-50 border border-green-100 rounded-lg px-3 py-2 mt-2 dark:border-emerald-400/20 dark:text-emerald-300 dark:bg-emerald-400/10">
               It will move back to the active invoices list.
             </p>
           </div>

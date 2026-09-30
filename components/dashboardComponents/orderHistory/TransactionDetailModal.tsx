@@ -38,7 +38,7 @@ export default function TransactionDetailModal({
 
         {isLoading && (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+            <Loader2 className="h-6 w-6 animate-spin text-blue-500 dark:text-blue-300" />
           </div>
         )}
 
@@ -49,45 +49,49 @@ export default function TransactionDetailModal({
               <h2 className="font-bold text-lg">
                 {transaction.businessName ?? "—"}
               </h2>
-              <p className="text-gray-500 text-xs">
+              <p className="text-gray-500 text-xs dark:text-[#9aa6bd]">
                 {transaction.date} at {transaction.timestamp}
               </p>
             </div>
 
             {/* ── Customer section ── */}
             <section className="space-y-2">
-              <h3 className="font-semibold text-gray-500 uppercase text-xs">
+              <h3 className="font-semibold text-gray-500 uppercase text-xs dark:text-[#9aa6bd]">
                 Customer
               </h3>
-              <div className="bg-gray-50 rounded-lg px-3 py-3 space-y-2">
+              <div className="bg-gray-50 rounded-lg px-3 py-3 space-y-2 dark:bg-white/5">
                 {hasCustomer ? (
                   <>
                     {customer?.name && (
                       <div className="flex items-center gap-2">
-                        <User className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                        <span className="font-semibold text-gray-800">
+                        <User className="h-3.5 w-3.5 text-gray-400 shrink-0 dark:text-[#9aa6bd]" />
+                        <span className="font-semibold text-gray-800 dark:text-[#e8ecf4]">
                           {customer.name}
                         </span>
                       </div>
                     )}
                     {customer?.phone && (
                       <div className="flex items-center gap-2">
-                        <Phone className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                        <span className="text-gray-600">{customer.phone}</span>
+                        <Phone className="h-3.5 w-3.5 text-gray-400 shrink-0 dark:text-[#9aa6bd]" />
+                        <span className="text-gray-600 dark:text-[#a9b4c7]">
+                          {customer.phone}
+                        </span>
                       </div>
                     )}
                     {customer?.email && (
                       <div className="flex items-center gap-2">
-                        <Mail className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                        <span className="text-gray-600">{customer.email}</span>
+                        <Mail className="h-3.5 w-3.5 text-gray-400 shrink-0 dark:text-[#9aa6bd]" />
+                        <span className="text-gray-600 dark:text-[#a9b4c7]">
+                          {customer.email}
+                        </span>
                       </div>
                     )}
                   </>
                 ) : (
                   // No customer linked — show invoice/ticket name instead
                   <div className="flex items-center gap-2">
-                    <User className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                    <span className="font-semibold text-gray-800">
+                    <User className="h-3.5 w-3.5 text-gray-400 shrink-0 dark:text-[#9aa6bd]" />
+                    <span className="font-semibold text-gray-800 dark:text-[#e8ecf4]">
                       {transaction.invoiceName || "Walk-in Customer"}
                     </span>
                   </div>
@@ -113,16 +117,16 @@ export default function TransactionDetailModal({
 
             {/* ── Items ── */}
             <section>
-              <h3 className="font-semibold text-gray-500 uppercase text-xs mb-2">
+              <h3 className="font-semibold text-gray-500 uppercase text-xs mb-2 dark:text-[#9aa6bd]">
                 Items
               </h3>
               {transaction.items.length === 0 ? (
-                <p className="text-gray-400 italic text-xs">
+                <p className="text-gray-400 italic text-xs dark:text-[#9aa6bd]">
                   No items available
                 </p>
               ) : (
                 <div className="rounded-md border overflow-hidden">
-                  <div className="grid grid-cols-4 gap-2 px-3 py-2 bg-gray-50 text-xs font-semibold text-gray-500 uppercase">
+                  <div className="grid grid-cols-4 gap-2 px-3 py-2 bg-gray-50 text-xs font-semibold text-gray-500 uppercase dark:text-[#9aa6bd] dark:bg-white/5">
                     <span className="col-span-2">Item</span>
                     <span className="text-center">Qty</span>
                     <span className="text-right">Rate</span>
@@ -133,7 +137,7 @@ export default function TransactionDetailModal({
                       className="grid grid-cols-4 gap-2 px-3 py-2 border-t text-sm"
                     >
                       <span className="col-span-2">{item.name}</span>
-                      <span className="text-center text-gray-500">
+                      <span className="text-center text-gray-500 dark:text-[#9aa6bd]">
                         {item.quantity}
                       </span>
                       <span className="text-right">
@@ -147,7 +151,7 @@ export default function TransactionDetailModal({
 
             {/* ── Bill totals ── */}
             <section className="border-t pt-4 space-y-1.5">
-              <div className="flex justify-between text-gray-500">
+              <div className="flex justify-between text-gray-500 dark:text-[#9aa6bd]">
                 <span>Subtotal</span>
                 <span>
                   {formatCurrency(
@@ -157,7 +161,7 @@ export default function TransactionDetailModal({
                 </span>
               </div>
               {(transaction.discount ?? 0) > 0 && (
-                <div className="flex justify-between text-red-500">
+                <div className="flex justify-between text-red-500 dark:text-red-300">
                   <span>Discount</span>
                   <span>
                     − {formatCurrency(Number(transaction.discount), currency)}
@@ -165,7 +169,7 @@ export default function TransactionDetailModal({
                 </div>
               )}
               {(transaction.taxAmount ?? 0) > 0 && (
-                <div className="flex justify-between text-blue-600">
+                <div className="flex justify-between text-blue-600 dark:text-blue-300">
                   <span>Tax</span>
                   <span>
                     + {formatCurrency(Number(transaction.taxAmount), currency)}
@@ -182,23 +186,29 @@ export default function TransactionDetailModal({
 
             {/* ── Payment ── */}
             <section className="space-y-1.5">
-              <h3 className="font-semibold text-gray-500 uppercase text-xs mb-2">
+              <h3 className="font-semibold text-gray-500 uppercase text-xs mb-2 dark:text-[#9aa6bd]">
                 Payment
               </h3>
               <div className="grid grid-cols-2 gap-y-1.5">
-                <span className="text-gray-500">Method</span>
+                <span className="text-gray-500 dark:text-[#9aa6bd]">
+                  Method
+                </span>
                 <span className="font-medium capitalize text-right">
                   {transaction.paymentMethod}
                 </span>
 
-                <span className="text-gray-500">Cashier</span>
+                <span className="text-gray-500 dark:text-[#9aa6bd]">
+                  Cashier
+                </span>
                 <span className="font-medium text-right">
                   {transaction.generatedBy ?? "—"}
                 </span>
 
                 {(transaction.cashAmount ?? 0) > 0 && (
                   <>
-                    <span className="text-gray-500">Cash</span>
+                    <span className="text-gray-500 dark:text-[#9aa6bd]">
+                      Cash
+                    </span>
                     <span className="text-right">
                       {formatCurrency(Number(transaction.cashAmount), currency)}
                     </span>
@@ -207,13 +217,17 @@ export default function TransactionDetailModal({
 
                 {(transaction.qrAmount ?? 0) > 0 && (
                   <>
-                    <span className="text-gray-500">QR</span>
+                    <span className="text-gray-500 dark:text-[#9aa6bd]">
+                      QR
+                    </span>
                     <span className="text-right">
                       {formatCurrency(Number(transaction.qrAmount), currency)}
                     </span>
                   </>
                 )}
-                <span className="text-gray-500">Status</span>
+                <span className="text-gray-500 dark:text-[#9aa6bd]">
+                  Status
+                </span>
                 <span className="font-medium capitalize text-right">
                   {transaction.status}
                 </span>

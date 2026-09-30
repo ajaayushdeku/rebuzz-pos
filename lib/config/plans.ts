@@ -246,18 +246,18 @@ export function planTone(subscriptionType?: string | null): {
   switch (parseSubscription(subscriptionType).tier) {
     case "lifetime":
       return {
-        tile: "bg-amber-100 text-amber-700",
-        icon: "text-amber-600 hover:bg-amber-100 hover:text-amber-700",
+        tile: "bg-yellow-100 text-yellow-500 dark:text-yellow-400 dark:bg-yellow-500/15",
+        icon: "text-yellow-500 hover:bg-yellow-100 dark:hover:bg-yellow-500/15 hover:text-yellow-700 dark:text-yellow-400 ",
       };
     case "standard":
       return {
-        tile: "bg-blue-100 text-blue-700",
-        icon: "text-blue-500 hover:bg-blue-100 hover:text-blue-600",
+        tile: "bg-blue-100 text-blue-500 dark:text-blue-400 dark:bg-blue-500/15",
+        icon: "text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-500/15 hover:text-blue-700 dark:text-blue-400",
       };
     case "free":
       return {
-        tile: "bg-gray-100 text-gray-600",
-        icon: "text-gray-500 hover:bg-gray-100 hover:text-gray-700",
+        tile: "bg-gray-100 text-gray-500 dark:text-gray-400 dark:bg-gray-500/15",
+        icon: "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-500/15 hover:text-gray-700 dark:text-gray-400",
       };
   }
 
@@ -286,7 +286,7 @@ export function planBadge(subscriptionType?: string | null): {
     case "lifetime":
       return {
         label: "LIFETIME",
-        className: "bg-amber-100 text-amber-700 hover:bg-amber-100",
+        className: "bg-yellow-100 text-yellow-700 hover:bg-yellow-100",
       };
     case "standard":
       return {

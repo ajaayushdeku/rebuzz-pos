@@ -73,7 +73,7 @@ export default function CustomerPreviewModal({
       icon={LinkIcon}
     >
       {!invoice ? (
-        <div className="flex items-center justify-center gap-2 py-14 text-[13px] text-gray-400">
+        <div className="flex items-center justify-center gap-2 py-14 text-[13px] text-gray-400 dark:text-[#9aa6bd]">
           <Loader2 size={15} className="animate-spin" />
           Loading invoice
         </div>
@@ -91,10 +91,13 @@ export default function CustomerPreviewModal({
                     type="button"
                     onClick={() => handleCopy(type, SHORT_LABELS[type])}
                     aria-label={`Copy ${SHORT_LABELS[type]} link`}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:border-white/25 dark:hover:text-[#e8ecf4] dark:hover:bg-white/5 dark:border-white/15 dark:text-[#9aa6bd]"
                   >
                     {copied === type ? (
-                      <Check size={14} className="text-emerald-600" />
+                      <Check
+                        size={14}
+                        className="text-emerald-600 dark:text-emerald-300"
+                      />
                     ) : (
                       <Copy size={14} />
                     )}
@@ -112,7 +115,7 @@ export default function CustomerPreviewModal({
             />
           ))}
 
-          <p className="pt-1 text-[11px] leading-relaxed text-gray-400">
+          <p className="pt-1 text-[11px] leading-relaxed text-gray-400 dark:text-[#9aa6bd]">
             Anyone with these links can view the document — no sign-in needed.
           </p>
         </div>

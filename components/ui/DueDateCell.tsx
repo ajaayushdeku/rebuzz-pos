@@ -20,16 +20,16 @@ import {
  */
 const TONES = {
   /** More than a day away. */
-  upcoming: "text-blue-700",
+  upcoming: "text-blue-700 dark:text-blue-400",
   /** Tomorrow. */
-  imminent: "text-green-700",
+  imminent: "text-green-700 dark:text-green-400",
   /** Today. */
-  today: "text-amber-700",
+  today: "text-amber-700 dark:text-amber-400",
   /** Yesterday — slipped, but only just. */
-  slipped: "text-orange-700",
+  slipped: "text-orange-700 dark:text-orange-400",
   /** More than a day past. */
-  overdue: "text-red-700",
-  settled: "text-gray-500",
+  overdue: "text-red-700 dark:text-red-400",
+  settled: "text-gray-500 dark:text-gray-400",
 } as const;
 
 /**

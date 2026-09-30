@@ -131,8 +131,8 @@ export default function SidebarPlanCard() {
         aria-hidden
         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors ${
           isLifetime
-            ? "text-amber-600 group-hover:bg-amber-50"
-            : "text-blue-600 group-hover:bg-blue-100"
+            ? "text-yellow-500 group-hover:bg-yellow-50 dark:group-hover:bg-yellow-500/15"
+            : "text-blue-500 group-hover:bg-blue-100 dark:group-hover:bg-blue-500/15"
         }`}
       >
         <ActionIcon size={16} />

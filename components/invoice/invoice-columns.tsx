@@ -19,10 +19,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const statusStyles: Record<string, string> = {
-  Paid: "bg-green-100 text-green-700 hover:bg-green-100",
-  unpaid: "bg-red-100 text-red-700 hover:bg-red-100",
-  Draft: "bg-gray-100 text-gray-700 hover:bg-gray-100",
-  Overdue: "bg-orange-100 text-orange-700 hover:bg-orange-100",
+  Paid: "bg-green-100 text-green-700 hover:bg-green-100 dark:hover:bg-emerald-400/20 dark:text-emerald-300 dark:bg-emerald-400/15",
+  unpaid:
+    "bg-red-100 text-red-700 hover:bg-red-100 dark:hover:bg-red-400/20 dark:text-red-300 dark:bg-red-400/15",
+  Draft:
+    "bg-gray-100 text-gray-700 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-[#c3ccdc] dark:bg-white/10",
+  Overdue:
+    "bg-orange-100 text-orange-700 hover:bg-orange-100 dark:hover:bg-orange-400/20 dark:text-orange-300 dark:bg-orange-400/15",
 };
 
 const multiSelectFilter: FilterFn<Invoice> = (row, columnId, value) => {
@@ -37,7 +40,7 @@ export const getInvoiceColumns = (
     accessorKey: "invoice",
     header: "Invoice #",
     cell: ({ row }) => (
-      <span className="font-medium text-gray-900">
+      <span className="font-medium text-gray-900 dark:text-[#e8ecf4]">
         ORD-{row.getValue("invoice")}
       </span>
     ),
@@ -46,7 +49,7 @@ export const getInvoiceColumns = (
     accessorKey: "customer_name",
     header: "Customer",
     cell: ({ row }) => (
-      <span className="text-gray-900">
+      <span className="text-gray-900 dark:text-[#e8ecf4]">
         {row.getValue("customer_name") ?? "—"}
       </span>
     ),
@@ -55,7 +58,7 @@ export const getInvoiceColumns = (
     accessorKey: "amount",
     header: ({ column }) => (
       <button
-        className="flex items-center gap-1 font-semibold text-gray-900 hover:text-blue-600 transition-colors"
+        className="flex items-center gap-1 font-semibold text-gray-900 hover:text-blue-600 transition-colors dark:text-[#e8ecf4]"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Amount
@@ -63,7 +66,7 @@ export const getInvoiceColumns = (
       </button>
     ),
     cell: ({ row }) => (
-      <span className="font-medium text-gray-900">
+      <span className="font-medium text-gray-900 dark:text-[#e8ecf4]">
         {formatCurrency(Number(row.getValue("amount")), currency)}
       </span>
     ),
@@ -72,7 +75,7 @@ export const getInvoiceColumns = (
     accessorKey: "created_at",
     header: ({ column }) => (
       <button
-        className="flex items-center gap-1 font-semibold text-gray-900 hover:text-blue-600 transition-colors"
+        className="flex items-center gap-1 font-semibold text-gray-900 hover:text-blue-600 transition-colors dark:text-[#e8ecf4]"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Date
@@ -80,7 +83,7 @@ export const getInvoiceColumns = (
       </button>
     ),
     cell: ({ row }) => (
-      <span className="text-gray-600">
+      <span className="text-gray-600 dark:text-[#a9b4c7]">
         {formatDatetime(row.getValue("created_at"))}
       </span>
     ),
@@ -92,7 +95,12 @@ export const getInvoiceColumns = (
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
       return (
-        <Badge className={statusStyles[status] ?? "bg-gray-100 text-gray-700"}>
+        <Badge
+          className={
+            statusStyles[status] ??
+            "bg-gray-100 text-gray-700 dark:text-[#c3ccdc] dark:bg-white/10"
+          }
+        >
           {status}
         </Badge>
       );
@@ -106,7 +114,7 @@ export const getInvoiceColumns = (
         <DropdownMenuTrigger asChild>
           <Button
             variant="link"
-            className="text-blue-600 hover:text-blue-700 p-0"
+            className="text-blue-600 hover:text-blue-700 p-0 dark:hover:text-[#c3d6f4] dark:text-blue-300"
           >
             Actions
             <ChevronDown className="ml-1 h-4 w-4" />

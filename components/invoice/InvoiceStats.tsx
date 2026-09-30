@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { InvoiceStatsProps } from "@/lib/types/invoice";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { CHART_PALETTE } from "../dashboardComponents/chartCard";
 
 function fmtLocalDate(date: Date): string {
   const y = date.getFullYear();
@@ -74,9 +73,9 @@ export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
       label: "Today's Invoice Amt",
       value: totalSalesAmount,
       icon: DollarSign,
-      iconColor: "text-blue-600",
-      bgColor: "bg-blue-50",
-      valueColor: "text-gray-700",
+      iconColor: "text-blue-600 dark:text-blue-300 ",
+      bgColor: "bg-blue-50 dark:bg-blue-400/10",
+      valueColor: "text-gray-700 dark:text-[#e8ecf4]",
       format: "currency" as const,
       subText: "Invoices created today",
     },
@@ -84,9 +83,9 @@ export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
       label: "Cash in hand",
       value: todayCash ?? 0,
       icon: Wallet,
-      iconColor: "text-emerald-600",
-      bgColor: "bg-emerald-50",
-      valueColor: "text-emerald-700",
+      iconColor: "text-emerald-600 dark:text-emerald-300",
+      bgColor: "bg-emerald-50 dark:bg-emerald-400/10",
+      valueColor: "text-emerald-700 dark:text-[#5EE9B5]",
       format: "currency" as const,
       subText: "Today's total revenue",
     },
@@ -94,16 +93,16 @@ export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
       label: "Order count",
       value: totalOrderCount,
       icon: Receipt,
-      iconColor: "text-violet-600",
-      bgColor: "bg-violet-50",
-      valueColor: "text-gray-700",
+      iconColor: "text-violet-600 dark:text-violet-300",
+      bgColor: "bg-violet-50 dark:bg-violet-400/10",
+      valueColor: "text-gray-700 dark:text-[#e8ecf4]",
       format: "number" as const,
       subText: `${totalOrderCount === 1 ? "Order" : "Orders"} Total`,
     },
   ];
 
   return (
-    <div className="relative bg-white pb-2 mb-8">
+    <div className="relative bg-white pb-2 mb-8 dark:bg-[#0F1420]">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {statItems.map((item) => {
           const displayValue =
@@ -118,30 +117,27 @@ export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
           return (
             <div
               key={item.label}
-              className="bg-white rounded-xl border border-[#e3e3e3] p-4"
+              className="bg-surface-card border-surface-border rounded-xl border border-[#e3e3e3] p-4 md:p-5 dark:border-white/10 dark:bg-[#161d2e]"
             >
               <div className="flex items-center justify-between mb-2">
-                <span
-                  className="truncate text-[13px] font-medium"
-                  style={{ color: CHART_PALETTE.axis }}
-                >
+                <span className="truncate text-[13px] font-medium text-[#5f6368] dark:text-[#9aa6bd]">
                   {item.label}
                 </span>
                 <div
                   // className={`w-7 h-7 rounded-lg ${item.bgColor} flex items-center justify-center shrink-0`}
-                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 ${item.bgColor ?? "bg-gray-50"} ${item.iconColor ?? "text-gray-500"} `}
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-current/20 ${item.bgColor ?? "bg-gray-50 dark:bg-white/5"} ${item.iconColor ?? "text-gray-500 dark:text-[#9aa6bd]"} `}
                 >
                   <item.icon size={16} />
                 </div>
               </div>
               <p
-                className={`truncate text-2xl font-semibold tracking-tight tabular-nums  ${item.valueColor}`}
+                className={`truncate text-2xl font-semibold tracking-tight tabular-nums  ${item.valueColor} `}
                 // style={{ color: CHART_PALETTE.title }}
               >
                 {displayValue}
               </p>
               {item.subText && (
-                <p className="text-[11px] text-gray-500 truncate tracking-wide">
+                <p className="text-[11px] text-gray-500 truncate tracking-wide dark:text-[#9aa6bd]">
                   {item.subText}
                 </p>
               )}
@@ -152,12 +148,12 @@ export default function InvoiceStats({ invoices }: InvoiceStatsProps) {
 
       {/* Refresh & timestamp */}
       <div className="absolute left-0 bottom-[-18px] flex items-center justify-between  pl-2 ">
-        <div className="flex items-center gap-2 text-xs text-gray-500">
+        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-[#9aa6bd]">
           <span>
             As of {formattedDate}, {formattedTime}
           </span>
           <button
-            className="text-blue-600 hover:text-blue-700 transition-colors"
+            className="text-blue-600 hover:text-blue-700 transition-colors dark:hover:text-[#c3d6f4] dark:text-blue-300"
             title="Refresh"
             onClick={() => window.location.reload()}
           >

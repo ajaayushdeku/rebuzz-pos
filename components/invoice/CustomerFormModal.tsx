@@ -357,7 +357,7 @@ export default function CustomerFormModal({
                 a single field, rather than two boxes that happen to sit side
                 by side. */}
             <div
-              className={`mt-2 flex items-center rounded-xl border bg-white transiti dark:bg-white/5 dark:text-[#e8ecf4]on focus-within:ring-2 ${
+              className={`mt-2 flex items-center rounded-xl border bg-white dark:bg-white/5 transition focus-within:ring-2 ${
                 checkError
                   ? "border-red-300 focus-within:border-red-400 focus-within:ring-red-500/20 dark:border-red-400/40"
                   : "border-gray-200 focus-within:border-blue-500 focus-within:ring-blue-500/20 dark:border-white/15"
@@ -431,7 +431,7 @@ export default function CustomerFormModal({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-1.5 rounded-lg border border-gray-20 dark:bg-white/5 dark:text-[#e8ecf4]0 bg-white px-3 py-1.5 text-[12px] font-semibold text-gray-700 transition hover:border-blue-400 hover:text-blue-600 dark:border-white/15 dark:text-[#c3ccdc]"
+                  className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-gray-700 transition hover:border-blue-400 hover:text-blue-600 dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:border-blue-400/60 dark:hover:text-[#a8c4ee]"
                 >
                   <ImageIcon size={13} />
                   {imageFile ? "Change photo" : "Upload photo"}

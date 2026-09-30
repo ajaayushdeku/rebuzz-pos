@@ -59,7 +59,6 @@ import ColumnPicker, {
   type TableColumn,
 } from "@/components/ui/ColumnPicker";
 import { useDuplicateInvoiceStore } from "@/stores/useDuplicateInvoiceStore";
-import { CHART_PALETTE } from "../dashboardComponents/chartCard";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -338,7 +337,7 @@ export default function InvoiceTable({
         <div className="relative flex-1">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#9aa6bd]"
           />
           <input
             value={search}
@@ -347,7 +346,7 @@ export default function InvoiceTable({
               setPage(0);
             }}
             placeholder="Search invoice # or customer..."
-            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]"
           />
         </div>
         <FilterSelect
@@ -372,23 +371,23 @@ export default function InvoiceTable({
           <button
             type="button"
             onClick={() => setStatusOpen((o) => !o)}
-            className="w-full flex items-center justify-between gap-2 pl-3 pr-2.5 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition capitalize"
+            className="w-full flex items-center justify-between gap-2 pl-3 pr-2.5 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition capitalize dark:border-white/15 dark:text-[#a9b4c7]"
           >
             <span>{statusFilter === "all" ? "All Status" : statusFilter}</span>
             <ChevronDown
               size={14}
               className={`text-gray-400 transition-transform duration-200 ${
                 statusOpen ? "rotate-180" : ""
-              }`}
+              } dark:text-[#9aa6bd]`}
             />
           </button>
 
           <div
-            className={`absolute z-30 mt-1.5 w-full origin-top rounded-md border border-gray-200 bg-white shadow-lg p-1 transition-all duration-200 ${
+            className={`absolute z-30 mt-1.5 w-full origin-top rounded-md border border-gray-200 bg-white dark:bg-[#1b2436] shadow-lg p-1 transition-all duration-200 ${
               statusOpen
                 ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
                 : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
-            }`}
+            } dark:border-white/15`}
           >
             {[
               { value: "all", label: "All Status" },
@@ -404,8 +403,8 @@ export default function InvoiceTable({
                 }}
                 className={`w-full text-left px-3 py-1.5 text-[13px] rounded-md transition-colors cursor-pointer capitalize ${
                   statusFilter === opt.value
-                    ? "bg-blue-50 text-blue-700 font-medium"
-                    : "text-gray-600 hover:bg-gray-100"
+                    ? "bg-blue-50 text-blue-700 font-medium dark:text-blue-300 dark:bg-blue-400/10"
+                    : "text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
                 }`}
               >
                 {opt.label}
@@ -424,8 +423,8 @@ export default function InvoiceTable({
       </div>
 
       {/* Table — horizontally scrollable on mobile */}
-      {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
-      <div className="bg-white overflow-x-auto scrollbar-hide">
+      {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto dark:bg-[#161d2e] dark:border-white/15 dark:shadow-none"> */}
+      <div className="bg-white overflow-x-auto scrollbar-hide dark:bg-[#0F1420]">
         <table
           className="w-full table-fixed text-sm"
           // Scales with what is actually shown. A fixed floor sized for every
@@ -444,13 +443,7 @@ export default function InvoiceTable({
             )}
           </colgroup>
           <thead>
-            <tr
-              className="border-b text-[11px] tracking-wider"
-              style={{
-                borderColor: CHART_PALETTE.grid,
-                color: CHART_PALETTE.axis,
-              }}
-            >
+            <tr className="border-b text-[11px] tracking-wider border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
               {/* <th className="text-left pb-3 pt-3 px-4 font-medium w-12">
                 S.No
               </th> */}
@@ -459,7 +452,7 @@ export default function InvoiceTable({
               )}
               {showColumn("due_date") && (
                 <th
-                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]"
                   onClick={() => toggleSort("due_date")}
                 >
                   <span className="flex items-center gap-1">
@@ -469,7 +462,7 @@ export default function InvoiceTable({
               )}
               {showColumn("invoice") && (
                 <th
-                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]"
                   onClick={() => toggleSort("invoice")}
                 >
                   <span className="flex items-center gap-1">
@@ -489,7 +482,7 @@ export default function InvoiceTable({
               )}
               {showColumn("amount") && (
                 <th
-                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]"
                   onClick={() => toggleSort("amount")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -499,7 +492,7 @@ export default function InvoiceTable({
               )}
               {showColumn("created_at") && (
                 <th
-                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]"
                   onClick={() => toggleSort("created_at")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -524,16 +517,19 @@ export default function InvoiceTable({
               <tr>
                 <td
                   colSpan={columnCount}
-                  className="text-center py-2 text-sm text-gray-400"
+                  className="text-center py-2 text-sm text-gray-400 dark:text-[#9aa6bd]"
                 >
                   <div className="flex flex-col items-center justify-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                      <FileText size={24} className="text-gray-500" />
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3 dark:bg-white/10">
+                      <FileText
+                        size={24}
+                        className="text-gray-500 dark:text-[#9aa6bd]"
+                      />
                     </div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium text-gray-500 dark:text-[#c3ccdc]">
                       No invoice found
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-gray-400 mt-1  dark:text-[#7b869b]">
                       All recently created invoice will appear here
                     </p>
                   </div>
@@ -547,9 +543,9 @@ export default function InvoiceTable({
                   <tr
                     key={inv.invoice}
                     onClick={() => router.push(`/invoices/${inv.invoice}`)}
-                    className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
+                    className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors dark:border-white/5 dark:hover:bg-white/5"
                   >
-                    {/* <td className="py-3 px-4 text-gray-400 text-xs">
+                    {/* <td className="py-3 px-4 text-gray-400 text-xs dark:text-[#9aa6bd]">
                       {page * pageSize + idx + 1}
                     </td> */}
                     {showColumn("status") && (
@@ -569,17 +565,11 @@ export default function InvoiceTable({
                     )}
                     {showColumn("invoice") && (
                       <td className="py-3 px-4">
-                        <span
-                          className="font-medium text-xs block"
-                          style={{ color: CHART_PALETTE.title }}
-                        >
+                        <span className="font-medium text-xs block dark:text-[#e8ecf4]">
                           ORD-{inv.invoice}
                         </span>
                         {inv.created_at && (
-                          <span
-                            className="text-[11px]"
-                            style={{ color: CHART_PALETTE.subtitle }}
-                          >
+                          <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                             {timeAgo(
                               inv.created_at
                                 ? new Date(inv.created_at)
@@ -591,8 +581,7 @@ export default function InvoiceTable({
                     )}
                     {showColumn("ticket_name") && (
                       <td
-                        className="truncate py-3 px-4 text-[13px]"
-                        style={{ color: CHART_PALETTE.title }}
+                        className="truncate py-3 px-4 text-[13px] dark:text-[#e8ecf4]"
                         title={inv.ticket_name || undefined}
                       >
                         {inv.ticket_name || "—"}
@@ -600,8 +589,7 @@ export default function InvoiceTable({
                     )}
                     {showColumn("customer") && (
                       <td
-                        className="truncate py-3 px-4 text-[13px]"
-                        style={{ color: CHART_PALETTE.title }}
+                        className="truncate py-3 px-4 text-[13px] dark:text-[#e8ecf4]"
                         title={inv.customer_name ?? undefined}
                       >
                         {inv.customer_name ?? "—"}
@@ -609,10 +597,7 @@ export default function InvoiceTable({
                     )}
 
                     {showColumn("amount") && (
-                      <td
-                        className="py-3 px-4 text-[13px] text-right tracking-wide tabular-nums font-medium"
-                        style={{ color: CHART_PALETTE.title }}
-                      >
+                      <td className="py-3 px-4 text-[13px] text-right tracking-wide tabular-nums font-medium dark:text-[#e8ecf4]">
                         {formatCurrencySymbol(
                           Number(inv.amount),
                           currency.symbol,
@@ -625,10 +610,7 @@ export default function InvoiceTable({
                       <td className="py-3 px-4 text-right">
                         {invoiceDate ? (
                           <div>
-                            <span
-                              className=" text-gray-800 text-xs tracking-wide block"
-                              style={{ color: CHART_PALETTE.title }}
-                            >
+                            <span className=" text-gray-800 text-xs tracking-wide block dark:text-[#e8ecf4]">
                               {/* {invoiceDate.toLocaleTimeString("en-US", {
                                 hour: "2-digit",
                                 minute: "2-digit",
@@ -642,10 +624,7 @@ export default function InvoiceTable({
                                   hour12: false,
                                 },
                               )}{" "}
-                              <span
-                                className="text-[10px] font-normal"
-                                style={{ color: CHART_PALETTE.subtitle }}
-                              >
+                              <span className="text-[10px] font-normal text-[#9aa0a6] dark:text-[#9aa6bd]">
                                 {"  "}[{" "}
                                 {new Date(inv.created_at).toLocaleString(
                                   undefined,
@@ -657,10 +636,7 @@ export default function InvoiceTable({
                                 ]
                               </span>
                             </span>
-                            <span
-                              className="text-[11px]"
-                              style={{ color: CHART_PALETTE.subtitle }}
-                            >
+                            <span className="text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                               {invoiceDate.toLocaleDateString("en-US", {
                                 month: "short",
                                 day: "numeric",
@@ -669,7 +645,9 @@ export default function InvoiceTable({
                             </span>
                           </div>
                         ) : (
-                          <span className="text-gray-400">—</span>
+                          <span className="text-gray-400 dark:text-[#9aa6bd]">
+                            —
+                          </span>
                         )}
                       </td>
                     )}
@@ -684,7 +662,7 @@ export default function InvoiceTable({
                             <button
                               onClick={(e) => e.stopPropagation()}
                               title="Actions"
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors dark:hover:bg-blue-400/15 dark:text-blue-300"
                             >
                               <ChevronDown className="h-4 w-4" />
                             </button>
@@ -935,10 +913,10 @@ export default function InvoiceTable({
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
-                              className="rounded-lg text-red-600 focus:bg-red-50 focus:text-red-600 cursor-pointer"
+                              className="rounded-lg text-red-600 focus:bg-red-50 focus:text-red-600 cursor-pointer dark:text-red-300"
                               onSelect={() => setDeleteTarget(inv)}
                             >
-                              {/* <Trash2 className="h-4 w-4 text-red-600" /> */}
+                              {/* <Trash2 className="h-4 w-4 text-red-600 dark:text-red-300" /> */}
                               Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -954,21 +932,21 @@ export default function InvoiceTable({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-white/10">
         <button
           onClick={() => setPage(Math.max(0, page - 1))}
           disabled={page === 0}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             page === 0
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
           }`}
         >
           <ChevronLeft size={14} />
           Previous
         </button>
 
-        <span className="text-xs text-gray-400 font-medium">
+        <span className="text-xs text-gray-400 font-medium dark:text-[#9aa6bd]">
           Page {page + 1} of {totalPages} · {sorted.length} invoices
         </span>
 
@@ -977,8 +955,8 @@ export default function InvoiceTable({
           disabled={page >= totalPages - 1}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             page >= totalPages - 1
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
           }`}
         >
           Next

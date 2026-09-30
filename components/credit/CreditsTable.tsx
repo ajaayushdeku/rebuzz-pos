@@ -50,7 +50,6 @@ import ColumnPicker, {
   storeColumns,
   type TableColumn,
 } from "@/components/ui/ColumnPicker";
-import { CHART_PALETTE } from "../dashboardComponents/chartCard";
 
 type SortConfig = { key: string; direction: "asc" | "desc" } | null;
 
@@ -349,7 +348,7 @@ export default function CreditsTable({
         <div className="relative flex-1">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#9aa6bd]"
           />
           <input
             value={search}
@@ -358,7 +357,7 @@ export default function CreditsTable({
               setPage(0);
             }}
             placeholder="Search by customer or invoice #..."
-            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15"
           />
         </div>
         {/* Ongoing list only, alongside the column itself — on a settled or
@@ -392,17 +391,21 @@ export default function CreditsTable({
             role="switch"
             aria-checked={allExpanded}
             onClick={toggleAllHistory}
-            className="inline-flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-white transition-colors hover:bg-gray-50 cursor-pointer"
+            className="inline-flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-white dark:bg-white/5 transition-colors hover:bg-gray-50 cursor-pointer dark:hover:bg-white/5 dark:border-white/15"
           >
             <History
               size={14}
               className={`transition-colors ${
-                allExpanded ? "text-blue-600" : "text-gray-400"
+                allExpanded
+                  ? "text-blue-600 dark:text-blue-300"
+                  : "text-gray-400 dark:text-[#9aa6bd]"
               }`}
             />
             <span
               className={`text-[13px] font-medium transition-colors ${
-                allExpanded ? "text-blue-700" : "text-gray-600"
+                allExpanded
+                  ? "text-blue-700 dark:text-blue-300"
+                  : "text-gray-600 dark:text-[#a9b4c7]"
               }`}
             >
               {allExpanded ? "Hide payment history" : "View payment history"}
@@ -411,7 +414,7 @@ export default function CreditsTable({
             {/* Toggle switch */}
             <span
               className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 ${
-                allExpanded ? "bg-blue-600" : "bg-gray-300"
+                allExpanded ? "bg-blue-600" : "bg-gray-300 dark:bg-white/20"
               }`}
             >
               <span
@@ -425,7 +428,7 @@ export default function CreditsTable({
       </div>
 
       {/* Table */}
-      <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] dark:bg-transparent">
         <table
           className="w-full table-fixed text-sm"
           // Scales with what is actually shown. A fixed floor sized for every
@@ -444,13 +447,7 @@ export default function CreditsTable({
               ))}
           </colgroup>
           <thead>
-            <tr
-              className="border-b text-[11px] tracking-wider"
-              style={{
-                borderColor: CHART_PALETTE.grid,
-                color: CHART_PALETTE.axis,
-              }}
-            >
+            <tr className="border-b text-[11px] tracking-wider border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">
               {showColumn("status") && (
                 <th className="text-left pb-3 pt-3 px-4 font-normal">Status</th>
               )}
@@ -459,7 +456,7 @@ export default function CreditsTable({
                   less than the deadline. */}
               {showDueDate && showColumn("dueDate") && (
                 <th
-                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                  className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]"
                   onClick={() => toggleSort("dueDate")}
                 >
                   <span className="flex items-center gap-1">
@@ -485,7 +482,7 @@ export default function CreditsTable({
               )}
               {showColumn("grandTotal") && (
                 <th
-                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]"
                   onClick={() => toggleSort("grandTotal")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -495,7 +492,7 @@ export default function CreditsTable({
               )}
               {showColumn("dueAmount") && (
                 <th
-                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]"
                   onClick={() => toggleSort("dueAmount")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -505,7 +502,7 @@ export default function CreditsTable({
               )}
               {showColumn("creationDate") && (
                 <th
-                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                  className="text-right pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-[#e8ecf4]"
                   onClick={() => toggleSort("creationDate")}
                 >
                   <span className="flex items-center justify-end gap-1">
@@ -524,7 +521,7 @@ export default function CreditsTable({
             {isLoading ? (
               <tr>
                 <td colSpan={colCount} className="text-center py-12">
-                  <span className="inline-flex items-center gap-2 text-sm text-gray-400">
+                  <span className="inline-flex items-center gap-2 text-sm text-gray-400 dark:text-[#9aa6bd]">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Loading credits...
                   </span>
@@ -534,7 +531,7 @@ export default function CreditsTable({
               <tr>
                 <td
                   colSpan={colCount}
-                  className="text-center py-12 text-sm text-red-500"
+                  className="text-center py-12 text-sm text-red-500 dark:text-red-300"
                 >
                   {error instanceof Error
                     ? error.message
@@ -545,16 +542,19 @@ export default function CreditsTable({
               <tr>
                 <td
                   colSpan={colCount}
-                  className="text-center py-2 text-sm text-gray-400"
+                  className="text-center py-2 text-sm text-gray-400 dark:text-[#9aa6bd]"
                 >
                   <div className="flex flex-col items-center justify-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                      <CreditCard size={24} className="text-gray-500" />
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3 dark:bg-white/10">
+                      <CreditCard
+                        size={24}
+                        className="text-gray-500 dark:text-[#9aa6bd]"
+                      />
                     </div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium text-gray-500 dark:text-[#9aa6bd]">
                       No credits found
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-gray-400 mt-1 dark:text-[#9aa6bd]">
                       Customer credit records will appear here.
                     </p>
                   </div>
@@ -572,7 +572,7 @@ export default function CreditsTable({
                         c.status !== "archived" &&
                         router.push(`/records/credits/${c._id}`)
                       }
-                      className={`${isExpanded ? "" : "border-b border-gray-50 "}last:border-0 hover:bg-gray-50 transition-colors ${c.status !== "archived" ? "cursor-pointer" : ""}`}
+                      className={`${isExpanded ? "" : "border-b border-gray-50 dark:border-white/5 "}last:border-0 hover:bg-gray-50 transition-colors ${c.status !== "archived" ? "cursor-pointer" : ""} dark:hover:bg-white/5`}
                     >
                       {/* Status */}
                       {showColumn("status") && (
@@ -580,10 +580,10 @@ export default function CreditsTable({
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-semibold border tracking-wide capitalize relative overflow-hidden ${
                               c.status === "archived"
-                                ? "text-gray-600 border-gray-300"
+                                ? "text-gray-600 border-gray-300 dark:border-white/20 dark:text-[#a9b4c7]"
                                 : cleared
-                                  ? "text-green-700 border-green-200"
-                                  : "text-red-700 border-red-200"
+                                  ? "text-green-700 border-green-200 dark:border-emerald-400/25 dark:text-emerald-300"
+                                  : "text-red-700 border-red-200 dark:border-red-400/25 dark:text-red-300"
                             }`}
                             style={
                               c.status === "archived"
@@ -631,19 +631,13 @@ export default function CreditsTable({
                       {/* Invoice Number */}
                       {showColumn("invoice") && (
                         <td className="py-3.5 px-4">
-                          <span
-                            className="text-xs block font-medium"
-                            style={{ color: CHART_PALETTE.title }}
-                          >
+                          <span className="text-xs block font-medium text-[#3c4043] dark:text-[#e8ecf4]">
                             {c.invoiceNo ? `ORD-${c.invoiceNo}` : "—"}
                           </span>
                           {(() => {
                             const d = parseNepalDateTime(c.creationDate);
                             return d ? (
-                              <span
-                                className="text-[11px] "
-                                style={{ color: CHART_PALETTE.subtitle }}
-                              >
+                              <span className="text-[11px]  text-[#9aa0a6] dark:text-[#9aa6bd]">
                                 {timeAgo(d)}
                               </span>
                             ) : null;
@@ -653,20 +647,14 @@ export default function CreditsTable({
 
                       {/* Customer */}
                       {showColumn("customer") && (
-                        <td
-                          className="py-3.5 px-4 text-[13px]"
-                          style={{ color: CHART_PALETTE.title }}
-                        >
+                        <td className="py-3.5 px-4 text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                           {c.user?.name ?? "—"}
                         </td>
                       )}
 
                       {/* Unpaid by customer (hidden for completed/archived) */}
                       {showDueDate && showColumn("unpaidBy") && (
-                        <td
-                          className="py-3.5 px-4 text-xs text-center "
-                          style={{ color: CHART_PALETTE.subtitle }}
-                        >
+                        <td className="py-3.5 px-4 text-xs text-center  text-[#9aa0a6] dark:text-[#9aa6bd]">
                           {!cleared &&
                           !(c.status === "archived") &&
                           ubc &&
@@ -677,17 +665,14 @@ export default function CreditsTable({
                       )}
                       {/* Total Credit */}
                       {showColumn("grandTotal") && (
-                        <td
-                          className="py-3.5 px-5 text-[13px] text-right tracking-wide font-medium "
-                          style={{ color: CHART_PALETTE.title }}
-                        >
+                        <td className="py-3.5 px-5 text-[13px] text-right tracking-wide font-medium  text-[#3c4043] dark:text-[#e8ecf4]">
                           {fmt(c.grandTotal ?? 0)}
                         </td>
                       )}
 
                       {/* Amount due */}
                       {showColumn("dueAmount") && (
-                        <td className="py-3.5 px-5  text-[13px] text-right tracking-wide font-medium text-red-900">
+                        <td className="py-3.5 px-5  text-[13px] text-right tracking-wide font-medium text-red-900 dark:text-red-200">
                           {fmt(c.dueAmount ?? 0)}
                         </td>
                       )}
@@ -700,19 +685,13 @@ export default function CreditsTable({
                             // console.log("invoiceDate", d, c.creationDate);
                             return d ? (
                               <div>
-                                <span
-                                  className=" tracking-wide text-xs block"
-                                  style={{ color: CHART_PALETTE.title }}
-                                >
+                                <span className=" tracking-wide text-xs block text-[#3c4043] dark:text-[#e8ecf4]">
                                   {d.toLocaleTimeString("en-US", {
                                     hour: "2-digit",
                                     minute: "2-digit",
                                     hour12: false,
                                   })}
-                                  <span
-                                    className="text-[10px] font-normal "
-                                    style={{ color: CHART_PALETTE.subtitle }}
-                                  >
+                                  <span className="text-[10px] font-normal  text-[#9aa0a6] dark:text-[#9aa6bd]">
                                     {"  "}[{" "}
                                     {d.toLocaleTimeString("en-US", {
                                       hour: "2-digit",
@@ -722,10 +701,7 @@ export default function CreditsTable({
                                     ]
                                   </span>
                                 </span>
-                                <span
-                                  className="text-[11px] "
-                                  style={{ color: CHART_PALETTE.subtitle }}
-                                >
+                                <span className="text-[11px]  text-[#9aa0a6] dark:text-[#9aa6bd]">
                                   {d.toLocaleDateString("en-US", {
                                     month: "short",
                                     day: "numeric",
@@ -734,7 +710,9 @@ export default function CreditsTable({
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-gray-400">—</span>
+                              <span className="text-gray-400 dark:text-[#9aa6bd]">
+                                —
+                              </span>
                             );
                           })()}
                         </td>
@@ -749,7 +727,7 @@ export default function CreditsTable({
                                 <button
                                   onClick={(e) => e.stopPropagation()}
                                   title="Actions"
-                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors dark:hover:bg-blue-400/15 dark:text-blue-300"
                                 >
                                   <ChevronDown className="h-4 w-4" />
                                 </button>
@@ -881,7 +859,7 @@ export default function CreditsTable({
 
                                 {/* Delete */}
                                 <DropdownMenuItem
-                                  className="rounded-lg text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+                                  className="rounded-lg text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer dark:text-red-300"
                                   onSelect={() => setArchiveTarget(c)}
                                 >
                                   Delete
@@ -894,7 +872,7 @@ export default function CreditsTable({
                     </tr>
 
                     {isExpanded && (
-                      <tr className=" border-b border-gray-300">
+                      <tr className=" border-b border-gray-300 dark:border-white/20">
                         <td colSpan={colCount} className="px-4 pb-3">
                           <CreditPaymentHistory creditId={c._id} />
                         </td>
@@ -909,21 +887,21 @@ export default function CreditsTable({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-white/10">
         <button
           onClick={() => setPage(Math.max(0, page - 1))}
           disabled={page === 0}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             page === 0
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
           }`}
         >
           <ChevronLeft size={14} />
           Previous
         </button>
 
-        <span className="text-xs text-gray-400 font-medium">
+        <span className="text-xs text-gray-400 font-medium dark:text-[#9aa6bd]">
           Page {page + 1} of {totalPages} · {sorted.length} credits
         </span>
 
@@ -932,8 +910,8 @@ export default function CreditsTable({
           disabled={page >= totalPages - 1}
           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             page >= totalPages - 1
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              ? "text-gray-300 cursor-not-allowed dark:text-[#6b7588]"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
           }`}
         >
           Next

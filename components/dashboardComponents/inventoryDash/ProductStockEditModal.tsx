@@ -641,7 +641,7 @@ export default function ProductStockEditModal({
                   <span className="text-[10px] font-semibold text-slate-700 dark:text-[#c3ccdc]">
                     {changedEntries.length === 1 ? "Change" : "Changes"}
                     {changedCount > 0 && (
-                      <span className="font-normal text-[10px]text-slate-400">
+                      <span className="font-normal text-[10px] text-slate-400 dark:text-[#9aa6bd]">
                         {" "}
                         across {changedCount}{" "}
                         {changedCount === 1 ? "product" : "products"}

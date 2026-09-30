@@ -40,14 +40,14 @@ function SummaryRow({
 }) {
   const toneClass =
     tone === "credit"
-      ? "text-emerald-600"
+      ? "text-emerald-600 dark:text-emerald-300"
       : tone === "debit"
-        ? "text-gray-700"
-        : "text-gray-500";
+        ? "text-gray-700 dark:text-[#c3ccdc]"
+        : "text-gray-500 dark:text-[#9aa6bd]";
 
   return (
     <div className="flex items-baseline justify-between gap-4 text-[13px]">
-      <span className="text-gray-500">{label}</span>
+      <span className="text-gray-500 dark:text-[#9aa6bd]">{label}</span>
       <span className={`font-medium tabular-nums ${toneClass}`}>{value}</span>
     </div>
   );
@@ -56,7 +56,7 @@ function SummaryRow({
 /** Small uppercase section heading used across the modal. */
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-400">
+    <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-gray-400 dark:text-[#9aa6bd]">
       {children}
     </span>
   );
@@ -340,20 +340,23 @@ export default function RecordPaymentModal({
         role="dialog"
         aria-modal="true"
         aria-label="Record payment"
-        className="w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 duration-200"
+        className="w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 duration-200 dark:ring-white/15"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Header ── */}
-        <div className="flex items-start justify-between border-b border-gray-100 px-6 py-4">
+        <div className="flex items-start justify-between border-b border-gray-100 px-6 py-4 dark:border-white/10">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50">
-              <HandCoins size={16} className="text-blue-600" />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-400/10">
+              <HandCoins
+                size={16}
+                className="text-blue-600 dark:text-blue-300"
+              />
             </div>
             <div className="min-w-0">
-              <h2 className="text-[15px] font-semibold leading-tight text-gray-900">
+              <h2 className="text-[15px] font-semibold leading-tight text-gray-900 dark:text-[#e8ecf4]">
                 Record payment
               </h2>
-              <p className="mt-0.5 truncate text-[12px] text-gray-400 flex flex-row items-center ">
+              <p className="mt-0.5 truncate text-[12px] text-gray-400 flex flex-row items-center dark:text-[#9aa6bd] ">
                 {" "}
                 {invoice?.invoice != null && (
                   <p className="tabular-nums">Invoice #{invoice.invoice}</p>
@@ -366,7 +369,7 @@ export default function RecordPaymentModal({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="-mr-1.5 -mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="-mr-1.5 -mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:text-[#e8ecf4] dark:hover:bg-white/10 dark:text-[#9aa6bd]"
           >
             <X size={16} strokeWidth={2.2} />
           </button>
@@ -375,16 +378,16 @@ export default function RecordPaymentModal({
         {/* ── Content ── */}
         <div className="max-h-[65vh] overflow-y-auto px-6 py-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {!invoice ? (
-            <div className="flex items-center justify-center gap-2 py-16 text-[13px] text-gray-400">
+            <div className="flex items-center justify-center gap-2 py-16 text-[13px] text-gray-400 dark:text-[#9aa6bd]">
               <Loader2 size={15} className="animate-spin" />
               Loading invoice
             </div>
           ) : (
             <div className="space-y-6">
               {/* Amount due + breakdown */}
-              <div className="rounded-xl border border-gray-100 bg-gray-50/70 px-4 py-4">
+              <div className="rounded-xl border border-gray-100 bg-gray-50/70 px-4 py-4 dark:border-white/10">
                 <SectionLabel>Amount due</SectionLabel>
-                <p className="mt-1.5 text-[30px] font-semibold leading-none tracking-tight text-gray-900 tabular-nums">
+                <p className="mt-1.5 text-[30px] font-semibold leading-none tracking-tight text-gray-900 tabular-nums dark:text-[#e8ecf4]">
                   {money(finalPayable)}
                 </p>
 
@@ -438,14 +441,18 @@ export default function RecordPaymentModal({
                         aria-pressed={active}
                         className={`flex items-center justify-center gap-2 rounded-xl border py-3 text-[13px] font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                           active
-                            ? "border-blue-600 bg-blue-50 text-blue-700"
-                            : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                            ? "border-blue-600 bg-blue-50 text-blue-700 dark:text-blue-300 dark:bg-blue-400/10"
+                            : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:hover:border-white/25 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#a9b4c7]"
                         }`}
                       >
                         <Icon
                           size={16}
                           strokeWidth={1.8}
-                          className={active ? "text-blue-600" : "text-gray-400"}
+                          className={
+                            active
+                              ? "text-blue-600 dark:text-blue-300"
+                              : "text-gray-400 dark:text-[#9aa6bd]"
+                          }
                         />
                         {label}
                       </button>
@@ -458,7 +465,7 @@ export default function RecordPaymentModal({
               <div>
                 <div className="flex items-center justify-between">
                   <SectionLabel>Discount</SectionLabel>
-                  <div className="flex rounded-lg border border-gray-200 p-0.5">
+                  <div className="flex rounded-lg border border-gray-200 p-0.5 dark:border-white/15">
                     {(
                       [
                         { key: "fixed", label: currency.symbol },
@@ -477,7 +484,7 @@ export default function RecordPaymentModal({
                         className={`min-w-[34px] rounded-md px-2 py-1 text-[12px] font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                           discountType === key
                             ? "bg-gray-900 text-white"
-                            : "text-gray-500 hover:text-gray-800"
+                            : "text-gray-500 hover:text-gray-800 dark:text-[#9aa6bd]"
                         }`}
                       >
                         {label}
@@ -502,23 +509,23 @@ export default function RecordPaymentModal({
                     }
                     className={`w-full rounded-xl border bg-white px-3.5 py-2.5 pr-10 text-[13px] tabular-nums outline-none transition focus:ring-2 focus:ring-blue-500/40 ${
                       discountError
-                        ? "border-red-300 focus:border-red-400"
-                        : "border-gray-200 focus:border-blue-500"
+                        ? "border-red-300 focus:border-red-400 dark:focus:border-red-400/60 dark:border-red-400/40"
+                        : "border-gray-200 focus:border-blue-500 dark:border-white/15"
                     }`}
                   />
-                  <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[13px] text-gray-400">
+                  <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[13px] text-gray-400 dark:text-[#9aa6bd]">
                     {discountType === "percentage" ? "%" : currency.symbol}
                   </span>
                 </div>
 
                 {discountError ? (
-                  <p className="mt-1.5 text-[11px] text-red-500">
+                  <p className="mt-1.5 text-[11px] text-red-500 dark:text-red-300">
                     {discountError}
                   </p>
                 ) : (
                   discountType === "percentage" &&
                   paymentData.discount > 0 && (
-                    <p className="mt-1.5 text-[11px] text-gray-400 tabular-nums">
+                    <p className="mt-1.5 text-[11px] text-gray-400 tabular-nums dark:text-[#9aa6bd]">
                       {paymentData.discount}% of {money(subtotalBeforeTax)} ={" "}
                       {money(computedDiscountAmount)} off
                     </p>
@@ -528,13 +535,13 @@ export default function RecordPaymentModal({
 
               {/* Loyalty */}
               {customerProfile && (
-                <div className="rounded-xl border border-gray-200 px-4 py-3.5">
+                <div className="rounded-xl border border-gray-200 px-4 py-3.5 dark:border-white/15">
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
-                      <p className="text-[13px] font-medium text-gray-900">
+                      <p className="text-[13px] font-medium text-gray-900 dark:text-[#e8ecf4]">
                         Redeem loyalty points
                       </p>
-                      <p className="mt-0.5 text-[11px] text-gray-400 tabular-nums">
+                      <p className="mt-0.5 text-[11px] text-gray-400 tabular-nums dark:text-[#9aa6bd]">
                         {(customerProfile.loyaltyPoint ?? 0).toFixed(2)} pts
                         available
                       </p>
@@ -551,10 +558,10 @@ export default function RecordPaymentModal({
                       }}
                       className={`relative mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-2 ${
                         !canRedeem
-                          ? "cursor-not-allowed bg-gray-200"
+                          ? "cursor-not-allowed bg-gray-200 dark:bg-white/10"
                           : redeemEnabled
                             ? "bg-blue-400"
-                            : "bg-gray-200"
+                            : "bg-gray-200 dark:bg-white/10"
                       }`}
                     >
                       <span
@@ -568,9 +575,9 @@ export default function RecordPaymentModal({
                   </div>
 
                   {!canRedeem && loyaltySettings && (
-                    <p className="mt-2.5 border-t border-gray-100 pt-2.5 text-[11px] leading-relaxed text-gray-500">
+                    <p className="mt-2.5 border-t border-gray-100 pt-2.5 text-[11px] leading-relaxed text-gray-500 dark:border-white/10 dark:text-[#9aa6bd]">
                       Needs at least{" "}
-                      <span className="font-semibold text-gray-700 tabular-nums">
+                      <span className="font-semibold text-gray-700 tabular-nums dark:text-[#c3ccdc]">
                         {loyaltySettings.basePoint} pts
                       </span>{" "}
                       to redeem.
@@ -578,9 +585,9 @@ export default function RecordPaymentModal({
                   )}
 
                   {redeemEnabled && (
-                    <div className="mt-3 space-y-1.5 border-t border-gray-100 pt-3">
+                    <div className="mt-3 space-y-1.5 border-t border-gray-100 pt-3 dark:border-white/10">
                       <div className="flex items-center justify-between">
-                        <label className="text-[11px] text-gray-400">
+                        <label className="text-[11px] text-gray-400 dark:text-[#9aa6bd]">
                           Points to redeem
                         </label>
                         <button
@@ -590,7 +597,7 @@ export default function RecordPaymentModal({
                               Number(maxRedeemablePoints.toFixed(0)),
                             )
                           }
-                          className="text-[11px] font-semibold text-blue-400 transition hover:text-blue-700 tabular-nums"
+                          className="text-[11px] font-semibold text-blue-400 transition hover:text-blue-700 tabular-nums dark:hover:text-[#c3d6f4]"
                         >
                           Use max ({maxRedeemablePoints.toFixed(0)} points)
                         </button>
@@ -606,17 +613,17 @@ export default function RecordPaymentModal({
                         placeholder="0"
                         className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-[13px] tabular-nums outline-none transition focus:ring-2 focus:ring-blue-400/40 ${
                           redeemError
-                            ? "border-red-300 focus:border-red-400"
-                            : "border-gray-200 focus:border-blue-400"
+                            ? "border-red-300 focus:border-red-400 dark:focus:border-red-400/60 dark:border-red-400/40"
+                            : "border-gray-200 focus:border-blue-400 dark:focus:border-blue-400/60 dark:border-white/15"
                         }`}
                       />
                       {redeemError ? (
-                        <p className="text-[11px] text-red-500">
+                        <p className="text-[11px] text-red-500 dark:text-red-300">
                           {redeemError}
                         </p>
                       ) : (
                         redeemPoints > 0 && (
-                          <p className="text-[11px] text-gray-400 tabular-nums">
+                          <p className="text-[11px] text-gray-400 tabular-nums dark:text-[#9aa6bd]">
                             {redeemPoints} pts = {money(redeemPoints)} off
                           </p>
                         )
@@ -630,7 +637,7 @@ export default function RecordPaymentModal({
         </div>
 
         {/* ── Footer ── */}
-        <div className="border-t border-gray-100 px-6 py-4">
+        <div className="border-t border-gray-100 px-6 py-4 dark:border-white/10">
           <button
             type="button"
             onClick={handleRecordPayment}

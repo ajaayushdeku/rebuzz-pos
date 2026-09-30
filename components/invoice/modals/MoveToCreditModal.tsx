@@ -28,8 +28,8 @@ export default function MoveToCreditModal({
       open={open}
       onClose={onClose}
       icon={Wallet}
-      iconColor="text-violet-600"
-      iconBgColor="bg-violet-50"
+      iconColor="text-violet-600 dark:text-violet-300"
+      iconBgColor="bg-violet-50 dark:bg-violet-400/10"
       title="Move to credit?"
       description={
         invoiceNo != null

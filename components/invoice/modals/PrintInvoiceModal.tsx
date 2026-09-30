@@ -133,18 +133,21 @@ export default function PrintInvoiceModal({
         icon={Printer}
       >
         {!invoice ? (
-          <div className="flex items-center justify-center gap-2 py-14 text-[13px] text-gray-400">
+          <div className="flex items-center justify-center gap-2 py-14 text-[13px] text-gray-400 dark:text-[#9aa6bd]">
             <Loader2 size={15} className="animate-spin" />
             Loading invoice
           </div>
         ) : printType ? (
           <div className="flex flex-col items-center justify-center gap-3 py-14 text-center">
-            <Loader2 size={20} className="animate-spin text-blue-600" />
+            <Loader2
+              size={20}
+              className="animate-spin text-blue-600 dark:text-blue-300"
+            />
             <div>
-              <p className="text-[13px] font-medium text-gray-800">
+              <p className="text-[13px] font-medium text-gray-800 dark:text-[#e8ecf4]">
                 Opening the print dialog
               </p>
-              <p className="mt-1 text-[11px] text-gray-400">
+              <p className="mt-1 text-[11px] text-gray-400 dark:text-[#9aa6bd]">
                 Printing {SHORT_LABELS[printType]}. If nothing appears, check
                 that pop-ups are allowed.
               </p>
@@ -152,7 +155,7 @@ export default function PrintInvoiceModal({
             <button
               type="button"
               onClick={() => setPrintType(null)}
-              className="mt-1 text-[11px] font-semibold text-gray-500 transition hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="mt-1 text-[11px] font-semibold text-gray-500 transition hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:text-[#e8ecf4] dark:text-[#9aa6bd]"
             >
               Back to documents
             </button>
@@ -169,7 +172,7 @@ export default function PrintInvoiceModal({
                   <button
                     type="button"
                     onClick={() => handlePrint(type)}
-                    className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 px-3 text-[12px] font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                    className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 px-3 text-[12px] font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:border-white/25 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#c3ccdc]"
                   >
                     <Printer size={13} />
                     Print
@@ -178,7 +181,7 @@ export default function PrintInvoiceModal({
               />
             ))}
 
-            <p className="pt-1 text-[11px] leading-relaxed text-gray-400">
+            <p className="pt-1 text-[11px] leading-relaxed text-gray-400 dark:text-[#9aa6bd]">
               Opens your browser&lsquo;s print dialog — pick a printer or save
               as PDF from there.
             </p>

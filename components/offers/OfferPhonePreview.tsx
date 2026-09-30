@@ -129,7 +129,7 @@ function PhoneFrame({
       <div
         className={`min-h-[460px] rounded-b-[1.85rem] bg-[#f8f9fa] dark:bg-[#0f1420] px-3 pb-5 pt-2 ${
           center ? "flex flex-col justify-center" : ""
-        } dark:bg-white/5`}
+        }`}
       >
         {children}
       </div>
