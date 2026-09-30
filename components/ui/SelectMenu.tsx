@@ -302,7 +302,12 @@ export default function SelectMenu<T extends string = string>({
         width: position.width,
       }}
       // Above ModalShell's overlay (z-50) so it works inside modals too.
-      className={`z-[60] rounded-xl border border-gray-200 bg-white shadow-lg p-1 transition-all duration-200 ${
+      //
+      // In dark it takes the floating surface rather than the card colour: the
+      // panel is portaled to <body> and can land over a card, a modal or the
+      // page, so a translucent or card-coloured fill would read as part of
+      // whatever happens to be behind it.
+      className={`z-[60] rounded-xl border border-gray-200 bg-white shadow-lg p-1 transition-all duration-200 dark:border-white/10 dark:bg-[#1b2436] ${
         position.dropUp ? "origin-bottom" : "origin-top"
       } ${
         open
@@ -328,8 +333,8 @@ export default function SelectMenu<T extends string = string>({
             capitalize ? "capitalize" : ""
           } ${
             value === opt.value
-              ? "bg-blue-50 text-blue-700 font-medium"
-              : "text-gray-600 hover:bg-gray-100"
+              ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-400/15 dark:text-[#a8c4ee]"
+              : "text-gray-600 hover:bg-gray-100 dark:text-[#c3ccdc] dark:hover:bg-white/10"
           }`}
         >
           {opt.label}
@@ -348,14 +353,17 @@ export default function SelectMenu<T extends string = string>({
         aria-expanded={open}
         aria-label={ariaLabel}
         onClick={() => setOpen((o) => !o)}
-        className={`w-full flex items-center justify-between gap-2 pl-3 pr-2.5 text-[13px] bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition disabled:cursor-not-allowed disabled:opacity-50 ${
-          triggerClassName ?? "py-2.5 border border-gray-200 rounded-xl"
+        className={`w-full flex items-center justify-between gap-2 pl-3 pr-2.5 text-[13px] bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white/5 dark:text-[#c3ccdc] ${
+          // A caller that replaces the shape owns its own dark border too —
+          // the swap takes the border class with it.
+          triggerClassName ??
+          "py-2.5 border border-gray-200 rounded-xl dark:border-white/15"
         } ${capitalize ? "capitalize" : ""}`}
       >
         <span className="truncate">{selected?.label ?? placeholder}</span>
         <ChevronDown
           size={14}
-          className={`shrink-0 text-gray-400 transition-transform duration-200 ${
+          className={`shrink-0 text-gray-400 transition-transform duration-200 dark:text-[#7b869b] ${
             open ? "rotate-180" : ""
           }`}
         />

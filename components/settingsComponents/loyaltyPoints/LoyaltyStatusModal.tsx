@@ -31,7 +31,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
  * would resolve by stylesheet order rather than by which was written last.
  */
 const cyanInputIdle =
-  "border-[#dadce0] focus:border-cyan-400 focus:ring-cyan-500/20";
+  "border-[#dadce0] focus:border-cyan-400 focus:ring-cyan-500/20 dark:border-white/15";
 
 export interface LoyaltyStatusDraft {
   name: string;
@@ -158,8 +158,8 @@ export default function LoyaltyStatusModal({
           : "Name the tier and set the points needed to reach it"
       }
       icon={Trophy}
-      iconColor="text-cyan-600"
-      iconBgColor="bg-cyan-50"
+      iconColor="text-cyan-600 dark:text-cyan-300"
+      iconBgColor="bg-cyan-50 dark:bg-cyan-400/15"
       maxWidth="max-w-xl"
       footer={
         <div className="flex items-center gap-2.5">
@@ -200,9 +200,9 @@ export default function LoyaltyStatusModal({
     >
       <div className="space-y-4">
         {showZeroHint && (
-          <div className="flex items-center  gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5">
-            <Info className=" h-4.5 w-4.5 shrink-0 text-amber-600" />
-            <p className="text-[12px] leading-relaxed text-amber-800">
+          <div className="flex items-center  gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5 dark:border-amber-400/25 dark:bg-amber-400/10">
+            <Info className=" h-4.5 w-4.5 shrink-0 text-amber-600 dark:text-amber-300" />
+            <p className="text-[12px] leading-relaxed text-amber-800 dark:text-amber-200">
               Your lowest tier starts at{" "}
               <span className="font-semibold">
                 {missingZeroFloor.toLocaleString()}
@@ -215,7 +215,7 @@ export default function LoyaltyStatusModal({
         )}
 
         <div>
-          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.06em] text-[#9aa0a6]">
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.06em] text-[#9aa0a6] dark:text-[#7b869b]">
             Status Name
           </label>
           <input
@@ -236,7 +236,7 @@ export default function LoyaltyStatusModal({
         </div>
 
         <div>
-          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.06em] text-[#9aa0a6]">
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.06em] text-[#9aa0a6] dark:text-[#7b869b]">
             Minimum Points Required
           </label>
           <input
@@ -270,8 +270,8 @@ export default function LoyaltyStatusModal({
         </div>
 
         {name.trim() && (
-          <div className="rounded-xl border border-dashed border-cyan-200 bg-cyan-50/50 px-3.5 py-3">
-            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-cyan-400">
+          <div className="rounded-xl border border-dashed border-cyan-200 bg-cyan-50/50 px-3.5 py-3 dark:border-cyan-400/25 dark:bg-cyan-400/10">
+            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-cyan-400 dark:text-cyan-300">
               Preview
             </p>
             <div className="flex items-center gap-2">
@@ -280,7 +280,7 @@ export default function LoyaltyStatusModal({
                 color={previewColor}
                 bgColor={previewBg}
               />
-              <span className="text-xs tabular-nums text-[#5f6368]">
+              <span className="text-xs tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
                 from {formatNumber(Number(minPoints) || 0, currency.locale)} pts
               </span>
             </div>

@@ -30,45 +30,45 @@ const ACCENTS: Record<
   }
 > = {
   emerald: {
-    tint: "bg-emerald-50",
-    border: "border-emerald-200",
-    icon: "text-emerald-600",
-    ink: "text-emerald-700",
+    tint: "bg-emerald-50 dark:bg-[#142F38]",
+    border: "border-emerald-200 dark:border-emerald-400/25",
+    icon: "text-emerald-600 dark:text-emerald-300",
+    ink: "text-emerald-700 dark:text-emerald-300",
     solid: "#10b981",
   },
   blue: {
-    tint: "bg-blue-50",
-    border: "border-blue-200",
-    icon: "text-blue-600",
-    ink: "text-blue-700",
+    tint: "bg-blue-50 dark:bg-[#1C2A43]",
+    border: "border-blue-200 dark:border-blue-400/25",
+    icon: "text-blue-600 dark:text-blue-300",
+    ink: "text-blue-700 dark:text-blue-300",
     solid: "#3b82f6",
   },
   violet: {
-    tint: "bg-violet-50",
-    border: "border-violet-200",
-    icon: "text-violet-600",
-    ink: "text-violet-700",
+    tint: "bg-violet-50 dark:bg-violet-400/10",
+    border: "border-violet-200 dark:border-violet-400/25",
+    icon: "text-violet-600 dark:text-violet-300",
+    ink: "text-violet-700 dark:text-violet-300",
     solid: "#8b5cf6",
   },
   rose: {
-    tint: "bg-rose-50",
-    border: "border-rose-200",
-    icon: "text-rose-600",
-    ink: "text-rose-700",
+    tint: "bg-rose-50 dark:bg-[#2E2436]",
+    border: "border-rose-200 dark:border-rose-400/25",
+    icon: "text-rose-600 dark:text-rose-300",
+    ink: "text-rose-700 dark:text-rose-300",
     solid: "#f65c85",
   },
   amber: {
-    tint: "bg-amber-50",
-    border: "border-amber-200",
-    icon: "text-amber-600",
-    ink: "text-amber-700",
+    tint: "bg-amber-50 dark:bg-[#2E2D29]",
+    border: "border-amber-200 dark:border-amber-400/25",
+    icon: "text-amber-600 dark:text-amber-300",
+    ink: "text-amber-700 dark:text-amber-300",
     solid: "#f59e0b",
   },
   gray: {
-    tint: "bg-gray-50",
-    border: "border-gray-200",
-    icon: "text-gray-600",
-    ink: "text-gray-700",
+    tint: "bg-gray-50 dark:bg-white/5",
+    border: "border-gray-200 dark:border-white/15",
+    icon: "text-gray-600 dark:text-[#a9b4c7]",
+    ink: "text-gray-700 dark:text-[#c3ccdc]",
     solid: "#9aa0a6",
   },
 };
@@ -115,7 +115,7 @@ export default function OfferStepCard({
       {/* One frame, not two: the card used to draw a bordered shadowed box and
           then a second shadowed box inside it. */}
       <div
-        className={`relative min-w-0 flex-1 rounded-2xl border bg-white px-5 py-4 md:px-6 ${tone.border}`}
+        className={`relative min-w-0 flex-1 rounded-2xl border bg-white px-5 py-4 md:px-6 dark:bg-[#161d2e] ${tone.border}`}
       >
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">

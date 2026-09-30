@@ -6,9 +6,10 @@ import { Lock, SlidersHorizontal } from "lucide-react";
 import OfferStepCard from "./OfferStepCard";
 
 const FIELD =
-  "h-11 w-full rounded-xl border border-[#dadce0] bg-white text-sm tabular-nums outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20";
+  "h-11 w-full rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 text-sm tabular-nums outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-white/15";
 
-const LABEL = "mb-1.5 block text-[13px] font-medium text-[#3c4043]";
+const LABEL =
+  "mb-1.5 block text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]";
 
 /** A number field that may be left empty — an empty box reads as "no limit". */
 function LimitField({
@@ -31,7 +32,7 @@ function LimitField({
       <label className={LABEL}>{label}</label>
       <div className="relative">
         {prefix && (
-          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#9aa0a6]">
+          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#9aa0a6] dark:text-[#9aa6bd]">
             {prefix}
           </span>
         )}
@@ -44,7 +45,11 @@ function LimitField({
           className={`${FIELD} ${prefix ? "pl-10 pr-3.5" : "px-3.5"}`}
         />
       </div>
-      {hint && <p className="mt-1.5 text-[11px] text-[#9aa0a6]">{hint}</p>}
+      {hint && (
+        <p className="mt-1.5 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
+          {hint}
+        </p>
+      )}
     </div>
   );
 }
@@ -112,14 +117,14 @@ export default function OfferConditions() {
           so it cannot be reached by keyboard or click either. */}
       <div
         aria-hidden
-        className="mt-6 flex cursor-not-allowed items-center justify-between gap-4 border-t border-[#e8eaed] pt-5 opacity-50"
+        className="mt-6 flex cursor-not-allowed items-center justify-between gap-4 border-t border-[#e8eaed] pt-5 opacity-50 dark:border-white/10"
       >
         <div className="min-w-0">
-          <p className="flex items-center gap-1.5 text-[13px] font-semibold text-[#5f6368]">
+          <p className="flex items-center gap-1.5 text-[13px] font-semibold text-[#5f6368] dark:text-[#a9b4c7]">
             <Lock size={12} className="shrink-0" />
             Can be used with other offers
           </p>
-          <p className="mt-0.5 text-[11px] text-[#9aa0a6]">
+          <p className="mt-0.5 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
             Coming soon — offers currently apply one at a time
           </p>
         </div>
@@ -131,7 +136,7 @@ export default function OfferConditions() {
           disabled
           tabIndex={-1}
           aria-label="Can be used with other offers — coming soon"
-          className="relative h-6 w-11 shrink-0 cursor-not-allowed rounded-full bg-[#dadce0]"
+          className="relative h-6 w-11 shrink-0 cursor-not-allowed rounded-full bg-[#dadce0] dark:bg-white/15"
         >
           <span className="absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow" />
         </button>

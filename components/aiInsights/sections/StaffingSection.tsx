@@ -76,7 +76,9 @@ function useMetrics(item: StaffingInsight): Metric[] {
         label: "Per person",
         value: String(h.ordersPerPerson),
         valueClassName:
-          item.kind === "stretched-hour" ? "text-red-600" : undefined,
+          item.kind === "stretched-hour"
+            ? "text-red-600 dark:text-red-300"
+            : undefined,
         note: "orders",
       },
     ];
@@ -92,7 +94,10 @@ function useMetrics(item: StaffingInsight): Metric[] {
       {
         label: "Per order",
         value: typical,
-        valueClassName: item.kind === "low-spend" ? "text-blue-700" : undefined,
+        valueClassName:
+          item.kind === "low-spend"
+            ? "text-blue-700 dark:text-blue-300"
+            : undefined,
         note:
           item.teamTypicalOrder !== null
             ? `team ${money(item.teamTypicalOrder)}`
@@ -128,8 +133,8 @@ function StaffingCard({
           <span
             className={`flex h-10 shrink-0 items-center rounded-lg px-2.5 text-[14px] font-bold ${
               kind.accent === "red"
-                ? "bg-red-50 text-red-600"
-                : "bg-amber-50 text-amber-600"
+                ? "bg-red-50 text-red-600 dark:text-red-300 dark:bg-red-400/10"
+                : "bg-amber-50 text-amber-600 dark:text-amber-300 dark:bg-amber-400/10"
             }`}
           >
             {item.hour.label}
@@ -170,7 +175,7 @@ function StaffingCard({
         </CardAction>
       }
     >
-      <p className="text-[13px] leading-relaxed text-[#5f6368]">
+      <p className="text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
         {item.description}
       </p>
       <div className="mt-auto">
@@ -194,7 +199,7 @@ export default function StaffingSection({
     <section>
       <SectionHeader
         icon={Users}
-        iconClassName="bg-amber-50 text-amber-600"
+        iconClassName="bg-amber-50 text-amber-600 dark:text-amber-300 dark:bg-amber-400/10"
         title="Staffing Recommendations"
         // Said up front: the POS only records who rang up each bill, so this
         // is about the till, not the whole floor or the kitchen.
@@ -207,7 +212,7 @@ export default function StaffingSection({
           <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
             <SectionRefreshButton
               state={state}
-              textClassName="text-amber-700 hover:bg-amber-100 border-amber-300 hover:border-amber-400"
+              textClassName="text-amber-700 hover:bg-amber-100 border-amber-300 hover:border-amber-400 dark:hover:border-amber-400/60 dark:hover:bg-amber-400/20 dark:border-amber-400/40 dark:text-amber-300"
             />
           </div>
         }

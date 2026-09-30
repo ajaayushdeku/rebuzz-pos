@@ -380,7 +380,7 @@ export function VariantRowsEditor({
               errors[row.key]
                 ? "border-rose-300 bg-rose-50/40 dark:border-rose-400/40"
                 : row.isAvailable
-                  ? "border-slate-200 bg-slate-50/40 dark:border-white/15 "
+                  ? "border-slate-200 bg-slate-50/40 dark:bg-white/10 dark:border-white/15 "
                   : "border-slate-200 bg-slate-50/60 opacity-70 dark:border-white/15 dark:bg-white/5"
             }`}
           >

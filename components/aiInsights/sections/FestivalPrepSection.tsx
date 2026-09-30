@@ -92,7 +92,7 @@ export default function FestivalPrepSection({
     <section>
       <SectionHeader
         icon={CalendarDays}
-        iconClassName="bg-amber-50 text-amber-600"
+        iconClassName="bg-amber-50 text-amber-600 dark:text-amber-300 dark:bg-amber-400/10"
         title="Upcoming Festival Prep"
         subtitle={`Festivals and public holidays in the next ${FESTIVAL_LOOKAHEAD_DAYS} days, from Nepal's holiday calendar`}
         info={{
@@ -107,13 +107,13 @@ export default function FestivalPrepSection({
               <GenerateMoreButton
                 label={showAll ? "Show fewer" : `Show all ${items.length}`}
                 icon={CalendarDays}
-                textClassName="text-amber-700"
+                textClassName="text-amber-700 dark:text-amber-300"
                 onClick={() => setShowAll((v) => !v)}
               />
             )}
             <SectionRefreshButton
               state={state}
-              textClassName="text-amber-700 hover:bg-amber-100 border-amber-300 hover:border-amber-400"
+              textClassName="text-amber-700 hover:bg-amber-100 border-amber-300 hover:border-amber-400 dark:hover:border-amber-400/60 dark:hover:bg-amber-400/20 dark:border-amber-400/40 dark:text-amber-300"
             />
           </div>
         }
@@ -158,7 +158,7 @@ export default function FestivalPrepSection({
                   {
                     label: "Nepali date",
                     value: item.bsLabel,
-                    valueClassName: "text-emerald-700",
+                    valueClassName: "text-emerald-700 dark:text-emerald-300",
                   },
                 ]}
                 footer={
@@ -167,7 +167,7 @@ export default function FestivalPrepSection({
                   </CardAction>
                 }
               >
-                <p className="text-[13px] leading-relaxed text-[#5f6368]">
+                <p className="text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
                   {item.description}
                 </p>
 

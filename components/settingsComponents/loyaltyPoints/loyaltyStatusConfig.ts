@@ -86,6 +86,12 @@ const TIER_DARK: Record<string, string> = {
   "text-stone-600": "dark:text-[#c3ccdc]",
   "bg-stone-100": "dark:bg-white/10",
   "border-stone-200": "dark:border-white/15",
+  // Zinc is what FALLBACK_TIER_STYLE paints an unrecognised tier with, so it
+  // needs a dark half like every other hue or the fallback badge stays light.
+  "text-zinc-700": "dark:text-[#c3ccdc]",
+  "text-zinc-600": "dark:text-[#c3ccdc]",
+  "bg-zinc-100": "dark:bg-white/10",
+  "border-zinc-200": "dark:border-white/15",
 };
 
 /**

@@ -42,7 +42,7 @@ export function DeleteConfirmDialog({
   description,
   icon = AlertTriangle,
   iconColor = "text-red-500",
-  iconBgColor = "bg-red-50",
+  iconBgColor = "bg-red-50 dark:bg-red-400/15",
   warning,
   onConfirm,
   isPending = false,

@@ -31,7 +31,7 @@ export default function SubscriptionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
       <div className="w-full mx-auto">
         <PageHeader
           title="Subscription"
@@ -57,12 +57,12 @@ export default function SubscriptionPage() {
           ))}
         </div>
 
-        <p className="mt-5 text-[11px] text-[#9aa0a6]">
+        <p className="mt-5 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
           Prices are in NPR and include all taxes. Plans renew automatically and
           can be cancelled at any time.
         </p>
 
-        <div className="my-8 border-t border-[#e8eaed]" />
+        <div className="my-8 border-t border-[#e8eaed] dark:border-white/10" />
 
         <PlanFaq />
       </div>

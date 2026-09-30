@@ -57,7 +57,7 @@ export const CreateDiscountDialog = () => {
   // Matches SelectMenu's trigger (rounded-xl, py-2.5, 13px) so the Type
   // dropdown and the Value field sit on the same baseline and height.
   const inputClass =
-    "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+    "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
 
   return (
     <>
@@ -82,7 +82,7 @@ export const CreateDiscountDialog = () => {
               type="button"
               onClick={() => handleOpenChange(false)}
               disabled={isPending}
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:bg-white/10"
             >
               Cancel
             </button>
@@ -110,15 +110,15 @@ export const CreateDiscountDialog = () => {
         <div className="space-y-5">
           <div>
             <div className="mb-3">
-              <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+              <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#6b7588]">
                 Details
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5 dark:text-[#9aa6bd]">
                 A clear name helps staff pick the right discount
               </p>
             </div>
 
-            <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
+            <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#6b7588]">
               Discount Name
             </label>
             <input
@@ -134,17 +134,17 @@ export const CreateDiscountDialog = () => {
           {/* ── Amount ── */}
           <div>
             <div className="mb-3">
-              <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+              <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#6b7588]">
                 Amount
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5 dark:text-[#9aa6bd]">
                 Choose a percentage of the total or a fixed amount
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
+                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#6b7588]">
                   Type
                 </label>
                 <SelectMenu
@@ -157,11 +157,11 @@ export const CreateDiscountDialog = () => {
                 />
               </div>
               <div>
-                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
+                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#6b7588]">
                   Value
                 </label>
                 <div className="relative">
-                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-slate-400">
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-slate-400 dark:text-[#7b869b]">
                     {formData.type === "percentage" ? (
                       <Percent size={11} />
                     ) : (

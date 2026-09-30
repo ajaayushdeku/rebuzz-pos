@@ -1336,7 +1336,7 @@ export default function ProductFormModal({
               : undefined
           }
         >
-          <div className="rounded-xl border border-slate-200 dark:border-white/15">
+          <div className="rounded-xl border border-slate-200 mb-8 dark:border-white/15">
             <div className="flex items-center justify-between gap-4 px-4 py-3">
               <div className="flex items-start gap-2.5">
                 <span

@@ -57,7 +57,7 @@ export default function CustomerRetentionSection({
     <section>
       <SectionHeader
         icon={HeartHandshake}
-        iconClassName="bg-pink-50 text-pink-600"
+        iconClassName="bg-pink-50 text-pink-600 dark:text-pink-300 dark:bg-pink-400/10"
         title="Customer Retention Radar"
         subtitle="Regulars who are overdue for a visit, judged against their own habit"
         info={{
@@ -68,7 +68,7 @@ export default function CustomerRetentionSection({
           <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
             <SectionRefreshButton
               state={state}
-              textClassName="text-pink-700 hover:bg-pink-100 border-pink-300 hover:border-pink-400"
+              textClassName="text-pink-700 hover:bg-pink-100 border-pink-300 hover:border-pink-400 dark:hover:border-pink-400/60 dark:hover:bg-pink-400/20 dark:border-pink-400/40 dark:text-pink-300"
             />
           </div>
         }
@@ -111,8 +111,8 @@ export default function CustomerRetentionSection({
                     value: `${item.daysSinceVisit} days ago`,
                     valueClassName:
                       item.status === "At risk"
-                        ? "text-red-600"
-                        : "text-amber-700",
+                        ? "text-red-600 dark:text-red-300"
+                        : "text-amber-700 dark:text-amber-300",
                     note: `usually ${everyText(item.usualGapDays)}`,
                   },
                   { label: "Per visit", value: money(item.spendPerVisit) },
@@ -147,7 +147,7 @@ export default function CustomerRetentionSection({
                     {item.usualOrder.length > 0 && (
                       <div>
                         <BodyLabel>Usually orders</BodyLabel>
-                        <p className="text-[13px] font-semibold text-[#3c4043]">
+                        <p className="text-[13px] font-semibold text-[#3c4043] dark:text-[#e8ecf4]">
                           {item.usualOrder.join(" + ")}
                         </p>
                       </div>
@@ -155,7 +155,7 @@ export default function CustomerRetentionSection({
                     {item.loyaltyPoints > 0 && (
                       <div>
                         <BodyLabel>Loyalty points</BodyLabel>
-                        <p className="text-[13px] font-semibold tabular-nums text-[#3c4043]">
+                        <p className="text-[13px] font-semibold tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                           {item.loyaltyPoints.toLocaleString("en-US")}
                         </p>
                       </div>
@@ -168,19 +168,19 @@ export default function CustomerRetentionSection({
                     details={
                       <div>
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-[11px] font-medium text-[#5f6368]">
+                          <span className="text-[11px] font-medium text-[#5f6368] dark:text-[#a9b4c7]">
                             Message to send
                           </span>
                           <button
                             type="button"
                             onClick={() => copyMessage(item.message)}
-                            className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-semibold text-blue-700 transition-colors hover:bg-blue-50"
+                            className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-semibold text-blue-700 transition-colors hover:bg-blue-50 dark:hover:bg-blue-400/15 dark:text-blue-300"
                           >
                             <Copy size={11} aria-hidden />
                             Copy
                           </button>
                         </div>
-                        <p className="mt-1.5 rounded-md border border-[#e8eaed] bg-white px-3 py-2 text-[12px] italic leading-relaxed text-[#5f6368]">
+                        <p className="mt-1.5 rounded-md border border-[#e8eaed] bg-white dark:bg-white/5 px-3 py-2 text-[12px] italic leading-relaxed text-[#5f6368] dark:border-white/10 dark:text-[#a9b4c7]">
                           “{item.message}”
                         </p>
                       </div>

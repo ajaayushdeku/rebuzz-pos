@@ -45,6 +45,16 @@ export interface ProviderButton {
 export interface ProviderMeta {
   /** Ink: icons, step text, links. Must be readable on white. */
   accent: string;
+  /**
+   * The same signal, for a dark surface. Defaults to `accent`.
+   *
+   * `accent` is chosen to be readable on white, so three of these are close to
+   * black — OpenRouter's is `#03080A`. Lightening one programmatically turns it
+   * grey and the provider stops being recognisable, so each names the shade of
+   * its OWN ramp that carries its identity on a dark card instead: OpenRouter
+   * becomes its lime, Mistral its amber, NVIDIA its green.
+   */
+  darkAccent?: string;
   /** When the accent is too dark to read as a link. Defaults to `accent`. */
   link?: string;
   /** A pale wash, behind provider marks. */
@@ -101,6 +111,7 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
     // the sweep crosses the yellow stop at 1.71:1, illegible exactly where it
     // is brightest. #1967D2 measures 5.37:1 and still reads as Google.
     accent: "#1967D2",
+    darkAccent: "#8AB4F8",
     tint: "#E8F0FE",
     // Gemini's own blue → violet → rose sweep, not Google's four brand
     // colours: the mark names the product, not the company.
@@ -154,6 +165,7 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
      * a darker lime for links, which near-black would not read as.
      */
     accent: "#03080A",
+    darkAccent: "#8ca728",
     link: "#4D6B00",
     tint: "#F2FFCC",
     stepBg: "#C8FF00",
@@ -213,6 +225,7 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
      * stays in the mark's sweep where nothing has to be read through it.
      */
     accent: "#C2340F",
+    darkAccent: "#FF7A59",
     tint: "#FFEDE7",
     gradient: ["#FF7A59", "#F55036", "#A32B0C"],
     mark: { bg: "#FFEDE7", ink: "#C2340F" },
@@ -273,6 +286,7 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
      * everywhere else the dark end carries the text and the button.
      */
     accent: "#933800",
+    darkAccent: "#FFAF01",
     tint: "#FFF7E3",
     gradient: ["#FEC63A", "#FF8204", "#FA500F"],
     // The yellow end of their own ramp, which is the half of it no other
@@ -336,6 +350,7 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
      * and the button, and the bright one leads the mark's sweep.
      */
     accent: "#4A7700",
+    darkAccent: "#518200",
     tint: "#F2FBE0",
     gradient: ["#A6E000", "#76B900", "#4A7700"],
     mark: { bg: "#EAF7CF", ink: "#4A7700" },

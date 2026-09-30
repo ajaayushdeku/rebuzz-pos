@@ -60,7 +60,7 @@ function menuMetrics(
     metrics.push({
       label: "Try at",
       value: money(item.suggestedPrice),
-      valueClassName: "text-emerald-700",
+      valueClassName: "text-emerald-700 dark:text-emerald-300",
     });
   }
   if (
@@ -71,7 +71,7 @@ function menuMetrics(
     metrics.push({
       label: "Separately",
       value: money(item.separatePrice),
-      valueClassName: "text-[#9aa0a6] line-through",
+      valueClassName: "text-[#9aa0a6] line-through dark:text-[#9aa6bd]",
       note: `saves ${money(item.separatePrice - item.suggestedPrice)}`,
     });
   } else {
@@ -122,7 +122,7 @@ export default function MenuSuggestionsSection({
     <section>
       <SectionHeader
         icon={Sparkles}
-        iconClassName="bg-violet-50 text-violet-600"
+        iconClassName="bg-violet-50 text-violet-600 dark:text-violet-300 dark:bg-violet-400/10"
         title="AI Menu Suggestions"
         subtitle={`Ideas built from your best sellers of the last ${SECTION_WINDOW_DAYS} days`}
         info={{
@@ -134,14 +134,14 @@ export default function MenuSuggestionsSection({
             <div className="relative">
               <Search
                 size={14}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9aa0a6]"
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9aa0a6] dark:text-[#9aa6bd]"
               />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search menu ideas..."
                 aria-label="Search menu ideas"
-                className="h-9 w-full rounded-lg border border-[#dadce0] bg-white pl-9 pr-3 text-[13px] outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100 sm:w-52"
+                className="h-9 w-full rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 pl-9 pr-3 text-[13px] outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100 sm:w-52 dark:focus:border-violet-400/60 dark:focus:ring-violet-400/25 dark:border-white/15"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -154,11 +154,11 @@ export default function MenuSuggestionsSection({
               />
               <SectionMoreButton
                 state={state}
-                textClassName="text-violet-600 hover:bg-violet-100 border-violet-300 hover:border-violet-400"
+                textClassName="text-violet-600 hover:bg-violet-100 border-violet-300 hover:border-violet-400 dark:hover:border-violet-400/60 dark:hover:bg-violet-400/20 dark:border-violet-400/40 dark:text-violet-300"
               />
               <SectionRefreshButton
                 state={state}
-                textClassName="text-violet-600 hover:bg-violet-100 border-violet-300 hover:border-violet-400"
+                textClassName="text-violet-600 hover:bg-violet-100 border-violet-300 hover:border-violet-400 dark:hover:border-violet-400/60 dark:hover:bg-violet-400/20 dark:border-violet-400/40 dark:text-violet-300"
               />
             </div>
           </div>
@@ -204,8 +204,8 @@ export default function MenuSuggestionsSection({
                       className={`rounded-md p-1 transition-colors hover:bg-[#f1f3f4] ${
                         starred
                           ? "text-amber-400"
-                          : "text-[#9aa0a6] hover:text-[#5f6368]"
-                      }`}
+                          : "text-[#9aa0a6] hover:text-[#5f6368] dark:hover:text-[#e8ecf4] dark:text-[#9aa6bd]"
+                      } dark:hover:bg-white/10`}
                     >
                       <Star
                         size={14}
@@ -221,7 +221,7 @@ export default function MenuSuggestionsSection({
                     </CardAction>
                   }
                 >
-                  <p className="text-[13px] leading-relaxed text-[#5f6368]">
+                  <p className="text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
                     {item.description}
                   </p>
 
@@ -233,7 +233,7 @@ export default function MenuSuggestionsSection({
                         content: (
                           <>
                             {b.name}
-                            <span className="ml-1.5 text-[#9aa0a6]">
+                            <span className="ml-1.5 text-[#9aa0a6] dark:text-[#9aa6bd]">
                               {money(b.price)}
                             </span>
                           </>

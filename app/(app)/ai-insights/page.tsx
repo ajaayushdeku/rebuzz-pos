@@ -169,7 +169,7 @@ export default function AIInsightPage() {
   const savedAnswers = answered.filter((data) => data!.cached).length;
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
       <div className="mx-auto flex w-full  flex-col ">
         <PageHeader
           title="AI Insights"
@@ -181,7 +181,7 @@ export default function AIInsightPage() {
               every hour.
               <Sparkles
                 size={16}
-                className="shrink-0 text-violet-500"
+                className="shrink-0 text-violet-500 dark:text-violet-300"
                 aria-hidden
               />
             </span>

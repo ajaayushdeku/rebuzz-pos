@@ -21,16 +21,32 @@ import { Input } from "@/components/ui/input";
 import PageHeader from "@/components/ui/PageHeader";
 
 const inputClass =
-  "w-full rounded-lg border border-[#dadce0] px-3 py-6 pr-10 text-sm text-[#3c4043] transition placeholder:text-[#9aa0a6] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500";
+  "w-full rounded-lg border border-[#dadce0] px-3 py-6 pr-10 text-sm text-[#3c4043] transition placeholder:text-[#9aa0a6] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
 const inputErrorClass =
-  "w-full rounded-lg border border-red-300 px-3 py-6 pr-10 text-sm text-[#3c4043] transition placeholder:text-[#9aa0a6] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-red-400";
+  "w-full rounded-lg border border-red-300 px-3 py-6 pr-10 text-sm text-[#3c4043] transition placeholder:text-[#9aa0a6] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-red-400 dark:border-red-400/50 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
 
 /** Four segments, so the bar reads as a level rather than a percentage. */
 const STRENGTH_LEVELS = [
-  { label: "Weak", bar: "bg-red-500", text: "text-red-600" },
-  { label: "Fair", bar: "bg-orange-500", text: "text-orange-600" },
-  { label: "Good", bar: "bg-yellow-500", text: "text-yellow-700" },
-  { label: "Strong", bar: "bg-green-500", text: "text-green-600" },
+  {
+    label: "Weak",
+    bar: "bg-red-500",
+    text: "text-red-600 dark:text-[#f87171]",
+  },
+  {
+    label: "Fair",
+    bar: "bg-orange-500",
+    text: "text-orange-600 dark:text-orange-300",
+  },
+  {
+    label: "Good",
+    bar: "bg-yellow-500",
+    text: "text-yellow-700 dark:text-yellow-300",
+  },
+  {
+    label: "Strong",
+    bar: "bg-green-500",
+    text: "text-green-600 dark:text-emerald-300",
+  },
 ] as const;
 
 /** Below this the password is refused — two requirements is not enough. */
@@ -126,7 +142,7 @@ function PasswordField({
     // the extra px-4 pushed every field 1rem further in than the card heading
     // above it, so nothing lined up down the left edge.
     <div>
-      <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.06em] text-[#5f6368]">
+      <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.06em] text-[#5f6368] dark:text-[#a9b4c7]">
         {label}
       </label>
 
@@ -143,7 +159,7 @@ function PasswordField({
           type="button"
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? `Hide ${label}` : `Show ${label}`}
-          className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer rounded text-[#9aa0a6] transition-colors hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer rounded text-[#9aa0a6] transition-colors hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-[#7b869b] dark:hover:text-white"
         >
           {visible ? <EyeOff size={16} /> : <Eye size={16} />}
         </button>
@@ -237,7 +253,7 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
       <div className="mx-auto w-full">
         {/* ── Header ── */}
         <PageHeader
@@ -252,20 +268,20 @@ export default function ChangePasswordPage() {
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <form
             onSubmit={handleSubmit}
-            className="overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white"
+            className="overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white dark:border-white/10 dark:bg-[#161d2e]"
           >
             {/* Card heading */}
             <div className="flex items-center gap-3  px-6 pt-6 pb-3">
               {/* `border-current/20` frames the tile in the icon's own hue,
                   as the cards elsewhere do. */}
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-current/20 bg-blue-50 text-blue-600">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-current/20 bg-blue-50 text-blue-600 dark:bg-blue-400/15 dark:text-[#7ba2e3]">
                 <Lock className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-[15px] font-normal text-[#3c4043]">
+                <h2 className="text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
                   Account security
                 </h2>
-                <p className="text-xs text-[#9aa0a6]">
+                <p className="text-xs text-[#9aa0a6] dark:text-[#7b869b]">
                   Choose a strong password you haven&rsquo;t used before.
                 </p>
               </div>
@@ -275,19 +291,19 @@ export default function ChangePasswordPage() {
               {/* The account is needed to submit, so say so while it loads
                 instead of leaving the button inert without explanation. */}
               {profileLoading && (
-                <div className="flex items-center gap-2 rounded-lg bg-[#f8f9fa] px-3 py-2.5 text-[12px] text-[#5f6368]">
+                <div className="flex items-center gap-2 rounded-lg bg-[#f8f9fa] px-3 py-2.5 text-[12px] text-[#5f6368] dark:bg-white/5 dark:text-[#a9b4c7]">
                   <Loader2 size={14} className="animate-spin" />
                   Loading your account…
                 </div>
               )}
 
               {!profileLoading && !userId && (
-                <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5">
+                <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 dark:border-red-400/25 dark:bg-red-400/10">
                   <AlertCircle
                     size={14}
-                    className="mt-0.5 shrink-0 text-red-500"
+                    className="mt-0.5 shrink-0 text-red-500 dark:text-[#f87171]"
                   />
-                  <p className="text-[12px] leading-relaxed text-red-600">
+                  <p className="text-[12px] leading-relaxed text-red-600 dark:text-[#f87171]">
                     Your account details could not be loaded, so the password
                     cannot be changed right now. Reload the page and try again.
                   </p>
@@ -311,7 +327,7 @@ export default function ChangePasswordPage() {
                 invalid={reusesOld}
                 message={
                   reusesOld ? (
-                    <p className="mt-1 flex items-center gap-1 text-[11px] text-red-500">
+                    <p className="mt-1 flex items-center gap-1 text-[11px] text-red-500 dark:text-[#f87171]">
                       <AlertCircle className="h-3 w-3" />
                       Must be different from your current password
                     </p>
@@ -325,7 +341,7 @@ export default function ChangePasswordPage() {
                         colour is not the only thing carrying the meaning. */}
                     <div>
                       <div className="mb-1.5 flex items-baseline justify-between">
-                        <span className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[#9aa0a6]">
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[#9aa0a6] dark:text-[#7b869b]">
                           Strength
                         </span>
                         <span
@@ -341,14 +357,14 @@ export default function ChangePasswordPage() {
                             className={`h-2 flex-1 rounded-full transition-colors duration-300 ${
                               i <= level
                                 ? STRENGTH_LEVELS[level].bar
-                                : "bg-[#e8eaed]"
+                                : "bg-[#e8eaed] dark:bg-white/15"
                             }`}
                           />
                         ))}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-x-4 gap-y-1.5 rounded-xl border border-[#e3e3e3] p-3 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-x-4 gap-y-1.5 rounded-xl border border-[#e3e3e3] p-3 sm:grid-cols-2 dark:border-white/10">
                       {REQUIREMENTS.map((req) => {
                         const passed = req.test(newPassword);
                         return (
@@ -358,20 +374,22 @@ export default function ChangePasswordPage() {
                           >
                             <span
                               className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full transition-colors ${
-                                passed ? "bg-emerald-500" : "bg-[#e8eaed]"
+                                passed
+                                  ? "bg-emerald-500"
+                                  : "bg-[#e8eaed] dark:bg-white/15"
                               }`}
                             >
                               {passed ? (
                                 <Check className="h-2.5 w-2.5 text-white" />
                               ) : (
-                                <X className="h-2.5 w-2.5 text-[#9aa0a6]" />
+                                <X className="h-2.5 w-2.5 text-[#9aa0a6] dark:text-[#7b869b]" />
                               )}
                             </span>
                             <span
                               className={
                                 passed
-                                  ? "font-medium text-[#3c4043]"
-                                  : "text-[#9aa0a6]"
+                                  ? "font-medium text-[#3c4043] dark:text-[#e8ecf4]"
+                                  : "text-[#9aa0a6] dark:text-[#7b869b]"
                               }
                             >
                               {req.label}
@@ -394,12 +412,12 @@ export default function ChangePasswordPage() {
                 message={
                   confirmPassword ? (
                     passwordsMatch ? (
-                      <p className="mt-1 flex items-center gap-1 text-[11px] text-emerald-600">
+                      <p className="mt-1 flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-300">
                         <Check className="h-3 w-3" />
                         Passwords match
                       </p>
                     ) : (
-                      <p className="mt-1 flex items-center gap-1 text-[11px] text-red-500">
+                      <p className="mt-1 flex items-center gap-1 text-[11px] text-red-500 dark:text-[#f87171]">
                         <AlertCircle className="h-3 w-3" />
                         Passwords do not match
                       </p>
@@ -410,9 +428,9 @@ export default function ChangePasswordPage() {
             </div>
 
             {/* ── Submit ── */}
-            <div className="space-y-2 border-t border-[#e8eaed] bg-[#f8f9fa] px-6 py-4">
+            <div className="space-y-2 border-t border-[#e8eaed] bg-[#f8f9fa] px-6 py-4 dark:border-white/10 dark:bg-[#1b2436]">
               {blocker && (
-                <p className="text-center text-[11px] text-[#5f6368]">
+                <p className="text-center text-[11px] text-[#5f6368] dark:text-[#a9b4c7]">
                   {blocker}
                 </p>
               )}
@@ -420,7 +438,7 @@ export default function ChangePasswordPage() {
               <Button
                 type="submit"
                 disabled={!canSubmit}
-                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-blue-600 py-6 text-[14px] text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-blue-600 py-6 text-[14px] text-white hover:bg-blue-700 dark:hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? (
                   <>
@@ -438,19 +456,19 @@ export default function ChangePasswordPage() {
           </form>
 
           {/* ── Why it matters ── */}
-          <div className="space-y-4 rounded-2xl border border-[#e3e3e3] bg-white p-6">
-            <h3 className="text-[13px] font-semibold text-[#3c4043]">
+          <div className="space-y-4 rounded-2xl border border-[#e3e3e3] bg-white p-6 dark:border-white/10 dark:bg-[#161d2e]">
+            <h3 className="text-[13px] font-semibold text-[#3c4043] dark:text-[#e8ecf4]">
               Choosing a password
             </h3>
 
             {SECURITY_NOTES.map(({ icon: Icon, title, body }) => (
               <div key={title} className="flex gap-3">
-                <Icon className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
+                <Icon className="mt-0.5 h-4 w-4 shrink-0 text-blue-500 dark:text-[#7ba2e3]" />
                 <div className="min-w-0">
-                  <p className="text-[12px] font-medium text-[#3c4043]">
+                  <p className="text-[12px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
                     {title}
                   </p>
-                  <p className="mt-0.5 text-[11px] leading-relaxed text-[#5f6368]">
+                  <p className="mt-0.5 text-[11px] leading-relaxed text-[#5f6368] dark:text-[#7b869b]">
                     {body}
                   </p>
                 </div>

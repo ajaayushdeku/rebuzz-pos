@@ -11,7 +11,6 @@ import {
   Tags,
   Edit3,
 } from "lucide-react";
-import { CHART_PALETTE } from "@/components/dashboardComponents/chartCard";
 
 const PAGE_SIZE = 5;
 
@@ -55,13 +54,7 @@ const CategoryTable = ({
           <col className="w-24" />
         </colgroup>
         <thead>
-          <tr
-            className="border-b text-[11px] tracking-wider"
-            style={{
-              borderColor: CHART_PALETTE.grid,
-              color: CHART_PALETTE.axis,
-            }}
-          >
+          <tr className="border-b border-[#e8eaed] text-[11px] tracking-wider text-[#5f6368] dark:border-white/10 dark:text-[#9aa6bd]">
             <th className="text-left pb-2.5 font-normal">S.No.</th>
             <th className="text-left pb-2.5 font-normal">Name</th>
             <th className="text-left pb-2.5 font-normal">Color</th>
@@ -72,7 +65,7 @@ const CategoryTable = ({
           {loading ? (
             <tr>
               <td colSpan={4} className="py-10 text-center">
-                <div className="flex items-center justify-center gap-2 text-gray-400">
+                <div className="flex items-center justify-center gap-2 text-gray-400 dark:text-[#7b869b]">
                   <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
                   <span className="text-sm">Loading categories...</span>
                 </div>
@@ -82,16 +75,16 @@ const CategoryTable = ({
             <tr>
               <td
                 colSpan={4}
-                className="text-center py-2 text-sm text-gray-400"
+                className="text-center py-2 text-sm text-gray-400 dark:text-[#7b869b]"
               >
                 <div className="flex flex-col items-center justify-center py-12">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                    <Tags size={24} className="text-gray-500" />
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3 dark:bg-white/10">
+                    <Tags size={24} className="text-gray-500 dark:text-[#9aa6bd]" />
                   </div>
-                  <p className="text-sm font-medium text-gray-500">
+                  <p className="text-sm font-medium text-gray-500 dark:text-[#c3ccdc]">
                     No categories found
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-gray-400 mt-1 dark:text-[#7b869b]">
                     Create a category to get started.
                   </p>
                 </div>
@@ -101,24 +94,23 @@ const CategoryTable = ({
             paged.map((c, idx) => (
               <tr
                 key={c._id}
-                className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
+                className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors dark:border-white/10 dark:hover:bg-white/5"
               >
-                <td className="py-3 font-medium text-[11px] text-gray-400">
+                <td className="py-3 font-medium text-[11px] text-gray-400 dark:text-[#7b869b]">
                   #{idx + 1}
                 </td>
                 <td
-                  className="truncate py-3 pr-3 text-[13px] font-medium"
-                  style={{ color: CHART_PALETTE.title }}
+                  className="truncate py-3 pr-3 text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]"
                 >
                   {c.name}
                 </td>
                 <td className="py-3">
                   <div className="flex items-center gap-2">
                     <span
-                      className="w-5 h-5 rounded-md border border-gray-200 shrink-0"
+                      className="w-5 h-5 rounded-md border border-gray-200 shrink-0 dark:border-white/15"
                       style={{ backgroundColor: normalizeColor(c.color) }}
                     />
-                    <span className="text-xs text-gray-500 font-mono">
+                    <span className="text-xs text-gray-500 font-mono dark:text-[#9aa6bd]">
                       {normalizeColor(c.color)}
                     </span>
                   </div>
@@ -127,13 +119,13 @@ const CategoryTable = ({
                   <div className="flex items-center justify-end gap-1.5">
                     <button
                       onClick={() => onEdit(c)}
-                      className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors dark:text-[#7b869b] dark:hover:bg-blue-400/15 dark:hover:text-[#7ba2e3]"
                     >
                       <Edit3 size={13} />
                     </button>
                     <button
                       onClick={() => onDelete(c._id)}
-                      className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors dark:text-[#7b869b] dark:hover:bg-red-400/15 dark:hover:text-[#f87171]"
                     >
                       <Trash2 size={13} />
                     </button>
@@ -147,20 +139,20 @@ const CategoryTable = ({
 
       {/* Pagination */}
       {filtered.length > PAGE_SIZE && (
-        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-white/10">
           <button
             onClick={() => setPage(Math.max(0, effectivePage - 1))}
             disabled={effectivePage === 0}
             className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
               effectivePage === 0
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                ? "text-gray-300 cursor-not-allowed dark:text-[#4a5468]"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#9aa6bd] dark:hover:bg-white/10 dark:hover:text-white"
             }`}
           >
             <ChevronLeft size={14} />
             Previous
           </button>
-          <span className="text-xs text-gray-400 font-medium">
+          <span className="text-xs text-gray-400 font-medium dark:text-[#7b869b]">
             Page {effectivePage + 1} of {totalPages} · {filtered.length} items
           </span>
           <button
@@ -168,8 +160,8 @@ const CategoryTable = ({
             disabled={effectivePage >= totalPages - 1}
             className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
               effectivePage >= totalPages - 1
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                ? "text-gray-300 cursor-not-allowed dark:text-[#4a5468]"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#9aa6bd] dark:hover:bg-white/10 dark:hover:text-white"
             }`}
           >
             Next

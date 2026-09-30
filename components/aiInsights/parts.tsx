@@ -76,7 +76,7 @@ export function SampleDataBadge() {
             RangeBadge: a native `title` never shows for anyone tabbing. */}
         <span
           tabIndex={0}
-          className="inline-flex shrink-0 cursor-help items-center gap-1 rounded-full border border-dashed border-[#dadce0] bg-[#f8f9fa] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#5f6368] outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+          className="inline-flex shrink-0 cursor-help items-center gap-1 rounded-full border border-dashed border-[#dadce0] bg-[#f8f9fa] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#5f6368] outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:border-white/15 dark:text-[#a9b4c7] dark:bg-white/5"
         >
           <FlaskConical size={10} aria-hidden />
           Sample data
@@ -109,7 +109,7 @@ export function SectionHeader({
   sample = false,
 }: {
   icon: LucideIcon;
-  /** Tile background and icon colour, e.g. "bg-red-50 text-red-600". */
+  /** Tile background and icon colour, e.g. "bg-red-50 text-red-600 dark:text-red-300 dark:bg-red-400/10". */
   iconClassName: string;
   title: string;
   subtitle: ReactNode;
@@ -132,14 +132,14 @@ export function SectionHeader({
           <Icon size={16} />
         </div>
         <div className="min-w-0">
-          <h2 className="flex flex-wrap items-center gap-1.5 text-[15px] font-normal text-[#3c4043]">
+          <h2 className="flex flex-wrap items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
             <span className="truncate">{title}</span>
             {info && (
               <CardInfo heading={info.heading} body={info.body} label={title} />
             )}
             {sample && <SampleDataBadge />}
           </h2>
-          <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6]">
+          <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
             {subtitle}
           </p>
         </div>
@@ -159,7 +159,7 @@ export function GenerateMoreButton({
 }: {
   label?: string;
   icon?: LucideIcon;
-  /** The section's accent, e.g. "text-red-600". */
+  /** The section's accent, e.g. "text-red-600 dark:text-red-300". */
   textClassName: string;
   onClick: () => void;
   /** A request is running: the icon spins and further clicks are ignored. */
@@ -171,7 +171,7 @@ export function GenerateMoreButton({
       onClick={onClick}
       disabled={busy}
       aria-busy={busy}
-      className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border border-[#dadce0] bg-white px-3 py-2 text-[11px] font-semibold tracking-wide transition-colors hover:bg-[#f8f9fa] disabled:cursor-wait disabled:opacity-70 ${textClassName}`}
+      className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 px-3 py-2 text-[11px] font-semibold tracking-wide transition-colors hover:bg-[#f8f9fa] disabled:cursor-wait disabled:opacity-70 ${textClassName} dark:hover:bg-white/5 dark:border-white/15`}
     >
       <Icon size={14} className={busy ? "animate-spin" : undefined} />
       <span className="hidden md:block"> {label}</span>
@@ -194,7 +194,7 @@ export function DismissButton({
       type="button"
       onClick={onClick}
       aria-label={`Dismiss ${label}`}
-      className={`rounded-md p-1 text-[#9aa0a6] transition-colors hover:bg-[#f1f3f4] hover:text-[#5f6368] ${className}`}
+      className={`rounded-md p-1 text-[#9aa0a6] transition-colors hover:bg-[#f1f3f4] hover:text-[#5f6368] ${className} dark:hover:text-[#e8ecf4] dark:hover:bg-white/10 dark:text-[#9aa6bd]`}
     >
       <X size={14} />
     </button>
@@ -213,7 +213,7 @@ export function CardGrid({ children }: { children: ReactNode }) {
 /** Shown when every card in a section has been dismissed. */
 export function EmptySection({ message }: { message: string }) {
   return (
-    <p className="rounded-xl border border-dashed border-[#dadce0] bg-white px-4 py-8 text-center text-[13px] text-[#9aa0a6]">
+    <p className="rounded-xl border border-dashed border-[#dadce0] bg-white dark:bg-transparent px-4 py-8 text-center text-[13px] text-[#9aa0a6] dark:border-white/15 dark:text-[#9aa6bd]">
       {message}
     </p>
   );
@@ -343,7 +343,7 @@ export function AiSectionBody<T>({
         {[0, 1, 2].map((i) => (
           <li
             key={i}
-            className="h-12 animate-pulse rounded-xl border border-[#e8eaed] bg-[#f1f3f4]"
+            className="h-12 animate-pulse rounded-xl border border-[#e8eaed] bg-[#f1f3f4] dark:border-white/10 dark:bg-white/10"
           />
         ))}
       </ul>
@@ -355,7 +355,7 @@ export function AiSectionBody<T>({
         {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className="h-64 animate-pulse rounded-xl border border-[#e8eaed] bg-[#f1f3f4]"
+            className="h-64 animate-pulse rounded-xl border border-[#e8eaed] bg-[#f1f3f4] dark:border-white/10 dark:bg-white/10"
           />
         ))}
       </div>
@@ -385,7 +385,7 @@ export function AiSectionBody<T>({
           /* Not this model's answer. Said plainly and in amber, because the
              cards are real but older — reading them as today's work from the
              model just chosen would be the wrong conclusion. */
-          <p className="mt-2.5 flex flex-wrap items-center justify-end gap-x-1.5 text-right text-[11px] text-amber-700">
+          <p className="mt-2.5 flex flex-wrap items-center justify-end gap-x-1.5 text-right text-[11px] text-amber-700 dark:text-amber-300">
             <TriangleAlert className="h-3 w-3 shrink-0" aria-hidden />
             <span>
               {staleWhy(data.staleReason)} Showing the last answer
@@ -399,7 +399,7 @@ export function AiSectionBody<T>({
             </span>
           </p>
         ) : (
-          <p className="mt-2.5 text-right text-[11px] text-[#9aa0a6]">
+          <p className="mt-2.5 text-right text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
             Written by {providerLabel ?? "AI"} from your own sales and menu
             {/* The model as well as the provider: on OpenRouter's free router
                 the model changes between answers, and "which one wrote this"
@@ -433,59 +433,59 @@ export function AiSectionBody<T>({
 export const ACCENTS = {
   emerald: {
     bar: "bg-emerald-500",
-    bg: "bg-emerald-50",
-    bgIcon: "bg-emerald-200",
-    tile: "bg-emerald-50 text-emerald-600",
-    text: "text-emerald-700",
+    bg: "bg-emerald-50 dark:bg-emerald-400/10",
+    bgIcon: "bg-emerald-200 dark:bg-emerald-400/25",
+    tile: "bg-emerald-50 text-emerald-600 dark:text-emerald-300 dark:bg-emerald-400/10",
+    text: "text-emerald-700 dark:text-emerald-300",
   },
   blue: {
     bar: "bg-blue-500",
-    bg: "bg-blue-50",
-    bgIcon: "bg-blue-200",
-    tile: "bg-blue-50 text-blue-600",
-    text: "text-blue-700",
+    bg: "bg-blue-50 dark:bg-blue-400/10",
+    bgIcon: "bg-blue-200 dark:bg-blue-400/25",
+    tile: "bg-blue-50 text-blue-600 dark:text-blue-300 dark:bg-blue-400/10",
+    text: "text-blue-700 dark:text-blue-300",
   },
   red: {
     bar: "bg-red-500",
-    bg: "bg-red-50",
-    bgIcon: "bg-red-200",
-    tile: "bg-red-50 text-red-600",
-    text: "text-red-600",
+    bg: "bg-red-50 dark:bg-red-400/10",
+    bgIcon: "bg-red-200 dark:bg-red-400/25",
+    tile: "bg-red-50 text-red-600 dark:text-red-300 dark:bg-red-400/10",
+    text: "text-red-600 dark:text-red-300",
   },
   rose: {
     bar: "bg-rose-400",
-    bg: "bg-rose-50",
-    bgIcon: "bg-rose-200",
-    tile: "bg-rose-50 text-rose-600",
-    text: "text-rose-600",
+    bg: "bg-rose-50 dark:bg-rose-400/10",
+    bgIcon: "bg-rose-200 dark:bg-rose-400/25",
+    tile: "bg-rose-50 text-rose-600 dark:text-rose-300 dark:bg-rose-400/10",
+    text: "text-rose-600 dark:text-rose-300",
   },
   amber: {
     bar: "bg-amber-400",
-    bg: "bg-amber-50",
-    bgIcon: "bg-amber-200",
-    tile: "bg-amber-50 text-amber-600",
-    text: "text-amber-700",
+    bg: "bg-amber-50 dark:bg-amber-400/10",
+    bgIcon: "bg-amber-200 dark:bg-amber-400/25",
+    tile: "bg-amber-50 text-amber-600 dark:text-amber-300 dark:bg-amber-400/10",
+    text: "text-amber-700 dark:text-amber-300",
   },
   orange: {
     bar: "bg-orange-400",
-    bg: "bg-orange-50",
-    bgIcon: "bg-orange-200",
-    tile: "bg-orange-50 text-orange-600",
-    text: "text-orange-700",
+    bg: "bg-orange-50 dark:bg-orange-400/10",
+    bgIcon: "bg-orange-200 dark:bg-orange-400/25",
+    tile: "bg-orange-50 text-orange-600 dark:text-orange-300 dark:bg-orange-400/10",
+    text: "text-orange-700 dark:text-orange-300",
   },
   pink: {
     bar: "bg-pink-500",
-    bg: "bg-pink-50",
-    bgIcon: "bg-pink-200",
-    tile: "bg-pink-50 text-pink-600",
-    text: "text-pink-600",
+    bg: "bg-pink-50 dark:bg-pink-400/10",
+    bgIcon: "bg-pink-200 dark:bg-pink-400/25",
+    tile: "bg-pink-50 text-pink-600 dark:text-pink-300 dark:bg-pink-400/10",
+    text: "text-pink-600 dark:text-pink-300",
   },
   slate: {
-    bar: "bg-slate-300",
-    bg: "bg-slate-50",
-    bgIcon: "bg-slate-200",
-    tile: "bg-slate-100 text-slate-500",
-    text: "text-slate-500",
+    bar: "bg-slate-300 dark:bg-white/20",
+    bg: "bg-slate-50 dark:bg-white/5",
+    bgIcon: "bg-slate-200 dark:bg-white/15",
+    tile: "bg-slate-100 text-slate-500 dark:text-[#9aa6bd] dark:bg-white/10",
+    text: "text-slate-500 dark:text-[#9aa6bd]",
   },
 } as const;
 
@@ -512,7 +512,7 @@ export function LeadTile({
 /** The quieter part of a card's label: " · since Aug 7". */
 export function LabelNote({ children }: { children: ReactNode }) {
   return (
-    <span className="font-medium normal-case tracking-normal text-[#9aa0a6]">
+    <span className="font-medium normal-case tracking-normal text-[#9aa0a6] dark:text-[#9aa6bd]">
       · {children}
     </span>
   );
@@ -533,10 +533,10 @@ export function Delta({
   const up = pct > 0;
   const Arrow = up ? ArrowUpRight : ArrowDownRight;
   const tone = neutral
-    ? "bg-[#f1f3f4] text-[#5f6368]"
+    ? "bg-[#f1f3f4] text-[#5f6368] dark:text-[#a9b4c7] dark:bg-white/10"
     : up
-      ? "bg-emerald-50 text-emerald-700"
-      : "bg-red-50 text-red-600";
+      ? "bg-emerald-50 text-emerald-700 dark:text-emerald-300 dark:bg-emerald-400/10"
+      : "bg-red-50 text-red-600 dark:text-red-300 dark:bg-red-400/10";
   return (
     <span
       className={`inline-flex items-center gap-0.5 rounded px-1 py-px text-[10px] font-semibold tabular-nums ${tone}`}
@@ -567,20 +567,20 @@ export function MetricStrip({ metrics }: { metrics: Metric[] }) {
   const cols = metrics.length >= 3 ? "grid-cols-3" : "grid-cols-2";
   return (
     <dl
-      className={`grid ${cols} divide-x divide-[#e8eaed] border-y border-[#e8eaed] bg-[#f8f9fa]`}
+      className={`grid ${cols} divide-x divide-[#e8eaed] border-y border-[#e8eaed] bg-[#f8f9fa] dark:border-white/10 dark:divide-white/10 dark:bg-white/5`}
     >
       {metrics.slice(0, 3).map((m) => (
         <div key={m.label} className="min-w-0 px-4 py-3">
-          <dt className="truncate text-[10px] font-semibold uppercase tracking-wider text-[#9aa0a6]">
+          <dt className="truncate text-[10px] font-semibold uppercase tracking-wider text-[#9aa0a6] dark:text-[#9aa6bd]">
             {m.label}
           </dt>
           <dd
-            className={`mt-1 text-[15px] font-semibold leading-tight tabular-nums ${m.valueClassName ?? "text-[#3c4043]"}`}
+            className={`mt-1 text-[15px] font-semibold leading-tight tabular-nums ${m.valueClassName ?? "text-[#3c4043] dark:text-[#e8ecf4]"}`}
           >
             {m.value}
           </dd>
           {(m.note || m.delta) && (
-            <dd className="mt-1 flex flex-wrap items-center gap-1 text-[11px] text-[#9aa0a6]">
+            <dd className="mt-1 flex flex-wrap items-center gap-1 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
               {m.note && <span className="tabular-nums">{m.note}</span>}
               {m.delta && <Delta {...m.delta} />}
             </dd>
@@ -608,18 +608,18 @@ export function Recommendation({
   details?: ReactNode;
 }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-blue-100 bg-blue-50/40">
+    <div className="overflow-hidden rounded-lg border border-blue-100 bg-blue-50/40 dark:border-blue-400/20 dark:bg-blue-400/10">
       <div className="px-3.5 py-3">
-        <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-blue-700">
+        <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">
           <Sparkles size={11} aria-hidden />
           {title}
         </p>
-        <div className="mt-1.5 text-[13px] leading-relaxed text-[#3c4043]">
+        <div className="mt-1.5 text-[13px] leading-relaxed text-[#3c4043] dark:text-[#e8ecf4]">
           {children}
         </div>
       </div>
       {details && (
-        <div className="flex flex-col gap-2 border-t border-blue-100 bg-white/70 px-3.5 py-3">
+        <div className="flex flex-col gap-2 border-t border-blue-100 bg-white/70 dark:bg-white/5 px-3.5 py-3 dark:border-blue-400/20">
           {details}
         </div>
       )}
@@ -643,7 +643,7 @@ export function TipList({ tips }: { tips: string[] }) {
     <ol className="flex flex-col gap-2">
       {tips.map((tip, i) => (
         <li key={i} className="flex gap-2.5">
-          <span className="mt-px text-[11px] font-semibold tabular-nums text-blue-700">
+          <span className="mt-px text-[11px] font-semibold tabular-nums text-blue-700 dark:text-blue-300">
             {i + 1}
           </span>
           <span>{tip}</span>
@@ -656,7 +656,7 @@ export function TipList({ tips }: { tips: string[] }) {
 /** A small uppercase label over a group of tags inside a card body. */
 export function BodyLabel({ children }: { children: ReactNode }) {
   return (
-    <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[#9aa0a6]">
+    <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[#9aa0a6] dark:text-[#9aa6bd]">
       {children}
     </p>
   );
@@ -673,7 +673,7 @@ export function TagList({
       {tags.map((t) => (
         <li
           key={t.key}
-          className="rounded-md border border-[#dadce0] bg-white px-2 py-1 text-[11px] text-[#3c4043]"
+          className="rounded-md border border-[#dadce0] bg-white dark:bg-white/5 px-2 py-1 text-[11px] text-[#3c4043] dark:border-white/15 dark:text-[#e8ecf4]"
         >
           {t.content}
         </li>
@@ -701,8 +701,8 @@ export function CardAction({
   children: ReactNode;
 }) {
   const className = primary
-    ? "flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#3c4043] px-3 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-[#2b2e31]"
-    : "flex w-full items-center justify-center gap-1.5 rounded-lg border border-[#dadce0] px-3 py-2.5 text-[13px] font-semibold text-[#3c4043] transition-colors hover:bg-[#f8f9fa]";
+    ? "flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#3c4043] px-3 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-[#2b2e31] dark:bg-white/15 dark:hover:bg-white/25"
+    : "flex w-full items-center justify-center gap-1.5 rounded-lg border border-[#dadce0] px-3 py-2.5 text-[13px] font-semibold text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:hover:bg-white/5 dark:border-white/15 dark:text-[#e8ecf4]";
   const content = (
     <>
       {children}
@@ -761,7 +761,7 @@ export function InsightCard({
 }) {
   const a = ACCENTS[accent];
   return (
-    <article className="relative flex h-full flex-col overflow-hidden rounded-xl border border-[#e3e3e3] bg-white transition-colors hover:border-[#dadce0]">
+    <article className="relative flex h-full flex-col overflow-hidden rounded-xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] transition-colors hover:border-[#dadce0] dark:hover:border-white/25 dark:border-white/10">
       {/* The kind of card, as a colour, before anything is read. */}
       {/* <div className={`h-0.75 ${a.bar}`} aria-hidden /> */}
 
@@ -773,7 +773,7 @@ export function InsightCard({
           >
             {label}
           </p>
-          <h3 className="mt-0.5 text-[15px] font-medium leading-snug text-[#3c4043]">
+          <h3 className="mt-0.5 text-[15px] font-medium leading-snug text-[#3c4043] dark:text-[#e8ecf4]">
             {title}
           </h3>
         </div>

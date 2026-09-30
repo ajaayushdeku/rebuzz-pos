@@ -103,7 +103,7 @@ export default function CategorySettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
       <div className="w-full mx-auto space-y-6">
         {/* ── Header ─────────────────────────────────────── */}
         {/* The column's space-y-6 already gaps the header from the search
@@ -127,18 +127,18 @@ export default function CategorySettingsPage() {
         <div className="relative mt-6 mb-8">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#7b869b]"
           />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search categories..."
-            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]"
           />
         </div>
 
         {/* Category Table */}
-        <div className="bg-white rounded-xl px-5 ">
+        <div className="bg-white rounded-xl px-5 dark:bg-[#0F1420] ">
           <CategoryTable
             categories={categories}
             search={search}

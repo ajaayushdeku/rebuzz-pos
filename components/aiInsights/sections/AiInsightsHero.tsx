@@ -111,7 +111,7 @@ export default function AiInsightsHero({
     // `relative` anchors the screen-reader labels inside, for the reason given
     // in SalesRecommendationsSection: unanchored, they size the window.
     // `overflow-hidden` clips the glow to the card's rounded corners.
-    <section className="relative overflow-hidden rounded-2xl bg-slate-900 text-white">
+    <section className="relative overflow-hidden rounded-2xl bg-slate-900 text-white dark:bg-[#1b2436]">
       {/* Decoration only: a soft violet glow behind the heading. */}
       <div
         className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-violet-600/25 blur-3xl"
@@ -151,7 +151,7 @@ export default function AiInsightsHero({
               onClick={onGenerate}
               disabled={isGenerating}
               aria-busy={isGenerating}
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-violet-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:cursor-wait disabled:opacity-80"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-violet-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 dark:focus-visible:ring-offset-[#1b2436] disabled:cursor-wait disabled:opacity-80"
             >
               {isGenerating ? (
                 <RefreshCw size={15} className="animate-spin" aria-hidden />

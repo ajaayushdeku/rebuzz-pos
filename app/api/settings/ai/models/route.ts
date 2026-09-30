@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL;
-// [POS backend] To call khajaGharBackend instead of backend/, replace the line
-// above with this import and switch the other [POS backend] lines below:
-// import { POS_API_URL as AI_SERVICE_URL, readAiError } from "@/lib/ai-insights/posAiApi.server";
+import { aiApiUrl, readAiError } from "@/lib/ai-insights/posAiApi.server";
 
 /**
  * Bridge for GET /api/settings/ai/models.
@@ -29,21 +26,24 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!AI_SERVICE_URL) {
+  // Only the name travels on: the service decides whether it knows it.
+  const provider = req.nextUrl.searchParams.get("provider")?.trim();
+  const query = provider ? `?provider=${encodeURIComponent(provider)}` : "";
+
+  const base = aiApiUrl("/settings/ai/models");
+
+  if (!base) {
     return NextResponse.json(
       { error: "AI service is not configured on this server" },
       { status: 503 },
     );
   }
 
-  // Only the name travels on: the service decides whether it knows it.
-  const provider = req.nextUrl.searchParams.get("provider")?.trim();
-  const query = provider ? `?provider=${encodeURIComponent(provider)}` : "";
+  const url = `${base}${query}`;
 
   let res: Response;
   try {
-    // [POS backend] res = await fetch(`${AI_SERVICE_URL}/settings/ai/models${query}`, {
-    res = await fetch(`${AI_SERVICE_URL}/api/settings/ai/models${query}`, {
+    res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
     });
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
     const cause =
       (error as { cause?: { code?: string; message?: string } })?.cause ?? {};
     console.error(
-      `[ai-models] GET ${AI_SERVICE_URL} failed:`,
+      `[ai-models] GET ${url} failed:`,
       (error as Error)?.message,
       "| cause:",
       cause.code ?? cause.message ?? "(none)",
@@ -65,20 +65,10 @@ export async function GET(req: NextRequest) {
   const json = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    // [POS backend] The POS answers jsend ({ status, data: { code, ... } }):
-    // const { error, retryAfter } = readAiError(json);
-    // return NextResponse.json({ error, retryAfter }, { status: res.status });
-
-    return NextResponse.json(
-      {
-        error: json?.error ?? "Request failed",
-        // Forwarded on a 429. The service sends the wait in the body, and the
-        // client turns it into "try again in N s" — but only if it arrives.
-        // Rebuilding the body without it made that sentence unreachable.
-        retryAfter: json?.retryAfter ?? undefined,
-      },
-      { status: res.status },
-    );
+    // `retryAfter` is forwarded on a 429: the client turns it into "try again
+    // in N s", and rebuilding the body without it made that unreachable.
+    const { error, retryAfter } = readAiError(json);
+    return NextResponse.json({ error, retryAfter }, { status: res.status });
   }
 
   return NextResponse.json(json);

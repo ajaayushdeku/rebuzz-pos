@@ -52,9 +52,10 @@ const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 const WEEKEND = ["Sat", "Sun"];
 
 const FIELD =
-  "h-10 w-full rounded-xl border border-[#dadce0] bg-white px-3.5 text-sm text-[#3c4043] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20";
+  "h-10 w-full rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 px-3.5 text-sm text-[#3c4043] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-white/15 dark:text-[#e8ecf4]";
 
-const LABEL = "mb-1.5 block text-[13px] font-medium text-[#3c4043]";
+const LABEL =
+  "mb-1.5 block text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]";
 
 /**
  * The AI service's error codes, in words. AI Fill runs on the business's own
@@ -83,7 +84,9 @@ function BsDate({ value }: { value: string }) {
   const label = toBsLabel(value)?.replace(/^0/, "");
   if (!label) return null;
   return (
-    <p className="mt-1.5 text-[13px] font-medium text-emerald-600">{label}</p>
+    <p className="mt-1.5 text-[13px] font-medium text-emerald-600 dark:text-emerald-300">
+      {label}
+    </p>
   );
 }
 
@@ -326,7 +329,7 @@ export default function OfferWhenItRuns() {
           <div className="relative min-w-0 flex-1">
             <PartyPopper
               size={15}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9aa0a6]"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9aa0a6] dark:text-[#9aa6bd]"
             />
             <input
               id="offer-custom-event"
@@ -342,7 +345,7 @@ export default function OfferWhenItRuns() {
                 type="button"
                 onClick={() => updateField("customFestival", "")}
                 aria-label="Clear event name"
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer rounded p-0.5 text-[#9aa0a6] transition hover:bg-[#f1f3f4] hover:text-[#5f6368]"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer rounded p-0.5 text-[#9aa0a6] transition hover:bg-[#f1f3f4] hover:text-[#5f6368] dark:hover:text-[#e8ecf4] dark:hover:bg-white/10 dark:text-[#9aa6bd]"
               >
                 <X size={14} />
               </button>
@@ -361,8 +364,8 @@ export default function OfferWhenItRuns() {
                   aria-label={aiLock ? "AI fill is locked" : "AI fill"}
                   className={`inline-flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border px-3.5 text-[13px] font-semibold transition disabled:cursor-not-allowed ${
                     aiLock
-                      ? "border-[#dadce0] bg-[#f1f3f4] text-[#9aa0a6] disabled:pointer-events-none"
-                      : "border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100 disabled:pointer-events-none disabled:opacity-50"
+                      ? "border-[#dadce0] bg-[#f1f3f4] text-[#9aa0a6] disabled:pointer-events-none dark:border-white/15 dark:text-[#9aa6bd] dark:bg-white/10"
+                      : "border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100 disabled:pointer-events-none disabled:opacity-50 dark:hover:bg-violet-400/20 dark:border-violet-400/25 dark:text-violet-300 dark:bg-violet-400/10"
                   }`}
                 >
                   {aiFilling ? (
@@ -386,12 +389,14 @@ export default function OfferWhenItRuns() {
           </Tooltip>
         </div>
 
-        <p className="mt-3 text-[12px] text-[#5f6368]">Or pick a festival</p>
+        <p className="mt-3 text-[12px] text-[#5f6368] dark:text-[#a9b4c7]">
+          Or pick a festival
+        </p>
 
         {/* One scrolling row rather than a wrapping block: the list only grows
             as festivals are added, and a wrap would push the dates further
             down the step every time one was. */}
-        <div className="mt-1.5 rounded-xl border border-[#dadce0] bg-[#f8f9fa] p-3">
+        <div className="mt-1.5 rounded-xl border border-[#dadce0] bg-[#ffffff] p-3 dark:border-white/15 dark:bg-white/5">
           <div className="flex gap-2 overflow-x-auto scrollbar-hide [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {FESTIVALS.map((f) => {
               const active = form.festival === f.id;
@@ -405,8 +410,8 @@ export default function OfferWhenItRuns() {
                   aria-pressed={active}
                   className={`inline-flex h-8 shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border px-3 text-[12px] font-medium transition-colors ${
                     active
-                      ? "border-emerald-500 bg-emerald-50 text-emerald-800"
-                      : "border-[#dadce0] bg-white text-[#5f6368] hover:bg-[#f8f9fa]"
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-800 dark:text-emerald-200 dark:bg-emerald-400/10"
+                      : "border-[#dadce0] bg-[#FAF9FF] text-[#5f6368] hover:bg-[#f8f9fa] dark:hover:bg-white/5 dark:bg-[#1D2239] dark:border-white/15 dark:text-[#a9b4c7]"
                   }`}
                 >
                   <span className="text-base leading-none">{f.icon}</span>
@@ -421,39 +426,50 @@ export default function OfferWhenItRuns() {
       {/* Dates: one card for everything about when the offer starts and
           ends — the fields, the calendars to pick them from, and the note
           when they are the merchant's to set. */}
-      <div className="mt-6 overflow-hidden rounded-xl border border-[#dadce0]">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e8eaed] bg-[#f8f9fa] px-4 py-2.5">
+      <div className="mt-6 overflow-hidden rounded-xl border border-[#dadce0] dark:border-white/15">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e8eaed] bg-[#f8f9fa] px-4 py-2.5 dark:border-white/10 dark:bg-white/5">
           <div className="flex items-center gap-2">
-            <CalendarDays size={15} className="text-[#5f6368]" />
-            <p className="text-[13px] font-semibold text-[#3c4043]">Dates</p>
+            <CalendarDays
+              size={15}
+              className="text-[#5f6368] dark:text-[#a9b4c7]"
+            />
+            <p className="text-[13px] font-semibold text-[#3c4043] dark:text-[#e8ecf4]">
+              Dates
+            </p>
             {runDays !== null && (
-              <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-[#5f6368] ring-1 ring-[#dadce0]">
+              <span className="rounded-full bg-white dark:bg-white/5 px-2 py-0.5 text-[11px] font-medium text-[#5f6368] ring-1 ring-[#dadce0] dark:text-[#a9b4c7] dark:ring-white/15">
                 {runDays} {runDays === 1 ? "day" : "days"}
               </span>
             )}
           </div>
 
           {/* The calendars in their own colours, matching the popups. */}
-          <div className="flex items-center gap-0.5 rounded-lg bg-white p-0.5 ring-1 ring-[#dadce0]">
-            <span className="px-2 text-[11px] text-[#9aa0a6] max-sm:hidden">
+          <div className="flex items-center gap-0.5 rounded-lg bg-white dark:bg-white/5 p-0.5 ring-1 ring-[#dadce0] dark:ring-white/15">
+            <span className="px-2 text-[11px] text-[#9aa0a6] max-sm:hidden dark:text-[#9aa6bd]">
               Browse holidays
             </span>
             <button
               type="button"
               onClick={() => setCalendar("bs")}
               aria-haspopup="dialog"
-              className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-rose-50 hover:text-rose-700"
+              className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-400/15 dark:text-[#e8ecf4]"
             >
-              <CalendarDays size={14} className="text-rose-500" />
+              <CalendarDays
+                size={14}
+                className="text-rose-500 dark:text-rose-300"
+              />
               Nepali calendar
             </button>
             <button
               type="button"
               onClick={() => setCalendar("ad")}
               aria-haspopup="dialog"
-              className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-teal-50 hover:text-teal-700"
+              className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-teal-50 hover:text-teal-700 dark:hover:bg-teal-400/15 dark:text-[#e8ecf4]"
             >
-              <CalendarDays size={14} className="text-teal-500" />
+              <CalendarDays
+                size={14}
+                className="text-teal-500 dark:text-teal-300"
+              />
               English calendar
             </button>
           </div>
@@ -464,9 +480,9 @@ export default function OfferWhenItRuns() {
               offer, so the card says plainly that the dates are the
               merchant's to set rather than leaving them looking broken. */}
           {(needsManualDates || customEvent) && (
-            <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-2.5">
-              <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-              <p className="text-[12px] leading-relaxed text-amber-800">
+            <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-2.5 dark:border-amber-400/25 dark:bg-amber-400/10">
+              <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" />
+              <p className="text-[12px] leading-relaxed text-amber-800 dark:text-amber-200">
                 {customEvent
                   ? "Set the start and end dates for your event, or pick them from a calendar."
                   : "This year's dates for this occasion aren't in the holiday calendar yet, so set the start and end dates yourself."}
@@ -491,7 +507,7 @@ export default function OfferWhenItRuns() {
 
             <ArrowRight
               size={16}
-              className="mt-10 hidden text-[#dadce0] sm:block"
+              className="mt-10 hidden text-[#dadce0] sm:block dark:text-[#3d4657]"
               aria-hidden
             />
 
@@ -530,7 +546,7 @@ export default function OfferWhenItRuns() {
       {/* Days of week */}
       <div className="mt-6">
         <div className="mb-2.5 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-[13px] font-medium text-[#3c4043]">
+          <p className="text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
             Specific days of week (optional)
           </p>
           <div className="flex flex-wrap gap-2">
@@ -539,7 +555,7 @@ export default function OfferWhenItRuns() {
                 key={pick.label}
                 type="button"
                 onClick={() => updateField("repeatingDays", pick.days)}
-                className="cursor-pointer rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
+                className="cursor-pointer rounded-full border border-[#dadce0] bg-white dark:bg-white/5 px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:hover:bg-white/5 dark:border-white/15 dark:text-[#e8ecf4]"
               >
                 {pick.label}
               </button>
@@ -558,8 +574,8 @@ export default function OfferWhenItRuns() {
                 aria-pressed={active}
                 className={`h-10 w-16 cursor-pointer rounded-lg text-[13px] font-medium transition-colors ${
                   active
-                    ? "bg-gray-800 text-white"
-                    : "border border-[#dadce0] bg-white text-[#5f6368] hover:bg-[#f8f9fa]"
+                    ? "bg-gray-800 text-white dark:bg-[#124142]"
+                    : "border border-[#dadce0] bg-white dark:bg-[#1D2239] text-[#5f6368] hover:bg-[#f8f9fa] dark:hover:bg-white/5 dark:border-white/15 dark:text-[#a9b4c7]"
                 }`}
               >
                 {day}
@@ -570,7 +586,7 @@ export default function OfferWhenItRuns() {
       </div>
 
       {/* Hours */}
-      <div className="mt-6 border-t border-[#e8eaed] pt-5">
+      <div className="mt-6 border-t border-[#e8eaed] pt-5 dark:border-white/10">
         <p className={LABEL}>Active hours window (optional)</p>
         <div className="flex flex-row items-center gap-3">
           <input
@@ -579,7 +595,9 @@ export default function OfferWhenItRuns() {
             onChange={(e) => updateField("startTime", e.target.value)}
             className={`${FIELD} w-auto`}
           />
-          <span className="text-[13px] text-[#5f6368]">to</span>
+          <span className="text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">
+            to
+          </span>
           <input
             type="time"
             value={form.endTime}

@@ -1,18 +1,35 @@
 /**
  * Where the AI key and AI insight routes live, and how their failures read.
  *
- * Not used yet: the proxies still call backend/ (AI_SERVICE_URL) for testing.
- * Switching them over means turning on the lines marked [POS backend] in
- * app/api/settings/ai/route.ts, app/api/settings/ai/models/route.ts,
- * app/api/ai-insights/route.ts, lib/ai-insights/askAiService.server.ts and
- * lib/ai-insights/hasSavedAiKey.server.ts.
+ * They are part of the POS API (khajaGharBackend), under the same business base
+ * URL as every other POS call:
  *
- * They are part of the POS API (khajaGharBackend), under the same business
- * base URL as every other POS call: `${NEXT_PUBLIC_API_URL}/settings/ai`,
- * `/settings/ai/models` and `/ai-insights`.
+ *   `${NEXT_PUBLIC_API_URL}/business/settings/ai`
+ *   `${NEXT_PUBLIC_API_URL}/business/settings/ai/models`
+ *   `${NEXT_PUBLIC_API_URL}/business/ai-insights`
+ *   `${NEXT_PUBLIC_API_URL}/business/ai-insights/quota`
+ *
+ * `/business` is not a fixed prefix: it is the business slug in
+ * `/api/:business_slug`, and it is how every other POS call in this app is
+ * addressed (see `lib/auth/verifyAdmin.ts`). Leaving it out reaches the POS's
+ * catch-all, which answers 200 with a "Cannot GET" body rather than an error —
+ * so a missing segment reads as success to anything checking `res.ok`.
  */
 
+/** The POS API, which already ends in `/api`. */
 export const POS_API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+/**
+ * The absolute URL for one of the AI routes, or null when the POS base URL is
+ * unset — which the caller answers with a 503, because a missing base is a
+ * deployment mistake rather than a bad request.
+ *
+ * `path` is the route as the POS spells it: "/settings/ai",
+ * "/settings/ai/models", "/ai-insights", "/ai-insights/quota".
+ */
+export function aiApiUrl(path: string): string | null {
+  return POS_API_URL ? `${POS_API_URL}/business${path}` : null;
+}
 
 /** The fields the browser reads from a failed AI request. */
 export interface AiErrorBody {

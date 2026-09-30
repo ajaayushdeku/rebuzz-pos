@@ -19,13 +19,17 @@ import {
 const KIND = {
   warning: {
     icon: TriangleAlert,
-    className: "text-amber-500",
+    className: "text-amber-500 dark:text-amber-300",
     label: "Warning",
   },
-  info: { icon: Info, className: "text-blue-500", label: "Suggestion" },
+  info: {
+    icon: Info,
+    className: "text-blue-500 dark:text-blue-300",
+    label: "Suggestion",
+  },
   success: {
     icon: CircleCheck,
-    className: "text-emerald-500",
+    className: "text-emerald-500 dark:text-emerald-300",
     label: "Working well",
   },
 } satisfies Record<
@@ -47,7 +51,7 @@ export default function SalesRecommendationsSection({
     <section>
       <SectionHeader
         icon={TrendingUp}
-        iconClassName="bg-blue-50 text-blue-600"
+        iconClassName="bg-blue-50 text-blue-600 dark:text-blue-300 dark:bg-blue-400/10"
         title="Sales Recommendations"
         // The window is part of the subtitle so nobody reads these as
         // following a date filter this page does not have.
@@ -60,11 +64,11 @@ export default function SalesRecommendationsSection({
           <div className="flex flex-row w-full md:w-fit items-end justify-end gap-2 absolute md:relative top-2">
             <SectionMoreButton
               state={state}
-              textClassName="text-blue-700 hover:bg-blue-100 border-blue-300 hover:border-blue-400"
+              textClassName="text-blue-700 hover:bg-blue-100 border-blue-300 hover:border-blue-400 dark:hover:border-blue-400/60 dark:hover:bg-blue-400/20 dark:border-blue-400/40 dark:text-blue-300"
             />
             <SectionRefreshButton
               state={state}
-              textClassName="text-blue-700 hover:bg-blue-100 border-blue-300 hover:border-blue-400"
+              textClassName="text-blue-700 hover:bg-blue-100 border-blue-300 hover:border-blue-400 dark:hover:border-blue-400/60 dark:hover:bg-blue-400/20 dark:border-blue-400/40 dark:text-blue-300"
             />
           </div>
         }
@@ -90,7 +94,7 @@ export default function SalesRecommendationsSection({
               // app shell away to show empty space underneath.
               <li
                 key={item.id}
-                className="relative flex items-center gap-3 rounded-xl border border-[#e3e3e3] bg-white px-4 py-3"
+                className="relative flex items-center gap-3 rounded-xl border border-[#e3e3e3] bg-white px-4 py-3 dark:border-white/10 dark:bg-[#161d2e]"
               >
                 <Icon
                   size={16}
@@ -99,7 +103,9 @@ export default function SalesRecommendationsSection({
                 />
                 {/* The icon's meaning, for anyone who cannot see its colour. */}
                 <span className="sr-only">{kind.label}:</span>
-                <p className="flex-1 text-[13px] text-[#3c4043]">{item.text}</p>
+                <p className="flex-1 text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
+                  {item.text}
+                </p>
                 <DismissButton
                   label="this recommendation"
                   onClick={() => onDismiss(item.id)}

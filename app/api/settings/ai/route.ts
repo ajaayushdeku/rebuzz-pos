@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL;
-// [POS backend] To call khajaGharBackend instead of backend/, replace the line
-// above with this import and switch the other [POS backend] lines below:
-// import { POS_API_URL as AI_SERVICE_URL, readAiError } from "@/lib/ai-insights/posAiApi.server";
+import { aiApiUrl, readAiError } from "@/lib/ai-insights/posAiApi.server";
 
 /**
  * Bridge between the browser and the BYOK AI service.
@@ -30,7 +27,9 @@ async function forward(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!AI_SERVICE_URL) {
+  const url = aiApiUrl("/settings/ai");
+
+  if (!url) {
     return NextResponse.json(
       { error: "AI service is not configured on this server" },
       { status: 503 },
@@ -39,8 +38,7 @@ async function forward(
 
   let res: Response;
   try {
-    // [POS backend] res = await fetch(`${AI_SERVICE_URL}/settings/ai`, {
-    res = await fetch(`${AI_SERVICE_URL}/api/settings/ai`, {
+    res = await fetch(url, {
       method,
       headers: {
         Authorization: `Bearer ${token}`,
@@ -61,7 +59,7 @@ async function forward(
     const cause =
       (error as { cause?: { code?: string; message?: string } })?.cause ?? {};
     console.error(
-      `[ai-settings] ${method} ${AI_SERVICE_URL} failed:`,
+      `[ai-settings] ${method} ${url} failed:`,
       (error as Error)?.message,
       "| cause:",
       cause.code ?? cause.message ?? "(none)",
@@ -76,29 +74,18 @@ async function forward(
   const json = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    // [POS backend] The POS answers jsend ({ status, data: { code, ... } }):
-    // const { error, available, detail, retryAfter } = readAiError(json);
-    // return NextResponse.json(
-    //   { error, available, detail, retryAfter },
-    //   { status: res.status },
-    // );
-
     // The service's error codes carry the meaning — AI_KEY_INVALID needs a
     // different fix from AI_QUOTA_EXCEEDED — so they pass through intact.
+    //
+    // `available` is present when the model was the problem: the names this key
+    // can actually use, so the message can name them instead of guessing.
+    // `detail` is the provider's own sentence, when it gave one — our codes say
+    // what kind of problem it is; only they know which plan or limit.
+    // `retryAfter` arrives on a 429 and becomes "try again in N s"; rebuilding
+    // the body without it made that sentence unreachable.
+    const { error, available, detail, retryAfter } = readAiError(json);
     return NextResponse.json(
-      {
-        error: json?.error ?? "Request failed",
-        // Present when the model was the problem: the names this key can
-        // actually use, so the message can name them instead of guessing.
-        available: json?.available ?? undefined,
-        // The provider's own sentence, when it gave one. Our codes say what
-        // kind of problem it is; only they know which plan or limit.
-        detail: json?.detail ?? undefined,
-        // Forwarded on a 429. The service sends the wait in the body, and the
-        // client turns it into "try again in N s" — but only if it arrives.
-        // Rebuilding the body without it made that sentence unreachable.
-        retryAfter: json?.retryAfter ?? undefined,
-      },
+      { error, available, detail, retryAfter },
       { status: res.status },
     );
   }

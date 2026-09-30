@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL;
-// [POS backend] To call khajaGharBackend instead of backend/, replace the line
-// above with this import and switch the other [POS backend] lines below:
-// import { POS_API_URL as AI_SERVICE_URL, readAiError } from "@/lib/ai-insights/posAiApi.server";
+import { aiApiUrl, readAiError } from "@/lib/ai-insights/posAiApi.server";
 
 /**
  * What is left of this business's hourly insight allowance.
@@ -24,7 +21,9 @@ export async function GET() {
     return NextResponse.json({ error: "AUTH_REQUIRED" }, { status: 401 });
   }
 
-  if (!AI_SERVICE_URL) {
+  const url = aiApiUrl("/ai-insights/quota");
+
+  if (!url) {
     return NextResponse.json(
       { error: "AI service is not configured on this server" },
       { status: 503 },
@@ -33,14 +32,13 @@ export async function GET() {
 
   let res: Response;
   try {
-    // [POS backend] res = await fetch(`${AI_SERVICE_URL}/ai-insights/quota`, {
-    res = await fetch(`${AI_SERVICE_URL}/api/ai-insights/quota`, {
+    res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
     });
   } catch (error) {
     console.error(
-      `[ai-insights/quota] GET ${AI_SERVICE_URL} failed:`,
+      `[ai-insights/quota] GET ${url} failed:`,
       (error as Error)?.message,
     );
     return NextResponse.json(
@@ -52,14 +50,8 @@ export async function GET() {
   const json = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    // [POS backend] The POS answers jsend ({ status, data: { code, ... } }):
-    // const { error } = readAiError(json);
-    // return NextResponse.json({ error }, { status: res.status });
-
-    return NextResponse.json(
-      { error: json?.error ?? "Request failed" },
-      { status: res.status },
-    );
+    const { error } = readAiError(json);
+    return NextResponse.json({ error }, { status: res.status });
   }
 
   return NextResponse.json(json, { headers: { "Cache-Control": "no-store" } });

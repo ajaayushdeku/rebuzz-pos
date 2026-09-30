@@ -25,7 +25,7 @@ const PRESET_COLORS = [
 ];
 
 const inputClass =
-  "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+  "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
 
 interface EditCategoryModalProps {
   open: boolean;
@@ -60,7 +60,7 @@ const EditCategoryModal = ({
             type="button"
             onClick={() => onOpenChange(false)}
             disabled={isPending}
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:bg-white/10"
           >
             Cancel
           </button>
@@ -88,15 +88,15 @@ const EditCategoryModal = ({
         {/* ── Details ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#6b7588]">
               Details
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5 dark:text-[#9aa6bd]">
               How this category appears across the app
             </p>
           </div>
 
-          <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
+          <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#6b7588]">
             Category Name
           </label>
           <input
@@ -110,16 +110,16 @@ const EditCategoryModal = ({
         {/* ── Colour ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#6b7588]">
               Colour
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5 dark:text-[#9aa6bd]">
               Pick a preset or enter a custom hex value
             </p>
           </div>
 
           {/* Presets */}
-          <div className="rounded-xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-3">
+          <div className="rounded-xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-3 dark:border-white/10 dark:from-white/5 dark:to-transparent">
             <div className="flex flex-wrap gap-2">
               {PRESET_COLORS.map((color) => (
                 <button
@@ -129,8 +129,8 @@ const EditCategoryModal = ({
                   className={`w-7 h-7 rounded-lg border-2 transition-all ${
                     normalizeColor(form.color).toUpperCase() ===
                     normalizeColor(color).toUpperCase()
-                      ? "border-gray-800 scale-110"
-                      : "border-gray-200 hover:border-gray-400"
+                      ? "border-gray-800 scale-110 dark:border-white/70"
+                      : "border-gray-200 hover:border-gray-400 dark:border-white/20 dark:hover:border-white/40"
                   }`}
                   style={{ backgroundColor: color }}
                 />
@@ -141,7 +141,7 @@ const EditCategoryModal = ({
           {/* Custom colour + hex */}
           <div className="mt-3 grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
+              <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#6b7588]">
                 Custom
               </label>
               <input
@@ -152,15 +152,15 @@ const EditCategoryModal = ({
                 onChange={(e) =>
                   onFormChange({ ...form, color: e.target.value })
                 }
-                className="h-10 w-full cursor-pointer rounded-lg border border-gray-200 p-1"
+                className="h-10 w-full cursor-pointer rounded-lg border border-gray-200 p-1 dark:border-white/15"
               />
             </div>
             <div>
-              <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
+              <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#6b7588]">
                 Hex
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm dark:text-[#7b869b]">
                   #
                 </span>
                 <input
@@ -181,20 +181,20 @@ const EditCategoryModal = ({
         {/* ── Preview ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-600">
+            <h3 className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-600 dark:text-[#a9b4c7]">
               Preview
             </h3>
           </div>
-          <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-3 shadow-sm">
+          <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-3 shadow-sm dark:border-white/10 dark:from-white/5 dark:to-transparent">
             <span
-              className="w-9 h-9 rounded-lg border border-gray-200 shrink-0"
+              className="w-9 h-9 rounded-lg border border-gray-200 shrink-0 dark:border-white/15"
               style={{ backgroundColor: normalizeColor(form.color) }}
             />
             <div className="min-w-0">
-              <p className="text-[13px] font-semibold uppercase tracking-[0.1em] text-slate-700">
+              <p className="text-[13px] font-semibold uppercase tracking-[0.1em] text-slate-700 dark:text-[#c3ccdc]">
                 {form.name || "Category Name"}
               </p>
-              <p className="text-[11px] text-gray-400 tracking-[0.1em]  font-mono">
+              <p className="text-[11px] text-gray-400 tracking-[0.1em]  font-mono dark:text-[#7b869b]">
                 {normalizeColor(form.color)}
               </p>
             </div>

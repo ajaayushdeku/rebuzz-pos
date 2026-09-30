@@ -14,19 +14,23 @@ export type ConfirmTone = "danger" | "warning" | "notice" | "primary";
 const TONE: Record<ConfirmTone, { button: string; warning: string }> = {
   danger: {
     button: "bg-red-600 hover:bg-red-700 focus-visible:ring-red-500",
-    warning: "border-red-100 bg-red-50 text-red-600",
+    warning:
+      "border-red-100 bg-red-50 text-red-600 dark:border-red-400/25 dark:bg-red-400/10 dark:text-[#f87171]",
   },
   warning: {
     button: "bg-orange-500 hover:bg-orange-600 focus-visible:ring-orange-400",
-    warning: "border-orange-100 bg-orange-50 text-orange-600",
+    warning:
+      "border-orange-100 bg-orange-50 text-orange-600 dark:border-orange-400/25 dark:bg-orange-400/10 dark:text-orange-300",
   },
   notice: {
     button: "bg-violet-600 hover:bg-violet-700 focus-visible:ring-violet-500",
-    warning: "border-violet-100 bg-violet-50 text-violet-600",
+    warning:
+      "border-violet-100 bg-violet-50 text-violet-600 dark:border-violet-400/25 dark:bg-violet-400/10 dark:text-violet-300",
   },
   primary: {
     button: "bg-blue-600 hover:bg-blue-700 focus-visible:ring-blue-500",
-    warning: "border-blue-100 bg-blue-50 text-blue-600",
+    warning:
+      "border-blue-100 bg-blue-50 text-blue-600 dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-[#7ba2e3]",
   },
 };
 
@@ -72,7 +76,7 @@ export function ConfirmDialog({
   onClose,
   icon: Icon = AlertTriangle,
   iconColor = "text-red-500",
-  iconBgColor = "bg-red-50",
+  iconBgColor = "bg-red-50 dark:bg-red-400/15",
   badge,
   title,
   description,
@@ -104,7 +108,7 @@ export function ConfirmDialog({
             type="button"
             onClick={onClose}
             disabled={isPending}
-            className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-3 text-[13px] font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-3 text-[13px] font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:border-white/25 dark:hover:bg-white/10"
           >
             Cancel
           </button>
@@ -138,12 +142,12 @@ export function ConfirmDialog({
           </div>
         )}
 
-        <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+        <h2 className="text-base font-semibold text-gray-900 dark:text-[#e8ecf4]">{title}</h2>
 
-        <p className="mt-1 text-sm text-gray-600">{description}</p>
+        <p className="mt-1 text-sm text-gray-600 dark:text-[#9aa6bd]">{description}</p>
 
         {detail && (
-          <p className="mt-1 text-xs text-gray-500 tabular-nums">{detail}</p>
+          <p className="mt-1 text-xs text-gray-500 tabular-nums dark:text-[#9aa6bd]">{detail}</p>
         )}
 
         {warning && (

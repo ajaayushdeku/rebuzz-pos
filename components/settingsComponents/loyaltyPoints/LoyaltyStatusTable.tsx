@@ -5,7 +5,6 @@ import { Trophy, Edit3, Trash2 } from "lucide-react";
 import { type LoyaltyStatus, pointRange } from "./loyaltyStatusConfig";
 import TierBadge from "./TierBadge";
 import TablePagination from "@/components/ui/TablePagination";
-import { CHART_PALETTE } from "@/components/dashboardComponents/chartCard";
 
 const PAGE_SIZE = 10;
 
@@ -36,12 +35,15 @@ export default function LoyaltyStatusTable({
   const visible = statuses.slice(start, start + PAGE_SIZE);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white px-2 py-2">
+    // <div className="overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white px-2 py-2 dark:border-white/10 dark:bg-[#161d2e]">
+    <div className="overflow-hidden  bg-white px-2 py-2 dark:bg-[#0F1420]">
       {/* Count header — the table gave no sense of how many tiers exist
           without counting the rows. */}
-      <div className="flex items-center justify-between gap-2 border-b border-[#e8eaed] px-4 py-3">
-        <p className="text-[15px] font-normal text-[#3c4043]">Loyalty Tiers</p>
-        <span className="rounded-full border border-[#dadce0] bg-white px-2 py-0.5 text-[11px] tabular-nums text-[#3c4043]">
+      <div className="flex items-center justify-between gap-2 border-b border-[#e8eaed] px-4 py-3 dark:border-white/10">
+        <p className="text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
+          Loyalty Tiers
+        </p>
+        <span className="rounded-full border border-[#dadce0] bg-white px-2 py-0.5 text-[11px] tabular-nums text-[#3c4043] dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]">
           {statuses.length} {statuses.length === 1 ? "tier" : "tiers"}
         </span>
       </div>
@@ -58,31 +60,28 @@ export default function LoyaltyStatusTable({
             <col className="w-28" />
           </colgroup>
           <thead>
-            <tr
-              className="border-b text-[11px] tracking-wider"
-              style={{
-                borderColor: CHART_PALETTE.grid,
-                color: CHART_PALETTE.axis,
-              }}
-            >
+            <tr className="border-b border-[#e8eaed] text-[11px] tracking-wider text-[#5f6368] dark:border-white/10 dark:text-[#9aa6bd]">
               <th className="px-4 py-3 text-left font-normal">Lvl</th>
               <th className="px-4 py-3 text-left font-normal">Loyalty Tier</th>
               <th className="px-4 py-3 text-center font-normal">Point Range</th>
               <th className="px-4 py-3 text-right font-normal">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#e8eaed]">
+          <tbody className="divide-y divide-[#e8eaed] dark:divide-white/10">
             {statuses.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-4 py-10">
                   <div className="flex flex-col items-center text-center">
-                    <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4]">
-                      <Trophy size={22} className="text-gray-500" />
+                    <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
+                      <Trophy
+                        size={22}
+                        className="text-gray-500 dark:text-[#9aa6bd]"
+                      />
                     </div>
-                    <p className="text-sm text-[#3c4043]">
+                    <p className="text-sm text-[#3c4043] dark:text-[#e8ecf4]">
                       No loyalty tiers yet
                     </p>
-                    <p className="mt-1 text-xs text-[#9aa0a6]">
+                    <p className="mt-1 text-xs text-[#9aa0a6] dark:text-[#7b869b]">
                       Add one to start ranking customers.
                     </p>
                   </div>
@@ -101,10 +100,12 @@ export default function LoyaltyStatusTable({
                   <tr
                     key={status.id}
                     className={`transition-colors ${
-                      isEditing ? "bg-blue-50/60" : "hover:bg-[#f8f9fa]"
+                      isEditing
+                        ? "bg-blue-50/60 dark:bg-blue-400/10"
+                        : "hover:bg-[#f8f9fa] dark:hover:bg-white/5"
                     }`}
                   >
-                    <td className="px-4 py-3 text-xs font-semibold tabular-nums text-[#9aa0a6]">
+                    <td className="px-4 py-3 text-xs font-semibold tabular-nums text-[#9aa0a6] dark:text-[#7b869b]">
                       #{idx + 1}
                     </td>
                     <td className="px-4 py-3">
@@ -115,13 +116,12 @@ export default function LoyaltyStatusTable({
                       />
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span
-                        className="text-[13px] font-medium tracking-wide  tabular-nums "
-                        style={{ color: CHART_PALETTE.title }}
-                      >
+                      <span className="text-[13px] font-medium tracking-wide  tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
                         {pointRange(status, statuses[idx + 1])}
                       </span>
-                      <span className="ml-1 text-xs text-[#9aa0a6]">pts</span>
+                      <span className="ml-1 text-xs text-[#9aa0a6] dark:text-[#7b869b]">
+                        pts
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1.5">
@@ -130,8 +130,8 @@ export default function LoyaltyStatusTable({
                           onClick={() => onEdit(status)}
                           className={`rounded-md p-1.5 transition-colors ${
                             isEditing
-                              ? "bg-blue-100 text-blue-600"
-                              : "text-[#9aa0a6] hover:bg-blue-50 hover:text-blue-600"
+                              ? "bg-blue-100 text-blue-600 dark:bg-blue-400/20 dark:text-[#a8c4ee]"
+                              : "text-[#9aa0a6] hover:bg-blue-50 hover:text-blue-600 dark:text-[#7b869b] dark:hover:bg-blue-400/15 dark:hover:text-[#7ba2e3]"
                           }`}
                           title="Edit"
                         >
@@ -140,7 +140,7 @@ export default function LoyaltyStatusTable({
                         <button
                           type="button"
                           onClick={() => onDelete(status)}
-                          className="rounded-md p-1.5 text-[#9aa0a6] transition-colors hover:bg-red-50 hover:text-red-600"
+                          className="rounded-md p-1.5 text-[#9aa0a6] transition-colors hover:bg-red-50 hover:text-red-600 dark:text-[#7b869b] dark:hover:bg-red-400/15 dark:hover:text-[#f87171]"
                           title="Delete"
                         >
                           <Trash2 className="h-3.5 w-3.5" />

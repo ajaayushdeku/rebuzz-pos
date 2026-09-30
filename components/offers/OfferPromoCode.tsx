@@ -131,7 +131,7 @@ export default function OfferPromoCode() {
         icon={Ticket}
         accent="amber"
       >
-        <label className="mb-1.5 block text-[13px] font-medium text-[#3c4043]">
+        <label className="mb-1.5 block text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
           Code
         </label>
         <div className=" flex  items-center  gap-2.5">
@@ -145,13 +145,13 @@ export default function OfferPromoCode() {
               updateField("hasKey", e.target.value.toUpperCase())
             }
             placeholder="NEWYEARS23"
-            className="h-12 min-w-0 flex-1 rounded-xl border border-[#dadce0] bg-white px-3.5 font-mono text-sm tracking-wider text-[#3c4043] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:max-w-sm"
+            className="h-12 min-w-0 flex-1 rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 px-3.5 font-mono text-sm tracking-wider text-[#3c4043] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:max-w-sm dark:border-white/15 dark:text-[#e8ecf4]"
           />
 
           <button
             type="button"
             onClick={generate}
-            className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-[13px] font-semibold text-emerald-700 transition-colors hover:bg-emerald-100"
+            className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-[13px] font-semibold text-emerald-700 transition-colors hover:bg-emerald-100 dark:hover:bg-emerald-400/20 dark:border-emerald-400/25 dark:text-emerald-300 dark:bg-emerald-400/10"
           >
             <Wand2 size={15} />
             Generate
@@ -161,7 +161,7 @@ export default function OfferPromoCode() {
             type="button"
             onClick={copy}
             disabled={!form.hasKey}
-            className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-[#dadce0] bg-white px-4 text-[13px] font-semibold text-[#5f6368] transition-colors hover:bg-[#f8f9fa] disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 px-4 text-[13px] font-semibold text-[#5f6368] transition-colors hover:bg-[#f8f9fa] disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#a9b4c7]"
           >
             <Copy size={15} />
             {copied ? "Copied" : "Copy"}
@@ -171,14 +171,17 @@ export default function OfferPromoCode() {
         {/* Share it — link and QR.
             Below the code because both are derived from it: with no code there
             is nothing to link to, and an empty QR would be a decorative box. */}
-        <div className="mt-6 border-t border-[#e8eaed] pt-5">
-          <p className="mb-1.5 flex items-center gap-1.5 text-[13px] font-medium text-[#3c4043]">
-            <Link2 size={14} className="shrink-0 text-[#9aa0a6]" />
+        <div className="mt-6 border-t border-[#e8eaed] pt-5 dark:border-white/10">
+          <p className="mb-1.5 flex items-center gap-1.5 text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
+            <Link2
+              size={14}
+              className="shrink-0 text-[#9aa0a6] dark:text-[#9aa6bd]"
+            />
             Share link &amp; QR code
           </p>
 
           {!form.hasKey ? (
-            <p className="rounded-xl border border-dashed border-[#dadce0] bg-[#f8f9fa] px-3.5 py-4 text-center text-[12px] text-[#9aa0a6]">
+            <p className="rounded-xl border border-dashed border-[#dadce0] bg-[#f8f9fa] px-3.5 py-4 text-center text-[12px] text-[#9aa0a6] dark:border-white/15 dark:text-[#9aa6bd] dark:bg-white/5">
               Add a promo code above to get a shareable link and QR code.
             </p>
           ) : (
@@ -189,19 +192,19 @@ export default function OfferPromoCode() {
                     readOnly
                     value={offerUrl}
                     onFocus={(e) => e.currentTarget.select()}
-                    className="h-11 min-w-0 flex-1 rounded-xl border border-[#dadce0] bg-[#f8f9fa] px-3.5 text-[13px] text-[#5f6368] outline-none"
+                    className="h-11 min-w-0 flex-1 rounded-xl border border-[#dadce0] bg-[#f8f9fa] px-3.5 text-[13px] text-[#5f6368] outline-none dark:border-white/15 dark:text-[#a9b4c7] dark:bg-white/5"
                   />
                   <button
                     type="button"
                     onClick={copyLink}
-                    className="inline-flex h-11 shrink-0 cursor-pointer items-center gap-2 rounded-xl border border-[#dadce0] bg-white px-3.5 text-[13px] font-semibold text-[#5f6368] transition-colors hover:bg-[#f8f9fa]"
+                    className="inline-flex h-11 shrink-0 cursor-pointer items-center gap-2 rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 px-3.5 text-[13px] font-semibold text-[#5f6368] transition-colors hover:bg-[#f8f9fa] dark:hover:bg-white/5 dark:border-white/15 dark:text-[#a9b4c7]"
                   >
                     <Copy size={15} />
                     {linkCopied ? "Copied" : "Copy"}
                   </button>
                 </div>
 
-                <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-800">
+                <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-800 dark:text-amber-200 dark:bg-amber-400/10">
                   Placeholder link — the short-link service isn&apos;t built
                   yet, so this address won&apos;t open. The QR encodes it as-is.
                 </p>
@@ -209,7 +212,7 @@ export default function OfferPromoCode() {
                 <button
                   type="button"
                   onClick={downloadQr}
-                  className="mt-3 inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-[#dadce0] bg-white px-3 text-[12px] font-semibold text-[#5f6368] transition-colors hover:bg-[#f8f9fa]"
+                  className="mt-3 inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 px-3 text-[12px] font-semibold text-[#5f6368] transition-colors hover:bg-[#f8f9fa] dark:hover:bg-white/5 dark:border-white/15 dark:text-[#a9b4c7]"
                 >
                   <Download size={14} />
                   Download QR (SVG)
@@ -217,7 +220,7 @@ export default function OfferPromoCode() {
               </div>
 
               <div className="shrink-0 self-center sm:self-start">
-                <div className="rounded-xl border border-[#dadce0] bg-white p-3">
+                <div className="rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 p-3 dark:border-white/15">
                   {/* Sized in CSS with a fixed viewBox so one SVG serves both
                       the on-screen chip and a printed poster. */}
                   <QRCode
@@ -229,7 +232,7 @@ export default function OfferPromoCode() {
                     viewBox="0 0 256 256"
                   />
                 </div>
-                <p className="mt-1.5 flex items-center justify-center gap-1 text-[10px] text-[#9aa0a6]">
+                <p className="mt-1.5 flex items-center justify-center gap-1 text-[10px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                   <QrCode size={11} />
                   Scan to open
                 </p>
@@ -243,15 +246,18 @@ export default function OfferPromoCode() {
           Four steps of separate controls are hard to hold in the head at once,
           so this is the last chance to notice the offer says something other
           than what was meant. */}
-      <div className="flex items-start gap-3 w-full rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 ">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white">
-          <ClipboardList size={17} className="text-emerald-600" />
+      <div className="flex items-start gap-3 w-full rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 dark:border-emerald-400/25 dark:bg-[#142F38] ">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-white/10">
+          <ClipboardList
+            size={17}
+            className="text-emerald-600 dark:text-emerald-300"
+          />
         </span>
         <div className="min-w-0">
-          <p className="text-[13px] font-semibold text-emerald-800">
+          <p className="text-[13px] font-semibold text-emerald-800 dark:text-emerald-200">
             Your offer so far
           </p>
-          <p className=" text-[13px] leading-relaxed text-green-700">
+          <p className=" text-[13px] leading-relaxed text-green-700 dark:text-emerald-300">
             {summary.length > 0 ? (
               summary.map((part, i) => (
                 <span key={part}>

@@ -15,10 +15,7 @@ import { NextResponse } from "next/server";
 
 import type { AiInsightsEnvelope } from "@/lib/ai-insights/contract";
 
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL;
-// [POS backend] To call khajaGharBackend instead of backend/, replace the line
-// above with this import and switch the other [POS backend] lines below:
-// import { POS_API_URL as AI_SERVICE_URL, readAiError } from "@/lib/ai-insights/posAiApi.server";
+import { aiApiUrl, readAiError } from "@/lib/ai-insights/posAiApi.server";
 
 export interface AskAiServiceInput {
   token: string;
@@ -38,7 +35,9 @@ export type AskAiServiceResult =
 export async function askAiService(
   input: AskAiServiceInput,
 ): Promise<AskAiServiceResult> {
-  if (!AI_SERVICE_URL) {
+  const url = aiApiUrl("/ai-insights");
+
+  if (!url) {
     return {
       ok: false,
       response: NextResponse.json(
@@ -50,8 +49,7 @@ export async function askAiService(
 
   let res: Response;
   try {
-    // [POS backend] res = await fetch(`${AI_SERVICE_URL}/ai-insights`, {
-    res = await fetch(`${AI_SERVICE_URL}/api/ai-insights`, {
+    res = await fetch(url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${input.token}`,
@@ -68,7 +66,7 @@ export async function askAiService(
     });
   } catch (error) {
     console.error(
-      `[ai-insights] POST ${AI_SERVICE_URL} failed:`,
+      `[ai-insights] POST ${url} failed:`,
       (error as Error)?.message,
     );
     return {
@@ -84,26 +82,12 @@ export async function askAiService(
 
   if (!res.ok) {
     const retryAfter = res.headers.get("retry-after");
-    // [POS backend] The POS answers jsend ({ status, data: { code, ... } }):
-    // const { error, retryAfter: retryAfterSec } = readAiError(json);
-    // return {
-    //   ok: false,
-    //   response: NextResponse.json(
-    //     { error, retryAfter: retryAfterSec },
-    //     {
-    //       status: res.status,
-    //       headers: retryAfter ? { "Retry-After": retryAfter } : undefined,
-    //     },
-    //   ),
-    // };
+    const { error, retryAfter: retryAfterSec } = readAiError(json);
 
     return {
       ok: false,
       response: NextResponse.json(
-        {
-          error: json?.error ?? "Request failed",
-          retryAfter: json?.retryAfter ?? undefined,
-        },
+        { error, retryAfter: retryAfterSec },
         {
           status: res.status,
           headers: retryAfter ? { "Retry-After": retryAfter } : undefined,

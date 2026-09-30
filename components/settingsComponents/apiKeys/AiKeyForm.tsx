@@ -52,6 +52,8 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
   const selected = provider.id;
   const isActive = selected === activeProvider;
   const meta = metaFor(selected);
+  /** The provider's own colour, in the shade that reads on a dark card. */
+  const darkSignal = meta.darkAccent ?? meta.accent;
 
   // A key is stored per provider. The status describes the one in use, so any
   // other provider has only the "does it have a key" answer to go on.
@@ -108,7 +110,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center gap-2 rounded-2xl border border-[#dadce0] bg-white p-6 text-sm text-[#9aa0a6]">
+      <div className="flex justify-center items-center gap-2 rounded-2xl border border-[#dadce0] bg-white dark:bg-[#161d2e] p-6 text-sm text-[#9aa0a6] dark:border-white/15 dark:text-[#9aa6bd]">
         <Loader2 className="h-4 w-4 animate-spin" />
         Loading key status…
       </div>
@@ -116,7 +118,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#dadce0] bg-white">
+    <div className="overflow-hidden rounded-2xl border border-[#dadce0] bg-white dark:bg-[#161d2e] dark:border-white/15">
       <div className="p-6">
         <div className="flex items-center gap-3">
           <div
@@ -129,17 +131,17 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
 
           <div className="min-w-0 flex-1">
             <div className="min-w-0">
-              <h2 className="text-[15px] font-normal text-[#3c4043]">
+              <h2 className="text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
                 {provider.label}
               </h2>
-              <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6]">
+              <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
                 {meta.blurb}
               </p>
             </div>
           </div>
 
           {isActive && (
-            <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-green-700">
+            <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-green-700 dark:border-emerald-400/25 dark:text-emerald-300 dark:bg-emerald-400/10">
               In use
             </span>
           )}
@@ -149,16 +151,24 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
         {!isActive && hasKey && (
           // Drawn in the provider being switched to, so the panel reads as
           // that provider throughout rather than a generic blue notice.
+          // `meta.tint` is a pale wash, which would be a light patch on a dark
+          // card — and an inline style cannot carry a `dark:` variant. So both
+          // fills are declared as custom properties and the classes pick one:
+          // the brand's own tint in light, the same hue at low opacity in dark.
           <div
-            className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl px-3.5 py-3 ring-1 ring-inset"
+            className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[var(--panel-light)] px-3.5 py-3 ring-1 ring-[var(--ring-light)] ring-inset dark:bg-[var(--panel-dark)] dark:ring-[var(--ring-dark)]"
             style={
               {
-                backgroundColor: meta.tint,
-                "--tw-ring-color": meta.accent + "26",
+                "--panel-light": meta.tint,
+                // `darkAccent`, not `accent`: the latter is near-black for some
+                // providers, so both its wash and its ring would be invisible.
+                "--panel-dark": `color-mix(in srgb, ${darkSignal} 16%, transparent)`,
+                "--ring-light": meta.accent + "26",
+                "--ring-dark": darkSignal + "59",
               } as React.CSSProperties
             }
           >
-            <p className="text-[12px] leading-relaxed text-[#3c4043]">
+            <p className="text-[12px] leading-relaxed text-[#3c4043] dark:text-[#e8ecf4]">
               A key for {provider.label} is saved. AI features are using{" "}
               {providers.find((p) => p.id === activeProvider)?.label ??
                 activeProvider}{" "}
@@ -195,14 +205,14 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
         )}
 
         {configured && (
-          <div className="mt-5 flex items-center justify-between gap-3 rounded-xl border border-green-200 bg-green-50 px-3.5 py-3">
+          <div className="mt-5 flex items-center justify-between gap-3 rounded-xl border border-green-200 bg-green-50 px-3.5 py-3 dark:border-emerald-400/25 dark:bg-emerald-400/10">
             <div className="flex min-w-0 items-center gap-2.5">
-              <ShieldCheck className="h-4 w-4 shrink-0 text-green-600" />
+              <ShieldCheck className="h-4 w-4 shrink-0 text-green-600 dark:text-emerald-300" />
               <div className="min-w-0">
-                <p className="text-[12px] font-semibold text-green-800">
+                <p className="text-[12px] font-semibold text-green-800 dark:text-emerald-200">
                   Key saved
                 </p>
-                <p className="truncate font-mono text-[11px] text-green-700">
+                <p className="truncate font-mono text-[11px] text-green-700 dark:text-emerald-300">
                   {status?.maskedKey ?? "••••"}
                 </p>
               </div>
@@ -230,7 +240,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
                   type="button"
                   onClick={() => setConfirmingRemove(false)}
                   disabled={remove.isPending}
-                  className="cursor-pointer rounded-lg px-2 py-1.5 text-[12px] font-medium text-[#5f6368] transition hover:text-[#3c4043]"
+                  className="cursor-pointer rounded-lg px-2 py-1.5 text-[12px] font-medium text-[#5f6368] transition hover:text-[#3c4043] dark:hover:text-[#e8ecf4] dark:text-[#a9b4c7]"
                 >
                   Cancel
                 </button>
@@ -239,7 +249,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
               <button
                 type="button"
                 onClick={() => setConfirmingRemove(true)}
-                className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-[#dadce0] bg-white px-2.5 py-1.5 text-[12px] font-medium text-[#5f6368] transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 px-2.5 py-1.5 text-[12px] font-medium text-[#5f6368] transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:hover:border-red-400/40 dark:hover:text-[#f87171] dark:border-white/15 dark:hover:bg-red-400/15 dark:text-[#a9b4c7]"
               >
                 <Trash2 className="h-3.5 w-3.5" />
                 Remove
@@ -252,16 +262,16 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
             models it reports this key can actually call, fetched with the
             stored credential; there is nothing to ask about otherwise. */}
         {configured && (
-          <div className="mt-3 rounded-xl border border-[#dadce0] bg-[#f8f9fa] px-3.5 py-3">
+          <div className="mt-3 rounded-xl border border-[#dadce0] bg-[#f8f9fa] px-3.5 py-3 dark:border-white/15 dark:bg-white/5">
             <div className="flex items-center justify-between gap-2">
               <label
                 htmlFor="ai-model"
-                className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.06em] text-[#9aa0a6]"
+                className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.06em] text-[#9aa0a6] dark:text-[#9aa6bd]"
               >
                 Model
               </label>
               {models.isFetching && (
-                <span className="mb-1.5 flex items-center gap-1 text-[11px] text-[#9aa0a6]">
+                <span className="mb-1.5 flex items-center gap-1 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                   <Loader2 className="h-3 w-3 animate-spin" />
                   Loading models…
                 </span>
@@ -285,7 +295,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
                   updateModel.isPending || selectableModels.length === 0
                 }
                 style={{ outlineColor: meta.accent }}
-                className="h-9 w-full cursor-pointer rounded-lg border border-[#dadce0] bg-white px-2.5 text-[13px] font-medium text-[#3c4043] outline-none transition focus:border-gray-400 focus:ring-2 focus:ring-gray-300/40 disabled:cursor-not-allowed disabled:opacity-60"
+                className="h-9 w-full cursor-pointer rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 px-2.5 text-[13px] font-medium text-[#3c4043] outline-none transition focus:border-gray-400 focus:ring-2 focus:ring-gray-300/40 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-white/20 dark:focus:border-white/30 dark:border-white/15 dark:text-[#e8ecf4]"
               >
                 {/* The stored model stays selectable even when the provider no
                     longer reports it, so the selector never shows a value the
@@ -300,27 +310,27 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
                 ))}
               </select>
               {updateModel.isPending && (
-                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-[#9aa0a6]" />
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-[#9aa0a6] dark:text-[#9aa6bd]" />
               )}
             </div>
-            <p className="mt-1.5 text-[11px] leading-relaxed text-[#9aa0a6]">
+            <p className="mt-1.5 text-[11px] leading-relaxed text-[#9aa0a6] dark:text-[#9aa6bd]">
               AI features run on this model. Changing it does not touch your
               key.
             </p>
             {models.error && !updateModel.error && (
-              <p className="mt-1.5 flex items-start gap-1.5 text-xs text-amber-600">
+              <p className="mt-1.5 flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-300">
                 <TriangleAlert className="mt-px h-3.5 w-3.5 shrink-0" />
                 <span>{(models.error as Error).message}</span>
               </p>
             )}
             {updateModel.error && (
-              <p className="mt-1.5 flex items-start gap-1.5 text-xs text-red-500">
+              <p className="mt-1.5 flex items-start gap-1.5 text-xs text-red-500 dark:text-red-300">
                 <TriangleAlert className="mt-px h-3.5 w-3.5 shrink-0" />
                 <span>{(updateModel.error as Error).message}</span>
               </p>
             )}
             {updateModel.isSuccess && !updateModel.error && (
-              <p className="mt-1.5 flex items-center gap-1.5 text-xs text-green-600">
+              <p className="mt-1.5 flex items-center gap-1.5 text-xs text-green-600 dark:text-emerald-300">
                 <Check className="h-3.5 w-3.5 shrink-0" />
                 Model updated.
               </p>
@@ -332,7 +342,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
           <div className="mb-1.5 flex items-center justify-between gap-2">
             <label
               htmlFor="ai-key"
-              className="block text-[11px] font-medium uppercase tracking-[0.06em] text-[#9aa0a6]"
+              className="block text-[11px] font-medium uppercase tracking-[0.06em] text-[#9aa0a6] dark:text-[#9aa6bd]"
             >
               {hasKey ? "Replace key" : "API key"}
             </label>
@@ -340,7 +350,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
               href={provider.keysUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-[11px] font-medium text-[#5f6368] transition hover:text-[#3c4043]"
+              className="flex items-center gap-1 text-[11px] font-medium text-[#5f6368] transition hover:text-[#3c4043] dark:hover:text-[#e8ecf4] dark:text-[#a9b4c7]"
             >
               Get a key
               <ExternalLink className="h-3 w-3" />
@@ -351,7 +361,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
             <KeyRound
               size={15}
               stroke={markPaint(selected)}
-              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9aa0a6]"
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9aa0a6] dark:text-[#9aa6bd]"
             />
             <input
               id="ai-key"
@@ -363,24 +373,24 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder={meta.placeholder}
-              className={`h-11 w-full rounded-xl border bg-white pl-10 pr-11 font-mono text-[13px] text-[#3c4043] outline-none transition focus:ring-2 ${
+              className={`h-11 w-full rounded-xl border bg-white dark:bg-white/5 pl-10 pr-11 font-mono text-[13px] text-[#3c4043] outline-none transition focus:ring-2 ${
                 looksWrong
-                  ? "border-red-300 focus:border-red-400 focus:ring-red-500/20"
-                  : "border-[#dadce0] focus:border-gray-400 focus:ring-gray-300/40"
-              }`}
+                  ? "border-red-300 focus:border-red-400 focus:ring-red-500/20 dark:focus:border-red-400/60 dark:border-red-400/40"
+                  : "border-[#dadce0] focus:border-gray-400 focus:ring-gray-300/40 dark:focus:ring-white/20 dark:focus:border-white/30 dark:border-white/15"
+              } dark:text-[#e8ecf4]`}
             />
             <button
               type="button"
               onClick={() => setRevealed((r) => !r)}
               aria-label={revealed ? "Hide API key" : "Show API key"}
-              className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer rounded p-0.5 text-[#9aa0a6] transition hover:bg-[#f1f3f4] hover:text-[#5f6368]"
+              className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer rounded p-0.5 text-[#9aa0a6] transition hover:bg-[#f1f3f4] hover:text-[#5f6368] dark:hover:text-[#e8ecf4] dark:hover:bg-white/10 dark:text-[#9aa6bd]"
             >
               {revealed ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
 
           {looksWrong && (
-            <p className="mt-2 flex items-start gap-1.5 text-xs text-red-500">
+            <p className="mt-2 flex items-start gap-1.5 text-xs text-red-500 dark:text-red-300">
               <TriangleAlert className="mt-px h-3.5 w-3.5 shrink-0" />
               <span>
                 That doesn&apos;t look like a complete key — it should be one
@@ -393,7 +403,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
               and the provider will not show the old one again either, so a typo
               here loses a working key at both ends. Stated before the click. */}
           {configured && apiKey.trim() && !looksWrong && (
-            <p className="mt-2.5 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800">
+            <p className="mt-2.5 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800 dark:text-amber-200 dark:bg-amber-400/10">
               <TriangleAlert className="mt-px h-3.5 w-3.5 shrink-0" />
               <span>
                 This replaces your saved key{" "}
@@ -439,7 +449,7 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
               type="button"
               onClick={() => setApiKey("")}
               disabled={!apiKey || save.isPending}
-              className="h-9 shrink-0 cursor-pointer rounded-xl border border-[#dadce0] bg-white px-4 text-[13px] font-medium text-[#5f6368] transition hover:bg-[#f8f9fa] disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-9 shrink-0 cursor-pointer rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 px-4 text-[13px] font-medium text-[#5f6368] transition hover:bg-[#f8f9fa] disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#a9b4c7]"
             >
               Clear
             </button>
@@ -448,13 +458,13 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
           {/* Saving a key also selects the provider, which is the one thing
               about this form that is not obvious from the button. */}
           {!isActive && !hasKey && (
-            <p className="mt-3 text-[11px] leading-relaxed text-[#9aa0a6]">
+            <p className="mt-3 text-[11px] leading-relaxed text-[#9aa0a6] dark:text-[#9aa6bd]">
               Saving a key here also switches AI features to {provider.label}.
             </p>
           )}
 
           {justSaved && !actionError && (
-            <p className="mt-3 flex items-start gap-1.5 text-xs text-green-600">
+            <p className="mt-3 flex items-start gap-1.5 text-xs text-green-600 dark:text-emerald-300">
               <Check className="mt-px h-3.5 w-3.5 shrink-0" />
               <span>
                 Saved.
@@ -477,14 +487,14 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
               exhausted quota reads differently from a bad key — each needs a
               different fix. */}
           {actionError && (
-            <p className="mt-3 flex items-start gap-1.5 text-xs text-red-500">
+            <p className="mt-3 flex items-start gap-1.5 text-xs text-red-500 dark:text-red-300">
               <TriangleAlert className="mt-px h-3.5 w-3.5 shrink-0" />
               <span>{(actionError as Error).message}</span>
             </p>
           )}
 
           {statusError && !actionError && (
-            <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800">
+            <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800 dark:text-amber-200 dark:bg-amber-400/10">
               <TriangleAlert className="mt-px h-3.5 w-3.5 shrink-0" />
               <span>{(statusError as Error).message}</span>
             </p>

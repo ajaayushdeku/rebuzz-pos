@@ -214,7 +214,7 @@ export default function HelpScreen() {
               }`}
             >
               {railOpen && (
-                <p className="flex-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9aa0a6]">
+                <p className="flex-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9aa0a6] dark:text-[#9aa6bd]">
                   On this page
                 </p>
               )}
@@ -227,7 +227,7 @@ export default function HelpScreen() {
                   railOpen ? "Collapse section list" : "Expand section list"
                 }
                 title={railOpen ? "Collapse" : "Expand"}
-                className="cursor-pointer rounded-md p-1 text-[#9aa0a6] transition-colors hover:bg-[#f1f3f4] hover:text-[#5f6368]"
+                className="cursor-pointer rounded-md p-1 text-[#9aa0a6] transition-colors hover:bg-[#f1f3f4] hover:text-[#5f6368] dark:hover:text-[#e8ecf4] dark:hover:bg-white/10 dark:text-[#9aa6bd]"
               >
                 {railOpen ? (
                   <ChevronsLeft size={14} aria-hidden />
@@ -254,13 +254,15 @@ export default function HelpScreen() {
                         railOpen ? "pl-3 pr-2" : "justify-center pl-0 pr-0"
                       } ${
                         isActive
-                          ? "border-[#1a73e8] font-medium text-[#1a73e8]"
-                          : "border-[#e8eaed] text-[#5f6368] hover:border-[#dadce0] hover:text-[#3c4043]"
+                          ? "border-[#1a73e8] font-medium text-[#1a73e8] dark:border-[#7ba2e3] dark:text-[#7ba2e3]"
+                          : "border-[#e8eaed] text-[#5f6368] hover:border-[#dadce0] hover:text-[#3c4043] dark:hover:border-white/25 dark:hover:text-[#e8ecf4] dark:border-white/10 dark:text-[#a9b4c7]"
                       }`}
                     >
                       <span
                         className={`shrink-0 tabular-nums text-[11px] ${
-                          isActive ? "text-[#1a73e8]" : "text-[#9aa0a6]"
+                          isActive
+                            ? "text-[#1a73e8] dark:text-[#7ba2e3]"
+                            : "text-[#9aa0a6] dark:text-[#9aa6bd]"
                         }`}
                       >
                         {number}
@@ -270,7 +272,7 @@ export default function HelpScreen() {
                           <span className="min-w-0 flex-1 truncate">
                             {s.label}
                           </span>
-                          <span className="shrink-0 text-[11px] tabular-nums text-[#9aa0a6]">
+                          <span className="shrink-0 text-[11px] tabular-nums text-[#9aa0a6] dark:text-[#9aa6bd]">
                             {counts[s.id]}
                           </span>
                         </>
@@ -290,7 +292,7 @@ export default function HelpScreen() {
                 title="Step by step"
                 lede="Each guide is one job, in the order the screen asks for it."
               >
-                <ul className="divide-y divide-[#e8eaed] border-y border-[#e8eaed]">
+                <ul className="divide-y divide-[#e8eaed] border-y border-[#e8eaed] dark:border-white/10 dark:divide-white/10">
                   {guides.map((g) => (
                     <GuideRow
                       key={g.id}
@@ -326,10 +328,10 @@ export default function HelpScreen() {
                 <div className="flex flex-col gap-8">
                   {faqs.map((g) => (
                     <div key={g.group}>
-                      <p className="pb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9aa0a6]">
+                      <p className="pb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9aa0a6] dark:text-[#9aa6bd]">
                         {g.group}
                       </p>
-                      <dl className="border-t border-[#e8eaed]">
+                      <dl className="border-t border-[#e8eaed] dark:border-white/10">
                         {g.items.map((f) => (
                           <FaqRow
                             key={f.q}
@@ -369,19 +371,19 @@ export default function HelpScreen() {
                 title="What the numbers mean"
                 lede="The words the dashboards use, in plain terms."
               >
-                <dl className="divide-y divide-[#e8eaed] border-y border-[#e8eaed]">
+                <dl className="divide-y divide-[#e8eaed] border-y border-[#e8eaed] dark:border-white/10 dark:divide-white/10">
                   {metrics.map((m) => (
                     <div
                       key={m.label}
                       className="flex flex-col gap-1 py-4 sm:flex-row sm:gap-8"
                     >
-                      <dt className="w-full shrink-0 text-[13px] font-medium text-[#3c4043] sm:w-52">
+                      <dt className="w-full shrink-0 text-[13px] font-medium text-[#3c4043] sm:w-52 dark:text-[#e8ecf4]">
                         {m.label}
-                        <span className="mt-0.5 block text-[11px] font-normal text-[#9aa0a6]">
+                        <span className="mt-0.5 block text-[11px] font-normal text-[#9aa0a6] dark:text-[#9aa6bd]">
                           {m.where}
                         </span>
                       </dt>
-                      <dd className="min-w-0 flex-1 text-[13px] leading-relaxed text-[#5f6368]">
+                      <dd className="min-w-0 flex-1 text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
                         {m.meaning}
                       </dd>
                     </div>
@@ -397,28 +399,28 @@ export default function HelpScreen() {
                 title="When something breaks"
                 lede="Every failure panel prints a code in its corner. This is what each one means."
               >
-                <dl className="divide-y divide-[#e8eaed] border-y border-[#e8eaed]">
+                <dl className="divide-y divide-[#e8eaed] border-y border-[#e8eaed] dark:border-white/10 dark:divide-white/10">
                   {errors.map((e) => (
                     <div
                       key={e.code}
                       className="flex flex-col gap-1.5 py-4 sm:flex-row sm:gap-8"
                     >
                       <dt className="w-full shrink-0 sm:w-52">
-                        <code className="rounded bg-[#f1f3f4] px-1.5 py-0.5 font-mono text-[10px] tracking-wide text-[#5f6368]">
+                        <code className="rounded bg-[#f1f3f4] px-1.5 py-0.5 font-mono text-[10px] tracking-wide text-[#5f6368] dark:text-[#a9b4c7] dark:bg-white/10">
                           {e.code}
                         </code>
                       </dt>
                       <dd className="min-w-0 flex-1">
-                        <p className="text-[13px] font-medium text-[#3c4043]">
+                        <p className="text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
                           {e.title}
                         </p>
-                        <p className="mt-1 text-[13px] leading-relaxed text-[#5f6368]">
+                        <p className="mt-1 text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
                           {e.hint}
                         </p>
                         {e.action && (
                           <Link
                             href={e.action.href}
-                            className="mt-2 inline-flex items-center gap-1 text-[12px] font-medium text-[#1a73e8] hover:underline"
+                            className="mt-2 inline-flex items-center gap-1 text-[12px] font-medium text-[#1a73e8] hover:underline dark:text-[#7ba2e3]"
                           >
                             {e.action.label}
                             <ArrowRight size={12} aria-hidden />
@@ -464,12 +466,12 @@ function SearchBand({
 }) {
   return (
     // The one tinted surface in the app: help is somewhere else.
-    <section className="overflow-hidden rounded-3xl border border-[#e3ecfd] bg-gradient-to-br from-[#f4f8ff] via-white to-[#faf6ff] px-6 py-9 md:px-10 md:py-11">
+    <section className="overflow-hidden rounded-3xl border border-[#e3ecfd] bg-gradient-to-br from-[#f4f8ff] via-white to-[#faf6ff] dark:from-[#182039] dark:via-[#161d2e] dark:to-[#1e1a33] px-6 py-9 md:px-10 md:py-11 dark:border-white/10">
       <div className="mx-auto max-w-2xl text-center">
-        <h2 className="text-[19px] font-medium text-[#3c4043] md:text-[22px]">
+        <h2 className="text-[19px] font-medium text-[#3c4043] md:text-[22px] dark:text-[#e8ecf4]">
           What do you need help with?
         </h2>
-        <p className="mx-auto mt-1.5 max-w-md text-[13px] leading-relaxed text-[#5f6368]">
+        <p className="mx-auto mt-1.5 max-w-md text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
           Search the guides, or jump to a section below.
         </p>
 
@@ -477,7 +479,7 @@ function SearchBand({
           <Search
             size={16}
             aria-hidden
-            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#9aa0a6]"
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#9aa0a6] dark:text-[#9aa6bd]"
           />
           <input
             type="search"
@@ -487,14 +489,14 @@ function SearchBand({
             aria-label="Search help"
             // WebKit draws its own clear cross on `type="search"`, which
             // put two in the field. Ours is always visible; that one is not.
-            className="h-12 w-full appearance-none rounded-full border border-[#dadce0] bg-white pl-11 pr-11 text-[14px] text-[#3c4043] outline-none transition placeholder:text-[#9aa0a6] focus:border-transparent focus:ring-2 focus:ring-blue-500 [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none"
+            className="h-12 w-full appearance-none rounded-full border border-[#dadce0] bg-white dark:bg-white/5 pl-11 pr-11 text-[14px] text-[#3c4043] outline-none transition placeholder:text-[#9aa0a6] focus:border-transparent focus:ring-2 focus:ring-blue-500 [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none dark:placeholder:text-[#7b869b] dark:border-white/15 dark:text-[#e8ecf4]"
           />
           {value && (
             <button
               type="button"
               onClick={() => onChange("")}
               aria-label="Clear search"
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer rounded-full p-1 text-[#9aa0a6] transition-colors hover:bg-[#f1f3f4] hover:text-[#5f6368]"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer rounded-full p-1 text-[#9aa0a6] transition-colors hover:bg-[#f1f3f4] hover:text-[#5f6368] dark:hover:text-[#e8ecf4] dark:hover:bg-white/10 dark:text-[#9aa6bd]"
             >
               <X size={14} />
             </button>
@@ -508,7 +510,7 @@ function SearchBand({
                 <button
                   type="button"
                   onClick={() => onJump(s.id)}
-                  className="cursor-pointer rounded-full border border-[#dadce0] bg-white/80 px-3 py-1.5 text-[12px] text-[#3c4043] transition-colors hover:bg-white"
+                  className="cursor-pointer rounded-full border border-[#dadce0] bg-white/80 dark:bg-white/5 px-3 py-1.5 text-[12px] text-[#3c4043] transition-colors hover:bg-white dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
                 >
                   {s.label}
                 </button>
@@ -516,14 +518,16 @@ function SearchBand({
             ))}
           </ul>
         ) : (
-          <p className="mt-4 text-[12px] text-[#5f6368]">
+          <p className="mt-4 text-[12px] text-[#5f6368] dark:text-[#a9b4c7]">
             {matches} {matches === 1 ? "result" : "results"}
           </p>
         )}
 
         {/* Its own line: it leaves the app. */}
-        <div className="mt-5 flex items-center justify-center gap-2 border-t border-[#e3ecfd] pt-5">
-          <span className="text-[12px] text-[#5f6368]">Prefer to watch?</span>
+        <div className="mt-5 flex items-center justify-center gap-2 border-t border-[#e3ecfd] pt-5 dark:border-white/10">
+          <span className="text-[12px] text-[#5f6368] dark:text-[#a9b4c7]">
+            Prefer to watch?
+          </span>
           <WatchButton
             video={HELP_CONTACT.youtube}
             name="Rebuzz POS tutorials"
@@ -553,17 +557,17 @@ function Section({
   return (
     // `scroll-mt`: the navbar is fixed, and would cover the heading.
     <section id={id} className="scroll-mt-24">
-      <p className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#1a73e8]">
+      <p className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#1a73e8] dark:text-[#7ba2e3]">
         <span className="tabular-nums ">
           {String(SECTION_ORDER.indexOf(id) + 1).padStart(2, "0")}
         </span>
         <span aria-hidden className="h-px w-2 bg-[#1a73e8]" />
         {kicker}
       </p>
-      <h2 className="mt-1.5 text-[20px] font-medium tracking-tight text-[#3c4043] md:text-[22px]">
+      <h2 className="mt-1.5 text-[20px] font-medium tracking-tight text-[#3c4043] md:text-[22px] dark:text-[#e8ecf4]">
         {title}
       </h2>
-      <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-[#5f6368]">
+      <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
         {lede}
       </p>
       <div className="mt-5">{children}</div>
@@ -618,26 +622,28 @@ function GuideRow({
           aria-hidden
           className={`shrink-0 transition-colors ${
             open
-              ? "text-[#1a73e8]"
-              : "text-[#9aa0a6] group-hover:text-[#5f6368]"
+              ? "text-[#1a73e8] dark:text-[#7ba2e3]"
+              : "text-[#9aa0a6] group-hover:text-[#5f6368] dark:group-hover:text-[#e8ecf4] dark:text-[#9aa6bd]"
           }`}
         />
         <span className="min-w-0 flex-1">
           <span
             className={`block truncate text-[14px] transition-colors ${
-              open ? "font-medium text-[#1a73e8]" : "text-[#3c4043]"
+              open
+                ? "font-medium text-[#1a73e8] dark:text-[#7ba2e3]"
+                : "text-[#3c4043] dark:text-[#e8ecf4]"
             }`}
           >
             {guide.title}
           </span>
-          <span className="mt-0.5 block truncate text-[12px] text-[#9aa0a6]">
+          <span className="mt-0.5 block truncate text-[12px] text-[#9aa0a6] dark:text-[#9aa6bd]">
             {guide.summary}
           </span>
         </span>
         {/* A plus that becomes a minus: "more here", not "goes somewhere". */}
         <span
           aria-hidden
-          className="relative h-4 w-4 shrink-0 text-[#9aa0a6] group-hover:text-[#5f6368]"
+          className="relative h-4 w-4 shrink-0 text-[#9aa0a6] group-hover:text-[#5f6368] dark:group-hover:text-[#e8ecf4] dark:text-[#9aa6bd]"
         >
           <span className="absolute left-0 top-1/2 h-px w-4 -translate-y-1/2 bg-current" />
           <span
@@ -650,14 +656,14 @@ function GuideRow({
 
       <Collapse open={open}>
         {/* An accent rail marks the open guide, in place of a box. */}
-        <div className="mb-5 ml-8 border-l-2 border-[#e3ecfd] pl-5">
+        <div className="mb-5 ml-8 border-l-2 border-[#e3ecfd] pl-5 dark:border-white/10">
           <ol className="flex flex-col gap-3">
             {guide.steps.map((step, i) => (
               <li key={i} className="flex gap-3">
-                <span className="mt-0.5 text-[11px] font-semibold tabular-nums text-[#1a73e8]">
+                <span className="mt-0.5 text-[11px] font-semibold tabular-nums text-[#1a73e8] dark:text-[#7ba2e3]">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <span className="text-[13px] leading-relaxed text-[#5f6368]">
+                <span className="text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
                   {step}
                 </span>
               </li>
@@ -665,7 +671,7 @@ function GuideRow({
           </ol>
 
           {guide.note && (
-            <p className="mt-4 text-[12px] leading-relaxed text-[#9aa0a6]">
+            <p className="mt-4 text-[12px] leading-relaxed text-[#9aa0a6] dark:text-[#9aa6bd]">
               {guide.note}
             </p>
           )}
@@ -673,7 +679,7 @@ function GuideRow({
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <Link
               href={guide.href}
-              className="inline-flex items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1.5 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#dadce0] bg-white dark:bg-white/5 px-3 py-1.5 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:hover:bg-white/5 dark:border-white/15 dark:text-[#e8ecf4]"
             >
               {guide.hrefLabel}
               <ArrowUpRight size={12} aria-hidden />
@@ -700,27 +706,27 @@ function MenuDirectory({ rows }: { rows: MenuRow[] }) {
         return (
           <div key={row.href}>
             {heading && row.group && (
-              <p className="mt-7 pb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9aa0a6] first:mt-0">
+              <p className="mt-7 pb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9aa0a6] first:mt-0 dark:text-[#9aa6bd]">
                 {row.group}
               </p>
             )}
 
-            <div className="flex flex-col gap-1.5 border-t border-[#e8eaed] py-4 sm:flex-row sm:gap-8">
+            <div className="flex flex-col gap-1.5 border-t border-[#e8eaed] py-4 sm:flex-row sm:gap-8 dark:border-white/10">
               <div className="w-full shrink-0 sm:w-52">
                 <Link
                   href={row.href}
-                  className="group inline-flex items-center gap-2 text-[13px] font-medium text-[#3c4043] transition-colors hover:text-[#1a73e8]"
+                  className="group inline-flex items-center gap-2 text-[13px] font-medium text-[#3c4043] transition-colors hover:text-[#1a73e8] dark:hover:text-[#a8c4ee] dark:text-[#e8ecf4]"
                 >
                   <Icon
                     size={14}
                     aria-hidden
-                    className="shrink-0 text-[#9aa0a6] transition-colors group-hover:text-[#1a73e8]"
+                    className="shrink-0 text-[#9aa0a6] transition-colors group-hover:text-[#1a73e8] dark:group-hover:text-[#a8c4ee] dark:text-[#9aa6bd]"
                   />
                   {row.label}
                   <ArrowUpRight
                     size={12}
                     aria-hidden
-                    className="shrink-0 text-[#dadce0] transition-colors group-hover:text-[#1a73e8]"
+                    className="shrink-0 text-[#dadce0] transition-colors group-hover:text-[#1a73e8] dark:group-hover:text-[#a8c4ee] dark:text-[#3d4657]"
                   />
                 </Link>
               </div>
@@ -728,16 +734,18 @@ function MenuDirectory({ rows }: { rows: MenuRow[] }) {
               <div className="min-w-0 flex-1">
                 {entry ? (
                   <>
-                    <p className="text-[13px] leading-relaxed text-[#5f6368]">
+                    <p className="text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
                       {entry.what}
                     </p>
-                    <p className="mt-1.5 text-[12px] leading-relaxed text-[#9aa0a6]">
-                      <span className="font-medium text-[#5f6368]">Shows </span>
+                    <p className="mt-1.5 text-[12px] leading-relaxed text-[#9aa0a6] dark:text-[#9aa6bd]">
+                      <span className="font-medium text-[#5f6368] dark:text-[#a9b4c7]">
+                        Shows{" "}
+                      </span>
                       {entry.shows}
                     </p>
                   </>
                 ) : (
-                  <p className="text-[13px] text-[#9aa0a6]">
+                  <p className="text-[13px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                     Not described yet.
                   </p>
                 )}
@@ -762,7 +770,7 @@ function FaqRow({
 }) {
   return (
     <>
-      <dt className="border-b border-[#e8eaed]">
+      <dt className="border-b border-[#e8eaed] dark:border-white/10">
         <button
           type="button"
           onClick={onToggle}
@@ -771,7 +779,9 @@ function FaqRow({
         >
           <span
             className={`min-w-0 flex-1 text-[13px] transition-colors ${
-              open ? "font-medium text-[#1a73e8]" : "text-[#3c4043]"
+              open
+                ? "font-medium text-[#1a73e8] dark:text-[#7ba2e3]"
+                : "text-[#3c4043] dark:text-[#e8ecf4]"
             }`}
           >
             {faq.q}
@@ -779,7 +789,7 @@ function FaqRow({
           {/* The guides' plus-to-minus, so both read as one control. */}
           <span
             aria-hidden
-            className="relative h-3.5 w-3.5 shrink-0 text-[#9aa0a6] group-hover:text-[#5f6368]"
+            className="relative h-3.5 w-3.5 shrink-0 text-[#9aa0a6] group-hover:text-[#5f6368] dark:group-hover:text-[#e8ecf4] dark:text-[#9aa6bd]"
           >
             <span className="absolute left-0 top-1/2 h-px w-3.5 -translate-y-1/2 bg-current" />
             <span
@@ -793,10 +803,14 @@ function FaqRow({
       {/* The <dd> stays in the list either way, so the pair is always a term
           and its definition; only its border follows the open state, since a
           rule under a row of no height would read as a double line. */}
-      <dd className={open ? "border-b border-[#e8eaed]" : undefined}>
+      <dd
+        className={
+          open ? "border-b border-[#e8eaed] dark:border-white/10" : undefined
+        }
+      >
         <Collapse open={open}>
           <div className="pb-4 pr-8">
-            <p className="mt-2 text-[13px] leading-relaxed text-[#5f6368]">
+            <p className="mt-2 text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
               {faq.a}
             </p>
             <div className="mt-3">
@@ -832,11 +846,11 @@ function WatchButton({
         role="button"
         aria-disabled="true"
         title="Tutorial coming soon"
-        className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-[12px] font-medium text-[#9aa0a6]"
+        className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-[12px] font-medium text-[#9aa0a6] dark:border-white/15 dark:text-[#9aa6bd] dark:bg-white/5"
       >
         <YouTubeIcon size={14} className="text-[#ff0000]/40" />
         {label}
-        <span className="ml-0.5 rounded-full bg-white px-1.5 py-px text-[10px] font-semibold tracking-wide text-[#9aa0a6]">
+        <span className="ml-0.5 rounded-full bg-white px-1.5 py-px text-[10px] font-semibold tracking-wide text-[#9aa0a6] dark:bg-white/15 dark:text-[#c3ccdc]">
           Soon
         </span>
       </span>
@@ -861,16 +875,16 @@ function WatchButton({
 function ConceptBlock({ concept }: { concept: HelpConcept }) {
   return (
     <div className="flex flex-col gap-1.5 sm:flex-row sm:gap-8">
-      <h3 className="w-full shrink-0 text-[14px] font-medium text-[#3c4043] sm:w-52">
+      <h3 className="w-full shrink-0 text-[14px] font-medium text-[#3c4043] sm:w-52 dark:text-[#e8ecf4]">
         {concept.term}
       </h3>
       <div className="min-w-0 flex-1">
-        <p className="text-[13px] leading-relaxed text-[#5f6368]">
+        <p className="text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
           {concept.body}
         </p>
         {concept.watchOut && (
           // Amber, and only here: the sentence that prevents a mistake.
-          <p className="mt-2.5 border-l-2 border-amber-300 pl-3 text-[12px] leading-relaxed text-amber-800">
+          <p className="mt-2.5 border-l-2 border-amber-300 pl-3 text-[12px] leading-relaxed text-amber-800 dark:border-amber-400/40 dark:text-amber-200">
             {concept.watchOut}
           </p>
         )}
@@ -882,17 +896,17 @@ function ConceptBlock({ concept }: { concept: HelpConcept }) {
 function NoMatches({ query, onClear }: { query: string; onClear: () => void }) {
   return (
     <div className="py-20 text-center">
-      <p className="text-[15px] text-[#3c4043]">
+      <p className="text-[15px] text-[#3c4043] dark:text-[#e8ecf4]">
         Nothing here matches “{query}”.
       </p>
-      <p className="mx-auto mt-1.5 max-w-sm text-[13px] leading-relaxed text-[#9aa0a6]">
+      <p className="mx-auto mt-1.5 max-w-sm text-[13px] leading-relaxed text-[#9aa0a6] dark:text-[#9aa6bd]">
         Try a plainer word — tax, refund, staff — or get in touch and
         we&rsquo;ll answer it directly.
       </p>
       <button
         type="button"
         onClick={onClear}
-        className="mt-5 cursor-pointer rounded-full border border-[#dadce0] bg-white px-4 py-2 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
+        className="mt-5 cursor-pointer rounded-full border border-[#dadce0] bg-white dark:bg-white/5 px-4 py-2 text-[12px] font-medium text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:hover:bg-white/5 dark:border-white/15 dark:text-[#e8ecf4]"
       >
         Clear search
       </button>

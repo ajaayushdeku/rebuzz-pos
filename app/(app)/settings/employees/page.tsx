@@ -29,7 +29,6 @@ import ColumnPicker, {
   storeColumns,
   type TableColumn,
 } from "@/components/ui/ColumnPicker";
-import { CHART_PALETTE } from "@/components/dashboardComponents/chartCard";
 import PageHeader from "@/components/ui/PageHeader";
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -82,7 +81,7 @@ function AutoPrintToggle({
       onClick={onToggle}
       className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 ${
         saving ? "cursor-wait opacity-60" : "cursor-pointer"
-      } ${enabled ? "bg-blue-600" : "bg-gray-300"}`}
+      } ${enabled ? "bg-blue-600" : "bg-gray-300 dark:bg-white/20"}`}
     >
       <span
         className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${
@@ -160,8 +159,8 @@ function RoleBadge({ role }: { role: string }) {
     <span
       className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
         isStaff
-          ? "bg-purple-50 text-purple-700 border border-purple-200"
-          : "bg-blue-50 text-blue-700 border border-blue-200"
+          ? "bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-400/15 dark:text-purple-300 dark:border-purple-400/25"
+          : "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-400/15 dark:text-[#a8c4ee] dark:border-blue-400/25"
       }`}
     >
       {isStaff ? (
@@ -180,8 +179,8 @@ function StatusBadge({ deactivated }: { deactivated?: boolean }) {
     <span
       className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
         deactivated
-          ? "bg-red-50 text-red-600 border border-red-200"
-          : "bg-green-50 text-green-700 border border-green-200"
+          ? "bg-red-50 text-red-600 border border-red-200 dark:bg-red-400/15 dark:text-[#f87171] dark:border-red-400/25"
+          : "bg-green-50 text-green-700 border border-green-200 dark:bg-green-400/15 dark:text-green-300 dark:border-green-400/25"
       }`}
     >
       <span
@@ -511,7 +510,7 @@ export default function StaffManagementPage() {
     );
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
       <div className="w-full mx-auto">
         {/* ── Header ───────────────────────────────────────── */}
         {/* The search row below brings its own mt-6, so the rule carries
@@ -536,7 +535,7 @@ export default function StaffManagementPage() {
           <div className="relative flex-1">
             <Search
               size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#7b869b]"
             />
             <input
               value={search}
@@ -545,14 +544,14 @@ export default function StaffManagementPage() {
                 setPage(0);
               }}
               placeholder="Search by name, email or phone..."
-              className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]"
             />
           </div>
           <div ref={roleRef} className="relative w-full sm:w-[150px]">
             <button
               type="button"
               onClick={() => setRoleOpen((o) => !o)}
-              className="w-full flex items-center justify-between gap-2 pl-3 pr-2.5 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition capitalize"
+              className="w-full flex items-center justify-between gap-2 pl-3 pr-2.5 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition capitalize dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc]"
             >
               <span>
                 {roleFilter === "all"
@@ -561,14 +560,14 @@ export default function StaffManagementPage() {
               </span>
               <ChevronDown
                 size={14}
-                className={`text-gray-400 transition-transform duration-200 ${
+                className={`text-gray-400 transition-transform duration-200 dark:text-[#7b869b] ${
                   roleOpen ? "rotate-180" : ""
                 }`}
               />
             </button>
 
             <div
-              className={`absolute z-30 mt-1.5 w-full origin-top rounded-md border border-gray-200 bg-white shadow-lg p-1 transition-all duration-200 ${
+              className={`absolute z-30 mt-1.5 w-full origin-top rounded-md border border-gray-200 bg-white shadow-lg p-1 transition-all duration-200 dark:border-white/10 dark:bg-[#1b2436] dark:shadow-none ${
                 roleOpen
                   ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
                   : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
@@ -589,8 +588,8 @@ export default function StaffManagementPage() {
                   }}
                   className={`w-full text-left px-3 py-1.5 text-[13px] rounded-md transition-colors cursor-pointer capitalize ${
                     roleFilter === opt.value
-                      ? "bg-blue-50 text-blue-700 font-medium"
-                      : "text-gray-600 hover:bg-gray-100"
+                      ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-400/15 dark:text-[#a8c4ee]"
+                      : "text-gray-600 hover:bg-gray-100 dark:text-[#c3ccdc] dark:hover:bg-white/10"
                   }`}
                 >
                   {opt.label}
@@ -610,7 +609,7 @@ export default function StaffManagementPage() {
 
         {/* ── Staff Table ── */}
         {/* Table always renders; loading + empty states live inside the tbody. */}
-        <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="bg-white overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] dark:bg-[#0F1420]">
           <table
             className="w-full table-fixed text-sm"
             // Scales with what is actually shown. A fixed floor sized for
@@ -628,13 +627,7 @@ export default function StaffManagementPage() {
               )}
             </colgroup>
             <thead>
-              <tr
-                className="border-b text-[11px] tracking-wider"
-                style={{
-                  borderColor: CHART_PALETTE.grid,
-                  color: CHART_PALETTE.axis,
-                }}
-              >
+              <tr className="border-b border-[#e8eaed] text-[11px] tracking-wider text-[#5f6368] dark:border-white/10 dark:text-[#9aa6bd]">
                 {showColumn("serial") && (
                   <th className="text-left pb-3 pt-3 px-4 font-normal">
                     S.No.
@@ -642,7 +635,7 @@ export default function StaffManagementPage() {
                 )}
                 {showColumn("name") && (
                   <th
-                    className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600"
+                    className="text-left pb-3 pt-3 px-4 font-normal cursor-pointer select-none hover:text-gray-600 dark:hover:text-white"
                     onClick={() => toggleSort("name")}
                   >
                     <span className="flex items-center gap-1">
@@ -684,8 +677,8 @@ export default function StaffManagementPage() {
               {loading ? (
                 <tr>
                   <td colSpan={colCount} className="text-center py-16">
-                    <div className="flex items-center justify-center gap-2 text-gray-400">
-                      <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+                    <div className="flex items-center justify-center gap-2 text-gray-400 dark:text-[#7b869b]">
+                      <Loader2 className="h-5 w-5 animate-spin text-blue-500 dark:text-[#7ba2e3]" />
                       <span className="text-sm">Loading staff...</span>
                     </div>
                   </td>
@@ -694,16 +687,19 @@ export default function StaffManagementPage() {
                 <tr>
                   <td
                     colSpan={colCount}
-                    className="text-center py-2 text-sm text-gray-400"
+                    className="text-center py-2 text-sm text-gray-400 dark:text-[#7b869b]"
                   >
                     <div className="flex flex-col items-center justify-center py-12">
-                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                        <UserCog size={28} className="text-gray-500" />
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3 dark:bg-white/10">
+                        <UserCog
+                          size={28}
+                          className="text-gray-500 dark:text-[#9aa6bd]"
+                        />
                       </div>
-                      <p className="text-sm font-medium text-gray-500">
+                      <p className="text-sm font-medium text-gray-500 dark:text-[#c3ccdc]">
                         No staff members found
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-gray-400 mt-1 dark:text-[#7b869b]">
                         Click &ldquo;Add New Staff&rdquo; to get started
                       </p>
                     </div>
@@ -716,41 +712,32 @@ export default function StaffManagementPage() {
                     onClick={() =>
                       router.push(`/records/employee/${staffMember._id}`)
                     }
-                    className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
+                    className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition-colors dark:border-white/10 dark:hover:bg-white/5"
                   >
                     {showColumn("serial") && (
-                      <td className="py-3 px-4 text-gray-400 text-[11px]">
+                      <td className="py-3 px-4 text-gray-400 text-[11px] dark:text-[#7b869b]">
                         {page * pageSize + idx + 1}
                       </td>
                     )}
                     {showColumn("name") && (
                       <td className="py-3 px-4">
-                        <span
-                          className="font-medium  text-[13px]"
-                          style={{ color: CHART_PALETTE.title }}
-                        >
+                        <span className="font-medium  text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
                           {staffMember.name || "—"}
                         </span>
                       </td>
                     )}
                     {showColumn("email") && (
                       <td className="py-3 px-4">
-                        <div
-                          className="flex items-center gap-1.5 text-xs"
-                          style={{ color: CHART_PALETTE.title }}
-                        >
-                          <Mail className="h-3.5 w-3.5 shrink-0 text-gray-500" />
+                        <div className="flex items-center gap-1.5 text-xs text-[#3c4043] dark:text-[#c3ccdc]">
+                          <Mail className="h-3.5 w-3.5 shrink-0 text-gray-500 dark:text-[#7b869b]" />
                           {staffMember.email || "—"}
                         </div>
                       </td>
                     )}
                     {showColumn("phone") && (
                       <td className="py-3 px-4">
-                        <div
-                          className="flex items-center gap-1.5 text-xs tracking-wide"
-                          style={{ color: CHART_PALETTE.title }}
-                        >
-                          <Phone className="h-3.5 w-3.5 text-gray-500 shrink-0" />
+                        <div className="flex items-center gap-1.5 text-xs tracking-wide text-[#3c4043] dark:text-[#c3ccdc]">
+                          <Phone className="h-3.5 w-3.5 text-gray-500 shrink-0 dark:text-[#7b869b]" />
                           {staffMember.phone || "—"}
                         </div>
                       </td>
@@ -789,14 +776,14 @@ export default function StaffManagementPage() {
                       >
                         <button
                           onClick={() => openEdit(staffMember)}
-                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors dark:text-[#7b869b] dark:hover:bg-blue-400/15 dark:hover:text-[#7ba2e3]"
                           title="Edit"
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
                         <button
                           onClick={() => setDeleteConfirm(staffMember._id)}
-                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors dark:text-[#7b869b] dark:hover:bg-red-400/15 dark:hover:text-[#f87171]"
                           title="Delete"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -811,21 +798,21 @@ export default function StaffManagementPage() {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-white/10">
           <button
             onClick={() => setPage(Math.max(0, page - 1))}
             disabled={page === 0}
             className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
               page === 0
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                ? "text-gray-300 cursor-not-allowed dark:text-[#4a5468]"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#9aa6bd] dark:hover:bg-white/10 dark:hover:text-white"
             }`}
           >
             <ChevronLeft size={14} />
             Previous
           </button>
 
-          <span className="text-xs text-gray-400 font-medium">
+          <span className="text-xs text-gray-400 font-medium dark:text-[#7b869b]">
             Page {page + 1} of {totalPages} · {sorted.length} staff members
           </span>
 
@@ -834,8 +821,8 @@ export default function StaffManagementPage() {
             disabled={page >= totalPages - 1}
             className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
               page >= totalPages - 1
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                ? "text-gray-300 cursor-not-allowed dark:text-[#4a5468]"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-[#9aa6bd] dark:hover:bg-white/10 dark:hover:text-white"
             }`}
           >
             Next

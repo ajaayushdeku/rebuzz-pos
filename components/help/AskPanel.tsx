@@ -36,7 +36,7 @@ export default function AskPanel() {
       <div
         role="tablist"
         aria-label="How to get in touch"
-        className="inline-flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+        className="inline-flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1 dark:bg-white/10"
       >
         {TABS.map((t) => {
           const selected = tab === t.id;
@@ -47,10 +47,10 @@ export default function AskPanel() {
               role="tab"
               aria-selected={selected}
               onClick={() => setTab(t.id)}
-              className={`cursor-pointer rounded-full px-4 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+              className={`cursor-pointer rounded-full px-4 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] dark:focus-visible:ring-offset-[#242a38] ${
                 selected
-                  ? "bg-white font-semibold text-blue-950"
-                  : "font-medium text-blue-800 hover:text-blue-950"
+                  ? "bg-white font-semibold text-blue-950 dark:bg-white/15 dark:text-[#e8ecf4]"
+                  : "font-medium text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee] dark:hover:text-white"
               }`}
             >
               {t.label}
@@ -284,7 +284,7 @@ function FeedbackForm() {
 // ── Shared parts ──────────────────────────────────────────────────────────
 
 const inputClass =
-  "h-11 w-full rounded-xl border border-[#dadce0] bg-white px-3.5 text-[13px] text-[#3c4043] outline-none transition placeholder:text-[#9aa0a6] focus:border-transparent focus:ring-2 focus:ring-blue-500";
+  "h-11 w-full rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 px-3.5 text-[13px] text-[#3c4043] outline-none transition placeholder:text-[#9aa0a6] focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:placeholder:text-[#7b869b] dark:border-white/15 dark:text-[#e8ecf4]";
 
 function Field({
   label,
@@ -309,15 +309,19 @@ function Field({
     <>
       {label}
       {required && (
-        <span className="text-[#d93025]" aria-hidden>
+        <span className="text-[#d93025] dark:text-[#f87171]" aria-hidden>
           *
         </span>
       )}
-      {hint && <span className="font-normal text-[#9aa0a6]">{hint}</span>}
+      {hint && (
+        <span className="font-normal text-[#9aa0a6] dark:text-[#9aa6bd]">
+          {hint}
+        </span>
+      )}
     </>
   );
   const captionClass =
-    "flex items-baseline gap-1.5 text-[12px] font-medium text-[#3c4043]";
+    "flex items-baseline gap-1.5 text-[12px] font-medium text-[#3c4043] dark:text-[#e8ecf4]";
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -355,14 +359,18 @@ function Stars({
 }) {
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="flex items-baseline gap-1.5 text-[12px] font-medium text-[#3c4043]">
+      <legend className="flex items-baseline gap-1.5 text-[12px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
         {label}
         {required && (
-          <span className="text-[#d93025]" aria-hidden>
+          <span className="text-[#d93025] dark:text-[#f87171]" aria-hidden>
             *
           </span>
         )}
-        {hint && <span className="font-normal text-[#9aa0a6]">{hint}</span>}
+        {hint && (
+          <span className="font-normal text-[#9aa0a6] dark:text-[#9aa6bd]">
+            {hint}
+          </span>
+        )}
       </legend>
 
       <div className="flex items-center gap-1">
@@ -387,7 +395,7 @@ function Stars({
                 className={`transition-colors ${
                   filled
                     ? "fill-amber-400 text-amber-400"
-                    : "text-[#dadce0] hover:text-[#9aa0a6]"
+                    : "text-[#dadce0] hover:text-[#9aa0a6] dark:hover:text-[#c3ccdc] dark:text-[#3d4657]"
                 }`}
               />
               <span className="sr-only">
@@ -415,7 +423,7 @@ function Submit({
       <button
         type="submit"
         disabled={disabled || busy}
-        className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-[#1a73e8] px-6 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-[#1765cc] disabled:cursor-not-allowed disabled:bg-[#dadce0] disabled:text-[#9aa0a6]"
+        className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-[#1a73e8] px-6 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-[#1765cc] disabled:cursor-not-allowed disabled:bg-[#dadce0] disabled:text-[#9aa0a6] dark:disabled:text-[#7b869b] dark:disabled:bg-white/10"
       >
         {busy && <Loader2 size={14} className="animate-spin" aria-hidden />}
         {busy ? "Sending…" : children}

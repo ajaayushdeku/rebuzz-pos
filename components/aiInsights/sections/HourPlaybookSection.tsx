@@ -35,21 +35,21 @@ function busynessTone(percent: number): {
   if (percent < 34) {
     return {
       accent: "red",
-      pill: "bg-red-50 text-red-600",
-      text: "text-red-600",
+      pill: "bg-red-50 text-red-600 dark:text-red-300 dark:bg-red-400/10",
+      text: "text-red-600 dark:text-red-300",
     };
   }
   if (percent < 75) {
     return {
       accent: "amber",
-      pill: "bg-amber-50 text-amber-600",
-      text: "text-amber-600",
+      pill: "bg-amber-50 text-amber-600 dark:text-amber-300 dark:bg-amber-400/10",
+      text: "text-amber-600 dark:text-amber-300",
     };
   }
   return {
     accent: "emerald",
-    pill: "bg-emerald-50 text-emerald-600",
-    text: "text-emerald-600",
+    pill: "bg-emerald-50 text-emerald-600 dark:text-emerald-300 dark:bg-emerald-400/10",
+    text: "text-emerald-600 dark:text-emerald-300",
   };
 }
 
@@ -76,7 +76,7 @@ function KindLabel({ kind }: { kind: SlotKind }) {
         size={10}
         strokeWidth={2.5}
         aria-hidden
-        className="shrink-0 bg-red-300"
+        className="shrink-0 bg-red-300 dark:bg-red-400/40"
       /> */}
       <p>{KIND_LABEL[kind]}</p>
     </div>
@@ -99,7 +99,7 @@ export default function HourPlaybookSection({
     <section>
       <SectionHeader
         icon={Clock}
-        iconClassName="bg-slate-900 text-white"
+        iconClassName="bg-slate-900 text-white dark:bg-white/15"
         title="Hour-by-Hour Playbook"
         subtitle={`Your busiest and quietest hours over the last ${HOUR_WINDOW_DAYS / 7} weeks, and what to do in each`}
         info={{
@@ -110,7 +110,7 @@ export default function HourPlaybookSection({
           <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
             <SectionRefreshButton
               state={state}
-              textClassName="text-[#5f6368]"
+              textClassName="text-[#5f6368] dark:text-[#a9b4c7]"
             />
           </div>
         }
@@ -168,7 +168,7 @@ export default function HourPlaybookSection({
                   },
                 ]}
               >
-                <p className="text-[13px] leading-relaxed text-[#5f6368]">
+                <p className="text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
                   {item.description}
                 </p>
                 <div className="mt-auto">

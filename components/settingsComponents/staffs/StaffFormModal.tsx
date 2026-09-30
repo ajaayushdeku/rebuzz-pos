@@ -13,12 +13,12 @@ export interface StaffFormData {
 
 export type StaffFormErrors = Partial<Record<keyof StaffFormData, string>>;
 
-const errorClass = "border-red-300 focus:ring-red-400";
+const errorClass = "border-red-300 focus:ring-red-400 dark:border-red-400/50";
 
 // Matches SelectMenu's trigger (rounded-xl, py-2.5, 13px) so the text fields
 // and the role dropdown share a height and radius.
 const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[13px] text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
 
 const ROLE_OPTIONS = [
   { value: "basic", label: "Basic" },
@@ -95,7 +95,7 @@ export default function StaffFormModal({
             type="button"
             onClick={() => onOpenChange(false)}
             disabled={saving}
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:bg-white/10"
           >
             Cancel
           </button>
@@ -123,10 +123,10 @@ export default function StaffFormModal({
         {/* ── Contact ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#6b7588]">
               Details
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5 dark:text-[#9aa6bd]">
               How this staff member signs in and is contacted
             </p>
           </div>
@@ -134,7 +134,7 @@ export default function StaffFormModal({
           <div className="space-y-3">
             {FIELDS.map(({ key, label, type, placeholder }) => (
               <div key={key}>
-                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
+                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#6b7588]">
                   {label}
                 </label>
                 <input
@@ -155,15 +155,15 @@ export default function StaffFormModal({
         {/* ── Role ── */}
         <div>
           <div className="mb-3">
-            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+            <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400 dark:text-[#6b7588]">
               Role
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5 dark:text-[#9aa6bd]">
               Controls what this staff member can access
             </p>
           </div>
 
-          <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5">
+          <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#6b7588]">
             Staff Role
           </label>
           <SelectMenu

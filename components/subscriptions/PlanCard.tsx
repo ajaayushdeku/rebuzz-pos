@@ -45,30 +45,30 @@ export default function PlanCard({
   return (
     <div
       className={cn(
-        "flex-col rounded-2xl border bg-white p-5 transition-colors md:flex",
+        "flex-col rounded-2xl border bg-white p-5 transition-colors md:flex dark:bg-[#161d2e]",
         isSelected ? "flex" : "hidden",
         isSelected
           ? "border-blue-500 md:ring-2 md:ring-blue-500/30"
-          : "border-[#e3e3e3] md:hover:border-[#dadce0]",
+          : "border-[#e3e3e3] md:hover:border-[#dadce0] dark:border-white/10",
       )}
     >
       <div className="relative mb-4">
         {plan.badge ? (
-          <span className="absolute right-0 mb-2 inline-block rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-700">
+          <span className="absolute right-0 mb-2 inline-block rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-700 dark:border-blue-400/25 dark:text-[#a8c4ee] dark:bg-blue-400/10">
             {plan.badge}
           </span>
         ) : null}
 
         <div className="flex items-center gap-3 ">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-current/20 bg-blue-50 text-blue-600">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-current/20 bg-blue-50 text-blue-600 dark:text-[#a8c4ee] dark:bg-blue-400/10">
             <PlanIcon className="h-5 w-5" />
           </span>
 
           <div className="min-w-0 ">
-            <h2 className="truncate text-lg font-semibold tracking-tight text-[#3c4043]">
+            <h2 className="truncate text-lg font-semibold tracking-tight text-[#3c4043] dark:text-[#e8ecf4]">
               {plan.name}
             </h2>
-            <p className="mt-0.5 w-full text-xs text-[#9aa0a6]">
+            <p className="mt-0.5 w-full text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
               {plan.tagline}
             </p>
           </div>
@@ -76,20 +76,22 @@ export default function PlanCard({
       </div>
 
       <div className="mb-5 flex flex-wrap items-baseline gap-x-2 gap-y-1.5">
-        <span className="text-[28px] font-semibold tracking-tight tabular-nums text-[#3c4043]">
+        <span className="text-[28px] font-semibold tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
           {plan.price}
         </span>
 
         {plan.discount ? (
-          <span className="text-sm text-[#9aa0a6] line-through">
+          <span className="text-sm text-[#9aa0a6] line-through dark:text-[#9aa6bd]">
             {plan.discount.originalPrice}
           </span>
         ) : null}
 
-        <span className="text-xs text-[#9aa0a6]">{plan.period}</span>
+        <span className="text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
+          {plan.period}
+        </span>
 
         {plan.discount ? (
-          <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+          <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:border-emerald-400/25 dark:text-emerald-300 dark:bg-emerald-400/10">
             Save {plan.discount.saving}
           </span>
         ) : null}
@@ -102,11 +104,15 @@ export default function PlanCard({
               <Printer
                 size={14}
                 aria-hidden
-                className={printerOn ? "text-blue-600" : "text-[#9aa0a6]"}
+                className={
+                  printerOn
+                    ? "text-blue-600 dark:text-[#a8c4ee]"
+                    : "text-[#9aa0a6] dark:text-[#9aa6bd]"
+                }
               />
               <span
                 id={printerLabelId}
-                className="text-[13px] font-medium text-[#3c4043]"
+                className="text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]"
               >
                 Printer service
               </span>
@@ -120,7 +126,7 @@ export default function PlanCard({
               onClick={() => setWithPrinter((on) => !on)}
               className={cn(
                 "relative h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors",
-                printerOn ? "bg-blue-600" : "bg-[#dadce0]",
+                printerOn ? "bg-blue-600" : "bg-[#dadce0] dark:bg-white/15",
               )}
             >
               <span
@@ -137,16 +143,20 @@ export default function PlanCard({
           <p
             className={cn(
               "mt-1.5 text-xs transition-colors",
-              printerOn ? "font-semibold text-blue-700" : "text-[#5f6368]",
+              printerOn
+                ? "font-semibold text-blue-700 dark:text-[#a8c4ee]"
+                : "text-[#5f6368] dark:text-[#a9b4c7]",
             )}
           >
             + {addon.price}{" "}
-            <span className="font-normal text-[#9aa0a6]">({addon.note})</span>
+            <span className="font-normal text-[#9aa0a6] dark:text-[#9aa6bd]">
+              ({addon.note})
+            </span>
           </p>
         </div>
       ) : null}
 
-      <span className="mb-2 text-[13px] font-semibold text-[#3c4043]">
+      <span className="mb-2 text-[13px] font-semibold text-[#3c4043] dark:text-[#e8ecf4]">
         What&lsquo;s included
       </span>
 
@@ -158,12 +168,12 @@ export default function PlanCard({
               className={cn(
                 "mt-0.5 shrink-0",
                 feature === PRINTER_FEATURE
-                  ? "text-green-600"
-                  : "text-blue-600",
+                  ? "text-green-600 dark:text-emerald-300"
+                  : "text-blue-600 dark:text-[#a8c4ee]",
               )}
               aria-hidden
             />
-            <span className="text-[13px] leading-snug text-[#5f6368]">
+            <span className="text-[13px] leading-snug text-[#5f6368] dark:text-[#a9b4c7]">
               {feature}
             </span>
           </li>
@@ -176,7 +186,7 @@ export default function PlanCard({
         className={cn(
           "w-full rounded-lg px-4 py-2 text-[13px] font-semibold transition-colors",
           isCurrent
-            ? "cursor-default border border-[#dadce0] bg-[#f8f9fa] text-[#9aa0a6]"
+            ? "cursor-default border border-[#dadce0] bg-[#f8f9fa] text-[#9aa0a6] dark:border-white/15 dark:text-[#9aa6bd] dark:bg-white/5"
             : "cursor-pointer bg-blue-600 text-white hover:bg-blue-700",
         )}
       >

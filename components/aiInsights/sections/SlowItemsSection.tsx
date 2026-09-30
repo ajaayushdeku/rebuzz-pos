@@ -55,7 +55,7 @@ export default function SlowItemsSection({
     <section>
       <SectionHeader
         icon={TriangleAlert}
-        iconClassName="bg-red-50 text-red-500"
+        iconClassName="bg-red-50 text-red-500 dark:text-red-300 dark:bg-red-400/10"
         title="Slow Item Insights"
         subtitle={`Items selling slowly over the last ${SECTION_WINDOW_DAYS} days, and how to fix them`}
         info={{
@@ -66,7 +66,7 @@ export default function SlowItemsSection({
           <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
             <SectionRefreshButton
               state={state}
-              textClassName="text-red-600 hover:bg-red-100 border-red-300 hover:border-red-400"
+              textClassName="text-red-600 hover:bg-red-100 border-red-300 hover:border-red-400 dark:hover:border-red-400/60 dark:hover:bg-red-400/20 dark:border-red-400/40 dark:text-red-300"
             />
           </div>
         }
@@ -99,7 +99,7 @@ export default function SlowItemsSection({
                   {
                     label: item.kind === "drop" ? "Sales change" : "Status",
                     value: item.signal,
-                    valueClassName: "text-red-600",
+                    valueClassName: "text-red-600 dark:text-red-300",
                   },
                   { label: "Pace", value: item.context },
                 ]}
@@ -109,7 +109,7 @@ export default function SlowItemsSection({
                   </CardAction>
                 }
               >
-                <p className="text-[13px] leading-relaxed text-[#5f6368]">
+                <p className="text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
                   {item.description}
                 </p>
                 <div className="mt-auto">

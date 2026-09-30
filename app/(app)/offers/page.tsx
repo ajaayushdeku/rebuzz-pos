@@ -39,7 +39,7 @@ function OfferBuilder() {
   const [view, setView] = useState<"build" | "preview">("build");
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8  md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8  md:px-10 dark:bg-[#0f1420]">
       <div className="mx-auto w-full">
         {/* The grid below brings its own pt-4, so the rule carries no
             margin of its own. */}
@@ -56,7 +56,7 @@ function OfferBuilder() {
             /* Only below xl, where the two columns stack. Wide enough and both
                are on screen at once, so a switch would be a control with
                nothing to switch. */
-            <div className="flex  items-center gap-1 rounded-xl bg-[#e4f2fe]  p-1 xl:hidden">
+            <div className="flex  items-center gap-1 rounded-xl bg-[#e4f2fe]  p-1 xl:hidden dark:bg-white/10">
               {VIEWS.map(({ id, label, icon: Icon }) => {
                 const active = view === id;
                 return (
@@ -68,8 +68,8 @@ function OfferBuilder() {
                     className={cn(
                       "flex items-center gap-2 rounded-lg px-5 py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe]",
                       active
-                        ? "bg-white text-gray-900 shadow-sm"
-                        : "text-gray-500 hover:text-gray-700",
+                        ? "bg-white text-gray-900 shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none"
+                        : "text-gray-500 hover:text-gray-700 dark:hover:text-[#e8ecf4] dark:text-[#9aa6bd]",
                     )}
                   >
                     <Icon size={15} />
@@ -82,15 +82,15 @@ function OfferBuilder() {
         />
 
         {/*
-        <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+        <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
            
-              <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+              <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200 dark:border-white/15">
                 <div>
                   <h1 className="font-bold text-xl md:text-2xl truncate">
                     Dashboard Overview
                   </h1>
                   {!isLoading && (
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-xs text-gray-400 mt-0.5 dark:text-[#9aa6bd]">
                       Welcome back, {profile?.name}. Here&lsquo;s what&lsquo;s happening
                       with Rebuzz POS
                     </p>

@@ -64,7 +64,7 @@ function LineBar({ limit, spent }: { limit: number; spent: number }) {
       aria-label={`${spent} of ${limit} AI requests used this hour`}
     >
       <div
-        className="absolute inset-y-0 right-0 bg-[#e8eaed] transition-[width] duration-300 ease-out"
+        className="absolute inset-y-0 right-0 bg-[#e8eaed] transition-[width] duration-300 ease-out dark:bg-white/10"
         style={{ width: `${100 - spentShare}%` }}
       />
     </div>
@@ -101,7 +101,7 @@ function RampBar({
           <span
             key={i}
             className={`flex-1 rounded-full transition-colors duration-300 ${
-              filled ? "" : "bg-[#e8eaed]"
+              filled ? "" : "bg-[#e8eaed] dark:bg-white/10"
             }`}
             style={
               filled
@@ -169,15 +169,15 @@ export default function AiQuotaMeter({
   const out = remaining === 0;
 
   const countTone = out
-    ? "text-red-600"
+    ? "text-red-600 dark:text-red-300"
     : nearlyOut
-      ? "text-amber-600"
-      : "text-[#3c4043]";
+      ? "text-amber-600 dark:text-amber-300"
+      : "text-[#3c4043] dark:text-[#e8ecf4]";
 
   if (variant === "inline") {
     return (
       <div
-        className={`flex shrink-0 items-center gap-2 rounded-full border border-[#dadce0] bg-white px-3 py-1.5 ${className}`}
+        className={`flex shrink-0 items-center gap-2 rounded-full border border-[#dadce0] bg-white dark:bg-white/5 px-3 py-1.5 ${className} dark:border-white/15`}
         title={
           out
             ? `No AI requests left — the allowance frees up ${unlockLabel(resetAt)}.`
@@ -189,21 +189,23 @@ export default function AiQuotaMeter({
         <Gauge
           className={`h-3.5 w-3.5 shrink-0 ${
             out
-              ? "text-red-600"
+              ? "text-red-600 dark:text-red-300"
               : nearlyOut
-                ? "text-amber-600"
-                : "text-[#5f6368]"
+                ? "text-amber-600 dark:text-amber-300"
+                : "text-[#5f6368] dark:text-[#a9b4c7]"
           }`}
           aria-hidden
         />
         <span className={`text-[11px] font-semibold tabular-nums ${countTone}`}>
           {spent}
-          <span className="font-normal text-[#9aa0a6]">/{limit}</span>
+          <span className="font-normal text-[#9aa0a6] dark:text-[#9aa6bd]">
+            /{limit}
+          </span>
         </span>
         {/* Names what the denominator is. The countdown used to sit here,
             between the count and the bar drawing that same count — it now
             follows the bar, where it reads as what happens next. */}
-        <span className="hidden md:block text-[11px] whitespace-nowrap text-[#9aa0a6]">
+        <span className="hidden md:block text-[11px] whitespace-nowrap text-[#9aa0a6] dark:text-[#9aa6bd]">
           this hour
         </span>
 
@@ -231,7 +233,7 @@ export default function AiQuotaMeter({
             </span>
             {/* After the bar: the bar is the state now, this is the state
                 next — the moment the window hands a request back. */}
-            <span className="text-[11px] whitespace-nowrap text-[#9aa0a6]">
+            <span className="text-[11px] whitespace-nowrap text-[#9aa0a6] dark:text-[#9aa6bd]">
               {out ? "frees up" : "+1"} {unlockLabel(resetAt)}
             </span>
           </span>
@@ -242,7 +244,7 @@ export default function AiQuotaMeter({
           onClick={() => setExpanded((open) => !open)}
           aria-expanded={expanded}
           aria-label={expanded ? "Hide the usage bar" : "Show the usage bar"}
-          className="-mr-1 flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-[#9aa0a6] transition-colors hover:bg-[#f1f3f4] hover:text-[#3c4043] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="-mr-1 flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-[#9aa0a6] transition-colors hover:bg-[#f1f3f4] hover:text-[#3c4043] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:text-[#e8ecf4] dark:hover:bg-white/10 dark:text-[#9aa6bd]"
         >
           <ChevronLeft
             className={`h-3.5 w-3.5 transition-transform duration-300 ease-out ${
@@ -257,17 +259,17 @@ export default function AiQuotaMeter({
 
   return (
     <div
-      className={`rounded-2xl border border-[#e3e3e3] bg-white p-5 ${className}`}
+      className={`rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] p-5 ${className} dark:border-white/10`}
     >
       <div className="flex items-start gap-4">
         {/* `border-current/20` frames the tile in the icon's own hue. */}
         <div
           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-current/20 ${
             out
-              ? "bg-red-50 text-red-600"
+              ? "bg-red-50 text-red-600 dark:text-red-300 dark:bg-red-400/10"
               : nearlyOut
-                ? "bg-amber-50 text-amber-600"
-                : "bg-blue-50 text-blue-600"
+                ? "bg-amber-50 text-amber-600 dark:text-amber-300 dark:bg-amber-400/10"
+                : "bg-blue-50 text-blue-600 dark:text-blue-300 dark:bg-blue-400/10"
           }`}
         >
           <Gauge className="h-5 w-5" />
@@ -276,10 +278,10 @@ export default function AiQuotaMeter({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
             <div className="min-w-0">
-              <p className="text-[15px] font-normal text-[#3c4043]">
+              <p className="text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
                 AI requests this hour
               </p>
-              <p className="mt-0.5 text-xs text-[#9aa0a6]">
+              <p className="mt-0.5 text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                 {out
                   ? `No requests left — the allowance frees up ${unlockLabel(resetAt)}.`
                   : `${remaining} left. The oldest request drops off ${unlockLabel(resetAt)}.`}
@@ -292,7 +294,7 @@ export default function AiQuotaMeter({
               className={`shrink-0 text-[22px] font-semibold leading-none tracking-tight tabular-nums ${countTone}`}
             >
               {spent}
-              <span className="text-[13px] font-normal text-[#9aa0a6]">
+              <span className="text-[13px] font-normal text-[#9aa0a6] dark:text-[#9aa6bd]">
                 {" "}
                 of {limit}
               </span>
@@ -305,7 +307,7 @@ export default function AiQuotaMeter({
             <RampBar limit={limit} spent={spent} />
           </div>
 
-          <p className="mt-2.5 text-[11px] leading-relaxed text-[#9aa0a6]">
+          <p className="mt-2.5 text-[11px] leading-relaxed text-[#9aa0a6] dark:text-[#9aa6bd]">
             Only generations that reach your AI provider count. Insights served
             from the last 26 hours&rsquo; cache are free.
           </p>

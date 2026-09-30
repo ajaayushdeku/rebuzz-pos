@@ -23,7 +23,7 @@ export default function PlanTabs({
     <div
       role="tablist"
       aria-label="Subscription plans"
-      className="relative flex items-center gap-1 rounded-xl bg-[#e4f2fe] p-1"
+      className="relative flex items-center gap-1 rounded-xl bg-[#e4f2fe] p-1 dark:bg-white/10"
     >
       {PLANS.map((plan) => {
         const isSelected = plan.id === selected;
@@ -34,10 +34,10 @@ export default function PlanTabs({
             aria-selected={isSelected}
             onClick={() => onSelect(plan.id)}
             className={cn(
-              "min-w-[100px] flex items-center text-center justify-center gap-2 rounded-lg px-5 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe]",
+              "min-w-[100px] flex items-center text-center justify-center gap-2 rounded-lg px-5 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] dark:focus-visible:ring-offset-[#242a38]",
               isSelected
-                ? "bg-white font-bold text-blue-950 shadow-sm"
-                : "font-semibold text-blue-800 hover:text-blue-950",
+                ? "bg-white font-bold text-blue-950 shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none"
+                : "font-semibold text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee] dark:hover:text-white",
             )}
           >
             {plan.name}

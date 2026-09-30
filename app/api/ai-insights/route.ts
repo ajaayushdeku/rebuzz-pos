@@ -6,10 +6,7 @@ import {
   AI_SYSTEM_PROMPT,
 } from "@/lib/ai-insights/contract";
 
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL;
-// [POS backend] To call khajaGharBackend instead of backend/, replace the line
-// above with this import and switch the other [POS backend] lines below:
-// import { POS_API_URL as AI_SERVICE_URL, readAiError } from "@/lib/ai-insights/posAiApi.server";
+import { aiApiUrl, readAiError } from "@/lib/ai-insights/posAiApi.server";
 
 /**
  * Server-side bridge to the BYOK AI service's insights endpoint.
@@ -66,7 +63,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "AUTH_REQUIRED" }, { status: 401 });
   }
 
-  if (!AI_SERVICE_URL) {
+  const url = aiApiUrl("/ai-insights");
+
+  if (!url) {
     return NextResponse.json(
       { error: "AI service is not configured on this server" },
       { status: 503 },
@@ -86,8 +85,7 @@ export async function POST(req: NextRequest) {
 
   let res: Response;
   try {
-    // [POS backend] res = await fetch(`${AI_SERVICE_URL}/ai-insights`, {
-    res = await fetch(`${AI_SERVICE_URL}/api/ai-insights`, {
+    res = await fetch(url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -104,7 +102,7 @@ export async function POST(req: NextRequest) {
     const cause =
       (error as { cause?: { code?: string; message?: string } })?.cause ?? {};
     console.error(
-      `[ai-insights] POST ${AI_SERVICE_URL} failed:`,
+      `[ai-insights] POST ${url} failed:`,
       (error as Error)?.message,
       "| cause:",
       cause.code ?? cause.message ?? "(none)",
@@ -119,25 +117,13 @@ export async function POST(req: NextRequest) {
   const json = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    // [POS backend] The POS answers jsend ({ status, data: { code, ... } }):
-    // const { error, raw, retryAfter } = readAiError(json);
-    // return NextResponse.json(
-    //   { error, raw, retryAfter },
-    //   { status: res.status, headers: retryAfterHeader(res) },
-    // );
-
     // Codes pass through intact: NOT_CONFIGURED and AI_DISABLED are 424s the UI
     // answers by pointing at the settings screen, the rest are 502s naming an
     // upstream failure. Collapsing them would lose the only actionable part.
+    // `retryAfter` rides along on a 429 and becomes "try again in N s".
+    const { error, raw, retryAfter } = readAiError(json);
     return NextResponse.json(
-      {
-        error: json?.error ?? "Request failed",
-        raw: json?.raw ?? undefined,
-        // Forwarded on a 429. The service sends the wait in the body, and the
-        // client turns it into "try again in N s" — but only if it arrives.
-        // Rebuilding the body without it made that sentence unreachable.
-        retryAfter: json?.retryAfter ?? undefined,
-      },
+      { error, raw, retryAfter },
       {
         status: res.status,
         headers: { ...rateLimitHeaders(res), ...retryAfterHeader(res) },

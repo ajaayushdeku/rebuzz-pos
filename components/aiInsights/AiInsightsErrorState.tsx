@@ -56,7 +56,8 @@ const TONES: Record<
     panel: "border-[#e3e3e3] bg-[#f8f9fa] dark:border-white/10 dark:bg-white/5",
     iconWrap: "bg-[#f1f3f4] dark:bg-white/10",
     icon: "text-[#5f6368] dark:text-[#c3ccdc]",
-    button: "bg-[#3c4043] hover:bg-[#2b2e31]",
+    button:
+      "bg-[#3c4043] hover:bg-[#2b2e31] dark:bg-white/15 dark:hover:bg-white/25",
   },
 };
 

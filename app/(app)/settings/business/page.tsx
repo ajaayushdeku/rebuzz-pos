@@ -25,9 +25,9 @@ import businessLogo from "@/public/rebuzz.png";
 import PageHeader from "@/components/ui/PageHeader";
 
 const inputClass =
-  "w-full rounded-lg border border-[#dadce0] px-3 py-2.5 text-sm text-[#3c4043] transition placeholder:text-[#9aa0a6] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500";
+  "w-full rounded-lg border border-[#dadce0] px-3 py-2.5 text-sm text-[#3c4043] transition placeholder:text-[#9aa0a6] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
 const inputErrorClass =
-  "w-full rounded-lg border border-red-300 px-3 py-2.5 text-sm text-[#3c4043] transition placeholder:text-[#9aa0a6] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-red-400";
+  "w-full rounded-lg border border-red-300 px-3 py-2.5 text-sm text-[#3c4043] transition placeholder:text-[#9aa0a6] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-red-400 dark:border-red-400/50 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]";
 
 /** Logo guidance, stated once and reused by the validator and the hint. */
 const LOGO_WARN_MB = 1;
@@ -78,8 +78,8 @@ function Field({
   return (
     <div className="min-w-0">
       <div className="mb-1.5 flex items-center gap-1.5">
-        <Icon className="h-3.5 w-3.5 shrink-0 text-[#9aa0a6]" />
-        <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#9aa0a6]">
+        <Icon className="h-3.5 w-3.5 shrink-0 text-[#9aa0a6] dark:text-[#7b869b]" />
+        <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#9aa0a6] dark:text-[#7b869b]">
           {label}
         </span>
       </div>
@@ -88,15 +88,21 @@ function Field({
         <>
           {children}
           {error ? (
-            <p className="mt-1 text-[11px] text-red-500">{error}</p>
+            <p className="mt-1 text-[11px] text-red-500 dark:text-[#f87171]">
+              {error}
+            </p>
           ) : hint ? (
-            <p className="mt-1 text-[11px] text-[#9aa0a6]">{hint}</p>
+            <p className="mt-1 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
+              {hint}
+            </p>
           ) : null}
         </>
       ) : (
         <p
           className={`truncate text-sm font-medium ${
-            value ? "text-[#3c4043]" : "text-[#9aa0a6]"
+            value
+              ? "text-[#3c4043] dark:text-[#e8ecf4]"
+              : "text-[#9aa0a6] dark:text-[#7b869b]"
           }`}
           title={value ?? undefined}
         >
@@ -125,10 +131,14 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border-t border-[#e8eaed] px-6 py-5">
+    <div className="border-t border-[#e8eaed] px-6 py-5 dark:border-white/10">
       <div className="mb-4">
-        <h3 className="text-[13px] font-semibold text-[#3c4043]">{title}</h3>
-        <p className="mt-0.5 text-[11px] text-[#9aa0a6]">{description}</p>
+        <h3 className="text-[13px] font-semibold text-[#3c4043] dark:text-[#e8ecf4]">
+          {title}
+        </h3>
+        <p className="mt-0.5 text-[11px] text-[#9aa0a6] dark:text-[#7b869b]">
+          {description}
+        </p>
       </div>
       <div className="grid gap-5 sm:grid-cols-2">{children}</div>
     </div>
@@ -137,20 +147,20 @@ function Section({
 
 function ProfileSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white">
+    <div className="overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white dark:border-white/10 dark:bg-[#161d2e]">
       <div className="flex items-center gap-5 p-6">
-        <div className="h-20 w-20 shrink-0 animate-pulse rounded-xl bg-gray-100" />
+        <div className="h-20 w-20 shrink-0 animate-pulse rounded-xl bg-gray-100 dark:bg-white/10" />
         <div className="space-y-2">
-          <div className="h-5 w-48 animate-pulse rounded bg-gray-100" />
-          <div className="h-3 w-24 animate-pulse rounded bg-gray-100" />
+          <div className="h-5 w-48 animate-pulse rounded bg-gray-100 dark:bg-white/10" />
+          <div className="h-3 w-24 animate-pulse rounded bg-gray-100 dark:bg-white/10" />
         </div>
       </div>
-      <div className="border-t border-[#e8eaed] p-6">
+      <div className="border-t border-[#e8eaed] p-6 dark:border-white/10">
         <div className="grid gap-6 sm:grid-cols-2">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="space-y-2">
-              <div className="h-2.5 w-16 animate-pulse rounded bg-gray-100" />
-              <div className="h-4 w-32 animate-pulse rounded bg-gray-100" />
+              <div className="h-2.5 w-16 animate-pulse rounded bg-gray-100 dark:bg-white/10" />
+              <div className="h-4 w-32 animate-pulse rounded bg-gray-100 dark:bg-white/10" />
             </div>
           ))}
         </div>
@@ -294,7 +304,7 @@ export default function BusinessSettingsPage() {
   const isComplete = filledCount === totalFields;
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
       <div className="mx-auto w-full">
         {/* ── Header ── */}
         <PageHeader
@@ -308,7 +318,7 @@ export default function BusinessSettingsPage() {
             !editing && !isLoading ? (
               <Button
                 onClick={startEdit}
-                className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm text-white hover:bg-blue-700"
+                className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm text-white hover:bg-blue-700 dark:hover:bg-blue-500"
               >
                 <Pencil className="h-4 w-4" />
                 Edit business
@@ -321,7 +331,7 @@ export default function BusinessSettingsPage() {
           <ProfileSkeleton />
         ) : (
           /* ── One card, two modes — so nothing is shown twice ── */
-          <div className="overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white">
+          <div className="overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white dark:border-white/10 dark:bg-[#161d2e]">
             {/* Identity.
                 This is the business's own page and the profile it describes is
                 what customers see on every receipt, so it leads the card —
@@ -339,15 +349,15 @@ export default function BusinessSettingsPage() {
               />
               <div
                 aria-hidden
-                className="pointer-events-none absolute left-1/2 top-6 h-44 w-44 -translate-x-1/2 rounded-full border border-[#dadce0]/70"
+                className="pointer-events-none absolute left-1/2 top-6 h-44 w-44 -translate-x-1/2 rounded-full border border-[#dadce0]/70 dark:border-white/10"
               />
               <div
                 aria-hidden
-                className="pointer-events-none absolute left-1/2 top-1 h-54 w-54 -translate-x-1/2 rounded-full border border-[#e8eaed]"
+                className="pointer-events-none absolute left-1/2 top-1 h-54 w-54 -translate-x-1/2 rounded-full border border-[#e8eaed] dark:border-white/5"
               />
 
               <div className="group relative z-10 h-36 w-36 shrink-0">
-                <div className="h-36 w-36 overflow-hidden rounded-full border-4 border-white bg-white shadow-md ring-1 ring-[#dadce0]/80">
+                <div className="h-36 w-36 overflow-hidden rounded-full border-4 border-white bg-white shadow-md ring-1 ring-[#dadce0]/80 dark:border-[#161d2e] dark:bg-[#161d2e] dark:ring-white/15">
                   <Image
                     src={displayLogo || businessLogo}
                     alt=""
@@ -389,8 +399,8 @@ export default function BusinessSettingsPage() {
                 {editing ? (
                   <>
                     <label className="mb-1.5 flex items-center justify-center gap-1.5">
-                      <Building2 className="h-3.5 w-3.5 text-[#9aa0a6]" />
-                      <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#9aa0a6]">
+                      <Building2 className="h-3.5 w-3.5 text-[#9aa0a6] dark:text-[#7b869b]" />
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#9aa0a6] dark:text-[#7b869b]">
                         Business name
                       </span>
                     </label>
@@ -404,18 +414,18 @@ export default function BusinessSettingsPage() {
                       placeholder="e.g. Rebuzz POS"
                     />
                     {errors.businessName && (
-                      <p className="mt-1 text-[11px] text-red-500">
+                      <p className="mt-1 text-[11px] text-red-500 dark:text-[#f87171]">
                         {errors.businessName}
                       </p>
                     )}
                   </>
                 ) : (
                   <>
-                    <h2 className="truncate text-[22px] font-semibold leading-tight tracking-tight text-[#3c4043]">
+                    <h2 className="truncate text-[22px] font-semibold leading-tight tracking-tight text-[#3c4043] dark:text-[#e8ecf4]">
                       {business?.businessName || "My Business"}
                     </h2>
                     <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-                      <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-[11px] font-semibold text-blue-700">
+                      <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-[11px] font-semibold text-blue-700 dark:border-blue-400/25 dark:bg-blue-400/15 dark:text-[#a8c4ee]">
                         {business?.businessType || "Business"}
                       </span>
 
@@ -424,8 +434,8 @@ export default function BusinessSettingsPage() {
                       <span
                         className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${
                           isComplete
-                            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                            : "border-amber-200 bg-amber-50 text-amber-700"
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-400/15 dark:text-emerald-300"
+                            : "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/25 dark:bg-amber-400/15 dark:text-amber-300"
                         }`}
                       >
                         {isComplete ? (
@@ -445,7 +455,7 @@ export default function BusinessSettingsPage() {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="mt-2 cursor-pointer text-xs font-semibold text-blue-600 transition-colors hover:text-blue-700"
+                    className="mt-2 cursor-pointer text-xs font-semibold text-blue-600 transition-colors hover:text-blue-700 dark:text-[#7ba2e3] dark:hover:text-white"
                   >
                     {displayLogo ? "Change logo" : "Upload logo"}
                   </button>
@@ -457,17 +467,17 @@ export default function BusinessSettingsPage() {
             {editing && (
               <div className="px-6 pb-2">
                 {logoError ? (
-                  <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                  <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-400/25 dark:bg-amber-400/10">
                     <AlertTriangle
                       size={15}
                       className="mt-0.5 shrink-0 text-amber-500"
                     />
-                    <p className="text-[11px] leading-relaxed text-amber-700">
+                    <p className="text-[11px] leading-relaxed text-amber-700 dark:text-amber-200">
                       {logoError}
                     </p>
                   </div>
                 ) : (
-                  <p className="text-[11px] text-[#9aa0a6]">
+                  <p className="text-[11px] text-[#9aa0a6] dark:text-[#7b869b]">
                     PNG, JPG or WEBP. Keep it under {LOGO_WARN_MB} MB for faster
                     loading — {LOGO_MAX_MB} MB is the limit.
                   </p>
@@ -574,12 +584,12 @@ export default function BusinessSettingsPage() {
 
             {/* Actions */}
             {editing && (
-              <div className="flex items-center justify-end gap-3 border-t border-[#e8eaed] bg-[#f8f9fa] px-6 py-4">
+              <div className="flex items-center justify-end gap-3 border-t border-[#e8eaed] bg-[#f8f9fa] px-6 py-4 dark:border-white/10 dark:bg-[#1b2436]">
                 <Button
                   onClick={cancelEdit}
                   variant="outline"
                   disabled={saving}
-                  className="flex cursor-pointer items-center gap-2 rounded-lg border-[#dadce0] text-[#3c4043] hover:bg-[#f1f3f4]"
+                  className="flex cursor-pointer items-center gap-2 rounded-lg border-[#dadce0] text-[#3c4043] hover:bg-[#f1f3f4] dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:bg-white/10"
                 >
                   <X className="h-4 w-4" />
                   Cancel
@@ -588,7 +598,7 @@ export default function BusinessSettingsPage() {
                 <Button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex cursor-pointer items-center gap-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                  className="flex cursor-pointer items-center gap-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 dark:hover:bg-blue-500"
                 >
                   {saving ? (
                     <>

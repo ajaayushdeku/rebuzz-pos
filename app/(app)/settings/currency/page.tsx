@@ -38,7 +38,7 @@ function CurrencyRow({
   return (
     <button
       onClick={() => onSelect(option.code)}
-      className="flex w-full items-stretch gap-3 overflow-hidden rounded-lg border border-gray-100 text-left transition-colors hover:border-gray-200 hover:bg-gray-50"
+      className="flex w-full items-stretch gap-3 overflow-hidden rounded-lg border border-gray-100 text-left transition-colors hover:border-gray-200 hover:bg-gray-50 dark:border-white/10 dark:hover:border-white/20 dark:hover:bg-white/5"
     >
       <div className="flex min-w-0 flex-1 items-center gap-3 py-2.5 pl-3">
         {/* The flag repeats the code beside it, so it is decorative to a
@@ -46,8 +46,8 @@ function CurrencyRow({
         <CountryFlag countryCode={option.countryCode} label="" />
 
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-gray-800">{option.code}</p>
-          <p className="truncate text-xs text-gray-600">
+          <p className="text-sm font-semibold text-gray-800 dark:text-[#e8ecf4]">{option.code}</p>
+          <p className="truncate text-xs text-gray-600 dark:text-[#9aa6bd]">
             {option.name} — {option.country}
           </p>
         </div>
@@ -55,7 +55,7 @@ function CurrencyRow({
 
       {/* Symbol rail — stretches the row's full height, so the column of
           symbols reads as one strip down the list. */}
-      <span className="flex w-14 shrink-0 items-center justify-center self-stretch border-l border-gray-100 bg-gray-50/70 text-base text-[13px] font-semibold text-gray-600">
+      <span className="flex w-14 shrink-0 items-center justify-center self-stretch border-l border-gray-100 bg-gray-50/70 text-base text-[13px] font-semibold text-gray-600 dark:border-white/10 dark:bg-white/5 dark:text-[#9aa6bd]">
         {option.symbol}
       </span>
     </button>
@@ -109,7 +109,7 @@ export default function CurrencyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
       <div className="w-full mx-auto">
         <PageHeader
           title="Change Currency"
@@ -120,13 +120,13 @@ export default function CurrencyPage() {
         <div className="relative mb-4">
           <Search
             size={13}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#7b869b]"
           />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by currency, code or country..."
-            className="w-full pl-8 pr-3 py-2 text-[13px] border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-8 pr-3 py-2 text-[13px] border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]"
           />
         </div>
 
@@ -134,7 +134,7 @@ export default function CurrencyPage() {
             the results would only be in the way. */}
         {!search && (
           <div className="mb-5">
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-[#7b869b]">
               Popular
             </p>
             <div className="space-y-1.5">
@@ -146,10 +146,10 @@ export default function CurrencyPage() {
         )}
 
         <div className="mb-2 flex items-baseline justify-between">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-[#7b869b]">
             {search ? "Results" : "All currencies"}
           </p>
-          <p className="text-[11px] text-gray-400">
+          <p className="text-[11px] text-gray-400 dark:text-[#7b869b]">
             {filtered.length} of {CURRENCY_OPTIONS.length}
           </p>
         </div>
@@ -162,7 +162,7 @@ export default function CurrencyPage() {
           ))}
 
           {filtered.length === 0 && (
-            <p className="py-8 text-center text-xs text-gray-400">
+            <p className="py-8 text-center text-xs text-gray-400 dark:text-[#7b869b]">
               No currency matches “{search}”.
             </p>
           )}
@@ -189,7 +189,7 @@ export default function CurrencyPage() {
         description={
           <>
             Switch your active currency to{" "}
-            <span className="font-semibold text-gray-800">
+            <span className="font-semibold text-gray-800 dark:text-[#e8ecf4]">
               {confirmTarget?.code} ({confirmTarget?.symbol})
             </span>
             ?

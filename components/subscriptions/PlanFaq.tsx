@@ -31,8 +31,10 @@ function FaqRow({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-xl border bg-white transition-colors",
-        isOpen ? "border-[#dadce0]" : "border-[#e8eaed] hover:border-[#dadce0]",
+        "overflow-hidden rounded-xl border bg-white transition-colors dark:bg-[#161d2e]",
+        isOpen
+          ? "border-[#dadce0] dark:border-white/15"
+          : "border-[#e8eaed] hover:border-[#dadce0] dark:hover:border-white/25 dark:border-white/10",
       )}
     >
       <button
@@ -41,7 +43,7 @@ function FaqRow({
         aria-controls={panelId}
         className="flex w-full cursor-pointer items-center justify-between gap-4 px-4 py-3.5 text-left"
       >
-        <span className="text-[13px] font-medium text-[#3c4043]">
+        <span className="text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
           {faq.question}
         </span>
 
@@ -49,8 +51,8 @@ function FaqRow({
           size={16}
           aria-hidden
           className={cn(
-            "shrink-0 text-[#9aa0a6] transition-transform duration-300 ease-out motion-reduce:transition-none",
-            isOpen && "rotate-180 text-blue-600",
+            "shrink-0 text-[#9aa0a6] transition-transform duration-300 ease-out motion-reduce:transition-none dark:text-[#9aa6bd]",
+            isOpen && "rotate-180 text-blue-600 dark:text-[#a8c4ee]",
           )}
         />
       </button>
@@ -64,7 +66,7 @@ function FaqRow({
         )}
       >
         <div className="overflow-hidden">
-          <p className="px-4 pb-4 text-[13px] leading-relaxed text-[#5f6368]">
+          <p className="px-4 pb-4 text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
             {faq.answer}
           </p>
         </div>

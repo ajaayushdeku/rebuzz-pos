@@ -152,7 +152,7 @@ export default function DiscountSettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10">
+    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
       <div className="w-full mx-auto space-y-6">
         {/* ── Header ─────────────────────────────────────── */}
         {/* The column's space-y-6 already gaps the header from the tabs
@@ -168,13 +168,13 @@ export default function DiscountSettingsPage() {
         <div className="relative flex justify-center mt-6">
           <span
             aria-hidden="true"
-            className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
+            className="absolute inset-x-0 top-1/2 h-px bg-gray-200 dark:bg-white/10"
           />
           <div
             role="tablist"
             aria-label="Discount type"
             onKeyDown={handleTabKeyDown}
-            className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+            className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1 dark:bg-[#272C37]"
           >
             {tabs.map((tab, i) => {
               const selected = tab.key === activeTab;
@@ -193,17 +193,17 @@ export default function DiscountSettingsPage() {
                   aria-controls={`discounts-panel-${tab.key}`}
                   tabIndex={selected ? 0 : -1}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`flex items-center gap-2 rounded-full px-5 py-2  text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                  className={`flex items-center gap-2 rounded-full px-5 py-2  text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] dark:focus-visible:ring-offset-[#242a38] ${
                     selected
-                      ? "bg-white font-bold text-blue-950 shadow-sm"
-                      : "font-semibold text-blue-800 hover:text-blue-950"
+                      ? "bg-white font-bold text-blue-950 shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none"
+                      : "font-semibold text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee] dark:hover:text-white"
                   }`}
                 >
                   <Icon size={14} className="shrink-0" />
                   {tab.label}
                   <span
                     className="inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold ring-1 
-                     bg-[#e4f2fe] text-blue-950 ring-blue-900"
+                     bg-[#e4f2fe] text-blue-950 ring-blue-900 dark:bg-white/10 dark:text-[#e8ecf4] dark:ring-white/20"
                   >
                     {tab.count === null ? "–" : tab.count}
                   </span>
@@ -217,13 +217,13 @@ export default function DiscountSettingsPage() {
         <div className="relative ">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#7b869b]"
           />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search discounts..."
-            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]"
           />
         </div>
 
@@ -233,7 +233,7 @@ export default function DiscountSettingsPage() {
           id={`discounts-panel-${activeTab}`}
           aria-labelledby={`discounts-tab-${activeTab}`}
           tabIndex={0}
-          className="bg-white rounded-xl px-6 py-2 focus-visible:outline-none"
+          className="bg-white rounded-xl px-6 py-2 focus-visible:outline-none dark:bg-[#0F1420]"
         >
           {activeTab === "percentage" ? (
             <DiscountTable

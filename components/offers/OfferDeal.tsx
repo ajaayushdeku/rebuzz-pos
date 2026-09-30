@@ -19,9 +19,10 @@ import { getVariants, variantLabel } from "@/lib/productVariants";
 import { Product } from "@/lib/types/product";
 
 const FIELD =
-  "h-11 w-full rounded-xl border border-[#dadce0] bg-white text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20";
+  "h-11 w-full rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-white/15";
 
-const LABEL = "mb-1.5 block text-[13px] font-medium text-[#3c4043]";
+const LABEL =
+  "mb-1.5 block text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]";
 
 type PickerRow = {
   key: string;
@@ -97,11 +98,18 @@ function ProductPicker({
         className={`${FIELD} flex items-center justify-between px-3.5 text-left`}
       >
         <span
-          className={selected ? "truncate text-[#3c4043]" : "text-[#9aa0a6]"}
+          className={
+            selected
+              ? "truncate text-[#3c4043] dark:text-[#e8ecf4]"
+              : "text-[#9aa0a6] dark:text-[#9aa6bd]"
+          }
         >
           {selected ? selected.label : placeholder}
         </span>
-        <ChevronsUpDown size={15} className="ml-2 shrink-0 text-[#9aa0a6]" />
+        <ChevronsUpDown
+          size={15}
+          className="ml-2 shrink-0 text-[#9aa0a6] dark:text-[#9aa6bd]"
+        />
       </button>
 
       {open && (
@@ -114,29 +122,29 @@ function ProductPicker({
             onClick={() => setOpen(false)}
             className="fixed inset-0 z-40 cursor-default"
           />
-          <div className="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-xl border border-[#dadce0] bg-white shadow-lg">
-            <div className="sticky top-0 border-b border-[#e8eaed] bg-white px-3 py-2">
+          <div className="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-xl border border-[#dadce0] bg-white dark:bg-[#1b2436] shadow-lg dark:border-white/15">
+            <div className="sticky top-0 border-b border-[#e8eaed] bg-white dark:bg-[#1b2436] px-3 py-2 dark:border-white/10">
               <div className="relative">
                 <Search
                   size={14}
-                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#9aa0a6]"
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#9aa0a6] dark:text-[#9aa6bd]"
                 />
                 <input
                   autoFocus
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search items..."
-                  className="w-full rounded-lg border border-[#dadce0] py-1.5 pl-8 pr-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full rounded-lg border border-[#dadce0] py-1.5 pl-8 pr-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-white/15"
                 />
               </div>
             </div>
 
             {isLoading ? (
-              <p className="px-3 py-6 text-center text-xs text-[#9aa0a6]">
+              <p className="px-3 py-6 text-center text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                 Loading items...
               </p>
             ) : filtered.length === 0 ? (
-              <p className="px-3 py-6 text-center text-xs text-[#9aa0a6]">
+              <p className="px-3 py-6 text-center text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                 No items match “{query}”
               </p>
             ) : (
@@ -151,23 +159,31 @@ function ProductPicker({
                       setOpen(false);
                       setQuery("");
                     }}
-                    className="flex w-full items-center justify-between gap-2 px-3.5 py-2 text-left text-sm hover:bg-[#f8f9fa]"
+                    className="flex w-full items-center justify-between gap-2 px-3.5 py-2 text-left text-sm hover:bg-[#f8f9fa] dark:hover:bg-white/5"
                   >
-                    <span className="truncate text-[#3c4043]">{row.label}</span>
+                    <span className="truncate text-[#3c4043] dark:text-[#e8ecf4]">
+                      {row.label}
+                    </span>
                     {/* {(row.variants?.length ?? 0) > 1 && (
-                      <span className="text-xs text-[#9aa0a6]">
+                      <span className="text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                         {row?.variants?.length} variants
                       </span>
                     )} */}
 
                     {row.variantId && row.variantId === variantValue && (
-                      <Check size={14} className="shrink-0 text-blue-600" />
+                      <Check
+                        size={14}
+                        className="shrink-0 text-blue-600 dark:text-blue-300"
+                      />
                     )}
                     {!row.variantId && row.productId === value && (
-                      <Check size={14} className="shrink-0 text-blue-600" />
+                      <Check
+                        size={14}
+                        className="shrink-0 text-blue-600 dark:text-blue-300"
+                      />
                     )}
                     {!row.available && (
-                      <span className="shrink-0 text-[11px] text-[#9aa0a6]">
+                      <span className="shrink-0 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                         Unavailable
                       </span>
                     )}
@@ -214,7 +230,7 @@ export default function OfferDeal() {
         <button
           type="button"
           onClick={() => chooseDeal("custom")}
-          className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-medium text-emerald-700 transition-colors hover:bg-emerald-100"
+          className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-medium text-emerald-700 transition-colors hover:bg-emerald-100 dark:hover:bg-emerald-400/20 dark:border-emerald-400/25 dark:text-emerald-300 dark:bg-emerald-400/10"
         >
           <Plus size={15} />
           Add custom deal
@@ -233,15 +249,15 @@ export default function OfferDeal() {
               aria-pressed={active}
               className={`cursor-pointer rounded-xl border p-3.5 text-left transition-all ${
                 active
-                  ? "border-emerald-500 bg-emerald-50/60 ring-1 ring-emerald-500/30"
-                  : "border-[#e3e3e3] bg-white hover:bg-[#f8f9fa]"
+                  ? "border-emerald-500 bg-emerald-50/60 ring-1 ring-emerald-500/30 dark:bg-emerald-400/10"
+                  : "border-[#e3e3e3] bg-white hover:bg-[#f8f9fa] dark:border-white/10 dark:bg-[#161d2e] dark:hover:bg-white/10"
               }`}
             >
               <span className="text-xl leading-none">{deal.icon}</span>
-              <p className="mt-2.5 text-[13px] font-medium text-[#3c4043]">
+              <p className="mt-2.5 text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
                 {deal.title}
               </p>
-              <p className="mt-0.5 text-[11px] text-[#9aa0a6]">
+              <p className="mt-0.5 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                 {deal.subtitle}
               </p>
             </button>
@@ -255,11 +271,12 @@ export default function OfferDeal() {
       {selected?.value && (
         <div className="mt-6 max-w-sm">
           <label className={LABEL}>
-            {selected.value.label} <span className="text-red-500">*</span>
+            {selected.value.label}{" "}
+            <span className="text-red-500 dark:text-red-300">*</span>
           </label>
           <div className="relative">
             {selected.value.prefix && (
-              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#9aa0a6]">
+              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#9aa0a6] dark:text-[#9aa6bd]">
                 {selected.value.prefix}
               </span>
             )}
@@ -274,7 +291,7 @@ export default function OfferDeal() {
               } ${selected.value.suffix ? "pr-9" : "pr-3.5"}`}
             />
             {selected.value.suffix && (
-              <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-sm text-[#9aa0a6]">
+              <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-sm text-[#9aa0a6] dark:text-[#9aa6bd]">
                 {selected.value.suffix}
               </span>
             )}
@@ -286,20 +303,23 @@ export default function OfferDeal() {
           sentence. Set apart from the plain fields because this one is the
           headline the customer actually reads. */}
       {needsSentence && (
-        <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50/50 p-3.5">
-          <label className="mb-2 flex items-center gap-1.5 text-[13px] font-semibold text-[#3c4043]">
-            <Sparkles size={14} className="text-emerald-600" />
+        <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50/50 p-3.5 dark:border-emerald-400/25 dark:bg-emerald-400/10">
+          <label className="mb-2 flex items-center gap-1.5 text-[13px] font-semibold text-[#3c4043] dark:text-[#e8ecf4]">
+            <Sparkles
+              size={14}
+              className="text-emerald-600 dark:text-emerald-300"
+            />
             Custom deal title or offer sentence{" "}
-            <span className="text-red-500">*</span>
+            <span className="text-red-500 dark:text-red-300">*</span>
           </label>
           <input
             type="text"
             value={form.customDeal}
             onChange={(e) => updateField("customDeal", e.target.value)}
             placeholder="e.g. Free delivery on your first order over 1,000"
-            className="h-11 w-full rounded-lg border border-emerald-300 bg-white px-3.5 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+            className="h-11 w-full rounded-lg border border-emerald-300 bg-white dark:bg-white/5 px-3.5 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-emerald-400/40"
           />
-          <p className="mt-2 text-[11px] text-[#5f6368]">
+          <p className="mt-2 text-[11px] text-[#5f6368] dark:text-[#a9b4c7]">
             Type the exact deal phrase as you want customers to read it.
           </p>
         </div>
@@ -308,7 +328,8 @@ export default function OfferDeal() {
       {form.discountKind === "free-item" && (
         <div className="mt-6 max-w-sm">
           <label className={LABEL}>
-            Which item is free? <span className="text-red-500">*</span>
+            Which item is free?{" "}
+            <span className="text-red-500 dark:text-red-300">*</span>
           </label>
           <ProductPicker
             value={form.freeItemId}
@@ -331,9 +352,9 @@ export default function OfferDeal() {
           scheduled reminders on the invoice detail page. */}
       <div
         aria-hidden
-        className="mt-6 cursor-not-allowed border-t border-[#e8eaed] pt-5 opacity-50"
+        className="mt-6 cursor-not-allowed border-t border-[#e8eaed] pt-5 opacity-50 dark:border-white/10"
       >
-        <p className="mb-1.5 flex items-center gap-1.5 text-[13px] font-medium text-[#5f6368]">
+        <p className="mb-1.5 flex items-center gap-1.5 text-[13px] font-medium text-[#5f6368] dark:text-[#a9b4c7]">
           <Lock size={12} className="shrink-0" />
           Who can use this
         </p>
@@ -345,14 +366,14 @@ export default function OfferDeal() {
               type="button"
               disabled
               tabIndex={-1}
-              className="h-8 cursor-not-allowed rounded-lg border border-[#dadce0] bg-white px-4 text-[13px] font-semibold text-[#5f6368]"
+              className="h-8 cursor-not-allowed rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 px-4 text-[13px] font-semibold text-[#5f6368] dark:border-white/15 dark:text-[#a9b4c7]"
             >
               {option.label}
             </button>
           ))}
         </div>
 
-        <p className="mt-2.5 text-[12px] text-[#9aa0a6]">
+        <p className="mt-2.5 text-[12px] text-[#9aa0a6] dark:text-[#9aa6bd]">
           Coming soon — offers currently apply to every customer.
         </p>
       </div>

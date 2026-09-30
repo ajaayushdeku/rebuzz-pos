@@ -154,7 +154,7 @@ function EventRow({
   const secondary = system === "bs" ? adRangeLabel(event) : event.bsLabel;
 
   return (
-    <li className="flex flex-wrap items-center gap-3 rounded-xl border border-[#e8eaed] bg-white p-2.5 transition-colors hover:border-(color:--cal-200) hover:bg-[#f8f9fa] sm:flex-nowrap">
+    <li className="flex flex-wrap items-center gap-3 rounded-xl border border-[#e8eaed] bg-white dark:bg-white/5 p-2.5 transition-colors hover:border-(color:--cal-200) hover:bg-[#f8f9fa] sm:flex-nowrap dark:hover:bg-white/5 dark:border-white/10">
       <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-lg bg-(color:--cal-50) text-(color:--cal-700)">
         <span className="text-[16px] font-semibold leading-none">
           {badge.day}
@@ -165,14 +165,16 @@ function EventRow({
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-1.5 text-[13px] font-medium text-[#3c4043]">
+        <p className="flex items-center gap-1.5 text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
           <span className="text-[15px] leading-none" aria-hidden>
             {event.icon}
           </span>
           <span className="truncate">{event.label}</span>
         </p>
-        <p className="mt-0.5 text-[11px] text-[#5f6368]">{primary}</p>
-        <p className="flex items-start gap-1.5 text-[11px] text-[#9aa0a6]">
+        <p className="mt-0.5 text-[11px] text-[#5f6368] dark:text-[#a9b4c7]">
+          {primary}
+        </p>
+        <p className="flex items-start gap-1.5 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
           <span
             className={`mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full ${SCOPE_STYLE[event.scope].dot}`}
             aria-hidden
@@ -279,8 +281,16 @@ export default function OfferCalendarModal({
       title={title}
       subtitle="Public holidays and festivals for planning an offer"
       icon={CalendarDays}
-      iconColor={system === "bs" ? "text-rose-600" : "text-teal-600"}
-      iconBgColor={system === "bs" ? "bg-rose-50" : "bg-teal-50"}
+      iconColor={
+        system === "bs"
+          ? "text-rose-600 dark:text-rose-300"
+          : "text-teal-600 dark:text-teal-300"
+      }
+      iconBgColor={
+        system === "bs"
+          ? "bg-rose-50 dark:bg-rose-400/10"
+          : "bg-teal-50 dark:bg-teal-400/10"
+      }
       maxWidth="max-w-5xl"
       bodyMaxHeight="max-h-[80vh]"
     >
@@ -292,7 +302,7 @@ export default function OfferCalendarModal({
         className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_360px]"
       >
         {/* ── The month ─────────────────────────────────────────────── */}
-        <section className="overflow-hidden rounded-2xl border border-[#e8eaed] bg-white lg:sticky lg:top-0">
+        <section className="overflow-hidden rounded-2xl border border-[#e8eaed] bg-white lg:sticky lg:top-0 dark:bg-[#161d2e] dark:border-white/10">
           <div className="flex items-center justify-between gap-3 bg-linear-to-br from-(color:--cal-500) to-(color:--cal-600) px-4 py-3.5 text-white">
             <div aria-live="polite" className="min-w-0">
               <p className="text-[18px] font-semibold leading-tight">
@@ -338,7 +348,9 @@ export default function OfferCalendarModal({
               <div
                 key={d}
                 className={`pb-1.5 text-[11px] font-semibold uppercase tracking-wide ${
-                  i === SATURDAY ? "text-red-500" : "text-[#9aa0a6]"
+                  i === SATURDAY
+                    ? "text-red-500 dark:text-red-300"
+                    : "text-[#9aa0a6] dark:text-[#9aa6bd]"
                 }`}
               >
                 {d}
@@ -378,7 +390,7 @@ export default function OfferCalendarModal({
                       ? "bg-(color:--cal-600)"
                       : shaded
                         ? "bg-(color:--cal-50) hover:bg-(color:--cal-100)"
-                        : "hover:bg-[#f8f9fa]"
+                        : "hover:bg-[#f8f9fa] dark:hover:bg-white/5"
                   } ${isToday && !isSelected ? "ring-2 ring-inset ring-(color:--cal-400)" : ""}`}
                 >
                   <span
@@ -386,15 +398,17 @@ export default function OfferCalendarModal({
                       isSelected
                         ? "text-white"
                         : red
-                          ? "text-red-600"
-                          : "text-[#3c4043]"
+                          ? "text-red-600 dark:text-red-300"
+                          : "text-[#3c4043] dark:text-[#e8ecf4]"
                     }`}
                   >
                     {day.primary}
                   </span>
                   <span
                     className={`mt-1 text-[10px] leading-none ${
-                      isSelected ? "text-(color:--cal-100)" : "text-[#9aa0a6]"
+                      isSelected
+                        ? "text-(color:--cal-100)"
+                        : "text-[#9aa0a6] dark:text-[#9aa6bd]"
                     }`}
                   >
                     {day.secondary}
@@ -420,7 +434,7 @@ export default function OfferCalendarModal({
           </div>
 
           {/* Legend */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-[#e8eaed] bg-[#f8f9fa] px-4 py-2.5 text-[11px] text-[#5f6368]">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-[#e8eaed] bg-[#f8f9fa] px-4 py-2.5 text-[11px] text-[#5f6368] dark:border-white/10 dark:text-[#a9b4c7] dark:bg-white/5">
             <span className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-red-500" /> Public
               holiday
@@ -450,7 +464,7 @@ export default function OfferCalendarModal({
           {selected ? (
             <div
               data-testid="selected-day"
-              className="rounded-2xl border border-(color:--cal-200) bg-linear-to-b from-(color:--cal-50) to-white p-3.5"
+              className="rounded-2xl border border-(color:--cal-200) bg-linear-to-b from-(color:--cal-50) to-white p-3.5 dark:border-white/10 dark:from-white/8 dark:to-transparent"
             >
               <div className="mb-3 flex items-start justify-between gap-2">
                 <div className="min-w-0">
@@ -462,12 +476,12 @@ export default function OfferCalendarModal({
                       </span>
                     )}
                   </p>
-                  <p className="mt-1 text-[15px] font-semibold text-[#3c4043]">
+                  <p className="mt-1 text-[15px] font-semibold text-[#3c4043] dark:text-[#e8ecf4]">
                     {system === "bs"
                       ? bsDayLabel(selected)
                       : adDayLabel(selected)}
                   </p>
-                  <p className="text-[12px] text-[#5f6368]">
+                  <p className="text-[12px] text-[#5f6368] dark:text-[#a9b4c7]">
                     {system === "bs"
                       ? adDayLabel(selected)
                       : bsDayLabel(selected)}
@@ -495,7 +509,7 @@ export default function OfferCalendarModal({
                   ))}
                 </ul>
               ) : (
-                <p className="rounded-xl bg-white px-3 py-3 text-center text-[12px] text-[#5f6368] ring-1 ring-[#e8eaed]">
+                <p className="rounded-xl dark:bg-white/5 px-3 py-3 text-center text-[12px] text-[#5f6368] ring-1 ring-[#e8eaed] dark:text-[#a9b4c7] dark:ring-white/10">
                   {outsideCoverage
                     ? "Holidays aren't listed this far ahead yet."
                     : "No public holidays or occasions on this day."}
@@ -503,11 +517,11 @@ export default function OfferCalendarModal({
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-3 rounded-2xl border border-dashed border-[#dadce0] px-4 py-3.5">
+            <div className="flex items-center gap-3 rounded-2xl border border-dashed border-[#dadce0] px-4 py-3.5 dark:border-white/15">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-(color:--cal-50) text-(color:--cal-500)">
                 <MousePointerClick size={16} />
               </span>
-              <p className="text-[12px] leading-relaxed text-[#5f6368]">
+              <p className="text-[12px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
                 Pick a day on the calendar to see its holidays here.
               </p>
             </div>
@@ -516,7 +530,7 @@ export default function OfferCalendarModal({
           {/* This month's holidays */}
           <section>
             <div className="mb-2.5 flex items-center justify-between">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#9aa0a6]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#9aa0a6] dark:text-[#9aa6bd]">
                 This month
               </p>
               {!outsideCoverage && monthEvents.length > 0 && (
@@ -528,13 +542,13 @@ export default function OfferCalendarModal({
             </div>
 
             {outsideCoverage ? (
-              <p className="rounded-xl bg-amber-50 px-3 py-2.5 text-[12px] leading-relaxed text-amber-800">
+              <p className="rounded-xl bg-amber-50 px-3 py-2.5 text-[12px] leading-relaxed text-amber-800 dark:text-amber-200 dark:bg-amber-400/10">
                 Holidays are listed up to {adDayLabel(coverage.end)}. Later
                 dates appear here automatically once Google&apos;s Nepal holiday
                 calendar publishes them, usually late in the year before.
               </p>
             ) : monthEvents.length === 0 ? (
-              <p className="rounded-xl bg-[#f8f9fa] px-3 py-3 text-center text-[12px] text-[#9aa0a6]">
+              <p className="rounded-xl bg-[#f8f9fa] px-3 py-3 text-center text-[12px] text-[#9aa0a6] dark:text-[#9aa6bd] dark:bg-white/5">
                 No public holidays or occasions this month.
               </p>
             ) : (
@@ -551,7 +565,7 @@ export default function OfferCalendarModal({
             )}
 
             {!outsideCoverage && (
-              <p className="mt-3 text-[11px] leading-relaxed text-[#9aa0a6]">
+              <p className="mt-3 text-[11px] leading-relaxed text-[#9aa0a6] dark:text-[#9aa6bd]">
                 Not shown, because their dates are set when observed:{" "}
                 {UNDATED_HOLIDAYS.join(", ")}.
               </p>

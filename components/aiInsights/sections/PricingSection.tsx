@@ -70,7 +70,8 @@ const pctChange = (now: number, before: number) =>
 function useMetrics(item: PricingInsight): Metric[] {
   const money = useMoney();
   const f = item.facts;
-  const lossClass = (v: number) => (v < 0 ? "text-red-600" : undefined);
+  const lossClass = (v: number) =>
+    v < 0 ? "text-red-600 dark:text-red-300" : undefined;
 
   switch (f.kind) {
     case "price-change":
@@ -143,7 +144,9 @@ function useMetrics(item: PricingInsight): Metric[] {
           label: "Per sale",
           value: money(f.profitPerUnit),
           valueClassName:
-            f.profitPerUnit < 0 ? "text-red-600" : "text-amber-700",
+            f.profitPerUnit < 0
+              ? "text-red-600 dark:text-red-300"
+              : "text-amber-700 dark:text-amber-300",
           note: `${f.marginPct}% margin`,
         },
       ];
@@ -171,10 +174,12 @@ function SuggestedRow({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <span className="text-[11px] font-medium text-[#5f6368]">{label}</span>
+      <span className="text-[11px] font-medium text-[#5f6368] dark:text-[#a9b4c7]">
+        {label}
+      </span>
       <span className="flex items-baseline gap-2">
         {was && (
-          <span className="text-[11px] tabular-nums text-[#9aa0a6] line-through">
+          <span className="text-[11px] tabular-nums text-[#9aa0a6] line-through dark:text-[#9aa6bd]">
             {was}
           </span>
         )}
@@ -235,7 +240,7 @@ function PricingCard({
         </CardAction>
       }
     >
-      <p className="text-[13px] leading-relaxed text-[#5f6368]">
+      <p className="text-[13px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
         {item.verdict}
       </p>
 
@@ -248,7 +253,11 @@ function PricingCard({
                   <SuggestedRow
                     label="Suggested price"
                     was={money(f.price)}
-                    className={up ? "text-emerald-700" : "text-blue-700"}
+                    className={
+                      up
+                        ? "text-emerald-700 dark:text-emerald-300"
+                        : "text-blue-700 dark:text-blue-300"
+                    }
                   >
                     {up ? (
                       <ArrowUpRight size={15} aria-hidden />
@@ -266,13 +275,13 @@ function PricingCard({
                         ? `${money(f.avgDiscount)} off`
                         : undefined
                     }
-                    className="text-blue-700"
+                    className="text-blue-700 dark:text-blue-300"
                   >
                     {discount === 0 ? "None" : `${money(discount)} off`}
                   </SuggestedRow>
                 )}
                 {item.breakEvenUnitsPct !== null && (
-                  <p className="flex items-start gap-1.5 text-[11px] leading-relaxed text-[#5f6368]">
+                  <p className="flex items-start gap-1.5 text-[11px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
                     <Scale size={12} className="mt-0.5 shrink-0" aria-hidden />
                     {breakEvenText(item.breakEvenUnitsPct)}.
                   </p>
@@ -303,7 +312,7 @@ export default function PricingSection({
     <section>
       <SectionHeader
         icon={BadgePercent}
-        iconClassName="bg-emerald-50 text-emerald-600"
+        iconClassName="bg-emerald-50 text-emerald-600 dark:text-emerald-300 dark:bg-emerald-400/10"
         title="Pricing Opportunities"
         subtitle={`Price changes, discounts and margins from your last ${PRICING_WEEKS} weeks of sales`}
         info={{
@@ -314,7 +323,7 @@ export default function PricingSection({
           <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
             <SectionRefreshButton
               state={state}
-              textClassName="text-emerald-700"
+              textClassName="text-emerald-700 dark:text-emerald-300"
             />
           </div>
         }

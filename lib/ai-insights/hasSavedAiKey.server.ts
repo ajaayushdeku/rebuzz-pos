@@ -1,5 +1,7 @@
 import { cookies } from "next/headers";
 
+import { aiApiUrl } from "@/lib/ai-insights/posAiApi.server";
+
 /**
  * Whether this business has a Gemini key saved, asked from the server.
  *
@@ -18,18 +20,14 @@ import { cookies } from "next/headers";
  * run anyway, and hiding them beats showing cards that can only fail.
  */
 export async function hasSavedAiKey(): Promise<boolean> {
-  const serviceUrl = process.env.AI_SERVICE_URL;
-  // [POS backend] To ask khajaGharBackend instead of backend/, use the POS
-  // base URL (NEXT_PUBLIC_API_URL) and the fetch path below:
-  // const serviceUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (!serviceUrl) return false;
+  const url = aiApiUrl("/settings/ai");
+  if (!url) return false;
 
   const token = (await cookies()).get("token")?.value;
   if (!token) return false;
 
   try {
-    // [POS backend] const res = await fetch(`${serviceUrl}/settings/ai`, {
-    const res = await fetch(`${serviceUrl}/api/settings/ai`, {
+    const res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
       // Never cached: the answer changes the moment a key is saved, and Next's
       // data cache keys on the URL rather than the token, so a cached answer
