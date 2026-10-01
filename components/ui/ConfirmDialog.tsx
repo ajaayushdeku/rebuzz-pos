@@ -9,13 +9,23 @@ import ModalShell from "@/components/ui/ModalShell";
  * warning callout together so they can't disagree — a red button over an amber
  * warning reads as two different levels of severity.
  */
-export type ConfirmTone = "danger" | "warning" | "notice" | "primary";
+export type ConfirmTone =
+  | "danger"
+  | "warning"
+  | "notice"
+  | "primary"
+  | "loggout";
 
 const TONE: Record<ConfirmTone, { button: string; warning: string }> = {
   danger: {
     button: "bg-red-600 hover:bg-red-700 focus-visible:ring-red-500",
     warning:
       "border-red-100 bg-red-50 text-red-600 dark:border-red-400/25 dark:bg-red-400/10 dark:text-[#f87171]",
+  },
+  loggout: {
+    button: "bg-rose-600 hover:bg-rose-700 focus-visible:ring-rose-500",
+    warning:
+      "border-rose-100 bg-rose-50 text-rose-600 dark:border-rose-400/25 dark:bg-rose-400/10 dark:text-[#f87171]",
   },
   warning: {
     button: "bg-orange-500 hover:bg-orange-600 focus-visible:ring-orange-400",
@@ -142,12 +152,18 @@ export function ConfirmDialog({
           </div>
         )}
 
-        <h2 className="text-base font-semibold text-gray-900 dark:text-[#e8ecf4]">{title}</h2>
+        <h2 className="text-base font-semibold text-gray-900 dark:text-[#e8ecf4]">
+          {title}
+        </h2>
 
-        <p className="mt-1 text-sm text-gray-600 dark:text-[#9aa6bd]">{description}</p>
+        <p className="mt-1 text-sm text-gray-600 dark:text-[#9aa6bd]">
+          {description}
+        </p>
 
         {detail && (
-          <p className="mt-1 text-xs text-gray-500 tabular-nums dark:text-[#9aa6bd]">{detail}</p>
+          <p className="mt-1 text-xs text-gray-500 tabular-nums dark:text-[#9aa6bd]">
+            {detail}
+          </p>
         )}
 
         {warning && (

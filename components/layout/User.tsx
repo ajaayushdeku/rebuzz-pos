@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "../ui/badge";
 import { planBadge } from "@/lib/config/plans";
 import { useSubscriptionType } from "@/hooks/useSubscriptionType";
+import LogoutModal from "../signup/LogoutModal";
 
 interface UserProps {
   initialBusinessName: string;
@@ -74,6 +75,7 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
   const queryClient = useQueryClient();
   const [busyId, setBusyId] = useState<string | null>(null); // switching/removing
   const [loggingOut, setLoggingOut] = useState(false);
+  const [loggingOutOpen, setLoggingOutOpen] = useState(false);
 
   // Shared with the sidebar plan card — see `useSubscriptionType`.
   const { subscriptionType } = useSubscriptionType();
@@ -171,6 +173,7 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
         window.location.assign("/login");
         return;
       }
+      setLoggingOut(false);
     } catch (error) {
       console.error("Logout request failed", error);
     }
@@ -344,10 +347,11 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
           </DropdownMenuItem>
 
           <DropdownMenuItem
-            onSelect={(e) => {
-              e.preventDefault();
-              if (!loggingOut) handleLogout();
-            }}
+            onClick={() => setLoggingOutOpen(true)}
+            // onSelect={(e) => {
+            //   e.preventDefault();
+            //   if (!loggingOut) handleLogout();
+            // }}
             className="text-red-500 cursor-pointer"
           >
             {loggingOut ? (
@@ -359,6 +363,13 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <LogoutModal
+        open={loggingOutOpen}
+        onClose={() => setLoggingOutOpen(false)}
+        loggingOut={loggingOut}
+        onConfirm={handleLogout}
+      />
     </div>
   );
 }

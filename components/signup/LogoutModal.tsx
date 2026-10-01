@@ -31,7 +31,7 @@ export default function LogoutModal({
       title="Logging Out?"
       description={"This will log you out of your account."}
       warning="You will need to sign in again to access your account."
-      tone="notice"
+      tone="loggout"
       confirmLabel="Logout"
       pendingLabel="Logging out..."
       onConfirm={onConfirm}
