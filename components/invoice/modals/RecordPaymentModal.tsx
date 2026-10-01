@@ -333,14 +333,14 @@ export default function RecordPaymentModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 p-4 "
+      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 p-4 dark:bg-black/70"
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Record payment"
-        className="w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 duration-200 dark:ring-white/15"
+        className="w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 dark:bg-[#161d2e] dark:ring-white/10 animate-in fade-in-0 zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Header ── */}
@@ -385,13 +385,13 @@ export default function RecordPaymentModal({
           ) : (
             <div className="space-y-6">
               {/* Amount due + breakdown */}
-              <div className="rounded-xl border border-gray-100 bg-gray-50/70 px-4 py-4 dark:border-white/10">
+              <div className="rounded-xl border border-gray-100 bg-gray-50/70 dark:bg-white/5 px-4 py-4 dark:border-white/10">
                 <SectionLabel>Amount due</SectionLabel>
                 <p className="mt-1.5 text-[30px] font-semibold leading-none tracking-tight text-gray-900 tabular-nums dark:text-[#e8ecf4]">
                   {money(finalPayable)}
                 </p>
 
-                <div className="mt-4 space-y-1.5 border-t border-gray-200/70 pt-3">
+                <div className="mt-4 space-y-1.5 border-t border-gray-200/70 pt-3 dark:border-white/10">
                   <SummaryRow
                     label="Subtotal"
                     value={money(subtotalBeforeTax)}
@@ -442,7 +442,7 @@ export default function RecordPaymentModal({
                         className={`flex items-center justify-center gap-2 rounded-xl border py-3 text-[13px] font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                           active
                             ? "border-blue-600 bg-blue-50 text-blue-700 dark:text-blue-300 dark:bg-blue-400/10"
-                            : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:hover:border-white/25 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#a9b4c7]"
+                            : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:bg-transparent dark:hover:border-white/25 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#a9b4c7]"
                         }`}
                       >
                         <Icon
@@ -483,7 +483,7 @@ export default function RecordPaymentModal({
                         aria-pressed={discountType === key}
                         className={`min-w-[34px] rounded-md px-2 py-1 text-[12px] font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                           discountType === key
-                            ? "bg-gray-900 text-white"
+                            ? "bg-gray-900 text-white dark:bg-white/15"
                             : "text-gray-500 hover:text-gray-800 dark:text-[#9aa6bd]"
                         }`}
                       >
@@ -507,7 +507,7 @@ export default function RecordPaymentModal({
                     placeholder={
                       discountType === "percentage" ? "e.g. 10" : "e.g. 50"
                     }
-                    className={`w-full rounded-xl border bg-white px-3.5 py-2.5 pr-10 text-[13px] tabular-nums outline-none transition focus:ring-2 focus:ring-blue-500/40 ${
+                    className={`w-full rounded-xl border bg-white dark:bg-white/5 px-3.5 py-2.5 pr-10 text-[13px] tabular-nums outline-none transition focus:ring-2 focus:ring-blue-500/40 ${
                       discountError
                         ? "border-red-300 focus:border-red-400 dark:focus:border-red-400/60 dark:border-red-400/40"
                         : "border-gray-200 focus:border-blue-500 dark:border-white/15"
@@ -611,7 +611,7 @@ export default function RecordPaymentModal({
                           handleRedeemChange(Number(e.target.value))
                         }
                         placeholder="0"
-                        className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-[13px] tabular-nums outline-none transition focus:ring-2 focus:ring-blue-400/40 ${
+                        className={`w-full rounded-xl border bg-white dark:bg-white/5 px-3.5 py-2.5 text-[13px] tabular-nums outline-none transition focus:ring-2 focus:ring-blue-400/40 ${
                           redeemError
                             ? "border-red-300 focus:border-red-400 dark:focus:border-red-400/60 dark:border-red-400/40"
                             : "border-gray-200 focus:border-blue-400 dark:focus:border-blue-400/60 dark:border-white/15"
@@ -642,7 +642,7 @@ export default function RecordPaymentModal({
             type="button"
             onClick={handleRecordPayment}
             disabled={disabled}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-sm"
+            className="w-full bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-sm"
           >
             {isRecordingPayment ? (
               <>

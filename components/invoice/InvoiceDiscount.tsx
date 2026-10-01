@@ -8,10 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
+import { TableRow, TableCell } from "@/components/ui/table";
 
 interface Discount {
   _id: string;
@@ -32,26 +29,21 @@ export default function InvoiceDiscount({
   onDiscountSelect,
   onDiscountRemove,
 }: InvoiceDiscountProps) {
-  const { data: masterDiscounts = [] } =
-    useDiscounts();
+  const { data: masterDiscounts = [] } = useDiscounts();
 
   const getDiscountDetail = (id: string) =>
     masterDiscounts.find((d) => d._id === id);
 
-  const totalDiscountAmount =
-    selectedDiscountIds.reduce(
-      (sum: number, id: string) => {
-        const d = getDiscountDetail(id);
-        if (!d) return sum;
-        return (
-          sum +
-          (d.type === "percentage"
-            ? (subtotal * d.rate) / 100
-            : d.rate)
-        );
-      },
-      0,
-    );
+  const totalDiscountAmount = selectedDiscountIds.reduce(
+    (sum: number, id: string) => {
+      const d = getDiscountDetail(id);
+      if (!d) return sum;
+      return (
+        sum + (d.type === "percentage" ? (subtotal * d.rate) / 100 : d.rate)
+      );
+    },
+    0,
+  );
 
   return (
     <>
@@ -61,10 +53,8 @@ export default function InvoiceDiscount({
         return (
           <TableRow key={id}>
             <TableCell>Discount</TableCell>
-            <TableCell colSpan={3}>
-              {d.name}
-            </TableCell>
-            <TableCell className="text-right text-red-500">
+            <TableCell colSpan={3}>{d.name}</TableCell>
+            <TableCell className="text-right text-red-500 dark:text-red-300">
               -$
               {(d.type === "percentage"
                 ? (subtotal * d.rate) / 100
@@ -74,9 +64,7 @@ export default function InvoiceDiscount({
             <TableCell>
               <Trash2
                 className="h-4 w-4 cursor-pointer"
-                onClick={() =>
-                  onDiscountRemove(id)
-                }
+                onClick={() => onDiscountRemove(id)}
               />
             </TableCell>
           </TableRow>
@@ -86,25 +74,15 @@ export default function InvoiceDiscount({
       {/* Selector to add a new discount */}
       <TableRow>
         <TableCell colSpan={4}>
-          <Select
-            onValueChange={(id) =>
-              onDiscountSelect(id)
-            }
-          >
+          <Select onValueChange={(id) => onDiscountSelect(id)}>
             <SelectTrigger>
               <SelectValue placeholder="Apply a business discount..." />
             </SelectTrigger>
             <SelectContent>
               {masterDiscounts.map((d) => (
-                <SelectItem
-                  key={d._id}
-                  value={d._id}
-                >
+                <SelectItem key={d._id} value={d._id}>
                   {d.name} (
-                  {d.type === "percentage"
-                    ? `${d.rate}%`
-                    : `$${d.rate}`}
-                  )
+                  {d.type === "percentage" ? `${d.rate}%` : `$${d.rate}`})
                 </SelectItem>
               ))}
             </SelectContent>
@@ -143,7 +121,7 @@ export default function InvoiceDiscount({
 //       {/* Subtotal Row */}
 //       <TableRow className="border-none hover:bg-transparent">
 //         <TableCell colSpan={4} />
-//         <TableCell className="text-right text-gray-600">
+//         <TableCell className="text-right text-gray-600 dark:text-[#a9b4c7]">
 //           Subtotal
 //         </TableCell>
 //         <TableCell className="text-right">
@@ -159,7 +137,7 @@ export default function InvoiceDiscount({
 //           className="hover:bg-transparent"
 //         >
 //           {/* Label */}
-//           <TableCell className="text-gray-600">
+//           <TableCell className="text-gray-600 dark:text-[#a9b4c7]">
 //             Discount
 //           </TableCell>
 
@@ -175,7 +153,7 @@ export default function InvoiceDiscount({
 //                   e.target.value,
 //                 )
 //               }
-//               className="border-gray-300"
+//               className="border-gray-300 dark:border-white/20"
 //             />
 //           </TableCell>
 
@@ -221,7 +199,7 @@ export default function InvoiceDiscount({
 //           </TableCell>
 
 //           {/* Discount Amount */}
-//           <TableCell className="text-right text-gray-600">
+//           <TableCell className="text-right text-gray-600 dark:text-[#a9b4c7]">
 //             $
 //             {calculateDiscountAmount(
 //               discount,
@@ -231,7 +209,7 @@ export default function InvoiceDiscount({
 //           {/* Delete */}
 //           <TableCell>
 //             <Trash2
-//               className="h-4 w-4 text-blue-500 cursor-pointer hover:text-red-500 transition-colors"
+//               className="h-4 w-4 text-blue-500 cursor-pointer hover:text-red-500 transition-colors dark:hover:text-[#f87171] dark:text-blue-300"
 //               onClick={() =>
 //                 onDiscountRemove(discount.id)
 //               }
@@ -243,7 +221,7 @@ export default function InvoiceDiscount({
 //       {/* Total Row */}
 //       <TableRow className="border-t hover:bg-transparent">
 //         <TableCell colSpan={3} />
-//         <TableCell className="text-right font-semibold text-gray-900">
+//         <TableCell className="text-right font-semibold text-gray-900 dark:text-[#e8ecf4]">
 //           Total
 //         </TableCell>
 //         <TableCell colSpan={1}>
@@ -279,7 +257,7 @@ export default function InvoiceDiscount({
 //       {/* Amount Due Row */}
 //       <TableRow className="border-t hover:bg-transparent">
 //         <TableCell colSpan={4} />
-//         <TableCell className="text-right font-bold text-gray-900">
+//         <TableCell className="text-right font-bold text-gray-900 dark:text-[#e8ecf4]">
 //           Amount Due
 //         </TableCell>
 //         <TableCell className="text-right font-bold text-lg">

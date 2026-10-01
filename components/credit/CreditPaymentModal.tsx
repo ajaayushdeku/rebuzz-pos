@@ -298,7 +298,7 @@ export default function CreditPaymentModal({
                     className={`flex items-center justify-center gap-2 rounded-xl border py-3 text-[13px] font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                       active
                         ? "border-blue-600 bg-blue-50 text-blue-700 dark:text-blue-300 dark:bg-blue-400/10"
-                        : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:hover:border-white/25 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#a9b4c7]"
+                        : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:bg-transparent dark:hover:border-white/25 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#a9b4c7]"
                     }`}
                   >
                     <Icon

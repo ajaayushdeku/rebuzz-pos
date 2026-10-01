@@ -398,20 +398,20 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-50 p-6 md:p-8">
       {/* ── Page header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="md:text-3xl text-2xl font-bold text-gray-900">
+      <div className="flex flex-col sm:flex-row sm:items-end  justify-between gap-4 mb-7">
+        <div className="mt-2">
+          <h1 className="md:text-3xl text-2xl font-semibold  truncate  tracking-wide text-[#3c4043] md:text-[26px] dark:text-[#e8ecf4]">
             New Invoice
           </h1>
-          <p className="text-sm text-gray-400 mt-0.5">
+          <p className="mt-1 ml-0.5 max-w-xl text-[12px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
             Create a new invoice for your customer
           </p>
         </div>
 
-        <Button
+        <button
           onClick={handleSave}
           disabled={isPending}
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
+          className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 text-[13px] inline-flex h-9 shrink-0 cursor-pointer border hover:border-blue-400 hover:bg-blue-50 active:bg-blue-100 select-none justify-center tracking-wide whitespace-nowrap   px-3.5 text-sm font-semibold transition-colors outline-none focus-visible:border-blue-500 focus-visible:ring-[3px] focus-visible:ring-blue-500/30 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 dark:border-[#7ba2e3]/40 dark:bg-white/5 dark:text-[#7ba2e3] dark:hover:border-[#7ba2e3]/60 dark:hover:bg-white/10"
         >
           {isPending ? (
             <>
@@ -424,22 +424,22 @@ export default function Page() {
               Save and Continue
             </>
           )}
-        </Button>
+        </button>
       </div>
 
-      <div className="border-gray-200 border shadow-sm rounded-xl bg-white overflow-hidden">
+      <div className="border-gray-200 border  rounded-xl bg-white dark:bg-[#161d2e] overflow-hidden dark:border-white/15">
         {/* ── Bill to + Invoice title ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 px-5 pt-5 border-b border-gray-100 pb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 px-5 pt-5 border-b border-gray-100 pb-8 dark:border-white/10">
           {/* Customer */}
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1 dark:text-[#9aa6bd]">
               Bill to
             </p>
-            <p className="text-lg font-bold text-gray-900 truncate">
+            <p className="text-lg font-semibold text-[#3c4043]  truncate dark:text-[#e8ecf4]">
               {selectedCustomer?.name || "No customer selected"}
             </p>
             {(selectedCustomer?.email || selectedCustomer?.phone) && (
-              <p className="text-xs text-gray-500 mt-0.5 truncate">
+              <p className="text-xs text-gray-500 mt-0.5 truncate dark:text-[#9aa6bd]">
                 {[selectedCustomer?.email, selectedCustomer?.phone]
                   .filter(Boolean)
                   .join(" · ")}
@@ -449,7 +449,7 @@ export default function Page() {
             <button
               type="button"
               onClick={() => setShowCustomerPicker((v) => !v)}
-              className="mt-2 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+              className="mt-2 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors dark:hover:text-[#c3d6f4] dark:text-blue-300"
             >
               {showCustomerPicker
                 ? "Cancel"
@@ -475,12 +475,12 @@ export default function Page() {
           <div className="sm:justify-self-end w-full sm:max-w-xs">
             <Label
               htmlFor="invoiceTitle"
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1 block"
+              className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1 block dark:text-[#9aa6bd]"
             >
               Invoice Title
             </Label>
             <Input
-              className="hover:bg-blue-50 font-semibold px-3 h-9 text-sm w-full"
+              className="hover:bg-blue-50 font-semibold px-3 h-9 text-sm w-full dark:hover:bg-blue-400/15"
               id="invoiceTitle"
               placeholder="Invoice"
               value={invoiceTitle}
@@ -490,7 +490,7 @@ export default function Page() {
         </div>
 
         {/* ── Items table ── */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto scrollbar-hide">
           <Table>
             <AddInvoiceHeader />
             <TableBody>
@@ -541,12 +541,12 @@ export default function Page() {
         />
 
         {/* ── Notes ── */}
-        <div className="px-5 py-4 border-t border-gray-100">
-          <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">
+        <div className="px-5 py-4 border-t border-gray-100 dark:border-white/10">
+          <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5 dark:text-[#9aa6bd]">
             Notes / Terms
           </label>
           <input
-            className="w-full focus:outline-none text-sm text-gray-700 placeholder:text-gray-300 p-2 rounded-lg border border-transparent focus:border-gray-200 hover:border-gray-200 transition"
+            className="w-full focus:outline-none text-sm text-gray-700 placeholder:text-gray-300 p-2 rounded-lg border border-transparent focus:border-gray-200 hover:border-gray-200 transition dark:hover:border-white/20 dark:text-[#c3ccdc]"
             placeholder="Enter notes or terms of service..."
             type="text"
             value={notes}

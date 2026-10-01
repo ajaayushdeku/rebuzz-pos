@@ -59,7 +59,7 @@ export default function Page() {
         <InvoiceHeader />
         <InvoiceStats invoices={invoices} />
         <InvoiceTable invoices={invoices} />
-        <div className="border-b border-gray-200 w-full" />
+        <div className="border-b border-gray-200 w-full dark:border-white/15" />
         <ArchivedInvoicesTable
           invoices={archivedInvoices}
           isLoading={archivedLoading}

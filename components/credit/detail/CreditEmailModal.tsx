@@ -144,7 +144,7 @@ export default function CreditEmailModal({
                 type="button"
                 onClick={sendAll}
                 disabled={!canSend}
-                className="rounded-xl px-4 py-3 text-[13px] font-semibold text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-xl px-4 py-3 text-[13px] font-semibold text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
               >
                 Send all three
               </button>
@@ -152,7 +152,7 @@ export default function CreditEmailModal({
                 type="button"
                 onClick={sendSelected}
                 disabled={!canSend}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-[13px] font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-[13px] font-semibold text-white transition hover:bg-blue-700 dark:hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSending ? (
                   <>
@@ -171,7 +171,7 @@ export default function CreditEmailModal({
         }
       >
         {!credit ? (
-          <div className="flex items-center justify-center gap-2 py-14 text-[13px] text-gray-400">
+          <div className="flex items-center justify-center gap-2 py-14 text-[13px] text-gray-400 dark:text-[#9aa6bd]">
             <Loader2 size={15} className="animate-spin" />
             Loading credit
           </div>
@@ -180,19 +180,22 @@ export default function CreditEmailModal({
             <div>
               <SectionLabel>Sending to</SectionLabel>
               {recipient ? (
-                <div className="mt-2 flex items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50/70 px-3.5 py-2.5">
-                  <Mail size={14} className="shrink-0 text-gray-400" />
-                  <p className="truncate text-[13px] font-medium text-gray-800">
+                <div className="mt-2 flex items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50/70 dark:bg-white/5 px-3.5 py-2.5 dark:border-white/15">
+                  <Mail
+                    size={14}
+                    className="shrink-0 text-gray-400 dark:text-[#9aa6bd]"
+                  />
+                  <p className="truncate text-[13px] font-medium text-gray-800 dark:text-[#e8ecf4]">
                     {recipient}
                   </p>
                 </div>
               ) : (
-                <div className="mt-2 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5">
+                <div className="mt-2 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 dark:border-red-400/25 dark:bg-red-400/10">
                   <AlertCircle
                     size={14}
-                    className="mt-0.5 shrink-0 text-red-500"
+                    className="mt-0.5 shrink-0 text-red-500 dark:text-red-300"
                   />
-                  <p className="text-[12px] leading-relaxed text-red-600">
+                  <p className="text-[12px] leading-relaxed text-red-600 dark:text-red-300">
                     This customer has no email on file. Add one to the customer
                     profile to send the credit.
                   </p>

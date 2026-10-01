@@ -108,8 +108,8 @@ function EditPaymentForm({
       title="Edit payment"
       subtitle={`Original payment: ${fmt(originalAmount)}`}
       icon={PencilLine}
-      iconColor="text-blue-600"
-      iconBgColor="bg-blue-50"
+      iconColor="text-blue-600 dark:text-[#7ba2e3]"
+      iconBgColor="bg-blue-50 dark:bg-blue-400/10"
       maxWidth="max-w-xl"
     >
       <div className="space-y-6">
@@ -117,13 +117,13 @@ function EditPaymentForm({
         <div>
           <div className="flex items-center justify-between">
             <SectionLabel>Amount</SectionLabel>
-            <span className="text-[11px] text-gray-400 tabular-nums">
+            <span className="text-[11px] text-gray-400 tabular-nums dark:text-[#9aa6bd]">
               Max {fmt(maxAmount)}
             </span>
           </div>
 
           <div className="relative mt-2">
-            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] text-gray-400">
+            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] text-gray-400 dark:text-[#9aa6bd]">
               {currency.symbol}
             </span>
             <input
@@ -133,16 +133,16 @@ function EditPaymentForm({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0"
-              className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3.5 text-[13px] tabular-nums outline-none transition focus:ring-2 ${
+              className={`h-11 w-full rounded-xl border bg-white dark:bg-white/5 pl-9 pr-3.5 text-[13px] tabular-nums outline-none transition focus:ring-2 ${
                 isOverMax
-                  ? "border-red-300 focus:border-red-400 focus:ring-red-500/20"
-                  : "border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
+                  ? "border-red-300 focus:border-red-400 focus:ring-red-500/20 dark:focus:border-red-400/60 dark:border-red-400/40"
+                  : "border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 dark:border-white/15"
               }`}
             />
           </div>
 
           {isOverMax && (
-            <p className="mt-1.5 text-[11px] font-medium text-red-500">
+            <p className="mt-1.5 text-[11px] font-medium text-red-500 dark:text-red-300">
               Amount cannot exceed {fmt(maxAmount)}
             </p>
           )}
@@ -162,14 +162,18 @@ function EditPaymentForm({
                   aria-pressed={active}
                   className={`flex items-center justify-center gap-2 rounded-xl border py-3 text-[13px] font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                     active
-                      ? "border-blue-600 bg-blue-50 text-blue-700"
-                      : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                      ? "border-blue-600 bg-blue-50 text-blue-700 dark:text-blue-300 dark:bg-blue-400/10"
+                      : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:bg-transparent dark:hover:border-white/25 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#a9b4c7]"
                   }`}
                 >
                   <Icon
                     size={16}
                     strokeWidth={1.8}
-                    className={active ? "text-blue-600" : "text-gray-400"}
+                    className={
+                      active
+                        ? "text-blue-600 dark:text-blue-300"
+                        : "text-gray-400 dark:text-[#9aa6bd]"
+                    }
                   />
                   {label}
                 </button>
@@ -185,18 +189,18 @@ function EditPaymentForm({
             type="datetime-local"
             value={paidAt}
             onChange={(e) => setPaidAt(e.target.value)}
-            className="mt-2 h-11 w-full rounded-xl border border-gray-200 bg-white px-3.5 text-[13px] tabular-nums outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+            className="mt-2 h-11 w-full rounded-xl border border-gray-200 bg-white dark:bg-white/5 px-3.5 text-[13px] tabular-nums outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-white/15"
           />
         </div>
       </div>
 
       {/* Footer */}
-      <div className="flex items-center gap-2.5 border-t border-gray-100 px-6 py-4 -mx-6 -mb-5 mt-6">
+      <div className="flex items-center gap-2.5 border-t border-gray-100 px-6 py-4 -mx-6 -mb-5 mt-6 dark:border-white/10">
         <button
           type="button"
           onClick={onClose}
           disabled={saving}
-          className="rounded-xl px-5 py-3 text-[13px] font-semibold text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50"
+          className="rounded-xl px-5 py-3 text-[13px] font-semibold text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
         >
           Cancel
         </button>
@@ -204,7 +208,7 @@ function EditPaymentForm({
           type="button"
           onClick={handleSubmit}
           disabled={saving || !isValid}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-sm"
+          className="w-full bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-sm"
         >
           {saving ? (
             <>

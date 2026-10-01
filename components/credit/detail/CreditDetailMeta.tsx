@@ -6,12 +6,13 @@ import type { CurrencyConfig } from "@/providers/CurrencyContext";
 import {
   CREDIT_STATE_LABEL,
   CREDIT_STATE_PILL,
+  CREDIT_STATE_PILL_CLASS,
   type CreditState,
 } from "./creditDetailHelpers";
 
 function MetaLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[10px] text-right font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
+    <p className="text-[10px] text-right font-semibold text-gray-400 uppercase tracking-widest mb-1.5 dark:text-[#9aa6bd]">
       {children}
     </p>
   );
@@ -83,11 +84,11 @@ export default function CreditDetailMeta({
     <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
       <div className="flex items-center gap-6">
         <div>
-          <p className="text-[10px] text-left font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
+          <p className="text-[10px] text-left font-semibold text-gray-400 uppercase tracking-widest mb-1.5 dark:text-[#9aa6bd]">
             Status
           </p>
           <span
-            className={`text-xs font-semibold px-2.5 py-1 rounded-md border relative overflow-hidden capitalize ${pill.className}`}
+            className={`text-xs font-semibold px-2.5 py-1 rounded-md border relative overflow-hidden capitalize ${CREDIT_STATE_PILL_CLASS} ${pill.className}`}
             style={pill.style}
           >
             {CREDIT_STATE_LABEL[state]}
@@ -95,23 +96,23 @@ export default function CreditDetailMeta({
         </div>
 
         <div>
-          <p className="text-[10px] text-left font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
+          <p className="text-[10px] text-left font-semibold text-gray-400 uppercase tracking-widest mb-1.5 dark:text-[#9aa6bd]">
             Customer
           </p>
           {isCustomerLoading ? (
-            <div className="h-5 w-28 bg-gray-200 animate-pulse rounded" />
+            <div className="h-5 w-28 bg-gray-200 animate-pulse rounded dark:bg-white/10" />
           ) : (
             <div className="flex items-end gap-2">
-              <span className="text-base font-bold text-blue-600">
+              <span className="text-base font-bold text-blue-600 dark:text-blue-300">
                 {customerName}
               </span>
               {/* {customerPhone && (
-                <span className="text-[11px] text-gray-400 mb-0.5">
+                <span className="text-[11px] text-gray-400 mb-0.5 dark:text-[#9aa6bd]">
                   {customerPhone}
                 </span>
               )} */}
               {!!loyaltyPoint && loyaltyPoint > 0 && (
-                <p className="text-[10px] text-amber-500 font-medium whitespace-nowrap mb-0.5 font-sans">
+                <p className="text-[10px] text-amber-500 font-medium whitespace-nowrap mb-0.5 font-sans dark:text-amber-300">
                   ★ {formatAmount(loyaltyPoint, currency.locale)}{" "}
                   <span className=" text-[8px] text-amber-400 font-medium whitespace-nowrap mb-0.5">
                     pts
@@ -130,7 +131,7 @@ export default function CreditDetailMeta({
             <MetaLabel>Due date</MetaLabel>
             {dueDate ? (
               <div className="text-right relative">
-                <p className="text-xl font-semibold text-gray-800">
+                <p className="text-xl font-semibold text-gray-800 dark:text-[#e8ecf4]">
                   {formatDueDate(dueDate)}
                 </p>
                 {/* How long is left, and only while something is still owed — on
@@ -140,10 +141,10 @@ export default function CreditDetailMeta({
                   <p
                     className={` absolute right-0 text-[11px] font-semibold mt-0.5 ${
                       daysUntilDue < 0
-                        ? "text-red-500"
+                        ? "text-red-500 dark:text-red-300"
                         : daysUntilDue === 0
-                          ? "text-amber-600"
-                          : "text-gray-400"
+                          ? "text-amber-600 dark:text-amber-300"
+                          : "text-gray-400 dark:text-[#9aa6bd]"
                     }`}
                   >
                     {daysUntilDue < 0
@@ -161,7 +162,7 @@ export default function CreditDetailMeta({
             ) : state === "archived" ? (
               // Nothing about an archived credit can change, so a button here
               // would open a form that cannot be saved.
-              <p className="text-base text-right font-semibold text-gray-300">
+              <p className="text-base text-right font-semibold text-gray-300 dark:text-[#6b7588]">
                 —
               </p>
             ) : (
@@ -169,7 +170,7 @@ export default function CreditDetailMeta({
               // the date, so it is also where they should be able to add one.
               <button
                 onClick={onSetDueDate}
-                className="text-base font-semibold text-blue-600 tracking-wide cursor-pointer hover:underline"
+                className="text-base font-semibold text-blue-600 tracking-wide cursor-pointer hover:underline dark:text-blue-300"
               >
                 Set due date
               </button>
@@ -179,7 +180,7 @@ export default function CreditDetailMeta({
 
         <div>
           <MetaLabel>Credit total</MetaLabel>
-          <p className="text-xl text-right font-semibold text-gray-800">
+          <p className="text-xl text-right font-semibold text-gray-800 dark:text-[#e8ecf4]">
             {fmt(grandTotal)}
           </p>
         </div>
@@ -187,7 +188,7 @@ export default function CreditDetailMeta({
         {paidAmount > 0 && (
           <div>
             <MetaLabel>Paid so far</MetaLabel>
-            <p className="text-xl text-right font-semibold text-green-600">
+            <p className="text-xl text-right font-semibold text-green-600 dark:text-emerald-300">
               {fmt(paidAmount)}
             </p>
           </div>
@@ -197,7 +198,9 @@ export default function CreditDetailMeta({
           <MetaLabel>Amount due</MetaLabel>
           <p
             className={`text-xl text-right font-semibold ${
-              cleared ? "text-green-600" : "text-red-600"
+              cleared
+                ? "text-green-600 dark:text-emerald-300"
+                : "text-red-600 dark:text-red-300"
             }`}
           >
             {fmt(cleared ? 0 : dueAmount)}

@@ -71,6 +71,8 @@ export default function CustomerPreviewModal({
           : "Public share links"
       }
       icon={LinkIcon}
+      iconColor="text-blue-600 dark:text-[#7ba2e3]"
+      iconBgColor="bg-blue-50 dark:bg-blue-400/10"
     >
       {!invoice ? (
         <div className="flex items-center justify-center gap-2 py-14 text-[13px] text-gray-400 dark:text-[#9aa6bd]">
@@ -105,7 +107,8 @@ export default function CustomerPreviewModal({
                   <button
                     type="button"
                     onClick={() => handleOpen(type)}
-                    className="flex h-8 items-center gap-1.5 rounded-lg bg-blue-600 px-3 text-[12px] font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    className="flex h-8 items-center gap-1.5 rounded-lg bg-blue-600 dark:bg-[#1C2A43] dark:text-[#7BA2E3] border dark:border-[#2D5284]
+                    dark:hover:bg-[#2D5284] dark:hover:text-white cursor-pointer px-3 text-[12px] font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                   >
                     <ExternalLink size={13} />
                     Open

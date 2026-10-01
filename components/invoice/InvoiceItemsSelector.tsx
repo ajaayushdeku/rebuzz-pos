@@ -66,10 +66,12 @@ type RowPill = {
 };
 
 const DOT_TONE: Record<PillTone, string> = {
-  danger: "bg-red-100 text-red-600 ring-red-300/70",
-  warning: "bg-amber-100 text-amber-600 ring-amber-300/70",
-  info: "bg-blue-100 text-blue-600 ring-blue-300/70",
-  tax: "bg-rose-100 text-rose-600 ring-rose-400/80",
+  danger:
+    "bg-red-100 text-red-600 ring-red-300/70 dark:text-red-300 dark:bg-red-400/15 dark:ring-red-400/40",
+  warning:
+    "bg-amber-100 text-amber-600 ring-amber-300/70 dark:text-amber-300 dark:bg-amber-400/15 dark:ring-amber-400/40",
+  info: "bg-blue-100 text-blue-600 ring-blue-300/70 dark:text-blue-300 dark:bg-blue-400/15 dark:ring-blue-400/40",
+  tax: "bg-rose-100 text-rose-600 ring-rose-400/80 dark:text-rose-300 dark:bg-rose-400/15 dark:ring-rose-400/40",
 };
 
 function PillDot({
@@ -162,9 +164,9 @@ function stockLevel(
 }
 
 const STOCK_TONE: Record<Exclude<StockLevel, "untracked">, string> = {
-  out: "border-red-200 bg-red-50 text-red-600",
-  low: "border-amber-200 bg-amber-50 text-amber-700",
-  ok: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  out: "border-red-200 bg-red-50 text-red-600 dark:border-red-400/25 dark:text-red-300 dark:bg-red-400/10",
+  low: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/25 dark:text-amber-300 dark:bg-amber-400/10",
+  ok: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/25 dark:text-emerald-300 dark:bg-emerald-400/10",
 };
 
 /** Badge copy for a stock level — "12 in stock" / "3 left" / "Out of stock". */
@@ -503,7 +505,7 @@ export default function InvoiceItemsSelector({
         label: `Stock exceeded — ${stockError}`,
         pulse: true,
         element: (
-          <Badge className="flex items-center gap-1 bg-red-100 text-red-700 hover:bg-red-200 text-xs">
+          <Badge className="flex items-center gap-1 bg-red-100 text-red-700 hover:bg-red-200 text-xs dark:text-red-300 dark:bg-red-400/15">
             <span className="text-[11px] font-semibold  tracking-wider leading-none">
               Stock Exceeded,
             </span>
@@ -531,7 +533,7 @@ export default function InvoiceItemsSelector({
         icon: Boxes,
         label: `Low stock — ${product.inStock} left`,
         element: (
-          <Badge className="flex items-center gap-1 bg-amber-100 text-amber-700 hover:bg-amber-200 text-xs border border-amber-200">
+          <Badge className="flex items-center gap-1 bg-amber-100 text-amber-700 hover:bg-amber-200 text-xs border border-amber-200 dark:border-amber-400/25 dark:text-amber-300 dark:bg-amber-400/15">
             <span className="text-[11px]  font-semibold  tracking-wider leading-none">
               Low Stock
             </span>
@@ -574,13 +576,13 @@ export default function InvoiceItemsSelector({
           icon: d.type === "percentage" ? Percent : DollarSignIcon,
           label: `${d.name} — ${formatCurrencySymbolOnly(currency.symbol)} ${amount.toFixed(2)} off`,
           element: (
-            <Badge className="flex items-center gap-1 bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs">
+            <Badge className="flex items-center gap-1 bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs dark:text-blue-300 dark:bg-blue-400/15">
               <span className="text-[11px] tracking-wider font-semibold leading-none">
                 {d.name}
               </span>
               {d.type === "percentage" ? (
                 <>
-                  <span className="text-[11px] font-semibold  tracking-wider text-blue-500 leading-none">
+                  <span className="text-[11px] font-semibold  tracking-wider text-blue-500 leading-none dark:text-blue-300">
                     ({d.rate}%) :
                   </span>
                   <span className="text-[11px] font-semibold  tracking-wider leading-none">
@@ -590,7 +592,7 @@ export default function InvoiceItemsSelector({
                 </>
               ) : (
                 <>
-                  <span className="text-[11px] font-semibold  tracking-wider text-blue-500 leading-none">
+                  <span className="text-[11px] font-semibold  tracking-wider text-blue-500 leading-none dark:text-blue-300">
                     ({formatCurrencySymbolOnly(currency.symbol)} {d.rate} off) :
                   </span>
                   <span className="text-[11px] font-semibold  tracking-wider leading-none">
@@ -642,11 +644,11 @@ export default function InvoiceItemsSelector({
         icon: Receipt,
         label: `${activeTax.name} (${activeTax.rate}%) — ${formatCurrencySymbolOnly(currency.symbol)} ${taxAmount.toFixed(2)}`,
         element: (
-          <Badge className="flex items-center gap-1 bg-rose-100 text-rose-700 hover:bg-rose-200 text-xs">
+          <Badge className="flex items-center gap-1 bg-rose-100 text-rose-700 hover:bg-rose-200 text-xs dark:text-rose-300 dark:bg-rose-400/15">
             <span className="text-[11px] font-semibold  tracking-wider leading-none">
               {activeTax.name}
             </span>
-            <span className="text-[11px] text-rose-500  tracking-wider leading-none">
+            <span className="text-[11px] text-rose-500  tracking-wider leading-none dark:text-rose-300">
               ({activeTax.rate}%) :
             </span>
             <span className="text-[11px] font-medium  tracking-wider  leading-none">
@@ -728,7 +730,7 @@ export default function InvoiceItemsSelector({
                 setDragOverId(null);
               }}
               className={cn(
-                "border-b-1 w-full align-top justify-start hover:bg-blue-50/60 transition-colors",
+                "border-b-1 w-full align-top justify-start hover:bg-blue-50/60 transition-colors dark:hover:bg-white/10",
                 draggingId === item.id && "opacity-40",
                 dragOverId === item.id &&
                   draggingId !== item.id &&
@@ -760,7 +762,7 @@ export default function InvoiceItemsSelector({
                     nudgeRow(item.id, e.key === "ArrowUp" ? -1 : 1);
                   }}
                   onBlur={() => setDraggingId(null)}
-                  className="mt-1.5 cursor-grab rounded p-0.5 text-gray-300 transition hover:text-gray-500 active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  className="mt-1.5 cursor-grab rounded p-0.5 text-gray-300 transition hover:text-gray-500 active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-[#6b7588]"
                 >
                   <GripVertical className="h-4 w-4" />
                 </button>
@@ -780,7 +782,7 @@ export default function InvoiceItemsSelector({
                         updateItem(item.id, "name", e.target.value)
                       }
                       placeholder="Product name"
-                      className="flex-1 h-8 text-xs bg-white"
+                      className="flex-1 h-8 text-xs bg-white dark:bg-white/5"
                     />
 
                     <Popover
@@ -793,7 +795,7 @@ export default function InvoiceItemsSelector({
                         <Button
                           variant="outline"
                           size="icon"
-                          className="h-8 w-8 shrink-0 border-gray-200"
+                          className="h-8 w-8 shrink-0 border-gray-200 dark:border-white/15"
                         >
                           <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
                         </Button>
@@ -885,7 +887,7 @@ export default function InvoiceItemsSelector({
                                             {product.name}
                                           </span>
                                           {hasVariants && (
-                                            <span className="inline-flex items-center gap-0.5 text-[9px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200 font-medium whitespace-nowrap">
+                                            <span className="inline-flex items-center gap-0.5 text-[9px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200 font-medium whitespace-nowrap dark:border-violet-400/25 dark:text-violet-300 dark:bg-violet-400/15">
                                               {/* <Layers size={5} /> */}
                                               {product.variants?.length}{" "}
                                               variants
@@ -966,7 +968,7 @@ export default function InvoiceItemsSelector({
                       updateItem(item.id, "description", e.target.value)
                     }
                     placeholder="Description"
-                    className="h-8 text-xs bg-white "
+                    className="h-8 text-xs bg-white dark:bg-white/5 "
                   />
                 </div>
               </TableCell>
@@ -981,13 +983,13 @@ export default function InvoiceItemsSelector({
                       updateItem(item.id, "quantity", Number(e.target.value))
                     }
                     className={cn(
-                      "text-right bg-white h-8 text-[14px] sm:text-[12px] tracking-wider px-1.5 no-spinner tabular-nums",
+                      "text-right bg-white dark:bg-white/5 h-8 text-[14px] sm:text-[12px] tracking-wider px-1.5 no-spinner tabular-nums",
                       stockErrors[item.id] &&
                         "border-red-400 focus-visible:ring-red-400",
                     )}
                   />
                   {stockErrors[item.id] && (
-                    <span className="absolute right-0 mt-1 block text-right text-[9px] font-medium text-red-600 whitespace-nowrap">
+                    <span className="absolute right-0 mt-1 block text-right text-[9px] font-medium text-red-600 whitespace-nowrap dark:text-red-300">
                       Stock exceeded
                     </span>
                   )}
@@ -1000,7 +1002,7 @@ export default function InvoiceItemsSelector({
                   className={`${rowPills.length > 0 && !showDiscountedUnit && "mb-7"} ${showDiscountedUnit && "mb-3"}`}
                 >
                   <>
-                    <span className="relative left-5 top-1/2 -translate-y-1/2 text-[14px] sm:text-[11px] text-slate-400">
+                    <span className="relative left-5 top-1/2 -translate-y-1/2 text-[14px] sm:text-[11px] text-slate-400 dark:text-[#9aa6bd]">
                       {currency.symbol}
                     </span>
                     <Input
@@ -1015,13 +1017,14 @@ export default function InvoiceItemsSelector({
                           : undefined
                       }
                       className={cn(
-                        "text-right h-8 bg-white md:text-[14px] sm:text-[12px] tracking-wider px-1.5 no-spinner tabular-nums",
-                        showDiscountedUnit && "text-gray-400 line-through",
+                        "text-right h-8 bg-white dark:bg-white/5 md:text-[14px] sm:text-[12px] tracking-wider px-1.5 no-spinner tabular-nums",
+                        showDiscountedUnit &&
+                          "text-gray-400 line-through dark:text-[#9aa6bd]",
                       )}
                     />
                   </>
                   {showDiscountedUnit && (
-                    <p className="mt-1 text-right text-[13px] sm:text-[11px] font-semibold leading-none text-green-600 tabular-nums">
+                    <p className="mt-1 text-right text-[13px] sm:text-[11px] font-semibold leading-none text-green-600 tabular-nums dark:text-emerald-300">
                       {formatCurrencySymbolOnly(currency.symbol)}{" "}
                       {discountedUnit.toFixed(2)}
                     </p>
@@ -1030,7 +1033,7 @@ export default function InvoiceItemsSelector({
               </TableCell>
 
               {/* Row total */}
-              <TableCell className="w-[132px] min-w-[120px] text-right font-semibold text-[12px] md:text-[14px] text-gray-800 tabular-nums">
+              <TableCell className="w-[132px] min-w-[120px] text-right font-semibold text-[12px] md:text-[14px] text-gray-800 tabular-nums dark:text-[#e8ecf4]">
                 <p className={`${rowPills.length > 0 && "mb-7"}`}>
                   {" "}
                   {formatCurrencySymbol(
@@ -1062,7 +1065,7 @@ export default function InvoiceItemsSelector({
                   <button
                     type="button"
                     onClick={() => setDiscountModalItemId(item.id)}
-                    className="w-6 h-6 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center transition-colors"
+                    className="w-6 h-6 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center transition-colors dark:hover:bg-blue-400/20 dark:text-blue-300 dark:bg-blue-400/10"
                     title="Add discount"
                   >
                     <Plus className="w-3 h-3" />
@@ -1088,7 +1091,9 @@ export default function InvoiceItemsSelector({
                       );
                     }}
                     className={`relative inline-flex h-5 w-8 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
-                      item.isTaxable ? "bg-blue-500" : "bg-gray-200"
+                      item.isTaxable
+                        ? "bg-blue-500"
+                        : "bg-gray-200 dark:bg-white/10"
                     }`}
                   >
                     <span
@@ -1105,18 +1110,18 @@ export default function InvoiceItemsSelector({
               {/* Delete */}
               <TableCell className="text-center w-[44px] min-w-[44px]">
                 <button
-                  className={`${rowPills.length > 0 && "mb-7"} text-gray-400 hover:text-red-500 transition-colors shrink-0`}
+                  className={`${rowPills.length > 0 && "mb-7"} text-gray-400 hover:text-red-500 transition-colors shrink-0 dark:hover:text-[#f87171] dark:text-[#9aa6bd]`}
                   onClick={() =>
                     onItemsChange(items.filter((i) => i.id !== item.id))
                   }
                 >
-                  <Trash2 className="h-3.5 w-3.5 text-gray-400 hover:text-red-500" />
+                  <Trash2 className="h-3.5 w-3.5 text-gray-400 hover:text-red-500 dark:hover:text-[#f87171] dark:text-[#9aa6bd]" />
                 </button>
               </TableCell>
             </TableRow>
 
             {/* ── Pills row — discount + tax badges ── */}
-            {/* <TableRow className="border-b border-gray-100 hover:bg-gray-50/70 transition-colors">
+            {/* <TableRow className="border-b border-gray-100 hover:bg-gray-50/70 transition-colors dark:border-white/10">
               <TableCell className="w-6 px-1 pb-2 pt-0" />
               <TableCell colSpan={6} className="pb-3 pt-1">
                 {rowPills.length > 0 && (
@@ -1148,14 +1153,14 @@ export default function InvoiceItemsSelector({
         );
       })}
 
-      <TableRow className="hover:bg-blue-50/70 transition-colors ">
+      <TableRow className="hover:bg-blue-50/70 transition-colors dark:hover:bg-white/10">
         {/* 8 columns while Discount is hidden — 9 when it comes back. An
             over-long colSpan is clamped rather than erroring, which is why the
             stale 10 here went unnoticed. */}
         <TableCell colSpan={8} className="p-0">
           <button
             onClick={addItem}
-            className="flex w-full items-center gap-2 text-blue-600 font-semibold text-sm hover:text-blue-700 transition-colors px-4 py-3"
+            className="flex w-full items-center gap-2 text-blue-600 font-semibold text-sm hover:text-blue-700 transition-colors px-4 py-3 dark:hover:text-[#c3d6f4] dark:text-blue-300"
           >
             <CirclePlus className="h-4 w-4" />
             Add an item
@@ -1242,23 +1247,23 @@ export default function InvoiceItemsSelector({
 
       {/* ── Variant picker modal ── */}
       {variantPicker && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 ">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 dark:bg-black/70">
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="variant-picker-title"
-            className="w-full max-w-md rounded-2xl bg-white shadow-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200"
+            className="w-full max-w-md rounded-2xl bg-white dark:bg-[#161d2e] shadow-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200 dark:ring-1 dark:ring-white/10"
           >
             {/* Header */}
-            <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 dark:border-white/10">
               <div className="min-w-0">
                 <h2
                   id="variant-picker-title"
-                  className="text-base font-semibold text-slate-900"
+                  className="text-base font-semibold text-slate-900 dark:text-[#e8ecf4]"
                 >
                   {variantPicker.productName}
                 </h2>
-                <p className="mt-0.5 text-xs text-slate-500">
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-[#9aa6bd]">
                   Select a variant to add to the invoice
                 </p>
               </div>
@@ -1266,7 +1271,7 @@ export default function InvoiceItemsSelector({
                 type="button"
                 onClick={() => setVariantPicker(null)}
                 aria-label="Close"
-                className="-mr-1 -mt-1 shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+                className="-mr-1 -mt-1 shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors dark:hover:text-[#e8ecf4] dark:hover:bg-white/10 dark:text-[#9aa6bd]"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -1304,19 +1309,19 @@ export default function InvoiceItemsSelector({
                       "w-full flex items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-left transition",
                       "focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1",
                       isOut
-                        ? "cursor-not-allowed border-slate-200 bg-slate-50 opacity-60"
-                        : "cursor-pointer border-slate-200 hover:border-blue-400 hover:bg-blue-50/50",
+                        ? "cursor-not-allowed border-slate-200 bg-slate-50 opacity-60 dark:border-white/15 dark:bg-white/5"
+                        : "cursor-pointer border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:border-blue-400/60 dark:border-white/15",
                     )}
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-50 text-violet-600">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-50 text-violet-600 dark:text-violet-300 dark:bg-violet-400/10">
                         <Layers className="h-3.5 w-3.5" />
                       </span>
                       <div className="min-w-0">
-                        <p className="truncate text-[13px] font-medium capitalize text-slate-800">
+                        <p className="truncate text-[13px] font-medium capitalize text-slate-800 dark:text-[#e8ecf4]">
                           {label}
                         </p>
-                        <span className="text-[11px] tabular-nums text-slate-400">
+                        <span className="text-[11px] tabular-nums text-slate-400 dark:text-[#9aa6bd]">
                           {formatCurrencySymbol(
                             variant.price,
                             currency.symbol,
@@ -1342,7 +1347,7 @@ export default function InvoiceItemsSelector({
                         </span>
                       )}
                       {!isOut && (
-                        <Plus className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+                        <Plus className="h-3.5 w-3.5 shrink-0 text-slate-300 dark:text-[#6b7588]" />
                       )}
                     </div>
                   </button>

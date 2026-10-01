@@ -60,7 +60,7 @@ function RowIconButton({
       aria-label={label}
       onClick={onClick}
       disabled={disabled}
-      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 ${
+      className={`flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 px-3 text-[12px] font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:border-white/25 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#c3ccdc] ${
         active
           ? "border-blue-200 bg-blue-50 text-blue-600"
           : "border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"
@@ -211,13 +211,15 @@ export default function CreditSendModal({
             : "Copy, download or email"
         }
         icon={FileText}
+        iconColor="text-blue-600 dark:text-[#7ba2e3]"
+        iconBgColor="bg-blue-50 dark:bg-blue-400/10"
         footer={
           credit ? (
             <button
               type="button"
               onClick={emailAll}
               disabled={!recipient || busy}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-[13px] font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-[13px] font-semibold text-white transition hover:bg-blue-700 dark:hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {emailingFor === "all" ? (
                 <>
@@ -235,7 +237,7 @@ export default function CreditSendModal({
         }
       >
         {!credit ? (
-          <div className="flex items-center justify-center gap-2 py-14 text-[13px] text-gray-400">
+          <div className="flex items-center justify-center gap-2 py-14 text-[13px] text-gray-400 dark:text-[#9aa6bd]">
             <Loader2 size={15} className="animate-spin" />
             Loading credit
           </div>
@@ -244,7 +246,7 @@ export default function CreditSendModal({
             <div>
               <div className="flex items-baseline justify-between">
                 <SectionLabel>Documents</SectionLabel>
-                <span className="text-[11px] text-gray-400 pr-3">
+                <span className="text-[11px] text-gray-400 pr-5 dark:text-[#9aa6bd]">
                   Copy · Download · Email
                 </span>
               </div>
@@ -264,7 +266,10 @@ export default function CreditSendModal({
                           active={copied === type}
                         >
                           {copied === type ? (
-                            <Check size={14} className="text-emerald-600" />
+                            <Check
+                              size={14}
+                              className="text-emerald-600 dark:text-emerald-300"
+                            />
                           ) : (
                             <LinkIcon size={14} />
                           )}
@@ -303,19 +308,22 @@ export default function CreditSendModal({
             <div>
               <SectionLabel>Emails go to</SectionLabel>
               {recipient ? (
-                <div className="mt-2 flex items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50/70 px-3.5 py-2.5">
-                  <Mail size={14} className="shrink-0 text-gray-400" />
-                  <p className="truncate text-[13px] font-medium text-gray-800">
+                <div className="mt-2 flex items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50/70 dark:bg-white/5 px-3.5 py-2.5 dark:border-white/15">
+                  <Mail
+                    size={14}
+                    className="shrink-0 text-gray-400 dark:text-[#9aa6bd]"
+                  />
+                  <p className="truncate text-[13px] font-medium text-gray-800 dark:text-[#e8ecf4]">
                     {recipient}
                   </p>
                 </div>
               ) : (
-                <div className="mt-2 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5">
+                <div className="mt-2 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 dark:border-red-400/25 dark:bg-red-400/10">
                   <AlertCircle
                     size={14}
-                    className="mt-0.5 shrink-0 text-red-500"
+                    className="mt-0.5 shrink-0 text-red-500 dark:text-red-300"
                   />
-                  <p className="text-[12px] leading-relaxed text-red-600">
+                  <p className="text-[12px] leading-relaxed text-red-600 dark:text-red-300">
                     This customer has no email on file. Copy and download still
                     work; add an email to the customer profile to send.
                   </p>
@@ -323,7 +331,7 @@ export default function CreditSendModal({
               )}
             </div>
 
-            <p className="text-[11px] leading-relaxed text-gray-400">
+            <p className="text-[11px] leading-relaxed text-gray-400 dark:text-[#9aa6bd]">
               Each link shows the credit with its payments and outstanding due.
             </p>
           </div>

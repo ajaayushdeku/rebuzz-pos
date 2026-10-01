@@ -44,13 +44,17 @@ const CustomerSelector = ({
     <>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <div className="p-5 m-4 w-62.5 h-35 font-semibold text-blue-700 rounded-lg flex items-center justify-center border border-gray-300 cursor-pointer hover:bg-blue-50 transition-colors">
+          <div className="p-5 m-4 w-62.5 h-35 font-semibold text-blue-700 rounded-lg flex items-center justify-center border border-gray-300 cursor-pointer hover:bg-blue-50 transition-colors dark:hover:bg-blue-400/15 dark:border-white/20 dark:text-blue-300">
             {isLoading ? (
-              <span className="text-gray-400">Loading...</span>
+              <span className="text-gray-400 dark:text-[#9aa6bd]">
+                Loading...
+              </span>
             ) : hasSelectedCustomer ? (
               <div className="text-center">
-                <p className="font-semibold text-gray-900">{value.name}</p>
-                <p className="text-xs text-gray-500 font-normal">
+                <p className="font-semibold text-gray-900 dark:text-[#e8ecf4]">
+                  {value.name}
+                </p>
+                <p className="text-xs text-gray-500 font-normal dark:text-[#9aa6bd]">
                   {value.email}
                 </p>
               </div>
@@ -94,7 +98,7 @@ const CustomerSelector = ({
 
             <CommandSeparator />
             <div
-              className="flex items-center gap-2 px-4 py-2.5 text-blue-600 font-medium text-sm cursor-pointer hover:bg-blue-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-2.5 text-blue-600 font-medium text-sm cursor-pointer hover:bg-blue-50 transition-colors dark:hover:bg-blue-400/15 dark:text-blue-300"
               onClick={() => {
                 setCreateModalOpen(true);
               }}

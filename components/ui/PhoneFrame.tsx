@@ -31,21 +31,20 @@ export default function PhoneFrame({
         width,
         borderRadius: active ? "2rem" : "0.25rem",
         borderWidth: active ? 6 : 1,
-        borderColor: active ? "#111827" : "#e5e7eb",
       }}
-      className={`shrink-0 overflow-hidden border-solid bg-white shadow-lg transition-all duration-500 ease-in-out ${className}`}
+      className={`shrink-0 overflow-hidden border-solid bg-white shadow-lg transition-all duration-500 ease-in-out ${active ? "border-[#111827] dark:border-[#333B4D] " : "border-[#e5e7eb]"}  ${className}`}
     >
       {/* Height and opacity, not mounting: a status bar that popped in at the
           end of the transition would break the illusion it is part of. */}
       <div
         aria-hidden={!active}
-        className={`relative flex items-center justify-between overflow-hidden bg-white px-5 text-[11px] font-semibold text-gray-900 transition-all duration-500 ease-in-out ${
+        className={`relative flex items-center justify-between overflow-hidden bg-white px-5 text-[11px] font-semibold text-[#3c4043] dark:text-[#e8ecf4] transition-all duration-500 ease-in-out dark:border-[#333b4d] dark:bg-[#1b2436] ${
           active ? "h-8 opacity-100" : "h-0 opacity-0"
         }`}
       >
         <span className="tabular-nums">9:41</span>
-        <span className="absolute left-1/2 top-1 h-4 w-16 -translate-x-1/2 rounded-full bg-gray-900" />
-        <span className="flex items-center gap-1 text-gray-800">
+        <span className="absolute left-1/2 top-1.5 h-4 w-16 -translate-x-1/2 rounded-full bg-gray-900 dark:bg-black" />
+        <span className="flex items-center gap-1  text-[#3c4043] dark:text-[#e8ecf4]">
           <SignalHigh size={13} strokeWidth={2.5} />
           <Wifi size={13} strokeWidth={2.5} />
           <BatteryMedium size={15} strokeWidth={2} />

@@ -116,7 +116,7 @@ export default function CreditDocumentViewer({
   };
 
   return (
-    <div className="w-full bg-white border border-gray-200 overflow-hidden shadow-sm">
+    <div className="w-full bg-white dark:bg-[#161d2e] border border-gray-200 overflow-hidden shadow-sm dark:border-white/15 dark:shadow-none">
       {/* Off-screen A4 copy: the export source, and the print body when
           printing. Portaled to <body> for print so no ancestor can clip it. */}
       <div aria-hidden className="absolute -left-[99999px] top-0">
@@ -144,15 +144,17 @@ export default function CreditDocumentViewer({
         )}
 
       {/* Preview header */}
-      <div className="relative bg-blue-100 border-b border-gray-200 px-5 py-3 flex items-center justify-between gap-2 print:hidden">
+      <div className="relative bg-blue-100 border-b border-gray-200 px-5 py-3 flex items-center justify-between gap-2 print:hidden dark:border-white/15 dark:bg-[#0F1420]">
         <div className="flex flex-col items-start gap-1 text-[11px] text-blue-400">
-          <span className="font-medium text-blue-500">PREVIEW MODE</span>
-          <span className="hidden lg:inline-block">
+          <span className="font-medium text-blue-500 dark:text-[#c3d6f4]">
+            PREVIEW MODE
+          </span>
+          <span className="hidden lg:inline-block dark:text-[#c3d6f4]">
             You are previewing how your customer will see this credit.
           </span>
         </div>
 
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center bg-white border border-blue-200 rounded-xl p-1 gap-1 shrink-0">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center bg-white dark:bg-white/10 border border-blue-200 rounded-xl p-1 gap-1 shrink-0 dark:border-blue-400/25">
           {PREVIEW_MODES.map(({ label, value, icon: Icon }) => (
             <button
               key={value}
@@ -161,8 +163,8 @@ export default function CreditDocumentViewer({
               aria-pressed={previewMode === value}
               className={`flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
                 previewMode === value
-                  ? " bg-blue-600/80  font-bold text-white shadow-sm"
-                  : "font-semibold text-blue-600/80 hover:text-blue-950 cursor-pointer"
+                  ? " bg-blue-600/80  font-bold text-white shadow-sm dark:bg-blue-400/20 dark:text-[#c3d6f4]"
+                  : "font-semibold text-blue-600/80 hover:text-blue-950 cursor-pointer dark:text-[#c3d6f4] dark:hover:text-white"
               }`}
             >
               <Icon size={16} />
@@ -180,7 +182,7 @@ export default function CreditDocumentViewer({
             <button
               type="button"
               onClick={() => setPrinting(true)}
-              className="flex items-center gap-2 rounded-lg border border-[3px] border-blue-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-gray-700 transition-all hover:border-blue-300 hover:bg-blue-50 cursor-pointer"
+              className="flex items-center gap-2 rounded-lg border border-[3px] border-blue-200 bg-white dark:bg-white/5 px-3.5 py-1.5 text-sm font-semibold text-gray-700 transition-all hover:border-blue-300 hover:bg-blue-50 cursor-pointer dark:hover:border-blue-400/50 dark:hover:bg-blue-400/15 dark:border-blue-400/25 dark:text-[#c3ccdc]"
             >
               <Printer size={16} />
               <span className="hidden lg:inline-block">Print</span>
@@ -189,7 +191,7 @@ export default function CreditDocumentViewer({
               type="button"
               onClick={handleExportPdf}
               disabled={isExporting}
-              className="flex items-center gap-2 rounded-lg border border-[3px] border-blue-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-gray-700 transition-all hover:border-blue-300 hover:bg-blue-50 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex items-center gap-2 rounded-lg border border-[3px] border-blue-200 bg-white dark:bg-white/5 px-3.5 py-1.5 text-sm font-semibold text-gray-700 transition-all hover:border-blue-300 hover:bg-blue-50 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 dark:hover:border-blue-400/50 dark:hover:bg-blue-400/15 dark:border-blue-400/25 dark:text-[#c3ccdc]"
             >
               <Download size={16} />
               <span className="hidden lg:inline-block">
@@ -201,7 +203,7 @@ export default function CreditDocumentViewer({
           <button
             type="button"
             onClick={() => router.push(`/records/credits/${credit._id}`)}
-            className="shrink-0 cursor-pointer rounded-2xl border-[3px] border-blue-200 px-3 py-1.5 bg-blue-50 items-center justify-center text-[13px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:text-blue-700"
+            className="shrink-0 cursor-pointer rounded-2xl border-[3px] border-blue-200 px-3 py-1.5 bg-blue-50 items-center justify-center text-[13px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:text-blue-700 dark:hover:border-blue-400/50 dark:hover:text-[#c3d6f4] dark:border-blue-400/25 dark:text-blue-300 dark:bg-blue-400/10"
           >
             Back to{" "}
             {`${shortName(credit.ticketName)} · ${credit.invoiceNo && `#${credit.invoiceNo}`}` ||
@@ -212,7 +214,7 @@ export default function CreditDocumentViewer({
 
       {/* Canvas */}
       <div
-        className="bg-blue-50 py-6 flex flex-col items-center justify-center transition-all duration-300 ease-in-out overflow-x-auto"
+        className="bg-blue-50 py-6 flex flex-col items-center justify-center transition-all duration-300 ease-in-out overflow-x-auto dark:bg-[#0F1420]"
         style={{ minHeight: isMobile ? "600px" : "800px" }}
       >
         <PhoneFrame

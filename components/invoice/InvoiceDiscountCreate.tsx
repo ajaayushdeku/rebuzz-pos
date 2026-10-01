@@ -93,7 +93,7 @@ function TypeDropdown({
         type="button"
         disabled={!editable}
         onClick={() => setOpen((o) => !o)}
-        className="w-20 flex items-center justify-between gap-1 pl-3 pr-2 py-1.5 text-[13px] border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
+        className="w-20 flex items-center justify-between gap-1 pl-3 pr-2 py-1.5 text-[13px] border border-gray-200 rounded-lg dark:bg-white/5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed dark:border-white/15 dark:text-[#a9b4c7]"
       >
         <span>{value === "fixed" ? currencySymbol : "%"}</span>
         {editable && (
@@ -101,18 +101,18 @@ function TypeDropdown({
             size={12}
             className={`text-gray-400 transition-transform duration-200 ${
               open ? "rotate-180" : ""
-            }`}
+            } dark:text-[#9aa6bd]`}
           />
         )}
       </button>
 
       {editable && (
         <div
-          className={`absolute z-30 mt-1 w-20 origin-top rounded-md border border-gray-200 bg-white shadow-lg p-0.5 transition-all duration-200 ${
+          className={`absolute z-30 mt-1 w-20 origin-top rounded-md border border-gray-200 bg-white dark:bg-[#1b2436] shadow-lg p-0.5 transition-all duration-200 ${
             open
               ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
               : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
-          }`}
+          } dark:border-white/15`}
         >
           {options.map((opt) => (
             <button
@@ -124,8 +124,8 @@ function TypeDropdown({
               }}
               className={`w-full text-left px-3 py-1.5 text-[13px] rounded-md transition-colors cursor-pointer ${
                 value === opt.value
-                  ? "bg-blue-50 text-blue-700 font-medium"
-                  : "text-gray-600 hover:bg-gray-100"
+                  ? "bg-blue-50 text-blue-700 font-medium dark:text-blue-300 dark:bg-blue-400/10"
+                  : "text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-[#a9b4c7]"
               }`}
             >
               {opt.label}
@@ -166,7 +166,7 @@ function DiscountRow({
     <div className="flex justify-end">
       <div className="flex items-center gap-5 min-w-[420px] max-w-full">
         <span
-          className="w-28 shrink-0  text-[13px] font-semibold  tracking-wider text-gray-600 truncate text-right"
+          className="w-28 shrink-0  text-[13px] font-semibold  tracking-wider text-gray-600 truncate text-right dark:text-[#a9b4c7]"
           title={label}
         >
           {label}
@@ -178,7 +178,7 @@ function DiscountRow({
           value={value}
           disabled={!editable}
           onChange={(e) => onValueChange(Number(e.target.value))}
-          className="h-8 w-24 rounded-lg border border-gray-200 px-2  text-[13px] font-semibold  tracking-wider text-right tabular-nums focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+          className="h-8 w-24 rounded-lg border border-gray-200 px-2  text-[13px] font-semibold  tracking-wider text-right tabular-nums focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 dark:border-white/15"
         />
 
         <TypeDropdown
@@ -188,14 +188,14 @@ function DiscountRow({
           onChange={onTypeChange}
         />
 
-        <span className="min-w-[96px] text-right font-medium text-gray-800 tabular-nums  text-[13px] font-semibold tracking-wider">
+        <span className="min-w-[96px] text-right font-medium text-gray-800 tabular-nums  text-[13px] font-semibold tracking-wider dark:text-[#e8ecf4]">
           {amount}
         </span>
 
         <button
           type="button"
           onClick={onRemove}
-          className="text-gray-400 hover:text-red-500 transition-colors shrink-0"
+          className="text-gray-400 hover:text-red-500 transition-colors shrink-0 dark:hover:text-[#f87171] dark:text-[#9aa6bd]"
           title="Remove discount"
         >
           <Trash2 className="h-4 w-4" />
@@ -231,13 +231,13 @@ export default function InvoiceDiscountCreate({
     selectedDiscountIds.length > 0 || customDiscounts.length > 0;
 
   return (
-    <div className="px-5 py-4 space-y-3 border-t border-gray-100">
+    <div className="px-5 py-4 space-y-3 border-t border-gray-100 dark:border-white/10">
       {/* Collapsible Header */}
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400 hover:text-gray-600 transition-colors cursor-pointer dark:hover:text-[#e8ecf4] dark:text-[#9aa6bd]"
         >
           <ChevronDown
             className={`w-3.5 h-3.5 transition-transform duration-200 ${
@@ -256,7 +256,7 @@ export default function InvoiceDiscountCreate({
             <button
               type="button"
               onClick={() => setShowInlineForm((v) => !v)}
-              className="h-8 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer"
+              className="h-8 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer dark:hover:border-blue-400/50 dark:hover:bg-blue-400/15 dark:border-white/20 dark:text-blue-300"
               title="Add discount"
             >
               {showInlineForm ? (
@@ -272,7 +272,7 @@ export default function InvoiceDiscountCreate({
               <button
                 type="button"
                 onClick={() => setModalOpen(true)}
-                className="h-8 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer"
+                className="h-8 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 text-xs font-semibold text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer dark:hover:border-blue-400/50 dark:hover:bg-blue-400/15 dark:border-white/20 dark:text-blue-300"
                 title="Select from discount collection"
               >
                 <Tags className="w-3.5 h-3.5" />
@@ -284,7 +284,9 @@ export default function InvoiceDiscountCreate({
             {/* {showInlineForm && <CreateDiscountDialog />} */}
 
             {!hasAnyDiscount && !showInlineForm && (
-              <span className="text-xs text-gray-400">No discount applied</span>
+              <span className="text-xs text-gray-400 dark:text-[#9aa6bd]">
+                No discount applied
+              </span>
             )}
           </div>
 
@@ -349,7 +351,7 @@ export default function InvoiceDiscountCreate({
                 <button
                   type="button"
                   onClick={onCustomDiscountAdd}
-                  className="h-8 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 text-xs font-semibold text-gray-500 hover:border-gray-400 hover:bg-gray-50 transition-colors"
+                  className="h-8 flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 text-xs font-semibold text-gray-500 hover:border-gray-400 hover:bg-gray-50 transition-colors dark:hover:border-white/30 dark:hover:bg-white/5 dark:border-white/20 dark:text-[#9aa6bd]"
                   title="Add custom discount"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -363,20 +365,20 @@ export default function InvoiceDiscountCreate({
 
       {/* Subtotal + discount summary */}
 
-      <div className="flex justify-end border-t border-gray-100 pt-3">
+      <div className="flex justify-end border-t border-gray-100 pt-3 dark:border-white/10">
         <div className="text-right space-y-1.5 min-w-52">
-          <div className="space-y-1.5  border-b border-gray-100 pb-1.5">
-            <div className="flex justify-between gap-12 text-sm text-gray-500">
-              <span className="text-[13px] font-semibold  tracking-wider text-gray-400">
+          <div className="space-y-1.5  border-b border-gray-100 pb-1.5 dark:border-white/10">
+            <div className="flex justify-between gap-12 text-sm text-gray-500 dark:text-[#9aa6bd]">
+              <span className="text-[13px] font-semibold  tracking-wider text-gray-400 dark:text-[#9aa6bd]">
                 Subtotal
               </span>
-              <span className="font-medium text-gray-800 tabular-nums  text-[13px] font-semibold  tracking-wider">
+              <span className="font-medium text-gray-800 tabular-nums  text-[13px] font-semibold  tracking-wider dark:text-[#e8ecf4]">
                 {fmt(subtotal)}
               </span>
             </div>
 
             {discountAmount > 0 && (
-              <div className="flex justify-between gap-12 text-sm text-blue-500 font-medium">
+              <div className="flex justify-between gap-12 text-sm text-blue-500 font-medium dark:text-blue-300">
                 <span className=" text-[13px] font-semibold  tracking-wider ">
                   Discount
                 </span>
@@ -387,7 +389,7 @@ export default function InvoiceDiscountCreate({
             )}
           </div>
 
-          <div className="flex justify-between gap-12 text-sm font-semibold text-gray-700">
+          <div className="flex justify-between gap-12 text-sm font-semibold text-gray-700 dark:text-[#c3ccdc]">
             <span className=" text-[13px] font-semibold  tracking-wider ">
               After Discount
             </span>

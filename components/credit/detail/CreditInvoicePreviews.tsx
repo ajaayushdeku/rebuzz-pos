@@ -71,13 +71,13 @@ export default function CreditInvoicePreviews({
       <div className="relative flex justify-center mt-6 mb-6">
         <span
           aria-hidden="true"
-          className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
+          className="absolute inset-x-0 top-1/2 h-px bg-gray-200 dark:bg-white/10"
         />
         <div
           role="tablist"
           aria-label="Credit document type"
           onKeyDown={handleTabKeyDown}
-          className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+          className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1 dark:bg-[#272C37]"
         >
           {CREDIT_DOCUMENT_TYPES.map((type, i) => {
             const selected = documentType === type;
@@ -95,10 +95,10 @@ export default function CreditInvoicePreviews({
                 aria-controls={`credit-doc-panel-${type}`}
                 tabIndex={selected ? 0 : -1}
                 onClick={() => setDocumentType(type)}
-                className={`rounded-full px-5 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                className={`rounded-full px-5 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] dark:focus-visible:ring-offset-[#242a38] ${
                   selected
                     ? "bg-white font-bold text-blue-950 shadow-sm"
-                    : "font-semibold text-blue-800 hover:text-blue-950"
+                    : "font-semibold text-blue-800 hover:text-blue-950 dark:text-blue-200"
                 }`}
               >
                 {CREDIT_DOC_LABELS[type]}

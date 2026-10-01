@@ -48,7 +48,10 @@ export default function Page() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 size={18} className="animate-spin text-gray-400" />
+        <Loader2
+          size={18}
+          className="animate-spin text-gray-400 dark:text-[#9aa6bd]"
+        />
       </div>
     );
   }
@@ -56,7 +59,9 @@ export default function Page() {
   if (error || !data?.data) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-400 text-sm">Invoice not found.</p>
+        <p className="text-gray-400 text-sm dark:text-[#9aa6bd]">
+          Invoice not found.
+        </p>
       </div>
     );
   }
@@ -66,7 +71,10 @@ export default function Page() {
   if (credit && !creditDetail) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 size={18} className="animate-spin text-gray-400" />
+        <Loader2
+          size={18}
+          className="animate-spin text-gray-400 dark:text-[#9aa6bd]"
+        />
       </div>
     );
   }

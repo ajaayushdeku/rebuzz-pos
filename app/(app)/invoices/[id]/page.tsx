@@ -147,7 +147,8 @@ const InvoiceDetailPage = () => {
     queryKey: ["customer-lookup", invoice?.customerEmail, invoice?.phoneNumber],
     queryFn: async () => {
       const creditUser = creditForInvoice?.user as
-        { phone?: string } | undefined;
+        | { phone?: string }
+        | undefined;
       const identifier =
         invoice?.customerEmail || creditUser?.phone || invoice?.phoneNumber;
       if (!identifier) return null;
@@ -439,8 +440,8 @@ const InvoiceDetailPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex items-center gap-2 text-gray-400 text-sm">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center dark:bg-white/5">
+        <div className="flex items-center gap-2 text-gray-400 text-sm dark:text-[#9aa6bd]">
           <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
           Loading invoice...
         </div>
@@ -450,8 +451,10 @@ const InvoiceDetailPage = () => {
 
   if (error || !invoice) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500 text-sm">Invoice not found.</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center dark:bg-white/5">
+        <p className="text-gray-500 text-sm dark:text-[#9aa6bd]">
+          Invoice not found.
+        </p>
       </div>
     );
   }
@@ -607,31 +610,31 @@ const InvoiceDetailPage = () => {
 
   // const statusLabel = isRefunded ? "Refunded" : isPaid ? "Paid" : "Unpaid";
   // const statusColor = isRefunded
-  //   ? "bg-orange-100 text-orange-700 border-orange-200"
+  //   ? "bg-orange-100 text-orange-700 border-orange-200 dark:border-orange-400/25 dark:text-orange-300 dark:bg-orange-400/15"
   //   : isPaid
-  //     ? "bg-green-100 text-green-700 border-green-200"
-  //     : "bg-red-100 text-red-700 border-red-200";
+  //     ? "bg-green-100 text-green-700 border-green-200 dark:border-emerald-400/25 dark:text-emerald-300 dark:bg-emerald-400/15"
+  //     : "bg-red-100 text-red-700 border-red-200 dark:border-red-400/25 dark:text-red-300 dark:bg-red-400/15";
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen dark:bg-[#0f1420] ">
       {/* ── Top bar ── */}
-      <div className="sticky top-0 z-30 bg-white border-b border-gray-200 px-6 md:px-10 py-4 pt-6 flex items-center justify-between">
+      <div className="sticky top-0 z-30 bg-white dark:bg-[#161d2e] border-b border-gray-200 px-6 md:px-10 py-4 pt-6 flex items-center justify-between dark:border-white/15">
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.back()}
-            className="h-8 w-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
+            className="h-8 w-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors dark:hover:bg-white/15 dark:text-[#9aa6bd] dark:bg-white/10"
           >
             <ArrowLeft size={18} />
           </button>
           <div>
-            <h1 className="text-base font-bold text-gray-900">
+            <h1 className="text-base font-bold text-gray-900 dark:text-[#e8ecf4]">
               {invoice.ticketName || "Invoice"} ·
-              <span className="text-gray-400 font-semibold">
+              <span className="text-gray-400 font-semibold dark:text-[#9aa6bd]">
                 {" "}
                 #{invoice?.invoice}
               </span>
             </h1>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs text-gray-400 mt-0.5 dark:text-[#9aa6bd]">
               {isCreditArchived
                 ? "Credit Archived"
                 : invoice.paidStatus === "paid"
@@ -654,8 +657,8 @@ const InvoiceDetailPage = () => {
                   <span
                     className={
                       !isPaid && !isRefunded && (daysUntilDue ?? 0) < 0
-                        ? "font-semibold text-red-500"
-                        : "font-medium text-gray-500"
+                        ? "font-semibold text-red-500 dark:text-red-300"
+                        : "font-medium text-gray-500 dark:text-[#9aa6bd]"
                     }
                   >
                     Due {formatDueDate(dueDateRaw)}
@@ -668,7 +671,7 @@ const InvoiceDetailPage = () => {
 
         <div className="flex items-center gap-2">
           {/* Online payments pill */}
-          <div className="hidden sm:flex items-center gap-2 border border-gray-200 rounded-full px-3 py-1.5 text-xs font-medium text-gray-400 opacity-60 cursor-not-allowed">
+          <div className="hidden md:flex items-center gap-2 border border-gray-200 rounded-full px-3 py-1.5 text-xs font-medium text-gray-400 opacity-60 cursor-not-allowed dark:border-white/15 dark:text-[#9aa6bd]">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="12"
@@ -701,8 +704,8 @@ const InvoiceDetailPage = () => {
             }
             className={`flex items-center gap-1.5 rounded-full border px-2 sm:px-3 py-1.5 text-xs font-semibold transition-colors ${
               showPan
-                ? "border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100"
-                : "border-gray-200 text-gray-500 hover:bg-gray-50"
+                ? "border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-400/20 dark:border-blue-400/25 dark:text-blue-300 dark:bg-blue-400/10"
+                : "border-gray-200 text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#9aa6bd]"
             }`}
           >
             {showPan ? <Eye size={15} /> : <EyeOff size={15} />}
@@ -711,7 +714,7 @@ const InvoiceDetailPage = () => {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1.5 border border-gray-200 rounded-full px-2 sm:px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+              <button className="flex items-center gap-1.5 border border-gray-200 rounded-full px-2 sm:px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors dark:hover:bg-white/5 dark:border-white/15 dark:text-[#c3ccdc]">
                 <span>
                   <ChevronDown size={15} />
                 </span>
@@ -721,12 +724,12 @@ const InvoiceDetailPage = () => {
 
             <DropdownMenuContent
               align="end"
-              className="w-45 rounded-xl p-1 shadow-lg border-gray-200"
+              className="w-45 rounded-xl p-1 shadow-lg border-gray-200 dark:border-white/15"
             >
               {canEditInvoice && (
                 <DropdownMenuItem
                   onClick={handleEditInvoice}
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm dark:focus:text-[#a8c4ee] dark:focus:bg-blue-400/15"
                 >
                   Edit invoice
                 </DropdownMenuItem>
@@ -734,33 +737,33 @@ const InvoiceDetailPage = () => {
 
               <DropdownMenuItem
                 onClick={() => setIsCustomerPreviewOpen(true)}
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm dark:focus:text-[#a8c4ee] dark:focus:bg-blue-400/15"
               >
                 Preview as Customer
               </DropdownMenuItem>
 
-              <DropdownMenuSeparator className="my-1 bg-gray-100" />
+              <DropdownMenuSeparator className="my-1 bg-gray-100 dark:bg-white/10" />
 
               <DropdownMenuItem
                 onClick={() => setIsExportPdfOpen(true)}
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm dark:focus:text-[#a8c4ee] dark:focus:bg-blue-400/15"
               >
                 Export as PDF
               </DropdownMenuItem>
 
               <DropdownMenuItem
                 onClick={() => setIsPrintOpen(true)}
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm"
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-blue-50 focus:text-blue-600 text-sm dark:focus:text-[#a8c4ee] dark:focus:bg-blue-400/15"
               >
                 Print options
               </DropdownMenuItem>
 
-              <DropdownMenuSeparator className="my-1 bg-gray-100" />
+              <DropdownMenuSeparator className="my-1 bg-gray-100 dark:bg-white/10" />
 
               {!isCredited && !isCreditArchived && !isPaid && (
                 <DropdownMenuItem
                   onClick={() => setIsMoveToCreditOpen(true)}
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-violet-50 focus:text-violet-600 text-sm"
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg focus:bg-violet-50 focus:text-violet-600 text-sm dark:hover:bg-violet-400/10 dark:focus:text-violet-300 dark:focus:bg-violet-400/10"
                 >
                   Move to credit
                 </DropdownMenuItem>
@@ -769,7 +772,7 @@ const InvoiceDetailPage = () => {
               {isPaid && (
                 <DropdownMenuItem
                   onClick={() => setIsRefundModalOpen(true)}
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-orange-600 focus:bg-orange-50 focus:text-orange-600 text-sm"
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-orange-600 focus:bg-orange-50 focus:text-orange-600 text-sm dark:text-orange-300"
                 >
                   Refund
                 </DropdownMenuItem>
@@ -778,7 +781,7 @@ const InvoiceDetailPage = () => {
               {isCredited && !isCreditArchived && (
                 <DropdownMenuItem
                   onClick={() => setIsArchiveModalOpen(true)}
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 text-sm"
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 text-sm dark:text-red-300"
                 >
                   Delete Credited Invoice
                 </DropdownMenuItem>
@@ -787,7 +790,7 @@ const InvoiceDetailPage = () => {
               {!isPaid && !isCredited && !isCreditArchived && (
                 <DropdownMenuItem
                   onClick={() => setIsDeleteModalOpen(true)}
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 text-sm"
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 text-sm dark:text-red-300 dark:hover:bg-red-400/10 dark:focus:text-red-300 dark:focus:bg-red-400/10"
                 >
                   Delete
                 </DropdownMenuItem>
@@ -797,7 +800,7 @@ const InvoiceDetailPage = () => {
 
           <button
             onClick={() => router.push("/invoices/add")}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-2 sm:px-4 py-1.5 rounded-full transition-colors"
+            className="bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white text-xs font-semibold px-2 sm:px-4 py-1.5 rounded-full transition-colors dark:bg-[#244074]"
           >
             <span className="lg:hidden">
               <Plus size={16} />
@@ -814,13 +817,13 @@ const InvoiceDetailPage = () => {
           <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
             <div className="flex items-center gap-6">
               <div>
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1.5 dark:text-[#9aa6bd]">
                   Status
                 </p>
 
                 {isCreditArchived ? (
                   <span
-                    className="text-xs font-semibold px-2.5 py-1 rounded-md border border-gray-300 text-gray-700 relative overflow-hidden capitalize"
+                    className="text-xs font-semibold px-2.5 py-1 rounded-md border border-gray-300 text-gray-700 relative overflow-hidden capitalize dark:border-white/20 dark:text-[#c3ccdc]"
                     style={{
                       backgroundImage:
                         "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(156, 163, 175, 0.2) 2px, rgba(156, 163, 175, 0.2) 4px)",
@@ -832,7 +835,7 @@ const InvoiceDetailPage = () => {
                 ) : displayBillData &&
                   displayBillData?.status === "refunded" ? (
                   <span
-                    className="text-xs font-semibold px-2.5 py-1 rounded-md border border-orange-300 text-orange-800 relative overflow-hidden capitalize"
+                    className="text-xs font-semibold px-2.5 py-1 rounded-md border border-orange-300 text-orange-800 relative overflow-hidden capitalize dark:border-orange-400/40 dark:text-orange-200"
                     style={{
                       backgroundImage:
                         "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(251, 146, 60, 0.15) 2px, rgba(251, 146, 60, 0.15) 4px)",
@@ -843,7 +846,7 @@ const InvoiceDetailPage = () => {
                   </span>
                 ) : invoice.paidStatus === "credited" ? (
                   <span
-                    className="text-xs font-semibold px-2.5 py-1 rounded-md border border-violet-300 text-violet-700 relative overflow-hidden capitalize"
+                    className="text-xs font-semibold px-2.5 py-1 rounded-md border border-violet-300 text-violet-700 relative overflow-hidden capitalize dark:border-violet-400/40 dark:text-violet-300"
                     style={{
                       backgroundImage:
                         "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(167, 139, 250, 0.2) 2px, rgba(167, 139, 250, 0.2) 4px)",
@@ -854,7 +857,7 @@ const InvoiceDetailPage = () => {
                   </span>
                 ) : invoice.paidStatus === "unpaid" ? (
                   <span
-                    className="text-xs font-semibold px-2.5 py-1 rounded-md border border-red-300 text-red-700 relative overflow-hidden capitalize"
+                    className="text-xs font-semibold px-2.5 py-1 rounded-md border border-red-300 text-red-700 relative overflow-hidden capitalize dark:border-red-400/40 dark:text-red-300"
                     style={{
                       backgroundImage:
                         "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(252, 165, 165, 0.2) 2px, rgba(252, 165, 165, 0.2) 4px)",
@@ -865,7 +868,7 @@ const InvoiceDetailPage = () => {
                   </span>
                 ) : (
                   <span
-                    className="text-xs font-semibold px-2.5 py-1 rounded-md border border-green-300 text-green-700 relative overflow-hidden capitalize"
+                    className="text-xs font-semibold px-2.5 py-1 rounded-md border border-green-300 text-green-700 relative overflow-hidden capitalize dark:border-emerald-400/40 dark:text-emerald-300"
                     style={{
                       backgroundImage:
                         "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(134, 239, 172, 0.2) 2px, rgba(134, 239, 172, 0.2) 4px)",
@@ -877,30 +880,30 @@ const InvoiceDetailPage = () => {
                 )}
               </div>
               <div>
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1.5 dark:text-[#9aa6bd]">
                   Customer
                 </p>
                 {isCustomerLoading ? (
-                  <div className="h-5 w-28 bg-gray-200 animate-pulse rounded" />
+                  <div className="h-5 w-28 bg-gray-200 animate-pulse rounded dark:bg-white/10" />
                 ) : (
                   <div>
                     <div className="flex items-end justify-between gap-2">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-base font-bold text-blue-600">
+                        <span className="text-base font-bold text-blue-600 dark:text-blue-300">
                           {customerProfile?.name ||
                             invoice?.customerEmail ||
                             "Guest"}
                         </span>
                         {/* {customerProfile && (
-                          <div className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center">
-                            <span className="text-[9px] text-blue-600 font-bold">
+                          <div className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center dark:bg-blue-400/15">
+                            <span className="text-[9px] text-blue-600 font-bold dark:text-blue-300">
                               i
                             </span>
                           </div>
                         )} */}
                       </div>
                       {customerProfile?.loyaltyPoint > 0 && (
-                        <p className="text-[10px] text-amber-500 font-medium whitespace-nowrap mb-0.5 font-sans">
+                        <p className="text-[10px] text-amber-500 font-medium whitespace-nowrap mb-0.5 font-sans dark:text-amber-300">
                           ★{" "}
                           {formatAmount(
                             customerProfile.loyaltyPoint,
@@ -920,12 +923,12 @@ const InvoiceDetailPage = () => {
               {/* Hidden once settled: see `isSettled`. */}
               {!isSettled && (
                 <div>
-                  <p className="text-[10px] text-right font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
+                  <p className="text-[10px] text-right font-semibold text-gray-400 uppercase tracking-widest mb-1.5 dark:text-[#9aa6bd]">
                     Due date
                   </p>
                   {dueDateRaw ? (
                     <div className="text-right relative">
-                      <p className="text-xl text-600 font-semibold font-sans text-gray-800">
+                      <p className="text-xl text-600 font-semibold font-sans text-gray-800 dark:text-[#e8ecf4]">
                         {formatDueDate(dueDateRaw)}
                       </p>
 
@@ -933,10 +936,10 @@ const InvoiceDetailPage = () => {
                         <p
                           className={` absolute right-0 text-[11px] font-semibold mt-0.5 ${
                             daysUntilDue < 0
-                              ? "text-red-500"
+                              ? "text-red-500 dark:text-red-300"
                               : daysUntilDue === 0
-                                ? "text-amber-600"
-                                : "text-gray-400"
+                                ? "text-amber-600 dark:text-amber-300"
+                                : "text-gray-400 dark:text-[#9aa6bd]"
                           }`}
                         >
                           {daysUntilDue < 0
@@ -954,7 +957,7 @@ const InvoiceDetailPage = () => {
                   ) : (
                     <button
                       onClick={() => setIsDueDateOpen(true)}
-                      className="text-base font-semibold text-blue-600 tracking-wide cursor-pointer hover:underline"
+                      className="text-base font-semibold text-blue-600 tracking-wide cursor-pointer hover:underline dark:text-blue-300"
                     >
                       Set due date
                     </button>
@@ -963,16 +966,16 @@ const InvoiceDetailPage = () => {
               )}
 
               <div>
-                <p className="text-[10px] text-right font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
+                <p className="text-[10px] text-right font-semibold text-gray-400 uppercase tracking-widest mb-1.5 dark:text-[#9aa6bd]">
                   Amount due
                 </p>
-                <p className="text-xl font-bold font-sans text-gray-800">
+                <p className="text-xl font-bold font-sans text-gray-800 dark:text-[#e8ecf4]">
                   {displayBillData && displayBillData.status === "refunded" ? (
-                    <span className="text-orange-600 font-semibold">
+                    <span className="text-orange-600 font-semibold dark:text-orange-300">
                       {currency.symbol} 0.00
                     </span>
                   ) : invoice.paidStatus === "paid" ? (
-                    <span className="text-green-600 font-semibold">
+                    <span className="text-green-600 font-semibold dark:text-emerald-300">
                       {currency.symbol} 0.00
                     </span>
                   ) : (
@@ -992,15 +995,19 @@ const InvoiceDetailPage = () => {
           {/* Steps Section */}
           <div className="space-y-2">
             {/* Step 1: Created */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-0">
+            <div className="bg-white dark:bg-[#161d2e] border border-gray-200 rounded-2xl p-5 mb-0 dark:border-white/15">
               <div className="flex items-center gap-4">
-                <div className="w-9 h-9 rounded-full border-2 border-blue-500 flex items-center justify-center text-blue-600 shrink-0">
+                <div className="w-9 h-9 rounded-full border-2 border-blue-500 flex items-center justify-center text-blue-600 shrink-0 dark:text-blue-300 dark:border-blue-400">
                   <FileText size={16} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900">Create</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    <span className="font-medium text-gray-700">Created:</span>{" "}
+                  <p className="text-sm font-semibold text-gray-900 dark:text-[#e8ecf4]">
+                    Create
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5 dark:text-[#9aa6bd]">
+                    <span className="font-medium text-gray-700 dark:text-[#c3ccdc]">
+                      Created:
+                    </span>{" "}
                     on{" "}
                     {new Date(invoice.createdAt).toLocaleDateString("en-US", {
                       month: "long",
@@ -1019,7 +1026,7 @@ const InvoiceDetailPage = () => {
                 {canEditInvoice && (
                   <button
                     onClick={handleEditInvoice}
-                    className="text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-4 py-1.5 transition-colors shrink-0"
+                    className="text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-4 py-1.5 transition-colors shrink-0 dark:hover:bg-blue-400/15 dark:border-blue-400/25 dark:text-blue-300"
                   >
                     Edit invoice
                   </button>
@@ -1028,35 +1035,40 @@ const InvoiceDetailPage = () => {
             </div>
 
             {/* Connector */}
-            <div className="w-[2px] h-4 bg-gray-600 mb-0 ml-[26px]" />
+            <div className="w-[2px] h-4 bg-gray-600 mb-0 ml-[26px] dark:bg-white/20" />
 
             {/* Step 2: Send & Reminders */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-0">
+            <div className="bg-white dark:bg-[#161d2e] border border-gray-200 rounded-2xl p-5 mb-0 dark:border-white/15">
               <div className="flex items-start gap-4">
-                <div className="w-9 h-9 rounded-full border-2 border-blue-500 flex items-center justify-center text-blue-600 shrink-0">
+                <div className="w-9 h-9 rounded-full border-2 border-blue-500 flex items-center justify-center text-blue-600 shrink-0 dark:text-blue-300 dark:border-blue-400">
                   {lastSentAt ? <Send size={16} /> : <Mail size={16} />}
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900">Send</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    <span className="font-medium text-gray-700">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-[#e8ecf4]">
+                    Send
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5 dark:text-[#9aa6bd]">
+                    <span className="font-medium text-gray-700 dark:text-[#c3ccdc]">
                       Last sent:
                     </span>{" "}
                     {lastSentAt ?? "Never"}
                     {lastSentAt && (
-                      <span className="text-gray-400"> GMT+5:45</span>
+                      <span className="text-gray-400 dark:text-[#9aa6bd]">
+                        {" "}
+                        GMT+5:45
+                      </span>
                     )}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  {/* <button className="text-xs font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-full px-3 py-1.5 transition-colors flex items-center gap-1.5">
+                  {/* <button className="text-xs font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-full px-3 py-1.5 transition-colors flex items-center gap-1.5 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#a9b4c7]">
                     <Check size={12} /> Mark as sent
                   </button> */}
                   <button
                     onClick={() => setIsSendInvoiceModalOpen(true)}
-                    className="text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-1.5 transition-colors"
+                    className="text-xs font-semibold bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white rounded-full px-4 py-1.5 transition-colors dark:bg-[#244074]"
                   >
                     {lastSentAt ? "Send again" : "Send Invoice"}
                   </button>
@@ -1065,17 +1077,20 @@ const InvoiceDetailPage = () => {
 
               {/* Reminders section — hidden once settled: see `isSettled`. */}
               {!isSettled && (
-                <div className="mt-4 ml-13 border border-gray-100 rounded-xl p-4">
+                <div className="mt-4 ml-13 border border-gray-100 rounded-xl p-4 dark:border-white/10">
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="flex items-center gap-2">
-                      <Bell size={13} className="text-gray-500" />
-                      <p className="text-xs font-semibold text-gray-700">
+                      <Bell
+                        size={13}
+                        className="text-gray-500 dark:text-[#9aa6bd]"
+                      />
+                      <p className="text-xs font-semibold text-gray-700 dark:text-[#c3ccdc]">
                         Scheduled due date &amp; automatic reminders
                       </p>
                     </div>
                     <button
                       onClick={() => setIsDueDateOpen(true)}
-                      className="text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-4 py-1.5 transition-colors shrink-0"
+                      className="text-xs font-semibold border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-4 py-1.5 transition-colors shrink-0 dark:hover:bg-blue-400/15 dark:border-blue-400/25 dark:text-blue-300"
                     >
                       {dueDateRaw ? "Edit due date" : "Set due date"}
                     </button>
@@ -1085,18 +1100,18 @@ const InvoiceDetailPage = () => {
                     // Reminders are all relative to the due date, so there is
                     // nothing to schedule against until one exists. Saying that
                     // beats showing a row of options that could not fire.
-                    <p className="text-xs text-gray-500 leading-relaxed">
+                    <p className="text-xs text-gray-500 leading-relaxed dark:text-[#9aa6bd]">
                       No due date set. Add one to schedule reminders before and
                       after payment falls due.
                     </p>
                   ) : (
                     <div className="space-y-3">
                       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                        <p className="text-xs text-gray-500">
-                          <span className="font-medium text-gray-700">
+                        <p className="text-xs text-gray-500 dark:text-[#9aa6bd]">
+                          <span className="font-medium text-gray-700 dark:text-[#c3ccdc]">
                             Due:
                           </span>{" "}
-                          <span className="font-semibold text-gray-800">
+                          <span className="font-semibold text-gray-800 dark:text-[#e8ecf4]">
                             {formatDueDate(dueDateRaw)}
                           </span>
                         </p>
@@ -1104,10 +1119,10 @@ const InvoiceDetailPage = () => {
                           <span
                             className={`text-[11px] font-semibold ${
                               daysUntilDue < 0
-                                ? "text-red-500"
+                                ? "text-red-500 dark:text-red-300"
                                 : daysUntilDue === 0
-                                  ? "text-amber-600"
-                                  : "text-gray-400"
+                                  ? "text-amber-600 dark:text-amber-300"
+                                  : "text-gray-400 dark:text-[#9aa6bd]"
                             }`}
                           >
                             {daysUntilDue < 0
@@ -1124,11 +1139,11 @@ const InvoiceDetailPage = () => {
                       </div>
 
                       <div>
-                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2 dark:text-[#9aa6bd]">
                           Scheduled reminders before due date
                         </p>
                         {remindersBefore.length === 0 ? (
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-gray-400 dark:text-[#9aa6bd]">
                             None scheduled before the due date.
                           </p>
                         ) : (
@@ -1136,7 +1151,7 @@ const InvoiceDetailPage = () => {
                             {remindersBefore.map((offset) => (
                               <span
                                 key={offset}
-                                className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600"
+                                className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 dark:border-white/15 dark:text-[#a9b4c7]"
                               >
                                 {reminderLabel(offset)}
                               </span>
@@ -1146,11 +1161,11 @@ const InvoiceDetailPage = () => {
                       </div>
 
                       <div>
-                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2 dark:text-[#9aa6bd]">
                           Scheduled reminders after due date
                         </p>
                         {remindersAfter.length === 0 ? (
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-gray-400 dark:text-[#9aa6bd]">
                             None scheduled once it falls due.
                           </p>
                         ) : (
@@ -1160,8 +1175,8 @@ const InvoiceDetailPage = () => {
                                 key={offset}
                                 className={`rounded-lg border px-2.5 py-1.5 text-xs font-medium ${
                                   offset === 0
-                                    ? "border-amber-200 bg-amber-50 text-amber-700"
-                                    : "border-red-200 bg-red-50 text-red-600"
+                                    ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/25 dark:text-amber-300 dark:bg-amber-400/10"
+                                    : "border-red-200 bg-red-50 text-red-600 dark:border-red-400/25 dark:text-red-300 dark:bg-red-400/10"
                                 }`}
                               >
                                 {reminderLabel(offset)}
@@ -1174,13 +1189,13 @@ const InvoiceDetailPage = () => {
                   )}
 
                   {/* Send reminder quick action */}
-                  <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
-                    <p className="text-xs text-gray-500">
+                  <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between dark:border-white/10">
+                    <p className="text-xs text-gray-500 dark:text-[#9aa6bd]">
                       Send an invoice reminder to the customer now
                     </p>
                     <button
                       onClick={handleSendReminder}
-                      className="text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed dark:hover:bg-blue-400/20 dark:text-blue-300 dark:bg-blue-400/10"
                     >
                       Send reminder
                     </button>
@@ -1190,24 +1205,24 @@ const InvoiceDetailPage = () => {
             </div>
 
             {/* Connector */}
-            <div className="w-[2px] h-4 bg-gray-600 mb-0 ml-[26px]" />
+            <div className="w-[2px] h-4 bg-gray-600 mb-0 ml-[26px] dark:bg-white/20" />
 
             {/* Step 3: Manage payments */}
             <div
-              className={`bg-white border rounded-2xl p-5  ${
+              className={`bg-white dark:bg-[#161d2e] border rounded-2xl p-5  ${
                 invoice.paidStatus === "paid"
-                  ? "border-green-100 bg-green-50/30"
-                  : "border-gray-200"
+                  ? "border-green-100 bg-green-50/30 dark:border-emerald-400/20"
+                  : "border-gray-200 dark:border-white/15"
               }`}
             >
               <div className="flex items-start gap-4">
                 <div
                   className={`w-9 h-9 rounded-full border-2 flex items-center justify-center shrink-0 ${
                     displayBillData && isRefunded
-                      ? "border-orange-400 text-orange-500 bg-orange-50"
+                      ? "border-orange-400 text-orange-500 bg-orange-50 dark:text-orange-300 dark:bg-orange-400/10"
                       : invoice.paidStatus === "paid"
-                        ? "border-green-500 text-green-600 bg-green-50"
-                        : "border-blue-500 text-blue-600"
+                        ? "border-green-500 text-green-600 bg-green-50 dark:text-emerald-300 dark:bg-emerald-400/10"
+                        : "border-blue-500 text-blue-600 dark:text-blue-300 dark:border-blue-400"
                   }`}
                 >
                   {displayBillData && isRefunded ? (
@@ -1219,7 +1234,7 @@ const InvoiceDetailPage = () => {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-[#e8ecf4]">
                     {isCreditArchived
                       ? "Credit archived"
                       : displayBillData && isRefunded
@@ -1229,9 +1244,9 @@ const InvoiceDetailPage = () => {
                           : "Manage payments"}
                   </p>
 
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-gray-500 mt-0.5 dark:text-[#9aa6bd]">
                     {isCreditArchived ? (
-                      <span className="text-gray-500">
+                      <span className="text-gray-500 dark:text-[#9aa6bd]">
                         Archived on{" "}
                         {creditForInvoice?.updatedAt &&
                           new Date(
@@ -1239,7 +1254,7 @@ const InvoiceDetailPage = () => {
                           ).toLocaleDateString()}
                       </span>
                     ) : displayBillData && isRefunded ? (
-                      <span className="text-orange-600">
+                      <span className="text-orange-600 dark:text-orange-300">
                         Refunded on{" "}
                         {displayBillData?.updatedAt &&
                           new Date(
@@ -1247,13 +1262,13 @@ const InvoiceDetailPage = () => {
                           ).toLocaleDateString()}
                       </span>
                     ) : isPaid ? (
-                      <span className="text-green-600">
+                      <span className="text-green-600 dark:text-emerald-300">
                         Paid via {invoice.paymentMethod || "cash"} on{" "}
                         {new Date(invoice.updatedAt).toLocaleDateString()}
                       </span>
                     ) : isCredited ? (
                       <span className="flex flex-row gap-1 ">
-                        <p className="text-violet-600 font-semibold">
+                        <p className="text-violet-600 font-semibold dark:text-violet-300">
                           {" "}
                           {creditPaid > 0
                             ? `${formatCurrencySymbol(
@@ -1264,7 +1279,7 @@ const InvoiceDetailPage = () => {
                             : ""}
                         </p>
                         <p> {creditPaid > 0 ? "paid so far ·" : ""}</p>
-                        <p className="text-violet-600 font-semibold">
+                        <p className="text-violet-600 font-semibold dark:text-violet-300">
                           {formatCurrencySymbol(
                             creditDue,
                             currency.symbol,
@@ -1281,7 +1296,7 @@ const InvoiceDetailPage = () => {
                     <button
                       onClick={handleChargeCard}
                       disabled
-                      className="text-xs font-semibold border border-gray-300 text-gray-500 rounded-full px-3 py-1.5 opacity-50 cursor-not-allowed flex items-center gap-1.5"
+                      className="text-xs font-semibold border border-gray-300 text-gray-500 rounded-full px-3 py-1.5 opacity-50 cursor-not-allowed flex items-center gap-1.5 dark:border-white/20 dark:text-[#9aa6bd]"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -1314,7 +1329,7 @@ const InvoiceDetailPage = () => {
                             ? setIsCreditPaymentOpen(true)
                             : setIsPaymentModalOpen(true)
                         }
-                        className="text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-1.5 transition-colors"
+                        className="text-xs font-semibold bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white rounded-full px-4 py-1.5 transition-colors dark:bg-[#244074]"
                       >
                         Record a payment
                       </button>
@@ -1324,14 +1339,16 @@ const InvoiceDetailPage = () => {
               </div>
 
               <div className="text-xs ml-13 mt-2 flex items-center justify-between">
-                <p className="text-gray-600">
-                  <span className="font-medium text-gray-700">Amount due:</span>{" "}
+                <p className="text-gray-600 dark:text-[#a9b4c7]">
+                  <span className="font-medium text-gray-700 dark:text-[#c3ccdc]">
+                    Amount due:
+                  </span>{" "}
                   {displayBillData && isRefunded ? (
-                    <span className="text-orange-600 font-bold">
+                    <span className="text-orange-600 font-bold dark:text-orange-300">
                       {currency.symbol} 0.00
                     </span>
                   ) : isPaid ? (
-                    <span className="text-green-600 font-bold">
+                    <span className="text-green-600 font-bold dark:text-emerald-300">
                       {currency.symbol} 0.00
                     </span>
                   ) : (
@@ -1353,7 +1370,7 @@ const InvoiceDetailPage = () => {
                             ? setIsCreditPaymentOpen(true)
                             : setIsPaymentModalOpen(true)
                         }
-                        className="text-blue-600 font-bold hover:underline font-medium"
+                        className="text-blue-600 font-bold hover:underline font-medium dark:text-blue-300"
                       >
                         Record a payment
                       </button>{" "}
@@ -1362,20 +1379,22 @@ const InvoiceDetailPage = () => {
                   )}
                 </p>
 
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-[#a9b4c7]">
                   <span className="font-medium">Status:</span>{" "}
                   {displayBillData && displayBillData.status === "refunded" ? (
-                    <span className="text-orange-600 font-bold">Refunded</span>
+                    <span className="text-orange-600 font-bold dark:text-orange-300">
+                      Refunded
+                    </span>
                   ) : invoice.paidStatus === "paid" ? (
-                    <span className="text-green-700 font-semibold">
+                    <span className="text-green-700 font-semibold dark:text-emerald-300">
                       This invoice has been fully paid
                     </span>
                   ) : isCreditArchived ? (
-                    <span className="text-gray-700 font-semibold">
+                    <span className="text-gray-700 font-semibold dark:text-[#c3ccdc]">
                       This invoice&lsquo;s credit has been archived
                     </span>
                   ) : isCredited ? (
-                    <span className="text-violet-700 font-semibold">
+                    <span className="text-violet-700 font-semibold dark:text-violet-300">
                       This invoice is on credit
                     </span>
                   ) : (
@@ -1386,14 +1405,14 @@ const InvoiceDetailPage = () => {
 
               {/* Payments received — from the credit's payment history */}
               {creditPayments.length > 0 && (
-                <div className="ml-13 mt-5 border-t border-gray-100 pt-4">
-                  <p className="text-sm font-semibold text-gray-800 mb-3">
+                <div className="ml-13 mt-5 border-t border-gray-100 pt-4 dark:border-white/10">
+                  <p className="text-sm font-semibold text-gray-800 mb-3 dark:text-[#e8ecf4]">
                     Payments received:
                   </p>
                   <div className="space-y-3">
                     {creditPayments.map((p) => (
                       <div key={p._id} className="text-xs">
-                        <p className="text-gray-700">
+                        <p className="text-gray-700 dark:text-[#c3ccdc]">
                           {formatPaymentDate(p.paymentDate)} - A payment for{" "}
                           <span className="font-bold">
                             {formatCurrencySymbol(
@@ -1404,7 +1423,7 @@ const InvoiceDetailPage = () => {
                           </span>{" "}
                           was made using a {p.paymentMethod || "cash"}.
                         </p>
-                        <div className="flex items-center gap-1.5 mt-1 text-blue-600 font-semibold">
+                        <div className="flex items-center gap-1.5 mt-1 text-blue-600 font-semibold dark:text-blue-300">
                           <button
                             onClick={() => setIsEmailInvoiceOpen(true)}
                             className="hover:underline"
@@ -1414,7 +1433,9 @@ const InvoiceDetailPage = () => {
 
                           {canEditPayments && (
                             <>
-                              <span className="text-gray-300">·</span>
+                              <span className="text-gray-300 dark:text-[#6b7588]">
+                                ·
+                              </span>
                               <button
                                 onClick={() => setPaymentToEdit(p)}
                                 className="hover:underline"
@@ -1422,7 +1443,9 @@ const InvoiceDetailPage = () => {
                                 Edit payment
                               </button>
 
-                              <span className="text-gray-300">·</span>
+                              <span className="text-gray-300 dark:text-[#6b7588]">
+                                ·
+                              </span>
 
                               <button
                                 onClick={() =>
@@ -1455,13 +1478,13 @@ const InvoiceDetailPage = () => {
           <div className="relative flex justify-center mt-6 mb-6">
             <span
               aria-hidden="true"
-              className="absolute inset-x-0 top-1/2 h-px bg-gray-200"
+              className="absolute inset-x-0 top-1/2 h-px bg-gray-200 dark:bg-white/10"
             />
             <div
               role="tablist"
               aria-label="Invoice document type"
               onKeyDown={handleInvoiceTabKeyDown}
-              className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1"
+              className="relative flex items-center gap-1 rounded-full bg-[#e4f2fe] p-1 dark:bg-[#1C1F30]"
             >
               {INVOICE_TABS.map((tab, i) => {
                 const selected = invoiceType === tab.key;
@@ -1479,10 +1502,10 @@ const InvoiceDetailPage = () => {
                     aria-controls={`invoice-type-panel-${tab.key}`}
                     tabIndex={selected ? 0 : -1}
                     onClick={() => setInvoiceType(tab.key)}
-                    className={`rounded-full px-5 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                    className={`rounded-full px-5 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] dark:focus-visible:ring-offset-[#242a38] ${
                       selected
                         ? "bg-white font-bold text-blue-950 shadow-sm"
-                        : "font-semibold text-blue-800 hover:text-blue-950"
+                        : "font-semibold text-blue-800 hover:text-blue-950 dark:text-blue-200"
                     }`}
                   >
                     {tab.label}

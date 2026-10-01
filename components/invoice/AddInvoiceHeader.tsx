@@ -19,34 +19,34 @@ export default function AddInvoiceHeader() {
           widest of them because it holds a formatted currency string, and it
           was previously the ONLY column with no width at all — it got
           whatever was left over, which is why long totals were cramped. */}
-      <TableRow className="bg-gray-50 border-b border-gray-200 hover:bg-gray-50">
+      <TableRow className="bg-gray-50 border-b border-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 dark:border-white/15 dark:bg-white/5">
         {/* Drag handle */}
         <TableHead className="w-[28px]" />
-        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 w-[32%] min-w-[190px]">
+        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 w-[32%] min-w-[190px] dark:text-[#9aa6bd]">
           Items
         </TableHead>
-        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 w-[24%] min-w-[150px]">
+        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 w-[24%] min-w-[150px] dark:text-[#9aa6bd]">
           Description
         </TableHead>
-        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-right w-[84px] min-w-[84px]">
+        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-right w-[84px] min-w-[84px] dark:text-[#9aa6bd]">
           Qty
         </TableHead>
-        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-right w-[104px] min-w-[104px]">
+        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-right w-[104px] min-w-[104px] dark:text-[#9aa6bd]">
           Price
         </TableHead>
-        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-right w-[132px] min-w-[120px]">
+        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-right w-[132px] min-w-[120px] dark:text-[#9aa6bd]">
           Amount
         </TableHead>
         {/* ── Discount column temporarily hidden ──
             Paired with the matching <TableCell> in InvoiceItemsSelector and the
             pills-row colSpan there. Restore all three together. */}
-        {/* <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-center w-[80px] min-w-[80px]">
+        {/* <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-center w-[80px] min-w-[80px] dark:text-[#9aa6bd]">
           Discount
         </TableHead> */}
-        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-center w-[76px] min-w-[76px]">
+        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-center w-[76px] min-w-[76px] dark:text-[#9aa6bd]">
           Taxable
         </TableHead>
-        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-center w-[44px] min-w-[44px]">
+        <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-center w-[44px] min-w-[44px] dark:text-[#9aa6bd]">
           Action
         </TableHead>
       </TableRow>

@@ -1,11 +1,8 @@
-import {
-  Alert,
-  AlertDescription,
-} from "@/components/ui/alert";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function AlertCard() {
   return (
-    <Alert className="flex-1 ml-8 bg-blue-50 border-blue-200">
+    <Alert className="flex-1 ml-8 bg-blue-50 border-blue-200 dark:border-blue-400/25 dark:bg-blue-400/10">
       <AlertDescription className="flex items-center gap-3 text-sm">
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
@@ -23,12 +20,11 @@ export default function AlertCard() {
             </div>
           </div>
         </div>
-        <span className="text-gray-700">
-          Invoices get paid 3x faster with online
-          payments.{" "}
+        <span className="text-gray-700 dark:text-[#c3ccdc]">
+          Invoices get paid 3x faster with online payments.{" "}
           <a
             href="#"
-            className="text-blue-600 hover:underline font-medium"
+            className="text-blue-600 hover:underline font-medium dark:text-blue-300"
           >
             Turn on Payments
           </a>

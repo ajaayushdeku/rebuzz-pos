@@ -76,9 +76,11 @@ export default function CreditCustomerPreviewModal({
         credit ? `Credit #${credit.invoiceNo} · share links` : "Share links"
       }
       icon={LinkIcon}
+      iconColor="text-blue-600 dark:text-[#7ba2e3]"
+      iconBgColor="bg-blue-50 dark:bg-blue-400/10"
     >
       {!credit ? (
-        <div className="flex items-center justify-center gap-2 py-14 text-[13px] text-gray-400">
+        <div className="flex items-center justify-center gap-2 py-14 text-[13px] text-gray-400 dark:text-[#9aa6bd]">
           <Loader2 size={15} className="animate-spin" />
           Loading credit
         </div>
@@ -96,10 +98,13 @@ export default function CreditCustomerPreviewModal({
                     type="button"
                     onClick={() => handleCopy(type)}
                     aria-label={`Copy ${CREDIT_DOC_LABELS[type]} link`}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:border-white/25 dark:hover:text-[#e8ecf4] dark:hover:bg-white/5 dark:border-white/15 dark:text-[#9aa6bd]"
                   >
                     {copied === type ? (
-                      <Check size={14} className="text-emerald-600" />
+                      <Check
+                        size={14}
+                        className="text-emerald-600 dark:text-emerald-300"
+                      />
                     ) : (
                       <Copy size={14} />
                     )}
@@ -107,7 +112,8 @@ export default function CreditCustomerPreviewModal({
                   <button
                     type="button"
                     onClick={() => handleOpen(type)}
-                    className="flex h-8 items-center gap-1.5 rounded-lg bg-blue-600 px-3 text-[12px] font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    className="flex h-8 items-center gap-1.5 rounded-lg bg-blue-600 dark:bg-[#1C2A43] dark:text-[#7BA2E3] border dark:border-[#2D5284]
+                    dark:hover:bg-[#2D5284] dark:hover:text-white cursor-pointer px-3 text-[12px] font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                   >
                     <ExternalLink size={13} />
                     Open
@@ -117,7 +123,7 @@ export default function CreditCustomerPreviewModal({
             />
           ))}
 
-          <p className="pt-1 text-[11px] leading-relaxed text-gray-400">
+          <p className="pt-1 text-[11px] leading-relaxed text-gray-400 dark:text-[#9aa6bd]">
             These links show the credit as the customer sees it, with its
             payments and outstanding due.
           </p>

@@ -131,6 +131,8 @@ export default function PrintInvoiceModal({
             : "Choose a document to print"
         }
         icon={Printer}
+        iconColor="text-blue-600 dark:text-[#7ba2e3]"
+        iconBgColor="bg-blue-50 dark:bg-blue-400/10"
       >
         {!invoice ? (
           <div className="flex items-center justify-center gap-2 py-14 text-[13px] text-gray-400 dark:text-[#9aa6bd]">

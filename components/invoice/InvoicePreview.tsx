@@ -921,7 +921,7 @@ export default function InvoicePreview({
     <div className="flex shrink-0 items-center gap-2 print:hidden">
       <button
         onClick={handlePrint}
-        className="flex items-center gap-2 rounded-lg border border-[3px] border-blue-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-gray-700 transition-all hover:border-blue-300 hover:bg-gray-50 cursor-pointer"
+        className="flex items-center gap-2 rounded-lg border border-[3px] border-blue-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-gray-700 transition-all hover:border-blue-300 hover:bg-gray-50 cursor-pointer dark:border-blue-400/25 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:border-blue-400/50 dark:hover:bg-white/10"
       >
         <Printer size={16} />
         <span className="hidden lg:inline-block">Print</span>
@@ -929,7 +929,7 @@ export default function InvoicePreview({
       <button
         onClick={handleExportPdf}
         disabled={isExporting}
-        className="flex items-center gap-2 rounded-lg border border-[3px] border-blue-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-gray-700 transition-all hover:border-blue-300 hover:bg-gray-50 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex items-center gap-2 rounded-lg border border-[3px] border-blue-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-gray-700 transition-all hover:border-blue-300 hover:bg-gray-50 cursor-pointer dark:border-blue-400/25 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:border-blue-400/50 dark:hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
       >
         <Download size={16} />
         <span className="hidden lg:inline-block">
@@ -981,13 +981,15 @@ export default function InvoicePreview({
 
   // Interactive preview with a Desktop / Mobile toggle.
   return (
-    <div className=" w-full bg-white border border-gray-200 overflow-hidden shadow-sm">
+    <div className=" w-full bg-white border border-gray-200 overflow-hidden shadow-sm dark:border-white/15 dark:bg-[#161d2e] dark:shadow-none">
       {printSupport}
 
       {/* Preview header */}
-      <div className=" relative bg-blue-100 border-b border-gray-200 px-5 py-3 flex items-center justify-between gap-2 print:hidden">
-        <div className="flex flex-col items-left gap-1 text-[11px] text-blue-400">
-          <span className="font-medium text-blue-500">PREVIEW MODE</span>
+      <div className=" relative bg-blue-100 border-b border-gray-200 px-5 py-3 flex items-center justify-between gap-2 print:hidden dark:border-white/10 dark:bg-[#0F1420]">
+        <div className="flex flex-col items-left gap-1 text-[11px] text-blue-400 dark:text-[#a8c4ee]">
+          <span className="font-medium text-blue-500 dark:text-[#c3d6f4]">
+            PREVIEW MODE
+          </span>
 
           <span className="hidden lg:inline-block">
             You are previewing how your customer will see this invoice.
@@ -995,15 +997,15 @@ export default function InvoicePreview({
         </div>
 
         {/* Desktop / Mobile toggle */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center bg-white border border-blue-200 rounded-xl p-1 gap-1 shrink-0 ">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center bg-white border border-blue-200 rounded-xl p-1 gap-1 shrink-0 dark:border-blue-400/25 dark:bg-white/10">
           {PREVIEW_MODES.map(({ label, value, icon: Icon }) => (
             <button
               key={value}
               onClick={() => setPreviewMode(value)}
               className={`flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
                 previewMode === value
-                  ? " bg-blue-600/80  font-bold text-white shadow-sm"
-                  : "font-semibold text-blue-600/80 hover:text-blue-950 cursor-pointer"
+                  ? " bg-blue-600/80  font-bold text-white shadow-sm dark:bg-blue-400/20 dark:text-[#c3d6f4]"
+                  : "font-semibold text-blue-600/80 hover:text-blue-950 cursor-pointer dark:text-[#c3d6f4] dark:hover:text-white"
               }`}
             >
               <Icon size={16} />
@@ -1019,7 +1021,7 @@ export default function InvoicePreview({
 
           <button
             onClick={() => router.push(`/invoices/${invoice.invoice}`)}
-            className="shrink-0 cursor-pointer rounded-2xl border-[3px] border-blue-200 px-3 py-1.5 bg-blue-50 items-center justify-center text-[13px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:text-blue-700"
+            className="shrink-0 cursor-pointer rounded-2xl border-[3px] border-blue-200 px-3 py-1.5 bg-blue-50 items-center justify-center text-[13px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:text-blue-700 dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-blue-300 dark:hover:border-blue-400/50 dark:hover:text-[#c3d6f4]"
           >
             Back to{" "}
             {invoice.ticketName
@@ -1031,7 +1033,7 @@ export default function InvoicePreview({
 
       {/* Preview canvas — animated width transition */}
       <div
-        className="bg-blue-50 py-6 flex flex-col items-center justify-center transition-all duration-300 ease-in-out overflow-x-auto"
+        className="bg-blue-50 py-6 flex flex-col items-center justify-center transition-all duration-300 ease-in-out overflow-x-auto dark:bg-[#0F1420]"
         style={{ minHeight: isMobile ? "600px" : "800px" }}
       >
         {/* The ref sits on the document itself, never on the handset around

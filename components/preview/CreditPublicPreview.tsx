@@ -70,7 +70,7 @@ export default function CreditPublicPreview({
   if (isLoading || bizLoading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <Loader2 className="h-8 w-8 animate-spin dark:text-[#7ba2e3]" />
       </div>
     );
   }
@@ -80,7 +80,7 @@ export default function CreditPublicPreview({
   }
 
   return (
-    <div className="h-dvh overflow-hidden bg-blue-50">
+    <div className="h-dvh overflow-hidden bg-blue-50 dark:bg-[#0f1420]">
       {/* The page is exactly the viewport and does not scroll; the document
           below scrolls inside it. That keeps the window free of a scrollbar
           that appears and disappears as modals lock the page, and it is what

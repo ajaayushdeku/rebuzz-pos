@@ -60,7 +60,7 @@ function RowIconButton({
       aria-label={label}
       onClick={onClick}
       disabled={disabled}
-      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 ${
+      className={`flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 px-3 text-[12px] font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:border-white/25 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#c3ccdc] ${
         active
           ? "border-blue-200 bg-blue-50 text-blue-600"
           : "border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"
@@ -252,6 +252,8 @@ export default function SendInvoiceModal({
             : "Copy, download or email"
         }
         icon={FileText}
+        iconColor="text-blue-600 dark:text-[#7ba2e3]"
+        iconBgColor="bg-blue-50 dark:bg-blue-400/10"
         footer={
           invoice ? (
             <button
@@ -304,7 +306,7 @@ export default function SendInvoiceModal({
             <div>
               <div className="flex items-baseline justify-between">
                 <SectionLabel>Documents</SectionLabel>
-                <span className="text-[11px] text-gray-400 pr-3">
+                <span className="text-[11px]  text-gray-400 pr-5">
                   Copy · Download · Email
                 </span>
               </div>
@@ -364,9 +366,12 @@ export default function SendInvoiceModal({
             <div>
               <SectionLabel>Emails go to</SectionLabel>
               {recipient ? (
-                <div className="mt-2 flex items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50/70 px-3.5 py-2.5">
-                  <Mail size={14} className="shrink-0 text-gray-400" />
-                  <p className="truncate text-[13px] font-medium text-gray-800">
+                <div className="mt-2 flex items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50/70 px-3.5 py-2.5 dark:border-white/15 dark:bg-white/5 ">
+                  <Mail
+                    size={14}
+                    className="shrink-0 text-gray-600 dark:text-gray-400"
+                  />
+                  <p className="truncate text-[13px] font-medium text-gray-800 dark:text-gray-200">
                     {recipient}
                   </p>
                 </div>

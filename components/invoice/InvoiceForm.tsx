@@ -1383,17 +1383,17 @@ export default function InvoiceForm({
       {/* ── Page header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="md:text-3xl text-2xl font-bold text-gray-900">
+          <h1 className="md:text-3xl text-2xl font-bold text-gray-900 dark:text-[#e8ecf4]">
             {isEditMode ? `Edit Invoice #${invoiceNumber}` : "New Invoice"}
           </h1>
           <div className="flex items-center gap-2 mt-1">
             {isCreditInvoice && (
-              <span className="text-[10px] font-bold uppercase tracking-wide text-violet-700 bg-violet-50 border border-violet-200 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold uppercase tracking-wide text-violet-700 bg-violet-50 border border-violet-200 px-2 py-0.5 rounded-full dark:border-violet-400/25 dark:text-violet-300 dark:bg-violet-400/10">
                 Credit
               </span>
             )}
             {isEditMode && tickets?.createdAt && (
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-gray-400 dark:text-[#9aa6bd]">
                 Created at{" "}
                 {new Date(tickets.createdAt).toLocaleDateString(undefined, {
                   month: "short",
@@ -1411,7 +1411,7 @@ export default function InvoiceForm({
               type="button"
               variant="outline"
               onClick={() => router.push(returnHref)}
-              className="border-gray-300 text-gray-600 hover:text-gray-800 px-6 py-3 rounded-lg"
+              className="border-gray-300 text-gray-600 hover:text-gray-800 px-6 py-3 rounded-lg dark:border-white/20 dark:text-[#a9b4c7]"
             >
               Cancel
             </Button>
@@ -1419,7 +1419,7 @@ export default function InvoiceForm({
           <Button
             onClick={handleSave}
             disabled={isPending}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2"
+            className="bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white rounded-lg flex items-center gap-2"
           >
             {isPending ? (
               <>
@@ -1441,19 +1441,19 @@ export default function InvoiceForm({
         </div>
       </div>
 
-      <div className="border-gray-200 border shadow-sm rounded-xl bg-white overflow-hidden">
+      <div className="border-gray-200 border shadow-sm rounded-xl bg-white dark:bg-[#161d2e] overflow-hidden dark:border-white/15">
         {/* ── Bill to + Invoice title ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 px-5 pt-5 border-b border-gray-100 pb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 px-5 pt-5 border-b border-gray-100 pb-8 dark:border-white/10">
           {/* Customer */}
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1 dark:text-[#9aa6bd]">
               Bill to
             </p>
-            <p className="text-lg font-bold text-gray-900 truncate">
+            <p className="text-lg font-bold text-gray-900 truncate dark:text-[#e8ecf4]">
               {selectedCustomer?.name || "No customer selected"}
             </p>
             {(selectedCustomer?.email || selectedCustomer?.phone) && (
-              <p className="text-xs text-gray-500  tracking-wider  mt-0.5 truncate">
+              <p className="text-xs text-gray-500  tracking-wider  mt-0.5 truncate dark:text-[#9aa6bd]">
                 {[selectedCustomer?.email, selectedCustomer?.phone]
                   .filter(Boolean)
                   .join(" · ")}
@@ -1463,7 +1463,7 @@ export default function InvoiceForm({
             <button
               type="button"
               onClick={() => setShowCustomerPicker((v) => !v)}
-              className="mt-2 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+              className="mt-2 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors dark:hover:text-[#c3d6f4] dark:text-blue-300"
             >
               {showCustomerPicker
                 ? "Cancel"
@@ -1490,19 +1490,19 @@ export default function InvoiceForm({
           <div className="sm:justify-self-end w-full sm:max-w-xs">
             <Label
               htmlFor="invoiceTitle"
-              className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1 block"
+              className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1 block dark:text-[#9aa6bd]"
             >
               Invoice Title
             </Label>
             <Input
-              className="hover:bg-blue-50 font-semibold px-3 h-9 text-sm w-full"
+              className="hover:bg-blue-50 font-semibold px-3 h-9 text-sm w-full dark:hover:bg-blue-400/15"
               id="invoiceTitle"
               placeholder="Invoice"
               value={invoiceTitle}
               onChange={(e) => setInvoiceTitle(e.target.value)}
             />
             {invoiceNumber && (
-              <p className="text-[11px] text-gray-400 mt-1 sm:text-right">
+              <p className="text-[11px] text-gray-400 mt-1 sm:text-right dark:text-[#9aa6bd]">
                 Invoice #{invoiceNumber}
               </p>
             )}
@@ -1510,7 +1510,14 @@ export default function InvoiceForm({
         </div>
 
         {/* ── Items table ── */}
-        <div className="overflow-x-auto">
+        {/* Two scrollers sit here, not one: this wrapper and the `<Table>`'s own
+            `[data-slot="table-container"]`, which is also `overflow-x-auto`. So
+            both utilities are needed — `scrollbar-hide` for this element and
+            `table-scroll-hidden` to reach the inner one. The row header, the
+            item rows and the "Add an item" row all live inside that container,
+            so hiding it covers the whole block. Wheel, touch, keyboard and
+            drag-select still scroll; only the bar is gone. */}
+        <div className="scrollbar-hide table-scroll-hidden overflow-x-auto">
           <Table>
             <AddInvoiceHeader />
             <TableBody>
@@ -1565,19 +1572,19 @@ export default function InvoiceForm({
             column, so payments read as a continuation of the totals rather
             than a separate panel. */}
         {showPaymentHistory && (
-          <div className="px-5 py-4 border-t border-gray-100">
+          <div className="px-5 py-4 border-t border-gray-100 dark:border-white/10">
             <div className="flex justify-end">
               <div className="space-y-1.5 min-w-[320px] max-w-full">
                 {paidPayments.map((p) => (
                   <div
                     key={p._id}
-                    className="flex justify-between gap-8 text-xs text-gray-600 font-semibold  "
+                    className="flex justify-between gap-8 text-xs text-gray-600 font-semibold dark:text-[#a9b4c7]  "
                   >
                     <span>
                       Payment on {formatPaymentDate(p.paymentDate)} using{" "}
                       {p.paymentMethod || "cash"}:
                     </span>
-                    <span className="font-medium text-gray-800 tabular-nums shrink-0">
+                    <span className="font-medium text-gray-800 tabular-nums shrink-0 dark:text-[#e8ecf4]">
                       {formatCurrencySymbol(
                         p.paymentAmount ?? 0,
                         currency.symbol,
@@ -1587,7 +1594,7 @@ export default function InvoiceForm({
                   </div>
                 ))}
 
-                <div className="flex justify-between gap-8 text-sm font-bold text-blue-600 border-t border-gray-100 pt-2 mt-1">
+                <div className="flex justify-between gap-8 text-sm font-bold text-blue-600 border-t border-gray-100 pt-2 mt-1 dark:border-white/10 dark:text-blue-300">
                   <span>Amount Due ({currency.code || "NPR"})</span>
                   <span className="tabular-nums shrink-0">
                     {formatCurrencySymbol(
@@ -1603,12 +1610,12 @@ export default function InvoiceForm({
         )}
 
         {/* ── Notes ── */}
-        <div className="px-5 py-4 border-t border-gray-100">
-          <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">
+        <div className="px-5 py-4 border-t border-gray-100 dark:border-white/10">
+          <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5 dark:text-[#9aa6bd]">
             Notes / Terms
           </label>
           <input
-            className="w-full focus:outline-none text-sm text-gray-700 placeholder:text-gray-300 p-2 rounded-lg border border-transparent focus:border-gray-200 hover:border-gray-200 transition"
+            className="w-full focus:outline-none text-sm text-gray-700 placeholder:text-gray-300 p-2 rounded-lg border border-transparent focus:border-gray-200 hover:border-gray-200 transition dark:hover:border-white/20 dark:text-[#c3ccdc]"
             placeholder="Enter notes or terms of service..."
             type="text"
             value={notes}

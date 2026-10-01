@@ -88,23 +88,6 @@ const CHANNELS = [
 
 type Channel = (typeof CHANNELS)[number]["id"];
 
-/**
- * The phone frame every channel is drawn inside.
- *
- * Chrome only — the notch, the status bar and the bezel — so the three
- * channels differ in their content and nowhere else.
- *
- * In dark mode the whole preview follows the theme, which reads as the
- * customer's phone being in dark mode too. Three levels inside the bezel, the
- * same hierarchy the app uses: `#1b2436` for the status strip, `#0f1420` for
- * the screen behind the content, `#161d2e` for the cards on it. The bezel goes
- * graphite rather than staying near-black, because `gray-900` is within a shade
- * of the page and the phone would lose its silhouette against it.
- *
- * The two QR tiles stay white in BOTH themes. `react-qr-code` draws black
- * modules, so a dark tile makes the code black-on-dark and it stops scanning —
- * the light quiet zone is functional, not decorative.
- */
 function PhoneFrame({
   children,
   center = false,

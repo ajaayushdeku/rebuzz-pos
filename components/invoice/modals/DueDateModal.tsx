@@ -223,6 +223,8 @@ export default function DueDateModal({
           : "When payment is expected"
       }
       icon={CalendarClock}
+      iconColor="text-blue-600 dark:text-[#7ba2e3]"
+      iconBgColor="bg-blue-50 dark:bg-blue-400/10"
       footer={
         <div className="flex items-center justify-end gap-2">
           <button

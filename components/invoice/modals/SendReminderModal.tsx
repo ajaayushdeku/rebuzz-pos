@@ -39,11 +39,13 @@ export default function SendReminderModal({
           : "Send a reminder to the customer"
       }
       icon={Bell}
+      iconColor="text-blue-600 dark:text-[#7ba2e3]"
+      iconBgColor="bg-blue-50 dark:bg-blue-400/10"
       maxWidth="max-w-lg"
     >
       <div className="space-y-4">
         <div>
-          <label className="text-xs font-medium text-gray-500 block mb-1.5">
+          <label className="text-xs font-medium text-gray-500 block mb-1.5 dark:text-[#9aa6bd]">
             Reminder message
           </label>
           <textarea
@@ -51,7 +53,7 @@ export default function SendReminderModal({
             value={reminderMessage}
             onChange={(e) => onMessageChange(e.target.value)}
             placeholder="Write a reminder message..."
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none"
+            className="w-full rounded-lg border border-gray-200 dark:bg-white/5 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none dark:border-white/15"
           />
         </div>
 
@@ -59,14 +61,14 @@ export default function SendReminderModal({
           <button
             onClick={onClose}
             disabled={sendingReminder}
-            className="flex-1 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
+            className="flex-1 rounded-lg border border-gray-300 dark:bg-white/5 text-gray-700 hover:bg-gray-100 py-2.5 text-sm font-medium transition-colors disabled:opacity-50 dark:hover:bg-white/10 dark:border-white/20 dark:text-[#c3ccdc]"
           >
             Cancel
           </button>
           <button
             onClick={onSubmit}
             disabled={sendingReminder || !reminderMessage.trim()}
-            className="flex-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white py-2.5 text-sm font-semibold transition-colors disabled:opacity-50"
+            className="flex-1 rounded-lg bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white py-2.5 text-sm font-semibold transition-colors disabled:opacity-50"
           >
             {sendingReminder ? (
               <span className="flex items-center justify-center gap-1.5">

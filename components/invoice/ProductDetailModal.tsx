@@ -19,7 +19,7 @@ interface ProductDetailModalProps {
 }
 
 const inputClass =
-  "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+  "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15";
 
 export default function ProductDetailModal({
   open,
@@ -55,7 +55,7 @@ export default function ProductDetailModal({
     >
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle className="text-base font-semibold text-gray-900">
+          <DialogTitle className="text-base font-semibold text-gray-900 dark:text-[#e8ecf4]">
             {isCustom
               ? "Custom Product Details"
               : `Set price for "${initialName}"`}
@@ -65,8 +65,9 @@ export default function ProductDetailModal({
         <div className="space-y-4 py-1">
           {isCustom && (
             <div>
-              <label className="text-xs font-medium text-gray-500 block mb-1.5">
-                Product name <span className="text-red-500">*</span>
+              <label className="text-xs font-medium text-gray-500 block mb-1.5 dark:text-[#9aa6bd]">
+                Product name{" "}
+                <span className="text-red-500 dark:text-red-300">*</span>
               </label>
               <input
                 value={name}
@@ -78,22 +79,27 @@ export default function ProductDetailModal({
                 placeholder="e.g. Special Burger"
                 className={
                   errors.name
-                    ? inputClass.replace("border-gray-200", "border-red-300")
+                    ? inputClass.replace(
+                        "border-gray-200 dark:border-white/15",
+                        "border-red-300 dark:border-red-400/40",
+                      )
                     : inputClass
                 }
               />
               {errors.name && (
-                <p className="text-xs text-red-500 mt-1">{errors.name}</p>
+                <p className="text-xs text-red-500 mt-1 dark:text-red-300">
+                  {errors.name}
+                </p>
               )}
             </div>
           )}
 
           <div>
-            <label className="text-xs font-medium text-gray-500 block mb-1.5">
-              Price <span className="text-red-500">*</span>
+            <label className="text-xs font-medium text-gray-500 block mb-1.5 dark:text-[#9aa6bd]">
+              Price <span className="text-red-500 dark:text-red-300">*</span>
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs dark:text-[#9aa6bd]">
                 Rs
               </span>
               <input
@@ -108,13 +114,18 @@ export default function ProductDetailModal({
                 placeholder="0.00"
                 className={`${
                   errors.price
-                    ? inputClass.replace("border-gray-200", "border-red-300")
+                    ? inputClass.replace(
+                        "border-gray-200 dark:border-white/15",
+                        "border-red-300 dark:border-red-400/40",
+                      )
                     : inputClass
                 } pl-8`}
               />
             </div>
             {errors.price && (
-              <p className="text-xs text-red-500 mt-1">{errors.price}</p>
+              <p className="text-xs text-red-500 mt-1 dark:text-red-300">
+                {errors.price}
+              </p>
             )}
           </div>
         </div>
@@ -129,7 +140,7 @@ export default function ProductDetailModal({
           </Button>
           <Button
             onClick={handleConfirm}
-            className="text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+            className="text-sm bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white rounded-lg"
           >
             Confirm
           </Button>
