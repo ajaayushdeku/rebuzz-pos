@@ -286,17 +286,20 @@ export function planBadge(subscriptionType?: string | null): {
     case "lifetime":
       return {
         label: "LIFETIME",
-        className: "bg-yellow-100 text-yellow-700 hover:bg-yellow-100",
+        className:
+          "bg-yellow-100 text-yellow-700 hover:bg-yellow-100 dark:bg-yellow-300/20 dark:text-yellow-400 dark:hover:bg-yellow/10",
       };
     case "standard":
       return {
-        label: "STANDARD",
-        className: "bg-blue-100 text-blue-700 hover:bg-blue-100",
+        label: "STANDARD  ",
+        className:
+          "bg-blue-100 text-blue-700 hover:bg-blue-100 dark:bg-blue-300/20 dark:text-blue-400 dark:hover:bg-blue/10",
       };
     case "free":
       return {
         label: "FREE",
-        className: "bg-gray-100 text-gray-600 hover:bg-gray-100",
+        className:
+          "bg-gray-100 text-gray-600 hover:bg-gray-100 dark:bg-gray-300/20 dark:text-gray-200 dark:hover:bg-gray/10",
       };
   }
 

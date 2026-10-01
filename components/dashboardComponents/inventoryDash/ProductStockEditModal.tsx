@@ -13,6 +13,7 @@ import {
   ChevronDown,
   PackageSearch,
   Undo2,
+  BoxesIcon,
 } from "lucide-react";
 
 import { InventoryItem } from "@/services/apiInventory";
@@ -429,25 +430,32 @@ export default function ProductStockEditModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Header ── */}
-        <header className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-100 px-6 py-5 dark:border-white/10">
-          <div className="min-w-0">
-            <h2
-              id="stock-edit-title"
-              className="text-lg font-bold text-slate-800 dark:text-[#e8ecf4]"
-            >
-              Edit stock
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5 dark:text-[#9aa6bd]">
-              Adjust stock levels across products and variants, then save them
-              together.
-            </p>
+        <header className="flex items-start justify-between border-b border-gray-100 px-6 py-4 dark:border-white/10">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-blue-600 dark:text-[#7ba2e3] bg-blue-50 dark:bg-blue-400/10">
+              <BoxesIcon size={16} />
+            </div>
+
+            <div className="min-w-0">
+              <h3
+                id="stock-edit-title"
+                className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]"
+              >
+                Edit stock
+              </h3>
+              <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
+                Adjust stock levels across products and variants, then save them
+                together.
+              </p>
+            </div>
           </div>
+
           <button
             type="button"
             onClick={handleClose}
             disabled={bulkSaving}
             aria-label="Close"
-            className="-mr-1 -mt-1 shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 disabled:opacity-40 dark:text-[#7b869b]"
+            className="-mr-1.5 -mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-[#9aa6bd] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]"
           >
             <X className="h-4 w-4" />
           </button>
@@ -461,7 +469,7 @@ export default function ProductStockEditModal({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search products..."
-              className="h-9 w-full rounded-lg border border-slate-200 pl-10 pr-9 text-[13px] text-slate-800 placeholder:text-slate-300 transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/15 dark:text-[#e8ecf4]"
+              className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]"
             />
             {search && (
               <button
@@ -477,9 +485,9 @@ export default function ProductStockEditModal({
         </div>
 
         {/* ── Body ── */}
-        <div className="relative flex min-h-0 flex-1 overflow-hidden">
+        <div className="relative flex min-h-0 flex-1 overflow-hidden ">
           <div
-            className="w-full overflow-y-auto px-6 py-4"
+            className="w-full overflow-y-auto scrollbar-hide px-6 py-4"
             style={{
               paddingBottom:
                 changedEntries.length > 0 ? HANDLE_HEIGHT + 16 : 16,
@@ -663,7 +671,7 @@ export default function ProductStockEditModal({
 
               <div
                 id="changed-items-list"
-                className="max-h-52 divide-y divide-slate-100 overflow-y-auto border-t border-slate-100 dark:border-white/10"
+                className="max-h-52 divide-y divide-slate-100 dark:divide-white/10 overflow-y-auto border-t border-slate-100 dark:border-white/10"
               >
                 {changedEntries.map((entry) => (
                   <div

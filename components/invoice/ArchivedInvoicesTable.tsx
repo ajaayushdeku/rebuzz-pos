@@ -319,7 +319,7 @@ export default function ArchivedInvoicesTable({
                         >
                           <button
                             onClick={() => setRestoreTarget(inv)}
-                            className="py-1.5 text-xs flex flex-row items-center gap-2 text-gray-400 hover:text-green-600 rounded-lg transition-colors hover:cursor-pointer dark:text-[#9aa6bd]"
+                            className="py-1.5 text-xs flex flex-row items-center gap-2 text-gray-400 hover:text-green-600 rounded-lg transition-colors hover:cursor-pointer dark:text-[#9aa6bd] dark:hover:text-emerald-300"
                             title="Restore invoice"
                           >
                             Unarchive <RotateCcw className="h-3.5 w-3.5" />

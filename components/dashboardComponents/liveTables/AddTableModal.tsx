@@ -208,7 +208,7 @@ export default function AddTableModal({
               className={`flex items-center justify-center gap-2 rounded-xl border py-3 text-[13px] font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                 zone === "indoor"
                   ? "border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-400/10 dark:text-[#a8c4ee]"
-                  : "border-gray-200 bg-white dark:bg-white/5 text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-white/15 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:border-white/25"
+                  : "border-gray-200 bg-white dark:bg-transparent dark:hover:bg-white/5 text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-white/15 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:border-white/25"
               }`}
             >
               <Armchair
@@ -229,7 +229,7 @@ export default function AddTableModal({
               className={`flex items-center justify-center gap-2 rounded-xl border py-3 text-[13px] font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 ${
                 zone === "outdoor"
                   ? "border-orange-500 bg-orange-50 text-orange-700 dark:bg-orange-400/10 dark:text-orange-300"
-                  : "border-gray-200 bg-white dark:bg-white/5 text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-white/15 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:border-white/25"
+                  : "border-gray-200 bg-white dark:bg-transparent dark:hover:bg-white/5 text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-white/15 dark:text-[#a9b4c7] dark:hover:bg-white/10 dark:hover:border-white/25"
               }`}
             >
               <Sun

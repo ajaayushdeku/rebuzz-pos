@@ -859,7 +859,7 @@ export default function CreditsTable({
 
                                 {/* Delete */}
                                 <DropdownMenuItem
-                                  className="rounded-lg text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer dark:text-red-300"
+                                  className="flex items-center gap-2 px-2 py-2 cursor-pointer rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 text-sm dark:text-red-300 dark:hover:bg-red-400/10 dark:focus:text-red-300 dark:focus:bg-red-400/10"
                                   onSelect={() => setArchiveTarget(c)}
                                 >
                                   Delete

@@ -1,4 +1,8 @@
-import { PROVIDER_META, markGradientId } from "./providerMeta";
+import {
+  PROVIDER_META,
+  markGradientId,
+  markGradientIdDark,
+} from "./providerMeta";
 
 /**
  * The SVG gradients the provider marks stroke themselves with.
@@ -17,6 +21,25 @@ export default function ProviderMarkDefs() {
     ([, meta]) => meta.gradient && meta.gradient.length > 1,
   );
 
+  /**
+   * Both sweeps are defined, always. An SVG `<linearGradient>` is referenced by
+   * id, and a `dark:` class cannot rewrite that id — so the mark draws itself
+   * twice, once per theme, and the classes show one. Defining both here means
+   * each id exists whichever copy is visible.
+   */
+  const sweeps = withGradients.flatMap(([id, meta]) => [
+    { key: id, id: markGradientId(id), stops: meta.gradient! },
+    ...(meta.darkGradient && meta.darkGradient.length > 1
+      ? [
+          {
+            key: `${id}-dark`,
+            id: markGradientIdDark(id),
+            stops: meta.darkGradient,
+          },
+        ]
+      : []),
+  ]);
+
   return (
     <svg
       width="0"
@@ -26,19 +49,12 @@ export default function ProviderMarkDefs() {
       className="absolute"
     >
       <defs>
-        {withGradients.map(([id, meta]) => (
-          <linearGradient
-            key={id}
-            id={markGradientId(id)}
-            x1="0%"
-            y1="0%"
-            x2="100%"
-            y2="100%"
-          >
-            {meta.gradient!.map((hex, index) => (
+        {sweeps.map(({ key, id, stops }) => (
+          <linearGradient key={key} id={id} x1="0%" y1="0%" x2="100%" y2="100%">
+            {stops.map((hex, index) => (
               <stop
                 key={hex}
-                offset={`${(index / (meta.gradient!.length - 1)) * 100}%`}
+                offset={`${(index / (stops.length - 1)) * 100}%`}
                 stopColor={hex}
               />
             ))}

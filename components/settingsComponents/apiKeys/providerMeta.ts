@@ -82,6 +82,17 @@ export interface ProviderMeta {
    * here, drawn by ProviderMarkDefs, and used in place of `mark.ink`.
    */
   gradient?: string[];
+  /**
+   * The same sweep for a dark tile: each brand's own ramp shifted one step
+   * brighter. Defaults to `gradient`.
+   *
+   * Needed because the tile behind the mark goes dark too, and the dark END of
+   * a brand ramp then disappears into it — Groq's `#A32B0C` measures 6.37:1 on
+   * its pale tile and 1.75:1 on the dark one. Shifting the ramp keeps the hue
+   * sweep that identifies the provider while bringing every stop back above
+   * 3:1.
+   */
+  darkGradient?: string[];
   button: ProviderButton;
   /** One line under the provider's name. */
   blurb: string;
@@ -116,6 +127,7 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
     // Gemini's own blue → violet → rose sweep, not Google's four brand
     // colours: the mark names the product, not the company.
     gradient: GEMINI_COLORS,
+    darkGradient: ["#8AB4F8", "#B49BE0", "#E88A96"],
     button: { bg: "#1967D2", ink: "#FFFFFF", hover: "#1557b0" },
     blurb: "Powers AI features across your dashboard",
     tagline: "Free tier · no card",
@@ -174,6 +186,7 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
     // lime — both brand colours in one small shape.
     mark: { bg: "#effdc4", ink: "#03080A" },
     gradient: ["#C8FF00", "#88bb08"],
+    darkGradient: ["#D9FF4D", "#A8DC2E"],
     button: { bg: "#C8FF00", ink: "#03080A", hover: "#B4E600" },
     blurb: "One key, many free models",
     tagline: "Free models · no card",
@@ -228,6 +241,7 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
     darkAccent: "#FF7A59",
     tint: "#FFEDE7",
     gradient: ["#FF7A59", "#F55036", "#A32B0C"],
+    darkGradient: ["#FFA98F", "#FF7A59", "#F55036"],
     mark: { bg: "#FFEDE7", ink: "#C2340F" },
     button: { bg: "#C2340F", ink: "#FFFFFF", hover: "#A32B0C" },
     blurb: "Fast answers on a free tier",
@@ -289,6 +303,7 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
     darkAccent: "#FFAF01",
     tint: "#FFF7E3",
     gradient: ["#FEC63A", "#FF8204", "#FA500F"],
+    darkGradient: ["#FFD972", "#FEC63A", "#FF8204"],
     // The yellow end of their own ramp, which is the half of it no other
     // provider here uses — Groq is red-orange.
     mark: { bg: "#FFF3CE", ink: "#933800" },
@@ -353,6 +368,7 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
     darkAccent: "#518200",
     tint: "#F2FBE0",
     gradient: ["#A6E000", "#76B900", "#4A7700"],
+    darkGradient: ["#C6F24A", "#A6E000", "#76B900"],
     mark: { bg: "#EAF7CF", ink: "#4A7700" },
     card: { border: "#76B900", bg: "#F0FADC" },
     button: { bg: "#4A7700", ink: "#FFFFFF", hover: "#3A5D00" },
@@ -423,6 +439,10 @@ export const metaFor = (providerId: string): ProviderMeta =>
 export const markGradientId = (providerId: string) =>
   `provider-mark-${providerId}`;
 
+/** The same, for the sweep drawn on a dark tile. */
+export const markGradientIdDark = (providerId: string) =>
+  `provider-mark-${providerId}-dark`;
+
 /**
  * What to paint a provider's mark with: its gradient when it has one, its
  * flat mark colour otherwise. Works as a `fill` or a `stroke`, so callers do
@@ -434,3 +454,40 @@ export function markPaint(providerId: string): string {
     ? `url(#${markGradientId(providerId)})`
     : (meta.mark?.ink ?? meta.accent);
 }
+
+/**
+ * The same, for a dark tile: the brighter sweep where there is one, and
+ * `darkAccent` in place of a flat mark ink that was chosen to read on white.
+ */
+export function markPaintDark(providerId: string): string {
+  const meta = metaFor(providerId);
+  if (meta.gradient) {
+    return `url(#${
+      meta.darkGradient
+        ? markGradientIdDark(providerId)
+        : markGradientId(providerId)
+    })`;
+  }
+  return meta.darkAccent ?? meta.mark?.ink ?? meta.accent;
+}
+
+/**
+ * The tile behind a mark, as a pair of custom properties.
+ *
+ * An inline style cannot carry a `dark:` variant, and the light tiles are pale
+ * brand washes — `#effdc4`, `#FFEDE7` — which would be bright patches on a dark
+ * card. The dark half is the provider's own `darkAccent` at low opacity, so the
+ * tile still belongs to the provider.
+ */
+export function markTileVars(providerId: string): React.CSSProperties {
+  const meta = metaFor(providerId);
+  const signal = meta.darkAccent ?? meta.accent;
+  return {
+    "--mark-tile-light": meta.mark?.bg ?? meta.tint,
+    "--mark-tile-dark": `color-mix(in srgb, ${signal} 18%, transparent)`,
+  } as React.CSSProperties;
+}
+
+/** Classes that pick between the two tile fills above. */
+export const MARK_TILE_CLASS =
+  "bg-[var(--mark-tile-light)] dark:bg-[var(--mark-tile-dark)]";

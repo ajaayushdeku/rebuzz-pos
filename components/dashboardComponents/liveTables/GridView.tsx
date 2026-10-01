@@ -163,7 +163,7 @@ function TableCard({
 
             {menuOpen && (
               <div
-                className="absolute right-0 top-7 z-20 w-40 rounded-xl dark:bg-[#1b2436] border border-[#dadce0] bg-white py-1.5 shadow-lg dark:border-white/15"
+                className="absolute right-0 top-7 z-20 w-40 rounded-xl dark:bg-[#1b2436] border border-[#dadce0] bg-white py-1.5 shadow-lg dark:border-white/15  hover:bg-blue-50 transition-colors dark:hover:bg-[#1C2A43]"
                 onClick={(e) => e.stopPropagation()}
               >
                 {isOccupied ? (
@@ -173,7 +173,7 @@ function TableCard({
                       setMenuOpen(false);
                       onChangeTable(table);
                     }}
-                    className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 transition-colors dark:text-[#7ba2e3]"
+                    className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-blue-600 transition-colors dark:text-[#7ba2e3]"
                   >
                     <ArrowRightLeft size={14} className="text-blue-400" />
                     Change Table

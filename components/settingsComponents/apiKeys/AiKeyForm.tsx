@@ -14,7 +14,12 @@ import {
 } from "lucide-react";
 
 import ProviderLogo from "./ProviderLogo";
-import { markPaint, metaFor } from "./providerMeta";
+import {
+  MARK_TILE_CLASS,
+  markPaint,
+  markTileVars,
+  metaFor,
+} from "./providerMeta";
 import {
   useAiKeyStatus,
   useAiModels,
@@ -122,8 +127,8 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
       <div className="p-6">
         <div className="flex items-center gap-3">
           <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-            style={{ backgroundColor: meta.mark?.bg ?? meta.tint }}
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${MARK_TILE_CLASS}`}
+            style={markTileVars(selected)}
           >
             {/* The provider's own mark, in its own colours. */}
             <ProviderLogo provider={selected} size={20} />

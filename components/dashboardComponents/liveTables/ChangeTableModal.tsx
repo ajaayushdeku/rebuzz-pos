@@ -13,8 +13,8 @@ import {
 import type { LiveTable } from "@/lib/mockData/mock-live-tables";
 import ModalShell, {
   SectionLabel,
-  modalInput,
-  modalInputIdle,
+  // modalInput,
+  // modalInputIdle,
   modalGhostButton,
 } from "@/components/ui/ModalShell";
 
@@ -120,7 +120,9 @@ export default function ChangeTableModal({
       title="Change Table"
       subtitle={`Move this ticket to another free table`}
       icon={ArrowRightLeft}
-      maxWidth="max-w-lg"
+      iconColor="text-blue-600 dark:text-[#7ba2e3]"
+      iconBgColor="bg-blue-50 dark:bg-blue-400/10"
+      maxWidth="max-w-xl"
       footer={
         <div className="flex items-center gap-2.5">
           <button
@@ -223,7 +225,8 @@ export default function ChangeTableModal({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search tables..."
-                className={`${modalInput} ${modalInputIdle} pl-9`}
+                // className={`${modalInput} ${modalInputIdle} pl-9 `}
+                className="w-full pl-9 pr-4 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:placeholder:text-[#7b869b]"
               />
             </div>
           )}
@@ -250,7 +253,7 @@ export default function ChangeTableModal({
               </p>
             </div>
           ) : (
-            <div className="max-h-56 space-y-1.5 overflow-y-auto pr-1">
+            <div className="max-h-56 space-y-1.5 overflow-y-auto scrollbar-hide pr-1">
               {visibleTables.map((t) => {
                 const isSelected = selectedTable?._id === t._id;
                 return (

@@ -3,7 +3,7 @@
 import { Check } from "lucide-react";
 
 import ProviderLogo from "./ProviderLogo";
-import { metaFor } from "./providerMeta";
+import { MARK_TILE_CLASS, markTileVars, metaFor } from "./providerMeta";
 import type { AiProvider } from "@/services/apiAiKey.client";
 
 /**
@@ -87,8 +87,8 @@ export default function ProviderPicker({
               }`}
             >
               <span
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                style={{ backgroundColor: meta.mark?.bg ?? meta.tint }}
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${MARK_TILE_CLASS}`}
+                style={markTileVars(provider.id)}
               >
                 <ProviderLogo provider={provider.id} size={20} />
               </span>
