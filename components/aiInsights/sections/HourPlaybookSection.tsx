@@ -107,7 +107,7 @@ export default function HourPlaybookSection({
           body: `Every bill from the last ${HOUR_WINDOW_DAYS / 7} weeks is grouped by the hour it was rung up, then averaged, so one exceptional day does not move an hour on its own.`,
         }}
         actions={
-          <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
+          <div className="flex flex-row w-full md:w-fit items-end justify-end">
             <SectionRefreshButton
               state={state}
               textClassName="text-[#5f6368] dark:text-[#a9b4c7]"

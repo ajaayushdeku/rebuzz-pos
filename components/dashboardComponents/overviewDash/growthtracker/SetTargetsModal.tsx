@@ -137,7 +137,7 @@ export default function SetTargetsModal({
       icon={Target}
       iconColor="text-blue-600 dark:text-[#a8c4ee]"
       iconBgColor="bg-blue-50 dark:bg-blue-400/15"
-      maxWidth="max-w-lg"
+      maxWidth="max-w-xl"
       footer={
         <div className="space-y-2.5">
           {/* Total stays in the footer so it is visible while scrolling the

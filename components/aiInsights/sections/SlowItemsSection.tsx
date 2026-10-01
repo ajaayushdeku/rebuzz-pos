@@ -63,7 +63,7 @@ export default function SlowItemsSection({
           body: `An item is flagged when its sales over the last ${SECTION_WINDOW_DAYS} days fall well behind the rest of your menu. A new item with little history can appear here simply because it has not had time to sell.`,
         }}
         actions={
-          <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
+          <div className="flex flex-row w-full md:w-fit items-end justify-end">
             <SectionRefreshButton
               state={state}
               textClassName="text-red-600 hover:bg-red-100 border-red-300 hover:border-red-400 dark:hover:border-red-400/60 dark:hover:bg-red-400/20 dark:border-red-400/40 dark:text-red-300"

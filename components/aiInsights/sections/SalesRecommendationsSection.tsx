@@ -61,7 +61,7 @@ export default function SalesRecommendationsSection({
           body: `Your last ${SALES_WINDOW_DAYS} days against the ${SALES_WINDOW_DAYS} before them, so every claim of a rise or fall is against your own recent trading rather than an outside benchmark.`,
         }}
         actions={
-          <div className="flex flex-row w-full md:w-fit items-end justify-end gap-2 absolute md:relative top-2">
+          <div className="flex flex-row w-full md:w-fit items-end justify-end gap-2">
             <SectionMoreButton
               state={state}
               textClassName="text-blue-700 hover:bg-blue-100 border-blue-300 hover:border-blue-400 dark:hover:border-blue-400/60 dark:hover:bg-blue-400/20 dark:border-blue-400/40 dark:text-blue-300"

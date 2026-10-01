@@ -65,7 +65,7 @@ export default function CustomerRetentionSection({
           body: "Each customer is judged against their own rhythm: someone who came weekly and has not been seen in a month is overdue, while a once-a-season visitor is not. Only customers with enough history to have a habit appear here.",
         }}
         actions={
-          <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
+          <div className="flex flex-row w-full md:w-fit items-end justify-end ">
             <SectionRefreshButton
               state={state}
               textClassName="text-pink-700 hover:bg-pink-100 border-pink-300 hover:border-pink-400 dark:hover:border-pink-400/60 dark:hover:bg-pink-400/20 dark:border-pink-400/40 dark:text-pink-300"

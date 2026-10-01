@@ -320,7 +320,7 @@ export default function PricingSection({
           body: `Each card compares what an item earns now against what it earned over the last ${PRICING_WEEKS} weeks. The suggested price is an estimate from your own sales, not a promise — nothing changes until you set it yourself.`,
         }}
         actions={
-          <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
+          <div className="flex flex-row w-full md:w-fit items-end justify-end ">
             <SectionRefreshButton
               state={state}
               textClassName="text-emerald-700 dark:text-emerald-300"

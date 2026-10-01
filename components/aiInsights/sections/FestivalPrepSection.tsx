@@ -100,7 +100,7 @@ export default function FestivalPrepSection({
           body: `The dates are Nepal's public holiday calendar for the next ${FESTIVAL_LOOKAHEAD_DAYS} days — not your own sales. What to prepare for each one is the AI reading those dates against what you sold around them before.`,
         }}
         actions={
-          <div className="flex flex-row w-full md:w-fit items-end justify-end gap-2 absolute md:relative top-2">
+          <div className="flex flex-row w-full md:w-fit items-end justify-end gap-2">
             {/* Everything is already loaded, so this only reveals cards —
                 it costs nothing, unlike Refresh beside it. */}
             {hidden > 0 && (

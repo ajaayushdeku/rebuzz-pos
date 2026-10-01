@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import {
@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import AiInsightsErrorState from "@/components/aiInsights/AiInsightsErrorState";
+import RefreshConfirmModal from "@/components/aiInsights/RefreshConfirmModal";
 import { CardInfo } from "@/components/dashboardComponents/chartCard";
 import {
   Tooltip,
@@ -122,7 +123,7 @@ export function SectionHeader({
   return (
     // `relative`: a few sections pin their controls to the top-right on
     // mobile, and those measure from here.
-    <div className="relative mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div className="relative mb-5 flex flex-wrap  items-center justify-between gap-3">
       <div className="flex min-w-0 items-center gap-3">
         {/* A pale frame on a paler fill, as on every dashboard card, so the
             icon's own colour carries the tile. */}
@@ -246,7 +247,15 @@ export function SectionMoreButton<T>({
   );
 }
 
-/** The Refresh button, once there is an answer worth replacing. */
+/**
+ * The Refresh button, once there is an answer worth replacing.
+ *
+ * Confirmed before it fires, because this is the one control on the page that
+ * spends from the hourly allowance on the merchant's own key — everything else
+ * is served from the day's saved answer for nothing. The modal says what is
+ * left, when the next request frees up, and which provider and model will
+ * answer, so the decision is made with those in view rather than after the fact.
+ */
 export function SectionRefreshButton<T>({
   state,
   textClassName,
@@ -254,17 +263,38 @@ export function SectionRefreshButton<T>({
   state: AiSectionState<T>;
   textClassName: string;
 }) {
+  const [confirming, setConfirming] = useState(false);
+
   // Nothing to refresh until something has loaded, and nothing to analyse
   // when there is no data — a new answer would cost a call to say so again.
   if (!state.data || state.data.reason) return null;
+
   return (
-    <GenerateMoreButton
-      label={state.isRefreshing ? "Refreshing…" : "Refresh"}
-      icon={RefreshCw}
-      textClassName={textClassName}
-      onClick={state.refresh}
-      busy={state.isRefreshing}
-    />
+    <>
+      <GenerateMoreButton
+        label={state.isRefreshing ? "Refreshing…" : "Refresh"}
+        icon={RefreshCw}
+        textClassName={textClassName}
+        onClick={() => setConfirming(true)}
+        busy={state.isRefreshing}
+      />
+
+      {/* Mounted only while asking. The modal reads the quota and the key
+          status, and this button renders on all eight sections — left mounted,
+          that would be eight readers of a `staleTime: 0` query refetching on
+          every window focus, each a round trip through the proxy to the POS. */}
+      {confirming && (
+        <RefreshConfirmModal
+          open
+          onClose={() => setConfirming(false)}
+          busy={state.isRefreshing}
+          onConfirm={() => {
+            setConfirming(false);
+            state.refresh();
+          }}
+        />
+      )}
+    </>
   );
 }
 

@@ -209,7 +209,7 @@ export default function StaffingSection({
           body: `The POS records who rang up each bill, so this covers the till over the last ${STAFFING_WINDOW_DAYS / 7} weeks — not the kitchen, the floor or anyone working a shift without taking orders.`,
         }}
         actions={
-          <div className="flex flex-row w-full md:w-fit items-end justify-end absolute md:relative top-2">
+          <div className="flex flex-row w-full md:w-fit items-end justify-end">
             <SectionRefreshButton
               state={state}
               textClassName="text-amber-700 hover:bg-amber-100 border-amber-300 hover:border-amber-400 dark:hover:border-amber-400/60 dark:hover:bg-amber-400/20 dark:border-amber-400/40 dark:text-amber-300"
