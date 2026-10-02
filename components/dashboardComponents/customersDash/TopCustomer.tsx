@@ -18,6 +18,8 @@ import { formatAmount, formatCurrencySymbol } from "@/utils/helper";
 import CustomerFormModal from "@/components/invoice/CustomerFormModal";
 import CustomerHistoryModal from "@/components/dashboardComponents/customersDash/CustomerHistoryModal";
 import { CardInfo } from "../chartCard";
+import MonthToDateBadge from "./MonthToDateBadge";
+import { monthToDate } from "./monthToDate";
 import { useTierStyle } from "@/hooks/useLoyaltyTiers";
 import type { LoyaltyTier } from "@/lib/types/customer";
 
@@ -58,6 +60,10 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [historyFor, setHistoryFor] = useState<TopCustomer | null>(null);
   const pageSize = 5;
+
+  // Read once per render so the heading, the subtitle and the badge cannot
+  // disagree if this renders across midnight.
+  const range = useMemo(() => monthToDate(), []);
 
   const filtered = useMemo(() => {
     if (!search) return topCustomers;
@@ -112,27 +118,34 @@ export default function TopCustomer({ topCustomers }: TopCustomersProps) {
             <Trophy size={16} style={{ color: "#d97706" }} />
           </div>
           <div className="min-w-0">
-            <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
+            <h3 className="flex flex-wrap items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
               Customer Leaderboard
               <CardInfo
                 heading="Reading this table"
                 label="Customer Leaderboard"
-                body="Your customers ranked by what they have spent this month. Click a column heading to sort by visits, spend or points instead. Loyalty tier is the rung they sit on in loyalty settings."
+                body={`Your customers ranked by what they have spent between ${range.longLabel} — the calendar month so far, not the last 30 days. Click a column heading to sort by visits, spend or points instead. Loyalty tier is the rung they sit on in loyalty settings.`}
               />
             </h3>
+            {/* The dates, spelled out: "this month" on its own reads as either
+                the calendar month or the last 30 days, and the two give
+                different leaders. */}
             <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
-              Highest value contributors this month
+              Highest value contributors this current month · {range.label}
             </p>
           </div>
         </div>
 
-        <button
-          onClick={() => setCreateModalOpen(true)}
-          className="inline-flex h-8 shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-full dark:bg-white/5 border border-[#dadce0] bg-white px-3 text-[11px] text-[#3c4043] transition-colors outline-none hover:bg-[#f8f9fa] focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
-        >
-          <UserPlus className="h-3.5 w-3.5" />
-          Add New Customer
-        </button>
+        <div className="flex items-center gap-2">
+          {" "}
+          <MonthToDateBadge />
+          <button
+            onClick={() => setCreateModalOpen(true)}
+            className="inline-flex h-8 shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-full dark:bg-white/5 border border-[#dadce0] bg-white px-3 text-[11px] text-[#3c4043] transition-colors outline-none hover:bg-[#f8f9fa] focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
+          >
+            <UserPlus className="h-3.5 w-3.5" />
+            Add New Customer
+          </button>
+        </div>
       </div>
 
       {/* Search */}

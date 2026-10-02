@@ -145,12 +145,12 @@ export default function CustomerHistoryModal({
       ) : (
         <>
           <div
-            className="overflow-x-auto pb-2 scrollbar-hide"
+            className="overflow-x-auto pb-2 scrollbar-hide "
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             <table className="w-full text-sm min-w-[760px]">
               <thead>
-                <tr className="text-xs text-gray-400 border-b border-gray-100 dark:border-white/10 dark:text-[#7b869b]">
+                <tr className="text-xs text-gray-400 border-b border-gray-100 dark:border-white/10 dark:text-[#7b869b] ">
                   <th className="text-left pb-3 pt-3 px-3 font-medium w-10">
                     #
                   </th>
@@ -206,7 +206,7 @@ export default function CustomerHistoryModal({
                           router.push(`/invoices/${purchase.invoiceNo}`);
                         }
                       }}
-                      className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors cursor-pointer dark:border-white/5"
+                      className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors cursor-pointer dark:border-white/5 dark:hover:bg-white/10"
                     >
                       <td className="py-3 px-3 text-gray-400 text-xs dark:text-[#7b869b]">
                         {page * pageSize + idx + 1}

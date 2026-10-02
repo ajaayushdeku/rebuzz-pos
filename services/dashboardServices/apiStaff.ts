@@ -126,7 +126,13 @@ function getDateRange(
       start = new Date(today.getFullYear(), 0, 1);
       break;
     default:
-      start = new Date(today.getFullYear(), today.getMonth(), 1);
+      // Deliberately the same window as "month", which is this function's
+      // declared default. They used to differ — `default:` was the 1st of the
+      // month — so any caller passing an unrecognised range (or an empty
+      // string, which skips the default parameter entirely) silently got a
+      // narrower window than the one the UI was showing.
+      start = new Date(today);
+      start.setDate(today.getDate() - 29);
   }
 
   return { startDate: toDateStr(start), endDate: end };
@@ -446,7 +452,7 @@ export async function getStaffData(
         const salesFromApi = sales?.totalSales ?? 0;
         const ticketCount = ticketCountMap.get(id) ?? 0;
         // const resolvedOrders = Math.max(salesFromApi, ticketCount);
-          const resolvedOrders = ticketCount;
+        const resolvedOrders = ticketCount;
 
         return {
           staffId: id,

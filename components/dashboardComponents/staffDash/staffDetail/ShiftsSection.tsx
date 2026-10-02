@@ -312,7 +312,7 @@ export default function ShiftsSection({
                       tabIndex={shift.shiftId ? 0 : -1}
                       role="button"
                       title="View shift details"
-                      className="cursor-pointer border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa] focus:bg-[#f8f9fa] focus:outline-none dark:border-white/10 dark:hover:bg-white/10"
+                      className="cursor-pointer border-b border-[#e8eaed] transition-colors last:border-0 hover:bg-[#f8f9fa] focus:bg-[#f8f9fa] dark:focus:bg-white/5 focus:outline-none dark:border-white/10 dark:hover:bg-white/10"
                     >
                       <td className="py-3.5 pr-3 pl-0 font-mono text-[11px] text-gray-400 align-top dark:text-[#7b869b]">
                         #{String(shiftPage * pageSize + idx + 1)}

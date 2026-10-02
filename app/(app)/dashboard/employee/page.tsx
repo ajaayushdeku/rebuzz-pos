@@ -29,7 +29,17 @@ const Page = async ({
   }>;
 }) => {
   const params = await searchParams;
-  const range = params.range ?? "";
+  /**
+   * `undefined`, not "" — a default parameter only fires on `undefined`, so an
+   * empty string reached the wrappers intact and silently defeated their
+   * `range = "month"` default. `getDateRange` then fell to its `default:` case,
+   * which is the 1st of the month rather than the last 30 days: on the 2nd of a
+   * month the page fetched a two-day window while the filter displayed thirty,
+   * and every card came back empty until the filter was touched.
+   *
+   * Same shape the customers page already uses.
+   */
+  const range = params.range || undefined;
   const startDate = params.startDate ?? "";
   const endDate = params.endDate ?? "";
 

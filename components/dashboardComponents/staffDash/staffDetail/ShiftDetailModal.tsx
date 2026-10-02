@@ -190,7 +190,7 @@ function ShiftDetailContent({ shiftDetail }: { shiftDetail: ShiftDetail }) {
 
       {/* Transactions */}
       <div>
-        <div className="mb-2.5 flex items-center gap-2">
+        <div className=" flex items-center gap-2">
           <SectionLabel
             icon={Receipt}
             tone="text-purple-500"
@@ -225,7 +225,7 @@ function ShiftDetailContent({ shiftDetail }: { shiftDetail: ShiftDetail }) {
           <div className="overflow-x-auto ">
             <table className="w-full min-w-[640px] text-sm">
               <thead>
-                <tr className="bg-gray-50/80 dark:bg-white/5 text-[10px] border-b border-gray-500 dark:border-white/15 uppercase tracking-wider text-gray-500 dark:text-[#9aa6bd]">
+                <tr className=" text-[10px] border-b border-gray-500/20 dark:border-white/15 uppercase tracking-wider text-gray-500 dark:text-[#9aa6bd]">
                   <th className="px-3 py-2.5 text-center font-semibold">
                     Invoice
                   </th>
@@ -253,7 +253,7 @@ function ShiftDetailContent({ shiftDetail }: { shiftDetail: ShiftDetail }) {
                   return (
                     <tr
                       key={txn._id}
-                      className="border-t border-gray-50 transition-colors last:border-0 hover:bg-gray-50/40 dark:border-white/5"
+                      className="border-t border-gray-50 transition-colors last:border-0 hover:bg-gray-100/60 dark:hover:bg-white/5  dark:border-white/5"
                     >
                       <td className="px-3 py-2.5 text-center">
                         <span className="  px-2 py-0.5 font-mono text-[11px] text-gray-500 dark:text-[#9aa6bd]">
