@@ -287,7 +287,7 @@ export default function AIBusinessStory() {
           href="/ai-insights"
           className="inline-flex items-center gap-1  ml-2 text-xs font-semibold text-violet-600 hover:text-violet-700 transition-colors dark:text-violet-300 dark:hover:text-violet-200"
         >
-          See full business details
+          See full business insights
           <ArrowUpRight size={13} />
         </Link>
       </div>

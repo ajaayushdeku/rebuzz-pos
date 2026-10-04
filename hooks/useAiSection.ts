@@ -45,9 +45,18 @@ export function useAiSection<T>(
   options: {
     /** A card as the model should read it in "already shown". */
     describe?: (item: T) => string;
+    /**
+     * False to hold the request back.
+     *
+     * For the case where the answer is known in advance to be a refusal — no
+     * provider key saved. Each section's route gathers its facts from the POS
+     * before the AI service is asked (pricing alone reads thirteen weekly sales
+     * reports), so a section that cannot succeed should not ask at all.
+     */
+    enabled?: boolean;
   } = {},
 ) {
-  const { describe } = options;
+  const { describe, enabled = true } = options;
   const queryClient = useQueryClient();
   const queryKey = ["ai-insights", "section", section];
   // Set the moment a refresh starts, not on the next render. `isPending` only
@@ -80,6 +89,7 @@ export function useAiSection<T>(
         noMore: prev.noMore,
       };
     },
+    enabled,
     staleTime: REUSE_MS,
     gcTime: REUSE_MS,
     refetchOnWindowFocus: false,

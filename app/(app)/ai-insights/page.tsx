@@ -5,6 +5,7 @@ import { Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 
 import ChartErrorBoundary from "@/components/ui/charterrorboundary";
+import AiKeyRequiredNotice from "@/components/aiInsights/AiKeyRequiredNotice";
 import AiQuotaMeter from "@/components/settingsComponents/apiKeys/AiQuotaMeter";
 import AiInsightsHero from "@/components/aiInsights/sections/AiInsightsHero";
 import MenuSuggestionsSection from "@/components/aiInsights/sections/MenuSuggestionsSection";
@@ -15,6 +16,7 @@ import FestivalPrepSection from "@/components/aiInsights/sections/FestivalPrepSe
 import SalesRecommendationsSection from "@/components/aiInsights/sections/SalesRecommendationsSection";
 import CustomerRetentionSection from "@/components/aiInsights/sections/CustomerRetentionSection";
 import StaffingSection from "@/components/aiInsights/sections/StaffingSection";
+import { useAiKeyStatus } from "@/hooks/useAiKey";
 import { useAiSection } from "@/hooks/useAiSection";
 import type { FestivalPrep } from "@/lib/ai-insights/sections/festivalPrep";
 import type { HourInsight } from "@/lib/ai-insights/sections/hourPlaybook";
@@ -43,6 +45,19 @@ import PageHeader from "@/components/ui/PageHeader";
 const TOTAL_SECTIONS = 8;
 
 export default function AIInsightPage() {
+  /**
+   * Whether there is a key at all, which decides whether this page has
+   * anything to show.
+   *
+   * Only a definite "no" counts. While the status is loading, and if the
+   * request for it fails, the sections load as usual: a settings route that is
+   * briefly unreachable must not be reported to the merchant as "you have not
+   * set this up", which would send them to re-enter a key that is already
+   * there.
+   */
+  const keyStatus = useAiKeyStatus();
+  const needsKey = keyStatus.data?.configured === false;
+
   const [dismissed, setDismissed] = useState<ReadonlySet<string>>(new Set());
   const [shortlisted, setShortlisted] = useState<ReadonlySet<string>>(
     new Set(),
@@ -64,18 +79,27 @@ export default function AIInsightPage() {
   // "Generate more" is offered where the AI can keep finding new ones: menu
   // ideas and sales recommendations. The other sections advise on a set the
   // app picks — flagged items, festivals, hours — so there is no "more".
+  // `enabled` on every one of them: without a key each section's route would
+  // still gather its facts from the POS — thirteen weekly sales reports for
+  // pricing alone — before the AI service refused it.
+  const enabled = !needsKey;
   const menuSuggestions = useAiSection<MenuSuggestion>("menu-suggestions", {
     describe: (idea) => idea.title,
+    enabled,
   });
-  const slowItems = useAiSection<SlowItemInsight>("slow-items");
-  const pricingSection = useAiSection<PricingInsight>("pricing");
-  const retentionSection = useAiSection<RetentionInsight>("retention");
-  const staffingSection = useAiSection<StaffingInsight>("staffing");
-  const hourPlaybook = useAiSection<HourInsight>("hour-playbook");
-  const festivalPrep = useAiSection<FestivalPrep>("festival-prep");
+  const slowItems = useAiSection<SlowItemInsight>("slow-items", { enabled });
+  const pricingSection = useAiSection<PricingInsight>("pricing", { enabled });
+  const retentionSection = useAiSection<RetentionInsight>("retention", {
+    enabled,
+  });
+  const staffingSection = useAiSection<StaffingInsight>("staffing", {
+    enabled,
+  });
+  const hourPlaybook = useAiSection<HourInsight>("hour-playbook", { enabled });
+  const festivalPrep = useAiSection<FestivalPrep>("festival-prep", { enabled });
   const salesRecommendations = useAiSection<SalesRecommendation>(
     "sales-recommendations",
-    { describe: (rec) => rec.text },
+    { describe: (rec) => rec.text, enabled },
   );
 
   const menu = keep(menuSuggestions.data?.items ?? []);
@@ -198,81 +222,88 @@ export default function AIInsightPage() {
           }
         />
 
-        <div className="flex flex-col gap-10">
-          <AiInsightsHero
-            activeInsights={activeInsights}
-            slowItems={slow.length}
-            shortlisted={shortlistedCount}
-            liveSections={liveSections.length}
-            totalSections={TOTAL_SECTIONS}
-            lastUpdated={lastUpdated}
-            savedAnswers={savedAnswers}
-            isGenerating={
-              generating || liveSections.some((section) => section.isFetching)
-            }
-            onGenerate={() => void generateInsights()}
-          />
-          {/* One boundary per section, so a failure in one cannot blank the
+        {needsKey ? (
+          /* One notice instead of the hero and eight sections: with no key
+             every section can only be refused, and eight identical panels read
+             as eight broken features rather than one unfinished setup. */
+          <AiKeyRequiredNotice />
+        ) : (
+          <div className="flex flex-col gap-10">
+            <AiInsightsHero
+              activeInsights={activeInsights}
+              slowItems={slow.length}
+              shortlisted={shortlistedCount}
+              liveSections={liveSections.length}
+              totalSections={TOTAL_SECTIONS}
+              lastUpdated={lastUpdated}
+              savedAnswers={savedAnswers}
+              isGenerating={
+                generating || liveSections.some((section) => section.isFetching)
+              }
+              onGenerate={() => void generateInsights()}
+            />
+            {/* One boundary per section, so a failure in one cannot blank the
             rest of the page. */}
-          <ChartErrorBoundary>
-            <MenuSuggestionsSection
-              items={menu}
-              state={menuSuggestions}
-              shortlisted={shortlisted}
-              onToggleShortlist={toggleShortlist}
-              onDismiss={dismiss}
-            />
-          </ChartErrorBoundary>
-          <ChartErrorBoundary>
-            <SlowItemsSection
-              items={slow}
-              state={slowItems}
-              onDismiss={dismiss}
-            />
-          </ChartErrorBoundary>
-          <ChartErrorBoundary>
-            <PricingSection
-              items={pricing}
-              state={pricingSection}
-              onDismiss={dismiss}
-            />
-          </ChartErrorBoundary>
-          <ChartErrorBoundary>
-            <HourPlaybookSection
-              items={hours}
-              state={hourPlaybook}
-              onDismiss={dismiss}
-            />
-          </ChartErrorBoundary>
-          <ChartErrorBoundary>
-            <FestivalPrepSection
-              items={festivals}
-              state={festivalPrep}
-              onDismiss={dismiss}
-            />
-          </ChartErrorBoundary>
-          <ChartErrorBoundary>
-            <SalesRecommendationsSection
-              items={sales}
-              state={salesRecommendations}
-              onDismiss={dismiss}
-            />
-          </ChartErrorBoundary>
-          <ChartErrorBoundary>
-            <CustomerRetentionSection
-              items={retention}
-              state={retentionSection}
-              onDismiss={dismiss}
-            />
-          </ChartErrorBoundary>
-          <ChartErrorBoundary>
-            <StaffingSection
-              items={staffing}
-              state={staffingSection}
-              onDismiss={dismiss}
-            />
-          </ChartErrorBoundary>
-        </div>
+            <ChartErrorBoundary>
+              <MenuSuggestionsSection
+                items={menu}
+                state={menuSuggestions}
+                shortlisted={shortlisted}
+                onToggleShortlist={toggleShortlist}
+                onDismiss={dismiss}
+              />
+            </ChartErrorBoundary>
+            <ChartErrorBoundary>
+              <SlowItemsSection
+                items={slow}
+                state={slowItems}
+                onDismiss={dismiss}
+              />
+            </ChartErrorBoundary>
+            <ChartErrorBoundary>
+              <PricingSection
+                items={pricing}
+                state={pricingSection}
+                onDismiss={dismiss}
+              />
+            </ChartErrorBoundary>
+            <ChartErrorBoundary>
+              <HourPlaybookSection
+                items={hours}
+                state={hourPlaybook}
+                onDismiss={dismiss}
+              />
+            </ChartErrorBoundary>
+            <ChartErrorBoundary>
+              <FestivalPrepSection
+                items={festivals}
+                state={festivalPrep}
+                onDismiss={dismiss}
+              />
+            </ChartErrorBoundary>
+            <ChartErrorBoundary>
+              <SalesRecommendationsSection
+                items={sales}
+                state={salesRecommendations}
+                onDismiss={dismiss}
+              />
+            </ChartErrorBoundary>
+            <ChartErrorBoundary>
+              <CustomerRetentionSection
+                items={retention}
+                state={retentionSection}
+                onDismiss={dismiss}
+              />
+            </ChartErrorBoundary>
+            <ChartErrorBoundary>
+              <StaffingSection
+                items={staffing}
+                state={staffingSection}
+                onDismiss={dismiss}
+              />
+            </ChartErrorBoundary>
+          </div>
+        )}
       </div>
     </div>
   );

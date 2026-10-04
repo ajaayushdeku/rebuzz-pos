@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import ProviderLogo from "./ProviderLogo";
+import { FilterSelect } from "@/components/ui/FilterSelect";
 import {
   MARK_TILE_CLASS,
   markPaint,
@@ -77,6 +78,22 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
   const updateModel = useUpdateAiModel();
   const currentModel = status?.model ?? null;
   const selectableModels = models.data?.models ?? [];
+
+  /**
+   * The models to offer, current one first when the provider has stopped
+   * reporting it.
+   *
+   * Carried over from the native select's `<option>` for the same reason: the
+   * stored model must stay visible and selected, or the control would show a
+   * different model from the one actually in use and the next change would
+   * clobber it silently.
+   */
+  const modelOptions = [
+    ...(currentModel && !selectableModels.includes(currentModel)
+      ? [{ value: currentModel, label: `${currentModel} (current)` }]
+      : []),
+    ...selectableModels.map((model) => ({ value: model, label: model })),
+  ];
 
   const handleSave = () => {
     const key = apiKey.trim();
@@ -269,12 +286,12 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
         {configured && (
           <div className="mt-3 rounded-xl border border-[#dadce0] bg-[#f8f9fa] px-3.5 py-3 dark:border-white/15 dark:bg-white/5">
             <div className="flex items-center justify-between gap-2">
-              <label
-                htmlFor="ai-model"
-                className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.06em] text-[#9aa0a6] dark:text-[#9aa6bd]"
-              >
+              {/* A span, not a <label htmlFor>: the control is a button now,
+                  and a label cannot point at one. FilterSelect's `ariaLabel`
+                  carries the name instead. */}
+              <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-[0.06em] text-[#9aa0a6] dark:text-[#9aa6bd]">
                 Model
-              </label>
+              </span>
               {models.isFetching && (
                 <span className="mb-1.5 flex items-center gap-1 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
                   <Loader2 className="h-3 w-3 animate-spin" />
@@ -288,32 +305,27 @@ export default function AiKeyForm({ provider }: { provider: AiProvider }) {
                 size={15}
                 className="pointer-events-none shrink-0"
               />
-              <select
-                id="ai-model"
+              {/* The same dropdown the invoice and dashboard filters use, so
+                  a select looks like a select everywhere in the app. Model ids
+                  are identifiers, hence `preserveCase` — "Gemini-3.6-flash" is
+                  not the name of anything. */}
+              <FilterSelect
                 value={currentModel ?? ""}
-                onChange={(e) => {
-                  const model = e.target.value;
+                options={modelOptions}
+                onChange={(model) => {
                   if (!model || model === currentModel) return;
                   updateModel.mutate(model);
                 }}
                 disabled={
                   updateModel.isPending || selectableModels.length === 0
                 }
-                style={{ outlineColor: meta.accent }}
-                className="h-9 w-full cursor-pointer rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 px-2.5 text-[13px] font-medium text-[#3c4043] outline-none transition focus:border-gray-400 focus:ring-2 focus:ring-gray-300/40 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-white/20 dark:focus:border-white/30 dark:border-white/15 dark:text-[#e8ecf4]"
-              >
-                {/* The stored model stays selectable even when the provider no
-                    longer reports it, so the selector never shows a value the
-                    user cannot see or silently clobber. */}
-                {currentModel && !selectableModels.includes(currentModel) && (
-                  <option value={currentModel}>{currentModel} (current)</option>
-                )}
-                {selectableModels.map((model) => (
-                  <option key={model} value={model}>
-                    {model}
-                  </option>
-                ))}
-              </select>
+                preserveCase
+                placeholder={
+                  models.isFetching ? "Loading models…" : "No models available"
+                }
+                ariaLabel="Model"
+                className="min-w-0 flex-1"
+              />
               {updateModel.isPending && (
                 <Loader2 className="h-4 w-4 shrink-0 animate-spin text-[#9aa0a6] dark:text-[#9aa6bd]" />
               )}

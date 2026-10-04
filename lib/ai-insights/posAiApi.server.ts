@@ -20,6 +20,31 @@
 export const POS_API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 /**
+ * The standalone AI service, when one is configured — and it wins over the POS
+ * routes above.
+ *
+ *   AI_SERVICE_URL=http://localhost:4000/api
+ *
+ * This is a switch, not a replacement: unset it and every AI call goes back to
+ * the POS API exactly as before, with no code change. The POS copy of these
+ * routes is still there and still works, so either side can be used or compared
+ * at any time.
+ *
+ * The two differ in the path as well as the host. The POS mounts them under the
+ * business slug (`/api/business/settings/ai`); the standalone service does not
+ * (`/api/settings/ai`), because it reads the business from the token instead.
+ *
+ * Server-side only, and deliberately not `NEXT_PUBLIC_`: every caller is a route
+ * handler, and the session token lives in an httpOnly cookie precisely so the
+ * browser cannot talk to either service directly.
+ *
+ * Authentication is unchanged. The standalone service issues no tokens of its
+ * own — it forwards the caller's POS token to the POS API and takes the business
+ * id from the answer — so the same login works against either.
+ */
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL?.replace(/\/+$/, "");
+
+/**
  * The absolute URL for one of the AI routes, or null when the POS base URL is
  * unset — which the caller answers with a 503, because a missing base is a
  * deployment mistake rather than a bad request.
@@ -28,6 +53,7 @@ export const POS_API_URL = process.env.NEXT_PUBLIC_API_URL;
  * "/settings/ai/models", "/ai-insights", "/ai-insights/quota".
  */
 export function aiApiUrl(path: string): string | null {
+  if (AI_SERVICE_URL) return `${AI_SERVICE_URL}${path}`;
   return POS_API_URL ? `${POS_API_URL}/business${path}` : null;
 }
 
@@ -52,6 +78,15 @@ export interface AiErrorBody {
 export function readAiError(json: unknown): AiErrorBody {
   const body = (json ?? {}) as {
     message?: unknown;
+    // The standalone service answers flat — `{ error, detail, available }` —
+    // where the POS nests the same fields under `data`. Both shapes are read
+    // here, so the UI's error messages work against either service unchanged,
+    // and switching between them needs no change anywhere else.
+    error?: unknown;
+    detail?: string;
+    available?: string[];
+    retryAfter?: number;
+    raw?: string;
     data?: {
       code?: unknown;
       message?: unknown;
@@ -64,15 +99,18 @@ export function readAiError(json: unknown): AiErrorBody {
   const data = body.data ?? {};
   const error =
     (typeof data.code === "string" && data.code) ||
+    // The standalone service's code, which is the same vocabulary the POS puts
+    // in `data.code` (AI_KEY_INVALID, NOT_CONFIGURED, …).
+    (typeof body.error === "string" && body.error) ||
     (typeof data.message === "string" && data.message) ||
     (typeof body.message === "string" && body.message) ||
     "Request failed";
 
   return {
     error,
-    available: data.available ?? undefined,
-    detail: data.detail ?? undefined,
-    retryAfter: data.retryAfter ?? undefined,
-    raw: data.raw ?? undefined,
+    available: data.available ?? body.available ?? undefined,
+    detail: data.detail ?? body.detail ?? undefined,
+    retryAfter: data.retryAfter ?? body.retryAfter ?? undefined,
+    raw: data.raw ?? body.raw ?? undefined,
   };
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import AiKeyForm from "./AiKeyForm";
 import AiQuotaMeter from "./AiQuotaMeter";
+import AiTroubleNote from "./AiTroubleNote";
 import ProviderGuide from "./ProviderGuide";
 import ProviderMarkDefs from "./ProviderMarkDefs";
 import ProviderPicker from "./ProviderPicker";
@@ -101,6 +102,11 @@ export default function ApiKeysScreen() {
           />
         </div>
       </div>
+
+      {/* Last, and full width: it is read after a generation has failed, not
+          while a key is being set up. Outside the grid above, so it does not
+          land in the sticky column beside the form. */}
+      <AiTroubleNote />
     </div>
   );
 }
