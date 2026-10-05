@@ -283,13 +283,13 @@ export default function AIBusinessStory() {
         {/* A client-side link rather than a plain anchor. A full page load
             empties the app's cache, and coming back to the overview would
             then pay for a fresh Gemini call instead of reusing this story. */}
-        <Link
+        {/* <Link
           href="/ai-insights"
           className="inline-flex items-center gap-1  ml-2 text-xs font-semibold text-violet-600 hover:text-violet-700 transition-colors dark:text-violet-300 dark:hover:text-violet-200"
         >
           See full business insights
           <ArrowUpRight size={13} />
-        </Link>
+        </Link> */}
       </div>
     </div>
   );

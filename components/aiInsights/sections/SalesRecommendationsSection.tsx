@@ -4,6 +4,10 @@ import { CircleCheck, Info, TrendingUp, TriangleAlert } from "lucide-react";
 
 import type { AiSectionState } from "@/hooks/useAiSection";
 import {
+  useWindowPhrase,
+  useComparisonPhrase,
+} from "@/components/aiInsights/periodLabel";
+import {
   SALES_WINDOW_DAYS,
   type RecommendationKind,
   type SalesRecommendation,
@@ -47,6 +51,13 @@ export default function SalesRecommendationsSection({
   state: AiSectionState<SalesRecommendation>;
   onDismiss: (id: string) => void;
 }) {
+  // The period these cards describe, or this section's own rolling window
+  // when there is none — see components/aiInsights/periodLabel.tsx.
+  const windowText = useWindowPhrase(`the last ${SALES_WINDOW_DAYS} days`);
+  const comparisonText = useComparisonPhrase(
+    `the last ${SALES_WINDOW_DAYS} days against the ${SALES_WINDOW_DAYS} before them`,
+  );
+
   return (
     <section>
       <SectionHeader
@@ -55,10 +66,10 @@ export default function SalesRecommendationsSection({
         title="Sales Recommendations"
         // The window is part of the subtitle so nobody reads these as
         // following a date filter this page does not have.
-        subtitle={`Based on the last ${SALES_WINDOW_DAYS} days, compared with the ${SALES_WINDOW_DAYS} before`}
+        subtitle={`Based on ${comparisonText}`}
         info={{
           heading: "What is being compared",
-          body: `Your last ${SALES_WINDOW_DAYS} days against the ${SALES_WINDOW_DAYS} before them, so every claim of a rise or fall is against your own recent trading rather than an outside benchmark.`,
+          body: `${comparisonText} — so every claim of a rise or fall is against your own trading rather than an outside benchmark.`,
         }}
         actions={
           <div className="flex flex-row w-full md:w-fit items-end justify-end gap-2">
@@ -66,10 +77,10 @@ export default function SalesRecommendationsSection({
               state={state}
               textClassName="text-blue-700 hover:bg-blue-100 border-blue-300 hover:border-blue-400 dark:hover:border-blue-400/60 dark:hover:bg-blue-400/20 dark:border-blue-400/40 dark:text-blue-300"
             />
-            <SectionRefreshButton
+            {/* <SectionRefreshButton
               state={state}
               textClassName="text-blue-700 hover:bg-blue-100 border-blue-300 hover:border-blue-400 dark:hover:border-blue-400/60 dark:hover:bg-blue-400/20 dark:border-blue-400/40 dark:text-blue-300"
-            />
+            /> */}
           </div>
         }
       />
@@ -78,7 +89,7 @@ export default function SalesRecommendationsSection({
         state={state}
         visibleCount={items.length}
         layout="list"
-        noSalesMessage={`No sales in the last ${SALES_WINDOW_DAYS} days, so there is nothing to analyse yet.`}
+        noSalesMessage={`No sales in ${windowText}, so there is nothing to analyse.`}
         emptyMessage="No sales alerts right now."
       >
         <ul className="flex flex-col gap-2.5">

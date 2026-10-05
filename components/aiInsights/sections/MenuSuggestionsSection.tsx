@@ -11,6 +11,7 @@ import type {
   MenuSuggestion,
 } from "@/lib/ai-insights/sections/menuSuggestions";
 import { SECTION_WINDOW_DAYS } from "@/lib/ai-insights/sections/shared";
+import { useWindowPhrase } from "@/components/aiInsights/periodLabel";
 import {
   AiSectionBody,
   BodyLabel,
@@ -99,6 +100,10 @@ export default function MenuSuggestionsSection({
   onToggleShortlist: (id: string) => void;
   onDismiss: (id: string) => void;
 }) {
+  // The period these cards describe, or this section's own rolling window
+  // when there is none — see components/aiInsights/periodLabel.tsx.
+  const windowText = useWindowPhrase(`the last ${SECTION_WINDOW_DAYS} days`);
+
   const money = useMoney();
   const [query, setQuery] = useState("");
   const [difficulty, setDifficulty] = useState<DifficultyFilter>("all");
@@ -124,10 +129,10 @@ export default function MenuSuggestionsSection({
         icon={Sparkles}
         iconClassName="bg-violet-50 text-violet-600 dark:text-violet-300 dark:bg-violet-400/10"
         title="AI Menu Suggestions"
-        subtitle={`Ideas built from your best sellers of the last ${SECTION_WINDOW_DAYS} days`}
+        subtitle={`Ideas built from your best sellers in ${windowText}`}
         info={{
           heading: "Where these come from",
-          body: `The AI is given your best-selling items over the last ${SECTION_WINDOW_DAYS} days and asked what else would sell beside them. Nothing here is on your menu yet — each card is a proposal, with the items it was built from listed on it.`,
+          body: `The AI is given your best-selling items from ${windowText} and asked what else would sell beside them. Nothing here is on your menu yet — each card is a proposal, with the items it was built from listed on it.`,
         }}
         actions={
           <div className="flex flex-row w-full md:w-fit gap-2 justify-between">
@@ -156,10 +161,10 @@ export default function MenuSuggestionsSection({
                 state={state}
                 textClassName="text-violet-600 hover:bg-violet-100 border-violet-300 hover:border-violet-400 dark:hover:border-violet-400/60 dark:hover:bg-violet-400/20 dark:border-violet-400/40 dark:text-violet-300"
               />
-              <SectionRefreshButton
+              {/* <SectionRefreshButton
                 state={state}
                 textClassName="text-violet-600 hover:bg-violet-100 border-violet-300 hover:border-violet-400 dark:hover:border-violet-400/60 dark:hover:bg-violet-400/20 dark:border-violet-400/40 dark:text-violet-300"
-              />
+              /> */}
             </div>
           </div>
         }
@@ -169,7 +174,7 @@ export default function MenuSuggestionsSection({
         state={state}
         visibleCount={items.length}
         layout="cards"
-        noSalesMessage={`No sales in the last ${SECTION_WINDOW_DAYS} days, so there are no best sellers to build ideas on yet.`}
+        noSalesMessage={`No sales in ${windowText}, so there are no best sellers to build ideas on.`}
         emptyMessage="No menu ideas right now."
       >
         {visible.length === 0 ? (

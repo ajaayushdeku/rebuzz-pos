@@ -22,6 +22,21 @@ export interface SalesWindows {
   previous: DateWindow;
 }
 
+/**
+ * How many days a window covers, both ends included.
+ *
+ * Needed because a window is no longer always 28 or 30 days: an analytics period
+ * can be a month, a quarter or a year, and a briefing that says "last 28 days"
+ * over a quarter's figures is telling the model something untrue.
+ */
+export function daysBetween(startDate: string, endDate: string): number {
+  const at = (iso: string) => {
+    const [y, m, d] = iso.split("-").map(Number);
+    return Date.UTC(y, m - 1, d);
+  };
+  return Math.max(1, Math.round((at(endDate) - at(startDate)) / 86_400_000) + 1);
+}
+
 export function shiftIsoDate(iso: string, days: number): string {
   const [y, m, d] = iso.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);

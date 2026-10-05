@@ -1,16 +1,14 @@
 "use client";
 
-import { RefreshCw, Loader2, Gauge, Clock3, Cpu, Sparkles } from "lucide-react";
+import { RefreshCw, Loader2, Cpu, Sparkles } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import ModalShell from "@/components/ui/ModalShell";
-import { useAiQuota } from "@/hooks/useAiQuota";
 import { useAiKeyStatus, useAiProviderLabel } from "@/hooks/useAiKey";
-import { unlockLabel } from "@/components/offers/useAiFillLock";
 
 /**
  * Asked before a Refresh, because a Refresh is the one action here that spends
- * from the hourly allowance on the merchant's own key — everything else on the
+ * a call on the merchant's own key — everything else on the
  * page is served from the day's saved answer at no cost.
  *
  * It states the four things that decide whether the spend is worth it: how many
@@ -64,16 +62,15 @@ export default function RefreshConfirmModal({
   /** A refresh is already running — the confirm button waits it out. */
   busy?: boolean;
 }) {
-  const { data: quota } = useAiQuota();
   const { data: status } = useAiKeyStatus();
   // The same label the card footers use, resolved from the service's own
   // catalogue rather than a list here.
   const providerLabel = useAiProviderLabel();
 
-  // `remaining === 0` is the one case where confirming can only fail: the
-  // service answers INSIGHTS_RATE_LIMIT and serves the old answer back.
-  const spent = quota?.remaining === 0;
-  const disabled = spent || busy;
+  // Nothing here can predict a refusal any more. REBUZZ's hourly allowance is
+  // gone, and a provider's own limit is only known once it answers — so the
+  // button is offered, and a refusal is reported with the provider's reason.
+  const disabled = busy;
 
   return (
     <ModalShell
@@ -119,24 +116,6 @@ export default function RefreshConfirmModal({
     >
       <div className="divide-y divide-gray-100 rounded-xl border border-gray-200 px-3.5 dark:divide-white/10 dark:border-white/15">
         <Fact
-          icon={Gauge}
-          label="Requests left this hour"
-          value={
-            quota
-              ? quota.remaining === 0
-                ? "None left"
-                : `${quota.remaining} of ${quota.limit}`
-              : "Unknown"
-          }
-          muted={!quota}
-        />
-        <Fact
-          icon={Clock3}
-          label="Next one frees up"
-          value={quota ? unlockLabel(quota.resetAt) : "Unknown"}
-          muted={!quota}
-        />
-        <Fact
           icon={Sparkles}
           label="Provider"
           value={providerLabel ?? "Unknown"}
@@ -150,15 +129,7 @@ export default function RefreshConfirmModal({
         />
       </div>
 
-      {spent && (
-        <p className="mt-3 rounded-lg border border-red-100 bg-red-50 px-3.5 py-2.5 text-[12px] text-red-600 dark:border-red-400/25 dark:bg-red-400/10 dark:text-[#f87171]">
-          The hourly allowance is used up, so a new answer cannot be generated
-          yet. The advice on screen stays as it is
-          {quota ? ` until ${unlockLabel(quota.resetAt)}` : ""}.
-        </p>
-      )}
-
-      {!spent && status?.configured && status.enabled === false && (
+      {status?.configured && status.enabled === false && (
         <p className="mt-3 rounded-lg border border-amber-100 bg-amber-50 px-3.5 py-2.5 text-[12px] text-amber-700 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-300">
           AI is switched off for this business, so this request will be refused.
           Turn it back on under Settings → API Keys.

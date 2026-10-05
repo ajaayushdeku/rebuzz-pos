@@ -116,7 +116,13 @@ function toMessage(code: unknown): string {
 export class AiInsightsError extends Error {
   readonly code: string;
   readonly needsSetup: boolean;
-  /** Seconds to wait before retrying. Only set on our own 429 answers. */
+  /**
+   * Seconds to wait before retrying.
+   *
+   * Was only ever set by our own hourly limiter's 429. That limiter is gone, and
+   * this now carries the provider's own `Retry-After` instead — so it appears on
+   * AI_RATE_LIMIT and AI_QUOTA_EXCEEDED, when the provider says how long.
+   */
   readonly retryAfter?: number;
 
   constructor(code: string, message: string, retryAfter?: number) {

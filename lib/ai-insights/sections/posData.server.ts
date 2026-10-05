@@ -128,8 +128,13 @@ export function moreCacheKey(
 /**
  * The lines that tell the model what is already on screen. Empty when nothing
  * is, so a first answer's briefing is unchanged.
+ *
+ * Takes only the part it reads rather than a whole `MoreRequest`. A `MoreRequest`
+ * still satisfies it, so the day-scoped callers are unchanged — but the period
+ * flow has no `after` timestamp to offer, and inventing one to satisfy a
+ * parameter that is never read would be worse than widening the door.
  */
-export function alreadyShownBriefing(more: MoreRequest | null): string {
+export function alreadyShownBriefing(more: { exclude: string[] } | null): string {
   if (!more || more.exclude.length === 0) return "";
   return [
     "",

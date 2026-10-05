@@ -3,7 +3,6 @@
 import { useState } from "react";
 
 import AiKeyForm from "./AiKeyForm";
-import AiQuotaMeter from "./AiQuotaMeter";
 import AiTroubleNote from "./AiTroubleNote";
 import ProviderGuide from "./ProviderGuide";
 import ProviderMarkDefs from "./ProviderMarkDefs";
@@ -22,6 +21,11 @@ import type { AiProvider } from "@/services/apiAiKey.client";
  * The choice sits across the top, and the two things a merchant reads while
  * setting one up — the form and its guide — sit side by side beneath it, each
  * with half the width. Stacks to one column on a phone.
+ *
+ * There is no usage meter any more. It reported REBUZZ's own hourly allowance,
+ * which no longer exists: insights are generated once per period and kept, so the
+ * only limit left is the provider's own — and that is reported where it happens,
+ * on the failure itself, with the provider's reason and timing.
  *
  * The form is keyed by provider so switching starts it clean: a key typed for
  * one provider must never be left in the field when another is selected.
@@ -63,11 +67,6 @@ export default function ApiKeysScreen() {
           themselves from these, and two copies would be two elements sharing
           one id. */}
       <ProviderMarkDefs />
-
-      {/* First thing on the screen: the allowance governs everything set up
-          below it, and under the form it sat past the fold where the merchant
-          only met it as an error. */}
-      <AiQuotaMeter />
 
       <ProviderPicker
         providers={providers}

@@ -9,6 +9,7 @@ import Image from "next/image";
 
 import {
   ChevronDown,
+  HelpCircle,
   Loader2,
   LogOut,
   Plus,
@@ -335,6 +336,16 @@ export default function User({ initialBusinessName, businessLogo }: UserProps) {
             <Link href="/settings/business" className="flex gap-2">
               <User2 className="mr-2 h-4 w-4" />
               Profile
+            </Link>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            className="sm:hidden block text-gray-600 dark:text-gray-400 cursor-pointer"
+            asChild
+          >
+            <Link href="/help" className="flex gap-2">
+              <HelpCircle className="mr-2 h-4 w-4" />
+              Help & Support
             </Link>
           </DropdownMenuItem>
 

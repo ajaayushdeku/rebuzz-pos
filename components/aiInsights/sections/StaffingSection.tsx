@@ -12,6 +12,7 @@ import {
 
 import type { AiSectionState } from "@/hooks/useAiSection";
 import { hourLabel } from "@/lib/ai-insights/sections/hourPlaybook";
+import { useWindowPhrase } from "@/components/aiInsights/periodLabel";
 import {
   STAFFING_WINDOW_DAYS,
   type StaffingInsight,
@@ -195,6 +196,12 @@ export default function StaffingSection({
   state: AiSectionState<StaffingInsight>;
   onDismiss: (id: string) => void;
 }) {
+  // The period these cards describe, or this section's own rolling window
+  // when there is none — see components/aiInsights/periodLabel.tsx.
+  const windowText = useWindowPhrase(
+    `the last ${STAFFING_WINDOW_DAYS / 7} weeks`,
+  );
+
   return (
     <section>
       <SectionHeader
@@ -203,13 +210,13 @@ export default function StaffingSection({
         title="Staffing Recommendations"
         // Said up front: the POS only records who rang up each bill, so this
         // is about the till, not the whole floor or the kitchen.
-        subtitle={`Who takes orders at the till, hour by hour, over the last ${STAFFING_WINDOW_DAYS / 7} weeks`}
+        subtitle={`Who takes orders at the till, hour by hour, in ${windowText}`}
         info={{
           heading: "What this can and cannot see",
-          body: `The POS records who rang up each bill, so this covers the till over the last ${STAFFING_WINDOW_DAYS / 7} weeks — not the kitchen, the floor or anyone working a shift without taking orders.`,
+          body: `The POS records who rang up each bill, so this covers the till in ${windowText} — not the kitchen, the floor or anyone working a shift without taking orders.`,
         }}
         actions={
-          <div className="flex flex-row w-full md:w-fit items-end justify-end">
+          <div className="hidden flex flex-row w-full md:w-fit items-end justify-end">
             <SectionRefreshButton
               state={state}
               textClassName="text-amber-700 hover:bg-amber-100 border-amber-300 hover:border-amber-400 dark:hover:border-amber-400/60 dark:hover:bg-amber-400/20 dark:border-amber-400/40 dark:text-amber-300"

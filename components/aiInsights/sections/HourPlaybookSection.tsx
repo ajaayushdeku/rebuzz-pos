@@ -3,6 +3,7 @@
 import { Clock, Coins, Flame, Hourglass, type LucideIcon } from "lucide-react";
 
 import type { AiSectionState } from "@/hooks/useAiSection";
+import { useWindowPhrase } from "@/components/aiInsights/periodLabel";
 import {
   HOUR_WINDOW_DAYS,
   ordersLabel,
@@ -93,6 +94,10 @@ export default function HourPlaybookSection({
   state: AiSectionState<HourInsight>;
   onDismiss: (id: string) => void;
 }) {
+  // The period these cards describe, or this section's own rolling window
+  // when there is none — see components/aiInsights/periodLabel.tsx.
+  const windowText = useWindowPhrase(`the last ${HOUR_WINDOW_DAYS / 7} weeks`);
+
   const money = useMoney();
 
   return (
@@ -101,13 +106,13 @@ export default function HourPlaybookSection({
         icon={Clock}
         iconClassName="bg-slate-900 text-white dark:bg-white/15"
         title="Hour-by-Hour Playbook"
-        subtitle={`Your busiest and quietest hours over the last ${HOUR_WINDOW_DAYS / 7} weeks, and what to do in each`}
+        subtitle={`Your busiest and quietest hours in ${windowText}, and what to do in each`}
         info={{
           heading: "How the hours are ranked",
-          body: `Every bill from the last ${HOUR_WINDOW_DAYS / 7} weeks is grouped by the hour it was rung up, then averaged, so one exceptional day does not move an hour on its own.`,
+          body: `Every bill from ${windowText} is grouped by the hour it was rung up, then averaged, so one exceptional day does not move an hour on its own.`,
         }}
         actions={
-          <div className="flex flex-row w-full md:w-fit items-end justify-end">
+          <div className="hidden flex flex-row w-full md:w-fit items-end justify-end">
             <SectionRefreshButton
               state={state}
               textClassName="text-[#5f6368] dark:text-[#a9b4c7]"
@@ -120,7 +125,7 @@ export default function HourPlaybookSection({
         state={state}
         visibleCount={items.length}
         layout="cards"
-        noSalesMessage={`Not enough orders in the last ${HOUR_WINDOW_DAYS / 7} weeks to read an hourly pattern yet. It needs at least 20 orders over 7 days.`}
+        noSalesMessage={`Not enough orders in ${windowText} to read an hourly pattern. It needs at least 20 orders over 7 trading days.`}
         nothingFlaggedMessage="Your hours are evenly busy. No hour stands out right now."
         emptyMessage="No hourly plays right now."
       >

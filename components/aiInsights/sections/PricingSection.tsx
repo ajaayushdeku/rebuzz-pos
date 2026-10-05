@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import type { AiSectionState } from "@/hooks/useAiSection";
+import { useWindowPhrase } from "@/components/aiInsights/periodLabel";
 import {
   PRICING_WEEKS,
   type PricingInsight,
@@ -308,19 +309,25 @@ export default function PricingSection({
   state: AiSectionState<PricingInsight>;
   onDismiss: (id: string) => void;
 }) {
+  // The period these cards describe, or this section's own rolling window
+  // when there is none — see components/aiInsights/periodLabel.tsx.
+  const windowText = useWindowPhrase(
+    `your last ${PRICING_WEEKS} weeks of sales`,
+  );
+
   return (
     <section>
       <SectionHeader
         icon={BadgePercent}
         iconClassName="bg-emerald-50 text-emerald-600 dark:text-emerald-300 dark:bg-emerald-400/10"
         title="Pricing Opportunities"
-        subtitle={`Price changes, discounts and margins from your last ${PRICING_WEEKS} weeks of sales`}
+        subtitle={`Price changes, discounts and margins from ${windowText}`}
         info={{
           heading: "How to read these",
-          body: `Each card compares what an item earns now against what it earned over the last ${PRICING_WEEKS} weeks. The suggested price is an estimate from your own sales, not a promise — nothing changes until you set it yourself.`,
+          body: `Each card compares what an item earns now against what it earned over ${windowText}. The suggested price is an estimate from your own sales, not a promise — nothing changes until you set it yourself.`,
         }}
         actions={
-          <div className="flex flex-row w-full md:w-fit items-end justify-end ">
+          <div className="hidden flex flex-row w-full md:w-fit items-end justify-end ">
             <SectionRefreshButton
               state={state}
               textClassName="text-emerald-700 dark:text-emerald-300"
@@ -333,7 +340,7 @@ export default function PricingSection({
         state={state}
         visibleCount={items.length}
         layout="cards"
-        noSalesMessage={`No sales in the last ${PRICING_WEEKS} weeks to judge prices from yet.`}
+        noSalesMessage={`No sales in ${windowText} to judge prices from.`}
         nothingFlaggedMessage="Your prices, discounts and margins look healthy. Nothing to change right now."
         emptyMessage="No price changes suggested right now."
       >

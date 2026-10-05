@@ -54,14 +54,14 @@ export default function Navbar() {
             href="/settings/currency"
             title={`Currency: ${currency.code} — click to change`}
             aria-label={`Change currency — currently ${currency.code}`}
-            className="flex h-8.5 min-w-9 cursor-pointer items-center justify-center rounded-md border border-none bg-gray-50/70 text-[13px] font-semibold text-gray-700 transition-colors hover:text-blue-600 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:text-[#a8c4ee]"
+            className="flex h-6.5 md:h-8 min-w-6 md:min-w-8 cursor-pointer items-center justify-center rounded-sm md:rounded-md border border-none bg-gray-50/70 text-[13px] font-semibold text-gray-700 transition-colors hover:text-blue-600 hover:bg-gray-100 dark:hover:bg-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:text-[#a8c4ee]"
           >
             {currency.symbol}
           </Link>
 
           <span
             aria-hidden
-            className="mx-1 h-5 w-px shrink-0 bg-gray-200 dark:bg-white/15"
+            className="hidden sm:inline-flex mx-1 h-5 w-px shrink-0 bg-gray-200 dark:bg-white/15"
           />
 
           <HelpButton />

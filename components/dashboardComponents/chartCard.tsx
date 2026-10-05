@@ -159,18 +159,23 @@ export function ChartCard({
 }) {
   return (
     <div
-      className={`relative w-full rounded-2xl border border-[#e3e3e3] bg-white px-6 pb-5 pt-5 dark:border-white/10 dark:bg-[#161d2e] ${CHART_DARK} ${className}`}
+      className={`relative w-full rounded-2xl border border-[#e3e3e3] bg-white px-4 pb-4 pt-4 sm:px-6 sm:pb-5 sm:pt-5 dark:border-white/10 dark:bg-[#161d2e] ${CHART_DARK} ${className}`}
     >
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
+      {/* Wraps at every width. Without that, a wide set of controls beside a
+          long title simply truncated the title — "Payment Methods" lost its
+          second word on an iPad — because the title block is the only part that
+          may shrink. Allowed to wrap, the controls drop to their own line and
+          the title keeps its words. */}
+      <div className="mb-4 flex flex-col gap-2.5 sm:mb-5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
+        <div className="  flex min-w-0 flex-1 bg-red-400 items-center gap-3 sm:basis-64">
           <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
+            className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-xl border sm:flex dark:border-white/10! dark:bg-white/5!"
             style={{ borderColor: iconBorder, backgroundColor: iconBg }}
           >
             <Icon size={16} style={{ color: iconColor }} />
           </div>
           <div className="min-w-0">
-            <h3 className="flex items-center gap-1.5 text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
+            <h3 className="flex items-center gap-1.5 text-sm font-normal text-[#3c4043] sm:text-[15px] dark:text-[#e8ecf4]">
               <span className="truncate">{title}</span>
               {info && (
                 <HintTooltip>
@@ -196,25 +201,35 @@ export function ChartCard({
                 </HintTooltip>
               )}
             </h3>
-            <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
+            {/* Two lines on a phone, where a long subtitle otherwise pushed the
+                chart most of the way down the screen; in full from `sm` up. */}
+            <p className=" mt-0.5 line-clamp-2 text-[11px] leading-snug tracking-wide text-[#9aa0a6] sm:line-clamp-none sm:text-xs dark:text-[#9aa6bd]">
               {subtitle}
             </p>
           </div>
         </div>
 
-        {rangeBadge && (
-          <div className="block md:hidden">
-            <RangeBadge variant="pill" />
-          </div>
+        {(rangeBadge || expenseBadge || controls) && (
+          <>
+            {/* `ml-auto` for the case where the controls wrap onto their own
+                line: `justify-between` only spaces items that share a line, so a
+                wrapped row would otherwise sit against the left edge, out of line
+                with the controls on every card that did fit beside its title. */}
+            <div className="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto justify-end">
+              {rangeBadge && (
+                <div className="md:hidden">
+                  <RangeBadge variant="pill" />
+                </div>
+              )}
+              {expenseBadge && (
+                <div className="md:hidden">
+                  <ExpenseBadge variant="pill" />
+                </div>
+              )}
+              {controls}
+            </div>
+          </>
         )}
-
-        {expenseBadge && (
-          <div className="block md:hidden">
-            <ExpenseBadge variant="pill" />
-          </div>
-        )}
-
-        {controls && <div className="flex items-center gap-2">{controls}</div>}
       </div>
 
       {children}

@@ -21,11 +21,13 @@
 
 import { buildMenuFacts, type MenuLine } from "./menuSuggestions";
 import {
+  daysBetween,
   formatMoney,
   shiftIsoDate,
   textOr,
   whole,
   type AiSectionResult,
+  type DateWindow,
   type MenuProduct,
   type SalesByItemRow,
   type SalesWindows,
@@ -149,14 +151,23 @@ export interface HourFacts {
   enoughData: boolean;
 }
 
+/**
+ * `window` defaults to the 28 days before `today` — what the day-scoped route
+ * uses, and what it still gets by passing nothing.
+ *
+ * A period is longer or shorter than that, and these figures are per hour of the
+ * day: averaging over four weeks of a quarter and calling it the quarter would
+ * quietly misreport every hour on the card.
+ */
 export function buildHourFacts(
   today: string,
   bills: ReportBill[],
   menu: MenuProduct[],
   salesRows: SalesByItemRow[],
   windows: SalesWindows,
+  window: DateWindow = hourWindow(today),
 ): HourFacts {
-  const { startDate, endDate } = hourWindow(today);
+  const { startDate, endDate } = window;
 
   const sums = Array.from({ length: 24 }, () => ({
     orders: 0,
@@ -297,7 +308,7 @@ export function hourBriefing(facts: HourFacts, currencySymbol: string): string {
   const money = (value: number) => formatMoney(currencySymbol, value);
 
   const lines = [
-    `Window: ${facts.windowStart} to ${facts.windowEnd}, ${HOUR_WINDOW_DAYS} days. Times are Nepal time. Money is before tax, in ${currencySymbol}.`,
+    `Window: ${facts.windowStart} to ${facts.windowEnd}, ${daysBetween(facts.windowStart, facts.windowEnd)} days. Times are Nepal time. Money is before tax, in ${currencySymbol}.`,
     `${whole(facts.totalOrders)} orders on ${facts.tradingDays} trading days (days with any sale; the averages below are per trading day). Typical order ${facts.avgOrder === null ? "unknown" : money(facts.avgOrder)} (the middle order, so one large bill does not skew it).`,
     `Orders come in from ${facts.opens === null ? "?" : hourLabel(facts.opens)} to ${facts.closes === null ? "?" : hourLabel(facts.closes)}.`,
     "No data on seats, guests per order, staff on shift or which items sell in which hour.",

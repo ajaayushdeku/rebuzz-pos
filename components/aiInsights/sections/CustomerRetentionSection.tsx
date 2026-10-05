@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { Copy, HeartHandshake, MessageCircle } from "lucide-react";
 
 import type { AiSectionState } from "@/hooks/useAiSection";
+import { useWindowPhrase } from "@/components/aiInsights/periodLabel";
 import {
   RETENTION_LOOKBACK_DAYS,
   type RetentionInsight,
@@ -51,6 +52,12 @@ export default function CustomerRetentionSection({
   state: AiSectionState<RetentionInsight>;
   onDismiss: (id: string) => void;
 }) {
+  // The period these cards describe, or this section's own rolling window
+  // when there is none — see components/aiInsights/periodLabel.tsx.
+  const windowText = useWindowPhrase(
+    `the last ${RETENTION_LOOKBACK_DAYS} days`,
+  );
+
   const money = useMoney();
 
   return (
@@ -65,7 +72,7 @@ export default function CustomerRetentionSection({
           body: "Each customer is judged against their own rhythm: someone who came weekly and has not been seen in a month is overdue, while a once-a-season visitor is not. Only customers with enough history to have a habit appear here.",
         }}
         actions={
-          <div className="flex flex-row w-full md:w-fit items-end justify-end ">
+          <div className="hidden flex flex-row w-full md:w-fit items-end justify-end ">
             <SectionRefreshButton
               state={state}
               textClassName="text-pink-700 hover:bg-pink-100 border-pink-300 hover:border-pink-400 dark:hover:border-pink-400/60 dark:hover:bg-pink-400/20 dark:border-pink-400/40 dark:text-pink-300"
@@ -78,7 +85,7 @@ export default function CustomerRetentionSection({
         state={state}
         visibleCount={items.length}
         layout="cards"
-        noSalesMessage={`No bills linked to a customer in the last ${RETENTION_LOOKBACK_DAYS} days yet. Add the customer to a bill to track their visits.`}
+        noSalesMessage={`No bills linked to a customer in ${windowText}. Add the customer to a bill to track their visits.`}
         nothingFlaggedMessage="Your regulars are all coming in at their usual pace. Nobody to win back right now."
         emptyMessage="No regulars going quiet right now."
       >

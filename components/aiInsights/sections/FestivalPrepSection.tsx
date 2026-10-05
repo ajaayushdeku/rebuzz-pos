@@ -111,10 +111,10 @@ export default function FestivalPrepSection({
                 onClick={() => setShowAll((v) => !v)}
               />
             )}
-            <SectionRefreshButton
+            {/* <SectionRefreshButton
               state={state}
               textClassName="text-amber-700 hover:bg-amber-100 border-amber-300 hover:border-amber-400 dark:hover:border-amber-400/60 dark:hover:bg-amber-400/20 dark:border-amber-400/40 dark:text-amber-300"
-            />
+            /> */}
           </div>
         }
       />

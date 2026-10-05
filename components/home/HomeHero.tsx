@@ -9,6 +9,7 @@ import {
   GRID_STYLE,
   GUEST_HIGHLIGHTS,
 } from "./content";
+import NavbarWelcome from "../NavbarWelcome";
 
 /**
  * * ── Hero ──
@@ -57,29 +58,37 @@ export default function HomeHero({ token }: { token?: string }) {
             Built for Nepal&lsquo;s businesses
           </span>
 
-          <h1 className="mt-6 text-balance text-4xl font-bold leading-[1.05] tracking-tighter text-[#1b2537] sm:text-5xl lg:text-[3.5rem] dark:text-[#e8ecf4]">
-            {token ? (
-              <>
-                Welcome back to{" "}
-                <span className="text-[#244074] dark:text-[#7ba2e3]">Re</span>
-                <span className="text-[#E26924]">Buzz</span>
-              </>
-            ) : (
-              <>
-                Run your business{" "}
-                <span className="relative whitespace-nowrap text-[#244074] dark:text-[#7ba2e3]">
-                  smarter
-                  {/* Underlined in the brand's orange, the way the wordmark
-                      splits: the emphasis lands on the word, not the line. */}
-                  <span
-                    aria-hidden
-                    className="absolute inset-x-0 -bottom-1 h-[6px] rounded-full bg-[#E26924]/30"
-                  />
-                </span>
-                , not harder
-              </>
+          <div className="mt-5 flex flex-col items-left gap-0.5">
+            {" "}
+            {token && (
+              <span>
+                <NavbarWelcome />
+              </span>
             )}
-          </h1>
+            <h1 className=" text-balance text-4xl font-bold leading-[1.05] tracking-tighter text-[#1b2537] sm:text-5xl lg:text-[3.5rem] dark:text-[#e8ecf4]">
+              {token ? (
+                <>
+                  Welcome back to{" "}
+                  <span className="text-[#244074] dark:text-[#7ba2e3]">Re</span>
+                  <span className="text-[#E26924]">Buzz</span>
+                </>
+              ) : (
+                <>
+                  Run your business{" "}
+                  <span className="relative whitespace-nowrap text-[#244074] dark:text-[#7ba2e3]">
+                    smarter
+                    {/* Underlined in the brand's orange, the way the wordmark
+                      splits: the emphasis lands on the word, not the line. */}
+                    <span
+                      aria-hidden
+                      className="absolute inset-x-0 -bottom-1 h-[6px] rounded-full bg-[#E26924]/30"
+                    />
+                  </span>
+                  , not harder
+                </>
+              )}
+            </h1>
+          </div>
 
           <p className="mt-6 max-w-lg text-base leading-relaxed text-gray-500 md:text-lg dark:text-[#9aa6bd]">
             {token
@@ -143,8 +152,8 @@ export default function HomeHero({ token }: { token?: string }) {
               <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
               <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
               <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
-              <span className="ml-3 rounded-md bg-white px-2 py-0.5 text-[11px] text-gray-400 ring-1 ring-gray-200 dark:bg-[#0f1420] dark:text-[#7b869b]">
-                rebuzzpos.com
+              <span className="ml-3 rounded-md bg-white px-2 py-0.5 text-[11px] text-gray-400 ring-1 ring-gray-200 dark:ring-white/20 dark:bg-[#0f1420] dark:text-[#7b869b]">
+                manager.rebuzzpos.com
               </span>
             </div>
             <Image

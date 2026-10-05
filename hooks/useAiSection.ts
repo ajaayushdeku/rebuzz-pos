@@ -205,4 +205,36 @@ export function useAiSection<T>(
   };
 }
 
-export type AiSectionState<T> = ReturnType<typeof useAiSection<T>>;
+/**
+ * What a section component needs from whoever is feeding it.
+ *
+ * Written out rather than inferred from `useAiSection`'s return, which used to
+ * define it. Inferring dragged React Query's own result types into the contract,
+ * so anything else supplying a section — `usePeriodSection`, feeding stored
+ * period insights — had to match internals the components never touch.
+ *
+ * `useAiSection` still satisfies it, and the components still use exactly these.
+ */
+export interface AiSectionState<T> {
+  data: AiSectionResult<T> | undefined;
+  /** A further batch of cards can be asked for. */
+  canGenerateMore: boolean;
+  generateMore: () => void;
+  isGeneratingMore: boolean;
+  error: AiInsightsError | undefined;
+  isLoading: boolean;
+  /** First load failed; there is nothing on screen to keep. */
+  isError: boolean;
+  retry: () => void;
+  /**
+   * Ask again, and report how it went.
+   *
+   * The caller only reads whether it failed and what came back, so that is all
+   * this promises — not the shape of any particular data library's result.
+   */
+  reload: () => Promise<{ isError: boolean; data?: AiSectionResult<T> } | undefined>;
+  /** Any request for this section is running, first load included. */
+  isFetching: boolean;
+  refresh: () => void;
+  isRefreshing: boolean;
+}

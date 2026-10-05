@@ -22,6 +22,7 @@ interface FilterSelectProps {
   placeholder?: string;
   /** Applied to the wrapper, so callers control width. */
   className?: string;
+  buttonClassName?: string;
   /**
    * Names the control for screen readers. Needed where the field's caption
    * is not a `<label>` — a `<label htmlFor>` cannot point at a button.
@@ -54,6 +55,7 @@ export function FilterSelect({
   onChange,
   placeholder = "Select",
   className,
+  buttonClassName = "pl-3 pr-2.5 py-2.5 text-[13px] ",
   ariaLabel,
   disabled = false,
   preserveCase = false,
@@ -123,8 +125,9 @@ export function FilterSelect({
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          "w-full flex items-center justify-between gap-2 pl-3 pr-2.5 py-2.5 text-[13px] border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc]",
+          "w-full flex items-center justify-between gap-2 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-600 cursor-pointer transition disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc]",
           caseClass,
+          buttonClassName,
         )}
       >
         <span className="truncate">{selected?.label ?? placeholder}</span>

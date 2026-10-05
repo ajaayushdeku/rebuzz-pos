@@ -11,7 +11,12 @@ import { Button } from "../ui/button";
  */
 export default function HelpButton() {
   return (
-    <Button asChild variant="ghost" size="icon" className=" p-4 ">
+    <Button
+      asChild
+      variant="ghost"
+      size="icon"
+      className=" p-4 hidden sm:inline-flex"
+    >
       <Link href="/help" aria-label="Help and support" title="Help & support">
         <HelpCircle className="md:h-5 md:w-5 h-10 w-10 text-gray-600 dark:text-[#7ba2e3]" />
       </Link>

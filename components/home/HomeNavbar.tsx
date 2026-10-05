@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import NavbarWelcome from "@/components/NavbarWelcome";
+// import NavbarWelcome from "@/components/NavbarWelcome";
 import HomeUserMenu from "@/components/HomeUserMenu";
 import ServerEnvBadge from "@/components/ServerEnvBadge";
 import ThemeToggle from "@/components/ui/ThemeToggle";
@@ -14,12 +14,7 @@ import ThemeToggle from "@/components/ui/ThemeToggle";
  * rectangle rather than a rule.
  */
 function NavDivider() {
-  return (
-    <span
-      aria-hidden
-      className="hidden h-5 w-px shrink-0 bg-gray-400 sm:block"
-    />
-  );
+  return <span aria-hidden className=" h-5 w-px shrink-0 bg-gray-600 " />;
 }
 
 /**
@@ -58,28 +53,29 @@ export default function HomeNavbar({ token }: { token?: string }) {
           // divider every other item.
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <ServerEnvBadge />
-
             <ThemeToggle />
-
             <NavDivider />
 
-            <button className="h-9 rounded-lg bg-[#244074] px-3 text-sm font-semibold text-white transition-colors hover:bg-[#1b3159] ">
+            <button className="group inline-flex h-8 md:h-9 items-center justify-center md:rounded-md md:border border-[#244074]/20 bg-transparent md:bg-[#244074] px-1  md:px-3 tracking-wider text-sm font-medium text-gray-600 dark:text-[#7BA2CA] md:text-white dark:md:text-white md:shadow-sm transition-all duration-200 hover:-translate-y-px hover:bg-[#1b3159] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#244074]/30">
               <Link
                 href="/dashboard"
                 aria-label="Go to Dashboard"
                 className="flex items-center gap-2"
               >
-                <LayoutDashboard size={16} aria-hidden />
+                <LayoutDashboard
+                  size={16}
+                  strokeWidth={2.5}
+                  className="transition-transform duration-200 group-hover:scale-105"
+                  aria-hidden
+                />
                 <span className="hidden md:inline">Dashboard</span>
               </Link>
             </button>
 
-            <span className="hidden lg:inline">
+            {/* <span className="hidden lg:inline">
               <NavbarWelcome />
-            </span>
-
+            </span> */}
             <NavDivider />
-
             <HomeUserMenu />
           </div>
         ) : (

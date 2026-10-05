@@ -20,11 +20,13 @@
 
 import { hourLabel } from "./hourPlaybook";
 import {
+  daysBetween,
   formatMoney,
   putNamesBack,
   shiftIsoDate,
   textOr,
   type AiSectionResult,
+  type DateWindow,
 } from "./shared";
 
 /** Part of the cache key: bump when the prompt or the facts change. */
@@ -132,6 +134,10 @@ export interface StaffingCandidate {
 }
 
 export interface StaffingFacts {
+  /** The window these figures came from, so the briefing can name it. */
+  windowStart: string;
+  windowEnd: string;
+  windowDays: number;
   totalOrders: number;
   tradingDays: number;
   teamTypicalOrder: number | null;
@@ -144,12 +150,22 @@ export interface StaffingFacts {
   enoughData: boolean;
 }
 
+/**
+ * `window` defaults to the 28 days before `today`, which is what the day-scoped
+ * route has always used and still gets by passing nothing.
+ *
+ * It is a parameter because an analytics period is not 28 days: September is 30,
+ * a quarter is about 91, a year is 365. Deriving the window here would have meant
+ * a quarterly card describing only the last four weeks of the quarter while
+ * claiming the whole of it — wrong in a way nobody would notice.
+ */
 export function buildStaffingFacts(
   today: string,
   bills: StaffBill[],
   employees: EmployeeRecord[],
+  window: DateWindow = staffingWindow(today),
 ): StaffingFacts {
-  const { startDate, endDate } = staffingWindow(today);
+  const { startDate, endDate } = window;
   const roster = employees.filter((e) => e._id && !e.isDeactivated);
   const onList = new Set(roster.map((e) => String(e._id)));
 
@@ -262,6 +278,8 @@ export function buildStaffingFacts(
   const enoughData =
     totalOrders >= MIN_ORDERS && tradingDays.size >= MIN_TRADING_DAYS;
 
+  const windowDays = daysBetween(startDate, endDate);
+
   // ── What is worth a card ──
   const candidates: StaffingCandidate[] = [];
   if (enoughData) {
@@ -328,6 +346,9 @@ export function buildStaffingFacts(
   }
 
   return {
+    windowStart: startDate,
+    windowEnd: endDate,
+    windowDays,
     totalOrders,
     tradingDays: tradingDays.size,
     teamTypicalOrder,
@@ -352,7 +373,7 @@ export function staffingBriefing(
     id ? (refFor.get(id) ?? "someone") : "nobody";
 
   const lines = [
-    `Last ${STAFFING_WINDOW_DAYS} days: ${facts.totalOrders} orders on ${facts.tradingDays} trading days. Times are Nepal time. Money is before tax, in ${currencySymbol}.`,
+    `${facts.windowStart} to ${facts.windowEnd} (${facts.windowDays} days): ${facts.totalOrders} orders on ${facts.tradingDays} trading days. Times are Nepal time. Money is before tax, in ${currencySymbol}.`,
     "The only staffing data is who rang up each bill. There is no attendance, kitchen staff, roles or wages. People are named by ref only.",
     `Staff list: ${facts.staffListSize} people; ${facts.notTakingOrders} of them took no orders in this time (they may work elsewhere, such as the kitchen).`,
     facts.teamTypicalOrder !== null

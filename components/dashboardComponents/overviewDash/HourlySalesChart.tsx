@@ -87,7 +87,7 @@ const HOUR_RANGE_OPTIONS = [
     value: `${r.start}-${r.end}`,
     label: r.label,
   })),
-  { value: "custom", label: "Custom", disabled: true },
+  { value: "custom", label: "Custom Time Range", disabled: true },
 ];
 
 export default function HourlySalesChart({ data }: HourlyDataProps) {
@@ -236,7 +236,8 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
               value={presetValue}
               options={HOUR_RANGE_OPTIONS}
               onChange={handlePresetChange}
-              className="w-[210px]"
+              className="w-[150px] md:w-[180px] py-1.5 text-[13px]"
+              buttonClassName="py-1.5 md:py-2 px-2 md:px-3 text-[11px] md:text-xs rounded-lg tracking-wide"
             />
 
             {/* Vertical divider */}
@@ -253,7 +254,7 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                 max={23}
                 value={fromHour}
                 onChange={(e) => handleFromChange(Number(e.target.value))}
-                className="w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-2.5 text-xs text-[#3c4043] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]"
+                className="w-12 md:w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-1.5 md:py-2 text-[11px] md:text-xs text-[#3c4043] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]"
               />
               <label className="whitespace-nowrap text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
                 To
@@ -264,7 +265,7 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
                 max={23}
                 value={toHour}
                 onChange={(e) => handleToChange(Number(e.target.value))}
-                className="w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-2.5 text-xs text-[#3c4043] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]"
+                className="w-12 md:w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-1.5 md:py-2 text-[11px] md:text-xs text-[#3c4043] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]"
               />
             </div>
           </div>

@@ -8,7 +8,7 @@ import { CategorySalesData } from "@/components/dashboardComponents/overviewDash
 import { HourlyData } from "@/components/dashboardComponents/overviewDash/HourlySalesChart";
 import { mapBillsToTransactions } from "@/lib/mappers/transaction";
 import { cookies } from "next/headers";
-import { getWeekDateRange } from "@/lib/config/weeklyDateRange";
+// import { getWeekDateRange } from "@/lib/config/weeklyDateRange";
 import { formatHourlyData } from "@/utils/formatHourReportToday";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
@@ -89,14 +89,24 @@ export const getStatsData = async (
   // Products sold and net profit both come from salesByItem.
   const salesByItemJson = await safeJson<{
     data?: { count: number; netProfit?: number }[];
+    totalDiscount?: number;
+    totalRedeemPoint?: number;
+    totalRevenue?: number;
+    netRevenue?: number;
+    totalTax?: number;
+    totalNetProfit?: number;
   }>(salesByItemRes);
-  const salesItems: { count: number; netProfit?: number }[] =
-    salesByItemJson?.data ?? [];
+  const salesItems: {
+    count: number;
+    netProfit?: number;
+    totalDiscount?: number;
+  }[] = salesByItemJson?.data ?? [];
   const totalProductsSold = salesItems.reduce(
     (sum, item) => sum + (item.count ?? 0),
     0,
   );
 
+  const totalDiscount = salesByItemJson?.totalDiscount;
   // Summed per item rather than read from /business/report's `profit`, which
   // was reporting an incorrect total. Matches how InventoryValueSummary
   // derives its own net-profit figure from the same endpoint.
@@ -109,7 +119,7 @@ export const getStatsData = async (
     totalSales: { value: totalRevenue, percent: 0 },
     totalOrders: { value: totalOrders, percent: 0 },
     productsSold: { value: totalProductsSold, percent: 0 },
-    netProfit: { value: netProfit, percent: 0 },
+    netProfit: { value: netProfit - (totalDiscount ?? 0), percent: 0 },
   };
 };
 
