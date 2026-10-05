@@ -167,7 +167,7 @@ export function ChartCard({
           may shrink. Allowed to wrap, the controls drop to their own line and
           the title keeps its words. */}
       <div className="mb-4 flex flex-col gap-2.5 sm:mb-5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
-        <div className="  flex min-w-0 flex-1 bg-red-400 items-center gap-3 sm:basis-64">
+        <div className="  flex min-w-0 flex-1 items-center gap-3 sm:basis-64">
           <div
             className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-xl border sm:flex dark:border-white/10! dark:bg-white/5!"
             style={{ borderColor: iconBorder, backgroundColor: iconBg }}
