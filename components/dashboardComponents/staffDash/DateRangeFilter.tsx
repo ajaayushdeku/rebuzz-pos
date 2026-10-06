@@ -328,12 +328,15 @@ export function DateRangeFilter({
           <Button
             variant="outline"
             className={cn(
-              "w-[190px] justify-start text-left text-[12px] font-normal h-9 dark:border-white/15 dark:bg-[#161d2e] dark:text-[#c3ccdc] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]",
+              "w-fit sm:w-[190px] justify-start text-left text-[12px] font-normal h-9 dark:border-white/15 dark:bg-[#161d2e] dark:text-[#c3ccdc] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]",
               !value.startDate && "text-muted-foreground dark:text-[#7b869b]",
             )}
           >
-            <CalendarIcon className="mr-1 h-4 w-4 dark:text-[#9aa6bd]" />
-            {displayText}
+            <CalendarIcon className=" h-4 w-4 dark:text-[#9aa6bd]" />
+            <span className="truncate hidden sm:block ml-1">
+              {" "}
+              {displayText}
+            </span>
           </Button>
         </DialogTrigger>
 

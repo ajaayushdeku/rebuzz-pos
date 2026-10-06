@@ -384,14 +384,14 @@ export function CalendarDateFilter({
           <Button
             variant="outline"
             className={cn(
-              "w-[210px] justify-start text-left text-[13px] font-normal h-9 dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]",
+              "w-fit sm:w-[210px] justify-start text-left text-[13px] font-normal h-9 dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]",
               !currentStartDate &&
                 !currentPreset &&
                 "text-muted-foreground dark:text-[#7b869b]",
             )}
           >
-            <CalendarIcon className="mr-2 h-4 w-4 dark:text-[#9aa6bd]" />
-            {displayText}
+            <CalendarIcon className=" h-4 w-4 dark:text-[#9aa6bd]" />
+            <span className="truncate hidden sm:block ml-2">{displayText}</span>
           </Button>
         </DialogTrigger>
         <DialogContent

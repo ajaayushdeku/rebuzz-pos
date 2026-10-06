@@ -345,9 +345,9 @@ const ProductCardGrid = ({
   return (
     <div>
       {/* Toolbar: search + sort */}
-      <div className="flex flex-col w-full sm:flex-row sm:items-center justify-between gap-3 mb-4">
+      <div className="flex  w-full flex-row items-center justify-between gap-3 mb-4">
         {/* Search */}
-        <div className="relative  w-full sm:w-72">
+        <div className="relative  w-full ">
           <Search
             size={14}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none dark:text-[#7b869b]"
@@ -382,13 +382,15 @@ const ProductCardGrid = ({
               value={sortBy}
               options={SORT_OPTIONS}
               onChange={(val) => setSortBy(val as SortKey)}
-              className="w-[200px]"
+              className="w-[100px] md:w-[180px] py-1.5 text-[13px]"
+              buttonClassName="h-9 px-2 md:px-3 text-[12px] sm:text-xs rounded-lg tracking-wide"
+              menuClassName="w-48 max-w-[calc(100vw-2rem)]"
             />
           </div>
         </div>
       </div>
 
-      <div className="flex flex-row items-center justify-between mb-4">
+      <div className="flex flex-col-reverse sm:flex-row items-start justify-between gap-5  mb-4">
         <div className="flex items-center flex-wrap gap-2 ">
           {/* Default filters */}
           {defaultCategories.map((cat) => {
@@ -458,35 +460,38 @@ const ProductCardGrid = ({
 
         {/* Stock-tracking tabs — the invoice table's switch: a pale blue
               track with the selected tab raised in white, plus a count. */}
-        <div
-          role="radiogroup"
-          aria-label="Stock tracking"
-          className="flex w-fit items-center gap-1 rounded-lg bg-gray-100 p-1 dark:bg-white/10"
-        >
-          {STOCK_TABS.map((tab) => {
-            const selected = stockTab === tab.value;
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.value}
-                type="button"
-                role="radio"
-                aria-checked={selected}
-                onClick={() => setStockTab(tab.value)}
-                className={`flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
-                  selected
-                    ? "bg-white font-semibold text-blue-900 shadow-sm dark:bg-white/15 dark:text-[#a8c4ee] dark:shadow-none"
-                    : "font-semibold text-gray-600 hover:text-blue-950 dark:text-[#a9b4c7]"
-                }`}
-              >
-                <Icon className="h-4 w-4 shrink-0 md:hidden" aria-hidden />
-                <span className="hidden md:inline">{tab.label}</span>
-                <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#e4f2fe] px-1.5 py-px text-[10px] font-bold tabular-nums tracking-wide text-blue-950 ring-1 ring-blue-900/40 dark:bg-white/10 dark:text-[#e8ecf4]">
-                  {stockCounts[tab.value]}
-                </span>
-              </button>
-            );
-          })}
+        <div className="flex w-full  flex-wrap items-start gap-2 sm:ml-auto sm:w-auto justify-end">
+          {" "}
+          <div
+            role="radiogroup"
+            aria-label="Stock tracking"
+            className="flex w-fit items-center gap-1 rounded-lg bg-gray-100 p-1 dark:bg-white/10 "
+          >
+            {STOCK_TABS.map((tab) => {
+              const selected = stockTab === tab.value;
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => setStockTab(tab.value)}
+                  className={`flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                    selected
+                      ? "bg-white font-semibold text-blue-900 shadow-sm dark:bg-white/15 dark:text-[#a8c4ee] dark:shadow-none"
+                      : "font-semibold text-gray-600 hover:text-blue-950 dark:text-[#a9b4c7]"
+                  }`}
+                >
+                  <Icon className="h-4 w-4 shrink-0 md:hidden" aria-hidden />
+                  <span className="hidden md:inline">{tab.label}</span>
+                  <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#e4f2fe] px-1.5 py-px text-[10px] font-bold tabular-nums tracking-wide text-blue-950 ring-1 ring-blue-900/40 dark:bg-white/10 dark:text-[#e8ecf4]">
+                    {stockCounts[tab.value]}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

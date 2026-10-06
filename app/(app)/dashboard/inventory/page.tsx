@@ -49,7 +49,7 @@ export default function InventoryPage() {
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
+    <div className="min-h-screen bg-surface-page px-6 py-5 sm:py-8 md:px-10 dark:bg-[#0f1420]">
       <PageHeader
         title="Inventory Management"
         subtitle="Monitor stock levels and manage supply intake."

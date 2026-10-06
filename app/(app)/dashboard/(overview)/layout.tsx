@@ -32,7 +32,7 @@ export default function DashboardLayout({
   });
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
+    <div className="min-h-screen bg-surface-page px-6 py-5 sm:py-8 md:px-10 dark:bg-[#0f1420]">
       {/* The tab row below supplies its own top padding, so the rule carries
           no margin of its own. */}
       <PageHeader
@@ -51,6 +51,7 @@ export default function DashboardLayout({
             icon={Plus}
             label="Create Order"
             href="/invoices/add"
+            hideLabelOnMobile={true}
           />
         }
         spaceBelow={false}

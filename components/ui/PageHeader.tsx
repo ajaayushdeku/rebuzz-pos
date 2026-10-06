@@ -56,22 +56,26 @@ export default function PageHeader({
     <div className={className}>
       {/* Actions sit on the title's baseline on desktop and drop below it on
           mobile, which is why the row aligns to `end` rather than centring. */}
-      <div className="flex w-full flex-col justify-between gap-4 pb-5 sm:flex-row sm:items-end">
+      <div className="flex w-full flex-row items-center justify-between gap-4 pb-5 sm:flex-row sm:items-end">
         {leading}
 
         <div className="min-w-0">
-          <h1 className="truncate text-[22px]  font-semibold tracking-wide text-[#3c4043] md:text-[26px] dark:text-[#e8ecf4]">
+          <h1 className="truncate text-[18px]  font-semibold tracking-wide text-[#3c4043] sm:text-[22px] md:text-[26px] dark:text-[#e8ecf4]">
             {title}
           </h1>
 
           {subtitle && (
-            <p className="mt-1 ml-0.5 max-w-xl text-[12px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
+            <p className="mt-1 ml-0.5 w-[75%] sm:max-w-xl text-[11px] md:text-[12px] sm:text-[12px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
               {subtitle}
             </p>
           )}
         </div>
 
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
+        {actions && (
+          <div className="flex w-fit  flex-wrap items-center gap-2 sm:ml-auto sm:w-auto justify-end">
+            {actions}
+          </div>
+        )}
       </div>
 
       {rule && (

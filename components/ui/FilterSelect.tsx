@@ -23,6 +23,7 @@ interface FilterSelectProps {
   /** Applied to the wrapper, so callers control width. */
   className?: string;
   buttonClassName?: string;
+  menuClassName?: string;
   /**
    * Names the control for screen readers. Needed where the field's caption
    * is not a `<label>` — a `<label htmlFor>` cannot point at a button.
@@ -30,25 +31,10 @@ interface FilterSelectProps {
   ariaLabel?: string;
   /** Unpickable and visibly so: nothing to choose from, or a save in flight. */
   disabled?: boolean;
-  /**
-   * Leave the labels exactly as given.
-   *
-   * The default capitalises, which suits the filter words these started with
-   * ("paid", "all status"). It is wrong for anything that is an identifier
-   * rather than a word — a model id like `gemini-3.6-flash` must not be shown
-   * as `Gemini-3.6-flash`, because that is not what it is called.
-   */
+
   preserveCase?: boolean;
 }
 
-/**
- * The dropdown from InvoiceTable's "All Status" filter, lifted into a reusable
- * component: a plain button plus an absolutely-positioned panel that scales in.
- *
- * Deliberately not a Radix Select. It renders inline rather than through a
- * portal, which keeps it usable inside a Dialog without a second portal layer
- * fighting the first for Escape and focus.
- */
 export function FilterSelect({
   value,
   options,
@@ -56,6 +42,7 @@ export function FilterSelect({
   placeholder = "Select",
   className,
   buttonClassName = "pl-3 pr-2.5 py-2.5 text-[13px] ",
+  menuClassName = "w-full",
   ariaLabel,
   disabled = false,
   preserveCase = false,
@@ -64,6 +51,8 @@ export function FilterSelect({
   const ref = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const selectedRef = useRef<HTMLButtonElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const [menuSide, setMenuSide] = useState<"left" | "right">("left");
 
   /** Capitalising is the default; an identifier opts out. */
   const caseClass = preserveCase ? "" : "capitalize";
@@ -77,18 +66,48 @@ export function FilterSelect({
   const isOpen = open && !disabled;
 
   /**
-   * Open a long list at the current value rather than at the top.
+   * Which side the panel hangs from, and where a long list starts.
    *
-   * Only when the panel actually overflows, and only its own scrollTop — a
-   * plain `scrollIntoView` on a panel that fits would scroll the page instead,
-   * which is how a dropdown ends up yanking the view on open.
+   * In a layout effect so it is settled before the browser paints: measured
+   * after paint, the panel would be visible on the wrong side for a frame and
+   * jump across as it opened.
+   *
+   * Re-run on resize while open, because a phone rotating mid-choice changes the
+   * answer, and the panel is the one thing on screen that would then be in the
+   * wrong place.
    */
   useLayoutEffect(() => {
     if (!isOpen) return;
+
+    const place = () => {
+      const wrapper = ref.current;
+      const panel = panelRef.current;
+      if (!wrapper || !panel) return;
+
+      const wrapperRect = wrapper.getBoundingClientRect();
+
+      // Room either side of the trigger, and what the panel wants.
+      const spaceRight = window.innerWidth - wrapperRect.left;
+      const spaceLeft = wrapperRect.right;
+      const menuWidth = panel.offsetWidth;
+
+      // Flipped only when it genuinely does not fit on the right *and* does fit
+      // on the left; otherwise left, which keeps the usual alignment.
+      setMenuSide(spaceRight < menuWidth && spaceLeft >= menuWidth ? "right" : "left");
+    };
+
+    place();
+
+    // Keep the selected item visible for long lists — its own scrollTop only, so
+    // a panel that fits cannot scroll the page instead.
     const panel = panelRef.current;
     const item = selectedRef.current;
-    if (!panel || !item || panel.scrollHeight <= panel.clientHeight) return;
-    item.scrollIntoView({ block: "nearest" });
+    if (panel && item && panel.scrollHeight > panel.clientHeight) {
+      item.scrollIntoView({ block: "nearest" });
+    }
+
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
   }, [isOpen]);
 
   useEffect(() => {
@@ -118,6 +137,7 @@ export function FilterSelect({
       }}
     >
       <button
+        ref={buttonRef}
         type="button"
         aria-label={ariaLabel}
         aria-haspopup="listbox"
@@ -139,18 +159,35 @@ export function FilterSelect({
         />
       </button>
 
-      {/* max-h + scroll engages only once a list outgrows it, so the short
-          filter lists this started with are unchanged; overscroll-contain stops
-          the page scrolling on from the end of a long one. */}
-      <div
-        ref={panelRef}
-        role="listbox"
-        className={`absolute z-30 mt-1.5 max-h-72 w-full origin-top overflow-y-auto overscroll-contain rounded-md border border-gray-200 bg-white shadow-lg p-1 transition-all duration-200 dark:border-white/15 dark:bg-[#1b2436] ${
-          isOpen
-            ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
-            : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
-        }`}
-      >
+      {/*
+        Mounted only while open, which is the fix for a panel that was taking up
+        room before it had ever been used.
+
+        It used to stay in the DOM at `opacity-0`. That hides it but changes
+        nothing about layout: a 182px panel on a 100px trigger still hung 63px
+        past the right edge of a phone screen, widening whatever could scroll and
+        covering what sat beside it. Worse, the side was only chosen when the
+        panel first opened — so the overhang was there on every fresh page load
+        and vanished at the first press, which is exactly how it was reported.
+
+        Unmounting also means the side is measured at the moment it is needed,
+        against the space the trigger has right then.
+
+        max-h + scroll engages only once a list outgrows it, so the short filter
+        lists this started with are unchanged; overscroll-contain stops the page
+        scrolling on from the end of a long one. max-w keeps the panel inside the
+        window on a narrow screen whatever width a caller asked for.
+      */}
+      {isOpen && (
+        <div
+          ref={panelRef}
+          role="listbox"
+          className={cn(
+            "absolute z-30 mt-1.5 max-h-72 max-w-[calc(100vw-1rem)] origin-top overflow-y-auto overscroll-contain rounded-md border border-gray-200 bg-white p-1 shadow-lg animate-in fade-in-0 zoom-in-95 duration-150 dark:border-white/15 dark:bg-[#1b2436]",
+            menuClassName,
+            menuSide === "left" ? "left-0" : "right-0",
+          )}
+        >
         {options.map((opt) => (
           <button
             key={opt.value}
@@ -173,8 +210,9 @@ export function FilterSelect({
           >
             {opt.label}
           </button>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
