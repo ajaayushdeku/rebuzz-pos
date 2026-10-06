@@ -236,7 +236,7 @@ export default function HourlySalesChart({ data }: HourlyDataProps) {
               value={presetValue}
               options={HOUR_RANGE_OPTIONS}
               onChange={handlePresetChange}
-              className="w-[150px] md:w-[180px] py-1.5 text-[13px]"
+              className="w-[90px] sm:w-[150px] md:w-[180px] py-1.5 text-[13px]"
               buttonClassName="py-1.5 md:py-2 px-2 md:px-3 text-[11px] md:text-xs rounded-lg tracking-wide"
             />
 

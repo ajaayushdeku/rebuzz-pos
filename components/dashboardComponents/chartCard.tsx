@@ -203,10 +203,18 @@ export function ChartCard({
             </h3>
             {/* Two lines on a phone, where a long subtitle otherwise pushed the
                 chart most of the way down the screen; in full from `sm` up. */}
-            <p className=" mt-0.5 line-clamp-2 text-[11px] leading-snug tracking-wide text-[#9aa0a6] sm:line-clamp-none sm:text-xs dark:text-[#9aa6bd]">
+            <p className="w-[90%] sm:w-full  mt-0.5 line-clamp-2 text-[11px] leading-snug tracking-wide text-[#9aa0a6] sm:line-clamp-none sm:text-xs dark:text-[#9aa6bd]">
               {subtitle}
             </p>
           </div>
+        </div>
+
+        <div className="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto justify-end">
+          {rangeBadge && (
+            <div className="md:hidden">
+              <RangeBadge variant="pill" />
+            </div>
+          )}
         </div>
 
         {(rangeBadge || expenseBadge || controls) && (

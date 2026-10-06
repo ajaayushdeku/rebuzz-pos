@@ -61,9 +61,9 @@ export default function StaffBoxContainer({
       `}</style>
 
       {/* Filter bar: role buttons + search */}
-      <div className="flex flex-row items-start sm:items-center justify-between gap-3 mb-4 mt-6 px-2 sm:px-0">
+      <div className="w-full flex flex-row items-center sm:items-center justify-between gap-3 mb-4 mt-6 px-2 sm:px-0">
         {/* Search */}
-        <div className="relative w-full sm:w-64">
+        <div className="relative w-full ">
           <Search
             size={14}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none dark:text-[#7b869b]"
@@ -73,9 +73,11 @@ export default function StaffBoxContainer({
             placeholder="Search employee..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-9 w-full rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 dark:text-[#e8ecf4] py-5 pl-9 pr-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/15"
+            className="h-9 w-full rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 dark:text-[#e8ecf4] pl-9 pr-8 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/15"
           />
         </div>
+
+        <div className=" h-6 w-px shrink-0 bg-[#dadce0] dark:bg-white/15" />
 
         {/* Role filter */}
         <div className="relative flex  items-center  gap-2">
@@ -86,6 +88,7 @@ export default function StaffBoxContainer({
             options={ROLE_OPTIONS}
             value={roleFilter}
             onChange={setRoleFilter}
+            iconSize={14}
           />
         </div>
       </div>

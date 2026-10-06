@@ -112,6 +112,21 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
 
   const AXIS_TICK = getAxisTick(isDark);
 
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+    const updateScreenSize = () => {
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    updateScreenSize();
+    mediaQuery.addEventListener("change", updateScreenSize);
+
+    return () => mediaQuery.removeEventListener("change", updateScreenSize);
+  }, []);
+
   return (
     <ChartCard
       icon={ChartColumnBig}
@@ -120,13 +135,18 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
       iconBorder="#a7f3d0"
       iconBg="#ecfdf5"
       title="Revenue per Employee"
+      rangeBadge={true}
       info={{
         heading: "Reading this chart",
         // Revenue is attributed to whoever took the sale.
         body: "Revenue from the bills each employee took, over the date range at the top of the page. One bar per employee, so the bars add up to the range's takings rather than to profit.",
       }}
       subtitle="Individual contribution to total revenue"
-      controls={<RangeBadge variant="pill" />}
+      controls={
+        <div className="hidden sm:block">
+          <RangeBadge variant="pill" />
+        </div>
+      }
     >
       {isEmpty && <SampleDataBadge />}
 
@@ -160,8 +180,8 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
               tick={AXIS_TICK}
               ticks={yTicks}
               domain={[0, yMax]}
-              width={80}
-              label={yAxisTitle("Revenue")}
+              width={isSmallScreen ? 55 : 80}
+              label={!isSmallScreen ? yAxisTitle("Revenue") : undefined}
             />
 
             <Tooltip

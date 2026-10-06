@@ -34,10 +34,6 @@ interface RawShift {
   closingCash: number;
 }
 
-/**
- * The windows this card can narrow to. "all" is the page's own date range —
- * every other value is a day count read straight off the segment.
- */
 const SHIFT_WINDOWS = [
   { value: "all", label: "All" },
   { value: "3", label: "3 days" },
@@ -205,13 +201,16 @@ export default function LatestShifts({
       }}
       subtitle="Latest Shifts from all the employees"
       controls={
-        <div className="relative flex flex-row  items-center w-full justify-between md:justify-end gap-2 mb-6">
+        <div className="relative flex flex-wrap items-center gap-2 mb-0 lg:mb-6">
+          <div className="block md:hidden mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" />
+
           <SegmentedControl
             label="Show:"
             accent="blue"
             options={SHIFT_WINDOWS}
             value={activePreset}
             onChange={selectWindow}
+            showText={true}
           />
 
           {!loading && totalPages > 1 && (
@@ -225,7 +224,7 @@ export default function LatestShifts({
             />
           )}
 
-          <div className="absolute right-0 bottom-[-30px] hidden md:block">
+          <div className="absolute right-0 bottom-[-30px] hidden lg:block">
             <RangeBadge variant="pill" />
           </div>
         </div>

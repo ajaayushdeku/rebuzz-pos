@@ -134,7 +134,7 @@ export default function ModalShell({
 
         {!hideHeader && (
           <div className="flex items-start justify-between border-b border-gray-100 px-6 py-4 dark:border-white/10">
-            <div className="flex min-w-0 items-center gap-3">
+            <div className="flex min-w-0 items-start bg-red-400 gap-3">
               {Icon && (
                 <div
                   className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${iconBgColor}`}

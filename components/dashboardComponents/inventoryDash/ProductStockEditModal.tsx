@@ -431,7 +431,7 @@ export default function ProductStockEditModal({
       >
         {/* ── Header ── */}
         <header className="flex items-start justify-between border-b border-gray-100 px-6 py-4 dark:border-white/10">
-          <div className="flex min-w-0 items-center gap-3">
+          <div className="flex min-w-0 items-start  gap-3">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-blue-600 dark:text-[#7ba2e3] bg-blue-50 dark:bg-blue-400/10">
               <BoxesIcon size={16} />
             </div>
@@ -443,7 +443,7 @@ export default function ProductStockEditModal({
               >
                 Edit stock
               </h3>
-              <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
+              <p className="mt-0.5 text-[11px] w-[90%] sm:w-full sm:text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
                 Adjust stock levels across products and variants, then save them
                 together.
               </p>
@@ -531,15 +531,18 @@ export default function ProductStockEditModal({
 
                   // If all variants changed, highlight the entire product section
                   const sectionChanged = productChanged || allVariantsChanged;
+                  const isDisabled =
+                    item.name === "custom" || item.name === "Custom";
 
                   return (
                     <div
                       key={item.id}
+                      aria-disabled={isDisabled}
                       className={`rounded-xl border transition ${
                         sectionChanged
-                          ? "border-blue-300 bg-blue-50/40 dark:bg-blue-400/10 dark:border-blue-400/40"
+                          ? "border-blue-300 bg-blue-50/40 dark:border-blue-400/40 dark:bg-blue-400/10"
                           : "border-slate-200 dark:border-white/15"
-                      }`}
+                      } ${isDisabled ? "pointer-events-none opacity-50" : ""}`}
                     >
                       <div className="flex items-center justify-between gap-4 px-4 py-3">
                         <div className="min-w-0">
@@ -557,7 +560,7 @@ export default function ProductStockEditModal({
                           <p className="mt-0.5 text-[11px] capitalize text-slate-400 dark:text-[#7b869b]">
                             {item.unit}
                             {!item.usesStocks && (
-                              <span className="ml-1.5 normal-case text-amber-600 dark:text-amber-400">
+                              <span className="hidden sm:block ml-1.5 normal-case text-amber-600 dark:text-amber-400">
                                 · not tracked, saving turns tracking on
                               </span>
                             )}
@@ -575,6 +578,14 @@ export default function ProductStockEditModal({
                           />
                         )}
                       </div>
+
+                      {!item.usesStocks && (
+                        <div className="w-full flex right-0  items-center justify-end px-4 pb-1.5">
+                          <span className="block sm:hidden text-[11px]     ml-1.5 normal-case text-amber-600 dark:text-amber-400">
+                            Not tracked, saving turns tracking on
+                          </span>
+                        </div>
+                      )}
 
                       {hasVariants && (
                         <div className="divide-y divide-slate-100 dark:divide-white/10 border-t border-slate-100 dark:border-white/10">

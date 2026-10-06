@@ -319,6 +319,21 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
 
   const AXIS_TICK = getAxisTick(isDark);
 
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+    const updateScreenSize = () => {
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    updateScreenSize();
+    mediaQuery.addEventListener("change", updateScreenSize);
+
+    return () => mediaQuery.removeEventListener("change", updateScreenSize);
+  }, []);
+
   return (
     <ChartCard
       icon={TrendingUp}
@@ -336,39 +351,45 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
       subtitle="Throughput breakdown across the day per team member."
       controls={
         <div className="flex flex-col items-end gap-1.5">
-          <div className="relative flex flex-row items-center gap-2">
-            {/* Hour Range Filter — same control as the hourly sales trend */}
-            <FilterSelect
-              value={presetValue}
-              options={HOUR_RANGE_OPTIONS}
-              onChange={handlePresetChange}
-              className="w-[210px]"
-            />
-            <div className="mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" />
-            {/* Custom From / To hour inputs */}
-            <div className="flex items-center gap-1.5">
-              <label className="whitespace-nowrap text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
-                From
-              </label>
-              <input
-                type="number"
-                min={0}
-                max={23}
-                value={fromHour}
-                onChange={(e) => handleFromChange(Number(e.target.value))}
-                className="w-14 rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 px-2 py-2.5 text-xs text-[#3c4043] tabular-nums focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-500 dark:border-white/15 dark:text-[#e8ecf4]"
+          <div className="relative flex flex-row-reverse md:flex-row items-center gap-2">
+            <div className="flex flex-row items-center gap-1.5">
+              {/* Hour Range Filter — same control as the hourly sales trend */}
+              <FilterSelect
+                value={presetValue}
+                options={HOUR_RANGE_OPTIONS}
+                onChange={handlePresetChange}
+                className="w-[90px] sm:w-[150px] md:w-[180px] py-1.5 text-[13px]"
+                buttonClassName="py-1.5 md:py-2 px-2 md:px-3 text-[11px] md:text-xs rounded-lg tracking-wide"
+                menuClassName="w-48 max-w-[calc(100vw-2rem)]"
               />
-              <label className="whitespace-nowrap text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
-                To
-              </label>
-              <input
-                type="number"
-                min={0}
-                max={23}
-                value={toHour}
-                onChange={(e) => handleToChange(Number(e.target.value))}
-                className="w-14 rounded-lg border border-[#dadce0] bg-white dark:bg-white/5 px-2 py-2.5 text-xs text-[#3c4043] tabular-nums focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-500 dark:border-white/15 dark:text-[#e8ecf4]"
-              />
+
+              <div className="mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" />
+
+              {/* Custom From / To hour inputs */}
+              <div className="flex items-center gap-1.5">
+                <label className="whitespace-nowrap text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
+                  From
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  max={23}
+                  value={fromHour}
+                  onChange={(e) => handleFromChange(Number(e.target.value))}
+                  className="w-12 md:w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-1.5 md:py-2 text-[11px] md:text-xs text-[#3c4043] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]"
+                />
+                <label className="whitespace-nowrap text-xs text-[#9aa0a6] dark:text-[#9aa6bd]">
+                  To
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  max={23}
+                  value={toHour}
+                  onChange={(e) => handleToChange(Number(e.target.value))}
+                  className="w-12 md:w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-1.5 md:py-2 text-[11px] md:text-xs text-[#3c4043] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]"
+                />
+              </div>
             </div>
 
             <div className="mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" />
@@ -377,10 +398,13 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
             {!isEmpty && allStaffNames.length > 0 && (
               <button
                 onClick={() => setModalOpen(true)}
-                className="flex shrink-0 cursor-pointer flex-row items-center gap-1.5 dark:bg-white/5 rounded-full border border-[#dadce0] bg-white px-2.5 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
+                className="flex shrink-0 cursor-pointer flex-row items-center gap-1.5 dark:bg-white/5 rounded-full border border-[#dadce0] bg-white px-1 sm:px-2.5 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
               >
                 <SlidersHorizontal size={12} />
-                Filter employee
+                <span className="truncate hidden sm:block">
+                  {" "}
+                  Filter employee
+                </span>
                 {selectedStaff.length < allStaffNames.length && (
                   <span className="flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">
                     {selectedStaff.length}
@@ -505,8 +529,8 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
                   tick={AXIS_TICK}
                   ticks={yTicks}
                   domain={[0, paddedMax]}
-                  width={80}
-                  label={yAxisTitle("Bills taken")}
+                  width={isSmallScreen ? 40 : 60}
+                  label={!isSmallScreen ? yAxisTitle("Bills Taken") : undefined}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend content={<CustomLegend staffLines={staffLines} />} />
