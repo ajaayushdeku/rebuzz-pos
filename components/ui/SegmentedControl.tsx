@@ -60,7 +60,7 @@ export default function SegmentedControl<T extends string>({
               type="button"
               aria-pressed={selected}
               onClick={() => onChange(option.value)}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] md:px-4 dark:focus-visible:ring-offset-[#242a38] ${
+              className={`flex items-center gap-1.5 rounded-md ${showText ? "px-2 py-1" : "px-3 py-1.5"} text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] md:px-4 dark:focus-visible:ring-offset-[#242a38] ${
                 selected
                   ? `bg-white font-bold text-blue-950 shadow-sm dark:bg-white/15 dark:shadow-none ${ACCENTS[accent]}`
                   : "font-medium text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee] dark:hover:text-white"

@@ -146,7 +146,7 @@ export default function GrowthByCategory() {
         body: "Each category's revenue over the last 30 days, compared with the 30 days before. The bar is the category's size against the biggest one, so the lengths are comparable; the badge beside it is the change. New means it sold nothing last period.",
       }}
       subtitle="Revenue growth per product category"
-      controls={
+      buttons={
         // The comparison the whole panel rests on. It was only in the code
         // before, so every percentage on screen was against an unstated
         // baseline.
@@ -154,7 +154,7 @@ export default function GrowthByCategory() {
           Last 30 days vs previous 30
         </span>
       }
-      className="flex flex-col gap-6"
+      className="flex flex-col gap-2"
     >
       {isLoading ? (
         <div className="space-y-4">
@@ -189,7 +189,7 @@ export default function GrowthByCategory() {
         </div>
       ) : (
         <>
-          <div className="space-y-5">
+          <div className="space-y-5 ">
             {rows.slice(0, loadMoreCategory).map((row, index) => {
               const positive = row.growth !== null && row.growth > 0;
               const negative = row.growth !== null && row.growth < 0;

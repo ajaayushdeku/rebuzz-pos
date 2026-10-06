@@ -27,7 +27,7 @@ import {
   yAxisTitle,
 } from "@/components/dashboardComponents/chartCard";
 import { fetchTargets } from "@/services/apiTarget.client";
-import { SquarePen, Target } from "lucide-react";
+import { Target, TargetIcon } from "lucide-react";
 
 /** The two series' colours, shared by the chart, legend and hover box. */
 const ACTUAL_COLOR = CHART_PALETTE.blue;
@@ -195,6 +195,21 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
 
   const AXIS_TICK = getAxisTick(isDark);
 
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+    const updateScreenSize = () => {
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    updateScreenSize();
+    mediaQuery.addEventListener("change", updateScreenSize);
+
+    return () => mediaQuery.removeEventListener("change", updateScreenSize);
+  }, []);
+
   return (
     <>
       <ChartCard
@@ -206,12 +221,12 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
           body: "Each month's revenue against the target you set for it. The filled line is what you took, the dashed line is the target — a month with no target set reads as zero. Use Set Targets to enter them.",
         }}
         subtitle="Monthly performance against set targets"
-        controls={
+        buttons={
           <button
             onClick={() => setModalOpen(true)}
             className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:bg-white/10 dark:hover:text-white"
           >
-            <SquarePen size={11} />
+            <TargetIcon size={11} />
             Set Targets
           </button>
         }
@@ -257,8 +272,8 @@ export default function TargetVsActualChart({ data }: TargetVsActualProps) {
                 tick={AXIS_TICK}
                 ticks={yTicks}
                 domain={[0, yMax]}
-                width={80}
-                label={yAxisTitle("Revenue")}
+                width={isSmallScreen ? 55 : 80}
+                label={!isSmallScreen ? yAxisTitle("Revenue") : undefined}
               />
               <Tooltip
                 content={<CustomTooltip currency={currency} />}

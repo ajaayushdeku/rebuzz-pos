@@ -174,6 +174,21 @@ export default function YearOverYearChart({ data }: YearOverYearProps) {
 
   const AXIS_TICK = getAxisTick(isDark);
 
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+    const updateScreenSize = () => {
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    updateScreenSize();
+    mediaQuery.addEventListener("change", updateScreenSize);
+
+    return () => mediaQuery.removeEventListener("change", updateScreenSize);
+  }, []);
+
   return (
     <ChartCard
       icon={ChartColumnBig}
@@ -216,8 +231,8 @@ export default function YearOverYearChart({ data }: YearOverYearProps) {
             tick={AXIS_TICK}
             ticks={yTicks}
             domain={[0, yMax]}
-            width={80}
-            label={yAxisTitle("Revenue")}
+            width={isSmallScreen ? 55 : 80}
+            label={!isSmallScreen ? yAxisTitle("Revenue") : undefined}
           />
 
           <Tooltip

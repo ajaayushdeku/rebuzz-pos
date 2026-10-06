@@ -202,8 +202,6 @@ export default function LatestShifts({
       subtitle="Latest Shifts from all the employees"
       controls={
         <div className="relative flex flex-wrap items-center gap-2 mb-0 lg:mb-6">
-          <div className="block md:hidden mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" />
-
           <SegmentedControl
             label="Show:"
             accent="blue"

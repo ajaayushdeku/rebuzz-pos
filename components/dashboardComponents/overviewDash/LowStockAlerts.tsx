@@ -114,13 +114,14 @@ export default function LowStockAlerts() {
         body: "Products at or near their low-stock level, worst first. A product with variants is listed per variant, since each one sells on its own. Critical is at or below the product's low-stock number, warning is within twice it.",
       }}
       subtitle="Items running out soon"
-      controls={
+      buttons={
         <>
+          {" "}
           {alerts.length > 0 && (
-            <span className="shrink-0 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] tabular-nums text-amber-700 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-300">
+            <span className="shrink-0 rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-[11px] tabular-nums tracking-wider text-amber-700 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-300">
               {alerts.length} low
             </span>
-          )}
+          )}{" "}
           <Link
             href="/dashboard/inventory"
             className="group flex items-center gap-1 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:bg-white/10 dark:hover:text-white"

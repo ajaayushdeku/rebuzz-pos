@@ -141,13 +141,18 @@ const PaymentMethodsChart = ({
       iconBorder="#a7f3d0"
       iconBg="#ecfdf5"
       title="Payment Methods"
+      rangeBadge={true}
       info={{
         heading: "Reading this chart",
         // Revenue share, not transaction counts.
         body: "Each slice is a payment type's share of revenue over the selected date range — not how many transactions used it. Hover a slice for its revenue and sale count.",
       }}
       subtitle="Revenue split by payment type"
-      controls={<RangeBadge variant="pill" />}
+      controls={
+        <div className="hidden lg:block">
+          <RangeBadge variant="pill" />
+        </div>
+      }
     >
       {data.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">

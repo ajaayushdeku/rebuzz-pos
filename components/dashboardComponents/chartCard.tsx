@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight, Info, type LucideIcon } from "lucide-react";
 
 import {
@@ -11,7 +11,25 @@ import {
 import RangeBadge from "../ui/RangeBadge";
 import ExpenseBadge from "../ui/ExpenseBadge";
 
-export const CHART_PALETTE = {
+export interface ChartPalette {
+  border: string;
+  control: string;
+  grid: string;
+  title: string;
+  tooltip: string;
+  subtitle: string;
+  axis: string;
+  hover: string;
+  blue: string;
+  darkBlue: string;
+  teal: string;
+  magenta: string;
+  good: string;
+  warn: string;
+  bad: string;
+}
+
+export const CHART_PALETTE: ChartPalette = {
   border: "#e3e3e3",
   control: "#dadce0",
   grid: "#e8eaed",
@@ -32,7 +50,12 @@ export const CHART_PALETTE = {
   bad: "#d93025",
 } as const;
 
-const ICON_TILE = {
+export interface IconTile {
+  border: string;
+  bg: string;
+}
+
+const ICON_TILE: IconTile = {
   border: "#dbeafe",
   bg: "rgb(239 246 255 / 0.6)",
 } as const;
@@ -139,6 +162,7 @@ export function ChartCard({
   children,
   rangeBadge = false,
   expenseBadge = false,
+  buttons,
 }: {
   icon: LucideIcon;
 
@@ -156,38 +180,67 @@ export function ChartCard({
   children: ReactNode;
   rangeBadge?: boolean;
   expenseBadge?: boolean;
+  buttons?: ReactNode;
 }) {
+  const [infoOpen, setInfoOpen] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(pointer: coarse)");
+
+    const update = () => {
+      setIsTouchDevice(mediaQuery.matches);
+    };
+
+    update();
+    mediaQuery.addEventListener("change", update);
+
+    return () => mediaQuery.removeEventListener("change", update);
+  }, []);
   return (
     <div
       className={`relative w-full rounded-2xl border border-[#e3e3e3] bg-white px-4 pb-4 pt-4 sm:px-6 sm:pb-5 sm:pt-5 dark:border-white/10 dark:bg-[#161d2e] ${CHART_DARK} ${className}`}
     >
-      {/* Wraps at every width. Without that, a wide set of controls beside a
-          long title simply truncated the title — "Payment Methods" lost its
-          second word on an iPad — because the title block is the only part that
-          may shrink. Allowed to wrap, the controls drop to their own line and
-          the title keeps its words. */}
-      <div className="mb-4 flex flex-col gap-2.5 sm:mb-5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
-        <div className="  flex min-w-0 flex-1 items-center gap-3 sm:basis-64">
+      <div className="mb-4 flex flex-col gap-2.5 p-0 sm:mb-5 sm:flex-col lg:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
+        <div className=" w-full  flex min-w-0 flex-1 items-start  sm:items-center gap-3 sm:justify-between ">
           <div
             className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-xl border sm:flex dark:border-white/10! dark:bg-white/5!"
             style={{ borderColor: iconBorder, backgroundColor: iconBg }}
           >
             <Icon size={16} style={{ color: iconColor }} />
           </div>
-          <div className="min-w-0">
+          <div className="ml-1 sm:ml-0 min-w-0 flex-1">
             <h3 className="flex items-center gap-1.5 text-sm font-normal text-[#3c4043] sm:text-[15px] dark:text-[#e8ecf4]">
               <span className="truncate">{title}</span>
               {info && (
-                <HintTooltip>
+                <HintTooltip
+                  open={isTouchDevice ? infoOpen : undefined}
+                  onOpenChange={isTouchDevice ? setInfoOpen : undefined}
+                >
                   <TooltipTrigger asChild>
                     <button
                       type="button"
                       aria-label={`How to read ${title}`}
+                      onClick={() => {
+                        if (isTouchDevice) {
+                          setInfoOpen((current) => !current);
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (
+                          isTouchDevice &&
+                          (e.key === "Enter" || e.key === " ")
+                        ) {
+                          e.preventDefault();
+                          setInfoOpen((current) => !current);
+                        }
+                      }}
                       className="flex cursor-help items-center rounded-full font-normal text-gray-400 outline-none transition-colors hover:text-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-[#7b869b] dark:hover:text-[#c3ccdc]"
                     >
                       <Info size={13} />
                     </button>
                   </TooltipTrigger>
+
                   <TooltipContent
                     side="top"
                     sideOffset={6}
@@ -200,43 +253,56 @@ export function ChartCard({
                   </TooltipContent>
                 </HintTooltip>
               )}
+              {/* {info && (
+                <HintTooltip open={infoOpen} onOpenChange={setInfoOpen}>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label={`How to read ${title}`}
+                      onClick={() => setInfoOpen((open) => !open)}
+                      className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-gray-400 outline-none transition-colors hover:bg-gray-100 hover:text-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-[#7b869b] dark:hover:bg-white/10 dark:hover:text-[#c3ccdc]"
+                    >
+                      <Info size={13} />
+                    </button>
+                  </TooltipTrigger>
+
+                  <TooltipContent
+                    side="top"
+                    sideOffset={6}
+                    className="max-w-64"
+                  >
+                    <p className="font-semibold">{info.heading}</p>
+
+                    <p className="mt-1 leading-relaxed opacity-80">
+                      {info.body}
+                    </p>
+                  </TooltipContent>
+                </HintTooltip>
+              )} */}
             </h3>
-            {/* Two lines on a phone, where a long subtitle otherwise pushed the
-                chart most of the way down the screen; in full from `sm` up. */}
-            <p className="w-[90%] sm:w-full  mt-0.5 line-clamp-2 text-[11px] leading-snug tracking-wide text-[#9aa0a6] sm:line-clamp-none sm:text-xs dark:text-[#9aa6bd]">
+
+            <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug truncate tracking-wide text-[#9aa0a6] sm:line-clamp-none sm:text-xs dark:text-[#9aa6bd]">
               {subtitle}
             </p>
           </div>
-        </div>
 
-        <div className="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto justify-end">
-          {rangeBadge && (
-            <div className="md:hidden">
-              <RangeBadge variant="pill" />
-            </div>
+          {(rangeBadge || expenseBadge || buttons) && (
+            <>
+              <div className="ml-auto flex shrink-0 items-center gap-2 md:hidden">
+                {rangeBadge && <RangeBadge variant="pill" />}
+                {expenseBadge && <ExpenseBadge variant="pill" />}
+              </div>
+              <div className="ml-auto flex shrink-0 items-center gap-2">
+                {buttons && <div className="flex gap-2">{buttons}</div>}
+              </div>
+            </>
           )}
         </div>
 
-        {(rangeBadge || expenseBadge || controls) && (
-          <>
-            {/* `ml-auto` for the case where the controls wrap onto their own
-                line: `justify-between` only spaces items that share a line, so a
-                wrapped row would otherwise sit against the left edge, out of line
-                with the controls on every card that did fit beside its title. */}
-            <div className="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto justify-end">
-              {rangeBadge && (
-                <div className="md:hidden">
-                  <RangeBadge variant="pill" />
-                </div>
-              )}
-              {expenseBadge && (
-                <div className="md:hidden">
-                  <ExpenseBadge variant="pill" />
-                </div>
-              )}
-              {controls}
-            </div>
-          </>
+        {controls && (
+          <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:ml-auto sm:w-auto">
+            {controls}
+          </div>
         )}
       </div>
 

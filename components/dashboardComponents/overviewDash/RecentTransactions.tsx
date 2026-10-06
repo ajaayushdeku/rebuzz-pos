@@ -58,7 +58,7 @@ export default function RecentTransactions({
         body: "The most recent paid orders, newest first. Amount is the order total; status is how it was settled. Use View all for the complete order history.",
       }}
       subtitle={description}
-      controls={
+      buttons={
         <Link
           href={viewAllHref}
           className="group flex items-center gap-1 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:bg-white/10 dark:hover:text-white"

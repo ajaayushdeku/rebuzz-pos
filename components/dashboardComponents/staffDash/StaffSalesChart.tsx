@@ -349,9 +349,28 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
         body: "Bills taken per hour of the day by each employee, across the date range at the top of the page — so an hour's figure is the total for that hour over every day in the range. Use the hour range to narrow the day, and Filter employee to pick who is drawn.",
       }}
       subtitle="Throughput breakdown across the day per team member."
+      buttons={
+        <>
+          {/* Employee filter */}
+          {!isEmpty && allStaffNames.length > 0 && (
+            <button
+              onClick={() => setModalOpen(true)}
+              className="flex shrink-0 cursor-pointer flex-row items-center gap-1.5 dark:bg-white/5 rounded-full border border-[#dadce0] bg-white px-1 sm:px-2.5 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
+            >
+              <SlidersHorizontal size={12} />
+              <span className="truncate hidden sm:block"> Filter employee</span>
+              {selectedStaff.length < allStaffNames.length && (
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">
+                  {selectedStaff.length}
+                </span>
+              )}
+            </button>
+          )}
+        </>
+      }
       controls={
         <div className="flex flex-col items-end gap-1.5">
-          <div className="relative flex flex-row-reverse md:flex-row items-center gap-2">
+          <div className="relative flex flex-row md:flex-row items-center gap-2">
             <div className="flex flex-row items-center gap-1.5">
               {/* Hour Range Filter — same control as the hourly sales trend */}
               <FilterSelect
@@ -392,13 +411,13 @@ export default function StaffSalesChart({ data }: StaffOrdersChartProps) {
               </div>
             </div>
 
-            <div className="mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" />
+            <div className="hidden md:block mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" />
 
             {/* Employee filter */}
             {!isEmpty && allStaffNames.length > 0 && (
               <button
                 onClick={() => setModalOpen(true)}
-                className="flex shrink-0 cursor-pointer flex-row items-center gap-1.5 dark:bg-white/5 rounded-full border border-[#dadce0] bg-white px-1 sm:px-2.5 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
+                className="hidden md:flex flex-row shrink-0 cursor-pointer  items-center gap-1.5 dark:bg-white/5 rounded-full border border-[#dadce0] bg-white px-1 sm:px-2.5 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
               >
                 <SlidersHorizontal size={12} />
                 <span className="truncate hidden sm:block">

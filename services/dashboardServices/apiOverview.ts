@@ -218,7 +218,7 @@ export const getWinningStats = async (): Promise<WinningApiResponse> => {
     // Case 1: No sales today and no sales yesterday - streak is broken
     if (!hasTodaySales && !hasYesterdaySales) {
       return {
-        value: "No Steak 🥲",
+        value: "No Streak 🥲",
         footer: "No sales streak yet",
       };
     }
@@ -246,7 +246,7 @@ export const getWinningStats = async (): Promise<WinningApiResponse> => {
         };
       } else {
         return {
-          value: "No Steak 🥲",
+          value: "No Streak 🥲",
           footer: "No sales streak yet",
         };
       }
@@ -272,7 +272,7 @@ export const getWinningStats = async (): Promise<WinningApiResponse> => {
     }
 
     return {
-      value: "No Steak 🥲",
+      value: "No Streak 🥲",
       footer: "No sales streak yet",
     };
   })();

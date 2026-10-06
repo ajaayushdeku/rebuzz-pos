@@ -161,13 +161,18 @@ const SalesCategoryChart = ({
       iconBorder="#bae6fd"
       iconBg="#f0f9ff"
       title="Sales by Category"
+      rangeBadge={true}
       info={{
         heading: "Reading this chart",
         // Revenue share, not item counts.
         body: "Each slice is a category's share of revenue over the selected date range — not how many items it sold. The list below repeats the shares in order, largest first; hover a slice for its revenue and item count.",
       }}
       subtitle="Revenue share across product categories"
-      controls={<RangeBadge variant="pill" />}
+      controls={
+        <div className="hidden lg:block">
+          <RangeBadge variant="pill" />
+        </div>
+      }
     >
       {data.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">

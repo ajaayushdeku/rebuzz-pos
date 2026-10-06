@@ -17,7 +17,7 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import RangeBadge from "@/components/ui/RangeBadge";
 import { ChartColumnBig } from "lucide-react";
 import {
-  AXIS_TICK,
+  // AXIS_TICK,
   BAR_RADIUS,
   CHART_PALETTE,
   ChartCard,
@@ -143,7 +143,7 @@ export default function RevenueStaffChart({ data }: StaffRevenueProps) {
       }}
       subtitle="Individual contribution to total revenue"
       controls={
-        <div className="hidden sm:block">
+        <div className="hidden lg:block">
           <RangeBadge variant="pill" />
         </div>
       }
