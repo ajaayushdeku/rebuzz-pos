@@ -46,4 +46,4 @@ export const STAT_ROW = [
  * tablet widths that are still below `sm`, where 72% would be 420px of card.
  */
 export const STAT_ROW_ITEM =
-  "w-[72%] max-w-[300px] shrink-0 snap-start sm:w-auto sm:max-w-none";
+  "w-[80%] max-w-[400px] shrink-0 snap-start sm:w-auto sm:max-w-none";

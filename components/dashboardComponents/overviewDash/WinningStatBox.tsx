@@ -22,7 +22,7 @@ const WinningStatBox = ({
 }: WinningStatBoxProps) => {
   return (
     <div
-      className={`relative w-full px-6 pt-4 pb-6 ${bgColor} rounded-2xl overflow-hidden lg:min-h-[180px] flex flex-col justify-center sm:min-h-[150px] `}
+      className={`relative w-full px-6 pt-4 pb-6 ${bgColor} rounded-2xl overflow-hidden lg:min-h-[180px] flex flex-col justify-center min-h-[150px] sm:min-h-[150px] `}
     >
       {/* Background ghost icon */}
       <Icon
