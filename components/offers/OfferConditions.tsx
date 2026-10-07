@@ -90,8 +90,8 @@ export default function OfferConditions() {
         />
         <LimitField
           label="Limit per customer"
-          value={form.usesLimit}
-          onChange={(v) => updateField("usesLimit", v)}
+          value={form.perCustomerLimit}
+          onChange={(v) => updateField("perCustomerLimit", v)}
           placeholder="2"
         />
       </div>

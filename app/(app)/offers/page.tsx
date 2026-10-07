@@ -13,33 +13,16 @@ import OfferPhonePreview from "@/components/offers/OfferPhonePreview";
 import OfferFooterActions from "@/components/offers/OfferFooterActions";
 import PageHeader from "@/components/ui/PageHeader";
 
-/**
- * Build an offer, with the customer's view of it beside the form.
- *
- * Four steps rather than six collapsible sections: the deal chosen in step one
- * decides what the rest of the form even asks, so the steps read in order and
- * stay open. The preview is not decoration — it is the offer, so a merchant
- * writes the words their customers read instead of filling in fields and
- * hoping.
- */
-/** The two halves of the page, for screens too narrow to hold both. */
 const VIEWS = [
   { id: "build" as const, label: "Build offer", icon: ListChecks },
   { id: "preview" as const, label: "Preview", icon: Smartphone },
 ];
 
 function OfferBuilder() {
-  /**
-   * Which half is on screen below `xl`.
-   *
-   * Stacked, the preview sits a full page below the form, so the one thing it
-   * exists for — watching the offer change as you type — stops happening. A
-   * switch keeps it one tap away instead.
-   */
   const [view, setView] = useState<"build" | "preview">("build");
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8  md:px-10 dark:bg-[#0f1420]">
+    <div className="min-h-screen bg-surface-page px-6 py-5 sm:py-8  md:px-10 dark:bg-[#0f1420]">
       <div className="mx-auto w-full">
         {/* The grid below brings its own pt-4, so the rule carries no
             margin of its own. */}
@@ -81,39 +64,9 @@ function OfferBuilder() {
           }
         />
 
-        {/*
-        <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
-           
-              <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200 dark:border-white/15">
-                <div>
-                  <h1 className="font-bold text-xl md:text-2xl truncate">
-                    Dashboard Overview
-                  </h1>
-                  {!isLoading && (
-                    <p className="text-xs text-gray-400 mt-0.5 dark:text-[#9aa6bd]">
-                      Welcome back, {profile?.name}. Here&lsquo;s what&lsquo;s happening
-                      with Rebuzz POS
-                    </p>
-                  )}
-                </div>
-        
-                <div className="flex items-center gap-2">
-                  <HeaderActionButton
-                    variant="dashed"
-                    icon={Plus}
-                    label="Create Order"
-                    href="/invoices/add"
-                  />
-                </div>
-              </div> */}
-
         <div className="grid grid-cols-1 items-start pt-4 gap-6 xl:grid-cols-[1fr_350px]">
           {/* Left: the four steps */}
-          {/* min-w-0 because a `1fr` track is `minmax(auto, 1fr)`, and that
-              `auto` floor is the item's min-content width. Without it any wide
-              descendant — a nowrap row, a long code, an input's intrinsic size
-              — pushes the whole column past its share and the page slides
-              sideways. */}
+
           <div
             className={cn(
               "min-w-0 space-y-5 mt-2 xl:block",

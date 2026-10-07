@@ -35,7 +35,7 @@ export default function OfferPromoCode() {
   const [linkCopied, setLinkCopied] = useState(false);
 
   // MOCK while the short-link service is pending — see offerLink.
-  const offerUrl = offerLink(form.hasKey);
+  const offerUrl = offerLink(form.code);
 
   const copyLink = async () => {
     if (!offerUrl) return;
@@ -65,7 +65,7 @@ export default function OfferPromoCode() {
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = `offer-${form.hasKey.toLowerCase() || "code"}.svg`;
+    a.download = `offer-${form.code.toLowerCase() || "code"}.svg`;
     a.click();
     // Released immediately: the download has already been handed the blob, and
     // an unrevoked object URL holds the data for the life of the document.
@@ -86,16 +86,16 @@ export default function OfferPromoCode() {
   const generate = () => {
     const stem = festival?.code ?? "OFFER";
     const suffix =
-      form.discountKind === "percentage" && form.discount > 0
-        ? String(form.discount)
+      form.discountKind === "percentage" && form.value > 0
+        ? String(form.value)
         : "";
-    updateField("hasKey", `${stem}${suffix}`);
+    updateField("code", `${stem}${suffix}`);
   };
 
   const copy = async () => {
-    if (!form.hasKey) return;
+    if (!form.code) return;
     try {
-      await navigator.clipboard.writeText(form.hasKey);
+      await navigator.clipboard.writeText(form.code);
       setCopied(true);
       toast.success("Promo code copied");
       window.setTimeout(() => setCopied(false), 1500);
@@ -107,19 +107,18 @@ export default function OfferPromoCode() {
   const summary = [
     dealSummary({
       dealId: form.discountKind,
-      amount: form.discount,
+      amount: form.value,
       audience: form.audience,
       tierName: tiers.find((t) => t.id === form.audienceTierId)?.name,
       freeItemName: productLabel(
         products,
-        form.freeItemId,
-        form.freeItemVariantId,
+        form.freeProduct,
+        form.freeProductVariantId,
       ),
-      customDeal: form.customDeal,
       currency: currency.symbol,
     }),
     festival && `during ${festival.label}`,
-    form.hasKey && `code ${form.hasKey}`,
+    form.code && `code ${form.code}`,
   ].filter(Boolean) as string[];
 
   return (
@@ -137,13 +136,11 @@ export default function OfferPromoCode() {
         <div className=" flex  items-center  gap-2.5">
           <input
             type="text"
-            value={form.hasKey}
+            value={form.code}
             // Upper-cased on the way in: a code is read off a receipt and
             // typed back, and "newyears23" failing to match is not a mistake
             // worth letting a customer make.
-            onChange={(e) =>
-              updateField("hasKey", e.target.value.toUpperCase())
-            }
+            onChange={(e) => updateField("code", e.target.value.toUpperCase())}
             placeholder="NEWYEARS23"
             className="h-12 min-w-0 flex-1 rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 px-3.5 font-mono text-sm tracking-wider text-[#3c4043] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:max-w-sm dark:border-white/15 dark:text-[#e8ecf4]"
           />
@@ -160,7 +157,7 @@ export default function OfferPromoCode() {
           <button
             type="button"
             onClick={copy}
-            disabled={!form.hasKey}
+            disabled={!form.code}
             className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 px-4 text-[13px] font-semibold text-[#5f6368] transition-colors hover:bg-[#f8f9fa] disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#a9b4c7]"
           >
             <Copy size={15} />
@@ -180,7 +177,7 @@ export default function OfferPromoCode() {
             Share link &amp; QR code
           </p>
 
-          {!form.hasKey ? (
+          {!form.code ? (
             <p className="rounded-xl border border-dashed border-[#dadce0] bg-[#f8f9fa] px-3.5 py-4 text-center text-[12px] text-[#9aa0a6] dark:border-white/15 dark:text-[#9aa6bd] dark:bg-white/5">
               Add a promo code above to get a shareable link and QR code.
             </p>
@@ -220,7 +217,7 @@ export default function OfferPromoCode() {
               </div>
 
               <div className="shrink-0 self-center sm:self-start">
-                <div className="rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 p-3 dark:border-white/15">
+                <div className="rounded-xl border border-[#dadce0] bg-white  p-3 dark:border-white/15">
                   {/* Sized in CSS with a fixed viewBox so one SVG serves both
                       the on-screen chip and a printed poster. */}
                   <QRCode

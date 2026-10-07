@@ -150,7 +150,7 @@ export default function OfferPhonePreview() {
   const { data: tiers = [] } = useLoyaltyTiers();
 
   // MOCK while the short-link service is pending — see offerLink.
-  const offerUrl = offerLink(form.hasKey);
+  const offerUrl = offerLink(form.code);
   const { data: business } = useBusiness();
   const { currency } = useCurrency();
   const [channel, setChannel] = useState<Channel>("feed");
@@ -162,15 +162,15 @@ export default function OfferPhonePreview() {
 
   const { badge, headline } = offerCopy({
     dealId: form.discountKind,
-    amount: form.discount,
+    amount: form.value,
     // The variant, not just the product: an offer on the large buff momo
     // previewing as "a free Momo" promises something the offer does not.
     freeItemName: productLabel(
       products,
-      form.freeItemId,
-      form.freeItemVariantId,
+      form.freeProduct,
+      form.freeProductVariantId,
     ),
-    customDeal: form.customDeal,
+    title: form.name,
     currency: currency.symbol,
   });
 
@@ -188,10 +188,10 @@ export default function OfferPhonePreview() {
   });
 
   const rawSaving =
-    form.discount > 0 && form.discountKind === "percentage"
-      ? (SAMPLE_ORDER * form.discount) / 100
-      : form.discount > 0 && form.discountKind === "rupee"
-        ? Math.min(form.discount, SAMPLE_ORDER)
+    form.value > 0 && form.discountKind === "percentage"
+      ? (SAMPLE_ORDER * form.value) / 100
+      : form.value > 0 && form.discountKind === "rupee"
+        ? Math.min(form.value, SAMPLE_ORDER)
         : 0;
 
   const saving = form.maxCap > 0 ? Math.min(rawSaving, form.maxCap) : rawSaving;
@@ -220,9 +220,9 @@ export default function OfferPhonePreview() {
       icon: CalendarCheck,
       text: `Valid until ${formatDate(form.endDate)}`,
     },
-    form.usesLimit > 0 && {
+    form.perCustomerLimit > 0 && {
       icon: User,
-      text: `Limit ${form.usesLimit} per customer`,
+      text: `Limit ${form.perCustomerLimit} per customer`,
     },
   ].filter(Boolean) as { icon: LucideIcon; text: string }[];
 
@@ -367,14 +367,14 @@ export default function OfferPhonePreview() {
               )}
 
               {/* A code nobody can read off the card is a code nobody uses. */}
-              {form.hasKey && (
+              {form.code && (
                 <div className="mt-3 flex items-center justify-between gap-2 border-t border-[#e8eaed] pt-2.5 dark:border-white/10">
                   <span className="text-[11px] text-[#5f6368] dark:text-[#a9b4c7]">
                     Promo code:
                   </span>
                   <span className="inline-flex items-center gap-1.5 rounded-md bg-gray-900 px-2.5 py-1 font-mono text-[11px] font-bold dark:bg-white/15 tracking-wider text-white">
                     <Tag size={11} />
-                    {form.hasKey}
+                    {form.code}
                   </span>
                 </div>
               )}
@@ -449,11 +449,11 @@ export default function OfferPhonePreview() {
                   {smsFinePrint}.
                 </p>
               )}
-              {form.hasKey && (
+              {form.code && (
                 <p className="mt-1 text-[11px] text-[#5f6368] dark:text-[#a9b4c7]">
                   Use code{" "}
                   <span className="font-bold tracking-wider text-gray-700 dark:text-[#c3ccdc]">
-                    {form.hasKey}
+                    {form.code}
                   </span>
                 </p>
               )}

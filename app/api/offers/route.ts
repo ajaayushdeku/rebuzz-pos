@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
 export const GET = async () => {
-  const res = await fetch(`${BASE}/business/offer_cards`, {
+  const res = await fetch(`${BASE}/business/offers/getall`, {
     headers: await authHeaders(),
   });
 
@@ -21,7 +21,7 @@ export const GET = async () => {
 export const POST = async (req: NextRequest) => {
   const body = await req.json();
 
-  const res = await fetch(`${BASE}/business/offer_cards`, {
+  const res = await fetch(`${BASE}/business/offers/create`, {
     method: "POST",
     headers: await authHeaders(),
     body: JSON.stringify(body),

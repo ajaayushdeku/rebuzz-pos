@@ -222,6 +222,11 @@ export const navigationConfig: NavigationItem[] = [
         icon: Tag,
       },
       {
+        label: "Offers",
+        href: "/settings/offers",
+        icon: Gift,
+      },
+      {
         label: "Loyalty Point",
         href: "/settings/loyalty-points",
         icon: Award,

@@ -31,7 +31,7 @@ export const DEAL_KINDS: DealKind[] = [
     icon: "🏷️",
     title: "Percentage off",
     subtitle: "Discount by %",
-    discountType: "percentage",
+    discountType: "percent",
     value: {
       label: "Discount percentage",
       suffix: "%",
@@ -43,7 +43,7 @@ export const DEAL_KINDS: DealKind[] = [
     icon: "💵",
     title: "Rupee discount",
     subtitle: "Flat Rs savings",
-    discountType: "fixed",
+    discountType: "amount",
     value: {
       label: "Discount amount in Rs",
       prefix: "Rs",
@@ -62,14 +62,7 @@ export const DEAL_KINDS: DealKind[] = [
     icon: "🍰",
     title: "Free item",
     subtitle: "Free side/drink",
-    discountType: "fixed",
-  },
-  {
-    id: "custom",
-    icon: "✨",
-    title: "Custom offer",
-    subtitle: "Custom deal rule",
-    discountType: "fixed",
+    discountType: "freeItem",
   },
 ];
 
@@ -141,6 +134,11 @@ export function dealById(id: string): DealKind | undefined {
  * the Viber message and the printed receipt all say the same thing, and three
  * copies of this would drift the first time a deal was reworded.
  *
+ * `title` wins when it is set, because step 1 shows the merchant that exact
+ * sentence in an editable box: once they have reworded it, the preview printing
+ * something else would make the box look like it did nothing. The badge is
+ * still the deal's, since it is a label rather than a sentence.
+ *
  * The audience is deliberately not folded in here. "Get 15% off, first-time
  * customers only" reads as one clause and buries the qualifier; the preview
  * prints it on its own line instead, where it can be seen before redeeming.
@@ -149,8 +147,28 @@ export function offerCopy(args: {
   dealId: string;
   amount: number;
   freeItemName?: string;
-  customDeal: string;
+  /** What the merchant called this offer, if they have named it yet. */
+  title?: string;
   /** The business's currency symbol — the copy is not Rs-only. */
+  currency: string;
+}): { badge: string; headline: string } {
+  const deal = autoCopy(args);
+  const title = args.title?.trim();
+
+  return title ? { badge: deal.badge, headline: title } : deal;
+}
+
+/**
+ * The copy a deal writes for itself, before the merchant has edited it.
+ *
+ * Split out so step 1 can offer it as the title's starting text and still tell
+ * whether what is in the box is still its own suggestion — if it is, a changed
+ * amount may rewrite it; if not, it is the merchant's words and stays put.
+ */
+export function autoCopy(args: {
+  dealId: string;
+  amount: number;
+  freeItemName?: string;
   currency: string;
 }): { badge: string; headline: string } {
   switch (args.dealId) {
@@ -176,11 +194,6 @@ export function offerCopy(args: {
           ? `Get a free ${args.freeItemName} with your order`
           : "Get a free item with your order",
       };
-    case "custom":
-      return {
-        badge: "SPECIAL OFFER",
-        headline: args.customDeal.trim() || "Your custom offer appears here",
-      };
     default:
       return {
         badge: "OFFER",
@@ -202,7 +215,6 @@ export function dealSummary(args: {
   audience: CustomerAudience;
   tierName?: string;
   freeItemName?: string;
-  customDeal: string;
   currency: string;
 }): string | null {
   if (!args.dealId) return null;
@@ -223,8 +235,6 @@ export function dealSummary(args: {
         return "Buy one get one free";
       case "free-item":
         return args.freeItemName ? `Free ${args.freeItemName}` : "A free item";
-      case "custom":
-        return args.customDeal.trim() || "Your custom offer";
       default:
         return null;
     }
