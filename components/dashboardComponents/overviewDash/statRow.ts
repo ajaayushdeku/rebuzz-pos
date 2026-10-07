@@ -32,7 +32,7 @@
  *   scrollbar, so a row that scrolls sideways inside it has to say so itself.
  */
 export const STAT_ROW = [
-  "flex items-start gap-3 -mx-6 snap-x snap-mandatory overflow-x-auto scroll-pl-6 px-6 pb-3 scrollbar-custom",
+  "flex items-start gap-3 -mx-6 snap-x snap-mandatory overflow-x-auto scroll-pl-6 px-6  scrollbar-hide",
   "sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-2 sm:snap-none sm:overflow-visible sm:px-0 sm:pb-0",
   "md:gap-3 lg:grid-cols-4",
 ].join(" ");
