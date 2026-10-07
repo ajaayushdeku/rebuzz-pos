@@ -421,7 +421,7 @@ const VIEW_OPTIONS: {
 const Legend = ({ scheme }: { scheme: ColorScheme }) => (
   <div className="flex shrink-0 items-center gap-2 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
     <span>Low</span>
-    <div className="flex h-4 w-24 overflow-hidden rounded">
+    <div className="flex h-2 md:h-4 w-15 sm:w-24 overflow-hidden rounded">
       {Array.from({ length: 12 }).map((_, i) => (
         <div
           key={i}
@@ -495,16 +495,19 @@ export default function Heatmap({
         body: "How many orders were taken in each slot. Shading runs from the quietest slot to the busiest one in the view you are on, so a cell's darkness is relative to that view — switching between week and month rescales it. In the month view, days before the 1st are dimmed and future days are left blank.",
       }}
       subtitle="Order counts by day and hour — darker cells = more orders"
-      controls={<Legend scheme={scheme} />}
+      buttons={<Legend scheme={scheme} />}
     >
       {/* Controls */}
-      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-5 flex  gap-3 sm:flex-row items-center justify-between   gap-2 sm:ml-auto w-full flex-wrap  sm:w-auto ">
         <PillSwitch
           options={VIEW_OPTIONS}
           value={view}
           onChange={setView}
           label="Heatmap view"
+          size="compact"
         />
+
+        {/* <div className="block sm:hidden mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" /> */}
 
         {/* Color scheme picker */}
         <div className="flex items-center gap-2">
@@ -519,7 +522,7 @@ export default function Heatmap({
                 title={s.name}
                 aria-label={`${s.name} colour scheme`}
                 aria-pressed={schemeKey === key}
-                className={`h-6 w-6 cursor-pointer rounded-full transition-all ${
+                className={` h-5 sm:h-6 w-5 sm:w-6 cursor-pointer rounded-full transition-all ${
                   schemeKey === key
                     ? "scale-110 ring-2 ring-[#5f6368] ring-offset-1 dark:ring-[#e8ecf4] dark:ring-offset-[#161d2e]"
                     : "hover:scale-105"

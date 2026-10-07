@@ -7,6 +7,7 @@ import {
   Edit3,
   Gift,
   Loader2,
+  Tag,
   Trash2,
 } from "lucide-react";
 
@@ -74,14 +75,14 @@ const OfferTable = ({
       {/* Scrolls sideways below ~760px rather than wrapping: a schedule broken
           over four lines stops being readable as a schedule. */}
       <div className="-mx-5 overflow-x-auto scrollbar-hide px-5">
-        <table className="w-full min-w-[760px] table-fixed text-sm">
+        <table className="w-full min-w-[760px] md:min-w-[1050px] table-fixed text-sm">
           <colgroup>
             <col className="w-12" />
-            <col />
-            <col className="w-40" />
-            <col className="w-52" />
-            <col className="w-28" />
-            <col className="w-24" />
+            <col className="w-80 md:w-65" />
+            <col className="w-25 md:w-30" />
+            <col className="w-50 md:w-55" />
+            <col className="w-30 md:w-35" />
+            <col className="w-10 md:w-20" />
           </colgroup>
           <thead>
             <tr className="border-b border-[#e8eaed] text-[11px] tracking-wider text-[#5f6368] dark:border-white/10 dark:text-[#9aa6bd]">
@@ -89,7 +90,7 @@ const OfferTable = ({
               <th className="pb-2.5 text-left font-normal">Offer</th>
               <th className="pb-2.5 text-left font-normal">Deal</th>
               <th className="pb-2.5 text-left font-normal">Runs</th>
-              <th className="pb-2.5 text-left font-normal">Status</th>
+              <th className="pb-2.5 text-center font-normal">Status</th>
               <th className="pb-2.5 text-right font-normal">Actions</th>
             </tr>
           </thead>
@@ -154,8 +155,8 @@ const OfferTable = ({
                       </p>
                       <div className="mt-0.5 flex items-center gap-2">
                         {offer.code && (
-                          <span className="rounded bg-gray-900 px-1.5 py-0.5 font-mono text-[10px] font-bold tracking-wider text-white dark:bg-white/15">
-                            {offer.code}
+                          <span className=" flex flex-row gap-1 items-center rounded bg-gray-900 px-1.5 py-0.5 font-mono text-[10px] font-bold tracking-wider text-white dark:bg-white/15">
+                            <Tag size={11} /> {offer.code}
                           </span>
                         )}
                         {limits && (
@@ -206,7 +207,7 @@ const OfferTable = ({
                       )}
                     </td>
 
-                    <td className="py-3">
+                    <td className="py-3 text-center">
                       <button
                         type="button"
                         onClick={() => onToggle(offer)}

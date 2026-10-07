@@ -1,4 +1,8 @@
 import OverviewStatBoxGrid from "../dashboardComponents/overviewDash/OverviewStatBoxGrid";
+import {
+  STAT_ROW,
+  STAT_ROW_ITEM,
+} from "../dashboardComponents/overviewDash/statRow";
 import WinningStatBox from "../dashboardComponents/overviewDash/WinningStatBox";
 import RecentTransactions from "../dashboardComponents/overviewDash/RecentTransactions";
 import TopItems from "../dashboardComponents/overviewDash/TopItems";
@@ -237,14 +241,9 @@ export const OverviewStatsWrapper = async ({
       };
     });
 
-    // items-start: a grid stretches every cell to the tallest in its row, so
-    // expanding one card silently grew its neighbours too — they gained the
-    // height without anything to put in it.
-    return (
-      <div className="grid items-start grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 my-4">
-        <OverviewStatBoxGrid stats={stats} periodLabel="" />
-      </div>
-    );
+    // The row's own layout lives in OverviewStatBoxGrid, so this branch and the
+    // one below cannot drift apart again.
+    return <OverviewStatBoxGrid stats={stats} periodLabel="" />;
   }
 
   // Preset range or range with comparison: show comparison with previous period
@@ -305,16 +304,13 @@ export const OverviewStatsWrapper = async ({
     };
   });
 
-  // items-start — see the note on the other grid above.
   return (
-    <div className="grid items-start grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 mt-4">
-      <OverviewStatBoxGrid
-        stats={stats}
-        periodLabel={periodLabel}
-        comparisonDateRangeLabel={comparisonDateRangeLabel}
-        currentDateRange={currentDateRangeLabel}
-      />
-    </div>
+    <OverviewStatBoxGrid
+      stats={stats}
+      periodLabel={periodLabel}
+      comparisonDateRangeLabel={comparisonDateRangeLabel}
+      currentDateRange={currentDateRangeLabel}
+    />
   );
 };
 
@@ -325,10 +321,13 @@ export const WinningStatsWrapper = async () => {
     ...winningStat[config.key],
   }));
 
+  // The same row as the stat boxes above it, from the same source — the two sit
+  // one under the other, so a card that scrolls in one and not the other, or
+  // snaps to a different place, reads as a bug.
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 ">
+    <div className={STAT_ROW}>
       {winningStats.map(({ key, ...stat }) => (
-        <div key={key}>
+        <div key={key} className={STAT_ROW_ITEM}>
           <WinningStatBox {...stat} />
         </div>
       ))}

@@ -59,13 +59,13 @@ export default function PageHeader({
       <div className="flex w-full flex-row items-center justify-between gap-4 pb-5 sm:flex-row sm:items-end">
         {leading}
 
-        <div className="min-w-0">
+        <div className="w-full min-w-0">
           <h1 className="truncate text-[18px]  font-semibold tracking-wide text-[#3c4043] sm:text-[22px] md:text-[26px] dark:text-[#e8ecf4]">
             {title}
           </h1>
 
           {subtitle && (
-            <p className="mt-1 ml-0.5 w-[75%] sm:w-full max-w-xl text-[11px] md:text-[12px] sm:text-[12px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
+            <p className="mt-1  ml-0.5 w-[75%] sm:w-full max-w-xl text-[11px] md:text-[12px] sm:text-[12px] leading-relaxed text-[#5f6368] dark:text-[#a9b4c7]">
               {subtitle}
             </p>
           )}

@@ -235,9 +235,9 @@ function Section({
 }) {
   return (
     <section className="border-t border-gray-100 pt-5 first:border-0 first:pt-0 dark:border-white/10">
-      <div className="mb-3.5 flex items-start gap-2.5">
+      <div className="mb-3.5 flex items-center gap-2.5">
         <Icon
-          size={15}
+          size={17}
           className="mt-0.5 shrink-0 text-gray-400 dark:text-[#9aa6bd]"
         />
         <div>

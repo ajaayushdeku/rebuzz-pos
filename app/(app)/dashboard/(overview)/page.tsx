@@ -12,6 +12,10 @@ import {
   TopItemsSkeleton,
   RecentTransactionsSkeleton,
 } from "@/components/dashboardComponents/overviewDash/OverviewSkeletons";
+import {
+  STAT_ROW,
+  STAT_ROW_ITEM,
+} from "@/components/dashboardComponents/overviewDash/statRow";
 
 import {
   AiInsightsSection,
@@ -64,9 +68,14 @@ const Page = async ({
           <ChartErrorBoundary>
             <Suspense
               fallback={
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 my-4">
+                /* The same row as the real cards — see statRow. A two-column
+                   grid here would have the page re-lay-out the moment the stats
+                   arrive. */
+                <div className={STAT_ROW}>
                   {Array.from({ length: 4 }).map((_, i) => (
-                    <StatSkeleton key={i} />
+                    <div key={i} className={STAT_ROW_ITEM}>
+                      <StatSkeleton />
+                    </div>
                   ))}
                 </div>
               }
@@ -84,9 +93,11 @@ const Page = async ({
           <ChartErrorBoundary>
             <Suspense
               fallback={
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 ">
+                <div className={STAT_ROW}>
                   {Array.from({ length: 4 }).map((_, i) => (
-                    <WinningStatSkeleton key={i} />
+                    <div key={i} className={STAT_ROW_ITEM}>
+                      <WinningStatSkeleton />
+                    </div>
                   ))}
                 </div>
               }

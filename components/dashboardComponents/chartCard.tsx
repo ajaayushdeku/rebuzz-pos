@@ -483,7 +483,7 @@ export function PillSwitch<T extends string>({
     <div
       role="radiogroup"
       aria-label={label}
-      className={`flex items-center ${full ? "w-full gap-1 p-1" : "gap-0.5 p-0.5"} ${style.track}`}
+      className={`flex items-center ${full ? "w-full gap-1 p-1" : "w-fit gap-0.5  p-0.5"} ${style.track}`}
     >
       {options.map((option) => {
         const selected = option.value === value;

@@ -8,7 +8,7 @@ const DAY_COUNT = 7;
  */
 export default function HeatmapSkeleton() {
   return (
-    <div className="bg-white w-full animate-pulse dark:bg-[#161d2e]">
+    <div className="bg-white w-full px-4 pb-4 pt-4 sm:px-6 sm:pb-5 sm:pt-5 rounded-2xl animate-pulse dark:bg-[#161d2e]">
       {/* ── Header + legend ── */}
       <div className="flex flex-row items-start justify-between mb-5 gap-3">
         <div className="space-y-2">
