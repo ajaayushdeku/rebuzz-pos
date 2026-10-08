@@ -74,7 +74,7 @@ export default function RecentTransactions({
     >
       {/* Horizontally scrollable table wrapper for mobile */}
       {/* <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto"> */}
-      <div className="bg-white overflow-x-auto dark:bg-transparent">
+      <div className="bg-white overflow-x-auto dark:bg-transparent scrollbar-hide">
         <table className="w-full text-sm min-w-[500px]">
           <thead>
             <tr className="border-b border-[#e8eaed] text-[11px] text-[#5f6368] dark:border-white/10 dark:text-[#9aa6bd]">

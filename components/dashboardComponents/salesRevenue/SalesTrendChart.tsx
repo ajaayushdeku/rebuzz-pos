@@ -131,6 +131,21 @@ export default function SalesTrendChart() {
 
   const AXIS_TICK = getAxisTick(isDark);
 
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+    const updateScreenSize = () => {
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    updateScreenSize();
+    mediaQuery.addEventListener("change", updateScreenSize);
+
+    return () => mediaQuery.removeEventListener("change", updateScreenSize);
+  }, []);
+
   return (
     <ChartCard
       icon={TrendingUp}
@@ -192,8 +207,8 @@ export default function SalesTrendChart() {
                   tick={AXIS_TICK}
                   ticks={ticks}
                   domain={[ticks[0], ticks[ticks.length - 1]]}
-                  width={72}
-                  label={yAxisTitle("Revenue")}
+                  width={isSmallScreen ? 55 : 80}
+                  label={!isSmallScreen ? yAxisTitle("Revenue") : undefined}
                 />
                 <Tooltip
                   content={<CustomTooltip currency={currency} />}

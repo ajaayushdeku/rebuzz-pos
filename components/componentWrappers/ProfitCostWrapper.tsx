@@ -8,7 +8,7 @@ import {
   getBudgetData,
   getExpenseByCategoryData,
   getExpenseStats,
-  getGrossProfitTrendData,
+  // getGrossProfitTrendData,
   getProfitPerProduct,
   getProfitStats,
   getDayTimeProfitData,
@@ -36,6 +36,7 @@ import RevenueFlowSankey from "../dashboardComponents/profitcostDash/RevenueFlow
 import ProfitVarianceBridge from "../dashboardComponents/profitcostDash/ProfitVarianceBridge";
 import MenuEngineeringMatrix from "../dashboardComponents/profitcostDash/MenuEngineeringMatrix";
 import MarginProfitForecastChart from "../dashboardComponents/profitcostDash/MarginProfitForecastChart";
+import { STAT_ROW } from "../dashboardComponents/overviewDash/statRow";
 
 export async function ProfitStatsWrapper({
   startDate,
@@ -52,7 +53,7 @@ export async function ProfitStatsWrapper({
     }));
 
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:gap-3 lg:grid-cols-4">
+    <div className={STAT_ROW}>
       <ProfitCostStatBoxGrid stats={stats} />
     </div>
   );

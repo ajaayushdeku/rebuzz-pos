@@ -133,7 +133,7 @@ export default function RefundBreakdown() {
           </div>
         </div>
 
-        <div className="min-w-0 flex-1 self-start">
+        <div className="w-full min-w-0 flex-1 self-start">
           {data.map((item) => (
             <div
               key={item.id}

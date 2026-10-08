@@ -147,7 +147,7 @@ function BreakdownSection({
           </div>
 
           {/* Table */}
-          <div className="min-w-0 overflow-x-auto">
+          <div className="min-w-0 overflow-x-auto scrollbar-hide">
             <div className="min-w-[420px]">
               <div
                 className={`${COLUMNS} border-b pb-2.5 text-[11px] border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]`}

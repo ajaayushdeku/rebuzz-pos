@@ -3,6 +3,9 @@
  * the component it stands in for, so the page doesn't shift when data arrives.
  */
 
+import { cn } from "@/lib/utils";
+import { STAT_ROW, STAT_ROW_ITEM } from "../statRow";
+
 /** Title + subtitle stack, matching <ComponentHeader />. */
 function HeaderSkeleton({
   titleWidth = "w-40",
@@ -60,11 +63,14 @@ function LegendSkeleton({ items = 2 }: { items?: number }) {
  */
 export function GrowthStatsSkeleton({ count = 6 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 md:gap-3 animate-pulse">
+    <div className={STAT_ROW}>
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="bg-surface-card border-surface-border w-full rounded-xl border p-4 shadow-sm md:p-5 dark:bg-[#161d2e] dark:border-white/10"
+          className={cn(
+            "bg-surface-card border-surface-border w-full rounded-xl border p-4 shadow-sm md:p-5 dark:bg-[#161d2e] dark:border-white/10",
+            STAT_ROW_ITEM,
+          )}
         >
           {/* Label + icon */}
           <div className="flex items-center justify-between gap-2">

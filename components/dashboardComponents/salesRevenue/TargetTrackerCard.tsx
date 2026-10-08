@@ -295,16 +295,16 @@ export default function TargetTrackerCard() {
               Target surpassed 🎉
             </span>
           ) : (
-            <>
+            <div className="flex flex-col sm:flex-row items-start gap-1">
               <span className="font-semibold tracking-wide text-[#3c4043] dark:text-[#e8ecf4]">
                 {fmt(remaining)}
               </span>{" "}
               remaining to hit target
-            </>
+            </div>
           )}
         </span>
         {hasTarget && (
-          <span className="font-medium tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
+          <span className="flex flex-col sm:flex-row items-end gap-1 font-medium tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
             {fmt(achieved)} of {fmt(target)}
           </span>
         )}

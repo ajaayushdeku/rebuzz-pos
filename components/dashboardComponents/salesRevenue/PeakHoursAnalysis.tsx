@@ -105,7 +105,7 @@ const HOUR_RANGE_OPTIONS = [
 
 /** The From / To hour inputs, outlined like the card's other controls. */
 const HOUR_INPUT_CLASS =
-  "w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-2 text-xs text-[#3c4043] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]";
+  " w-12 md:w-14 rounded-lg border border-[#dadce0] bg-white px-2 py-1.5 md:py-2 text-[11px] md:text-xs text-[#3c4043] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]";
 
 /** A round arrow over the chart's edge, shown while there is more to scroll. */
 const ScrollButton = ({
@@ -252,6 +252,21 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
 
   const AXIS_TICK = getAxisTick(isDark);
 
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+    const updateScreenSize = () => {
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    updateScreenSize();
+    mediaQuery.addEventListener("change", updateScreenSize);
+
+    return () => mediaQuery.removeEventListener("change", updateScreenSize);
+  }, []);
+
   return (
     <ChartCard
       icon={Clock}
@@ -273,7 +288,8 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
                 value={presetValue}
                 options={HOUR_RANGE_OPTIONS}
                 onChange={handlePresetChange}
-                className="w-[210px]"
+                className="w-[90px] sm:w-[150px] md:w-[180px] py-1.5 text-[13px]"
+                buttonClassName="py-1.5 md:py-2 px-2 md:px-3 text-[11px] md:text-xs rounded-lg tracking-wide"
               />
 
               {/* Vertical divider */}
@@ -306,7 +322,11 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
               </div>
             </div>
 
-            {rangeError && <p className="text-xs text-red-500">{rangeError}</p>}
+            {rangeError && (
+              <p className="text-xs text-red-500 dark:text-red-400">
+                {rangeError}
+              </p>
+            )}
           </div>
 
           <div className="hidden md:block absolute right-0 bottom-[-15px]">
@@ -383,8 +403,8 @@ const PeakHoursAnalysis = ({ data }: PeakHourlyDataProps) => {
                   tick={AXIS_TICK}
                   ticks={ticks}
                   domain={[ticks[0], ticks[ticks.length - 1]]}
-                  width={56}
-                  label={yAxisTitle("Avg. orders")}
+                  width={isSmallScreen ? 20 : 50}
+                  label={!isSmallScreen ? yAxisTitle("Avg. orders") : undefined}
                 />
 
                 <Tooltip

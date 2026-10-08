@@ -119,7 +119,7 @@ export default function ProfitPerProduct({
         body: "Each product sold in the date range at the top of the page, with same-named items merged. COGS is each item's cost price times the units sold; profit is the sales report's own figure for the item, and margin is that profit as a share of its revenue.",
       }}
       subtitle="Revenue, cost and margins for top selling products."
-      controls={<RangeBadge variant="pill" />}
+      buttons={<RangeBadge variant="pill" />}
       className="overflow-hidden"
     >
       {/* Search */}

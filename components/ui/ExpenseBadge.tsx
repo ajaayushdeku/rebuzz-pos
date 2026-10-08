@@ -11,9 +11,9 @@ import {
 
 const VARIANT = {
   badge:
-    "ml-auto gap-1 bg-rose-50/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-rose-800 dark:bg-rose-400/10 dark:text-rose-200",
+    "ml-auto gap-1 bg-rose-50/60 px-1 sm:px-2 py-1 sm:py-0.5 text-[10px] font-semibold uppercase tracking-wide text-rose-800 dark:bg-rose-400/10 dark:text-rose-200",
   pill:
-    "gap-1 border border-rose-200 bg-white px-2 py-0.5 text-[11px] text-rose-800 hover:bg-rose-50/60 " +
+    "gap-1 border border-rose-200 bg-white px-1 sm:px-2 py-1 sm:py-0.5 text-[11px] text-rose-800 hover:bg-rose-50/60 " +
     "dark:border-rose-400/25 dark:bg-rose-400/10 dark:text-rose-200 dark:hover:bg-rose-400/15",
 } as const;
 
@@ -65,7 +65,9 @@ export default function ExpenseBadge({
           className={`inline-flex shrink-0 cursor-help items-center rounded-sm sm:rounded-full outline-none transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 ${VARIANT[variant]} ${className}`}
         >
           <ReceiptText size={11} />
-          {variant === "pill" ? "Uses expenses" : "Expenses"}
+          <span className="truncate hidden sm:inline">
+            {variant === "pill" ? "Uses expenses" : "Expenses"}
+          </span>
         </span>
       </TooltipTrigger>
 

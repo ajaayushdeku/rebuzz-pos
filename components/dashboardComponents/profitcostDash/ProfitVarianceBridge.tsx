@@ -259,6 +259,21 @@ export default function ProfitVarianceBridge({
 
   const AXIS_TICK = getAxisTick(isDark);
 
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+    const updateScreenSize = () => {
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    updateScreenSize();
+    mediaQuery.addEventListener("change", updateScreenSize);
+
+    return () => mediaQuery.removeEventListener("change", updateScreenSize);
+  }, []);
+
   return (
     <ChartCard
       icon={ArrowLeftRight}
@@ -275,7 +290,7 @@ export default function ProfitVarianceBridge({
         body: "This calendar month against the last one; the date range at the top of the page does not change it. It starts from last month's net profit, then each bar adds how much one cause moved it — revenue as a whole, then each cost — ending at this month's net profit. Hover a bar for both months' figures.",
       }}
       subtitle={`Why did net profit move in ${monthName(current.start)} vs ${monthName(previous.start)}?`}
-      controls={<ExpenseBadge variant="pill" />}
+      buttons={<ExpenseBadge variant="pill" />}
     >
       {!hasData ? (
         <p className="rounded-xl border border-dashed px-4 py-14 text-center text-xs border-[#dadce0] dark:border-white/15 text-[#9aa0a6] dark:text-[#9aa6bd]">
@@ -314,8 +329,10 @@ export default function ProfitVarianceBridge({
                     tick={AXIS_TICK}
                     ticks={ticks}
                     domain={[ticks[0], ticks[ticks.length - 1]]}
-                    width={72}
-                    label={yAxisTitle("Net profit")}
+                    width={isSmallScreen ? 55 : 80}
+                    label={
+                      !isSmallScreen ? yAxisTitle("Net profit") : undefined
+                    }
                   />
                   <Tooltip
                     content={<CauseTooltip />}

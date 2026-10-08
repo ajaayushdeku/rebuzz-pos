@@ -140,6 +140,8 @@ export default function SlowProducts({
             </span>
           </div>
 
+          <div className="mx-1 h-6 w-px bg-[#dadce0] dark:bg-white/15" />
+
           {/* FilterSelect owns its trigger's classes, so the pill look is
               applied to its button from the wrapper. */}
           <FilterSelect
@@ -151,7 +153,7 @@ export default function SlowProducts({
               setPage(0);
             }}
             placeholder="Select days"
-            className="w-[104px] [&>button]:rounded-lg [&>button]:border-[#dadce0] [&>button]:py-1 [&>button]:pl-2.5 [&>button]:pr-2 [&>button]:text-[11px] [&>button]:text-[#3c4043]"
+            className="w-[85px] sm:w-[100px] md:w-[100px]  [&>button]:rounded-lg [&>button]:border-[#dadce0] [&>button]:py-1 [&>button]:pl-2.5 [&>button]:pr-2 [&>button]:text-[11px] [&>button]:text-[#3c4043]"
           />
         </div>
       }
@@ -233,7 +235,7 @@ export default function SlowProducts({
       </div>
 
       {/* Table: no zebra or shadow, hairline rows, quiet grey headings. */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto scrollbar-hide">
         <table className="w-full">
           <thead>
             <tr className="border-b text-left border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">

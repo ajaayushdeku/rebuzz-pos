@@ -99,6 +99,21 @@ const PeakDaysAnalysis = ({ data }: PeakDayDataProps) => {
 
   const AXIS_TICK = getAxisTick(isDark);
 
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+    const updateScreenSize = () => {
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    updateScreenSize();
+    mediaQuery.addEventListener("change", updateScreenSize);
+
+    return () => mediaQuery.removeEventListener("change", updateScreenSize);
+  }, []);
+
   return (
     <ChartCard
       icon={CalendarDays}
@@ -109,7 +124,12 @@ const PeakDaysAnalysis = ({ data }: PeakDayDataProps) => {
         body: "For each weekday, the average number of orders (tickets created) and sales (bills) per day, over the date range at the top of the page. Both are counts, not amounts, and each weekday is averaged over only the dates that had any. The days run left to right, ending on the range's last day. Hover a day for the exact figures.",
       }}
       subtitle="Average orders and sales per weekday across the selected period"
-      controls={<RangeBadge variant="pill" />}
+      rangeBadge={true}
+      buttons={
+        <div className="hidden md:block">
+          <RangeBadge variant="pill" />
+        </div>
+      }
     >
       {/* CHART */}
       <div
@@ -142,8 +162,8 @@ const PeakDaysAnalysis = ({ data }: PeakDayDataProps) => {
                 tick={AXIS_TICK}
                 ticks={ticks}
                 domain={[ticks[0], ticks[ticks.length - 1]]}
-                width={56}
-                label={yAxisTitle("Avg. per day")}
+                width={isSmallScreen ? 20 : 50}
+                label={!isSmallScreen ? yAxisTitle("Avg. per day") : undefined}
               />
 
               <Tooltip

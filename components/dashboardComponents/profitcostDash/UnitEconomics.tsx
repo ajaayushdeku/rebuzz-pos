@@ -82,7 +82,7 @@ export default function UnitEconomics({ data }: { data: UnitEconomicsData }) {
         body: "For the date range at the top of the page. Profit per item is the sales report's profit divided by the units sold; order size is revenue divided by the number of orders; cost per item is the items' cost prices over the units sold; profit per labor hour divides that profit by the hours of the shifts recorded in the range.",
       }}
       subtitle="What one item, one order and one labor hour earn"
-      controls={<RangeBadge variant="pill" />}
+      buttons={<RangeBadge variant="pill" />}
       className="h-full"
     >
       <div className="grid grid-cols-2 gap-3">

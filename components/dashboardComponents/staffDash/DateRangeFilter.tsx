@@ -346,7 +346,7 @@ export function DateRangeFilter({
           showCloseButton={false}
           className={cn(
             "w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)]",
-            "max-h-[calc(100dvh-1rem)] overflow-hidden",
+            "max-h-[calc(80dvh-1rem)] overflow-y-auto",
             "gap-0 rounded-2xl bg-white  p-0 shadow-xl",
             "dark:bg-[#161d2e]",
             "sm:w-[720px] sm:max-w-[720px]",
