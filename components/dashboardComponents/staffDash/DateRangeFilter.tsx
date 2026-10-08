@@ -354,7 +354,6 @@ export function DateRangeFilter({
           )}
         >
           {/* Main content */}
-
           <div
             className={cn(
               "grid gap-4 p-3.5",
