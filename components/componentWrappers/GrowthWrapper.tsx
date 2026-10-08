@@ -11,6 +11,10 @@ import {
 
 import { GROWTH_STAT_CONFIG } from "@/lib/config/dashboard";
 import GrowthByCategory from "../dashboardComponents/overviewDash/growthtracker/GrowthByCategory";
+import {
+  STAT_ROW,
+  STAT_ROW_ITEM,
+} from "../dashboardComponents/overviewDash/statRow";
 
 export const GrowthStatsWrapper = async () => {
   const growthStat = await getGrowthData();
@@ -23,14 +27,17 @@ export const GrowthStatsWrapper = async () => {
   }));
   // console.log("Growth Data:", growthStat); // Log the fetched growth data for debugging
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3 ">
+    <div className={STAT_ROW}>
       {stats.map(({ key, ...stat }) => (
-        <GrowthTrackCard
-          key={key}
-          {...stat}
-          currentLabel={period.current}
-          previousLabel={period.previous}
-        />
+        <div  key={key} className={STAT_ROW_ITEM}>
+          {" "}
+          <GrowthTrackCard
+            key={key}
+            {...stat}
+            currentLabel={period.current}
+            previousLabel={period.previous}
+          />
+        </div>
       ))}
     </div>
   );

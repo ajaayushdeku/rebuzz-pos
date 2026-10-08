@@ -80,9 +80,13 @@ export default function BreakEvenMarginSafety() {
         body: "For the month chosen on this card — not the date range at the top of the page. Break-even is everything the month cost, fixed and variable together (tax sits in the variable costs); margin of safety is how far revenue, side income included, sits above it, as a share of revenue.",
       }}
       subtitle="How much revenue is required to cover all costs"
+      expenseBadge={true}
       controls={
         <>
-          <ExpenseBadge variant="pill" />
+          <div className=" hidden md:block">
+            <ExpenseBadge variant="pill" />
+          </div>
+
           <MonthYearFilter
             month={month}
             year={year}

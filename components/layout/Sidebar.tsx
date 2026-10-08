@@ -51,7 +51,7 @@ export default function Sidebar() {
       )}
     >
       <div
-        className={`my-2 flex items-center justify-between gap-1 px-1 py-2 border-b border-gray-100 transition-[width] dark:border-white/10 duration-300 ease-in-out ${isCollapsed ? "justify-center " : "justify-between"}`}
+        className={`my-1 sm:my-2 flex items-center justify-between gap-1 px-1 py-2 border-b border-gray-100 transition-[width] dark:border-white/10 duration-300 ease-in-out ${isCollapsed ? "justify-center " : "justify-between"}`}
       >
         {!isCollapsed && (
           <Link href="/invoices/add" className="min-w-0  ml-2">
@@ -60,7 +60,9 @@ export default function Sidebar() {
               size="sm"
             >
               <Plus className="w-2 h-2 mr-1 font-bold" />
-              <span className="whitespace-nowrap text-[16px]">Create new</span>
+              <span className="whitespace-nowrap text-[15px] sm:text-[16px]">
+                Create new Invoice
+              </span>
             </Button>
           </Link>
         )}

@@ -14,6 +14,8 @@ import {
 import { useRouter } from "next/navigation";
 import { ChartCard } from "../chartCard";
 import { TaxRefundStatsSkeleton } from "./TaxAnalyticsSkeletons";
+import { STAT_ROW_ITEM } from "../overviewDash/statRow";
+import { cn } from "@/lib/utils";
 
 interface RefundTaxItem {
   billNumber: string;
@@ -39,7 +41,12 @@ function StatTile({
   sub: string;
 }) {
   return (
-    <div className="rounded-xl border px-5 py-4 border-[#e3e3e3] dark:border-white/10">
+    <div
+      className={cn(
+        "rounded-xl border px-5 py-4 border-[#e3e3e3] dark:border-white/10",
+        STAT_ROW_ITEM,
+      )}
+    >
       <div className="flex items-start justify-between gap-2">
         <span className="min-w-0 truncate text-[11px] text-[#5f6368] dark:text-[#a9b4c7]">
           {label}
@@ -94,7 +101,7 @@ const TaxOnRefundedBills = ({
         body: "Bills refunded in the date range at the top of the page, newest first. Tax refunded is the tax that was reversed along with the bill. Click a row to open that invoice.",
       }}
       subtitle="Tax reversed for returned items"
-      controls={<RangeBadge variant="pill" />}
+      buttons={<RangeBadge variant="pill" />}
     >
       {isLoading ? (
         <TaxRefundStatsSkeleton />
@@ -116,7 +123,7 @@ const TaxOnRefundedBills = ({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="flex items-start gap-3 -mx-4 snap-x snap-mandatory overflow-x-auto scroll-pl-6 px-6  scrollbar-hide sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-2 sm:snap-none sm:overflow-visible sm:px-0 sm:pb-0 md:gap-3 lg:grid-cols-4">
             <StatTile
               icon={RefreshCcw}
               iconClass="bg-red-50 text-red-600 dark:bg-red-400/10 dark:text-red-400"
@@ -149,7 +156,7 @@ const TaxOnRefundedBills = ({
               Recent refunds
             </p>
 
-            <div className="max-h-80 overflow-y-auto border-t border-[#e8eaed] dark:border-white/10">
+            <div className="max-h-80 overflow-y-auto scrollbar-hide border-t border-[#e8eaed] dark:border-white/10">
               {data.map((bill) => (
                 <div
                   key={bill.billNumber}

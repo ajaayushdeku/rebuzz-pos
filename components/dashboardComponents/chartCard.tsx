@@ -292,9 +292,11 @@ export function ChartCard({
                 {rangeBadge && <RangeBadge variant="pill" />}
                 {expenseBadge && <ExpenseBadge variant="pill" />}
               </div>
-              <div className="ml-auto flex shrink-0 items-center gap-2">
-                {buttons && <div className="flex gap-2">{buttons}</div>}
-              </div>
+              {buttons && (
+                <div className="ml-auto flex shrink-0 items-center gap-2">
+                  {buttons && <div className="flex gap-2">{buttons}</div>}
+                </div>
+              )}
             </>
           )}
         </div>

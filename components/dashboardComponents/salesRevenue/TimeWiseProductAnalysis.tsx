@@ -218,7 +218,12 @@ export default function TimeWiseProductAnalysis({
         body: "For the date range at the top of the page, bills (refunds left out, up to 120 of them) are grouped by the hour they were rung up: morning 6–11 AM, lunch 11 AM–2 PM, afternoon 2–5 PM, evening 5–9 PM. Each window shows the product, variants counted separately, with the best score of revenue and units sold weighed equally against that window's best. Revenue is unit price times quantity.",
       }}
       subtitle="Top performing products specific to times of day"
-      controls={<RangeBadge variant="pill" />}
+      controls={
+        <div className="hidden md:block ">
+          <RangeBadge variant="pill" />
+        </div>
+      }
+      rangeBadge={true}
       className="select-none"
     >
       {isLoading ? (
@@ -233,7 +238,7 @@ export default function TimeWiseProductAnalysis({
       ) : (
         // The tiles as they were before the card restyle, on the softest grey
         // border (gray-100) so they sit lightly inside the card's own frame.
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
           {data.map((item) => (
             <div
               key={item.period}

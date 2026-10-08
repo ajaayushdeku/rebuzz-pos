@@ -904,7 +904,7 @@ export default function RevenueFlowSankey() {
             : " No revenue data for this month yet."}
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto scrollbar-hide">
           <div
             ref={chartRef}
             className="dark:[&_.recharts-default-tooltip]:border-white/15! dark:[&_.recharts-default-tooltip]:bg-[#1b2436]! dark:[&_.recharts-default-tooltip]:text-[#e8ecf4]!"

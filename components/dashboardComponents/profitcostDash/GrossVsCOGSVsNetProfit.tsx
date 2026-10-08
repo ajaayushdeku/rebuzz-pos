@@ -168,8 +168,24 @@ export default function GrossVsCOGSVsNetProfit({
 }) {
   const { currency } = useCurrency();
 
-  const ITEMS_PER_PAGE = 5;
   const [page, setPage] = useState(0);
+
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+    const updateScreenSize = () => {
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    updateScreenSize();
+    mediaQuery.addEventListener("change", updateScreenSize);
+
+    return () => mediaQuery.removeEventListener("change", updateScreenSize);
+  }, []);
+
+  const ITEMS_PER_PAGE = isSmallScreen ? 3 : 5;
 
   const {
     data: categories,
@@ -270,7 +286,7 @@ export default function GrossVsCOGSVsNetProfit({
         body: "Each category's sales in the date range at the top of the page, highest revenue first. Net profit is revenue less tax and the items' cost prices, and COGS is revenue less that profit — so it includes the tax collected as well as the cost of the goods. Hover a category for its margin and COGS ratio.",
       }}
       subtitle="Per-category breakdown of revenue, cost, and profitability"
-      controls={
+      buttons={
         <>
           {allChartData.length > ITEMS_PER_PAGE && (
             <ChartPager
@@ -400,8 +416,8 @@ export default function GrossVsCOGSVsNetProfit({
                     tick={AXIS_TICK}
                     ticks={ticks}
                     domain={[ticks[0], ticks[ticks.length - 1]]}
-                    width={72}
-                    label={yAxisTitle("Amount")}
+                    width={isSmallScreen ? 55 : 80}
+                    label={!isSmallScreen ? yAxisTitle("Amount") : undefined}
                   />
                   <Tooltip
                     content={<CustomTooltip currency={currency} />}

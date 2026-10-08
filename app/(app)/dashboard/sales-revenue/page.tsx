@@ -46,14 +46,14 @@ export default async function Page({
   });
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
+    <div className="min-h-screen bg-surface-page px-6 py-5 sm:py-8 md:px-10 dark:bg-[#0f1420]">
       <PageHeader
         title="Sales & Revenue"
         subtitle={
           <>Detailed breakdown of your store&lsquo;s financial performance</>
         }
         actions={
-          <>
+          <div className="flex flex-row items-center gap-2">
             {/* Global date range filter — single source of truth */}
             <SalesRevenueHeader />
 
@@ -64,7 +64,7 @@ export default async function Page({
               label="Create Order"
               href="/invoices/add"
             />
-          </>
+          </div>
         }
       />
 

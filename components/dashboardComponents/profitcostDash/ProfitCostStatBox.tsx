@@ -4,6 +4,8 @@ import { useCurrency } from "@/providers/CurrencyContext";
 import { StatBoxProps } from "../StatBox";
 import { formatCurrencySymbol } from "@/utils/helper";
 import RangeTag from "@/components/ui/RangeTag";
+import { cn } from "@/lib/utils";
+import { STAT_ROW_ITEM } from "../overviewDash/statRow";
 
 /**
  * A stat tile in the ChartCard look: hairline border, no shadow, a bordered
@@ -32,7 +34,12 @@ export default function StatBox({
   const Icon = ICON_MAP[iconName];
 
   return (
-    <div className="rounded-2xl border bg-white px-5 py-4 border-[#e3e3e3] dark:border-white/10 dark:bg-white/5">
+    <div
+      className={cn(
+        "rounded-2xl border bg-white px-5 py-4 border-[#e3e3e3] dark:border-white/10 dark:bg-white/5",
+        STAT_ROW_ITEM,
+      )}
+    >
       <div className="mb-3 flex items-center justify-between gap-2">
         <span className="truncate text-[13px] font-medium text-[#5f6368] dark:text-[#a9b4c7]">
           {label}

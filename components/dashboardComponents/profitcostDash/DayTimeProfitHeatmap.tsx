@@ -102,7 +102,7 @@ export default function DayTimeProfitHeatmap({
         body: "Each cell is the average profit per bill paid in that weekday and hour, over the date range at the top of the page — a bill's total less its items' cost prices, refunds left out. An hour with no bills shows zero. Hover a cell for its exact figure.",
       }}
       subtitle="Average profit generation by hour and day of week"
-      controls={<RangeBadge variant="pill" />}
+      buttons={<RangeBadge variant="pill" />}
       className="select-none"
     >
       {/* Heatmap Grid */}

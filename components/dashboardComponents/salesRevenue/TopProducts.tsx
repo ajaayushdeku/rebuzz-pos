@@ -105,11 +105,11 @@ export default function TopProducts({
         body: "Products sold in the date range at the top of the page, most units sold first until you sort by a column. Sold, revenue and net profit are totals for the range, with same-named items merged. The last column is each product's share of all units sold in the range.",
       }}
       subtitle="Products contributing most to revenue growth"
-      controls={<RangeBadge variant="pill" />}
-      className="h-full"
+      rangeBadge={true}
+      buttons={<RangeBadge variant="pill" />}
     >
       {/* Search */}
-      <div className="relative mb-3 w-full">
+      <div className="relative mb-3  w-full">
         <Search
           size={13}
           className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9aa0a6] dark:text-[#9aa6bd]"
@@ -136,7 +136,7 @@ export default function TopProducts({
       </div>
 
       {/* Table: no zebra or shadow, hairline rows, quiet grey headings. */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto scrollbar-hide">
         <table className="w-full table-auto">
           <thead>
             <tr className="border-b text-left border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]">

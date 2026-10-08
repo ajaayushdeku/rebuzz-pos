@@ -181,7 +181,7 @@ export default function WhatIfScenarioPlanner({
         body: "It starts from the date range at the top of the page: revenue plus side income, less cost of goods, tax and your recorded expenses. Price and volume move revenue and the tax inside it; volume and the stock-cost lever move cost of goods. Side income and other costs stay put. Labor is locked until employees carry a pay rate.",
       }}
       subtitle="Move a lever to see what it would do to profit"
-      controls={
+      buttons={
         <>
           <RangeBadge variant="pill" />
           <ExpenseBadge variant="pill" />

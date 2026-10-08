@@ -213,6 +213,21 @@ export default function ProfitWaterfallBridge({
 
   const AXIS_TICK = getAxisTick(isDark);
 
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+    const updateScreenSize = () => {
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    updateScreenSize();
+    mediaQuery.addEventListener("change", updateScreenSize);
+
+    return () => mediaQuery.removeEventListener("change", updateScreenSize);
+  }, []);
+
   return (
     <ChartCard
       icon={ChartColumnDecreasing}
@@ -228,7 +243,9 @@ export default function ProfitWaterfallBridge({
         body: "It starts from what came in during the date range at the top of the page — sales, plus any side income you recorded — then takes out the cost of goods, tax, staff pay and your recorded expenses, largest first with the smallest grouped together. Each bar is what is left after that step; the last is net profit.",
       }}
       subtitle="Where each rupee of revenue goes, from gross to net"
-      controls={
+      // rangeBadge={true}
+      // expenseBadge={true}
+      buttons={
         <>
           <RangeBadge variant="pill" />
           <ExpenseBadge variant="pill" />
@@ -268,8 +285,10 @@ export default function ProfitWaterfallBridge({
                     tick={AXIS_TICK}
                     ticks={ticks}
                     domain={[ticks[0], ticks[ticks.length - 1]]}
-                    width={72}
-                    label={yAxisTitle("Left after step")}
+                    width={isSmallScreen ? 55 : 80}
+                    label={
+                      !isSmallScreen ? yAxisTitle("Left after step") : undefined
+                    }
                   />
                   <Tooltip
                     content={<StepTooltip />}

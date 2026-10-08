@@ -55,7 +55,7 @@ async function fetchRevenueVsProfit(
 
   return Object.entries(merged)
     .sort(([, a], [, b]) => b.revenue - a.revenue)
-    .slice(0, 6)
+    .slice(0, 12)
     .map(([product, { revenue, profit }]) => ({
       product,
       revenue: Math.round(revenue * 100) / 100,

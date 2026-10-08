@@ -86,11 +86,31 @@ export default function RevenueVsProfitChart({
   startDate: string;
   endDate: string;
 }) {
-  const ITEMS_PER_PAGE = 6;
+  const [isDark, setIsDark] = useState(false);
+
+  const AXIS_TICK = getAxisTick(isDark);
+
   const [page, setPage] = useState(0);
 
   const { data, isFetching, isError } = useRevenueVsProfit(startDate, endDate);
   const { currency } = useCurrency();
+
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+    const updateScreenSize = () => {
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    updateScreenSize();
+    mediaQuery.addEventListener("change", updateScreenSize);
+
+    return () => mediaQuery.removeEventListener("change", updateScreenSize);
+  }, []);
+
+  const ITEMS_PER_PAGE = isSmallScreen ? 3 : 6;
 
   const allData = useMemo<ProductData[]>(() => {
     if (!data || data.length === 0) return [];
@@ -102,7 +122,7 @@ export default function RevenueVsProfitChart({
   const chartData = useMemo<ProductData[]>(() => {
     const start = page * ITEMS_PER_PAGE;
     return allData.slice(start, start + ITEMS_PER_PAGE);
-  }, [allData, page]);
+  }, [allData, page, ITEMS_PER_PAGE]);
 
   const displayData =
     chartData.length > 0
@@ -140,8 +160,6 @@ export default function RevenueVsProfitChart({
   const firstShown = page * ITEMS_PER_PAGE + 1;
   const lastShown = Math.min(allData.length, (page + 1) * ITEMS_PER_PAGE);
 
-  const [isDark, setIsDark] = useState(false);
-
   useEffect(() => {
     const updateTheme = () => {
       setIsDark(document.documentElement.classList.contains("dark"));
@@ -159,7 +177,6 @@ export default function RevenueVsProfitChart({
     return () => observer.disconnect();
   }, []);
 
-  const AXIS_TICK = getAxisTick(isDark);
   return (
     <ChartCard
       icon={ChartColumnBig}
@@ -169,7 +186,7 @@ export default function RevenueVsProfitChart({
         body: "Revenue is what each product sold for in the date range at the top of the page; profit is what was left after its cost. Hover a bar for the exact figures.",
       }}
       subtitle="Comparing top-line revenue against net profit per product"
-      controls={
+      buttons={
         <>
           {allData.length > ITEMS_PER_PAGE && (
             <ChartPager
@@ -221,8 +238,8 @@ export default function RevenueVsProfitChart({
                 tick={AXIS_TICK}
                 ticks={ticks}
                 domain={[ticks[0], ticks[ticks.length - 1]]}
-                width={72}
-                label={yAxisTitle("Amount")}
+                width={isSmallScreen ? 55 : 80}
+                label={!isSmallScreen ? yAxisTitle("Amount") : undefined}
               />
               <Tooltip
                 content={<CustomTooltip currency={currency} />}

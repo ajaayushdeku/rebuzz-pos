@@ -129,7 +129,7 @@ export default function RefundAnalysis({
         body: "Refunded bills from the date range at the top of the page. Value lost is the bill's full total; the refund date is when the bill was last updated. Click a row to open the bill.",
       }}
       subtitle="All the refunded bills with lost value."
-      controls={<RangeBadge variant="pill" />}
+      buttons={<RangeBadge variant="pill" />}
       className="overflow-hidden"
     >
       {/* Search */}
