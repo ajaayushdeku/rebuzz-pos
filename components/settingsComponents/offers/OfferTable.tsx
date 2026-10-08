@@ -80,17 +80,19 @@ const OfferTable = ({
             <col className="w-12" />
             <col className="w-80 md:w-65" />
             <col className="w-25 md:w-30" />
-            <col className="w-50 md:w-55" />
-            <col className="w-30 md:w-35" />
-            <col className="w-10 md:w-20" />
+            <col className="w-50 md:w-50" />
+            <col className="w-25 md:w-25" />
+            <col className="w-25 md:w-25" />
+            <col className="w-15 md:w-20" />
           </colgroup>
           <thead>
             <tr className="border-b border-[#e8eaed] text-[11px] tracking-wider text-[#5f6368] dark:border-white/10 dark:text-[#9aa6bd]">
-              <th className="pb-2.5 text-left font-normal">S.No.</th>
+              <th className=" pb-2.5 text-left font-normal">S.No.</th>
               <th className="pb-2.5 text-left font-normal">Offer</th>
               <th className="pb-2.5 text-left font-normal">Deal</th>
               <th className="pb-2.5 text-left font-normal">Runs</th>
               <th className="pb-2.5 text-center font-normal">Status</th>
+              <th className="pb-2.5 text-center font-normal">Use Count</th>
               <th className="pb-2.5 text-right font-normal">Actions</th>
             </tr>
           </thead>
@@ -145,7 +147,7 @@ const OfferTable = ({
                     key={offer._id}
                     className="border-b border-gray-50 transition-colors last:border-0 hover:bg-gray-50/50 dark:border-white/10 dark:hover:bg-white/5"
                   >
-                    <td className="py-3 text-[11px] font-medium text-gray-400 dark:text-[#7b869b]">
+                    <td className="pl-2 py-3 text-[11px] font-medium text-gray-400 dark:text-[#7b869b]">
                       #{effectivePage * PAGE_SIZE + idx + 1}
                     </td>
 
@@ -236,6 +238,14 @@ const OfferTable = ({
                         />
                         {offer.enabled ? "Live" : "Off"}
                       </button>
+                    </td>
+
+                    <td className="py-3 text-center">
+                      <p className="truncate text-[12px] text-[#3c4043] dark:text-[#e8ecf4]">
+                        {offer.perCustomerLimit === 0
+                          ? "Unlimited"
+                          : offer.perCustomerLimit}
+                      </p>
                     </td>
 
                     <td className="py-3">

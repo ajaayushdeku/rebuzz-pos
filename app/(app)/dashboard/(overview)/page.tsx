@@ -56,7 +56,7 @@ const Page = async ({
     <>
       <div className="w-full dark:bg-[#0f1420] ">
         {/* ACTUAL CONTENTS */}
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 ">
           {/* Time Range Filter + Stats */}
           {/* <div className="flex items-center justify-between my-4">
             <h2 className="text-base font-semibold text-gray-900">

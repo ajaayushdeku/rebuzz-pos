@@ -322,18 +322,20 @@ export function DateRangeFilter({
   })();
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex min-w-0 items-center gap-2">
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button
             variant="outline"
             className={cn(
-              "w-fit sm:w-[190px] justify-start text-left text-[12px] font-normal h-9 dark:border-white/15 dark:bg-[#161d2e] dark:text-[#c3ccdc] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]",
+              "h-9 min-w-0 max-w-full justify-start gap-1.5 px-2.5 text-left text-[13px] font-normal sm:w-[210px] sm:px-3",
+              "dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:bg-white/10 dark:hover:text-[#e8ecf4]",
               !value.startDate && "text-muted-foreground dark:text-[#7b869b]",
             )}
           >
-            <CalendarIcon className=" h-4 w-4 dark:text-[#9aa6bd]" />
-            <span className="truncate hidden sm:block ml-1">
+            <CalendarIcon className="h-4 w-4 shrink-0 dark:text-[#9aa6bd]" />
+
+            <span className="min-w-0 truncate hidden sm:block sm:ml-1">
               {" "}
               {displayText}
             </span>
@@ -342,23 +344,41 @@ export function DateRangeFilter({
 
         <DialogContent
           showCloseButton={false}
-          className="w-[calc(300vw-2rem)] sm:w-[720px] sm:max-w-[720px] p-0 gap-0 rounded-2xl shadow-xl bg-white dark:bg-[#161d2e]"
+          className={cn(
+            "w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)]",
+            "max-h-[calc(100dvh-1rem)] overflow-hidden",
+            "gap-0 rounded-2xl bg-white  p-0 shadow-xl",
+            "dark:bg-[#161d2e]",
+            "sm:w-[720px] sm:max-w-[720px]",
+            "sm:max-h-[calc(100dvh-2rem)]",
+          )}
         >
-          {/* Two columns from sm up: calendar on the left, controls on the
-              right. Stacked, this ran ~600px tall and filled a laptop viewport;
-              side by side it is roughly half that, and the extra width is what
-              pays for it. */}
-          <div className="grid gap-5 p-5 sm:grid-cols-[minmax(0,1fr)_280px]">
+          {/* Main content */}
+
+          <div
+            className={cn(
+              "grid gap-4 p-3.5",
+              "sm:grid-cols-[minmax(0,1fr)_280px] sm:gap-5 sm:p-5",
+            )}
+          >
             {/* Calendar — `p-0` drops the component's own p-3, which was adding
-                24px of height inside an already tall modal. */}
-            <div>
+                  24px of height inside an already tall modal. */}
+            <div className="min-w-0">
               {mode === "single" ? (
                 <Calendar
                   mode="single"
                   selected={tempStartDate}
                   onSelect={handleSingleDateSelect}
                   defaultMonth={tempStartDate}
-                  className="p-0 mx-auto [--cell-size:--spacing(13)] [&_[data-day]]:text-[15px] [&_th]:text-[13px]"
+                  className={cn(
+                    "mx-auto p-0",
+                    "[--cell-size:--spacing(11)]",
+                    "[&_[data-day]]:text-[12px]",
+                    "[&_th]:text-[11px]",
+                    "sm:[--cell-size:--spacing(13)]",
+                    "sm:[&_[data-day]]:text-[13px]",
+                    "sm:[&_th]:text-[11px]",
+                  )}
                   disabled={(date) => date > new Date()}
                 />
               ) : (
@@ -368,13 +388,29 @@ export function DateRangeFilter({
                   onSelect={handleRangeSelect}
                   defaultMonth={tempStartDate}
                   numberOfMonths={1}
-                  className="p-0 mx-auto [--cell-size:--spacing(13)] [&_[data-day]]:text-[15px] [&_th]:text-[13px]"
+                  className={cn(
+                    "mx-auto p-0",
+                    "[--cell-size:--spacing(11)]",
+                    "[&_[data-day]]:text-[12px]",
+                    "[&_th]:text-[11px]",
+                    "sm:[--cell-size:--spacing(13)]",
+                    "sm:[&_[data-day]]:text-[13px]",
+                    "sm:[&_th]:text-[11px]",
+                  )}
                   disabled={(date) => date > new Date()}
                 />
               )}
             </div>
 
-            <div className="flex flex-col gap-3 sm:border-l sm:border-gray-100 sm:pl-5 dark:sm:border-white/10">
+            {/* Controls */}
+            <div
+              className={cn(
+                "flex min-w-0 flex-col gap-3",
+                "border-t border-gray-100 pt-3",
+                "dark:border-white/10",
+                "sm:border-l sm:border-t-0 sm:pl-5 sm:pt-0",
+              )}
+            >
               {/* Mode toggle — the app's pill tab treatment, matching the
                   Recent Transactions / settings tab bars. */}
               <div
@@ -395,7 +431,8 @@ export function DateRangeFilter({
                     }
                   }}
                   className={cn(
-                    "flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] dark:focus-visible:ring-offset-[#161d2e]",
+                    "flex  flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[13px] transition-colors",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
                     mode === "single"
                       ? "bg-white font-bold text-blue-950 shadow-sm dark:bg-[#161d2e] dark:text-[#e8ecf4]"
                       : "font-semibold text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee] dark:hover:text-white",
@@ -410,7 +447,8 @@ export function DateRangeFilter({
                   aria-selected={mode === "range"}
                   onClick={() => setMode("range")}
                   className={cn(
-                    "flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] dark:focus-visible:ring-offset-[#161d2e]",
+                    "flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[13px] transition-colors",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
                     mode === "range"
                       ? "bg-white font-bold text-blue-950 shadow-sm dark:bg-[#161d2e] dark:text-[#e8ecf4]"
                       : "font-semibold text-blue-800 hover:text-blue-950 dark:text-[#a8c4ee] dark:hover:text-white",
@@ -429,33 +467,62 @@ export function DateRangeFilter({
                   onChange={handlePresetChange}
                   placeholder="Quick select"
                   className="w-full"
+                  menuClassName="min-w-full"
                 />
               )}
 
               {/* Date input fields — stacked, since the column is narrow. */}
-              <div className="flex flex-col gap-2.5">
-                <div>
+              <div
+                className={cn(
+                  "grid gap-2.5",
+                  mode === "range" ? "grid-cols-1" : "grid-cols-1",
+                  "sm:grid-cols-1",
+                )}
+              >
+                {/* Start */}
+                <div className="min-w-0">
                   <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-slate-400 block mb-1.5 dark:text-[#7b869b]">
                     {mode === "single" ? "Date" : "Start Date"}
                   </label>
+
                   <input
                     type="date"
                     value={startInput}
                     onChange={(e) => handleStartInputChange(e.target.value)}
                     onBlur={handleStartBlur}
-                    className="w-full h-9 px-3 text-xs tracking-[0.06em] border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60 hover:[&::-webkit-calendar-picker-indicator]:opacity-100 dark:[&::-webkit-calendar-picker-indicator]:invert"
+                    className={cn(
+                      "h-9 w-full min-w-0 rounded-lg border border-gray-200 bg-white px-2.5 text-xs tracking-wide",
+                      "focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500",
+                      "dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]",
+                      "[&::-webkit-calendar-picker-indicator]:cursor-pointer",
+                      "[&::-webkit-calendar-picker-indicator]:opacity-60",
+                      "hover:[&::-webkit-calendar-picker-indicator]:opacity-100",
+                      "dark:[&::-webkit-calendar-picker-indicator]:invert",
+                    )}
                   />
                 </div>
+
+                {/* End */}
                 {mode === "range" && (
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1 dark:text-[#9aa6bd]">
+                  <div className="min-w-0">
+                    <label className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-400 dark:text-[#7b869b]">
                       End Date
                     </label>
+
                     <input
                       type="date"
                       value={endInput}
                       onChange={(e) => handleEndInputChange(e.target.value)}
-                      className="w-full h-9 px-3 text-xs tracking-[0.06em] border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60 hover:[&::-webkit-calendar-picker-indicator]:opacity-100 dark:[&::-webkit-calendar-picker-indicator]:invert"
+                      className={cn(
+                        "h-9 w-full min-w-0 rounded-lg border border-gray-200 bg-white px-2.5 text-xs tracking-wide",
+                        "focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500",
+                        "dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4]",
+                        "[&::-webkit-calendar-picker-indicator]:cursor-pointer",
+                        "[&::-webkit-calendar-picker-indicator]:opacity-60",
+                        "hover:[&::-webkit-calendar-picker-indicator]:opacity-100",
+                        "dark:[&::-webkit-calendar-picker-indicator]:invert",
+                        "dark:[&::-webkit-calendar-picker-indicator]:text-white",
+                      )}
                     />
                   </div>
                 )}
@@ -464,11 +531,23 @@ export function DateRangeFilter({
           </div>
 
           {/* Apply / Cancel buttons — same pair the confirm dialogs use. */}
-          <div className="flex items-center gap-2.5 px-5 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl dark:bg-white/5 dark:border-white/10">
+          <div
+            className={cn(
+              "flex items-center gap-2 border-t border-gray-100 bg-gray-50 px-3 py-3",
+              "dark:border-white/10 dark:bg-white/5",
+              "sm:gap-2.5 sm:px-5 sm:py-4",
+            )}
+          >
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-[13px] font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 dark:bg-[#161d2e] dark:border-white/15 dark:text-[#c3ccdc] dark:hover:bg-white/10 dark:hover:border-white/25"
+              className={cn(
+                "h-10 flex-1 rounded-xl border border-gray-200 bg-white px-3 text-[12px] font-semibold text-gray-700",
+                "transition hover:border-gray-300 hover:bg-gray-50",
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400",
+                "dark:border-white/15 dark:bg-[#161d2e] dark:text-[#c3ccdc]",
+                "dark:hover:border-white/25 dark:hover:bg-white/10",
+              )}
             >
               Cancel
             </button>
@@ -476,7 +555,12 @@ export function DateRangeFilter({
               type="button"
               onClick={handleApply}
               disabled={!canApply}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-[13px] font-bold text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className={cn(
+                "flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-[12px] font-bold text-white shadow-sm",
+                "transition hover:bg-blue-700",
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
+                "disabled:cursor-not-allowed disabled:opacity-50",
+              )}
             >
               <Check className="h-4 w-4" />
               Apply

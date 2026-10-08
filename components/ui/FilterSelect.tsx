@@ -93,7 +93,9 @@ export function FilterSelect({
 
       // Flipped only when it genuinely does not fit on the right *and* does fit
       // on the left; otherwise left, which keeps the usual alignment.
-      setMenuSide(spaceRight < menuWidth && spaceLeft >= menuWidth ? "right" : "left");
+      setMenuSide(
+        spaceRight < menuWidth && spaceLeft >= menuWidth ? "right" : "left",
+      );
     };
 
     place();
@@ -183,33 +185,33 @@ export function FilterSelect({
           ref={panelRef}
           role="listbox"
           className={cn(
-            "absolute z-30 mt-1.5 max-h-72 max-w-[calc(100vw-1rem)] origin-top overflow-y-auto overscroll-contain rounded-md border border-gray-200 bg-white p-1 shadow-lg animate-in fade-in-0 zoom-in-95 duration-150 dark:border-white/15 dark:bg-[#1b2436]",
+            "absolute z-30 my-1.5 max-h-72 max-w-[calc(100vw-1rem)] origin-top overflow-y-auto overscroll-contain scrollbar-hide rounded-md border border-gray-200 bg-white p-1 shadow-lg animate-in fade-in-0 zoom-in-95 duration-150 dark:border-white/15 dark:bg-[#1b2436]",
             menuClassName,
             menuSide === "left" ? "left-0" : "right-0",
           )}
         >
-        {options.map((opt) => (
-          <button
-            key={opt.value}
-            ref={value === opt.value ? selectedRef : undefined}
-            type="button"
-            role="option"
-            aria-selected={value === opt.value}
-            disabled={opt.disabled}
-            onClick={() => {
-              onChange(opt.value);
-              setOpen(false);
-            }}
-            className={`w-full text-left px-3 py-1.5 text-[13px] rounded-md transition-colors ${caseClass} ${
-              opt.disabled
-                ? "cursor-not-allowed text-gray-400 dark:text-[#6b7588]"
-                : value === opt.value
-                  ? "cursor-pointer bg-blue-50 text-blue-700 font-medium dark:bg-blue-400/15 dark:text-[#a8c4ee]"
-                  : "cursor-pointer text-gray-600 hover:bg-gray-100 dark:text-[#c3ccdc] dark:hover:bg-white/10"
-            }`}
-          >
-            {opt.label}
-          </button>
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              ref={value === opt.value ? selectedRef : undefined}
+              type="button"
+              role="option"
+              aria-selected={value === opt.value}
+              disabled={opt.disabled}
+              onClick={() => {
+                onChange(opt.value);
+                setOpen(false);
+              }}
+              className={`w-full text-left px-3 py-1.5 text-[13px] rounded-md transition-colors ${caseClass} ${
+                opt.disabled
+                  ? "cursor-not-allowed text-gray-400 dark:text-[#6b7588]"
+                  : value === opt.value
+                    ? "cursor-pointer bg-blue-50 text-blue-700 font-medium dark:bg-blue-400/15 dark:text-[#a8c4ee]"
+                    : "cursor-pointer text-gray-600 hover:bg-gray-100 dark:text-[#c3ccdc] dark:hover:bg-white/10"
+              }`}
+            >
+              {opt.label}
+            </button>
           ))}
         </div>
       )}
