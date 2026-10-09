@@ -7,6 +7,12 @@
  * pop in after a blank spinner.
  */
 
+import { cn } from "@/lib/utils";
+import {
+  STAT_ROW,
+  STAT_ROW_ITEM,
+} from "../dashboardComponents/overviewDash/statRow";
+
 /**
  * The card frame of the shared ChartCard (components/dashboardComponents/
  * chartCard): hairline border, no shadow, the same padding. Written out rather
@@ -114,11 +120,14 @@ export function ExpenseBudgetGaugesSkeleton() {
       </div>
 
       {/* 5 stat cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className={STAT_ROW}>
         {Array.from({ length: 5 }).map((_, i) => (
           <div
             key={i}
-            className="bg-white dark:bg-[#161d2e] rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3 dark:border-white/10"
+            className={cn(
+              "bg-white dark:bg-[#161d2e] rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3 dark:border-white/10",
+              STAT_ROW_ITEM,
+            )}
           >
             <div className="flex items-center justify-between">
               <div className="h-3 w-20 bg-gray-100 rounded dark:bg-white/10" />

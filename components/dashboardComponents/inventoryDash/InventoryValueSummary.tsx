@@ -20,7 +20,9 @@ import {
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
 import RangeTag from "@/components/ui/RangeTag";
-import { CHART_PALETTE } from "../chartCard";
+// import { CHART_PALETTE } from "../chartCard";
+import { STAT_ROW, STAT_ROW_ITEM } from "../overviewDash/statRow";
+import { cn } from "@/lib/utils";
 
 // Combined selling/cost value across every product in the business catalog.
 // Revenue & net profit follow the shared date range; the rest are stock-based
@@ -179,7 +181,10 @@ export default function InventoryValueSummary({
     return (
       <div
         key={card.label}
-        className="rounded-2xl border bg-white dark:bg-[#161d2e] px-5 py-4 border-[#e3e3e3] dark:border-white/10"
+        className={cn(
+          "rounded-2xl border bg-white dark:bg-[#161d2e] px-5 py-4 border-[#e3e3e3] dark:border-white/10",
+          STAT_ROW_ITEM,
+        )}
       >
         <div className="flex items-center justify-between gap-2">
           <span className="tracking-wide truncate text-[12px] text-[#5f6368] dark:text-[#a9b4c7]">
@@ -240,9 +245,7 @@ export default function InventoryValueSummary({
             <p className="mb-2 tracking-wide font-semibold text-[10px] text-gray-400 uppercase dark:text-[#7b869b]">
               Current stock (all products)
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {staticCards.map(renderCard)}
-            </div>
+            <div className={STAT_ROW}>{staticCards.map(renderCard)}</div>
           </div>
 
           {/* Date-ranged metrics */}
@@ -250,9 +253,7 @@ export default function InventoryValueSummary({
             <p className="mb-2 tracking-wide font-semibold text-[10px] text-gray-400 uppercase dark:text-[#7b869b]">
               For selected range
             </p>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-              {rangedCards.map(renderCard)}
-            </div>
+            <div className={STAT_ROW}>{rangedCards.map(renderCard)}</div>
           </div>
         </div>
       )}

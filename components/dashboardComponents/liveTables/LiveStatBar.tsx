@@ -4,6 +4,8 @@ import { Gauge, DoorOpen, TrendingUp, type LucideIcon } from "lucide-react";
 
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
+import { STAT_ROW, STAT_ROW_ITEM } from "../overviewDash/statRow";
+import { cn } from "@/lib/utils";
 
 interface LiveStatBarProps {
   occupancyPct: number;
@@ -18,8 +20,11 @@ export default function LiveStatBar({
 }: LiveStatBarProps) {
   const { currency } = useCurrency();
 
+  // One column on a phone. Three across gave each box 95px, and `px-5` took 40
+  // of those — "Rs 12,500.00" at `text-xl` had 55px and truncated. The repeated
+  // `sm:grid-cols-3 md:grid-cols-3` was one rule twice.
   return (
-    <div className="grid grid-cols-3 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-3">
+    <div className={STAT_ROW}>
       {/* Occupancy */}
       <StatBox
         label="Occupancy"
@@ -82,7 +87,12 @@ function StatBox({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border bg-white dark:bg-[#161d2e] px-5 py-4 border-[#e3e3e3] dark:border-white/10">
+    <div
+      className={cn(
+        "rounded-2xl h-[125px] border border-[#e3e3e3] bg-white px-4 py-4 sm:px-5 dark:border-white/10 dark:bg-[#161d2e]",
+        STAT_ROW_ITEM,
+      )}
+    >
       {/* Label + Icon */}
       <div className="mb-3 flex items-center justify-between gap-2">
         <span className="truncate text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">

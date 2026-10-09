@@ -38,7 +38,7 @@ export default function DashboardLayout({
       <PageHeader
         title="Dashboard Overview"
         subtitle={
-          isLoading ? undefined : (
+          isLoading ? "Welcome back" : (
             <>
               Welcome back, {profile?.name}. Here&lsquo;s what&lsquo;s happening
               with Rebuzz POS

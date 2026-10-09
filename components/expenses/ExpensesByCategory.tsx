@@ -149,7 +149,7 @@ export default function ExpensesByCategory() {
         body: "Every expense logged in the month picked at the top of the page, grouped by its category and ordered largest first. Income entries are left out, so the percentages are shares of expenses rather than of all money moved.",
       }}
       subtitle="Share of total expenses this month"
-      controls={<RangeBadge scope="month" variant="pill" />}
+      buttons={<RangeBadge scope="month" variant="pill" />}
     >
       {/* Hide scrollbar styles */}
       <style jsx global>{`

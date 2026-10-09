@@ -140,37 +140,39 @@ export default function WhatChangedAndWhy() {
       ) : (
         <>
           {/* Comparison row */}
-          <div className="flex items-center justify-between gap-4">
-            {/* Last month */}
-            <div>
-              <p className="mb-1 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
-                Last month
-              </p>
-              <p className="text-xl font-semibold tracking-tight tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
-                {fmt(data.lastMonth)}
-              </p>
-            </div>
-
-            {/* Change pill — center */}
-            <div className="flex flex-1 justify-center">
-              <span
-                className={`inline-flex items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-xs tabular-nums dark:border-white/15 dark:bg-white/5 ${
-                  increased
-                    ? "text-[#e37400] dark:text-amber-400"
-                    : "text-[#1a73e8] dark:text-[#7ba2e3]"
-                }`}
-              >
-                {increased ? (
-                  <TrendingUp size={12} />
-                ) : (
-                  <TrendingDown size={12} />
-                )}
-                {fmt(Math.abs(data.change))} ({data.changePct}%)
-              </span>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between  gap-4">
+            <div className="flex flex-row items-end  justify-between sm:justify-start gap-2 w-full  ">
+              {" "}
+              {/* Last month */}
+              <div>
+                <p className="mb-1 text-[11px] text-[#9aa0a6] dark:text-[#9aa6bd]">
+                  Last month
+                </p>
+                <p className="text-xl font-semibold tracking-tight tabular-nums text-[#5f6368] dark:text-[#a9b4c7]">
+                  {fmt(data.lastMonth)}
+                </p>
+              </div>
+              {/* Change pill — center */}
+              <div className="flex  justify-center">
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-xs tabular-nums dark:border-white/15 dark:bg-white/5 ${
+                    increased
+                      ? "text-[#e37400] dark:text-amber-400"
+                      : "text-[#1a73e8] dark:text-[#7ba2e3]"
+                  }`}
+                >
+                  {increased ? (
+                    <TrendingUp size={12} />
+                  ) : (
+                    <TrendingDown size={12} />
+                  )}
+                  {fmt(Math.abs(data.change))} ({data.changePct}%)
+                </span>
+              </div>
             </div>
 
             {/* This month — blue card */}
-            <div className="min-w-[140px] rounded-2xl bg-blue-600 px-5 py-3 text-right">
+            <div className="min-w-[140px] rounded-2xl bg-blue-600 px-5 py-3 text-right w-full sm:w-fit">
               <p className="mb-0.5 text-[11px] text-blue-100">This month</p>
               <p className="text-2xl font-semibold leading-none tracking-tight tabular-nums text-white">
                 {fmt(data.thisMonth)}

@@ -39,7 +39,7 @@ function OfferBuilder() {
             /* Only below xl, where the two columns stack. Wide enough and both
                are on screen at once, so a switch would be a control with
                nothing to switch. */
-            <div className="flex  items-center gap-1 rounded-xl bg-[#e4f2fe]  p-1 xl:hidden dark:bg-white/10">
+            <div className="flex  items-center gap-1 rounded-lg sm:rounded-xl bg-[#e4f2fe]  p-1 xl:hidden dark:bg-white/10">
               {VIEWS.map(({ id, label, icon: Icon }) => {
                 const active = view === id;
                 return (
@@ -49,14 +49,14 @@ function OfferBuilder() {
                     onClick={() => setView(id)}
                     aria-pressed={active}
                     className={cn(
-                      "flex items-center gap-2 rounded-lg px-5 py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe]",
+                      "flex items-center gap-2 rounded-md sm:rounded-lg px-3 sm:px-5 py-1.5 sm:py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe]",
                       active
                         ? "bg-white text-gray-900 shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none"
                         : "text-gray-500 hover:text-gray-700 dark:hover:text-[#e8ecf4] dark:text-[#9aa6bd]",
                     )}
                   >
                     <Icon size={15} />
-                    {label}
+                    <span className="hidden sm:block"> {label}</span>
                   </button>
                 );
               })}

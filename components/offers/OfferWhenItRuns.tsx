@@ -563,7 +563,9 @@ export default function OfferWhenItRuns() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        {/* Seven across on a phone. At a fixed `w-16` they wrapped into two
+            ragged rows, and a week reads as a week when it is one line. */}
+        <div className="grid grid-cols-7 gap-1.5 sm:flex sm:flex-wrap sm:gap-2">
           {DAYS.map((day) => {
             const active = form.repeatingDays.includes(day);
             return (
@@ -572,7 +574,7 @@ export default function OfferWhenItRuns() {
                 type="button"
                 onClick={() => toggleDay(day)}
                 aria-pressed={active}
-                className={`h-10 w-16 cursor-pointer rounded-lg text-[13px] font-medium transition-colors ${
+                className={`h-10 w-full cursor-pointer rounded-lg text-[12px] font-medium transition-colors sm:w-16 sm:text-[13px] ${
                   active
                     ? "bg-gray-800 text-white dark:bg-[#124142]"
                     : "border border-[#dadce0] bg-white dark:bg-[#1D2239] text-[#5f6368] hover:bg-[#f8f9fa] dark:hover:bg-white/5 dark:border-white/15 dark:text-[#a9b4c7]"
@@ -588,12 +590,15 @@ export default function OfferWhenItRuns() {
       {/* Hours */}
       <div className="mt-6 border-t border-[#e8eaed] pt-5 dark:border-white/10">
         <p className={LABEL}>Active hours window (optional)</p>
-        <div className="flex flex-row items-center gap-3">
+        {/* Wraps, and the fields share what room there is: two native time
+            pickers plus the word between them need about 300px, which a phone
+            does not have inside the card. */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <input
             type="time"
             value={form.startTime}
             onChange={(e) => updateField("startTime", e.target.value)}
-            className={`${FIELD} w-auto`}
+            className={`${FIELD} min-w-[7.5rem] flex-1 sm:w-auto sm:flex-none`}
           />
           <span className="text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">
             to
@@ -602,7 +607,7 @@ export default function OfferWhenItRuns() {
             type="time"
             value={form.endTime}
             onChange={(e) => updateField("endTime", e.target.value)}
-            className={`${FIELD} w-auto`}
+            className={`${FIELD} min-w-[7.5rem] flex-1 sm:w-auto sm:flex-none`}
           />
         </div>
       </div>

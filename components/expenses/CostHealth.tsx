@@ -263,7 +263,9 @@ function FixedVariableDonut({
   };
 
   return (
-    <div className="flex items-center gap-6">
+    // The donut is only 90px, so it stays beside the legend even on a
+    // phone; what has to give is the legend itself, below.
+    <div className="flex items-center gap-4 sm:gap-6">
       {/* Donut */}
       <div className="relative w-[90px] h-[90px] shrink-0">
         <svg
@@ -300,11 +302,13 @@ function FixedVariableDonut({
       </div>
 
       {/* Legend */}
-      <div className="space-y-4">
+      {/* `min-w-0` so a long amount lets the legend shrink rather than
+          pushing the donut off the card. */}
+      <div className="min-w-0 space-y-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full bg-gray-800" />
-            <span className="flex flex-row items-center gap-2 text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
+            <span className="flex flex-col items-start gap-0 text-[13px] text-[#3c4043] sm:flex-row sm:items-center sm:gap-2 dark:text-[#e8ecf4]">
               <span className="tabular-nums">
                 Fixed costs {fixedPct.toFixed(1)}%
               </span>
@@ -321,7 +325,7 @@ function FixedVariableDonut({
         <div>
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full bg-blue-400" />
-            <span className="flex flex-row items-center gap-2 text-[13px] text-[#3c4043] dark:text-[#e8ecf4]">
+            <span className="flex flex-col items-start gap-0 text-[13px] text-[#3c4043] sm:flex-row sm:items-center sm:gap-2 dark:text-[#e8ecf4]">
               <span className="tabular-nums">
                 Variable costs {variablePct.toFixed(1)}%
               </span>
@@ -489,7 +493,7 @@ export default function CostHealth() {
     );
 
   return (
-    <div className="flex flex-col gap-8 mt-4">
+    <div className="flex flex-col gap-8 mt-10">
       {/* ======================================================
           COST HEALTH
       ====================================================== */}
@@ -497,7 +501,7 @@ export default function CostHealth() {
       <section>
         {/* Section header — the ChartCard header, over a grid of cards
             rather than inside one. */}
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="mb-5 flex flex-row items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <div
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
@@ -509,7 +513,7 @@ export default function CostHealth() {
               <h3 className="text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
                 Cost health
               </h3>
-              <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
+              <p className="mt-0.5 text-xs truncate tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
                 {`Each cost as a share of ${revenueLabel}, against a target`}
               </p>
             </div>
@@ -588,7 +592,7 @@ export default function CostHealth() {
           body: "Covers the month picked at the top of the page. Total spend is everything logged as an expense. Net profit here is the tracker's own income less its expenses — miscellaneous money only, with no cost of goods or tax — so it is not the shop's profit. Fixed and variable split those expenses by category.",
         }}
         subtitle="How your money was split this month"
-        controls={<RangeBadge scope="month" variant="pill" />}
+        buttons={<RangeBadge scope="month" variant="pill" />}
       >
         {!hasData ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -607,14 +611,18 @@ export default function CostHealth() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[1fr_auto] lg:gap-12">
-              <div className="grid grid-cols-2 gap-4 lg:gap-6">
+            <div className="grid grid-cols-1 items-center gap-6 lg:grid-cols-[1fr_auto] lg:gap-12">
+              {/* One column on a phone. Two gave each figure about
+                  150px for a 30px currency amount, and the net-profit
+                  label — which carries its own parenthetical — wrapped
+                  to four lines underneath. */}
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-4 lg:gap-6">
                 {/* Total spend */}
                 <div>
                   <p className="mb-2 text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">
                     Total spend
                   </p>
-                  <p className="text-3xl font-semibold tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
+                  <p className="text-2xl font-semibold tracking-tight tabular-nums text-[#3c4043] sm:text-3xl dark:text-[#e8ecf4]">
                     {fmtRs(overview.totalSpend)}
                   </p>
                   {/* Reads against the same revenue the cards use. Keyed to
@@ -659,7 +667,7 @@ export default function CostHealth() {
                     </span>
                   </div>
                   <p
-                    className={`text-3xl font-semibold tracking-tight tabular-nums ${
+                    className={`text-2xl font-semibold tracking-tight tabular-nums sm:text-3xl ${
                       overview.netProfit >= 0
                         ? "text-[#1e8e3e] dark:text-[#10b981]"
                         : "text-[#d93025] dark:text-[#f87171]"
@@ -696,7 +704,10 @@ export default function CostHealth() {
             </div>
 
             {/* Bottom summary row */}
-            <div className="mt-2 grid grid-cols-2 gap-4 border-t pt-5 md:grid-cols-4 border-[#e8eaed] dark:border-white/10">
+            {/* Stacked on a phone rather than two-up: at ~135px a
+                column, the icon takes 42 and the amount truncates —
+                "Rs 1,24,5…" is worse than a taller card. */}
+            <div className="mt-2 grid grid-cols-1 gap-3.5 border-t pt-5 sm:grid-cols-2 sm:gap-4 md:grid-cols-4 border-[#e8eaed] dark:border-white/10">
               <SummaryFigure
                 icon={Wallet}
                 iconClass="bg-red-50 text-red-600 dark:bg-red-400/10 dark:text-red-400"

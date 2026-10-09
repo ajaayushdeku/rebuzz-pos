@@ -66,7 +66,7 @@ export default function LiveTablesPage() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-surface-page px-6 py-8 md:px-10 dark:bg-[#0f1420]">
+    <div className="min-h-screen bg-surface-page px-6 py-5 sm:py-8 md:px-10 dark:bg-[#0f1420]">
       <div className="w-full mx-auto flex flex-col ">
         {/* mb-4 rather than the module's mb-6: the view toggle below sits
             closer to the rule here. */}
@@ -125,7 +125,7 @@ export default function LiveTablesPage() {
           {isLoading ? (
             <LiveTablesSkeleton />
           ) : isError ? (
-            <div className="flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-[#e3e3e3] bg-white p-16 text-center dark:border-white/10 dark:bg-[#161d2e]">
+            <div className="flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-[#e3e3e3] bg-white p-8 text-center sm:p-16 dark:border-white/10 dark:bg-[#161d2e]">
               <p className="text-sm text-[#d93025] dark:text-[#f87171]">
                 Failed to load tables
               </p>
@@ -134,7 +134,7 @@ export default function LiveTablesPage() {
               </p>
             </div>
           ) : tables.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-[#e3e3e3] bg-white p-16 text-center">
+            <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-[#e3e3e3] bg-white p-8 text-center sm:p-16 dark:border-white/10 dark:bg-[#161d2e]">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
                 <Utensils className="h-6 w-6 text-[#9aa0a6] dark:text-[#9aa6bd]" />
               </div>

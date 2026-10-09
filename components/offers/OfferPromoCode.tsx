@@ -133,7 +133,10 @@ export default function OfferPromoCode() {
         <label className="mb-1.5 block text-[13px] font-medium text-[#3c4043] dark:text-[#e8ecf4]">
           Code
         </label>
-        <div className=" flex  items-center  gap-2.5">
+        {/* The field takes the row on a phone and the buttons share the one
+            below. Side by side, "Generate" and "Copy" came to about 210px of a
+            287px step body and left the code box a stub. */}
+        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
           <input
             type="text"
             value={form.code}
@@ -145,24 +148,29 @@ export default function OfferPromoCode() {
             className="h-12 min-w-0 flex-1 rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 px-3.5 font-mono text-sm tracking-wider text-[#3c4043] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:max-w-sm dark:border-white/15 dark:text-[#e8ecf4]"
           />
 
-          <button
-            type="button"
-            onClick={generate}
-            className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-[13px] font-semibold text-emerald-700 transition-colors hover:bg-emerald-100 dark:hover:bg-emerald-400/20 dark:border-emerald-400/25 dark:text-emerald-300 dark:bg-emerald-400/10"
-          >
-            <Wand2 size={15} />
-            Generate
-          </button>
+          {/* Their own row, splitting it evenly — a 44px-tall target that
+              reaches half the width is easier to hit than a shrink-wrapped
+              one pushed against the edge. */}
+          <div className="flex gap-2.5">
+            <button
+              type="button"
+              onClick={generate}
+              className="inline-flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-[13px] font-semibold text-emerald-700 transition-colors hover:bg-emerald-100 sm:flex-none dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-300 dark:hover:bg-emerald-400/20"
+            >
+              <Wand2 size={15} />
+              Generate
+            </button>
 
-          <button
-            type="button"
-            onClick={copy}
-            disabled={!form.code}
-            className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-[#dadce0] bg-white dark:bg-white/5 px-4 text-[13px] font-semibold text-[#5f6368] transition-colors hover:bg-[#f8f9fa] disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-white/5 dark:border-white/15 dark:text-[#a9b4c7]"
-          >
-            <Copy size={15} />
-            {copied ? "Copied" : "Copy"}
-          </button>
+            <button
+              type="button"
+              onClick={copy}
+              disabled={!form.code}
+              className="inline-flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#dadce0] bg-white px-4 text-[13px] font-semibold text-[#5f6368] transition-colors hover:bg-[#f8f9fa] disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none dark:border-white/15 dark:bg-white/5 dark:text-[#a9b4c7] dark:hover:bg-white/5"
+            >
+              <Copy size={15} />
+              {copied ? "Copied" : "Copy"}
+            </button>
+          </div>
         </div>
 
         {/* Share it — link and QR.

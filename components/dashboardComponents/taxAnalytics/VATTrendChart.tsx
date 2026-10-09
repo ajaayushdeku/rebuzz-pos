@@ -86,6 +86,21 @@ export default function VATTrendChart() {
   }, []);
 
   const AXIS_TICK = getAxisTick(isDark);
+
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+    const updateScreenSize = () => {
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    updateScreenSize();
+    mediaQuery.addEventListener("change", updateScreenSize);
+
+    return () => mediaQuery.removeEventListener("change", updateScreenSize);
+  }, []);
   return (
     <ChartCard
       icon={ChartSpline}
@@ -117,8 +132,8 @@ export default function VATTrendChart() {
             tickLine={false}
             tick={AXIS_TICK}
             ticks={[0, 40000, 80000, 120000, 160000]}
-            width={80}
-            label={yAxisTitle("VAT amount")}
+            width={isSmallScreen ? 55 : 80}
+            label={!isSmallScreen ? yAxisTitle("VAT amount") : undefined}
           />
           <Tooltip content={<CustomTooltip />} />
 

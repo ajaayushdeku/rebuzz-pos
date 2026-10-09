@@ -5,12 +5,7 @@ import type { LucideIcon } from "lucide-react";
 import { CHART_PALETTE } from "@/components/dashboardComponents/chartCard";
 
 export type StepAccent =
-  | "emerald"
-  | "blue"
-  | "violet"
-  | "amber"
-  | "gray"
-  | "rose";
+  "emerald" | "blue" | "violet" | "amber" | "gray" | "rose";
 
 /**
  * The step's colour. It frames the card, its number bubble and its icon tile,
@@ -115,7 +110,7 @@ export default function OfferStepCard({
       {/* One frame, not two: the card used to draw a bordered shadowed box and
           then a second shadowed box inside it. */}
       <div
-        className={`relative min-w-0 flex-1 rounded-2xl border bg-white px-5 py-4 md:px-6 dark:bg-[#161d2e] ${tone.border}`}
+        className={`relative min-w-0 flex-1 rounded-2xl border bg-white px-4 py-4 sm:px-5 md:px-6 dark:bg-[#161d2e] ${tone.border}`}
       >
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">

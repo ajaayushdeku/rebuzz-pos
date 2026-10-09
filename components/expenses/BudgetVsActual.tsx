@@ -12,7 +12,7 @@ import { BudgetVsActualSkeleton } from "./ExpenseAnalyticsSkeletons";
 
 /** The four columns, shared by the header row and the rows. */
 const COLUMNS =
-  "grid grid-cols-[1.4fr_1fr_1fr_1.3fr_1.4fr] items-center gap-3 min-w-[520px]";
+  "grid grid-cols-[1.4fr_1fr_1fr_1.5fr_1.4fr] items-center gap-3 min-w-[520px]";
 
 function getPctStyle(pct: number): string {
   if (pct >= 100)
@@ -30,7 +30,7 @@ const VarianceBadge = ({ variance }: { variance: number }) => {
 
   if (variance === 0) {
     return (
-      <span className="rounded-full border px-2 py-0.5 text-[11px] border-[#dadce0] dark:border-white/15 text-[#5f6368] dark:text-[#a9b4c7]">
+      <span className="rounded-full border  px-2 py-0.5 text-[11px] border-[#dadce0] dark:border-white/15 text-[#5f6368] dark:text-[#a9b4c7]">
         on budget
       </span>
     );
@@ -38,7 +38,7 @@ const VarianceBadge = ({ variance }: { variance: number }) => {
   const over = variance > 0;
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] tabular-nums md:text-[11px] ${
+      className={`inline-flex items-center gap-1 rounded-full  border px-2 py-0.5 text-[10px] tabular-nums md:text-[11px] ${
         over
           ? "border-red-200 bg-red-50 text-red-600 dark:bg-red-400/10 dark:border-red-400/25 dark:text-red-400"
           : "border-green-200 bg-green-50 text-green-700 dark:bg-emerald-400/10 dark:border-emerald-400/25 dark:text-emerald-300"
@@ -119,10 +119,10 @@ export default function BudgetVsActual() {
         body: "Only the categories you have set a budget for appear here — a category with no budget is left out entirely. Actual is everything you logged against that category in the month picked at the top of the page, and the bar and percentage are how much of the budget that spends.",
       }}
       subtitle="Spending vs planned budget per category"
-      controls={<RangeBadge scope="month" variant="pill" />}
+      buttons={<RangeBadge scope="month" variant="pill" />}
     >
       {rows.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12">
+        <div className="flex flex-col items-center justify-center py-12 text-center">
           <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-white/10">
             <ChartColumnBig
               size={24}
@@ -137,7 +137,7 @@ export default function BudgetVsActual() {
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto scrollbar-hide">
           {/* Table header */}
           <div
             className={`${COLUMNS} border-b pb-2.5 text-[11px] border-[#e8eaed] dark:border-white/10 text-[#5f6368] dark:text-[#a9b4c7]`}

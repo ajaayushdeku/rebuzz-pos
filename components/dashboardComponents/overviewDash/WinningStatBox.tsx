@@ -3,6 +3,12 @@ import { LucideIcon } from "lucide-react";
 export interface WinningStatBoxProps {
   label: string;
   value: string;
+  /**
+   * Drawn beside the value, for the cards where the figure carries a mood —
+   * a frown on "No Streak". Sized to the value's own type rather than the
+   * card's corner icon, since it is read as part of the sentence.
+   */
+  valueIcon?: LucideIcon;
   /** Small companion beside the value — e.g. the 12-hour peak-hour window. */
   valueNote?: string;
   footer?: string;
@@ -14,6 +20,7 @@ export interface WinningStatBoxProps {
 const WinningStatBox = ({
   label,
   value,
+  valueIcon: ValueIcon,
   valueNote,
   footer,
   icon: Icon,
@@ -39,8 +46,18 @@ const WinningStatBox = ({
 
         <div className="w-full flex flex-row  justify-between items-center">
           <div className="min-w-0">
-            <p className="text-[20px] md:text-2xl font-bold tracking-wide text-white leading-tight">
+            {/* flex rather than an inline icon: the value is the largest thing
+                on the card, and an icon baseline-aligned to 24px bold text
+                sits low. Centred on the line instead. */}
+            <p className="flex items-center gap-1.5 text-[20px] md:text-2xl font-bold tracking-wide text-white leading-tight">
               {value}
+              {ValueIcon && (
+                <ValueIcon
+                  size={22}
+                  className="shrink-0 text-white"
+                  aria-hidden
+                />
+              )}
             </p>
             {valueNote && (
               // Same idiom as the chart axes: 24-hour figure, 12-hour in

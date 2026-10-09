@@ -112,21 +112,33 @@ function TableCard({
   return (
     <div
       onClick={onClick}
-      className={`group cursor-pointer rounded-2xl border bg-white px-5 pb-2 pt-4 transition-colors dark:bg-[#161d2e] ${
+      className={`group cursor-pointer rounded-2xl border bg-white px-3 pb-2 pt-3 transition-colors sm:px-5 sm:pt-4 dark:bg-[#161d2e] ${
         isSelected
           ? "border-blue-400 ring-2 ring-blue-400 ring-offset-1 dark:ring-offset-[#0f1420]"
           : "border-[#e3e3e3] hover:border-[#dadce0] dark:border-white/10"
       }`}
     >
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className={`flex items-center gap-2 ${config.textColor}`}>
-          <Armchair size={17} strokeWidth={2} className={config.iconColor} />
+      {/* Header. At two cards to a phone's width the card is about 137px
+          wide, and `px-5` left 97px of it — a 13px status label and two icon
+          buttons did not fit, which is why the buttons used to stack into a
+          vertical column below `sm`. Everything shrinks a step instead, and
+          the status truncates rather than pushing the actions off. */}
+      <div className="mb-3 flex items-start justify-between gap-1 sm:mb-4">
+        <div
+          className={`flex min-w-0 items-center gap-1.5 sm:gap-2 ${config.textColor}`}
+        >
+          <Armchair
+            size={15}
+            strokeWidth={2}
+            className={`shrink-0 sm:size-[17px] ${config.iconColor}`}
+          />
 
-          <span className="text-[13px]">{config.label}</span>
+          <span className="truncate text-[11px] sm:text-[13px]">
+            {config.label}
+          </span>
         </div>
 
-        <div className="flex items-center gap-0.5">
+        <div className="flex shrink-0 items-center gap-0.5">
           {/* View details — stops propagation so it doesn't also select the
               card underneath. */}
           <button
@@ -137,7 +149,7 @@ function TableCard({
               e.stopPropagation();
               onViewDetails(table);
             }}
-            className="rounded-md p-0.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-blue-600 dark:text-[#7b869b] dark:hover:bg-white/10"
+            className="rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-blue-600 dark:text-[#7b869b] dark:hover:bg-white/10"
           >
             <Eye size={16} />
           </button>
@@ -154,7 +166,7 @@ function TableCard({
                 text-gray-400
                 hover:text-gray-600
                 transition-colors
-                p-0.5
+                
                 rounded-md
               "
             >
@@ -163,7 +175,7 @@ function TableCard({
 
             {menuOpen && (
               <div
-                className="absolute right-0 top-7 z-20 w-40 rounded-xl dark:bg-[#1b2436] border border-[#dadce0] bg-white py-1.5 shadow-lg dark:border-white/15  hover:bg-blue-50 transition-colors dark:hover:bg-[#1C2A43]"
+                className="absolute right-0 top-7 z-20 w-40 rounded-xl border border-[#dadce0] bg-white py-1.5 shadow-lg dark:border-white/15 dark:bg-[#1b2436]"
                 onClick={(e) => e.stopPropagation()}
               >
                 {isOccupied ? (
@@ -214,13 +226,13 @@ function TableCard({
       </div>
 
       {/* Table Name */}
-      <h3 className="mb-5 text-xl font-semibold leading-none tracking-tight text-[#3c4043] dark:text-[#e8ecf4]">
+      <h3 className="mb-3 text-lg font-semibold leading-none tracking-tight text-[#3c4043] sm:mb-5 sm:text-xl dark:text-[#e8ecf4]">
         {table.name || `Table ${table.id}`}
       </h3>
 
       {/* Seats */}
-      <div className="flex items-center gap-2 text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">
-        <Users size={15} strokeWidth={1.8} />
+      <div className="flex items-center gap-1.5 text-[12px] text-[#5f6368] sm:gap-2 sm:text-[13px] dark:text-[#a9b4c7]">
+        <Users size={15} strokeWidth={1.8} className="shrink-0" />
 
         <span>
           {table.capacity} {table.capacity === 1 ? "seat" : "seats"}
@@ -228,9 +240,12 @@ function TableCard({
       </div>
 
       {/* Bottom Information */}
-      <div className="mt-4 min-h-[34px] border-t pt-3 border-[#e8eaed] dark:border-white/10">
+      <div className="mt-3 min-h-[34px] border-t border-[#e8eaed] pt-2.5 sm:mt-4 sm:pt-3 dark:border-white/10">
         {isActive ? (
-          <div className="flex items-center justify-between">
+          /* Wraps: the bill and the seated time together need more than the
+             97px this card has on a phone, and a truncated amount of money is
+             worse than a second line. */
+          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
             {/* Bill */}
             {bill != null ? (
               <div className="flex items-center gap-1.5">
@@ -406,7 +421,10 @@ export default function GridView({
     <div className="space-y-6">
       {/* Status filter — the loose pills this page has always used: the
           selected one fills with its status colour. */}
-      <div>
+      {/* `flex flex-wrap gap-2` rather than `mr-2` on each pill: the margin
+          spaced them along a row but gave a wrapped row nothing above it, so on
+          a phone the two lines of pills touched. */}
+      <div className="flex flex-wrap gap-2">
         {Object.entries(STATUS_CONFIG).map(([key, config]) => {
           const isActive = tableStatus === config.status;
           const count = counts[config.status] ?? 0;
@@ -415,10 +433,16 @@ export default function GridView({
               key={key}
               type="button"
               onClick={() => setTableStatus(config.status)}
-              className={`mr-2 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium transition-all duration-200 ${
+              // `hover:${config.border}` and `hover:${config.textColor}` were
+              // built by interpolation, which Tailwind cannot see at build
+              // time, so neither class was ever generated. Worse, textColor is
+              // two classes ("text-green-600 dark:text-emerald-400"): only the
+              // first took the `hover:` prefix and the second landed bare,
+              // repainting every inactive pill in dark mode. Static hover now.
+              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-200 sm:px-4 ${
                 isActive
                   ? ""
-                  : `bg-white dark:bg-white/5 border-gray-200 text-gray-700 hover:bg-violet-50 hover:${config.border} hover:${config.textColor} dark:border-white/15 dark:text-[#c3ccdc] dark:hover:bg-violet-400/15`
+                  : "border-gray-200 bg-white text-gray-700 hover:bg-[#f8f9fa] dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:bg-white/10"
               }`}
               style={
                 isActive

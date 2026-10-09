@@ -77,7 +77,7 @@ function TableTicketCard({
     <div
       ref={cardRef}
       aria-current={isSelected ? "true" : undefined}
-      className={`flex flex-col rounded-2xl border bg-white px-5 py-4 transition-colors dark:bg-[#161d2e] ${
+      className={`flex flex-col rounded-2xl border bg-white px-4 py-4 transition-colors sm:px-5 dark:bg-[#161d2e] ${
         isSelected
           ? "border-blue-400 ring-2 ring-blue-400 ring-offset-1 dark:ring-offset-[#0f1420]"
           : "border-[#e3e3e3] hover:border-[#dadce0] dark:border-white/10"
@@ -85,8 +85,8 @@ function TableTicketCard({
     >
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-current/20 bg-emerald-50 text-[13px] font-medium text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300">
+        <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+          <span className="flex h-8 w-8 shrink-0 sm:h-9 sm:w-9 items-center justify-center rounded-full border border-current/20 bg-emerald-50 text-[13px] font-medium text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300">
             {tableName.charAt(0).toUpperCase()}
           </span>
           <div className="min-w-0">
@@ -203,7 +203,8 @@ export default function TableTicketCards({
       <div
         className={`${maxHeightClass} overflow-y-auto p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}
       >
-        <div className="grid grid-cols-2 items-start gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {/* `md:grid-cols-2` appeared twice; the second was dead. */}
+        <div className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 xl:grid-cols-3">
           {ticketed.map((t) => (
             <TableTicketCard
               key={t.id}

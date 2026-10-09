@@ -18,7 +18,7 @@ import {
   getStatusLabel,
 } from "@/lib/mockData/mock-live-tables";
 import { useCurrency } from "@/providers/CurrencyContext";
-import { formatCurrencySymbol, formatCurrencySymbolOnly } from "@/utils/helper";
+import { formatCurrencySymbol } from "@/utils/helper";
 import { useTableTicket } from "@/hooks/useTableTicket";
 
 // ── Layout persistence (per-browser) ──────────────────────────────────────
@@ -86,20 +86,6 @@ function TableNode({
   const [nowMs] = useState(() => Date.now());
 
   const radius = isRound ? "9999px" : "12px";
-
-  // What to show inside based on mode
-  const mainLine = (): string => {
-    switch (mode) {
-      case "status":
-        return table.id.toString();
-      case "covers":
-        return table.id.toString();
-      case "total":
-        return table.id.toString();
-      case "time":
-        return table.id.toString();
-    }
-  };
 
   const subLine = (): string | null => {
     switch (mode) {
@@ -401,7 +387,7 @@ export default function FloorPlanView({
   return (
     <div className="overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] dark:border-white/10">
       {/* Header */}
-      <div className="flex flex-col items-start justify-between gap-4 border-b border-[#e8eaed] px-6 py-4 dark:border-white/10">
+      <div className="flex flex-col items-start justify-between gap-3 border-b border-[#e8eaed] px-4 py-4 sm:gap-4 sm:px-6 dark:border-white/10">
         <div className="flex flex-col items-start gap-1">
           <div className="flex items-center gap-1.5">
             <span className="text-[15px] text-[#3c4043] dark:text-[#e8ecf4]">
@@ -421,8 +407,11 @@ export default function FloorPlanView({
             })}
           </span>
         </div>
-        {/* Legend */}
-        <div className="hidden sm:flex items-center gap-4">
+        {/* Legend. It used to be `hidden sm:flex`, which took the key to the
+            colours away from the screen that needs it most — on a phone the
+            node colour was the only status cue left and nothing said what
+            green or blue meant. It is two dots and two words; it fits. */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
           {LEGEND.map(({ label, color }) => (
             <div key={label} className="flex items-center gap-1.5">
               <span
@@ -438,7 +427,10 @@ export default function FloorPlanView({
       </div>
 
       {/* Zone tabs + Edit Layout controls */}
-      <div className="flex items-center justify-between gap-2 border-b border-[#e8eaed] px-6 py-3 dark:border-white/10">
+      {/* Wraps: the two zone tabs come to about 200px and the layout
+          controls another 165px once Reset appears, against the 255px a phone
+          has here. The controls drop to their own line rather than overflow. */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#e8eaed] px-4 py-3 sm:px-6 dark:border-white/10">
         <div
           role="radiogroup"
           aria-label="Zone"
@@ -494,92 +486,106 @@ export default function FloorPlanView({
       </div>
 
       {/* ── Dark floor canvas ── */}
-      <div
-        ref={canvasRef}
-        className="relative mx-5 my-5 rounded-2xl overflow-hidden"
-        style={{ background: "#0d1b2a", height: 500 }}
-      >
-        {/* Edit-mode hint */}
-        {editing && (
+      {/* The nodes are placed in percentages but sized in pixels, so a narrow
+          canvas slides them on top of one another — a 100px rectangle table is
+          40% of the width a phone can give this. The plan keeps its
+          proportions and pans sideways instead, which is how a spatial diagram
+          survives a small screen. The drag maths reads
+          `getBoundingClientRect`, so it stays correct inside the scroller. */}
+      <div className="scrollbar-hide overflow-x-auto px-4 py-4 sm:px-5 sm:py-5">
+        <div
+          ref={canvasRef}
+          className="relative h-[420px] min-w-[560px] overflow-hidden rounded-2xl sm:h-[500px]"
+          style={{ background: "#0d1b2a" }}
+        >
+          {/* Edit-mode hint */}
+          {editing && (
+            <div
+              className="absolute top-4 right-4 flex items-center gap-1.5 bg-blue-500/20 border border-blue-400/40 rounded-full px-3 py-1"
+              style={{ zIndex: 10 }}
+            >
+              <Move size={11} className="text-blue-200" />
+              <span className="text-[10px] text-blue-100 font-semibold tracking-wide">
+                Drag tables to rearrange
+              </span>
+            </div>
+          )}
+
+          {/* Kitchen Pass label */}
           <div
-            className="absolute top-4 right-4 flex items-center gap-1.5 bg-blue-500/20 border border-blue-400/40 rounded-full px-3 py-1"
+            className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1"
             style={{ zIndex: 10 }}
           >
-            <Move size={11} className="text-blue-200" />
-            <span className="text-[10px] text-blue-100 font-semibold tracking-wide">
-              Drag tables to rearrange
+            <span className="text-[10px] text-white/60 font-semibold tracking-widest uppercase">
+              ⚙ Kitchen Pass
             </span>
           </div>
-        )}
 
-        {/* Kitchen Pass label */}
-        <div
-          className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1"
-          style={{ zIndex: 10 }}
-        >
-          <span className="text-[10px] text-white/60 font-semibold tracking-widest uppercase">
-            ⚙ Kitchen Pass
-          </span>
-        </div>
-
-        {/* Entrance label */}
-        <div
-          className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1"
-          style={{ zIndex: 10 }}
-        >
-          <span className="text-[10px] text-white/60 font-semibold tracking-widest uppercase">
-            ⬆ Entrance
-          </span>
-        </div>
-
-        {/* Decorative leaf sprites */}
-        {[
-          [35, 38],
-          [60, 28],
-          [45, 62],
-          [72, 55],
-        ].map(([lx, ly], i) => (
-          <span
-            key={i}
-            style={{
-              position: "absolute",
-              left: `${lx}%`,
-              top: `${ly}%`,
-              opacity: 0.15,
-              fontSize: 18,
-              pointerEvents: "none",
-            }}
+          {/* Entrance label */}
+          <div
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1"
+            style={{ zIndex: 10 }}
           >
-            🌿
-          </span>
-        ))}
+            <span className="text-[10px] text-white/60 font-semibold tracking-widest uppercase">
+              ⬆ Entrance
+            </span>
+          </div>
 
-        {/* Table nodes */}
-        {tables.map((table) => (
-          <TableNode
-            key={table.id}
-            table={table}
-            mode={mode}
-            isSelected={selectedTableId === table.id}
-            editing={editing}
-            pos={posFor(table)}
-            onClick={() => onSelectTable(table)}
-            onViewDetails={() => onViewDetails(table)}
-            onDragStart={handleDragStart}
-            onDragMove={handleDragMove}
-            onDragEnd={handleDragEnd}
-          />
-        ))}
+          {/* Decorative leaf sprites */}
+          {[
+            [35, 38],
+            [60, 28],
+            [45, 62],
+            [72, 55],
+          ].map(([lx, ly], i) => (
+            <span
+              key={i}
+              style={{
+                position: "absolute",
+                left: `${lx}%`,
+                top: `${ly}%`,
+                opacity: 0.15,
+                fontSize: 18,
+                pointerEvents: "none",
+              }}
+            >
+              🌿
+            </span>
+          ))}
+
+          {/* Table nodes */}
+          {tables.map((table) => (
+            <TableNode
+              key={table.id}
+              table={table}
+              mode={mode}
+              isSelected={selectedTableId === table.id}
+              editing={editing}
+              pos={posFor(table)}
+              onClick={() => onSelectTable(table)}
+              onViewDetails={() => onViewDetails(table)}
+              onDragStart={handleDragStart}
+              onDragMove={handleDragMove}
+              onDragEnd={handleDragEnd}
+            />
+          ))}
+        </div>
       </div>
 
       {/* ── View mode pill bar ── */}
-      <div className="flex justify-center pb-5">
-        <div className="flex items-center bg-gray-900 rounded-full p-1 gap-1">
+      {/* Four pills come to about 360px — more than a phone's 287px — and a
+          segmented control that wraps stops reading as one control. It scrolls
+          instead. `mx-auto` on a `w-max` inner element centres it when there is
+          room and collapses to the left edge when there is not, which keeps the
+          first pill reachable; `justify-center` on the scroller would have put
+          it out of reach. */}
+      <div className="scrollbar-hide overflow-x-auto px-4 pb-5">
+        <div className="mx-auto flex w-max items-center gap-1 rounded-full bg-gray-900 p-1">
           {VIEW_MODES.map(({ id, label, icon }) => (
             <button
               key={id}
               onClick={() => setMode(id)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-all ${
+              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all sm:px-4 sm:py-2 ${
                 mode === id
                   ? "bg-white text-gray-900 shadow-sm dark:bg-white/15 dark:text-[#e8ecf4] dark:shadow-none dark:text-[#e8ecf4]"
                   : "text-white/60 hover:text-white"

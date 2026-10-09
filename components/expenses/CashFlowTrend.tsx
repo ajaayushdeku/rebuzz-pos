@@ -115,6 +115,21 @@ export default function CashFlowTrend() {
 
   const AXIS_TICK = getAxisTick(isDark);
 
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+    const updateScreenSize = () => {
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    updateScreenSize();
+    mediaQuery.addEventListener("change", updateScreenSize);
+
+    return () => mediaQuery.removeEventListener("change", updateScreenSize);
+  }, []);
+
   if (isLoading)
     return (
       <>
@@ -136,7 +151,7 @@ export default function CashFlowTrend() {
         body: "Six months to date, always — it ignores the month picked at the top of the page. Inflow is everything you logged as income that month; outflow is every other entry, so expenses. The hover box shows the two and what they leave behind.",
       }}
       subtitle="Monthly comparison of cash inflows vs outflows"
-      controls={
+      buttons={
         // States plainly that this card ignores the page's month filter —
         // otherwise the fixed window looks like the filter is broken.
         <span className="shrink-0 rounded-full border bg-white dark:bg-white/5 px-2 py-0.5 text-[11px] border-[#dadce0] dark:border-white/15 text-[#3c4043] dark:text-[#e8ecf4]">
@@ -198,8 +213,8 @@ export default function CashFlowTrend() {
                 axisLine={false}
                 tickLine={false}
                 tick={AXIS_TICK}
-                width={80}
-                label={yAxisTitle("Amount")}
+                width={isSmallScreen ? 55 : 80}
+                label={!isSmallScreen ? yAxisTitle("Amount") : undefined}
               />
               <Tooltip content={<CustomTooltip />} />
 

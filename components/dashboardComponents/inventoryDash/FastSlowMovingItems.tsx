@@ -168,7 +168,7 @@ const Panel = ({
           ? "Your bestsellers over the past 30 days"
           : "These need attention — consider a promo or recipe change"
       }
-      controls={
+      buttons={
         totalPages > 1 && (
           <ChartPager
             first={start + 1}
@@ -228,7 +228,7 @@ const FastSlowMovingItems = ({
   const { fast, slow, basis } = classify(items, inventory);
 
   return (
-    <div className="relative grid grid-cols-1 gap-4 md:grid-cols-2">
+    <div className="relative grid grid-cols-1 mt-8 gap-4 md:grid-cols-2">
       <Panel type="fast" items={fast} basis={basis} />
       <Panel type="slow" items={slow} basis={basis} />
     </div>

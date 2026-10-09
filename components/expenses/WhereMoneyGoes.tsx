@@ -138,10 +138,10 @@ export default function WhereMoneyGoes() {
     );
 
   return (
-    <div className="mt-4 flex flex-col gap-4">
+    <div className="mt-10 flex flex-col gap-4">
       {/* Section header — the ChartCard header, over a pair of cards rather
           than inside one. */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-row  items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <div
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border dark:border-white/10! dark:bg-white/5!"
@@ -153,7 +153,7 @@ export default function WhereMoneyGoes() {
             <h3 className="text-[15px] font-normal text-[#3c4043] dark:text-[#e8ecf4]">
               Where the money goes
             </h3>
-            <p className="mt-0.5 text-xs tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
+            <p className="mt-0.5 text-xs truncate tracking-wide text-[#9aa0a6] dark:text-[#9aa6bd]">
               Category breakdown and top vendor concentration
             </p>
           </div>

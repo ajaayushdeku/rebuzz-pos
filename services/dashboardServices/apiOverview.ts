@@ -1,3 +1,5 @@
+import { Frown } from "lucide-react";
+
 import { StatsApiResponse, WinningApiResponse } from "@/lib/dashboardstats";
 import { authHeaders } from "../authServices/session";
 import { TopProduct } from "@/components/dashboardComponents/overviewDash/TopItems";
@@ -123,6 +125,24 @@ export const getStatsData = async (
   };
 };
 
+/**
+ * The streak card with nothing to report.
+ *
+ * One constant because three branches arrive at it — no sales today and none
+ * yesterday, a single day that never became a streak, and a run shorter than
+ * two days — and they were three copies of the same string, which is how one of
+ * them came to say something different from the other two.
+ *
+ * `Frown` is named, not rendered: this is a data module, and the card draws it.
+ * The emoji it replaces (🥲) was a character in the value, so it inherited the
+ * value's weight and size and sat on the text baseline looking like a typo.
+ */
+const NO_STREAK = {
+  value: "No Streak",
+  valueIcon: Frown,
+  footer: "No sales streak yet",
+};
+
 // Fetch the WinningStats by using other api to get specific data
 export const getWinningStats = async (): Promise<WinningApiResponse> => {
   const [topProducts, hourlyData, weeklyData] = await Promise.all([
@@ -217,10 +237,7 @@ export const getWinningStats = async (): Promise<WinningApiResponse> => {
 
     // Case 1: No sales today and no sales yesterday - streak is broken
     if (!hasTodaySales && !hasYesterdaySales) {
-      return {
-        value: "No Streak 🥲",
-        footer: "No sales streak yet",
-      };
+      return NO_STREAK;
     }
 
     // Case 2: No sales today but has sales yesterday - preserve streak up to yesterday
@@ -244,12 +261,9 @@ export const getWinningStats = async (): Promise<WinningApiResponse> => {
           value: `${streak} days 🔥`,
           footer: `Avg $${Math.round(streakRevenue / streak).toLocaleString()}/day · No sales recorded today yet`,
         };
-      } else {
-        return {
-          value: "No Streak 🥲",
-          footer: "No sales streak yet",
-        };
       }
+
+      return NO_STREAK;
     }
 
     // Case 3: Has sales today - include today in streak calculation
@@ -271,10 +285,7 @@ export const getWinningStats = async (): Promise<WinningApiResponse> => {
       };
     }
 
-    return {
-      value: "No Streak 🥲",
-      footer: "No sales streak yet",
-    };
+    return NO_STREAK;
   })();
 
   return {

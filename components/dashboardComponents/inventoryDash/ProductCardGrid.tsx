@@ -106,14 +106,26 @@ type SaleFigures = {
   orderCount: number;
 };
 
-/** Skeleton card shown while loading more items */
+/**
+ * Stands in for one <ProductCard /> while the next page loads.
+ *
+ * Shaped like the card's collapsed header — thumbnail, two lines, a chevron —
+ * so the grid does not re-flow when the real cards arrive. The old one was a
+ * stack of four bars of nothing in particular and a different height.
+ */
 function SkeletonCard() {
   return (
-    <div className="relative rounded-2xl border border-[#e3e3e3] bg-white dark:bg-[#161d2e] p-2 dark:border-white/10">
-      <div className="h-2 rounded-lg bg-gray-200 mb-3 dark:bg-white/15" />
-      <div className="h-3 bg-gray-200 rounded w-3/4 mb-2 dark:bg-white/15" />
-      <div className="h-3 bg-gray-200 rounded w-1/2 mb-3 dark:bg-white/15" />
-      <div className="h-8 bg-gray-200 rounded w-full dark:bg-white/15" />
+    <div className="animate-pulse rounded-2xl border border-[#e3e3e3] bg-white p-3 dark:border-white/10 dark:bg-[#161d2e]">
+      <div className="flex items-start gap-3">
+        <div className="h-16 w-16 shrink-0 rounded-xl bg-gray-200 sm:h-20 sm:w-20 dark:bg-white/15" />
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="h-3 w-3/4 rounded bg-gray-200 dark:bg-white/15" />
+          <div className="h-2.5 w-1/3 rounded bg-gray-100 dark:bg-white/10" />
+          <div className="h-3.5 w-24 rounded bg-gray-200 dark:bg-white/15" />
+          <div className="h-2.5 w-20 rounded bg-gray-100 dark:bg-white/10" />
+        </div>
+        <div className="h-7 w-7 shrink-0 rounded-full bg-gray-100 dark:bg-white/10" />
+      </div>
     </div>
   );
 }
@@ -477,14 +489,14 @@ const ProductCardGrid = ({
                   role="radio"
                   aria-checked={selected}
                   onClick={() => setStockTab(tab.value)}
-                  className={`flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
+                  className={`flex  w-fit md:w-[150px] cursor-pointer items-center md:items-start gap-1.5 rounded-md px-3 py-1.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e4f2fe] ${
                     selected
                       ? "bg-white font-semibold text-blue-900 shadow-sm dark:bg-white/15 dark:text-[#a8c4ee] dark:shadow-none"
                       : "font-semibold text-gray-600 hover:text-blue-950 dark:text-[#a9b4c7]"
                   }`}
                 >
                   <Icon className="h-4 w-4 shrink-0 md:hidden" aria-hidden />
-                  <span className="hidden md:inline">{tab.label}</span>
+                  <span className="hidden  md:inline">{tab.label}</span>
                   <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#e4f2fe] px-1.5 py-px text-[10px] font-bold tabular-nums tracking-wide text-blue-950 ring-1 ring-blue-900/40 dark:bg-white/10 dark:text-[#e8ecf4]">
                     {stockCounts[tab.value]}
                   </span>
@@ -520,7 +532,12 @@ const ProductCardGrid = ({
       )}
 
       {/* Product Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 mb-3">
+      {/* One column on a phone, which is the shape the card is now built
+          for — a wide short row rather than a tall tile. `xl:grid-cols-3`
+          was dropped as a no-op: it repeated the `lg` value. Three stays
+          the ceiling because the opened panel has figures like "In-Stock
+          value (sell)" to fit, and a fourth column starves them. */}
+      <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
         {visibleItems.map((item, idx) => {
           const { sale, sharedVariants } = salesFor(item);
           return (

@@ -180,11 +180,12 @@ const PaymentMethodsChart = ({
                   cy="50%"
                   innerRadius={55}
                   outerRadius={82}
-                  paddingAngle={0.5}
+                  paddingAngle={2}
                   dataKey="totalRevenue"
                   nameKey="name"
                   startAngle={90}
                   endAngle={-270}
+                  strokeWidth={0}
                 >
                   {coloredData.map((entry) => (
                     <Cell

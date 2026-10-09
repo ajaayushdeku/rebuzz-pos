@@ -6,6 +6,9 @@
  * (the card + <ComponentHeader /> already render above the loading branch).
  */
 
+import { cn } from "@/lib/utils";
+import { STAT_ROW, STAT_ROW_ITEM } from "../overviewDash/statRow";
+
 /** Summary strip: a left label/value pair, divider, then two right pairs. */
 function SummaryStripSkeleton() {
   return (
@@ -67,11 +70,14 @@ export function TaxRankedChartSkeleton({ rows = 5 }: { rows?: number }) {
 export function TaxRefundStatsSkeleton() {
   return (
     <div className="animate-pulse">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className={STAT_ROW}>
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-xl border border-[#e3e3e3] px-5 py-4 dark:border-white/10"
+            className={cn(
+              "rounded-xl border border-[#e3e3e3] px-5 py-4 dark:border-white/10",
+              STAT_ROW_ITEM,
+            )}
           >
             <div className="flex items-start justify-between gap-2">
               <div className="h-3 w-24 bg-gray-100 rounded dark:bg-white/10" />
@@ -125,7 +131,7 @@ export function TaxableSplitSkeleton() {
         </div>
 
         {/* Legend rows */}
-        <div className="space-y-3 w-full">
+        {/* <div className="space-y-3 w-full">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full bg-gray-200 shrink-0 dark:bg-white/15" />
@@ -134,24 +140,27 @@ export function TaxableSplitSkeleton() {
               <div className="h-3 w-12 bg-gray-100 rounded shrink-0 dark:bg-white/10" />
             </div>
           ))}
-        </div>
-      </div>
+        </div> */}
 
-      {/* Stats — the bordered tiles beside the donut. */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div
-            key={i}
-            className="rounded-xl border border-[#e3e3e3] px-5 py-4 dark:border-white/10"
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div className="h-3 w-24 bg-gray-100 rounded dark:bg-white/10" />
-              <div className="w-7 h-7 bg-gray-100 rounded-lg shrink-0 dark:bg-white/10" />
+        {/* Stats — the bordered tiles beside the donut. */}
+        <div className={STAT_ROW}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className={cn(
+                "rounded-xl border border-[#e3e3e3] px-5 py-4 dark:border-white/10",
+                STAT_ROW_ITEM,
+              )}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="h-3 w-24 bg-gray-100 rounded dark:bg-white/10" />
+                <div className="w-7 h-7 bg-gray-100 rounded-lg shrink-0 dark:bg-white/10" />
+              </div>
+              <div className="h-5 w-24 bg-gray-200 rounded mt-2 dark:bg-white/15" />
+              <div className="h-2.5 w-20 bg-gray-100 rounded mt-1.5 dark:bg-white/10" />
             </div>
-            <div className="h-5 w-24 bg-gray-200 rounded mt-2 dark:bg-white/15" />
-            <div className="h-2.5 w-20 bg-gray-100 rounded mt-1.5 dark:bg-white/10" />
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Tab bar and the first rows of the item list. */}
@@ -286,14 +295,16 @@ export function TaxRateBreakdownSkeleton() {
 export function TaxComparisonSkeleton() {
   return (
     <div className="animate-pulse">
-      <div className="flex items-center justify-between gap-4">
-        <div className="space-y-1.5">
-          <div className="h-2.5 w-20 bg-gray-100 rounded dark:bg-white/10" />
-          <div className="h-6 w-28 bg-gray-200 rounded dark:bg-white/15" />
-        </div>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between  gap-4">
+        <div className="flex flex-row items-end  justify-between sm:justify-start gap-2 w-full ">
+          <div className="space-y-1.5">
+            <div className="h-2.5 w-20 bg-gray-100 rounded dark:bg-white/10" />
+            <div className="h-6 w-28 bg-gray-200 rounded dark:bg-white/15" />
+          </div>
 
-        <div className="flex-1 flex justify-center">
-          <div className="h-6 w-36 rounded-full bg-gray-100 dark:bg-white/10" />
+          <div className="flex-1 flex justify-center">
+            <div className="h-6 w-36 rounded-full bg-gray-100 dark:bg-white/10" />
+          </div>
         </div>
 
         <div className="min-w-[140px] rounded-2xl bg-gray-100 px-5 py-3 dark:bg-white/10">
@@ -312,24 +323,65 @@ export function TaxComparisonSkeleton() {
 }
 
 /**
- * Body skeleton for figure cards — <IncomeTaxProvision /> and the like: a
- * headline amount over a short list of contributing lines.
+ * One tile in the income tax provision skeleton.
+ *
+ * Tinted in `white/…` rather than the `bg-gray-100 / dark:bg-white/10` pair the
+ * other skeletons here use. Those assume a card that is white in light mode;
+ * this card is `bg-gray-900` in both, so the light-mode greys came out as
+ * near-white bars on near-black and read as content rather than as absence.
  */
-export function TaxFigureCardSkeleton({ rows = 3 }: { rows?: number }) {
+function ProvisionTileSkeleton({
+  /** The rate tile shows a short "25%", not a currency amount. */
+  short = false,
+}: {
+  short?: boolean;
+}) {
   return (
-    <div className="space-y-4 animate-pulse">
-      <div className="space-y-2">
-        <div className="h-2.5 w-28 bg-gray-100 rounded dark:bg-white/10" />
-        <div className="h-8 w-40 bg-gray-200 rounded dark:bg-white/15" />
+    <div className="min-w-0 flex-1 rounded-xl bg-gray-800 px-3.5 py-3 sm:px-4 sm:py-3.5">
+      <div className="h-2.5 w-24 rounded bg-white/10" />
+      <div
+        className={`mt-2.5 h-6 rounded bg-white/20 md:h-7 ${short ? "w-16" : "w-32"}`}
+      />
+      <div className="mt-2.5 h-2 w-28 rounded bg-white/10" />
+    </div>
+  );
+}
+
+/**
+ * Body skeleton for <IncomeTaxProvision />.
+ *
+ * Shaped like the card it stands in for — three tiles in the calculation row,
+ * two below, a note strip — and it stacks at the same breakpoint, so the layout
+ * does not rearrange under the reader when the figures arrive. It replaces a
+ * generic "headline amount over a list of rows" skeleton that resembled nothing
+ * on the card and was two full tiles shorter than it, which made the page jump.
+ */
+export function IncomeTaxProvisionSkeleton() {
+  /** Stands in for an arrow, so the tiles do not shift when one appears. */
+  const arrow = (
+    <div className="flex shrink-0 items-center justify-center sm:px-1">
+      <div className="h-4 w-4 rounded-full bg-white/10" />
+    </div>
+  );
+
+  return (
+    <div className="animate-pulse">
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-stretch sm:gap-3">
+        <ProvisionTileSkeleton />
+        {arrow}
+        <ProvisionTileSkeleton short />
+        {arrow}
+        <ProvisionTileSkeleton />
       </div>
 
-      <div className="space-y-2.5 pt-1">
-        {Array.from({ length: rows }).map((_, i) => (
-          <div key={i} className="flex items-center justify-between gap-3">
-            <div className="h-3 w-32 bg-gray-100 rounded dark:bg-white/10" />
-            <div className="h-3.5 w-20 bg-gray-200 rounded dark:bg-white/15" />
-          </div>
-        ))}
+      <div className="mt-2.5 grid grid-cols-1 gap-2.5 sm:mt-3 sm:grid-cols-2 sm:gap-3">
+        <ProvisionTileSkeleton />
+        <ProvisionTileSkeleton />
+      </div>
+
+      <div className="mt-3.5 space-y-2 rounded-xl bg-gray-800/60 px-3.5 py-3 sm:mt-4 sm:px-4">
+        <div className="h-2 w-full rounded bg-white/10" />
+        <div className="h-2 w-4/5 rounded bg-white/10" />
       </div>
     </div>
   );

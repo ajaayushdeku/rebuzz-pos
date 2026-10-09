@@ -1,3 +1,4 @@
+import type { LucideIcon } from "lucide-react";
 import {
   CUSTOMER_STAT_CONFIG,
   EXPENSE_STAT_CONFIG,
@@ -20,6 +21,17 @@ export type StatsApiResponse = Record<StatKey, Stat>;
 // For winning stats
 export interface WinningStat {
   value: string;
+  /**
+   * An icon to sit beside the value, where a mood is part of the reading —
+   * a frown on "No Streak", for instance.
+   *
+   * The icon rather than rendered markup, because the service that decides
+   * this is a data module: it can name a component, but JSX belongs to the
+   * component that draws the card. `value` was briefly widened to a
+   * `ReactNode` to allow markup here, which is what put a `<span>` inside a
+   * `.ts` file and stopped the build.
+   */
+  valueIcon?: LucideIcon;
   /** Small companion shown beside the value, e.g. the 12-hour peak window. */
   valueNote?: string;
   // Optional computed footer; overrides the static footer in WINNING_STAT_CONFIG.

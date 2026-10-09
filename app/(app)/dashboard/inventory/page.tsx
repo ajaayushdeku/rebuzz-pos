@@ -54,7 +54,7 @@ export default function InventoryPage() {
         title="Inventory Management"
         subtitle="Monitor stock levels and manage supply intake."
         actions={
-          <>
+          <div className="flex flex-row items-center gap-2 ">
             <DateRangeFilter
               value={dateRange}
               onChange={setDateRange}
@@ -68,7 +68,7 @@ export default function InventoryPage() {
               hideLabelOnMobile
               onClick={() => setModalOpen(true)}
             />
-          </>
+          </div>
         }
       />
 

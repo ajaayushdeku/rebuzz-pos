@@ -5,7 +5,7 @@ import { MergedSalesItem } from "@/services/apiInventory";
 import { ChartColumnBig } from "lucide-react";
 import { classifySalesVelocity, type Velocity } from "@/lib/salesVelocity";
 import {
-  CHART_PALETTE,
+  // CHART_PALETTE,
   ChartCard,
   ChartLegend,
   ChartPager,
@@ -14,7 +14,7 @@ import {
 const PAGE_SIZE = 8;
 
 /** Gutter widths, shared by the bars and the axis so ticks line up. */
-const LABEL_W = "w-24";
+const LABEL_W = "w-16 sm:w-24";
 const VALUE_W = "w-10";
 
 const VELOCITY_COLOR: Record<Velocity, string> = {
@@ -61,7 +61,7 @@ export default function StockMovementChart({
         body: "Units sold per product over the past 30 days, highest first, eight at a time. Bar width is against the busiest product in the whole catalogue, so a bar means the same thing on every page. The colour is how fast that product moves compared with the rest of your range.",
       }}
       subtitle="Units sold per item – fast vs slow movers (Past 30 days)"
-      controls={
+      buttons={
         totalPages > 1 && (
           <ChartPager
             first={start + 1}

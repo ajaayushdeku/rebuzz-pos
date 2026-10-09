@@ -286,116 +286,136 @@ export default function ProductCard({
 
   return (
     <div
-      className={`relative flex flex-col overflow-hidden rounded-2xl border transition-colors duration-200 ${cardTone}`}
+      className={`relative flex flex-col overflow-hidden rounded-xl sm:rounded-2xl border transition-colors duration-200 ${cardTone}`}
     >
-      {/* The card is `overflow-hidden`, so a rotated strip anchored past the
-          corner is clipped into a ribbon. */}
-      {discountPercent > 0 && (
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-9 top-4 z-20 w-32 rotate-45 bg-rose-500 py-1 text-center text-[10px] font-bold tracking-wide text-white shadow-md"
-        >
-          {discountPercent}% OFF
-        </div>
-      )}
       {discountPercent > 0 && (
         <span className="sr-only">{discountPercent} percent discount</span>
       )}
 
-      <div className="flex flex-col flex-1">
-        {/* ── Image (top) ── */}
-        <button
-          type="button"
-          onClick={() => gallery.length && openLightbox(0)}
-          disabled={!gallery.length}
-          aria-label="View product image"
-          className="relative aspect-square w-full shrink-0 bg-gray-100 group focus:outline-none dark:bg-white/10"
-        >
-          {primary && !imgError ? (
-            <>
-              <img
-                src={primary}
-                alt={item.name}
-                loading="lazy"
-                onError={() => setImgError(true)}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-              <span className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center">
-                <Expand
-                  size={18}
-                  className="text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                />
-              </span>
-              {gallery.length > 1 && (
-                <span className="absolute bottom-2 right-2 text-[10px] font-medium bg-black/60 text-white px-1.5 py-0.5 rounded-full">
-                  {gallery.length}
-                </span>
-              )}
-            </>
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-white/5">
-              <img
-                src={business?.logo || businessLogo.src}
-                alt="Business Logo"
-                className="w-20 h-20 object-contain opacity-90"
-              />
-            </div>
-          )}
-
-          {/* Status badge overlay. Untracked products carry one too: without
-              it their card was silent while collapsed, and an unlabelled card
-              reads as an ordinary in-stock one. */}
-          <span
-            className={`absolute left-2 top-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] ${cfg.badge}`}
+      <div className="flex flex-1 flex-col">
+        {/* ── Header: thumbnail, identity, toggle — all on one row ──
+            Was a full-width `aspect-square` hero above the name. A square
+            image is as tall as the card is wide, so on a one-column phone the
+            card opened with a ~330px photograph and ran to about 420px shut —
+            one product per screen. */}
+        <div className="flex items-start gap-3 ">
+          <button
+            type="button"
+            onClick={() => gallery.length && openLightbox(0)}
+            disabled={!gallery.length}
+            aria-label={`View images of ${item.name}`}
+            className="group relative h-20 w-20 shrink-0 overflow-hidden rounded-br-md sm:rounded-br-xl bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:h-30 sm:w-30 dark:bg-white/10"
           >
-            <StatusIcon className="h-3 w-3 shrink-0" aria-hidden />
-            {cfg.label}
-          </span>
-        </button>
+            {primary && !imgError ? (
+              <>
+                <img
+                  src={primary}
+                  alt={item.name}
+                  loading="lazy"
+                  onError={() => setImgError(true)}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+                <span className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/25">
+                  <Expand
+                    size={14}
+                    className="cursor-pointer text-white opacity-0 transition-opacity group-hover:opacity-100"
+                  />
+                </span>
+                {gallery.length > 1 && (
+                  <span className="absolute bottom-1 right-1 rounded-full bg-black/60 px-1 py-px text-[9px] font-medium text-white">
+                    {gallery.length}
+                  </span>
+                )}
+              </>
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-white/5">
+                <img
+                  src={business?.logo || businessLogo.src}
+                  alt=""
+                  className="h-9 w-9 object-contain opacity-90"
+                />
+              </div>
+            )}
+          </button>
 
-        {/* ── Body ── */}
-        <div className="p-3 flex flex-col flex-1">
-          {/* Name + taxable pill */}
-          <div className="flex  justify-between gap-2 mb-2">
-            <h3 className="line-clamp-2 min-w-0 flex-1 text-[13px] leading-snug text-[#3c4043] dark:text-[#e8ecf4]">
+          <div className="min-w-0 flex-1 pt-2">
+            <h3 className="line-clamp-2 text-[13px] leading-snug text-[#3c4043] dark:text-[#e8ecf4]">
               {item.name}
             </h3>
 
-            <span className="flex flex-row h-fit gap-1">
-              {item.isTaxable && (
-                <span className="shrink-0 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] text-blue-600 dark:bg-blue-400/10 dark:border-blue-400/25 dark:text-[#7ba2e3]">
-                  Taxable
-                </span>
-              )}
-
-              {item?.categories && (
+            {/* Status, and the one figure worth seeing while collapsed. The
+                badge used to float over the image; at thumbnail size there is
+                nothing to float over, and it reads better in the line. */}
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] ${cfg.badge}`}
+              >
+                <StatusIcon className="h-3 w-3 shrink-0" aria-hidden />
+                {cfg.label}
+              </span>
+              {item.usesStocks && (
                 <span
-                  className="shrink-0 rounded-full border border-[var(--cat-edge)] px-2 py-0.5 text-[10px] text-[var(--cat-ink)] dark:border-[var(--cat-edge-dark)] dark:text-[var(--cat-ink-dark)]"
-                  style={
-                    {
-                      "--cat-ink": categoryTextColor,
-                      "--cat-ink-dark": categoryTextColorDark,
-                      "--cat-edge": categoryBoderColor,
-                      "--cat-edge-dark": categoryBorderColorDark,
-                      backgroundColor: `${categoryColor}20`,
-                    } as React.CSSProperties
-                  }
+                  className={`text-[11px] font-medium tabular-nums ${cfg.text}`}
                 >
-                  {category?.name}
+                  {item.inStock.toLocaleString()} in stock
                 </span>
               )}
-
-              {/* Meta badges */}
-              {!item.isAvailable && (
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[10px] text-gray-500 dark:bg-white/5 dark:border-white/15 dark:text-[#9aa6bd]">
-                    Unavailable
+            </div>
+            <div className="flex flex-row sm:flex-col items-center sm:items-start gap-2 sm:gap-0">
+              {/* Price, and what comes off it. The discount was a rotated ribbon
+                pinned past the corner, which needed a tall card to cross; on
+                this one it would have run through the thumbnail. */}
+              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                <span className="text-[15px] font-semibold tracking-tight tabular-nums text-[#3c4043] dark:text-[#e8ecf4]">
+                  {fmt(item.price)}
+                </span>
+                {discountPercent > 0 && (
+                  <span className="rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-white">
+                    -{discountPercent}%
                   </span>
+                )}
+              </div>
+
+              {/* Tags on their own wrapping line. Sharing the name's row, three
+                pills and a two-line name had about 150px between them on a
+                phone, which clipped the name to a word. */}
+              {(item.isTaxable || item.categories || !item.isAvailable) && (
+                <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                  {item.isTaxable && (
+                    <span className="rounded-full border border-blue-200 bg-blue-50 px-1.5 py-0 sm:py-0.5 text-[9px] sm:text-[10px] text-blue-600 dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-[#7ba2e3]">
+                      Taxable
+                    </span>
+                  )}
+
+                  {item?.categories && (
+                    <span
+                      className="max-w-[9rem] truncate rounded-full border border-[var(--cat-edge)] px-1.5 py-0 sm:py-0.5 text-[9px] sm:text-[10px] text-[var(--cat-ink)] dark:border-[var(--cat-edge-dark)] dark:text-[var(--cat-ink-dark)]"
+                      style={
+                        {
+                          "--cat-ink": categoryTextColor,
+                          "--cat-ink-dark": categoryTextColorDark,
+                          "--cat-edge": categoryBoderColor,
+                          "--cat-edge-dark": categoryBorderColorDark,
+                          backgroundColor: `${categoryColor}20`,
+                        } as React.CSSProperties
+                      }
+                    >
+                      {category?.name}
+                    </span>
+                  )}
+
+                  {!item.isAvailable && (
+                    <span className="rounded-full border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[9px] sm:text-[10px] text-gray-500 dark:border-white/15 dark:bg-white/5 dark:text-[#9aa6bd]">
+                      Unavailable
+                    </span>
+                  )}
                 </div>
               )}
-            </span>
+            </div>
           </div>
+        </div>
 
+        <div className="px-3 ">
           <div
             id={panelId}
             inert={!isExpanded}
@@ -405,7 +425,13 @@ export default function ProductCard({
                 : "grid-rows-[0fr] opacity-0"
             }`}
           >
-            <div className="flex flex-col overflow-hidden">
+            {/* The rule and the bottom padding live inside the clipped
+                box, so a shut card has neither. On the wrapper they would
+                draw a line under every collapsed card and leave 12px of
+                space beneath it. */}
+            <div
+              className={`flex flex-col overflow-hidden border-t border-[#e8eaed]  dark:border-white/10 ${isExpanded ? "pt-3" : ""}`}
+            >
               {/* Stock — same reserved height whether or not stock is tracked */}
               <div className="min-h-[14px] flex flex-col justify-end mb-2">
                 {item.usesStocks ? (
@@ -582,22 +608,33 @@ export default function ProductCard({
             </div>
           </div>
 
-          {/* Toggle — stays at the bottom of the card */}
-          <button
-            type="button"
-            onClick={() => setIsExpanded(!isExpanded)}
-            aria-expanded={isExpanded}
-            aria-controls={panelId}
-            className="mx-auto mt-auto flex cursor-pointer items-center justify-center gap-1 rounded-full border border-[#dadce0] bg-white dark:bg-white/5 px-2.5 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:text-[#e8ecf4] dark:hover:bg-white/10"
-          >
-            <span>{isExpanded ? "Hide details" : "Show details"}</span>
-            <ChevronDown
-              size={13}
-              className={`transition-transform duration-300 ease-out motion-reduce:transition-none ${
-                isExpanded ? "rotate-180" : "rotate-0"
-              }`}
-            />
-          </button>
+          {/* The pair the tax and budget cards use: a neutral pill to open,
+              a rose one to close. Below the panel rather than beside the name,
+              so the label sits with the section it governs — and outside the
+              clipped box, since inside it there would be no way back open. */}
+          <div className="flex items-center justify-end pb-2">
+            <button
+              type="button"
+              onClick={() => setIsExpanded(!isExpanded)}
+              aria-expanded={isExpanded}
+              aria-controls={panelId}
+              className={
+                isExpanded
+                  ? "flex cursor-pointer items-center gap-1 rounded-full  bg-rose-50 px-3 py-0.5 sm:py-1  text-[9px] sm:text-[10px] text-rose-700 transition-colors hover:bg-rose-100 dark:border-rose-400/25 dark:bg-rose-400/10 dark:text-rose-300 dark:hover:bg-rose-400/20"
+                  : "flex cursor-pointer items-center gap-1 rounded-full  bg-white px-3 py-0.5 sm:py-1 text-[9px] sm:text-[10px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:hover:bg-white/10"
+              }
+            >
+              <span className="hidden sm:block">
+                {isExpanded ? "Hide details" : "Show details"}
+              </span>
+              <ChevronDown
+                size={12}
+                className={`shrink-0 transition-transform duration-300 ease-out motion-reduce:transition-none ${
+                  isExpanded ? "rotate-180" : "rotate-0"
+                }`}
+              />
+            </button>
+          </div>
         </div>
       </div>
 

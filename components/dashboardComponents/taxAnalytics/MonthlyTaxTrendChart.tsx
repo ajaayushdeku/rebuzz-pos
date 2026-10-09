@@ -109,6 +109,21 @@ export default function MonthlyTaxTrendChart() {
 
   const AXIS_TICK = getAxisTick(isDark);
 
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+    const updateScreenSize = () => {
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    updateScreenSize();
+    mediaQuery.addEventListener("change", updateScreenSize);
+
+    return () => mediaQuery.removeEventListener("change", updateScreenSize);
+  }, []);
+
   return (
     <ChartCard
       icon={ChartColumnBig}
@@ -148,8 +163,8 @@ export default function MonthlyTaxTrendChart() {
                 axisLine={false}
                 tickLine={false}
                 tick={AXIS_TICK}
-                width={80}
-                label={yAxisTitle("Tax generated")}
+                width={isSmallScreen ? 55 : 80}
+                label={!isSmallScreen ? yAxisTitle("Tax generated") : undefined}
               />
               <Tooltip
                 content={<CustomTooltip />}

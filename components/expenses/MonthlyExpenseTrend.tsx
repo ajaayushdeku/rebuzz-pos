@@ -185,6 +185,21 @@ export default function MonthlyExpenseTrend() {
 
   const AXIS_TICK = getAxisTick(isDark);
 
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+    const updateScreenSize = () => {
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    updateScreenSize();
+    mediaQuery.addEventListener("change", updateScreenSize);
+
+    return () => mediaQuery.removeEventListener("change", updateScreenSize);
+  }, []);
+
   if (isLoading)
     return (
       <>
@@ -206,7 +221,7 @@ export default function MonthlyExpenseTrend() {
         body: "Six months to date, always — it ignores the month picked at the top of the page. Each bar stacks that month's expenses by category, largest category at the bottom, so the whole bar is what you spent. Income is left out. Hover a bar for the split and the month's total.",
       }}
       subtitle="Stacked breakdown of expenses over the last 6 months"
-      controls={
+      buttons={
         // States plainly that this card ignores the page's month filter.
         <span className="shrink-0 rounded-full border bg-white dark:bg-white/5 px-2 py-0.5 text-[11px] border-[#dadce0] dark:border-white/15 text-[#3c4043] dark:text-[#e8ecf4]">
           Last 6 months
@@ -269,8 +284,8 @@ export default function MonthlyExpenseTrend() {
                 axisLine={false}
                 tickLine={false}
                 tick={AXIS_TICK}
-                width={80}
-                label={yAxisTitle("Expenses")}
+                width={isSmallScreen ? 55 : 80}
+                label={!isSmallScreen ? yAxisTitle("Expenses") : undefined}
               />
               <Tooltip
                 content={<CustomTooltip />}

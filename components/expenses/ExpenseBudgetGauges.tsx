@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   DollarSign,
   Clock,
@@ -10,7 +10,6 @@ import {
   AlertTriangle,
   Gauge,
   ChevronDown,
-  ChevronUp,
   type LucideIcon,
 } from "lucide-react";
 import { useTracker } from "@/providers/ExpenseContext";
@@ -19,6 +18,11 @@ import { formatCurrencySymbol, formatCompactCurrency } from "@/utils/helper";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { CHART_PALETTE, ChartCard } from "../dashboardComponents/chartCard";
 import { ExpenseBudgetGaugesSkeleton } from "./ExpenseAnalyticsSkeletons";
+import {
+  STAT_ROW,
+  STAT_ROW_ITEM,
+} from "../dashboardComponents/overviewDash/statRow";
+import { cn } from "@/lib/utils";
 
 // ── Radial gauge built with SVG ───────────────────────────────────────────
 
@@ -109,6 +113,15 @@ function RadialGauge({
   );
 }
 
+/**
+ * The gauge grid, used by the first row and by every group revealed after it.
+ *
+ * One constant because a revealed group has to be its own grid — a grid cannot
+ * animate part of itself — and a group whose columns did not match the first
+ * row's would put its gauges out of line with the ones above.
+ */
+const GAUGE_GRID = "grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5";
+
 /** One of the five figures under the gauges. */
 function StatTile({
   label,
@@ -123,7 +136,12 @@ function StatTile({
   iconClass: string;
 }) {
   return (
-    <div className="rounded-2xl border bg-white dark:bg-[#161d2e] px-5 py-4 border-[#e3e3e3] dark:border-white/10">
+    <div
+      className={cn(
+        "rounded-2xl border bg-white dark:bg-[#161d2e] px-5 py-4 border-[#e3e3e3] dark:border-white/10",
+        STAT_ROW_ITEM,
+      )}
+    >
       <div className="mb-3 flex items-center justify-between gap-2">
         <p className="truncate text-[13px] text-[#5f6368] dark:text-[#a9b4c7]">
           {label}
@@ -144,6 +162,33 @@ function StatTile({
 export default function ExpenseBudgetGauges() {
   const { currency } = useCurrency();
   const { transactions, budgets, expensePurposes, isLoading } = useTracker();
+
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [isMediumScreen, setIsMediumScreen] = useState(false);
+
+  useEffect(() => {
+    const smQuery = window.matchMedia("(max-width: 639px)");
+    const mdQuery = window.matchMedia(
+      "(min-width: 768px) and (max-width: 1023px)",
+    );
+
+    const updateScreenSize = () => {
+      setIsSmallScreen(smQuery.matches);
+      setIsMediumScreen(mdQuery.matches);
+    };
+
+    updateScreenSize();
+
+    smQuery.addEventListener("change", updateScreenSize);
+    mdQuery.addEventListener("change", updateScreenSize);
+
+    return () => {
+      smQuery.removeEventListener("change", updateScreenSize);
+      mdQuery.removeEventListener("change", updateScreenSize);
+    };
+  }, []);
+  /** How many gauges one click brings in — a full row at the widest layout. */
+  const STEP = isSmallScreen ? 2 : isMediumScreen ? 3 : 5;
 
   // Build purposeId → { name } lookup
   const purposeLookup = useMemo(() => {
@@ -204,12 +249,28 @@ export default function ExpenseBudgetGauges() {
 
   const underBudget = variance >= 0;
 
-  // Visible gauge count — initially 5 (matches the largest grid column count),
-  // expand/collapse in batches of 5.
-  const [visibleCount, setVisibleCount] = useState(5);
-  const visibleGauges = gauges.slice(0, visibleCount);
-  const canLoadMore = visibleCount < gauges.length;
-  const canHide = visibleCount > 5;
+  /**
+   * How many groups beyond the first row are open. 0 is the resting state.
+   *
+   * A count of groups rather than of gauges, because each group animates on its
+   * own: a click moves only the row it brings in, and the rows already open do
+   * not re-run their transition underneath it.
+   */
+  const [revealed, setRevealed] = useState(0);
+
+  const head = gauges.slice(0, STEP);
+
+  // The remainder in groups of five, each its own grid so it can be expanded
+  // independently of the rows above it.
+  const chunks: (typeof gauges)[] = [];
+  for (let i = STEP; i < gauges.length; i += STEP) {
+    chunks.push(gauges.slice(i, i + STEP));
+  }
+
+  const allShown = revealed >= chunks.length;
+  const nextCount = allShown
+    ? 0
+    : Math.min(STEP, gauges.length - STEP - revealed * STEP);
 
   const stats = [
     {
@@ -257,9 +318,6 @@ export default function ExpenseBudgetGauges() {
       </>
     );
 
-  const moreButton =
-    "inline-flex cursor-pointer items-center gap-1 rounded-full border bg-white dark:bg-white/5 px-2.5 py-1 text-[11px] transition-colors hover:bg-[#f8f9fa] dark:hover:bg-white/10";
-
   return (
     <div className="relative flex flex-col gap-4">
       {/* Gauges card */}
@@ -272,7 +330,7 @@ export default function ExpenseBudgetGauges() {
           body: "Only the categories you have set a budget for appear here — a category with no budget is left out entirely. Each ring is what you spent against that budget in the month picked at the top of the page: green under 90%, amber close to the limit, red once you are over it. The ring stops at full even when the figure does not.",
         }}
         subtitle="Current spending vs allocated budget per category"
-        controls={<RangeBadge scope="month" variant="pill" />}
+        buttons={<RangeBadge scope="month" variant="pill" />}
       >
         {gauges.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -288,8 +346,8 @@ export default function ExpenseBudgetGauges() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
-              {visibleGauges.map((g) => (
+            <div className={GAUGE_GRID}>
+              {head.map((g) => (
                 <RadialGauge
                   key={g.category}
                   label={g.category}
@@ -300,41 +358,77 @@ export default function ExpenseBudgetGauges() {
               ))}
             </div>
 
-            {/* Load More / Hide buttons */}
-            {gauges.length > 5 && (
-              <div className="mt-5 flex items-center justify-center gap-2">
-                {canLoadMore && (
-                  <button
-                    onClick={() =>
-                      setVisibleCount((prev) =>
-                        Math.min(prev + 5, gauges.length),
-                      )
-                    }
-                    className={`${moreButton} border-[#dadce0] text-[#3c4043] dark:border-white/15 dark:text-[#e8ecf4]`}
+            {chunks.length > 0 && (
+              <>
+                {/* A grid track per group rather than a height: a group's
+                    height is not known in advance — the gauges reflow from five
+                    columns to two — and `0fr` → `1fr` is the one way to
+                    transition to `auto`. The rows stay mounted so there is
+                    something to reveal; `inert` keeps the closed ones out of
+                    tab order and away from screen readers. */}
+                {chunks.map((chunk, index) => (
+                  <div
+                    key={index}
+                    className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${
+                      index < revealed ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                    }`}
                   >
-                    <ChevronDown size={12} />
-                    Show {gauges.length - visibleCount} more
-                  </button>
-                )}
-                {canHide && (
-                  <button
-                    onClick={() =>
-                      setVisibleCount((prev) => Math.max(prev - 5, 5))
-                    }
-                    className={`${moreButton} border-[#dadce0] text-[#3c4043] dark:border-white/15 dark:text-[#e8ecf4]`}
-                  >
-                    <ChevronUp size={12} />
-                    Show less
-                  </button>
-                )}
-              </div>
+                    <div className="overflow-hidden" inert={index >= revealed}>
+                      {/* The gap above a revealed group lives inside the
+                          clipped box, so it collapses with it. On the wrapper
+                          it would leave 24px of space under the first row
+                          while nothing was open. */}
+                      <div className={`${GAUGE_GRID} pt-6`}>
+                        {chunk.map((g) => (
+                          <RadialGauge
+                            key={g.category}
+                            label={g.category}
+                            pct={g.pct}
+                            actual={g.actual}
+                            budget={g.budget}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* The same pair of pills as the tax breakdown's lists: one
+                    step forward, one jump back. The chevron turns with the
+                    rows it opens. */}
+                <div className="mt-5 flex items-center justify-center gap-2">
+                  {!allShown && (
+                    <button
+                      type="button"
+                      onClick={() => setRevealed((prev) => prev + 1)}
+                      aria-expanded={revealed > 0}
+                      className="flex cursor-pointer items-center gap-1 rounded-full border border-[#dadce0] bg-white px-3 py-1 text-[11px] text-[#3c4043] transition-colors hover:bg-[#f8f9fa] dark:border-white/15 dark:bg-white/5 dark:text-[#e8ecf4] dark:hover:bg-white/10"
+                    >
+                      Show {nextCount} more
+                      <ChevronDown size={12} className="shrink-0" />
+                    </button>
+                  )}
+
+                  {revealed > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setRevealed(0)}
+                      aria-expanded={revealed > 0}
+                      className="flex cursor-pointer items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11px] text-rose-700 transition-colors hover:bg-rose-100 dark:border-rose-400/25 dark:bg-rose-400/10 dark:text-rose-300"
+                    >
+                      Hide
+                      <ChevronDown size={12} className="rotate-180 shrink-0" />
+                    </button>
+                  )}
+                </div>
+              </>
             )}
           </>
         )}
       </ChartCard>
 
       {/* Spend Overview — 5 stat cards */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className={STAT_ROW}>
         {stats.map((stat) => (
           <StatTile
             key={stat.label}

@@ -109,8 +109,8 @@ export default function ExpenseMonthYearFilter() {
   const years = Array.from({ length: 7 }, (_, i) => currentYear - 5 + i);
 
   return (
-    <div className="flex items-center gap-1.5">
-      <CalendarDays className="h-4 w-4 text-gray-400 shrink-0 dark:text-[#7b869b]" />
+    <div className="flex flex-row sm:flex-row items-end sm:items-center gap-1.5">
+      <CalendarDays className="hidden sm:block h-4 w-4 text-gray-400 shrink-0 dark:text-[#7b869b]" />
       {/* Month */}
       <FilterDropdown
         value={month}

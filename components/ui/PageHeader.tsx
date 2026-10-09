@@ -41,6 +41,8 @@ export interface PageHeaderProps {
   spaceBelow?: boolean;
   /** Extra classes on the wrapper, for the rare page that needs them. */
   className?: string;
+  flexItems?: string;
+  actionWidth?: string;
 }
 
 export default function PageHeader({
@@ -51,12 +53,16 @@ export default function PageHeader({
   rule = true,
   spaceBelow = true,
   className = "",
+  flexItems = "items-center flex-row",
+  actionWidth = "w-fit",
 }: PageHeaderProps) {
   return (
     <div className={className}>
       {/* Actions sit on the title's baseline on desktop and drop below it on
           mobile, which is why the row aligns to `end` rather than centring. */}
-      <div className="flex w-full flex-row items-center justify-between gap-4 pb-5 sm:flex-row sm:items-end">
+      <div
+        className={`flex w-full  ${flexItems} justify-between gap-4 pb-5 sm:flex-row sm:items-end`}
+      >
         {leading}
 
         <div className="w-full min-w-0">
@@ -72,7 +78,9 @@ export default function PageHeader({
         </div>
 
         {actions && (
-          <div className="flex w-fit  flex-wrap items-center gap-2 sm:ml-auto sm:w-auto justify-end">
+          <div
+            className={`flex ${actionWidth}  flex-wrap items-center gap-2 sm:ml-auto sm:w-auto justify-end`}
+          >
             {actions}
           </div>
         )}

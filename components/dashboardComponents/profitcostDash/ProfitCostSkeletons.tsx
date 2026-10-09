@@ -7,6 +7,9 @@
  * are mock-driven, so they don't get a Suspense skeleton.
  */
 
+import { cn } from "@/lib/utils";
+import { STAT_ROW, STAT_ROW_ITEM } from "../overviewDash/statRow";
+
 /**
  * The card frame of the shared ChartCard (components/dashboardComponents/
  * chartCard): hairline border, no shadow, the same padding. Written out
@@ -45,7 +48,12 @@ function HeaderSkeleton({
 /** Matches ProfitCostStatBox: label and icon tile, then the value. */
 function StatTileSkeleton() {
   return (
-    <div className="rounded-2xl border border-[#e3e3e3] bg-white px-5 py-4 animate-pulse dark:bg-white/5 dark:border-white/10">
+    <div
+      className={cn(
+        "rounded-2xl border border-[#e3e3e3] bg-white px-5 py-4 animate-pulse dark:bg-white/5 dark:border-white/10",
+        STAT_ROW_ITEM,
+      )}
+    >
       <div className="mb-3 flex items-center justify-between">
         <div className="h-3 w-24 rounded bg-gray-200 dark:bg-white/15" />
         <div className="h-8 w-8 rounded-lg border border-gray-100 bg-gray-50 dark:bg-white/5 dark:border-white/10" />
@@ -58,7 +66,7 @@ function StatTileSkeleton() {
 /** Matches ProfitStatsWrapper's grid of stat tiles. */
 export function ProfitStatsSkeleton({ count = 4 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 mt-4">
+    <div className={STAT_ROW}>
       {Array.from({ length: count }).map((_, i) => (
         <StatTileSkeleton key={i} />
       ))}

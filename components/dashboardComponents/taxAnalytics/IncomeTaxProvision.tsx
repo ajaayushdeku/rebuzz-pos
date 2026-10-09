@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useCurrency } from "@/providers/CurrencyContext";
 import { formatCurrencySymbol } from "@/utils/helper";
-import { TaxFigureCardSkeleton } from "./TaxAnalyticsSkeletons";
+import { IncomeTaxProvisionSkeleton } from "./TaxAnalyticsSkeletons";
 
 // Statutory corporate income tax rate (Nepal). This is a government rate, not a
 // business metric — no API provides it, so it's a fixed constant.
@@ -68,7 +68,12 @@ function Figure({
       : "text-gray-500 dark:text-[#9aa6bd]";
 
   return (
-    <div className={`flex-1 rounded-xl px-4 py-3.5 ${box}`}>
+    // `min-w-0` so a long currency figure lets the tile shrink instead of
+    // pushing the row wider than the card — three of these plus two arrows is
+    // a tight fit at the tablet widths where the row is still horizontal.
+    <div
+      className={`min-w-0 flex-1 rounded-xl px-3.5 py-3 sm:px-4 sm:py-3.5 ${box}`}
+    >
       <p
         className={`mb-1.5 text-[11px] ${
           tone === "good"
@@ -119,9 +124,12 @@ export default function IncomeTaxProvision() {
   return (
     // The dark card of the page: same frame and header layout as the shared
     // ChartCard, in the dark scheme this card has always used.
-    <div className="relative w-full rounded-2xl bg-gray-900 px-6 pb-5 pt-5">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
+    <div className="relative w-full rounded-2xl bg-gray-900 px-4 pb-4 pt-4 sm:px-6 sm:pb-5 sm:pt-5">
+      {/* `items-start`: the subtitle runs to three lines on a phone, and
+          centring against that block left the icon floating in the middle of
+          the paragraph instead of beside the title. */}
+      <div className="mb-4 flex items-start gap-3 sm:mb-5">
+        <div className="flex min-w-0 items-start gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/10">
             <Landmark size={16} className="text-white" />
           </div>
@@ -162,29 +170,35 @@ export default function IncomeTaxProvision() {
       </div>
 
       {isLoading ? (
-        <TaxFigureCardSkeleton />
+        <IncomeTaxProvisionSkeleton />
       ) : isError ? (
         <p className="py-10 text-center text-sm text-red-400">
           Couldn&apos;t load income tax provision. Please try again.
         </p>
       ) : (
         <>
-          {/* Top row — the calculation, left to right */}
-          <div className="flex items-stretch gap-3">
+          {/* The calculation: left to right with room, top to bottom without.
+              Three currency tiles and two arrows in a phone's width gave each
+              figure about 90px for a number like "Rs 1,24,500.00", so it
+              stacks — and the arrows turn to point the way the eye now
+              travels, because they are what makes the three tiles a sum
+              rather than three unrelated numbers. */}
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-stretch sm:gap-3">
             <Figure
               label="Net profit (pre-tax)"
               value={fmtRs(netProfitPreTax)}
               note="This month's earnings before tax"
             />
 
-            {/* Arrow + rate */}
-            <div className="flex shrink-0 flex-col items-center justify-center gap-1 px-1">
+            {/* Arrow + rate. Side by side while stacked ("×25% ↓"), stacked
+                while side by side. */}
+            <div className="flex shrink-0 items-center justify-center gap-2 sm:flex-col sm:gap-1 sm:px-1">
               <p className="text-xs tabular-nums text-gray-400 dark:text-[#7b869b]">
                 ×{ANNUAL_TAX_RATE}%
               </p>
               <ArrowRight
                 size={16}
-                className="text-gray-500 dark:text-[#9aa6bd]"
+                className="rotate-90 text-gray-500 sm:rotate-0 dark:text-[#9aa6bd]"
               />
             </div>
 
@@ -196,10 +210,10 @@ export default function IncomeTaxProvision() {
             />
 
             {/* Arrow */}
-            <div className="flex shrink-0 items-center justify-center px-1">
+            <div className="flex shrink-0 items-center justify-center sm:px-1">
               <ArrowRight
                 size={16}
-                className="text-gray-500 dark:text-[#9aa6bd]"
+                className="rotate-90 text-gray-500 sm:rotate-0 dark:text-[#9aa6bd]"
               />
             </div>
 
@@ -211,8 +225,10 @@ export default function IncomeTaxProvision() {
             />
           </div>
 
-          {/* Bottom row — what to set aside */}
-          <div className="mt-3 grid grid-cols-2 gap-3">
+          {/* Bottom row — what to set aside. One column on a phone: two
+              currency figures side by side left each about 150px, and the
+              notes under them wrapped to four lines. */}
+          <div className="mt-2.5 grid grid-cols-1 gap-2.5 sm:mt-3 sm:grid-cols-2 sm:gap-3">
             <Figure
               label="Annual provision"
               value={fmtRs(annualProvision)}
@@ -227,7 +243,7 @@ export default function IncomeTaxProvision() {
           </div>
 
           {/* Info note */}
-          <div className="mt-4 flex items-start gap-2 rounded-xl bg-gray-800/60 px-4 py-3">
+          <div className="mt-3.5 flex items-start gap-2 rounded-xl bg-gray-800/60 px-3.5 py-3 sm:mt-4 sm:px-4">
             <Info
               size={13}
               className="mt-0.5 shrink-0 text-gray-500 dark:text-[#9aa6bd]"
