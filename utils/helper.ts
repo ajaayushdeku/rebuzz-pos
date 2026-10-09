@@ -19,16 +19,32 @@ const numberLocale = (locale: string): string =>
   INDIAN_GROUPING_LOCALES.has(locale) ? "en-IN" : locale;
 
 /**
- * Formats the numeric part of a compact value (e.g. the "1.5" in "1.5Cr")
- * so it stays short even for astronomically large amounts. Values with an
- * integer part of 1,000,000+ fall back to exponential notation.
+ * Formats the numeric part of a compact value — the "1.5" in "1.5Cr".
+ *
+ * Grouped, which it did not used to be: built with `toFixed` it produced
+ * "206327.5Cr", six digits in a row with nothing to break them up, and the
+ * reader has to count characters to find out what order of magnitude they are
+ * looking at. A mantissa only gets that long when the unit above it is missing,
+ * which is now a rarer thing, but grouping costs one call and reads better at
+ * four digits too.
+ *
+ * At a million of its own unit it gives up and goes exponential: by then the
+ * value is past the largest unit either scale has a name for, and "1e+6Kh" at
+ * least stays short.
  */
-const formatCompactValue = (value: number): string => {
+const formatCompactValue = (value: number, locale?: string): string => {
   const abs = Math.abs(value);
   if (abs >= 1_000_000) {
     return value.toExponential(1).replace(/\.0e/, "e");
   }
-  return value.toFixed(1).replace(/\.0$/, "");
+
+  // maximumFractionDigits 1 with a minimum of 0 is what the old
+  // `toFixed(1).replace(/\.0$/, "")` was doing by hand: one decimal place when
+  // there is something to show, none when there is not.
+  return new Intl.NumberFormat(numberLocale(locale ?? "en-US"), {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 1,
+  }).format(value);
 };
 
 /**
@@ -63,8 +79,9 @@ export const formatCompactCurrency = (
 
 // Format currency symbol only (no conversion)
 // Uses locale-aware number formatting (Indian/Nepali: 1,00,000 | Western: 1,000,000)
-// Very large values (≥ 1,00,00,000 Indian / ≥ 1,000,000 Western) are compacted
-// (e.g. 1Cr / 1M) so they fit comfortably in the UI.
+// From a billion up the value is compacted instead (1Ar on the Indian scale, 1B
+// on the Western one) so it fits in the UI. The threshold is the same number on
+// both scales; only the name for it differs.
 export const formatCurrencySymbol = (
   amount: number,
   symbol: string,
@@ -177,40 +194,59 @@ export const formatDate = (dateString: string) => {
   return date.toLocaleDateString();
 };
 
+/** One step on a scale: the value it starts at, and what it is called. */
+type CompactUnit = { threshold: number; suffix: string };
+
+/**
+ * The Indian scale, largest first — lakh, crore, arab, kharab.
+ *
+ * Arab and kharab were missing, which is how a turnover of 2.06 trillion came
+ * out as "206327.5Cr": crore was the largest name available, so the mantissa
+ * had to carry the rest. The names above crore are in everyday use in Nepal and
+ * India, and two of them cover every figure this app will ever show — a kharab
+ * is already 100 billion.
+ */
+const INDIAN_UNITS: CompactUnit[] = [
+  { threshold: 1_00_00_00_00_000, suffix: "Kh" }, // kharab — 100 billion
+  { threshold: 1_00_00_00_000, suffix: "Ar" }, // arab — 1 billion
+  { threshold: 1_00_00_000, suffix: "Cr" }, // crore — 10 million
+  { threshold: 1_00_000, suffix: "L" }, // lakh — 100 thousand
+  { threshold: 1_000, suffix: "k" },
+];
+
+/** The Western scale, largest first — thousand, million, billion, trillion. */
+const WESTERN_UNITS: CompactUnit[] = [
+  { threshold: 1_000_000_000_000, suffix: "T" },
+  { threshold: 1_000_000_000, suffix: "B" },
+  { threshold: 1_000_000, suffix: "M" },
+  { threshold: 1_000, suffix: "k" },
+];
+
 /**
  * Compact number for chart axes / tight spaces.
  *
- * Western (default): 1,000 → 1k · 1,000,000 → 1M
- * Indian (pass an NPR/INR locale): 1,00,000 → 1L · 1,00,00,000 → 1Cr
+ * Western (default): 1,000 → 1k · 1,000,000 → 1M · 1e9 → 1B · 1e12 → 1T
+ * Indian (an NPR/INR locale): 1,00,000 → 1L · 1,00,00,000 → 1Cr ·
+ * 1,00,00,00,000 → 1Ar · 1,00,00,00,00,000 → 1Kh
  *
- * Units are capped at 1,00,00,000 (1Cr) for Indian locales and 1,000,000 (1M)
- * for Western locales. Values beyond that still use those units, but the
- * numeric part falls back to exponential notation (e.g. 1e+17Cr) so the
- * string never becomes unwieldy.
+ * A table rather than a ladder of ifs, so adding the next unit up is a line
+ * rather than another branch, and so the two scales are visibly the same shape.
+ *
+ * Past the largest unit the mantissa keeps growing, and past a million of it
+ * `formatCompactValue` switches to exponential — that is 1e17 on the Indian
+ * scale and 1e18 on the Western one, well beyond any real figure, and it is
+ * there so the string can never run away rather than because anyone will see
+ * it.
  */
 export function formatCompactNumber(amount: number, locale?: string): string {
   const abs = Math.abs(amount);
+  const units =
+    locale && isIndianGroupingLocale(locale) ? INDIAN_UNITS : WESTERN_UNITS;
 
-  if (locale && isIndianGroupingLocale(locale)) {
-    if (abs >= 1_00_00_000) {
-      return `${formatCompactValue(amount / 1_00_00_000)}Cr`;
-    }
-    if (abs >= 1_00_000) {
-      return `${formatCompactValue(amount / 1_00_000)}L`;
-    }
-    if (abs >= 1_000) {
-      return `${formatCompactValue(amount / 1_000)}k`;
-    }
-    return amount.toFixed(0);
-  }
+  const unit = units.find((candidate) => abs >= candidate.threshold);
+  if (!unit) return amount.toFixed(0);
 
-  if (abs >= 1_000_000) {
-    return `${formatCompactValue(amount / 1_000_000)}M`;
-  }
-  if (abs >= 1_000) {
-    return `${formatCompactValue(amount / 1_000)}k`;
-  }
-  return amount.toFixed(0);
+  return `${formatCompactValue(amount / unit.threshold, locale)}${unit.suffix}`;
 }
 
 export function formatDatetime(dateString: string) {

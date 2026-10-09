@@ -312,7 +312,7 @@ export default function BreakEvenMarginSafety() {
           its fixed costs, so an early-month shortfall is expected rather than a
           warning. Say which, instead of leaving it to be misread. */}
       {isPartialMonth && (
-        <div className="mt-3 flex items-start gap-2 rounded-xl bg-blue-50 px-3 py-2.5 dark:text-blue-200 dark:bg-blue-400/10">
+        <div className="mt-3 flex items-center gap-2 rounded-xl bg-blue-50 px-3 py-2.5 dark:text-blue-200 dark:bg-blue-400/10">
           <Info className="mt-px h-3.5 w-3.5 shrink-0 text-blue-400" />
           <p className="text-[11px] leading-relaxed text-blue-800 dark:text-[#a8c4ee]">
             {MONTHS[month - 1]} is still in progress — revenue covers{" "}

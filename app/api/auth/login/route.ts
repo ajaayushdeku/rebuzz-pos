@@ -6,6 +6,7 @@ import {
   writeAccounts,
   upsertActiveAccount,
   setRole,
+  setToken,
   setCurrencyCookie,
   clearCurrencyCookie,
 } from "@/lib/auth/accounts";
@@ -79,13 +80,11 @@ export const POST = async (req: NextRequest) => {
       clearCurrencyCookie(response);
     }
 
-    response.cookies.set("token", responseLogin.data.token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7,
-    });
+    // Through `setToken` rather than set here, so the cookie gets the token's
+    // own remaining life. Written out by hand, this one carried a flat seven
+    // days and kept presenting a token the backend had already stopped
+    // accepting.
+    setToken(response, responseLogin.data.token);
 
     // Best-effort: fetch the business name for this account so the switcher can
     // label it by business rather than by email.

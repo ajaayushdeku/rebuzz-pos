@@ -42,11 +42,11 @@ const COLOR_PALETTE = [
   "#f59e0b",
 ];
 
-const formatCurrency = (value: number): string => {
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
-  return value.toFixed(0);
-};
+// const formatCurrency = (value: number): string => {
+//   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+//   if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
+//   return value.toFixed(0);
+// };
 
 const CustomTooltip = ({
   active,
@@ -94,7 +94,7 @@ const PaymentMethodsChart = ({
   startDate,
   endDate,
 }: PaymentMethodsChartProps) => {
-  const { currency } = useCurrency();
+  // const { currency } = useCurrency();
   // Suspense query — loading is handled by the page's <Suspense> fallback and
   // errors by the page's <ChartErrorBoundary>. `data` is always defined here.
   const { data } = usePaymentMethods(startDate, endDate);
@@ -180,7 +180,7 @@ const PaymentMethodsChart = ({
                   cy="50%"
                   innerRadius={55}
                   outerRadius={82}
-                  paddingAngle={2}
+                  paddingAngle={0.5}
                   dataKey="totalRevenue"
                   nameKey="name"
                   startAngle={90}

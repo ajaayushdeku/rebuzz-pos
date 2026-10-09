@@ -30,6 +30,15 @@ const LoginPage = () => {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
 
+  /**
+   * Arrived here because the session ended, not because they asked to log in.
+   *
+   * Set by `/api/auth/session-expired`. Without it, being thrown back to a
+   * login form mid-shift reads as the app having lost the session for no
+   * reason — or as a bug.
+   */
+  const sessionExpired = searchParams.get("expired") === "1";
+
   const {
     register,
     handleSubmit,
@@ -198,6 +207,17 @@ const LoginPage = () => {
                 </Link>
               </div>
             </div>
+
+            {/* Why this page is being shown. Amber, not red: nothing went
+                wrong, a session simply ran out. Hidden once a login has been
+                attempted, so its own error is the thing being read. */}
+            {sessionExpired && !serverError && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-400/25 dark:bg-amber-400/10">
+                <p className="text-[13px] leading-snug text-amber-700 dark:text-amber-200">
+                  Your session has ended. Please log in again to continue.
+                </p>
+              </div>
+            )}
 
             {/* Server error */}
             {serverError && (

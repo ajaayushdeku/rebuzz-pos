@@ -218,7 +218,7 @@ export default function GrossVsCOGSVsNetProfit({
   const chartData = useMemo<ChartDataPoint[]>(() => {
     const start = page * ITEMS_PER_PAGE;
     return allChartData.slice(start, start + ITEMS_PER_PAGE);
-  }, [allChartData, page]);
+  }, [allChartData, page, ITEMS_PER_PAGE]);
 
   const displayData: ChartDataPoint[] =
     chartData.length > 0

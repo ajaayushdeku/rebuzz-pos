@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Clock,
   ArrowRight,
+  ShieldCheck,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -21,7 +22,7 @@ export interface StaffBoxProps {
   ordersTaken: number;
   amount: number;
   avgTime?: string;
-  role?: "Basic" | "Staff" | "Owner";
+  role?: "Basic" | "Staff" | "Admin";
 }
 
 const getInitials = (name: string): string =>
@@ -37,10 +38,10 @@ const getInitials = (name: string): string =>
  */
 function resolveRole(
   position: string | undefined,
-): "Owner" | "Staff" | "Basic" {
+): "Admin" | "Staff" | "Basic" {
   if (!position) return "Basic";
   const p = position.toLowerCase().trim();
-  if (p === "owner" || p === "admin") return "Owner";
+  if (p === "owner" || p === "admin") return "Admin";
   if (p === "staff") return "Staff";
   return "Basic";
 }
@@ -51,12 +52,13 @@ function resolveRole(
 // regardless and only the badge carried the role.
 
 const roleConfig = {
-  Owner: {
-    avatar: "bg-amber-500",
+  Admin: {
+    avatar: "bg-green-600",
     badge:
-      "border border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-400/10 dark:border-amber-400/25 dark:text-amber-300",
-    label: "Owner",
-    icon: Crown,
+      "border border-green-200 bg-green-100 text-[#328817] dark:bg-green-400/10 dark:border-green-400/25 dark:text-green-300",
+
+    label: "Admin",
+    icon: ShieldCheck,
   },
   Staff: {
     avatar: "bg-blue-500",
@@ -128,9 +130,9 @@ export default function StaffStatBox({
             >
               {staffInitials}
             </div>
-            {roleKey === "Owner" && (
-              <div className="absolute -right-1 -top-1 rounded-full bg-amber-400 p-0.5 shadow">
-                <Crown size={10} className="text-white" />
+            {roleKey === "Admin" && (
+              <div className="absolute -right-1 -top-1 rounded-full bg-green-500 p-0.5 shadow">
+                <ShieldCheck size={10} className="text-white" />
               </div>
             )}
           </div>

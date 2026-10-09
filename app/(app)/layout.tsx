@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { Toaster } from "react-hot-toast";
 
 import { ACCESS_DENIED_PATH } from "@/lib/auth/roles";
-import { isDeniedSession } from "@/lib/auth/verifyAdmin";
+import { sessionStatus } from "@/lib/auth/verifyAdmin";
 
 import { QueryProvider } from "@/providers/QueryProvider";
 import { SidebarProvider } from "@/providers/SidebarProvider";
@@ -41,13 +41,30 @@ export default async function RootLayout({
 }>) {
   const cookieStore = await cookies();
 
-  // The authoritative half of the role gate. The middleware turns away any
-  // session whose role cookie says staff, but that cookie is written by this
-  // app and so can be edited in a browser; the token cannot be. This asks the
-  // backend who the token belongs to, and wraps every page under (app).
+  /*
+   * The authoritative half of the session gate, for every page under (app).
+   *
+   * The middleware can only see whether a token cookie exists, and the role
+   * cookie beside it is written by this app so a browser can edit it. Neither
+   * can tell a live session from one the backend has stopped accepting. This
+   * asks.
+   *
+   * Two ways out, and they are different events: an expired token means the
+   * session is over and the cookies have to go, while a wrong role means the
+   * account is not welcome and should be told so. `unknown` — the API being
+   * briefly unreachable — deliberately falls through and renders, because
+   * signing out every till over a failed request is worse than a dead session
+   * lasting until the next navigation.
+   */
   const token = cookieStore.get("token")?.value;
-  if (token && (await isDeniedSession(token))) {
-    redirect(ACCESS_DENIED_PATH);
+  if (token) {
+    const status = await sessionStatus(token);
+
+    // The handler clears the cookies and lands on /login?expired=1 — a
+    // component cannot write cookies while rendering, which is why this is a
+    // redirect and not a few lines here.
+    if (status === "expired") redirect("/api/auth/session-expired");
+    if (status === "denied") redirect(ACCESS_DENIED_PATH);
   }
 
   const currencyCode = cookieStore.get("currency")?.value;

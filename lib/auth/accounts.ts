@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { ROLE_COOKIE } from "@/lib/auth/roles";
+import {
+  DEFAULT_SESSION_MAX_AGE,
+  tokenCookieMaxAge,
+} from "@/lib/auth/tokenExpiry";
 
 /**
  * Multi-account session store.
@@ -44,7 +48,7 @@ const cookieBase = {
   secure: process.env.NODE_ENV === "production",
   sameSite: "lax" as const,
   path: "/",
-  maxAge: 60 * 60 * 24 * 7, // 7 days — matches the `token` cookie
+  maxAge: DEFAULT_SESSION_MAX_AGE,
 };
 
 export function readAccounts(req: NextRequest): AccountsStore {
@@ -65,8 +69,19 @@ export function writeAccounts(res: NextResponse, store: AccountsStore) {
   res.cookies.set(ACCOUNTS_COOKIE, JSON.stringify(store), cookieBase);
 }
 
+/**
+ * Make this token the active session.
+ *
+ * The cookie is given the token's own remaining life, so it cannot outlive what
+ * it holds. Every path that starts or changes a session goes through here —
+ * login and the account switcher — which is the point: a second place setting
+ * this cookie by hand is how the two lifetimes drifted apart before.
+ */
 export function setToken(res: NextResponse, token: string) {
-  res.cookies.set(TOKEN_COOKIE, token, cookieBase);
+  res.cookies.set(TOKEN_COOKIE, token, {
+    ...cookieBase,
+    maxAge: tokenCookieMaxAge(token),
+  });
 }
 
 export function clearToken(res: NextResponse) {
@@ -80,6 +95,11 @@ export function clearToken(res: NextResponse) {
  * session from a staff one without asking the backend on every navigation.
  * This cookie is that answer, cached. It is written only where the token is
  * written, and cleared wherever the token is cleared, so the two cannot drift.
+ *
+ * Keeps the default life rather than the token's, and may therefore outlive it
+ * by a few days. Harmless: a role with no token beside it fails the
+ * middleware's `!token` check and goes to login like any other visitor, and the
+ * only branch that acts on the role requires a token to be present.
  *
  * It is a cache, not the authority: the layout re-checks the role against the
  * profile endpoint, which is what catches a cookie somebody set by hand.

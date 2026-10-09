@@ -127,10 +127,10 @@ export default function StaffBoxContainer({
  */
 function resolveRole(
   position: string | undefined,
-): "Owner" | "Staff" | "Basic" {
+): "Admin" | "Staff" | "Basic" {
   if (!position) return "Basic";
   const p = position.toLowerCase().trim();
-  if (p === "owner" || p === "admin") return "Owner";
+  if (p === "owner" || p === "admin") return "Admin";
   if (p === "staff") return "Staff";
   return "Basic";
 }

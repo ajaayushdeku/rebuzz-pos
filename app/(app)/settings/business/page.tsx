@@ -8,6 +8,7 @@ import {
   Camera,
   Check,
   Loader2,
+  Lock,
   MapPin,
   Navigation,
   Pencil,
@@ -15,8 +16,13 @@ import {
   Receipt,
   User,
   X,
+  Info,
 } from "lucide-react";
 
+import { useQuery } from "@tanstack/react-query";
+
+import { DEMO_EDIT_LOCKED_REASON, isDemoPhone } from "@/lib/auth/demoAccount";
+import { fetchUserData } from "@/services/apiProfile";
 import { useBusiness, useUpdateBusiness } from "@/hooks/useBusiness";
 import { AddressSearch } from "@/components/onboardingComponents/AddressSearch";
 import { Button } from "@/components/ui/button";
@@ -173,6 +179,25 @@ export default function BusinessSettingsPage() {
   const { data: business, isLoading } = useBusiness();
   const { mutate: saveBusiness, isPending: saving } = useUpdateBusiness();
 
+  /**
+   * Who is signed in, only so the demo account can be recognised.
+   *
+   * The same query key the navbar and the dashboard header already use, so this
+   * is served from the cache rather than being a third request for one field.
+   */
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ["profile"],
+    queryFn: fetchUserData,
+  });
+
+  /**
+   * The demo is read-only here. Everyone else edits as before.
+   *
+   * `app/api/business/route.ts` asks the API the same question on every save —
+   * this only decides what the page offers, and a browser can be made to lie.
+   */
+  const isDemo = isDemoPhone(profile?.phone);
+
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState<Partial<Record<FormKey, string>>>({});
@@ -193,6 +218,10 @@ export default function BusinessSettingsPage() {
    * keep in step with it.
    */
   const startEdit = () => {
+    // The button that calls this is already disabled for the demo; this is the
+    // belt to that brace, so nothing else can put the card into edit mode.
+    if (isDemo) return;
+
     setForm({
       businessName: business?.businessName ?? "",
       owner: business?.owner ?? "",
@@ -260,6 +289,9 @@ export default function BusinessSettingsPage() {
   };
 
   const handleSave = () => {
+    // Guarded as well, because this is the call that writes. The route checks
+    // the account too, so even a demo session that reached this cannot save.
+    if (isDemo) return;
     if (!validate()) return;
 
     saveBusiness({
@@ -312,15 +344,34 @@ export default function BusinessSettingsPage() {
           subtitle={
             editing
               ? "Changes are saved only when you press Save."
-              : "Your business profile as it appears on invoices and receipts."
+              : isDemo
+                ? // Said here rather than only in a tooltip on the button: a
+                  // tooltip is unreachable on a touch screen, which is where
+                  // most of this app is used, and the reason a control does
+                  // nothing is not optional information.
+                  "Demo/Guest User account Details"
+                : "Your business profile as it appears on invoices and receipts."
           }
           actions={
-            !editing && !isLoading ? (
+            /* Waits for the profile as well as the business: until the account
+               is known the demo would briefly be offered a working button.
+               Both are usually already cached, so this is not a visible delay. */
+            !editing && !isLoading && !profileLoading ? (
+              /* Kept in place for the demo rather than removed — the profile is
+                 still what this page is about, and a header that loses its only
+                 action reads as a page that has lost something. Disabled and
+                 padlocked instead, with the reason in the subtitle. */
               <Button
                 onClick={startEdit}
-                className="inline-flex h-9 shrink-0 cursor-pointer select-none items-center justify-center gap-2 tracking-wide whitespace-nowrap rounded-lg border border-blue-300 bg-white text-blue-600  px-3.5 text-sm font-semibold transition-colors outline-none over:border-blue-400 hover:bg-blue-50 active:bg-blue-100 focus-visible:border-blue-500 focus-visible:ring-[3px] focus-visible:ring-blue-500/30 active:bg-blue-800 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 dark:border-[#7ba2e3]/40 dark:bg-white/5 dark:text-[#7ba2e3] dark:hover:border-[#7ba2e3]/60 dark:hover:bg-white/10 dark:active:bg-white/15"
+                disabled={isDemo}
+                title={isDemo ? DEMO_EDIT_LOCKED_REASON : undefined}
+                className="inline-flex h-9 shrink-0 cursor-pointer select-none items-center justify-center gap-2 tracking-wide whitespace-nowrap rounded-lg border border-blue-300 bg-white text-blue-600  px-3.5 text-sm font-semibold transition-colors outline-none over:border-blue-400 hover:bg-blue-50 active:bg-blue-100 focus-visible:border-blue-500 focus-visible:ring-[3px] focus-visible:ring-blue-500/30 active:bg-blue-800 active:translate-y-px disabled:cursor-not-allowed disabled:border-[#dadce0] disabled:bg-[#f8f9fa] disabled:text-[#9aa0a6] disabled:opacity-100 disabled:hover:bg-[#f8f9fa] dark:border-[#7ba2e3]/40 dark:bg-white/5 dark:text-[#7ba2e3] dark:hover:border-[#7ba2e3]/60 dark:hover:bg-white/10 dark:active:bg-white/15 dark:disabled:border-white/10 dark:disabled:bg-white/5 dark:disabled:text-[#7b869b] dark:disabled:hover:bg-white/5"
               >
-                <Pencil className="h-4 w-4" />
+                {isDemo ? (
+                  <Lock className="h-4 w-4" />
+                ) : (
+                  <Pencil className="h-4 w-4" />
+                )}
                 Edit business
               </Button>
             ) : undefined
@@ -330,291 +381,301 @@ export default function BusinessSettingsPage() {
         {isLoading ? (
           <ProfileSkeleton />
         ) : (
-          /* ── One card, two modes — so nothing is shown twice ── */
-          <div className="overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white dark:border-white/10 dark:bg-[#161d2e]">
-            {/* Identity.
+          <>
+            {isDemo && (
+              <p className="mb-3 flex items-center gap-1.5 rounded-lg bg-amber-100 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800 dark:text-amber-200 dark:bg-amber-400/10">
+                <Info className="mt-px h-3.5 w-3.5 shrink-0" />
+                {isDemo && DEMO_EDIT_LOCKED_REASON}
+              </p>
+            )}
+
+            <div className="overflow-hidden rounded-2xl border border-[#e3e3e3] bg-white dark:border-white/10 dark:bg-[#161d2e]">
+              {/* Identity.
                 This is the business's own page and the profile it describes is
                 what customers see on every receipt, so it leads the card —
                 centred, with the mark first. */}
-            <div className="relative flex flex-col items-center gap-4 overflow-hidden px-6 pb-6 pt-10 text-center">
-              {/* Something for the mark to sit on.
+              <div className="relative flex flex-col items-center gap-4 overflow-hidden px-6 pb-6 pt-10 text-center">
+                {/* Something for the mark to sit on.
                   Not the coloured band again — that competed with the logo and
                   turned the top of the card into a header bar. This is ambient
                   instead: a blurred wash of the app's own blues behind the
                   circle, and two faint rings spreading from it, so the eye is
                   drawn to the centre without anything hard-edged arriving. */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute left-1/2 top-2 h-44 w-44 -translate-x-1/2 rounded-full bg-gradient-to-br from-blue-400/30 via-indigo-400/20 to-violet-400/30 blur-3xl"
-              />
-              <div
-                aria-hidden
-                className="pointer-events-none absolute left-1/2 top-6 h-44 w-44 -translate-x-1/2 rounded-full border border-[#dadce0]/70 dark:border-white/10"
-              />
-              <div
-                aria-hidden
-                className="pointer-events-none absolute left-1/2 top-1 h-54 w-54 -translate-x-1/2 rounded-full border border-[#e8eaed] dark:border-white/5"
-              />
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute left-1/2 top-2 h-44 w-44 -translate-x-1/2 rounded-full bg-gradient-to-br from-blue-400/30 via-indigo-400/20 to-violet-400/30 blur-3xl"
+                />
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute left-1/2 top-6 h-44 w-44 -translate-x-1/2 rounded-full border border-[#dadce0]/70 dark:border-white/10"
+                />
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute left-1/2 top-1 h-54 w-54 -translate-x-1/2 rounded-full border border-[#e8eaed] dark:border-white/5"
+                />
 
-              <div className="group relative z-10 h-36 w-36 shrink-0">
-                <div className="h-36 w-36 overflow-hidden rounded-full border-4 border-white bg-white shadow-md ring-1 ring-[#dadce0]/80 dark:border-[#161d2e] dark:bg-[#161d2e] dark:ring-white/15">
-                  <Image
-                    src={displayLogo || businessLogo}
-                    alt=""
-                    width={144}
-                    height={144}
-                    className={
-                      displayLogo
-                        ? "h-full w-full object-cover"
-                        : "h-full w-full object-contain p-6"
-                    }
-                    unoptimized={!!logoPreview}
-                    priority
+                <div className="group relative z-10 h-36 w-36 shrink-0">
+                  <div className="h-36 w-36 overflow-hidden rounded-full border-4 border-white bg-white shadow-md ring-1 ring-[#dadce0]/80 dark:border-[#161d2e] dark:bg-[#161d2e] dark:ring-white/15">
+                    <Image
+                      src={displayLogo || businessLogo}
+                      alt=""
+                      width={144}
+                      height={144}
+                      className={
+                        displayLogo
+                          ? "h-full w-full object-cover"
+                          : "h-full w-full object-contain p-6"
+                      }
+                      unoptimized={!!logoPreview}
+                      priority
+                    />
+                  </div>
+
+                  {/* The logo is only replaceable while editing, so the overlay
+                    exists only then rather than teasing a disabled control. */}
+                  {editing && (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      aria-label="Change business logo"
+                      className="absolute inset-0 flex items-center justify-center rounded-full bg-black/45 text-white opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer"
+                    >
+                      <Camera size={22} />
+                    </button>
+                  )}
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={handleLogoChange}
                   />
                 </div>
 
-                {/* The logo is only replaceable while editing, so the overlay
-                    exists only then rather than teasing a disabled control. */}
-                {editing && (
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    aria-label="Change business logo"
-                    className="absolute inset-0 flex items-center justify-center rounded-full bg-black/45 text-white opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer"
-                  >
-                    <Camera size={22} />
-                  </button>
-                )}
-
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  className="hidden"
-                  onChange={handleLogoChange}
-                />
-              </div>
-
-              <div className="relative z-10 w-full min-w-0 max-w-md">
-                {editing ? (
-                  <>
-                    <label className="mb-1.5 flex items-center justify-center gap-1.5">
-                      <Building2 className="h-3.5 w-3.5 text-[#9aa0a6] dark:text-[#7b869b]" />
-                      <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#9aa0a6] dark:text-[#7b869b]">
-                        Business name
-                      </span>
-                    </label>
-                    <Input
-                      type="text"
-                      value={form.businessName}
-                      onChange={(e) => set("businessName", e.target.value)}
-                      className={
-                        errors.businessName ? inputErrorClass : inputClass
-                      }
-                      placeholder="e.g. Rebuzz POS"
-                    />
-                    {errors.businessName && (
-                      <p className="mt-1 text-[11px] text-red-500 dark:text-[#f87171]">
-                        {errors.businessName}
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <h2 className="truncate text-[22px] font-semibold leading-tight tracking-tight text-[#3c4043] dark:text-[#e8ecf4]">
-                      {business?.businessName || "My Business"}
-                    </h2>
-                    <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-                      <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-[11px] font-semibold text-blue-700 dark:border-blue-400/25 dark:bg-blue-400/15 dark:text-[#a8c4ee]">
-                        {business?.businessType || "Business"}
-                      </span>
-
-                      {/* Green only when there is nothing left to add, so the
-                          colour means something rather than always being on. */}
-                      <span
-                        className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${
-                          isComplete
-                            ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-400/15 dark:text-emerald-300"
-                            : "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/25 dark:bg-amber-400/15 dark:text-amber-300"
-                        }`}
-                      >
-                        {isComplete ? (
-                          <Check className="h-3 w-3" />
-                        ) : (
-                          <AlertTriangle className="h-3 w-3" />
-                        )}
-                        {isComplete
-                          ? "Profile complete"
-                          : `${filledCount} of ${totalFields} details added`}
-                      </span>
-                    </div>
-                  </>
-                )}
-
-                {editing && (
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="mt-2 cursor-pointer text-xs font-semibold text-blue-600 transition-colors hover:text-blue-700 dark:text-[#7ba2e3] dark:hover:text-white"
-                  >
-                    {displayLogo ? "Change logo" : "Upload logo"}
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Logo feedback — an error blocks the upload, a warning does not */}
-            {editing && (
-              <div className="px-6 pb-2">
-                {logoError ? (
-                  <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-400/25 dark:bg-amber-400/10">
-                    <AlertTriangle
-                      size={15}
-                      className="mt-0.5 shrink-0 text-amber-500"
-                    />
-                    <p className="text-[11px] leading-relaxed text-amber-700 dark:text-amber-200">
-                      {logoError}
-                    </p>
-                  </div>
-                ) : (
-                  <p className="text-[11px] text-[#9aa0a6] dark:text-[#7b869b]">
-                    PNG, JPG or WEBP. Keep it under {LOGO_WARN_MB} MB for faster
-                    loading — {LOGO_MAX_MB} MB is the limit.
-                  </p>
-                )}
-              </div>
-            )}
-
-            <Section
-              title="Owner & contact"
-              description="Who runs the business, and how customers reach you."
-            >
-              <Field
-                icon={User}
-                label="Owner"
-                editing={editing}
-                value={business?.owner}
-                error={errors.owner}
-              >
-                <Input
-                  type="text"
-                  value={form.owner}
-                  onChange={(e) => set("owner", e.target.value)}
-                  className={errors.owner ? inputErrorClass : inputClass}
-                  placeholder="e.g. John Doe"
-                />
-              </Field>
-
-              <Field
-                icon={Phone}
-                label="Contact number"
-                editing={editing}
-                value={business?.phoneNumber}
-                error={errors.phoneNumber}
-              >
-                <Input
-                  type="text"
-                  value={form.phoneNumber}
-                  onChange={(e) => set("phoneNumber", e.target.value)}
-                  className={errors.phoneNumber ? inputErrorClass : inputClass}
-                  placeholder="e.g. +977-9841234567"
-                />
-              </Field>
-            </Section>
-
-            <Section
-              title="Location"
-              description="Printed on receipts, and used to place you on a map."
-            >
-              <Field
-                icon={MapPin}
-                label="Address"
-                editing={editing}
-                value={business?.address}
-                error={errors.address}
-              >
-                <Input
-                  type="text"
-                  value={form.address}
-                  onChange={(e) => set("address", e.target.value)}
-                  className={errors.address ? inputErrorClass : inputClass}
-                  placeholder="e.g. Kathmandu, Nepal"
-                />
-              </Field>
-
-              {/* The map search needs the room, so it spans both columns. */}
-              <div className="sm:col-span-2">
-                <Field
-                  icon={Navigation}
-                  label="Precise location"
-                  hint="Search and pick the exact spot for your business"
-                  editing={editing}
-                  value={business?.accurateLocation}
-                >
-                  <AddressSearch
-                    value={form.accurateLocation}
-                    onChange={(val) => set("accurateLocation", val)}
-                  />
-                </Field>
-              </div>
-            </Section>
-
-            <Section
-              title="Tax details"
-              description="Shown on tax invoices so customers can claim against them."
-            >
-              <Field
-                icon={Receipt}
-                label="PAN / VAT"
-                hint="Printed on tax invoices"
-                editing={editing}
-                value={
-                  business?.panNumber ? String(business.panNumber) : undefined
-                }
-              >
-                <Input
-                  type="text"
-                  value={form.panNumber}
-                  onChange={(e) => set("panNumber", e.target.value)}
-                  className={inputClass}
-                  placeholder="e.g. 609699393"
-                />
-              </Field>
-            </Section>
-
-            {/* Actions */}
-            {editing && (
-              <div className="flex items-center justify-end gap-3 border-t border-[#e8eaed] bg-[#f8f9fa] px-6 py-4 dark:border-white/10 dark:bg-[#1b2436]">
-                <Button
-                  onClick={cancelEdit}
-                  variant="outline"
-                  disabled={saving}
-                  className="flex cursor-pointer items-center gap-2 rounded-lg border-[#dadce0] text-[#3c4043] hover:bg-[#f1f3f4] dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:bg-white/10"
-                >
-                  <X className="h-4 w-4" />
-                  Cancel
-                </Button>
-
-                <Button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="flex cursor-pointer items-center gap-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 dark:hover:bg-blue-500"
-                >
-                  {saving ? (
+                <div className="relative z-10 w-full min-w-0 max-w-md">
+                  {editing ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Saving...
+                      <label className="mb-1.5 flex items-center justify-center gap-1.5">
+                        <Building2 className="h-3.5 w-3.5 text-[#9aa0a6] dark:text-[#7b869b]" />
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#9aa0a6] dark:text-[#7b869b]">
+                          Business name
+                        </span>
+                      </label>
+                      <Input
+                        type="text"
+                        value={form.businessName}
+                        onChange={(e) => set("businessName", e.target.value)}
+                        className={
+                          errors.businessName ? inputErrorClass : inputClass
+                        }
+                        placeholder="e.g. Rebuzz POS"
+                      />
+                      {errors.businessName && (
+                        <p className="mt-1 text-[11px] text-red-500 dark:text-[#f87171]">
+                          {errors.businessName}
+                        </p>
+                      )}
                     </>
                   ) : (
                     <>
-                      <Check className="h-4 w-4" />
-                      Save changes
+                      <h2 className="truncate text-[22px] font-semibold leading-tight tracking-tight text-[#3c4043] dark:text-[#e8ecf4]">
+                        {business?.businessName || "My Business"}
+                      </h2>
+                      <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+                        <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-[11px] font-semibold text-blue-700 dark:border-blue-400/25 dark:bg-blue-400/15 dark:text-[#a8c4ee]">
+                          {business?.businessType || "Business"}
+                        </span>
+
+                        {/* Green only when there is nothing left to add, so the
+                          colour means something rather than always being on. */}
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${
+                            isComplete
+                              ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-400/15 dark:text-emerald-300"
+                              : "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/25 dark:bg-amber-400/15 dark:text-amber-300"
+                          }`}
+                        >
+                          {isComplete ? (
+                            <Check className="h-3 w-3" />
+                          ) : (
+                            <AlertTriangle className="h-3 w-3" />
+                          )}
+                          {isComplete
+                            ? "Profile complete"
+                            : `${filledCount} of ${totalFields} details added`}
+                        </span>
+                      </div>
                     </>
                   )}
-                </Button>
+
+                  {editing && (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="mt-2 cursor-pointer text-xs font-semibold text-blue-600 transition-colors hover:text-blue-700 dark:text-[#7ba2e3] dark:hover:text-white"
+                    >
+                      {displayLogo ? "Change logo" : "Upload logo"}
+                    </button>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
+
+              {/* Logo feedback — an error blocks the upload, a warning does not */}
+              {editing && (
+                <div className="px-6 pb-2">
+                  {logoError ? (
+                    <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-400/25 dark:bg-amber-400/10">
+                      <AlertTriangle
+                        size={15}
+                        className="mt-0.5 shrink-0 text-amber-500"
+                      />
+                      <p className="text-[11px] leading-relaxed text-amber-700 dark:text-amber-200">
+                        {logoError}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-[#9aa0a6] dark:text-[#7b869b]">
+                      PNG, JPG or WEBP. Keep it under {LOGO_WARN_MB} MB for
+                      faster loading — {LOGO_MAX_MB} MB is the limit.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <Section
+                title="Owner & contact"
+                description="Who runs the business, and how customers reach you."
+              >
+                <Field
+                  icon={User}
+                  label="Owner"
+                  editing={editing}
+                  value={business?.owner}
+                  error={errors.owner}
+                >
+                  <Input
+                    type="text"
+                    value={form.owner}
+                    onChange={(e) => set("owner", e.target.value)}
+                    className={errors.owner ? inputErrorClass : inputClass}
+                    placeholder="e.g. John Doe"
+                  />
+                </Field>
+
+                <Field
+                  icon={Phone}
+                  label="Contact number"
+                  editing={editing}
+                  value={business?.phoneNumber}
+                  error={errors.phoneNumber}
+                >
+                  <Input
+                    type="text"
+                    value={form.phoneNumber}
+                    onChange={(e) => set("phoneNumber", e.target.value)}
+                    className={
+                      errors.phoneNumber ? inputErrorClass : inputClass
+                    }
+                    placeholder="e.g. +977-9841234567"
+                  />
+                </Field>
+              </Section>
+
+              <Section
+                title="Location"
+                description="Printed on receipts, and used to place you on a map."
+              >
+                <Field
+                  icon={MapPin}
+                  label="Address"
+                  editing={editing}
+                  value={business?.address}
+                  error={errors.address}
+                >
+                  <Input
+                    type="text"
+                    value={form.address}
+                    onChange={(e) => set("address", e.target.value)}
+                    className={errors.address ? inputErrorClass : inputClass}
+                    placeholder="e.g. Kathmandu, Nepal"
+                  />
+                </Field>
+
+                {/* The map search needs the room, so it spans both columns. */}
+                <div className="sm:col-span-2">
+                  <Field
+                    icon={Navigation}
+                    label="Precise location"
+                    hint="Search and pick the exact spot for your business"
+                    editing={editing}
+                    value={business?.accurateLocation}
+                  >
+                    <AddressSearch
+                      value={form.accurateLocation}
+                      onChange={(val) => set("accurateLocation", val)}
+                    />
+                  </Field>
+                </div>
+              </Section>
+
+              <Section
+                title="Tax details"
+                description="Shown on tax invoices so customers can claim against them."
+              >
+                <Field
+                  icon={Receipt}
+                  label="PAN / VAT"
+                  hint="Printed on tax invoices"
+                  editing={editing}
+                  value={
+                    business?.panNumber ? String(business.panNumber) : undefined
+                  }
+                >
+                  <Input
+                    type="text"
+                    value={form.panNumber}
+                    onChange={(e) => set("panNumber", e.target.value)}
+                    className={inputClass}
+                    placeholder="e.g. 609699393"
+                  />
+                </Field>
+              </Section>
+
+              {/* Actions */}
+              {editing && (
+                <div className="flex items-center justify-end gap-3 border-t border-[#e8eaed] bg-[#f8f9fa] px-6 py-4 dark:border-white/10 dark:bg-[#1b2436]">
+                  <Button
+                    onClick={cancelEdit}
+                    variant="outline"
+                    disabled={saving}
+                    className="flex cursor-pointer items-center gap-2 rounded-lg border-[#dadce0] text-[#3c4043] hover:bg-[#f1f3f4] dark:border-white/15 dark:bg-white/5 dark:text-[#c3ccdc] dark:hover:bg-white/10"
+                  >
+                    <X className="h-4 w-4" />
+                    Cancel
+                  </Button>
+
+                  <Button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="flex cursor-pointer items-center gap-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 dark:hover:bg-blue-500"
+                  >
+                    {saving ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="h-4 w-4" />
+                        Save changes
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>

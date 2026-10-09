@@ -160,7 +160,7 @@ function Shell({
         body: "The day figure is the forecast for tomorrow, or for today when yesterday's saved forecast is showing, beside what that weekday usually sells. The week figure is that day and the six after it, beside a usual week. Usual days are worked out from up to your last 8 weeks of sales. Hover the confidence badge for what its level means.",
       }}
       subtitle={subHeader}
-      controls={badge}
+      buttons={badge}
       className="h-full select-none"
     >
       {children}
@@ -366,7 +366,7 @@ export default function ForecastCard() {
           in teal with a calendar — so the two figures are never read for one
           another at a glance. */}
       <div
-        className={`mb-5 grid grid-cols-2 gap-3 transition-opacity ${busy ? "opacity-50" : ""}`}
+        className={`mb-5 grid grid-cols-1 sm:grid-cols-2 gap-3 transition-opacity ${busy ? "opacity-50" : ""}`}
       >
         {[
           {

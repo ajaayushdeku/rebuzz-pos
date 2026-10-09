@@ -370,7 +370,7 @@ export default function ProfitVarianceBridge({
           </div> */}
 
           {inProgress && (
-            <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800 dark:text-amber-200 dark:bg-amber-400/10">
+            <p className="mt-3 flex items-center gap-1.5 rounded-lg bg-amber-100 px-3 py-2.5 text-[11px] leading-relaxed text-amber-800 dark:text-amber-200 dark:bg-amber-400/10">
               <Info className="mt-px h-3.5 w-3.5 shrink-0" />
 
               <span>

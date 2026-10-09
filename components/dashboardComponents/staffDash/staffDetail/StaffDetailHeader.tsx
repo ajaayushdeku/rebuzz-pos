@@ -1,8 +1,16 @@
 "use client";
 
-import { ArrowLeft, Crown, Hash, Mail, Phone, UserRound } from "lucide-react";
+import {
+  ArrowLeft,
+  Crown,
+  ShieldCheck,
+  Hash,
+  Mail,
+  Phone,
+  UserRound,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
-import { initials } from "@/lib/utils";
+// import { initials } from "@/lib/utils";
 import { DateRangeFilter } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 import type { DateRangeValue } from "@/components/dashboardComponents/staffDash/DateRangeFilter";
 
@@ -28,7 +36,7 @@ const ROLE_STYLE: Record<
   { solid: string; glow: string; icon: typeof Crown }
 > = {
   owner: { solid: "#fbc847", glow: "rgba(255, 186, 12, 0.4)", icon: Crown },
-  admin: { solid: "#fbc847", glow: "rgba(255, 183, 0, 0.4)", icon: Crown },
+  admin: { solid: "#00A63E", glow: "rgba(0, 255, 94, 0.4)", icon: ShieldCheck },
   staff: { solid: "#e11d48", glow: "rgba(225,29,72,0.35)", icon: UserRound },
   basic: { solid: "#0891b2", glow: "rgba(8,145,178,0.35)", icon: UserRound },
 };
@@ -93,13 +101,15 @@ export default function StaffDetailHeader({
           }}
           title={name}
         >
-          <UserRound
+          <RoleIcon
             aria-hidden
             size={30}
-            strokeWidth={1.5}
-            className="pointer-events-none absolute text-white/65"
+            strokeWidth={2}
+            className="pointer-events-none absolute text-white/80"
           />
-          <span>{initials(name || "Staff")}</span>
+          {/* <span className="text-gray-900 z-100">
+            {initials(name || "Staff")}
+          </span> */}
         </div>
 
         <div className="min-w-0">
@@ -115,7 +125,7 @@ export default function StaffDetailHeader({
                   boxShadow: `0 4px 10px -5px ${roleStyle.glow}`,
                 }}
               >
-                <RoleIcon size={10} className="shrink-0" />
+                <RoleIcon size={12} className="shrink-0 font-bold" />
                 <p className="mt-0.5"> {role}</p>
               </span>
             )}

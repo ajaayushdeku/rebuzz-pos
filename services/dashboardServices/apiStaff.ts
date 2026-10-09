@@ -416,7 +416,7 @@ export async function getStaffData(
 
       identityMap.set(emp._id, {
         name: emp.name || emp._id,
-        role: emp.role || "Owner",
+        role: emp.role || "Admin",
       });
     }
 
@@ -428,7 +428,7 @@ export async function getStaffData(
 
       identityMap.set(shift.employeeId, {
         name: shift.employeeName || shift.employeeId,
-        role: "Owner",
+        role: "Admin",
       });
     }
 

@@ -197,7 +197,7 @@ const SalesCategoryChart = ({
                   cy="50%"
                   innerRadius={55}
                   outerRadius={82}
-                  paddingAngle={2}
+                  paddingAngle={0.5}
                   dataKey="totalRevenue"
                   nameKey="name"
                   startAngle={90}
@@ -215,15 +215,7 @@ const SalesCategoryChart = ({
           <div className="relative">
             <div
               ref={scrollRef}
-              className="  mt-2
-    px-2
-    h-22
-    overflow-y-auto
-    space-y-3
-    scrollbar-hide
-    [-ms-overflow-style:none]
-    [scrollbar-width:none]
-    [&::-webkit-scrollbar]:hidden"
+              className="  mt-2 px-2 h-22 overflow-y-auto space-y-3 scrollbar-hide    [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
               {coloredData.map((entry) => (
                 <div
